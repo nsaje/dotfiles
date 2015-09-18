@@ -212,11 +212,12 @@ class AdGroupSettings(api_common.BaseApiView):
                 if action:
                     actionlogs_to_send.append(action)
 
-            # note changes in history
-            changes_text = 'Automatically created campaigns for {}'.format(
-                [x.source.name for x, _ in ad_group_sources_w_defaults])
+            # note changes in history. If no changes text is set the default message will be shown.
+            if ad_group_sources_w_defaults:
+                changes_text = 'Created settings and automatically created campaigns for {}'.format(
+                    ', '.join([x.source.name for x, _ in ad_group_sources_w_defaults]))
+                new_settings.changes_text = changes_text
 
-            new_settings.changes_text = changes_text
             new_settings.save(request)
 
         zwei_actions.send(actionlogs_to_send)
