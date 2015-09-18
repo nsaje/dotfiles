@@ -122,9 +122,6 @@ class GaReportRow(ReportRow):
                 return True
         return False
 
-    def get_ga_fields(self, column):
-        return [ga_row_dict.get(column, None) for ga_row_dict in self.ga_row_dicts]
-
     def sessions(self):
         all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
         all_row_sessions = [int(raw_sessions) if raw_sessions not in ('', None) else 0 for raw_sessions in all_row_raw_sessions]
@@ -199,9 +196,6 @@ class OmnitureReportRow(ReportRow):
             if 'conversions' in goal_dict.keys():
                 return True
         return False
-
-    def get_ga_fields(self, column):
-        return [ga_row_dict.get(column, None) for ga_row_dict in self.ga_row_dicts]
 
     def sessions(self):
         all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
