@@ -24,6 +24,8 @@ from convapi.helpers import get_from_s3
 
 from reports import update
 
+from utils.compression import unzip
+from utils.csv_utils import convert_to_xls
 from utils.statsd_helper import statsd_incr, statsd_timer
 
 logger = logging.getLogger(__name__)
@@ -91,7 +93,7 @@ def report_aggregate(csvreport, sender, recipient, subject, date, text, report_l
 
 
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
-          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
+          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLOY)
 @transaction.atomic
 def process_ga_report(ga_report_task):
     try:
@@ -201,7 +203,7 @@ def _convert_ga_omniture(content, attachment_name):
     csv_file = StringIO.StringIO()
     writer = unicodecsv.writer(csv_file, encoding='utf-8')
 
-    workbook = xlrd.open_workbook(file_contents=content) #, encoding_override="utf-8")
+    workbook = xlrd.open_workbook(file_contents=content)
 
     header = _parse_omniture_header(workbook)
     date_raw = header.get('Date', '')
@@ -347,17 +349,43 @@ def _extract_omniture_date(date_raw):
 
 
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
-          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
+          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLOY)
 @transaction.atomic
 def process_ga_report_v2(ga_report_task):
+    process_report_v2(ga_report_task, reports.constants.ReportType.GOOGLE_ANALYTICS)
+
+
+@app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
+          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLOY)
+@transaction.atomic
+def process_omniture_report_v2(ga_report_task):
+    process_report_v2(ga_report_task, reports.constants.ReportType.OMNITURE)
+
+
+def process_report_v2(report_task, report_type):
     try:
-        report_log = models.GAReportLog()
+        report_log = models.ReportLog()
         # create report log and validate incoming task
-        content = _update_and_validate_report_log(ga_report_task, report_log)
+        content = _update_and_validate_report_log_v2(report_task, report_log)
 
         # omniture parsing for now
         report = None
-        if ga_report_task.attachment_name.endswith('.xls'):
+
+        attachment_name = report_task.attachment_name
+        if attachment_name.endswith('.zip'):
+            files = unzip(content)
+            for filename in files:
+                if filename.endswith('.xls') or filename.endswith('.csv'):
+                    attachment_name = filename
+                    content = files[filename]
+                    break
+
+        if report_type == reports.constants.ReportType.OMNITURE:
+            if attachment_name.endswith('.csv'):
+                # instead of writing yet another parser variant we convert it
+                # to an xls
+                content = convert_to_xls(content)
+
             report = parse_v2.OmnitureReport(content)
             report.parse()
         else:
@@ -365,16 +393,18 @@ def process_ga_report_v2(ga_report_task):
             # parse will throw exceptions in case of errors
             report.parse()
 
-        _update_report_log_after_parsing(report, report_log, ga_report_task)
+        _update_report_log_after_parsing(report, report_log, report_task)
 
         # serialize report - this happens even if report is failed/empty
         valid_entries = report.valid_entries()
         update.process_report(
             report.get_date(),
             valid_entries,
-            reports.constants.ReportType.GOOGLE_ANALYTICS
+            report_type
         )
 
+        report_log.visits_imported = report.imported_visits()
+        report_log.visits_reported = report.reported_visits()
         report_log.state = constants.ReportState.SUCCESS
         report_log.save()
     except exc.EmptyReportException as e:
@@ -393,7 +423,7 @@ def process_ga_report_v2(ga_report_task):
 
 
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
-          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLAY)
+          default_retry_delay=settings.CELERY_TASK_RETRY_DEPLOY)
 @transaction.atomic
 def process_omniture_report(ga_report_task):
     try:
@@ -457,6 +487,35 @@ def _update_and_validate_report_log(ga_report_task, report_log):
     return content
 
 
+def _update_and_validate_report_log_v2(ga_report_task, report_log):
+    report_log.email_subject = '{subj}_v2'.format(subj=ga_report_task.subject)
+    report_log.from_address = ga_report_task.from_address
+    report_log.state = constants.ReportState.RECEIVED
+
+    if int(ga_report_task.attachment_count) != 1:
+        logger.warning('ERROR: single attachment expected')
+        report_log.add_error('ERROR: single attachment expected')
+        report_log.state = constants.ReportState.FAILED
+        report_log.save()
+
+    content = get_from_s3(ga_report_task.attachment_s3_key)
+    if content is None:
+        logger.warning('ERROR: Get attachment from s3 failed')
+        report_log.add_error('ERROR: Get attachment from s3 failed')
+        report_log.state = constants.ReportState.FAILED
+        report_log.save()
+
+    if ga_report_task.attachment_content_type != 'text/csv':
+        logger.warning('ERROR: content type is not CSV')
+        report_log.add_error('ERROR: content type is not CSV')
+        report_log.state = constants.ReportState.FAILED
+        report_log.save()
+
+    filename = ga_report_task.attachment_name
+    report_log.report_filename = filename
+    return content
+
+
 def _update_report_log_after_parsing(csvreport, report_log, ga_report_task):
     report_log.for_date = csvreport.get_date()
     report_log.state = constants.ReportState.PARSED
@@ -493,4 +552,3 @@ def _update_report_log_after_parsing(csvreport, report_log, ga_report_task):
     report_log.email_subject = ga_report_task.subject
     report_log.for_date = csvreport.get_date()
     report_log.save()
-

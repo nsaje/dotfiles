@@ -77,7 +77,7 @@ SLACK_EMOJI = { 'info': ':information_source:', 'error': ':rage:', 'success': ':
 def post_to_slack(msg, msg_type='info'):
     emoji = SLACK_EMOJI.get(msg_type)
     hour = datetime.now().hour
-    
+
     if hour >= 8 and hour < 14:
         state = ':innocent:'
     elif hour >= 14 and hour < 18:
@@ -86,7 +86,7 @@ def post_to_slack(msg, msg_type='info'):
         state = ':scream:'
     else:
         state = ':angry_celan:'
-    
+
     data = urllib.urlencode({
 	'payload': json.dumps({
 	    'text': '{} {}'.format(emoji, msg),
@@ -97,7 +97,7 @@ def post_to_slack(msg, msg_type='info'):
     req = urllib2.Request(SLACK, data)
     response = urllib2.urlopen(req)
     return response.read() == 'ok'
-    
+
 # SETTINGS
 @task
 def staging(*args):
@@ -152,7 +152,7 @@ def deploy(*args):
         execute(docker_deploy, "server", params)
 
     clone_code(params)
-        
+
     all_apps_params = {}
 
     # First deploy without switching on all the servers.
@@ -500,7 +500,7 @@ def deploy_django_app(app, params):
         params['venv_name'] = '%s-%s-%s' % (app, params['timestamp'], params['commit_hash'])
 
         return params
-    
+
     print task("Create virtualenv [%s@%s]" % (app, env.host))
     create_virtualenv(app, params)
 
@@ -531,7 +531,7 @@ def deploy_angular_app(app, params):
         return params
     print task("Unpack [%s@%s]" % (app, env.host))
     unpack(app, params)
-    
+
     print ok("%s successfully deployed at %s" % (app.capitalize(), env.host))
     return params
 
@@ -558,7 +558,7 @@ def real_migrate(app, params):
         run('/home/one/migration.sh')
         print ok("%s successfully migrated %s" % (app.capitalize(), env.host))
         return
-    
+
     print task("Create virtualenv [%s@%s]" % (app, env.host))
     create_virtualenv(app, params)
 
