@@ -32,7 +32,8 @@ checkout:
 
 test:
     override:
-        - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test  ;; 1) cd client && grunt test && cd .. && ./run_e2e.sh && tar -pc client/dist/ -zf client.tar.gz; ;; esac':
+        - 'git rev-parse HEAD > server/git_commit_hash.txt'
+        - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test  ;; 1) cd client && grunt test && cd .. && ./run_e2e.sh && git rev-parse HEAD > client/dist/git_commit_hash.txt && tar -pc client/dist/ -zf client.tar.gz; ;; esac':
             parallel: true
     post:
         - if [[ "$CIRCLE_NODE_INDEX" = "0" ]]; then  tar -pc server -zf server.tar.gz; fi
