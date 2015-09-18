@@ -6,8 +6,6 @@ import re
 import StringIO
 import xlrd
 
-import datetime
-
 import dash
 from utils import url_helper
 
@@ -250,7 +248,7 @@ class Report(object):
                 continue
             count_goal_useful += 1
         return "Overview report_dt: {dt} cads: {count_useful_ca}/{count_all} goals {useful_ga}/{count_all}".format(
-            dt=self.start_date.isoformat() if self.start_date != None else '',
+            dt=self.start_date.isoformat() if self.start_date is None else '',
             count_useful_ca=count_valid_rows,
             count_all=count_all,
             useful_ga=count_goal_useful,
@@ -446,7 +444,6 @@ class GAReport(Report):
             if results is not None:
                 source_param = results.group(0)
 
-
         if content_ad_id is None or source_param == '':
             logger.warning(
                 'Could not parse landing page url %s. content_ad_id: %s, source_param: %s',
@@ -586,7 +583,7 @@ class OmnitureReport(Report):
                 keyvalue = [(kv or '').strip() for kv in line[0].split(':')]
                 val = ''.join(keyvalue[1:])
                 second_col = line[1] if len(line) > 1 else ''
-                header[keyvalue[0].replace('#','').strip()] = val + second_col
+                header[keyvalue[0].replace('#', '').strip()] = val + second_col
 
         return header
 
@@ -640,7 +637,7 @@ class OmnitureReport(Report):
             if not body_found:
                 if len(line) > 0 and ':' in line[0]:
                     continue  # header
-                if not 'tracking code' in ' '.join(line[1:]).lower():
+                if 'tracking code' not in ' '.join(line[1:]).lower():
                     continue
                 else:
                     body_found = True
