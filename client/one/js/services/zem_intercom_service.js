@@ -5,8 +5,7 @@ oneApp.factory('zemIntercomService', ['$window', function($window) {
     var INTERCOM_APP_ID = 'anyekw96';
 
     function boot(user) {
-        var userDict;
-        var companyObject;
+        var userDict, companyObject;
         if ($window.Intercom === undefined) {
             return;
         }
@@ -26,8 +25,7 @@ oneApp.factory('zemIntercomService', ['$window', function($window) {
     }
 
     function getCompanyObjectFromEmail(email) {
-        var splitEmail = email.split('@');
-        var companyName;
+        var splitEmail = email.split('@'), companyName;
         if (splitEmail.length !== 2) {
             return false;
         }
