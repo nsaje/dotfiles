@@ -163,7 +163,7 @@ def _process_zwei_response(action, data, request):
         action.save()
 
         if action.action == actionlog.constants.Action.FETCH_REPORTS:
-            fetch_reports_callback(action, data):
+            fetch_reports_callback(action, data)
 
         elif action.action == actionlog.constants.Action.FETCH_REPORTS_BY_PUBLISHER:
             fetch_reports_by_publisher_callback(action, data)

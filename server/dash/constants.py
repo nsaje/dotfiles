@@ -913,6 +913,7 @@ class SourceAction(ConstantBase):
     CAN_MODIFY_DMA_TARGETING_AUTOMATIC = 15
     CAN_MODIFY_COUNTRY_TARGETING = 16
     CAN_MODIFY_DMA_TARGETING_MANUAL = 17
+    CAN_FETCH_REPORT_BY_PUBLISHER = 18
 
     _VALUES = {
         CAN_UPDATE_STATE: 'Can update state',
@@ -932,6 +933,7 @@ class SourceAction(ConstantBase):
         UPDATE_TRACKING_CODES_ON_CONTENT_ADS: 'Update tracking codes on content ads',
         CAN_UPDATE_DAILY_BUDGET_MANUAL: 'Can update daily budget manually',
         CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL: 'Can modify ad group IAB category manually',
+        CAN_FETCH_REPORT_BY_PUBLISHER: 'Can fetch report by publishers',
     }
 
 

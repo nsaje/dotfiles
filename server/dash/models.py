@@ -609,6 +609,11 @@ class SourceType(models.Model):
     def supports_dma_targeting(self):
         return self.can_modify_dma_targeting_manual() or self.can_modify_dma_targeting_automatic()
 
+    def can_fetch_report_by_publisher(self):
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_FETCH_REPORT_BY_PUBLISHER in self.available_actions
+
+
     def __str__(self):
         return self.type
 
@@ -703,6 +708,10 @@ class Source(models.Model):
 
     def update_tracking_codes_on_content_ads(self):
         return self.source_type.update_tracking_codes_on_content_ads()
+
+    def can_fetch_report_by_publisher(self):
+        return self.source_type.can_fetch_report_by_publisher()
+
 
     def __unicode__(self):
         return self.name
