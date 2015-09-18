@@ -594,8 +594,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'autopilot_state' in resource and not autopilot_form.is_valid():
             errors.update(autopilot_form.errors)
 
-        if (not request.user.has_perm('zemauth.can_set_media_source_to_auto_pilot') and
-                resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE):
+        if not request.user.has_perm('zemauth.can_set_media_source_to_auto_pilot') and\
+                resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
             errors.update(exc.ForbiddenError(message='Not allowed'))
 
         if errors:
