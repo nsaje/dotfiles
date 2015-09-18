@@ -525,12 +525,12 @@ def _update_report_log_after_parsing(csvreport, report_log, ga_report_task):
 
     message = ''
     if len(content_ad_errors) > 0:
-        message += '\nERROR: not all landing page urls have a valid content ad specified:\n'
+        message += '\nERROR: not all urls/keywords have a valid content ad specified:\n'
         for err in content_ad_errors:
             message += '{}\n'.format(err or '')
 
     if len(media_source_errors) > 0:
-        message += '\nERROR: not all landing page urls have a media source specified: \n'
+        message += '\nERROR: not all urls/keywords have a media source specified: \n'
         for landing_url in media_source_errors:
             message += '{}\n'.format(landing_url or '')
 
