@@ -16,6 +16,8 @@ from utils import csv_utils
 @patch('reports.redshift._get_cursor')
 class ParseReportTest(TestCase):
 
+    fixtures = ['test_ga_aggregation.yaml']
+
     def test_parse_header(self, cursor):
         complete_head = """
 # ----------------------------------------
@@ -299,9 +301,9 @@ Landing Page,Device Category,Sessions
 # ----------------------------------------
 
 Landing Page,Device Category,Sessions,Goal Completions
-/unexpected-scenario?_z1_adgid=1&_z1_caid=10&_z1_msid=yahoo,desktop,6,1
-/unexpected-scenario?_z1_adgid=1&_z1_caid=10&_z1_msid=yahoo,mobile,6,2
-/unexpected-scenario?_z1_adgid=1&_z1_caid=10&_z1_msid=yahoo,tablet,6,3
+/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,desktop,6,1
+/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,mobile,6,2
+/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,tablet,6,3
 ,,600,96.33%,578,95.50%,1.06,00:00:10,0.00%,0,A$0.00
 
 Day Index,Sessions
@@ -311,6 +313,7 @@ Day Index,Sessions
 
         parser = parse_v2.GAReport(complete_csv)
         parser.parse()
+        parser.validate()
         self.assertEqual(1, len(parser.entries))
         self.assertEqual(6, parser.valid_entries()[0].goals['Goal 1']['conversions'], 6)
 

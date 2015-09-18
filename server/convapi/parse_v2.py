@@ -8,6 +8,7 @@ import xlrd
 
 import datetime
 
+import dash
 from utils import url_helper
 
 LANDING_PAGE_COL_NAME = 'Landing Page'
@@ -38,7 +39,7 @@ GOAL_RATE_KEYWORDS = ['conversion rate']
 
 def _report_atoi(raw_str):
     # TODO: Implement locale specific parsing
-    ret_str = raw_str.replace(',', '')
+    ret_str = (raw_str or '0').replace(',', '')
     dot_loc = ret_str.find('.')
     if dot_loc != -1:
         return int(ret_str[:dot_loc])
@@ -51,8 +52,21 @@ def _report_atof(raw_str):
     return float(raw_str.replace(',', ''))
 
 
-class GaReportRow(object):
+class ReportRow(object):
+
+    def __init__(self):
+        self.valid = True
+
+    def is_valid(self):
+        return self.valid
+
+    def mark_invalid(self):
+        self.valid = False
+
+
+class GaReportRow(ReportRow):
     def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
+        ReportRow.__init__(self)
         self.ga_row_dicts = [ga_row_dict]
 
         self.visits = _report_atoi(ga_row_dict.get('Sessions'))
@@ -93,6 +107,9 @@ class GaReportRow(object):
                 self.goals[ga_report_row_goal] = ga_report_row.goals[ga_report_row_goal]
 
     def is_row_valid(self):
+        if not self.is_valid():
+            return False
+
         return self.content_ad_id is not None and\
             self.source_param != '' and\
             self.source_param is not None
@@ -125,8 +142,9 @@ class GaReportRow(object):
         )
 
 
-class OmnitureReportRow(object):
+class OmnitureReportRow(ReportRow):
     def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param):
+        ReportRow.__init__(self)
         self.omniture_row_dict = [omniture_row_dict]
 
         self.visits = _report_atoi(omniture_row_dict.get('Visits'))
@@ -167,6 +185,9 @@ class OmnitureReportRow(object):
                 self.goals[omniture_report_row_goal] = omniture_report_row.goals[omniture_report_row_goal]
 
     def is_row_valid(self):
+        if not self.is_valid():
+            return False
+
         return self.content_ad_id is not None and\
             self.source_param != '' and\
             self.source_param is not None
@@ -205,6 +226,7 @@ class Report(object):
         # mapping from each url in report to corresponding z1 code or utm term
         self.entries = {}
         self.start_date = None
+        self._imported_visits = 0
 
     def is_empty(self):
         return self.entries == {}
@@ -214,6 +236,15 @@ class Report(object):
 
     def valid_entries(self):
         return [entry for entry in self.entries.values() if entry.is_row_valid()]
+
+    def reported_visits(self):
+        return sum(entry.visits for entry in self.valid_entries())
+
+    def imported_visits(self):
+        return self._imported_visits
+
+    def add_imported_visits(self, count):
+        self._imported_visits += count
 
     def debug_parsing_overview(self):
         count_all = len(self.entries.values())
@@ -258,17 +289,42 @@ class Report(object):
 
         return content_ad_id, source_param
 
+    def validate(self):
+        '''
+        Check if imported content ads and sources exist in database.
+        If not mark them as invalid.
+        '''
+        # get all sources
+        sources = dash.models.Source.objects.all()
+        track_source_map = {}
+        for source in sources:
+            track_source_map[source.tracking_slug] = source.id
+
+        # slow but since we don't receive many reports this shouldn't hurt much
+        for entry in self.entries.values():
+            caid = entry.content_ad_id
+            source_param = track_source_map.get(entry.source_param)
+            if source_param is None:
+                entry.mark_invalid()
+                continue
+
+            if not dash.models.ContentAdSource.objects.filter(
+                content_ad__id=caid,
+                source__id=source_param).exists():
+                entry.mark_invalid()
+                continue
+
     def is_media_source_specified(self):
         media_source_not_specified = []
         for entry in self.entries.values():
-            if entry.source_param == '' is None or entry.source_param == '':
+            if not entry.is_valid() or entry.source_param == '' is None or entry.source_param == '':
                 media_source_not_specified.append(entry.source_param)
         return (len(media_source_not_specified) == 0, list(media_source_not_specified))
 
     def is_content_ad_specified(self):
         content_ad_not_specified = set()
         for entry in self.entries.values():
-            if entry.content_ad_id is None or entry.content_ad_id == '':
+            if not entry.is_valid() or entry.content_ad_id is None or entry.content_ad_id == '':
                 content_ad_not_specified.add(entry.content_ad_id)
         return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
 
@@ -348,6 +404,7 @@ class GAReport(Report):
                 content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
                 goals = self._parse_goals(self.fieldnames, entry)
                 report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, goals)
+                self.add_imported_visits(report_entry.visits or 0)
 
                 existing_entry = self.entries.get(report_entry.key())
                 if existing_entry is None:
@@ -549,9 +606,13 @@ class OmnitureReport(Report):
                 if not value:
                     break
                 line.append(value)
-            if len(line) == 1 and ':' in line[0]:
+
+            if len(line) >= 1 and len(line) <= 2 and ':' in line[0]:
                 keyvalue = [(kv or '').strip() for kv in line[0].split(':')]
-                header[keyvalue[0]] = ''.join(keyvalue[1:])
+                val = ''.join(keyvalue[1:])
+                second_col = line[1] if len(line) > 1 else ''
+                header[keyvalue[0].replace('#','').strip()] = val + second_col
+
         return header
 
     def _extract_date(self, date_raw):
@@ -586,7 +647,7 @@ class OmnitureReport(Report):
         workbook = xlrd.open_workbook(file_contents=self.xlsx_report_blob)
 
         header = self._parse_header(workbook)
-        date_raw = header.get('Date', '')
+        date_raw = header.get('Date') or header.get('Range')
         self.start_date = self._extract_date(date_raw)
 
         body_found = False
@@ -602,7 +663,9 @@ class OmnitureReport(Report):
                 line.append(value)
 
             if not body_found:
-                if not 'tracking code' in ' '.join(line).lower():
+                if len(line) > 0 and ':' in line[0]:
+                    continue  # header
+                if not 'tracking code' in ' '.join(line[1:]).lower():
                     continue
                 else:
                     body_found = True
@@ -615,14 +678,19 @@ class OmnitureReport(Report):
             keys = [idxel[1] for idxel in enum_columns if idxel[1] != '']
             values = [line[idxel[0]] for idxel in enum_columns if idxel[1] != '']
             omniture_row_dict = dict(zip(keys, values))
-
             if 'Total' in line:  # footer with summary
                 self._check_session_counts(omniture_row_dict)
                 break
 
-            keyword = omniture_row_dict.get('Tracking Code', '')
+            tracking_code_col = 'Tracking Code'
+            for key in keys:
+                if 'tracking code' in key.lower():
+                    tracking_code_col = key
+
+            keyword = omniture_row_dict.get(tracking_code_col, '')
             content_ad_id, source_param = self._parse_z11z_keyword(keyword)
             report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param)
+            self.add_imported_visits(report_entry.visits or 0)
 
             existing_entry = self.entries.get(report_entry.key())
             if existing_entry is None:

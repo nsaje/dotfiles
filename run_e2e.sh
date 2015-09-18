@@ -13,6 +13,7 @@ echo 'Loading fixtures' &&
 $SCRIPTPATH/server/manage.py syncdb --noinput &&
 $SCRIPTPATH/server/manage.py migrate --noinput &&
 $SCRIPTPATH/server/manage.py redshift_create_e2e_db &&
+$SCRIPTPATH/server/manage.py redshift_migrate &&
 $SCRIPTPATH/server/manage.py loaddata demo_groups &&
 $SCRIPTPATH/server/manage.py loaddata demo_data
 

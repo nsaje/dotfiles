@@ -704,7 +704,6 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=['domain'],
-            order_direction='ASC',
             constraints={'ad_group': ad_group.id}
         )
 
@@ -805,7 +804,6 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=['domain'],
-            order_direction='ASC',
             constraints={'ad_group': ad_group.id,
                         'exchange': ['adsnative']}
         )
@@ -871,8 +869,7 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             date,
             breakdown_fields=['domain', 'exchange'],
-            order_fields=['cost'],
-            order_direction='DESC',
+            order_fields=['-cost'],
             constraints={'ad_group': ad_group.id,}
         )
 

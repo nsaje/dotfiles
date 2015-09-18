@@ -123,6 +123,12 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
             new_field_value
         )
 
+    # update ad group source settings
+    cons = consistency.SettingsStateConsistence(ad_group_source)
+    settings_changes = cons.get_needed_state_updates()
+    if settings_changes:
+        actionlog.api.set_ad_group_source_settings(settings_changes, ad_group_source, request)
+
 
 def insert_content_ad_callback(
         ad_group_source,
@@ -725,7 +731,7 @@ class AdGroupSourceSettingsWriter(object):
         self.ad_group_source = ad_group_source
         assert type(self.ad_group_source) is models.AdGroupSource
 
-    def set(self, settings_obj, request):
+    def set(self, settings_obj, request, send_action=True):
         latest_settings = self.get_latest_settings()
 
         state = settings_obj.get('state')
@@ -740,27 +746,28 @@ class AdGroupSourceSettingsWriter(object):
                 state is not None and state != latest_settings.state,
                 autopilot_state is not None and autopilot_state != latest_settings.autopilot_state,
                 cpc_cc is not None and cpc_cc != latest_settings.cpc_cc,
-                daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc
-        ]):
-                new_settings = latest_settings
-                new_settings.pk = None  # make a copy of the latest settings
+                daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc]):
+            new_settings = latest_settings
+            new_settings.pk = None  # make a copy of the latest settings
 
-                old_settings_obj = {}
+            old_settings_obj = {}
 
-                if state is not None:
-                    new_settings.state = state
-                if autopilot_state is not None:
-                    new_settings.autopilot_state = autopilot_state
-                if cpc_cc is not None:
-                    old_settings_obj['cpc_cc'] = new_settings.cpc_cc
-                    new_settings.cpc_cc = cpc_cc
-                if daily_budget_cc is not None:
-                    old_settings_obj['daily_budget_cc'] = new_settings.daily_budget_cc
-                    new_settings.daily_budget_cc = daily_budget_cc
-                new_settings.save(request)
+            if state is not None:
+                new_settings.state = state
+            if autopilot_state is not None:
+                old_settings_obj['autopilot_state'] = latest_settings.autopilot_state
+                new_settings.autopilot_state = autopilot_state
+            if cpc_cc is not None:
+                old_settings_obj['cpc_cc'] = latest_settings.cpc_cc
+                new_settings.cpc_cc = cpc_cc
+            if daily_budget_cc is not None:
+                old_settings_obj['daily_budget_cc'] = latest_settings.daily_budget_cc
+                new_settings.daily_budget_cc = daily_budget_cc
+            new_settings.save(request)
 
-                self.add_to_history(settings_obj, old_settings_obj, request)
+            self.add_to_history(settings_obj, old_settings_obj, request)
 
+            if send_action:
                 filtered_settings_obj = {k:v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}
                 if 'state' not in settings_obj or self.can_trigger_action():
                     if filtered_settings_obj:
@@ -771,7 +778,7 @@ class AdGroupSourceSettingsWriter(object):
                         settings_obj,
                         self.ad_group_source
                     )
-        else:
+        elif send_action:
             ssc = consistency.SettingsStateConsistence(self.ad_group_source)
             if not ssc.is_consistent() and ('state' not in settings_obj or self.can_trigger_action()):
                 new_settings = latest_settings

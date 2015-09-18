@@ -150,18 +150,13 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
     return _translate_row(results[0], reverse_field_mapping)
 
 
-def query_general(table_name, start_date, end_date, aggregates, breakdown_fields=None, order_fields=None, order_direction=None, limit=None, offset=None, constraints={}):
+def query_general(table_name, start_date, end_date, aggregates, breakdown_fields=None, order_fields_tuples=None, limit=None, offset=None, constraints={}):
 
     constraints = _prepare_constraints(constraints, field_mapping={})
     constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
     constraints.append('{} <= \'{}\''.format(quote('date'), end_date))
 
     aggregates = _prepare_aggregates_simple(aggregates)
-
-    # Warning - direction affects just the last order parameter
-    if order_direction:
-        if order_direction.lower() not in ("asc", "desc"):
-            raise Exception("Order direction has to be either ASC or DESC")
 
     if breakdown_fields:
         breakdown_fields = _prepare_breakdown(breakdown_fields, {})
@@ -170,8 +165,7 @@ def query_general(table_name, start_date, end_date, aggregates, breakdown_fields
             breakdown_fields + aggregates,
             constraints,
             breakdown=breakdown_fields,
-            order_fields=order_fields,
-            order_direction=order_direction,
+            order_fields_tuples=order_fields_tuples,
             limit=limit,
             offset=offset,
         )
@@ -254,7 +248,7 @@ def _translate_row(row, reverse_field_mapping):
     return {reverse_field_mapping.get(k, k): v for k, v in row.iteritems()}
 
 
-def _create_select_query(table, fields, constraints, breakdown=None, order_fields=None, order_direction=None, limit = None, offset = None):
+def _create_select_query(table, fields, constraints, breakdown=None, order_fields_tuples=None, limit = None, offset = None):
     cmd = 'SELECT {fields} FROM {table} WHERE {constraints}'.format(
         fields=','.join(fields),
         table=table,
@@ -264,15 +258,18 @@ def _create_select_query(table, fields, constraints, breakdown=None, order_field
     if breakdown:
         cmd += ' GROUP BY {}'.format(','.join(breakdown))
 
-    if order_fields:
-        cmd += " ORDER BY " + ",".join(order_fields)
-        if order_direction:
-            cmd += " " + order_direction + " "
+    if order_fields_tuples:
+        cmd += " ORDER BY " 
+        order_cmds = []
+        for order_field, direction in order_fields_tuples:
+            # order_field might actually be an expression
+            order_cmds.append('{} {}'.format(order_field , direction))
+        cmd += " " + ",".join(order_cmds) + " "
+        
     if limit:
         cmd += " LIMIT " + str(limit)
     if offset:
         cmd += " OFFSET " + str(offset)
-    
     return cmd
 
 

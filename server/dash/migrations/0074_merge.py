@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('dash', '0066_adgroupsourcesettings_autopilot'),
+        ('dash', '0073_auto_20150915_1222'),
         ('dash', '0073_merge'),
     ]
 
