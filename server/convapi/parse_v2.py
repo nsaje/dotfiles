@@ -130,6 +130,7 @@ class GaReportRow(ReportRow):
 
 
 class OmnitureReportRow(ReportRow):
+
     def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param):
         ReportRow.__init__(self)
         self.omniture_row_dict = [omniture_row_dict]
@@ -140,8 +141,11 @@ class OmnitureReportRow(ReportRow):
             self.bounce_rate = _report_atof(omniture_row_dict['Bounce Rate'].replace('%', '')) / 100
         else:
             self.bounce_rate = 0
-        self.pageviews = int(round(_report_atof(omniture_row_dict.get('Pages Views', '0')) * self.visits))
-        self.new_visits = _report_atoi(omniture_row_dict.get('Unique Visits', '0'))
+        self.pageviews = round(_report_atof(omniture_row_dict.get('Page Views', '0')))
+        self.new_visits = _report_atoi(
+            omniture_row_dict.get('Unique Visits',
+                omniture_row_dict.get('Unique Visitors', '0')
+            ))
         self.bounced_visits = int(self.bounce_rate * self.visits)
         self.total_time_on_site = self.visits * _report_atoi(omniture_row_dict.get('Total Seconds Spent', '0'))
 
