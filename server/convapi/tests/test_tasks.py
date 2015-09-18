@@ -85,7 +85,9 @@ Day Index,Sessions
         tasks.process_ga_report(ga_report_task)
 
         report_log = models.GAReportLog.objects.first()
-        self.assertIsNone(report_log.errors)
+        self.assertFalse(report_log.errors is None)
+        self.assertEqual(234, report_log.visits_reported)
+        self.assertEqual(234, report_log.visits_imported)
 
     def test_process_ga_report_v2(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
@@ -147,7 +149,7 @@ Day Index,Sessions
 
         report_log = models.ReportLog.objects.first()
         self.assertIsNone(report_log.errors)
-        self.assertEqual(0, report_log.visits_reported)
+        self.assertEqual(234, report_log.visits_reported)
         self.assertEqual(234, report_log.visits_imported)
 
     def test_process_ga_report_v2_omni_csv_zip(self, cursor):
@@ -166,7 +168,7 @@ Day Index,Sessions
         tasks.process_omniture_report_v2(ga_report_task)
 
         report_log = models.ReportLog.objects.first()
-        self.assertIsNone(report_log.errors)
+        self.assertFalse(report_log.errors is None)
         self.assertEqual(0, report_log.visits_reported)
         self.assertEqual(4112, report_log.visits_imported)
 
