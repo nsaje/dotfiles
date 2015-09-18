@@ -695,10 +695,9 @@ def get_ad_group_sources_settings(ad_group_sources):
 def get_ad_group_source_settings(ad_group_source):
     try:
         return models.AdGroupSourceSettings.objects.\
-            distinct('ad_group_source_id').\
             filter(ad_group_source=ad_group_source).\
-            order_by('ad_group_source_id', '-created_dt').\
-            select_related('ad_group_source')[0:1].get()
+            select_related('ad_group_source').\
+            latest('created_dt')
     except ObjectDoesNotExist:
         return None
 

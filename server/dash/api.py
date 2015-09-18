@@ -761,8 +761,10 @@ class AdGroupSourceSettingsWriter(object):
 
                 self.add_to_history(settings_obj, old_settings_obj, request)
 
+                filtered_settings_obj = {k:v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}
                 if 'state' not in settings_obj or self.can_trigger_action():
-                    actionlog.api.set_ad_group_source_settings(settings_obj, new_settings.ad_group_source, request)
+                    if filtered_settings_obj:
+                        actionlog.api.set_ad_group_source_settings(filtered_settings_obj, new_settings.ad_group_source, request)
                 else:
                     logger.info(
                         'settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled',
