@@ -30,7 +30,7 @@ class TasksTest(TestCase):
 # ----------------------------------------
 
 Landing Page,Device Category,Sessions,% New Sessions,New Users,Bounce Rate,Pages/Session,Avg. Session Duration,Yell Free Listings (Goal 1 Conversion Rate),Yell Free Listings (Goal 1 Completions),Yell Free Listings (Goal 1 Value)
-/lasko?_z1_caid=1000&_z1_adgid=1&_z1_msid=adblade,mobile,553,96.02%,531,92.41%,1.12,00:00:12,0.00%,0,£0.00,,"3,215",95.43%,"3,068",88.99%,1.18,00:00:17,0.00%,0,£0.00
+/lasko?_z1_caid=1&_z1_adgid=1&_z1_msid=yahoo,mobile,553,96.02%,531,92.41%,1.12,00:00:12,0.00%,0,£0.00,,"3,215",95.43%,"3,068",88.99%,1.18,00:00:17,0.00%,0,£0.00
 
 Day Index,Sessions
 16/04/2015,"553"
@@ -85,7 +85,9 @@ Day Index,Sessions
         tasks.process_ga_report(ga_report_task)
 
         report_log = models.GAReportLog.objects.first()
-        self.assertIsNone(report_log.errors)
+        self.assertFalse(report_log.errors is None)
+        self.assertEqual(234, report_log.visits_reported)
+        self.assertEqual(234, report_log.visits_imported)
 
     def test_process_ga_report_v2(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
@@ -127,7 +129,7 @@ Day Index,Sessions
 
         report_log = models.ReportLog.objects.first()
         self.assertIsNone(report_log.errors)
-        self.assertEqual(0, report_log.visits_reported)
+        self.assertEqual(234, report_log.visits_reported)
         self.assertEqual(234, report_log.visits_imported)
 
     def test_process_ga_report_v2_omni_zip(self, cursor):
@@ -147,7 +149,7 @@ Day Index,Sessions
 
         report_log = models.ReportLog.objects.first()
         self.assertIsNone(report_log.errors)
-        self.assertEqual(0, report_log.visits_reported)
+        self.assertEqual(234, report_log.visits_reported)
         self.assertEqual(234, report_log.visits_imported)
 
     def test_process_ga_report_v2_omni_csv_zip(self, cursor):
@@ -166,7 +168,7 @@ Day Index,Sessions
         tasks.process_omniture_report_v2(ga_report_task)
 
         report_log = models.ReportLog.objects.first()
-        self.assertIsNone(report_log.errors)
+        self.assertFalse(report_log.errors is None)
         self.assertEqual(0, report_log.visits_reported)
         self.assertEqual(4112, report_log.visits_imported)
 

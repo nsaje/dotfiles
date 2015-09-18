@@ -299,55 +299,8 @@ class CreateCampaignManualActionsTest(TestCase):
         manual_actions = self._get_created_manual_actions(ad_group_source)
 
         # should create manual actions
-        self.assertTrue(len(manual_actions), 1)
+        self.assertEqual(len(manual_actions), 1)
         self.assertEqual('target_regions', manual_actions[0].payload['property'])
-
-    def test_no_manual_update_after_campaign_creation_auto_targeting(self):
-        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
-
-        self._fire_campaign_creation_callback(
-            ad_group_source,
-            ['GB', '693'],
-            [
-                dash.constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
-                dash.constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
-            ])
-
-        manual_actions = self._get_created_manual_actions(ad_group_source)
-
-        # should not create manual actions
-        self.assertFalse(manual_actions.exists())
-
-    def test_no_manual_update_after_campaign_creation_dma_targeting_not_supported(self):
-        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
-
-        self._fire_campaign_creation_callback(
-            ad_group_source,
-            ['GB', '693'],
-            [
-                dash.constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
-            ])
-
-        manual_actions = self._get_created_manual_actions(ad_group_source)
-
-        # should not create manual actions
-        self.assertFalse(manual_actions.exists())
-
-    def test_no_manual_update_after_campaign_creation_no_dma_targeting(self):
-        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
-
-        self._fire_campaign_creation_callback(
-            ad_group_source,
-            ['GB'],
-            [
-                dash.constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
-                dash.constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
-            ])
-
-        manual_actions = self._get_created_manual_actions(ad_group_source)
-
-        # should not create manual actions
-        self.assertFalse(manual_actions.exists())
 
 
 class SubmitAdGroupTest(TestCase):
