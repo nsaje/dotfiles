@@ -478,26 +478,6 @@ Segment: All Visits (No Segment),,,,,,,,,,
         self.assertEqual(1, len(valid_entries))
         entry = valid_entries[0]
 
-        """
-        self.ga_row_dicts = [ga_row_dict]
-
-        self.visits = _report_atoi(ga_row_dict.get('Sessions'))
-        self.bounce_rate_raw = ga_row_dict.get('Bounce Rate')
-        if ga_row_dict.get('Bounce Rate') is not None:
-            self.bounce_rate = _report_atof(ga_row_dict['Bounce Rate'].replace('%', '')) / 100
-        else:
-            self.bounce_rate = 0
-        self.pageviews = int(round(_report_atof(ga_row_dict.get('Pages / Session', '0')) * self.visits))
-        self.new_visits = _report_atoi(ga_row_dict.get('New Users', '0'))
-        self.bounced_visits = int(self.bounce_rate * self.visits)
-        self.total_time_on_site = self.visits * self._parse_duration(ga_row_dict.get('Avg. Session Duration', '00:00:00'))
-
-        self.report_date = report_date.isoformat()
-        self.content_ad_id = content_ad_id
-        self.source_param = source_param
-        self.goals = goals
-        """
-
         self.assertEqual(10, entry.visits)
         self.assertEqual(40, entry.pageviews)
         self.assertEqual(1, entry.bounce_rate)
