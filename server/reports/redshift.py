@@ -1,5 +1,5 @@
 import collections
-from itertools import repeat
+import itertools
 
 from django.conf import settings
 from django.db import connections
@@ -152,9 +152,10 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
 
 def query_general(table_name, start_date, end_date, aggregates, breakdown_fields=None, order_fields_tuples=None, limit=None, offset=None, constraints={}):
 
-    constraints = _prepare_constraints(constraints, field_mapping={})
-    constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
-    constraints.append('{} <= \'{}\''.format(quote('date'), end_date))
+    constraints_str, params = _prepare_constraints_general(constraints)
+    constraints_str += ' AND {} >= %s'.format(quote('date'))
+    constraints_str += ' AND {} <= %s'.format(quote('date'))
+    params.extend([start_date, end_date])
 
     aggregates = _prepare_aggregates_simple(aggregates)
 
@@ -163,22 +164,20 @@ def query_general(table_name, start_date, end_date, aggregates, breakdown_fields
         statement = _create_select_query(
             table_name,
             breakdown_fields + aggregates,
-            constraints,
+            [constraints_str],	# a single one actually
             breakdown=breakdown_fields,
             order_fields_tuples=order_fields_tuples,
             limit=limit,
             offset=offset,
         )
+    else:
+        statement = _create_select_query(
+            table_name,
+            aggregates,
+            [constraints_str] # a single sentence actually
+        )
 
-        return _get_results(statement)
-
-    statement = _create_select_query(
-        table_name,
-        aggregates,
-        constraints
-    )
-
-    return _get_results(statement)
+    return _get_results(statement, params)
 
 
 
@@ -204,6 +203,24 @@ def _prepare_constraints(constraints, field_mapping):
             result.append('{}={}'.format(k, quote_if_str(get_obj_id(v))))
 
     return result
+
+def _prepare_constraints_general(constraints):
+    # returns a string and list of params
+    result = []
+    params = []
+
+    for k, v in constraints.iteritems():
+        if isinstance(v, collections.Sequence) or isinstance(v, QuerySet):
+            if v:
+                result.append('{} IN ({})'.format(k, ','.join(["%s"]*len(v))))
+                params.extend(v)
+            else:
+                result.append('FALSE')
+        else:
+            result.append('{}=%s'.format(k))
+            params.append(v)
+
+    return " AND ".join(result), params
 
 
 def _prepare_aggregates(aggregates, field_mapping):
@@ -309,9 +326,11 @@ def _get_cursor():
     return connections[settings.STATS_DB_NAME].cursor()
 
 
-def _get_results(statement):
+def _get_results(statement, args = None):
     cursor = _get_cursor()
-    cursor.execute(statement, [])
+    if args == None:
+        args = []
+    cursor.execute(statement, args)
 
     results = dictfetchall(cursor)
     cursor.close()
@@ -319,5 +338,47 @@ def _get_results(statement):
 
 
 def _get_row_string(cursor, cols, row):
-    template_string = '(' + ','.join(repeat('%s', len(cols))) + ')'
+    template_string = '(' + ','.join(itertools.repeat('%s', len(cols))) + ')'
     return cursor.mogrify(template_string, [row[col] for col in cols])
+
+
+def delete_general(table, constraints = None):
+    if not constraints:
+        raise exc.ReportsQueryError("Delete query without specifying constraints")
+    constraints_str, params = _prepare_constraints_general(constraints)
+    cmd = 'DELETE FROM {table} WHERE {constraints_str}'.format(table=table,
+                                                            constraints_str=constraints_str)
+    return _get_results(cmd, params)
+
+# iterate in chunks, python recepie
+def grouper(n, iterable):
+    it = iter(iterable)
+    while True:
+       chunk = tuple(itertools.islice(it, n))
+       if not chunk:
+           return
+       yield chunk    
+
+
+MAX_AT_A_TIME = 100
+def multi_insert_general(table, field_list, all_row_tuples, max_at_a_time = None):
+    if not max_at_a_time:
+	max_at_a_time = MAX_AT_A_TIME
+    fields_str = "(" + ",".join(field_list) +")"
+    fields_placeholder = "(" + ",".join(["%s"]*len(field_list)) + ")" 
+    for row_tuples in grouper(max_at_a_time, all_row_tuples):
+        statement = "INSERT INTO {table} {fields} VALUES {fields_strs}".format(table=table,
+                                                                    fields=fields_str,
+                                                                    fields_strs=",".join([fields_placeholder]*len(row_tuples))
+                                                                    )
+                                        
+        row_tuples_flat = [item for sublist in row_tuples for item in sublist]
+        _get_results(statement, row_tuples_flat)
+        
+
+
+
+
+
+
+

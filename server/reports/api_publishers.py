@@ -42,6 +42,7 @@ FIELDS = [dict(sql='clicks_sum',      app='clicks',      out=lambda v: v,),
           dict(sql='ctr',             app='ctr',         out=lambda v: to_percent(v)),
           dict(sql='adgroup_id',      app='ad_group',    out=lambda v: v),
           dict(sql='exchange',        app='exchange',    out=lambda v: v),
+          dict(sql='ob_section_id',   app='ob_section_id',out=lambda v: v),
           ]
 BY_SQL_MAPPING = {d['sql']:d for d in FIELDS}
 BY_APP_MAPPING = {d['app']:d for d in FIELDS}
@@ -119,3 +120,28 @@ def _map_rowdict_to_output(row):
         result[newname] = newval
 
     return result
+
+
+def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts):
+    # start a transaction
+    sql_fields = ['date', 'adgroup_id', 'exchange', 'domain', 'clicks', 'ob_section_id']
+    row_tuples = []
+    for row in datarowdicts:
+        # strip http:
+        url = row['url']
+        if url.startswith("https://"):
+            url = url[8:]
+        if url.starstwith("http://"):
+            url = url[7:]
+        newrow = (date, ad_group_id, exchange, url, row['clicks'], row['ob_section_id'])
+        row_tuples.append(newrow)
+    
+    redshift.delete_query('ob_publishers_1', {'date': date, 'adgroup_id': ad_group, 'exchange': exchange})
+    redshift.multi_insert('ob_publishers_1', sql_fields, row_tuples)
+    
+    
+
+
+
+
+

@@ -1,5 +1,5 @@
 import datetime
-from mock import patch, Mock
+from mock import patch, Mock, call
 
 from django.test import TestCase
 
@@ -136,3 +136,52 @@ class RedshiftTest(TestCase):
         query = 'VACUUM FULL touchpointconversions'
 
         mock_cursor.execute.assert_called_with(query, [])
+
+
+    def test_delete_general(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_cursor.fetchall.return_value = []
+        mock_get_cursor.return_value = mock_cursor
+
+        date = datetime.date(2015, 1, 2)
+        ad_group_id = 1
+        source_id = 2
+
+        redshift.delete_general('test_table', {'date': date, 'ad_group_id': 4})
+
+        query = 'DELETE FROM test_table WHERE date=%s AND ad_group_id=%s'
+        params = [datetime.date(2015, 1, 2), 4]
+
+        mock_cursor.execute.assert_called_with(query, params)
+
+    def test_multi_insert_general(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_cursor.fetchall.return_value = []
+        mock_get_cursor.return_value = mock_cursor
+
+        date = datetime.date(2015, 1, 2)
+        ad_group_id = 1
+        source_id = 2
+
+        redshift.multi_insert_general('test_table', ['field1', 'field2'], (('a', 'b'), ('c', 'd'), ('e', 'f')))
+
+        query = 'INSERT INTO test_table (field1,field2) VALUES (%s,%s),(%s,%s),(%s,%s)'
+        params = ['a', 'b', 'c', 'd', 'e', 'f']
+        mock_cursor.execute.assert_called_with(query, params)
+
+    def test_multi_insert_general_max2(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_cursor.fetchall.return_value = []
+        mock_get_cursor.return_value = mock_cursor
+
+        date = datetime.date(2015, 1, 2)
+        ad_group_id = 1
+        source_id = 2
+
+        redshift.multi_insert_general('test_table', ['field1', 'field2'], (('a', 'b'), ('c', 'd'), ('e', 'f')), max_at_a_time=2)
+
+        mock_cursor.execute.assert_has_calls([
+                                                call('INSERT INTO test_table (field1,field2) VALUES (%s,%s),(%s,%s)', ['a', 'b', 'c', 'd']),
+                                                call('INSERT INTO test_table (field1,field2) VALUES (%s,%s)', ['e', 'f'])
+                                            ])
+
