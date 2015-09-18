@@ -387,11 +387,11 @@ def process_report_v2(report_task, report_type):
                 content = convert_to_xls(content)
 
             report = parse_v2.OmnitureReport(content)
-            report.parse()
         else:
             report = parse_v2.GAReport(content)
             # parse will throw exceptions in case of errors
-            report.parse()
+        report.parse()
+        report.validate()
 
         _update_report_log_after_parsing(report, report_log, report_task)
 
@@ -413,13 +413,11 @@ def process_report_v2(report_task, report_type):
         report_log.add_error(e.message)
         report_log.state = constants.ReportState.EMPTY_REPORT
         report_log.save()
-        raise
     except Exception as e:
         logger.warning(e.message)
         report_log.add_error(e.message)
         report_log.state = constants.ReportState.FAILED
         report_log.save()
-        raise
 
 
 @app.task(max_retries=settings.CELERY_TASK_MAX_RETRIES,
@@ -525,14 +523,19 @@ def _update_report_log_after_parsing(csvreport, report_log, ga_report_task):
 
     message = ''
     if len(content_ad_errors) > 0:
-        message += '\nERROR: not all landing page urls have a valid content ad specified:\n'
+        message += '\nERROR: not all urls/keywords have a valid content ad specified:\n'
         for err in content_ad_errors:
-            message += err or '' + '\n'
+            message += '{}\n'.format(err or '')
 
     if len(media_source_errors) > 0:
-        message += '\nERROR: not all landing page urls have a media source specified: \n'
+        message += '\nERROR: not all urls/keywords have a media source specified: \n'
         for landing_url in media_source_errors:
-            message += landing_url or '' + '\n'
+            message += '{}\n'.format(landing_url or '')
+
+    if message != '':
+        logger.warning(message)
+        report_log.add_error(message)
+        report_log.save()
 
     if too_many_errors(content_ad_errors, media_source_errors):
         logger.warning("Too many errors in content_ad_errors and media_source_errors lists.")

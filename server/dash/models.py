@@ -774,6 +774,41 @@ class DefaultSourceSettings(models.Model):
         help_text='Information about format can be found here: <a href="https://sites.google.com/a/zemanta.com/root/content-ads-dsp/additional-source-parameters-format" target="_blank">Zemanta Pages</a>'
     )
 
+    default_cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Default CPC'
+    )
+
+    mobile_cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Default CPC (if ad group is targeting mobile only)'
+    )
+
+    daily_budget_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Default daily budget'
+    )
+
+    auto_add = models.BooleanField(null=False,
+                                   blank=False,
+                                   default=False,
+                                   verbose_name='Automatically add this source to ad group at creation')
+
+    objects = QuerySetManager()
+
+    class QuerySet(models.QuerySet):
+        def with_credentials(self):
+            return self.exclude(credentials__isnull=True)
+
     class Meta:
         verbose_name_plural = "Default Source Settings"
 
@@ -1080,10 +1115,13 @@ class AdGroupSettings(SettingsBase):
         return dt
 
     def targets_dma(self):
-        return any(tr in regions.DMA_BY_CODE for tr in self.target_regions)
+        return any(tr in regions.DMA_BY_CODE for tr in self.target_regions) if self.target_regions else False
 
     def targets_countries(self):
-        return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions)
+        return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions) if self.target_regions else False
+
+    def is_mobile_only(self):
+        return self.target_devices and len(self.target_devices) == 1 and constants.AdTargetDevice.MOBILE in self.target_devices
 
     @classmethod
     def get_defaults_dict(cls):

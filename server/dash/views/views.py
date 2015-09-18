@@ -433,7 +433,7 @@ class AdGroupSources(api_common.BaseApiView):
 
         sources = []
         for source_settings in models.DefaultSourceSettings.objects.\
-                filter(source__in=filtered_sources).exclude(credentials__isnull=True):
+                filter(source__in=filtered_sources).with_credentials():
 
             if source_settings.source in ad_group_sources:
                 continue
@@ -478,21 +478,16 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.ValidationError('{} media source can not be added because it does not support DMA targeting.'\
                                       .format(source.name))
 
-        ad_group_source = models.AdGroupSource(
-            source=source,
-            ad_group=ad_group,
-            source_credentials=default_settings.credentials,
-            can_manage_content_ads=source.can_manage_content_ads(),
-        )
-
-        if source.source_type.type == constants.SourceType.GRAVITY:
-            ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
-
+        ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
         ad_group_source.save(request)
 
         external_name = ad_group_source.get_external_name()
         actionlog.api.create_campaign(ad_group_source, external_name, request)
         self._add_to_history(ad_group_source, request)
+
+        if request.user.has_perm('zemauth.add_media_sources_automatically'):
+            helpers.set_ad_group_source_defaults(default_settings, ad_group.get_current_settings(), ad_group_source,
+                                                 request)
 
         return self.create_api_response(None)
 
@@ -502,7 +497,6 @@ class AdGroupSources(api_common.BaseApiView):
         settings = ad_group_source.ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
-        
 
     def _can_target_existing_regions(self, source, ad_group_settings):
         return (source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma()) or\
