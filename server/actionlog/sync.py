@@ -370,8 +370,6 @@ class AdGroupSourceSync(BaseSync):
                     action = api._init_fetch_reports_by_publisher(self.obj, date, order, request)
                 except InsertActionException:
                     continue
-                except: 
-                    continue
                 actions.append(action)
 
         zwei_actions.send(actions)
