@@ -4,6 +4,7 @@ import pytz
 from django.conf import settings
 
 import dash
+import dash.budget
 import decimal
 import reports.api
 import dash.views.helpers

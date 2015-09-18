@@ -11,5 +11,5 @@ AUTOPILOT_CPC_CHANGE_TABLE = (
 )
 AUTOPILOT_MINIMUM_CPC = decimal.Decimal('0.05')
 AUTOPILOT_MAXIMUM_CPC = decimal.Decimal('4.0')
-AUTOMATION_AI_NAME = 'Zemanta AI'
+AUTOMATION_AI_NAME = 'Zemanta Auto-Pilot'
 AUTOPILOT_EMAIL = 'help@zemanta.com'

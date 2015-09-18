@@ -19,7 +19,11 @@
             </a>
         </li>
         <li ng-if="autopilotShown" class="divider"></li>
-        <li ng-if="autopilotShown" ng-class="{disabled: !active}">
+        <li ng-if="autopilotShown" ng-class="{disabled: !active}"
+                zem-lazy-popover-text="{{ active ? '' : 'Media Source must be enabled before enabling Auto-Pilot.' }}"
+                zem-lazy-popover-placement="right"
+                zem-lazy-popover-animation-class="fade"
+                zem-lazy-popover-append-to-body="true">
             <a ng-click="setAutopilotState(autopilotEnabledValue)">
                 <div class="auto-pilot-icon"></div><zem-internal-feature ng-if="autopilotInternal"></zem-internal-feature><span>Auto-Pilot</span>
             </a>

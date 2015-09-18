@@ -105,6 +105,7 @@ Zemanta
             details=desc
         )
 
+
 def notify_depleted_budget_campaigns():
     campaigns = automation.helpers.get_active_campaigns()
     available_budgets = automation.helpers.get_available_budgets(campaigns)
