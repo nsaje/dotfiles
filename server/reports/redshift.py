@@ -157,8 +157,6 @@ def query_general(table_name, start_date, end_date, aggregates, breakdown_fields
     constraints_str += ' AND {} <= %s'.format(quote('date'))
     params.extend([start_date, end_date])
 
-    aggregates = _prepare_aggregates_simple(aggregates)
-
     if breakdown_fields:
         breakdown_fields = _prepare_breakdown(breakdown_fields, {})
         statement = _create_select_query(
@@ -239,20 +237,6 @@ def _prepare_aggregates(aggregates, field_mapping):
 
     # HACK: should be added to aggregate_fields
     processed_aggrs.append(_click_discrepancy_aggregate('clicks', 'visits', 'click_discrepancy'))
-
-    return processed_aggrs
-
-def _prepare_aggregates_simple(aggregates):
-    processed_aggrs = []
-    for key, aggr in aggregates.iteritems():
-        field_name = aggr.input_field.name
-        if isinstance(aggr, db_aggregates.SumDivision):
-            divisor = aggr.extra['divisor']
-            processed_aggrs.append(_sum_division_aggregate(field_name, divisor, key))
-        elif isinstance(aggr, Sum):
-            processed_aggrs.append(_sum_aggregate(field_name, key))
-        else:
-            raise exc.ReportsUnknownAggregator('Unknown aggregator')
 
     return processed_aggrs
 

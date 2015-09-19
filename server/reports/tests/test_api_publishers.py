@@ -30,7 +30,7 @@ class ApiPublishersTest(TestCase):
 
         # check select fields if contains breakdown fields
         select_fields = query.split('FROM')[0].split(',')
-        self.assertEqual(len(select_fields), len(breakdown) + len(api_publishers.PUBLISHERS_AGGREGATE_FIELDS))
+        self.assertEqual(len(select_fields), len(breakdown) + len(api_publishers.RETURNED_APP_FIELDS))
         for bf in breakdown_fields:
             self.assertEqual(1, len([x for x in select_fields if bf in x]))
 
@@ -46,10 +46,10 @@ class ApiPublishersTest(TestCase):
     def check_aggregations(self, mock_get_results):
         required_statements = [
             '"date"',
-            'CASE WHEN SUM("clicks") <> 0 THEN SUM(CAST("cost_micro" AS FLOAT)) / SUM("clicks") ELSE NULL END as "cpc_micro"',
+            'CASE WHEN SUM("clicks") <> 0 THEN SUM(CAST("cost_micro" AS FLOAT)) / SUM("clicks") ELSE NULL END AS "cpc_micro"',
             'SUM("cost_micro") AS "cost_micro_sum"',
             'SUM("impressions") AS "impressions_sum"',
-            'CASE WHEN SUM("impressions") <> 0 THEN SUM(CAST("clicks" AS FLOAT)) / SUM("impressions") ELSE NULL END as "ctr"',
+            'CASE WHEN SUM("impressions") <> 0 THEN SUM(CAST("clicks" AS FLOAT)) / SUM("impressions") ELSE NULL END AS "ctr"',
             'SUM("clicks") AS "clicks_sum"',
         ]
         query = self._get_query(mock_get_results)

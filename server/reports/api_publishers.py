@@ -22,24 +22,23 @@ def to_percent(num):
     else:
         return num * 100
 
-PUBLISHERS_AGGREGATE_FIELDS = dict(
-    clicks_sum=Sum('clicks'),
-    impressions_sum=Sum('impressions'),
-    cost_micro_sum=Sum('cost_micro'),
-    ctr=db_aggregates.SumDivision('clicks', 'impressions'),
-    cpc_micro=db_aggregates.SumDivision('cost_micro', 'clicks')
-)
+def _sum_div(expr, divisor):
+    return ('CASE WHEN SUM("{divisor}") <> 0 THEN SUM(CAST("{expr}" AS FLOAT)) / SUM("{divisor}") '
+            'ELSE NULL END').format(
+                expr=expr,
+                divisor=divisor,)
 
-#	       SQL NAME               APP NAME           OUTPUT TRANSFORM                    ORDER BY function
-FIELDS = [dict(sql='clicks_sum',      app='clicks',      out=lambda v: v,),
-          dict(sql='impressions_sum', app='impressions', out=lambda v: v),
+RETURNED_APP_FIELDS = ["clicks", "impressions", "cost", "ctr", "cpc"]
+
+#	       SQL NAME               APP NAME           OUTPUT TRANSFORM                    AGGREGATE                            ORDER BY function
+FIELDS = [dict(sql='clicks_sum',      app='clicks',      out=lambda v: v,                    calc='SUM("clicks")'),
+          dict(sql='impressions_sum', app='impressions', out=lambda v: v,                    calc='SUM("impressions")'),    	
           dict(sql='domain',          app='domain',      out=lambda v: v),
           dict(sql='exchange',        app='exchange',    out=lambda v: v),
           dict(sql='date',            app='date',        out=lambda v: v),
-          dict(sql='clicks_sum',      app='clicks',      out=lambda v: v),
-          dict(sql='cost_micro_sum',  app='cost',        out=lambda v: from_micro_cpm(v)),
-          dict(sql='cpc_micro',       app='cpc',         out=lambda v: from_micro_cpm(v),    order="SUM(clicks)=0, cpc_micro"), # makes sure nulls are last
-          dict(sql='ctr',             app='ctr',         out=lambda v: to_percent(v)),
+          dict(sql='cost_micro_sum',  app='cost',        out=lambda v: from_micro_cpm(v),    calc='SUM("cost_micro")'),
+          dict(sql='cpc_micro',       app='cpc',         out=lambda v: from_micro_cpm(v),    calc=_sum_div("cost_micro", "clicks"), order="SUM(clicks)=0, cpc_micro"), # makes sure nulls are last
+          dict(sql='ctr',             app='ctr',         out=lambda v: to_percent(v),        calc=_sum_div("clicks", "impressions")),
           dict(sql='adgroup_id',      app='ad_group',    out=lambda v: v),
           dict(sql='exchange',        app='exchange',    out=lambda v: v),
           dict(sql='ob_section_id',   app='ob_section_id',out=lambda v: v),
@@ -49,6 +48,22 @@ BY_APP_MAPPING = {d['app']:d for d in FIELDS}
 
 CONSTRAINTS_FIELDS_APP_SET = set(BY_APP_MAPPING.keys())
 BREAKDOWN_FIELDS_APP_SET = set(['exchange', 'domain', 'date', ])
+
+def _translate_app_fields(field_names):
+    return [BY_APP_MAPPING[field_name]['sql'] for field_name in field_names]
+    
+
+def _expand_sql_fields(field_names):
+    fields = []
+    for field_name in field_names:
+        desc = BY_SQL_MAPPING[field_name]
+        
+        if "calc" in desc:
+            field_expanded = desc["calc"] + " AS \"" + field_name +"\""
+        else:
+            field_expanded = '"' + field_name + '"'
+        fields.append(field_expanded)
+    return fields
 
 def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}):
     # This API tries to completely isolate the rest of the app from Redshift-tied part, so namings are decoupled:
@@ -60,8 +75,7 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
     unknown_fields = set(breakdown_fields) - BREAKDOWN_FIELDS_APP_SET
     if unknown_fields:
         raise exc.ReportsQueryError('Invalid breakdowns: {}'.format(str(unknown_fields)))
-    breakdown_fields = [BY_APP_MAPPING[field]['sql'] for field in breakdown_fields]
-    
+    breakdown_fields = _translate_app_fields(breakdown_fields)
     # map order fields, we decode directions here too
     # we also support specifying order functions to be used instead of field name 
     # due to Redshift's inability to use aliased name inside expressions in ORDER BY
@@ -90,12 +104,14 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
         raise exc.ReportsQueryError("Unsupported field constraint fields: {}".format(str(unknown_fields)))
     constraints = {BY_APP_MAPPING[field_name]['sql']: v for field_name, v in constraints.iteritems()}
 
+    returned_fields = _expand_sql_fields(_translate_app_fields(RETURNED_APP_FIELDS))
+
     # now execute the query
     results = redshift.query_general(
         'b1_publishers_1',
         start_date,
         end_date,
-        PUBLISHERS_AGGREGATE_FIELDS,
+        returned_fields,
         breakdown_fields,
         order_fields_tuples=order_fields_tuples,
         limit=limit,
