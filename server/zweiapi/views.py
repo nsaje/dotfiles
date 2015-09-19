@@ -45,7 +45,6 @@ def zwei_callback(request, action_id):
         _process_zwei_response(action, data, request)
         _update_last_successful_sync_dt(action, request)
     except Exception as e:
-        print e
         _handle_zwei_callback_error(e, action)
 
     response_data = {'status': 'OK'}
@@ -364,7 +363,6 @@ def _fetch_reports_callback(action, data):
 
 
 def _fetch_reports_by_publisher_callback(action, data):
-    print "S"
     date_str = action.payload['args']['date']
     date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
     ad_group = action.ad_group_source.ad_group

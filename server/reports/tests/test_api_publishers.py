@@ -1,12 +1,12 @@
 import datetime
 
-from mock import patch, call
+import mock
 from django.test import TestCase
 
 from reports import api_publishers
 
 
-@patch('reports.redshift._get_results')
+@mock.patch('reports.redshift._get_results')
 class ApiPublishersTest(TestCase):
 
     def _get_query(self, mock_get_results):
@@ -154,13 +154,13 @@ class ApiPublishersTest(TestCase):
                                               [{
                                                   "ob_section_id": "AAAABBBBB",
                                                   "clicks": 123,
-                                                  "name": "New publisher",
+                                                  "name": "CNN money",
                                                   "url": "http://money.cnn.com",
                                               }])
                                        
         _get_results.assert_has_calls([
-            call('DELETE FROM ob_publishers_1 WHERE date=%s AND adgroup_id=%s AND exchange=%s', [datetime.date(2015, 2, 1), 3, 'outbrain']),
-            call('INSERT INTO ob_publishers_1 (date,adgroup_id,exchange,domain,clicks,ob_section_id) VALUES (%s,%s,%s,%s,%s,%s)', [datetime.date(2015, 2, 1), 3, 'outbrain', 'money.cnn.com', 123, 'AAAABBBBB'])
+            mock.call('DELETE FROM "ob_publishers_1" WHERE date=%s AND adgroup_id=%s AND exchange=%s', [datetime.date(2015, 2, 1), 3, 'outbrain']),
+            mock.call('INSERT INTO ob_publishers_1 (date,adgroup_id,exchange,domain,name,clicks,ob_section_id) VALUES (%s,%s,%s,%s,%s,%s)', [datetime.date(2015, 2, 1), 3, 'outbrain', 'CNN money', 'money.cnn.com', 123, 'AAAABBBBB'])
         ])
 
 

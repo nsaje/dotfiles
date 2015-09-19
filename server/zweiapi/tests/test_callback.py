@@ -768,11 +768,11 @@ class FetchReportsByPublisherTestCase(TestCase):
 
     fixtures = ['test_zwei_api.yaml']
 
-    def test_fetch_reports(self):
+    @mock.patch('reports.api_publishers.ob_insert_adgroup_date')
+    def test_fetch_reports_by_publisher(self, ob_insert_adgroup_date):
         article_row = {
-            'url': 'http://example.com',
+            'url': 'http://money.cnn.com',
             'name': 'Some publisher',
-            'impressions': 50,
             'clicks': 2,
             'ob_section_id': 'AABBCCDDEEFF',
         }
@@ -783,6 +783,13 @@ class FetchReportsByPublisherTestCase(TestCase):
 
         ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
         response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+        ob_insert_adgroup_date.assert_has_calls ([mock.call(
+                                              datetime.date(2014,7,1), 
+                                              1,
+                                              "Outbrain",
+                                              [article_row]
+                                              )])
+
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
