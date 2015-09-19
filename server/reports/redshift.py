@@ -346,7 +346,7 @@ def delete_general(table, constraints = None):
     if not constraints:
         raise exc.ReportsQueryError("Delete query without specifying constraints")
     constraints_str, params = _prepare_constraints_general(constraints)
-    cmd = 'DELETE FROM {table} WHERE {constraints_str}'.format(table=table,
+    cmd = 'DELETE FROM "{table}" WHERE {constraints_str}'.format(table=table,
                                                             constraints_str=constraints_str)
     return _get_results(cmd, params)
 

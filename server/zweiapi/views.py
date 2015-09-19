@@ -1,6 +1,7 @@
 import json
 import logging
 import traceback
+import datetime
 
 import hashlib
 from django.core.cache import cache
@@ -44,6 +45,7 @@ def zwei_callback(request, action_id):
         _process_zwei_response(action, data, request)
         _update_last_successful_sync_dt(action, request)
     except Exception as e:
+        print e
         _handle_zwei_callback_error(e, action)
 
     response_data = {'status': 'OK'}
@@ -362,8 +364,9 @@ def _fetch_reports_callback(action, data):
 
 
 def _fetch_reports_by_publisher_callback(action, data):
+    print "S"
     date_str = action.payload['args']['date']
-    date = datetime.datetime.strptime(date_str, "%Y-%m-%d")
+    date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
     ad_group = action.ad_group_source.ad_group
     source = action.ad_group_source.source
 
@@ -371,7 +374,7 @@ def _fetch_reports_by_publisher_callback(action, data):
 
     valid_response = True
     empty_response = False
-
+    logger.warning("GOT the publishers callback: %s", rows_raw)
     if valid_response and _has_changed(data, ad_group, source, date, "reports_by_publisher"):
         reports.api_publishers.ob_insert_adgroup_date(	date, 
                                                         ad_group.id, 
@@ -381,7 +384,7 @@ def _fetch_reports_by_publisher_callback(action, data):
                                                         
                                                         
     if not valid_response:
-        msg = 'Update of source traffic for adgroup %d, source %d, datetime '\
+        msg = 'Update of publishers for adgroup %d, source %d, datetime '\
               '%s skipped due to report not being valid (empty response).'
 
         action.state = actionlog.constants.ActionState.FAILED

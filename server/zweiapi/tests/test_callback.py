@@ -760,3 +760,60 @@ class FetchReportsTestCase(TestCase):
             content_type='application/json',
             data=json.dumps(zwei_response_data)
         ), action_log
+
+
+
+
+class FetchReportsByPublisherTestCase(TestCase):
+
+    fixtures = ['test_zwei_api.yaml']
+
+    def test_fetch_reports(self):
+        article_row = {
+            'url': 'http://example.com',
+            'name': 'Some publisher',
+            'impressions': 50,
+            'clicks': 2,
+            'ob_section_id': 'AABBCCDDEEFF',
+        }
+        zwei_response_data = {
+            'status': 'success',
+            'data': [article_row]
+        }
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.SUCCESS
+        )
+
+
+    def _execute_action(self, ad_group_source, date, zwei_response_data):
+        action_log = actionlog.models.ActionLog(
+            action=actionlog.constants.Action.FETCH_REPORTS_BY_PUBLISHER,
+            state=actionlog.constants.ActionState.WAITING,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            ad_group_source=ad_group_source,
+            payload={
+                'action': actionlog.constants.Action.FETCH_REPORTS_BY_PUBLISHER,
+                'source': ad_group_source.source.source_type.type,
+                'args': {
+                    'partner_campaign_id': '"[fake]"',
+                    'date': date
+                },
+            }
+        )
+
+        action_log.save()
+
+        return self.client.post(
+            reverse('api.zwei_callback', kwargs={'action_id': action_log.id}),
+            content_type='application/json',
+            data=json.dumps(zwei_response_data)
+        ), action_log
+
+
+
+

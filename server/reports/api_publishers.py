@@ -124,7 +124,7 @@ def _map_rowdict_to_output(row):
 
 def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts):
     # start a transaction
-    sql_fields = ['date', 'adgroup_id', 'exchange', 'domain', 'clicks', 'ob_section_id']
+    sql_fields = ['date', 'adgroup_id', 'exchange', 'domain', 'name', 'clicks', 'ob_section_id']
     row_tuples = []
     for row in datarowdicts:
         # strip http:
@@ -133,7 +133,7 @@ def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts):
             url = url[8:]
         if url.startswith("http://"):
             url = url[7:]
-        newrow = (date, ad_group, exchange, url, row['clicks'], row['ob_section_id'])
+        newrow = (date, ad_group, exchange, url, row['name'], row['clicks'], row['ob_section_id'])
         row_tuples.append(newrow)
     
     redshift.delete_general('ob_publishers_1', {'date': date, 'adgroup_id': ad_group, 'exchange': exchange})
