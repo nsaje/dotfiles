@@ -153,9 +153,6 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
 def query_general(table_name, start_date, end_date, aggregates, breakdown_fields=None, order_fields_tuples=None, limit=None, offset=None, constraints={}):
 
     constraints_str, params = _prepare_constraints_general(constraints)
-    constraints_str += ' AND {} >= %s'.format(quote('date'))
-    constraints_str += ' AND {} <= %s'.format(quote('date'))
-    params.extend([start_date, end_date])
 
     if breakdown_fields:
         breakdown_fields = _prepare_breakdown(breakdown_fields, {})
@@ -215,7 +212,14 @@ def _prepare_constraints_general(constraints):
             else:
                 result.append('FALSE')
         else:
-            result.append('{}=%s'.format(k))
+            if k.endswith("__lte"):
+                k = k[:-5]
+                result.append('"{}" <= %s'.format(k))
+            elif k.endswith("__gte"):
+                k = k[:-5]
+                result.append('"{}" >= %s'.format(k))
+            else:
+                result.append('{}=%s'.format(k))
             params.append(v)
 
     return " AND ".join(result), params

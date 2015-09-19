@@ -1,8 +1,5 @@
 import logging
 
-from django.db.models import Sum
-
-from utils import db_aggregates
 from reports import redshift
 from reports import exc
 
@@ -28,7 +25,7 @@ def _sum_div(expr, divisor):
                 expr=expr,
                 divisor=divisor,)
 
-RETURNED_APP_FIELDS = ["clicks", "impressions", "cost", "ctr", "cpc"]
+RETURNED_FIELDS_APP = ["clicks", "impressions", "cost", "ctr", "cpc"]
 
 #	       SQL NAME               APP NAME           OUTPUT TRANSFORM                    AGGREGATE                            ORDER BY function
 FIELDS = [dict(sql='clicks_sum',      app='clicks',      out=lambda v: v,                    calc='SUM("clicks")'),
@@ -103,8 +100,10 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
     if unknown_fields:
         raise exc.ReportsQueryError("Unsupported field constraint fields: {}".format(str(unknown_fields)))
     constraints = {BY_APP_MAPPING[field_name]['sql']: v for field_name, v in constraints.iteritems()}
+    constraints['date__gte'] = start_date
+    constraints['date__lte'] = end_date
 
-    returned_fields = _expand_sql_fields(_translate_app_fields(RETURNED_APP_FIELDS))
+    returned_fields = _expand_sql_fields(_translate_app_fields(RETURNED_FIELDS_APP))
 
     # now execute the query
     results = redshift.query_general(

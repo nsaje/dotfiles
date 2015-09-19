@@ -30,7 +30,7 @@ class ApiPublishersTest(TestCase):
 
         # check select fields if contains breakdown fields
         select_fields = query.split('FROM')[0].split(',')
-        self.assertEqual(len(select_fields), len(breakdown) + len(api_publishers.RETURNED_APP_FIELDS))
+        self.assertEqual(len(select_fields), len(breakdown) + len(api_publishers.RETURNED_FIELDS_APP))
         for bf in breakdown_fields:
             self.assertEqual(1, len([x for x in select_fields if bf in x]))
 
