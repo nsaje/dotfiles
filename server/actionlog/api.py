@@ -566,10 +566,9 @@ def _init_fetch_reports(ad_group_source, date, order, request=None):
 
 def _init_fetch_reports_by_publisher(ad_group_source, date, order, request=None):
     if not ad_group_source.source.can_fetch_report_by_publisher():
-        logger.exception('Trying to _init_fetch_reports_by_publisher() on source that does not support it: {}'.format(ad_group_source.id))
+        logger.error('Trying to _init_fetch_reports_by_publisher() on source that does not support it: {}'.format(ad_group_source.id))
+        raise exceptions.InsertActionException('Trying to _init_fetch_reports_by_publisher() on source that does not support it: {}'.format(ad_group_source.id))
 
-        et, ei, tb = sys.exc_info()
-        raise exceptions.InsertActionException, ei, tb
     
     msg = '_init_fetch_reports started: ad_group_source.id: {}, date: {}'.format(
         ad_group_source.id,

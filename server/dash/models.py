@@ -712,7 +712,6 @@ class Source(models.Model):
     def can_fetch_report_by_publisher(self):
         return self.source_type.can_fetch_report_by_publisher()
 
-
     def __unicode__(self):
         return self.name
 
