@@ -32,9 +32,9 @@ Landing Page,Device Category,Sessions
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
-           self.fail('Should not raise an exception {stack}'.format(
-               stack=traceback.format_exc())
-           )
+            self.fail('Should not raise an exception {stack}'.format(
+                stack=traceback.format_exc())
+            )
 
         complete_head = """
 # ----------------------------------------
@@ -49,9 +49,9 @@ Device Category,Landing Page,Sessions
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
-           self.fail('Should not raise an exception {stack}'.format(
-               stack=traceback.format_exc())
-           )
+            self.fail('Should not raise an exception {stack}'.format(
+                stack=traceback.format_exc())
+            )
 
         complete_head = """
 # ----------------------------------------
@@ -66,9 +66,9 @@ Device Category,Sessions,Keyword
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
-           self.fail('Should not raise an exception {stack}'.format(
-               stack=traceback.format_exc())
-           )
+            self.fail('Should not raise an exception {stack}'.format(
+                stack=traceback.format_exc())
+            )
 
         complete_head = """
 # ----------------------------------------
@@ -83,9 +83,9 @@ Device Category,Sessions,Keyword
         try:
             parser._parse_header(complete_head.split('\n'))
         except:
-           self.fail('Should not raise an exception {stack}'.format(
-               stack=traceback.format_exc())
-           )
+            self.fail('Should not raise an exception {stack}'.format(
+                stack=traceback.format_exc())
+            )
 
         incomplete_head_1 = """
 # ----------------------------------------
@@ -93,12 +93,28 @@ Device Category,Sessions,Keyword
         with self.assertRaises(exc.CsvParseException):
             parser._parse_header(incomplete_head_1.split('\n'))
 
-
         incomplete_head_2 = """
 $ ----------------------------------------""".strip().replace('\t', '')
         with self.assertRaises(exc.CsvParseException):
             parser._parse_header(incomplete_head_2.split('\n'))
 
+        incomplete_head_3 = """
+ ----------------------------------------
+
+
+
+ ----------------------------------------""".strip().replace('\t', '')
+        with self.assertRaises(exc.CsvParseException):
+            parser._parse_header(incomplete_head_3.split('\n'))
+
+        incomplete_head_4 = """
+# ----------------------------------------
+
+
+
+# ----------------------------------------""".strip().replace('\t', '')
+        with self.assertRaises(exc.CsvParseException):
+            parser._parse_header(incomplete_head_4.split('\n'))
 
         invalid_date_head = """
 # ----------------------------------------
@@ -289,6 +305,28 @@ Landing Page,Device Category,Sessions
         fields_raw = "Landing Page,Sessions,% New Sessions,New Users,Bounce Rate,Pages / Session,Avg. Session Duration,Revenue"
         self.assertEqual(set(["Revenue"]), set(parser._get_goal_fields(fields_raw.split(','))))
 
+    def test_missing_columns(self, cursor):
+        # GA report can potentially contain multiple entries for a single
+        # content ad
+        complete_csv = """
+# ----------------------------------------
+# All Web Site Data
+# Landing Pages
+# 20150416-20150416
+# ----------------------------------------
+
+Landing Page,Device Category,Goal Completions
+/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,desktop,6,1
+,,600,96.33%,578,95.50%,1.06,00:00:10,0.00%,0,A$0.00
+
+Day Index,Sessions
+4/16/15,18
+,18
+""".strip().replace('\t', '')
+
+        with self.assertRaises(exc.CsvParseException):
+            parser = parse_v2.GAReport(complete_csv)
+            parser.parse()
 
     def test_merge(self, cursor):
         # GA report can potentially contain multiple entries for a single
@@ -300,10 +338,10 @@ Landing Page,Device Category,Sessions
 # 20150416-20150416
 # ----------------------------------------
 
-Landing Page,Device Category,Sessions,Goal Completions
-/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,desktop,6,1
-/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,mobile,6,2
-/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,tablet,6,3
+Landing Page,Device Category,Sessions,Goal Completions,% New Sessions,Avg. Session Duration,Pages / Session,Bounce Rate,New Users
+/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,desktop,6,1,0.00%,00:00:00,1,1.00%,1
+/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,mobile,6,2,0.00%,00:00:00,1,1.00%,1
+/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,tablet,6,3,0.00%,00:00:00,1,1.00%,1
 ,,600,96.33%,578,95.50%,1.06,00:00:10,0.00%,0,A$0.00
 
 Day Index,Sessions
@@ -315,12 +353,32 @@ Day Index,Sessions
         parser.parse()
         parser.validate()
         self.assertEqual(1, len(parser.entries))
-        self.assertEqual(6, parser.valid_entries()[0].goals['Goal 1']['conversions'], 6)
+
+        valid_entries = parser.valid_entries()
+        self.assertEqual(6, valid_entries[0].goals['Goal 1']['conversions'], 6)
 
         self.assertTrue(parser.is_media_source_specified())
         self.assertTrue(parser.is_content_ad_specified())
 
+        entry = valid_entries[0]
+        self.assertEqual(18, entry.visits)
+        self.assertEqual(18, entry.pageviews)
+        self.assertEqual(0.01, entry.bounce_rate)
+
+        self.assertEqual(3, entry.new_visits)
+        self.assertEqual(0, entry.bounced_visits)
+        self.assertEqual(0, entry.total_time_on_site)
+
+
+        self.assertEqual(1, entry.content_ad_id)
+        self.assertEqual('yahoo', entry.source_param)
+        self.assertEqual('2015-04-16', entry.report_date)
+
+        self.assertEqual({'Goal 1': {'conversions': 6}}, entry.goals)
+
 class OmnitureReportTest(TestCase):
+
+    fixtures = ['test_ga_aggregation.yaml']
 
     def test_parse_header(self):
         csv_header = """
@@ -355,10 +413,98 @@ Segment: All Visits (No Segment),,,,,,,,,,
 ,,,,,,,,,,""".strip().decode('utf-8')
         report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_header))
         with self.assertRaises(Exception):
-           report.parse()
+            report.parse()
 
     def test_session_counts(self):
-        pass
+        csv_file = """
+######################################################################
+# Company:,Zemanta
+# URL:,.
+# Site:,Global
+# Range:,Sat. 12 Sep. 2015
+# Report:,Tracking Code Report
+# Description:,""
+######################################################################
+# Report Options:
+# Report Type: ,"Ranked"
+# Selected Metrics: ,"Visits, New Sessions, Unique Visitors, Bounce Rate, Pages/Session, Avg. Session Duration, Entries, Bounces, Page Views, Total Seconds Spent"
+# Broken Down by: ,"None"
+# Data Filter: ,"RANDOM"
+# Compare to Report Suite: ,"None"
+# Compare to Segment: ,"None"
+# Item Filter: ,"None"
+# Percent Shown as: ,"Number"
+# Segment: ,"All Visits (No Segment)"
+######################################################################
+#
+# Copyright 2015 Adobe Systems Incorporated. All rights reserved.
+# Use of this document signifies your agreement to the Terms of Use (http://marketing.adobe.com/resources/help/terms.html?type=prod&locale=en_US) and Online Privacy Policy (http://my.omniture.com/x/privacy).
+# Adobe Systems Incorporated products and services are licensed under the following Netratings patents: 5675510 5796952 6115680 6108637 6138155 6643696 and 6763386.
+#
+######################################################################
+
+,Tracking Code,Visits,,New Sessions,Unique Visitors,,Bounce Rate,Pages/Session,Avg. Session Duration,Entries,,Bounces,,Page Views,,Total Seconds Spent,
+1.,CSY-PB-ZM-AB-M-outbrain:Gandalf-Is-Coming-Get-Ready-for-Winter-Storms,20,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,20,0.4%,0,0.0%
+2.,CSY-PB-ZM-AB-M-yahoo:Gandalf-Is-Coming-Get-Ready-for-Winter-Storms,20,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,20,0.4%,0,0.0%
+3.,CSY-PB-ZM-AB-M-b1_triplelift:Gandalf-Is-Coming-Get-Ready-for-Winter-Storms,20,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,20,0.4%,0,0.0%
+,Total,20,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,20,0.4%,0,0.0%
+""".strip().decode('utf-8')
+        with self.assertRaises(exc.IncompleteReportException):
+            report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_file))
+            report.parse()
 
     def test_parse(self):
-        pass
+        csv_file = """
+######################################################################
+# Company:,Zemanta
+# URL:,.
+# Site:,Global
+# Range:,Sat. 12 Sep. 2015
+# Report:,Tracking Code Report
+# Description:,""
+######################################################################
+# Report Options:
+# Report Type: ,"Ranked"
+# Selected Metrics: ,"Visits, New Sessions, Unique Visitors, Bounce Rate, Pages/Session, Avg. Session Duration, Entries, Bounces, Page Views, Total Seconds Spent"
+# Broken Down by: ,"None"
+# Data Filter: ,"RANDOM"
+# Compare to Report Suite: ,"None"
+# Compare to Segment: ,"None"
+# Item Filter: ,"None"
+# Percent Shown as: ,"Number"
+# Segment: ,"All Visits (No Segment)"
+######################################################################
+#
+# Copyright 2015 Adobe Systems Incorporated. All rights reserved.
+# Use of this document signifies your agreement to the Terms of Use (http://marketing.adobe.com/resources/help/terms.html?type=prod&locale=en_US) and Online Privacy Policy (http://my.omniture.com/x/privacy).
+# Adobe Systems Incorporated products and services are licensed under the following Netratings patents: 5675510 5796952 6115680 6108637 6138155 6643696 and 6763386.
+#
+######################################################################
+
+,Tracking Code,Visits,,New Sessions,Unique Visitors,,Bounce Rate,Pages/Session,Avg. Session Duration,Entries,,Bounces,,Page Views,,Total Seconds Spent,
+1.,CSY-PB-ZM-AB-M-z11yahoo1z:Gandalf-Is-Coming-Get-Ready-for-Winter-Storms,10,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,40,0.4%,0,0.0%
+,Total,10,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,40,0.4%,0,0.0%
+""".strip().decode('utf-8')
+
+        report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_file))
+        report.parse()
+        report.validate()
+
+        self.assertEqual(datetime.date(2015, 9, 12), report.start_date)
+        valid_entries = report.valid_entries()
+        self.assertEqual(1, len(valid_entries))
+        entry = valid_entries[0]
+
+        self.assertEqual(10, entry.visits)
+        self.assertEqual(40, entry.pageviews)
+        self.assertEqual(1, entry.bounce_rate)
+        self.assertEqual(20, entry.new_visits)
+        self.assertEqual(10, entry.bounced_visits)
+        self.assertEqual(0, entry.total_time_on_site)
+
+        self.assertEqual(1, entry.content_ad_id)
+        self.assertEqual('yahoo', entry.source_param)
+
+        self.assertEqual('2015-09-12', entry.report_date)
+
+        self.assertEqual({}, entry.goals)
