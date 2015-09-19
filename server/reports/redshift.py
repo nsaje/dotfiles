@@ -150,7 +150,7 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
     return _translate_row(results[0], reverse_field_mapping)
 
 
-def query_general(table_name, start_date, end_date, aggregates, breakdown_fields=None, order_fields_tuples=None, limit=None, offset=None, constraints={}):
+def query_general(table_name, aggregates, breakdown_fields=None, order_fields_tuples=None, limit=None, offset=None, constraints={}):
 
     constraints_str, params = _prepare_constraints_general(constraints)
 

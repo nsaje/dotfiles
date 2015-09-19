@@ -108,8 +108,6 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
     # now execute the query
     results = redshift.query_general(
         'b1_publishers_1',
-        start_date,
-        end_date,
         returned_fields,
         breakdown_fields,
         order_fields_tuples=order_fields_tuples,
