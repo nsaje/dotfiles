@@ -25,13 +25,14 @@ import getpass
 # > fab environment:hosts deploy:application
 # with the following possible values:
 # - environment: 'staging' or 'production'
-# - hosts: 'all' or the names of desired hosts separated by comma
+# - hosts: 'all' or the names of desired hosts separated by comma (knot01,knot02...)
 # - application: 'server' or 'client'
 #
 # Examples:
 # > fab staging:all deploy:server
 # > fab production:all deploy:client
-# > fab staging:ovh01,ovh02 deploy:client
+# > fab production:all migrate:all
+# > fab production:all deploy:all
 # > fab production:all cleanup:keep=5
 # > fab purgecache
 
