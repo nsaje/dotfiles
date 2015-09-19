@@ -160,7 +160,7 @@ class ApiPublishersTest(TestCase):
                                        
         _get_results.assert_has_calls([
             mock.call('DELETE FROM "ob_publishers_1" WHERE date=%s AND adgroup_id=%s AND exchange=%s', [datetime.date(2015, 2, 1), 3, 'outbrain']),
-            mock.call('INSERT INTO ob_publishers_1 (date,adgroup_id,exchange,domain,name,clicks,ob_section_id) VALUES (%s,%s,%s,%s,%s,%s)', [datetime.date(2015, 2, 1), 3, 'outbrain', 'CNN money', 'money.cnn.com', 123, 'AAAABBBBB'])
+            mock.call('INSERT INTO ob_publishers_1 (date,adgroup_id,exchange,domain,name,clicks,ob_section_id) VALUES (%s,%s,%s,%s,%s,%s,%s)', [datetime.date(2015, 2, 1), 3, 'outbrain', 'money.cnn.com', 'CNN money', 123, 'AAAABBBBB'])
         ])
 
 
