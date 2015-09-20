@@ -25,7 +25,6 @@ class RSPublishersModel(redshift.RSModel):
               dict(sql='cpc_micro',       app='cpc',         out=lambda v: from_micro_cpm(v),    calc=sum_div("cost_micro", "clicks"), order="SUM(clicks)=0, cpc_micro"), # makes sure nulls are last
               dict(sql='ctr',             app='ctr',         out=lambda v: to_percent(v),        calc=sum_div("clicks", "impressions")),
               dict(sql='adgroup_id',      app='ad_group',    out=lambda v: v),
-              dict(sql='exchange',        app='exchange',    out=lambda v: v),
               dict(sql='ob_section_id',   app='ob_section_id',out=lambda v: v),
               ]
 

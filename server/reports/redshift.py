@@ -383,6 +383,9 @@ def _prepare_constraints_general(constraints):
     for k in sorted(constraints.keys()):
         v = constraints[k]
         if (isinstance(v, collections.Sequence) or isinstance(v, QuerySet)) and type(v) not in (str, unicode):
+            if k.endswith("__eq"):
+                k = k[:-4]
+              
             if v:
                 result.append('{} IN ({})'.format(k, ','.join(["%s"]*len(v))))
                 params.extend(v)
