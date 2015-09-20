@@ -205,7 +205,7 @@ def _translate_row(row, reverse_field_mapping):
     return {reverse_field_mapping.get(k, k): v for k, v in row.iteritems()}
 
 
-def _create_select_query(table, fields, constraints, breakdown=None, order_fields_tuples=None, limit = None, offset = None):
+def _create_select_query(table, fields, constraints, breakdown=None, limit = None, offset = None):
     cmd = 'SELECT {fields} FROM {table} WHERE {constraints}'.format(
         fields=','.join(fields),
         table=table,
@@ -215,14 +215,6 @@ def _create_select_query(table, fields, constraints, breakdown=None, order_field
     if breakdown:
         cmd += ' GROUP BY {}'.format(','.join(breakdown))
 
-    if order_fields_tuples:
-        cmd += " ORDER BY " 
-        order_cmds = []
-        for order_field, direction in order_fields_tuples:
-            # order_field might actually be an expression
-            order_cmds.append('{} {}'.format(order_field , direction))
-        cmd += " " + ",".join(order_cmds) + " "
-        
     if limit:
         cmd += " LIMIT " + str(limit)
     if offset:
@@ -320,7 +312,7 @@ class RSModel(object):
         # map order fields, we decode directions here too
         # we also support specifying order functions to be used instead of field name 
         # due to Redshift's inability to use aliased name inside expressions in ORDER BY
-        order_fields_tuples = []
+        order_fields_out = []
         for field in order_fields:
             direction = "ASC"
             if field.startswith("-"):
@@ -337,10 +329,10 @@ class RSModel(object):
             except KeyError:
                 order_statement = field_desc['sql']
                 
-            order_fields_tuples.append((order_statement, direction))
+            order_fields_out.append(order_statement + " " + direction)
 
     
-        return order_fields_tuples
+        return order_fields_out
 
 
     def translate_constraints(self, constraints):
@@ -417,7 +409,7 @@ def _prepare_constraints_general(constraints):
 
 
 
-def get_query_general(table_name, aggregates, breakdown_fields=None, order_fields_tuples=None, limit=None, offset=None, constraints={}):
+def get_query_general(table_name, aggregates, breakdown_fields=None, order_fields=None, limit=None, offset=None, constraints={}):
     constraints_str, params = _prepare_constraints_general(constraints)
 
     if breakdown_fields:
@@ -427,7 +419,7 @@ def get_query_general(table_name, aggregates, breakdown_fields=None, order_field
             breakdown_fields + aggregates,
             [constraints_str],	# a single one actually
             breakdown=breakdown_fields,
-            order_fields_tuples=order_fields_tuples,
+            order_fields=order_fields,
             limit=limit,
             offset=offset,
         )
@@ -475,7 +467,7 @@ def multi_insert_general(table, field_list, all_row_tuples, max_at_a_time = None
         general_get_results(statement, row_tuples_flat)
         
 
-def _create_select_query_general(table, fields, constraints, breakdown=None, order_fields_tuples=None, limit = None, offset = None):
+def _create_select_query_general(table, fields, constraints, breakdown=None, order_fields=None, limit = None, offset = None):
     cmd = 'SELECT {fields} FROM {table} WHERE {constraints}'.format(
         fields=','.join(fields),
         table=table,
@@ -485,12 +477,12 @@ def _create_select_query_general(table, fields, constraints, breakdown=None, ord
     if breakdown:
         cmd += ' GROUP BY {}'.format(','.join(breakdown))
 
-    if order_fields_tuples:
+    if order_fields:
         cmd += " ORDER BY " 
         order_cmds = []
-        for order_field, direction in order_fields_tuples:
+        for order_field in order_fields:
             # order_field might actually be an expression
-            order_cmds.append('{} {}'.format(order_field , direction))
+            order_cmds.append('{}'.format(order_field))
         cmd += " " + ",".join(order_cmds) + " "
         
     if limit:

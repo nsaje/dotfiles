@@ -40,7 +40,7 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
     # Lastly map SQL fields back to application-used fields
         
     breakdown_fields = rspub.translate_breakdown_fields(breakdown_fields)    
-    order_fields_tuples = rspub.translate_order_fields(order_fields)
+    order_fields = rspub.translate_order_fields(order_fields)
     
     # map constraints fields
     constraints = copy.copy(constraints)
@@ -55,7 +55,7 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
         rspub.TABLE_NAME,
         returned_fields,
         breakdown_fields,
-        order_fields_tuples=order_fields_tuples,
+        order_fields=order_fields,
         limit=limit,
         offset=offset,
         constraints=constraints)
