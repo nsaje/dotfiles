@@ -147,11 +147,11 @@ class RedshiftTest(TestCase):
         ad_group_id = 1
         source_id = 2
 
-        redshift.delete_general('test_table', {'date': date, 'ad_group_id': 4, 'exchange': 'abc'})
+        redshift.delete_general('test_table', {'date__eq': date, 'ad_group_id__eq': 4, 'exchange__eq': 'abc'})
 
-        query = 'DELETE FROM "test_table" WHERE date=%s AND ad_group_id=%s AND exchange=%s'
-        params = [datetime.date(2015, 1, 2), 4, "abc"]
-
+        query = 'DELETE FROM "test_table" WHERE ad_group_id=%s AND date=%s AND exchange=%s'
+        params =  [4, datetime.date(2015, 1, 2), 'abc']
+        
         mock_cursor.execute.assert_called_with(query, params)
 
     def test_multi_insert_general(self, mock_get_cursor):
