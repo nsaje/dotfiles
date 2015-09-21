@@ -484,7 +484,9 @@ class RSModel(object):
                                                                         )
                                             
             row_tuples_flat = [item for sublist in row_tuples for item in sublist]
-            general_get_results(statement, row_tuples_flat)
+#            general_get_results(statement, row_tuples_flat)
+            cursor = _get_cursor()
+            cursor.execute(statement, row_tuples_flat)
 
 
     def execute_delete(self, constraints = None):
@@ -492,9 +494,11 @@ class RSModel(object):
             raise exc.ReportsQueryError("Delete query without specifying constraints")
         (constraint_str, constraint_params) = self.constraints_to_str(constraints)
                
-        cmd = 'DELETE FROM "{table}" WHERE {constraints_str}'.format(table=self.TABLE_NAME,
-                                                                constraints_str=constraint_str)
-        return general_get_results(cmd, constraint_params)
+        statement = 'DELETE FROM "{table}" WHERE {constraints_str}'.format(table=self.TABLE_NAME,
+                                                                    constraints_str=constraint_str)
+        cursor = _get_cursor()
+        cursor.execute(statement, constraint_params)
+
 
              
 

@@ -147,7 +147,12 @@ class ApiPublishersTest(TestCase):
         query = self._get_query(_get_results)
         self.assertIn("SUM(clicks)=0, cpc_micro", query)
 
-    def test_ob_insert_adgroup_date(self, _get_results):
+@mock.patch('reports.redshift._get_cursor')
+class ApiPublishersInsertTest(TestCase):
+    def test_ob_insert_adgroup_date(self, mock_get_cursor):
+        mock_cursor = mock.Mock()
+        mock_get_cursor.return_value = mock_cursor
+
         api_publishers.ob_insert_adgroup_date(datetime.date(2015,2,1), 
                                               3,
                                               "outbrain",
@@ -158,7 +163,7 @@ class ApiPublishersTest(TestCase):
                                                   "url": "http://money.cnn.com",
                                               }])
                                        
-        _get_results.assert_has_calls([
+        mock_cursor.execute.assert_has_calls([
             mock.call('DELETE FROM "ob_publishers_1" WHERE adgroup_id=%s AND date=%s AND exchange=%s', [3, datetime.date(2015, 2, 1), 'outbrain']),
             mock.call('INSERT INTO ob_publishers_1 (date,adgroup_id,exchange,domain,name,clicks,ob_section_id) VALUES (%s,%s,%s,%s,%s,%s,%s)', [datetime.date(2015, 2, 1), 3, 'outbrain', 'money.cnn.com', 'CNN money', 123, 'AAAABBBBB'])
         ])
