@@ -33,6 +33,16 @@ class AdGroupSourceSettingsState(ConstantBase):
     }
 
 
+class AdGroupSourceSettingsAutopilotState(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+
+    _VALUES = {
+        ACTIVE: 'Enabled',
+        INACTIVE: 'Paused'
+    }
+
+
 class AdTargetDevice(ConstantBase):
     DESKTOP = 'desktop'
     MOBILE = 'mobile'

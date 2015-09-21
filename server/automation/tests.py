@@ -1,30 +1,41 @@
+import decimal
+import dash
+import datetime
+from mock import patch
+
 from django.core import mail
 from django import test
-from mock import patch
-from automation import budgetdepletion
+
+from automation import budgetdepletion, helpers, autopilot
+from automation import models as automationmodels
 from dash import models
 from reports import refresh
-from django.conf import settings
-from automation import models as automationmodels
+import automation.settings
+
+
+class DatetimeMock(datetime.datetime):
+    @classmethod
+    def utcnow(cls):
+        return datetime.datetime(2014, 06, 05, 9, 58, 25)
 
 
 class BudgetDepletionTestCase(test.TestCase):
-    fixtures = ['test_budget_depletion.yaml']
+    fixtures = ['test_automation.yaml']
 
     def setUp(self):
         refresh.refresh_adgroup_stats()
 
     def test_get_active_campaigns(self):
-        campaigns = budgetdepletion.get_active_campaigns()
+        campaigns = helpers.get_active_campaigns()
         self.assertEqual(campaigns.filter(pk=1).count(), 1)
 
     def test_get_active_campaigns_subset(self):
         campaigns = models.Campaign.objects.all()
-        actives = budgetdepletion._get_active_campaigns_subset(campaigns)
+        actives = helpers._get_active_campaigns_subset(campaigns)
         self.assertEqual(actives.filter(pk=1).count(), 1)
         self.assertEqual(actives.filter(pk=2).count(), 0)
 
-    @patch("django.conf.settings.DEPLETING_AVAILABLE_BUDGET_SCALAR", 1.0)
+    @patch("automation.settings.DEPLETING_AVAILABLE_BUDGET_SCALAR", 1.0)
     def test_budget_is_depleting(self):
         self.assertEqual(budgetdepletion.budget_is_depleting(100, 5), False)
         self.assertEqual(budgetdepletion.budget_is_depleting(100, 500), True)
@@ -55,10 +66,115 @@ class BudgetDepletionTestCase(test.TestCase):
             'campaign_name',
             'campaign_url',
             'account_name',
-            'test@zemanta.com'
+            ['test@zemanta.com'],
+            1000,
+            1500,
+            5000
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(
-            settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL)
+            automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL)
         )
         self.assertEqual(mail.outbox[0].to, ['test@zemanta.com'])
+
+    def test_get_active_ad_groups(self):
+            campaign1 = models.Campaign.objects.get(id=1)
+            actives = helpers.get_active_ad_groups(campaign1)
+            self.assertEqual(len(actives), 1)
+
+            campaign2 = models.Campaign.objects.get(id=2)
+            actives = helpers.get_active_ad_groups(campaign2)
+            self.assertEqual(len(actives), 0)
+
+    def test_persist_cpc_change_to_admin_log(self):
+        autopilot.persist_cpc_change_to_admin_log(
+            models.AdGroupSource.objects.get(id=1),
+            20.0,
+            0.15,
+            0.20,
+            30.0,
+            5
+        )
+        log = automationmodels.AutopilotAdGroupSourceBidCpcLog.objects.all().latest('created_dt')
+        self.assertEqual(log.campaign, models.Campaign.objects.get(pk=1))
+        self.assertEqual(log.ad_group, models.AdGroup.objects.get(pk=1))
+        self.assertEqual(log.ad_group_source, models.AdGroupSource.objects.get(pk=1))
+        self.assertEqual(log.yesterdays_spend_cc, 20.0)
+        self.assertEqual(log.previous_cpc_cc, decimal.Decimal('0.15'))
+        self.assertEqual(log.new_cpc_cc, decimal.Decimal('0.20'))
+        self.assertEqual(log.current_daily_budget_cc, 30.0)
+
+    @patch('datetime.datetime', DatetimeMock)
+    def test_ad_group_sources_daily_budget_was_changed_recently(self):
+        self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=1)))
+
+        self.assertFalse(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=2)))
+        settings_writer = dash.api.AdGroupSourceSettingsWriter(models.AdGroupSource.objects.get(id=2))
+        resource = dict()
+        resource['daily_budget_cc'] = decimal.Decimal(60.00)
+        settings_writer.set(resource, None)
+        self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=2)))
+
+    @patch('automation.settings.AUTOPILOT_CPC_CHANGE_TABLE', (
+        {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.5, 'bid_cpc_procentual_increase': 0.1},
+        {'underspend_upper_limit': -0.5, 'underspend_lower_limit': 0, 'bid_cpc_procentual_increase': 0.5},
+        )
+    )
+    def test_calculate_new_autopilot_cpc(self):
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0, 10, 5), decimal.Decimal('0'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 8), decimal.Decimal('0.75'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 10), decimal.Decimal('0.75'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 2), decimal.Decimal('0.55'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 0), decimal.Decimal('0.5'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 5), decimal.Decimal('0.55'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 0, 5), decimal.Decimal('0.5'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 0), decimal.Decimal('0.5'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, -10, 5), decimal.Decimal('0.5'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, -5), decimal.Decimal('0.5'))
+        self.assertEqual(autopilot.calculate_new_autopilot_cpc(-0.5, 10, 5), decimal.Decimal('0'))
+
+    def test_send_autopilot_CPC_changes_email(self):
+        autopilot.send_autopilot_CPC_changes_email(
+            'campaign_name',
+            1,
+            'account_name',
+            ['test@zemanta.com'],
+            {u'AdGroup': [[u'Source', decimal.Decimal('0.0800'), decimal.Decimal('0.09')]]}
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(
+            automation.settings.AUTOPILOT_EMAIL)
+        )
+        self.assertEqual(mail.outbox[0].to, ['test@zemanta.com'])
+
+    def test_get_active_ad_group_sources_settings(self):
+            adg1 = models.AdGroup.objects.get(id=1)
+            actives = helpers.get_active_ad_group_sources_settings(adg1)
+            self.assertEqual(len(actives), 1)
+
+            adg2 = models.AdGroup.objects.get(id=2)
+            actives2 = helpers.get_active_ad_group_sources_settings(adg2)
+            self.assertEqual(len(actives2), 1)
+
+    def test_get_autopilot_ad_group_sources_settings(self):
+            adg1 = models.AdGroup.objects.get(id=1)
+            actives = autopilot.get_autopilot_ad_group_sources_settings(adg1)
+            self.assertEqual(len(actives), 0)
+
+            adg2 = models.AdGroup.objects.get(id=2)
+            actives2 = autopilot.get_autopilot_ad_group_sources_settings(adg2)
+            self.assertEqual(len(actives2), 1)
+
+    def test_ad_group_source_is_on_autopilot(self):
+            adgs1 = models.AdGroupSource.objects.get(id=1)
+            self.assertFalse(autopilot.ad_group_source_is_on_autopilot(adgs1))
+
+            adgs2 = models.AdGroupSource.objects.get(id=2)
+            self.assertTrue(autopilot.ad_group_source_is_on_autopilot(adgs2))
+
+    def test_get_total_daily_budget_amount(self):
+            camp1 = models.Campaign.objects.get(id=1)
+            self.assertEqual(helpers.get_total_daily_budget_amount(camp1), decimal.Decimal('60'))
+
+            camp2 = models.Campaign.objects.get(id=2)
+            self.assertEqual(helpers.get_total_daily_budget_amount(camp2), decimal.Decimal('0'))

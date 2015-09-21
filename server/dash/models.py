@@ -1031,7 +1031,7 @@ class AdGroupSettings(SettingsBase):
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(AdGroup, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True, blank=True)
     state = models.IntegerField(
         default=constants.AdGroupSettingsState.INACTIVE,
         choices=constants.AdGroupSettingsState.get_choices()
@@ -1147,6 +1147,7 @@ class AdGroupSettings(SettingsBase):
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
             'enable_ga_tracking': 'Enable GA tracking',
+            'autopilot_state': 'Auto-Pilot',
             'enable_adobe_tracking': 'Enable Adobe tracking',
             'adobe_tracking_param': 'Adobe tracking parameter'
         }
@@ -1157,6 +1158,8 @@ class AdGroupSettings(SettingsBase):
     def get_human_value(cls, prop_name, value):
         if prop_name == 'state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
+        elif prop_name == 'autopilot_state':
+            value = constants.AdGroupSourceSettingsAutopilotState.get_text(value)
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
@@ -1181,7 +1184,10 @@ class AdGroupSettings(SettingsBase):
 
     def save(self, request, *args, **kwargs):
         if self.pk is None:
-            self.created_by = request.user
+            if request is None:
+                self.created_by = None
+            else:
+                self.created_by = request.user
 
         super(AdGroupSettings, self).save(*args, **kwargs)
 
@@ -1258,6 +1264,10 @@ class AdGroupSourceSettings(models.Model):
         blank=True,
         null=True,
         verbose_name='Daily budget'
+    )
+    autopilot_state = models.IntegerField(
+        default=constants.AdGroupSourceSettingsAutopilotState.INACTIVE,
+        choices=constants.AdGroupSourceSettingsAutopilotState.get_choices()
     )
 
     def save(self, request, *args, **kwargs):
