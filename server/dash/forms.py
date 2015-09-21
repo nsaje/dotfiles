@@ -179,6 +179,14 @@ class AdGroupSourceSettingsStateForm(forms.Form):
     )
 
 
+class AdGroupSourceSettingsAutopilotStateForm(forms.Form):
+    autopilot_state = forms.TypedChoiceField(
+        choices=constants.AdGroupSourceSettingsAutopilotState.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+
+
 class AccountAgencySettingsForm(forms.Form):
     id = forms.IntegerField()
     name = forms.CharField(
@@ -389,7 +397,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         label="Description",
         error_messages={
             'max_length': 'Description is too long (%(show_value)d/%(limit_value)d).'
-        } 
+        }
     )
     call_to_action = forms.CharField(
         required=True,
@@ -421,6 +429,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         if column_names[2] != 'image_url':
             raise forms.ValidationError('Third column in header should be Image URL.')
 
+
         for n, field in enumerate(column_names):
             # We accept "(optional)" in the names of optional columns.
             # That's how those columns are presented in our csv template (that user can download)
@@ -435,7 +444,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
         # Make sure each column_name appears only once
         for column_name, count in Counter(column_names).iteritems():
-            if count > 1:	
+            if count > 1:
                 raise forms.ValidationError("Column \"{0}\" appears multiple times ({1}) in the CSV file.".format(column_name, count))
 
         return column_names
@@ -508,7 +517,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
         return data
 
-    # we validate form as a whole after all fields have been validated to see 
+    # we validate form as a whole after all fields have been validated to see
     # if the fields that are submitted as empty in the form are specified in CSV as columns
     def clean(self):
         cleaned_data = super(AdGroupAdsPlusUploadForm, self).clean()
@@ -516,11 +525,10 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         if self.errors:
             return
 
-        # after individual fields are validated we need to check if CSV has columns for the ones 
-        # that are submitted empty. We take an advantage of the fact that fields of this form 
+        # after individual fields are validated we need to check if CSV has columns for the ones
+        # that are submitted empty. We take an advantage of the fact that fields of this form
         # have exactly the same names as normalized names of csv columns
         for column_and_field_name in ['display_url', 'brand_name', 'description', 'call_to_action']:
             if not self.cleaned_data.get(column_and_field_name): 	# if field is empty in the form
-                if column_and_field_name not in self.csv_column_names:	# and is not present as a CSV column 
+                if column_and_field_name not in self.csv_column_names:	# and is not present as a CSV column
                     self.add_error(column_and_field_name, forms.ValidationError("{0} has to be present here or as a column in CSV.".format(self.fields[column_and_field_name].label)))
-

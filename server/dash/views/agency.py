@@ -18,6 +18,7 @@ from dash import models
 from dash import api
 from dash import budget
 from dash import constants
+import automation.settings
 from reports import redshift
 from utils import api_common
 from utils import statsd_helper
@@ -283,10 +284,10 @@ class CampaignAgency(api_common.BaseApiView):
         with transaction.atomic():
             campaign.save(request)
             settings.save(request)
-        
+
             # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
             campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-    
+
             for ad_group in campaign_ad_groups:
                 adgroup_settings = ad_group.get_current_settings()
                 actions.extend(
@@ -866,15 +867,15 @@ class AdGroupAgency(api_common.BaseApiView):
 
     @newrelic.agent.function_trace()
     def get_history(self, ad_group, user):
-        settings = models.AdGroupSettings.objects.\
+        ad_group_settings = models.AdGroupSettings.objects.\
             filter(ad_group=ad_group).\
             order_by('created_dt').\
             select_related('created_by')
 
         history = []
-        for i in range(0, len(settings)):
-            old_settings = settings[i - 1] if i > 0 else None
-            new_settings = settings[i]
+        for i in range(0, len(ad_group_settings)):
+            old_settings = ad_group_settings[i - 1] if i > 0 else None
+            new_settings = ad_group_settings[i]
 
             changes = old_settings.get_setting_changes(new_settings) \
                 if old_settings is not None else None
@@ -888,10 +889,13 @@ class AdGroupAgency(api_common.BaseApiView):
                 continue
 
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings, user)
-
+            if new_settings.created_by is None:
+                changed_by = automation.settings.AUTOMATION_AI_NAME
+            else:
+                changed_by = new_settings.created_by.email
             history.append({
                 'datetime': new_settings.created_dt,
-                'changed_by': new_settings.created_by.email,
+                'changed_by': changed_by,
                 'changes_text': changes_text,
                 'settings': settings_dict.values(),
                 'show_old_settings': old_settings is not None

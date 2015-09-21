@@ -365,7 +365,7 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
                 data.get('state'), content_ad_source.content_ad.state,
                 data.get('submission_status'), content_ad_source.submission_status,
             )
-            
+
         if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
             is_unsynced = all([
                 data['submission_status'] == constants.ContentAdSubmissionStatus.APPROVED,
@@ -737,12 +737,14 @@ class AdGroupSourceSettingsWriter(object):
         state = settings_obj.get('state')
         cpc_cc = settings_obj.get('cpc_cc')
         daily_budget_cc = settings_obj.get('daily_budget_cc')
+        autopilot_state = settings_obj.get('autopilot_state')
 
         assert cpc_cc is None or isinstance(cpc_cc, decimal.Decimal)
         assert daily_budget_cc is None or isinstance(daily_budget_cc, decimal.Decimal)
 
         if any([
                 state is not None and state != latest_settings.state,
+                autopilot_state is not None and autopilot_state != latest_settings.autopilot_state,
                 cpc_cc is not None and cpc_cc != latest_settings.cpc_cc,
                 daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc]):
             new_settings = latest_settings
@@ -752,6 +754,9 @@ class AdGroupSourceSettingsWriter(object):
 
             if state is not None:
                 new_settings.state = state
+            if autopilot_state is not None:
+                old_settings_obj['autopilot_state'] = latest_settings.autopilot_state
+                new_settings.autopilot_state = autopilot_state
             if cpc_cc is not None:
                 old_settings_obj['cpc_cc'] = latest_settings.cpc_cc
                 new_settings.cpc_cc = cpc_cc
@@ -763,8 +768,10 @@ class AdGroupSourceSettingsWriter(object):
             self.add_to_history(settings_obj, old_settings_obj, request)
 
             if send_action:
+                filtered_settings_obj = {k:v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}
                 if 'state' not in settings_obj or self.can_trigger_action():
-                    actionlog.api.set_ad_group_source_settings(settings_obj, new_settings.ad_group_source, request)
+                    if filtered_settings_obj:
+                        actionlog.api.set_ad_group_source_settings(filtered_settings_obj, new_settings.ad_group_source, request)
                 else:
                     logger.info(
                         'settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled',

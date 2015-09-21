@@ -36,18 +36,27 @@ GOAL_RATE_KEYWORDS = ['conversion rate']
 
 
 def _report_atoi(raw_str):
-    # TODO: Implement locale specific parsing
-    ret_str = (raw_str or '0').replace(',', '')
-    dot_loc = ret_str.find('.')
-    if dot_loc != -1:
-        return int(ret_str[:dot_loc])
-    else:
-        return int(ret_str)
+    try:
+        # TODO: Implement locale specific parsing
+        ret_str = (raw_str or '0').replace(',', '')
+        dot_loc = ret_str.find('.')
+        if dot_loc != -1:
+            return int(ret_str[:dot_loc])
+        else:
+            return int(ret_str)
+    except:
+        logger.exception('Failed converting to float {}'.format(raw_str))
+        raise
 
 
 def _report_atof(raw_str):
-    # TODO: Implement locale specific parsing
-    return float(raw_str.replace(',', ''))
+    try:
+        ret_str = (raw_str or '0').replace(',', '')
+        # TODO: Implement locale specific parsing
+        return float(ret_str.replace(',', ''))
+    except:
+        logger.exception('Failed converting to float {}'.format(raw_str))
+        raise
 
 
 class ReportRow(object):
@@ -118,8 +127,12 @@ class GaReportRow(ReportRow):
         return sum(all_row_sessions)
 
     def _parse_duration(self, durstr):
-        hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
-        return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
+        try:
+            hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
+            return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
+        except:
+            logger.exception('Failed parsing duration {}'.format(durstr))
+            raise
 
     def __str__(self):
         return "{date}-{caid}-{source_param}".format(
