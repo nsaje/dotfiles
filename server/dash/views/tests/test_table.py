@@ -7,6 +7,7 @@ from mock import patch
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.contrib.auth import models as authmodels
 
 from utils.test_helper import QuerySetMatcher
 from zemauth.models import User
@@ -99,7 +100,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         mock_query.assert_any_call(
             date,
             date,
-            constraints = {"ad_group": ad_group,
+            constraints={"ad_group": ad_group,
                            "source": sources_matcher}
         )
 
@@ -286,7 +287,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
-            constraints={'ad_group':ad_group,
+            constraints={'ad_group': ad_group,
                          'source': sources_matcher}
         )
 
@@ -642,6 +643,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
                          "Dashboard of this media source is not yet available because the "
                          "media source is still being set up for this ad group.")
 
+
 @override_settings(
     R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/1/{content_ad_id}/'
 )
@@ -710,7 +712,7 @@ class AdGroupPublishersTableTest(TestCase):
         mock_query.assert_any_call(
             date,
             date,
-            constraints = {"ad_group": ad_group.id},
+            constraints={"ad_group": ad_group.id},
         )
 
         result = json.loads(response.content)
@@ -719,7 +721,6 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertEqual(result['success'], True)
 
         self.assertIn('data', result)
-
 
         self.assertIn('order', result['data'])
         self.assertEqual(result['data']['order'], 'domain')
@@ -870,13 +871,13 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=['-cost'],
-            constraints={'ad_group': ad_group.id,}
+            constraints={'ad_group': ad_group.id, }
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            constraints = {"ad_group": ad_group.id,}
+            constraints={"ad_group": ad_group.id, }
         )
 
         result = json.loads(response.content)
@@ -889,3 +890,30 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
         self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
+
+
+class AllAccountsSourcesTableTest(TestCase):
+    fixtures = ['test_aggregation.yaml']
+
+    def setUp(self):
+        self.normal_user = User.objects.get(pk=1)
+        self.redshift_user = User.objects.get(pk=2)
+
+    def test_get_normal_all_accounts_table(self):
+        sources_table = table.AllAccountsSourcesTable(self.normal_user, 1, [])
+        print sources_table.reports_api
+        print dir(sources_table)
+
+        today = datetime.datetime.utcnow()
+        print sources_table.get_stats(today, today)
+
+    def test_get_redshift_all_accounts_table(self):
+        """
+        sources_table = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
+        print sources_table.reports_api
+        print dir(sources_table)
+
+        today = datetime.datetime.utcnow()
+        print sources_table.get_stats(today, today)
+        """
+        pass
