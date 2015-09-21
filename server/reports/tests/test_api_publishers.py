@@ -20,7 +20,7 @@ class ApiPublishersTest(TestCase):
             return
         self.assertTrue('GROUP BY' in query)
 
-        breakdown_fields = [api_publishers.rspub.by_app_mapping[f]['sql'] for f in breakdown]
+        breakdown_fields = [api_publishers.rs_pub.by_app_mapping[f]['sql'] for f in breakdown]
 
         # check group by statement if contains breakdown fields
         group_by_fields = query.split('GROUP BY')[1].split('ORDER BY')[0].split(',')
@@ -30,7 +30,7 @@ class ApiPublishersTest(TestCase):
 
         # check select fields if contains breakdown fields
         select_fields = query.split('FROM')[0].split(',')
-        self.assertEqual(len(select_fields), len(breakdown) + len(api_publishers.rspub.DEFAULT_RETURNED_FIELDS_APP))
+        self.assertEqual(len(select_fields), len(breakdown) + len(api_publishers.rs_pub.DEFAULT_RETURNED_FIELDS_APP))
         for bf in breakdown_fields:
             self.assertEqual(1, len([x for x in select_fields if bf in x]))
 
@@ -176,7 +176,7 @@ class ApiPublishersMapperTest(TestCase):
                 'ctr': None,
                 'adgroup_id': None,
                 'exchange': None}
-        result = api_publishers.rspub.map_result_to_app(input)
+        result = api_publishers.rs_pub.map_result_to_app(input)
         self.assertEqual(result, {   'ad_group': None,
                                      'clicks': None,
                                      'cost': None,
@@ -192,7 +192,7 @@ class ApiPublishersMapperTest(TestCase):
                  'cost_micro_sum': 200000,
                  'ctr': 0.2,
                 }
-        result = api_publishers.rspub.map_result_to_app(input)
+        result = api_publishers.rs_pub.map_result_to_app(input)
         self.assertEqual(result, {'cost': 0.0002, 
                                   'cpc': 0.0001, 
                                   'ctr': 20.0
@@ -200,7 +200,7 @@ class ApiPublishersMapperTest(TestCase):
 
     def test_map_unknown_row(self):
         input = {'bah': 100000,}
-        self.assertRaises(KeyError, api_publishers.rspub.map_result_to_app, input)
+        self.assertRaises(KeyError, api_publishers.rs_pub.map_result_to_app, input)
         
 
 

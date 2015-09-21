@@ -25,43 +25,35 @@ class RSPublishersModel(redshift.RSModel):
               dict(sql='cpc_micro',       app='cpc',         out=lambda v: from_micro_cpm(v),    calc=sum_div("cost_micro", "clicks"), order="SUM(clicks)=0, cpc_micro"), # makes sure nulls are last
               dict(sql='ctr',             app='ctr',         out=lambda v: to_percent(v),        calc=sum_div("clicks", "impressions")),
               dict(sql='adgroup_id',      app='ad_group',    out=lambda v: v),
-              dict(sql='ob_section_id',   app='ob_section_id',out=lambda v: v),
+
               ]
 
+class RSOutbrainPublishersModel(RSPublishersModel):
+    TABLE_NAME = 'ob_publishers_1'
+    
+    FIELDS = copy.copy(RSPublishersModel.FIELDS) + [
+              # The following are only available for Outbrain tables
+              dict(sql='ob_section_id',   app='ob_section_id',	out=lambda v: v),
+              dict(sql='name',            app='name',		out=lambda v: v),
+              dict(sql='clicks',          app='clicks_raw',     out=lambda v: v), # special case to insert into aggregated variable
+              
+    ]
 
-rspub = RSPublishersModel()
+
+rs_pub = RSPublishersModel()
+rs_ob_pub = RSOutbrainPublishersModel()
 
 
 def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}):
-    # This API tries to completely isolate the rest of the app from Redshift-tied part, so namings are decoupled:
-    # First map all query fields to their SQL representations first
-    # Then run the query (without any knowledge about the outside world of the app)
-    # Lastly map SQL fields back to application-used fields
-        
-    breakdown_fields = rspub.translate_breakdown_fields(breakdown_fields)    
-    order_fields = rspub.translate_order_fields(order_fields)
-    
-    # map constraints fields
+    # add two more constraints
     constraints = copy.copy(constraints)
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
-    constraints = rspub.translate_constraints(constraints)
     
-    returned_fields = rspub.get_returned_fields() 
 
-    # now get the query and parameters
-    (statement, params) = redshift.get_query_general(
-        rspub.TABLE_NAME,
-        returned_fields,
-        breakdown_fields,
-        order_fields=order_fields,
-        limit=limit,
-        offset=offset,
-        constraints=constraints)
-
-    
+    (statement, params) = rs_pub.get_select_query(breakdown_fields, order_fields, offset, limit, constraints)    
     results = redshift.general_get_results(statement, params)
-    results = rspub.map_results_to_app(results)
+    results = rs_pub.map_results_to_app(results)
 
     if breakdown_fields:
         return results
@@ -72,8 +64,8 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
 
 
 def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts):
-    # start a transaction
-    sql_fields = ['date', 'adgroup_id', 'exchange', 'domain', 'name', 'clicks', 'ob_section_id']
+    # TO DO: Execute this inside a transaction
+    fields_sql = ['date', 'adgroup_id', 'exchange', 'domain', 'name', 'clicks', 'ob_section_id']
     row_tuples = []
     for row in datarowdicts:
         # strip http:
@@ -85,8 +77,8 @@ def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts):
         newrow = (date, ad_group, exchange, url, row['name'], row['clicks'], row['ob_section_id'])
         row_tuples.append(newrow)
     
-    redshift.delete_general('ob_publishers_1', {'date__eq': date, 'adgroup_id__eq': ad_group, 'exchange__eq': exchange})
-    redshift.multi_insert_general('ob_publishers_1', sql_fields, row_tuples)
+    rs_ob_pub.delete({'date__eq': date, 'ad_group__eq': ad_group, 'exchange__eq': exchange})
+    rs_ob_pub.multi_insert_sql(fields_sql, row_tuples)
     
     
 

@@ -275,8 +275,20 @@ def _get_row_string(cursor, cols, row):
 
 # New style API
 
+# iterate in chunks, python recepie
+def grouper(n, iterable):
+    it = iter(iterable)
+    while True:
+       chunk = tuple(itertools.islice(it, n))
+       if not chunk:
+           return
+       yield chunk    
+
 
 class RSModel(object):
+    FIELDS = []
+    TABLE_NAME = "test_table"
+    
     def __init__(self):
         self.by_sql_mapping = {d['sql']:d for d in self.FIELDS}
         self.by_app_mapping = {d['app']:d for d in self.FIELDS}
@@ -336,7 +348,7 @@ class RSModel(object):
 
 
     def translate_constraints(self, constraints):
-        constraints_translated = {}
+        constraint_tuples = []
         for constraint_name, val in constraints.iteritems():
             parts = constraint_name.split("__")
             field_name_app = parts[0]
@@ -349,13 +361,92 @@ class RSModel(object):
             else:
                 operator = "eq"
             
-            constraints_translated[field_name_sql + "__" + operator] = val
-        return constraints_translated
-        
-
+            constraint_tuples.append((field_name_sql, operator, val))
+        return constraint_tuples
+     
 
     def get_returned_fields(self):
         return self.expand_sql_fields(self.translate_app_fields(self.DEFAULT_RETURNED_FIELDS_APP))
+
+    def constraints_to_str(self, constraints):    
+        constraints_tuples = self.translate_constraints(constraints) 
+
+        # returns a string and list of params
+        result = []
+        params = []
+
+        for field_name, operator, value in constraints_tuples:
+            if operator == "lte":
+                result.append('"{}" <= %s'.format(field_name))
+                params.append(value)
+            elif operator == "gte":
+                result.append('"{}" >= %s'.format(field_name))
+                params.append(value)
+            elif operator == "eq":
+                if (isinstance(value, collections.Sequence) or isinstance(value, QuerySet)) and type(value) not in (str, unicode):
+                    if value:
+                        result.append('{} IN ({})'.format(field_name, ','.join(["%s"]*len(value))))
+                        params.extend(value)
+                    else:
+                        result.append('FALSE')
+                else:
+                    result.append('{}=%s'.format(field_name))
+                    params.append(value)
+            else:
+                raise Exception("Unknown constraint type: {}".format(field_name))
+
+        return " AND ".join(result), params
+
+
+    def get_select_query(self, breakdown_fields, order_fields, offset, limit, constraints):
+        # Takes app-based fields and first checks & translates them and then creates a query
+        # first translate constraints into tuples, then create a single constraints str
+        (constraint_str, constraint_params) = self.constraints_to_str(constraints)
+        breakdown_fields = self.translate_breakdown_fields(breakdown_fields)    
+        order_fields = self.translate_order_fields(order_fields)
+        returned_fields = self.get_returned_fields() 
+
+        
+        statement= self.form_select_query(
+            self.TABLE_NAME,
+            breakdown_fields + returned_fields,
+            constraint_str,
+            breakdown_fields=breakdown_fields,
+            order_fields=order_fields,
+            limit=limit,
+            offset=offset,
+        )
+
+        return (statement, constraint_params)
+
+    @staticmethod
+    def form_select_query(table, fields, constraints, breakdown_fields=None, order_fields=None, limit = None, offset = None):
+        cmd = 'SELECT {fields} FROM {table} WHERE {constraints}'.format(
+            fields=','.join(fields),
+            table=table,
+            constraints=constraints,
+        )
+        
+        if breakdown_fields:
+            cmd += ' GROUP BY {}'.format(','.join(breakdown_fields))
+
+        if order_fields:
+            cmd += " ORDER BY " 
+            order_cmds = []
+            for order_field in order_fields:
+                # order_field might actually be an expression
+                order_cmds.append('{}'.format(order_field))
+            cmd += " " + ",".join(order_cmds) + " "
+            
+        if limit:
+            cmd += " LIMIT " + str(limit)
+        if offset:
+            cmd += " OFFSET " + str(offset)
+        return cmd
+
+
+
+
 
 
     def map_results_to_app(self, rows):
@@ -375,124 +466,34 @@ class RSModel(object):
 
         return result
 
-def _prepare_constraints_general(constraints):
-    # returns a string and list of params
-    result = []
-    params = []
 
-    for k in sorted(constraints.keys()):
-        v = constraints[k]
-        if (isinstance(v, collections.Sequence) or isinstance(v, QuerySet)) and type(v) not in (str, unicode):
-            if k.endswith("__eq"):
-                k = k[:-4]
-              
-            if v:
-                result.append('{} IN ({})'.format(k, ','.join(["%s"]*len(v))))
-                params.extend(v)
-            else:
-                result.append('FALSE')
-        else:
-            if k.endswith("__lte"):
-                k = k[:-5]
-                result.append('"{}" <= %s'.format(k))
-            elif k.endswith("__gte"):
-                k = k[:-5]
-                result.append('"{}" >= %s'.format(k))
-            elif k.endswith("__eq"):
-                k = k[:-4]
-                result.append('{}=%s'.format(k))
-            else:
-                raise Exception("Unknown constraint type: {}".format(k))
-            params.append(v)
-
-    return " AND ".join(result), params
+    MAX_AT_A_TIME = 100
+    # This function specifically takes sql-named fields
+    def multi_insert_sql(self, fields_sql, all_row_tuples, max_at_a_time = None):
+        if not max_at_a_time:
+            max_at_a_time = self.MAX_AT_A_TIME
+        fields_str = "(" + ",".join(fields_sql) +")"
+        fields_placeholder = "(" + ",".join(["%s"]*len(fields_sql)) + ")" 
+        for row_tuples in grouper(max_at_a_time, all_row_tuples):
+            statement = "INSERT INTO {table} {fields} VALUES {fields_strs}".format(table=self.TABLE_NAME,
+                                                                        fields=fields_str,
+                                                                        fields_strs=",".join([fields_placeholder]*len(row_tuples))
+                                                                        )
+                                            
+            row_tuples_flat = [item for sublist in row_tuples for item in sublist]
+            general_get_results(statement, row_tuples_flat)
 
 
+    def delete(self, constraints = None):
+        if not constraints:
+            raise exc.ReportsQueryError("Delete query without specifying constraints")
+        (constraint_str, constraint_params) = self.constraints_to_str(constraints)
+               
+        cmd = 'DELETE FROM "{table}" WHERE {constraints_str}'.format(table=self.TABLE_NAME,
+                                                                constraints_str=constraint_str)
+        return general_get_results(cmd, constraint_params)
 
-
-
-
-def get_query_general(table_name, aggregates, breakdown_fields=None, order_fields=None, limit=None, offset=None, constraints={}):
-    constraints_str, params = _prepare_constraints_general(constraints)
-
-    if breakdown_fields:
-        breakdown_fields = _prepare_breakdown(breakdown_fields, {})
-        statement = _create_select_query_general(
-            table_name,
-            breakdown_fields + aggregates,
-            [constraints_str],	# a single one actually
-            breakdown=breakdown_fields,
-            order_fields=order_fields,
-            limit=limit,
-            offset=offset,
-        )
-    else:
-        statement = _create_select_query(
-            table_name,
-            aggregates,
-            [constraints_str] # a single sentence actually
-        )
-
-    return (statement, params)
-
-
-def delete_general(table, constraints = None):
-    if not constraints:
-        raise exc.ReportsQueryError("Delete query without specifying constraints")
-    constraints_str, params = _prepare_constraints_general(constraints)
-    cmd = 'DELETE FROM "{table}" WHERE {constraints_str}'.format(table=table,
-                                                            constraints_str=constraints_str)
-    return general_get_results(cmd, params)
-
-# iterate in chunks, python recepie
-def grouper(n, iterable):
-    it = iter(iterable)
-    while True:
-       chunk = tuple(itertools.islice(it, n))
-       if not chunk:
-           return
-       yield chunk    
-
-
-MAX_AT_A_TIME = 100
-def multi_insert_general(table, field_list, all_row_tuples, max_at_a_time = None):
-    if not max_at_a_time:
-	max_at_a_time = MAX_AT_A_TIME
-    fields_str = "(" + ",".join(field_list) +")"
-    fields_placeholder = "(" + ",".join(["%s"]*len(field_list)) + ")" 
-    for row_tuples in grouper(max_at_a_time, all_row_tuples):
-        statement = "INSERT INTO {table} {fields} VALUES {fields_strs}".format(table=table,
-                                                                    fields=fields_str,
-                                                                    fields_strs=",".join([fields_placeholder]*len(row_tuples))
-                                                                    )
-                                        
-        row_tuples_flat = [item for sublist in row_tuples for item in sublist]
-        general_get_results(statement, row_tuples_flat)
-        
-
-def _create_select_query_general(table, fields, constraints, breakdown=None, order_fields=None, limit = None, offset = None):
-    cmd = 'SELECT {fields} FROM {table} WHERE {constraints}'.format(
-        fields=','.join(fields),
-        table=table,
-        constraints=' AND '.join(constraints),
-    )
-    
-    if breakdown:
-        cmd += ' GROUP BY {}'.format(','.join(breakdown))
-
-    if order_fields:
-        cmd += " ORDER BY " 
-        order_cmds = []
-        for order_field in order_fields:
-            # order_field might actually be an expression
-            order_cmds.append('{}'.format(order_field))
-        cmd += " " + ",".join(order_cmds) + " "
-        
-    if limit:
-        cmd += " LIMIT " + str(limit)
-    if offset:
-        cmd += " OFFSET " + str(offset)
-    return cmd
+             
 
 def general_get_results(statement, args):
     cursor = _get_cursor()

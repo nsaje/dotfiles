@@ -138,7 +138,17 @@ class RedshiftTest(TestCase):
         mock_cursor.execute.assert_called_with(query, [])
 
 
-    def test_delete_general(self, mock_get_cursor):
+class TestModel(redshift.RSModel):
+    FIELDS = [dict(sql='date',            app='date',        out=lambda v: v),
+              dict(sql='adgroup_id',      app='ad_group',    out=lambda v: v),
+              dict(sql='exchange',        app='exchange',    out=lambda v: v),
+              ]
+
+
+@patch('reports.redshift._get_cursor')
+class RedshiftTestRSModel(TestCase):
+
+    def test_delete(self, mock_get_cursor):
         mock_cursor = Mock()
         mock_cursor.fetchall.return_value = []
         mock_get_cursor.return_value = mock_cursor
@@ -146,10 +156,9 @@ class RedshiftTest(TestCase):
         date = datetime.date(2015, 1, 2)
         ad_group_id = 1
         source_id = 2
+        TestModel().delete({'date__eq': date, 'ad_group__eq': 4, 'exchange__eq': 'abc'})
 
-        redshift.delete_general('test_table', {'date__eq': date, 'ad_group_id__eq': 4, 'exchange__eq': 'abc'})
-
-        query = 'DELETE FROM "test_table" WHERE ad_group_id=%s AND date=%s AND exchange=%s'
+        query = 'DELETE FROM "test_table" WHERE adgroup_id=%s AND date=%s AND exchange=%s'
         params =  [4, datetime.date(2015, 1, 2), 'abc']
         
         mock_cursor.execute.assert_called_with(query, params)
@@ -163,7 +172,8 @@ class RedshiftTest(TestCase):
         ad_group_id = 1
         source_id = 2
 
-        redshift.multi_insert_general('test_table', ['field1', 'field2'], (('a', 'b'), ('c', 'd'), ('e', 'f')))
+        # since this function is _sql, no additional field name checks are done
+        redshift.RSModel().multi_insert_sql(['field1', 'field2'], (('a', 'b'), ('c', 'd'), ('e', 'f')))
 
         query = 'INSERT INTO test_table (field1,field2) VALUES (%s,%s),(%s,%s),(%s,%s)'
         params = ['a', 'b', 'c', 'd', 'e', 'f']
@@ -177,11 +187,17 @@ class RedshiftTest(TestCase):
         date = datetime.date(2015, 1, 2)
         ad_group_id = 1
         source_id = 2
-
-        redshift.multi_insert_general('test_table', ['field1', 'field2'], (('a', 'b'), ('c', 'd'), ('e', 'f')), max_at_a_time=2)
+        
+        # since this function is _sql, no additional field name checks are done
+        redshift.RSModel().multi_insert_sql(['field1', 'field2'], (('a', 'b'), ('c', 'd'), ('e', 'f')), max_at_a_time=2)
 
         mock_cursor.execute.assert_has_calls([
                                                 call('INSERT INTO test_table (field1,field2) VALUES (%s,%s),(%s,%s)', ['a', 'b', 'c', 'd']),
                                                 call('INSERT INTO test_table (field1,field2) VALUES (%s,%s)', ['e', 'f'])
                                             ])
+
+    def test_constraints_to_tuples_str(self, mock_get_cursor):
+        constraint_str, params = TestModel().constraints_to_str({"exchange": ["ab", "cd"], "date": datetime.date(2015, 1,2)}) 
+        self.assertEqual(constraint_str, "date=%s AND exchange IN (%s,%s)")
+        self.assertEqual(params, [datetime.date(2015, 1, 2), 'ab', 'cd'])
 
