@@ -127,6 +127,10 @@ class GaReportRow(ReportRow):
         return sum(all_row_sessions)
 
     def _parse_duration(self, durstr):
+        if not durstr:
+            logger.warning('Empty duration {}'.format(durstr))
+            return 0
+
         try:
             hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
             return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
