@@ -46,7 +46,8 @@ def _report_atoi(raw_str):
             return int(ret_str)
     except:
         logger.exception('Failed converting to float {}'.format(raw_str))
-    return 0
+        raise
+
 
 def _report_atof(raw_str):
     try:
@@ -55,7 +56,7 @@ def _report_atof(raw_str):
         return float(ret_str.replace(',', ''))
     except:
         logger.exception('Failed converting to float {}'.format(raw_str))
-    return 0.0
+        raise
 
 
 class ReportRow(object):
@@ -126,8 +127,12 @@ class GaReportRow(ReportRow):
         return sum(all_row_sessions)
 
     def _parse_duration(self, durstr):
-        hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
-        return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
+        try:
+            hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
+            return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
+        except:
+            logger.exception('Failed parsing duration {}'.format(durstr))
+            raise
 
     def __str__(self):
         return "{date}-{caid}-{source_param}".format(
