@@ -238,15 +238,19 @@ def get_yesterday_cost(**constraints):
     today = datetime.datetime(today.year, today.month, today.day)
     yesterday = today - datetime.timedelta(days=1)
 
+    rs = get_day_cost(yesterday, breakdown=['source'], **constraints)
+
+    result = {row['source']: row['cost'] for row in rs}
+    return result
+
+def get_day_cost(day, breakdown=None, **constraints):
     rs = query(
-        start_date=yesterday,
-        end_date=yesterday,
-        breakdown=['source'],
+        start_date=day,
+        end_date=day,
+        breakdown=breakdown,
         **constraints
     )
-    result = {row['source']: row['cost'] for row in rs}
-
-    return result
+    return rs
 
 
 def traffic_metrics_exist(ad_group, source, datetime):

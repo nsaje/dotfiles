@@ -156,16 +156,27 @@ class ApiPublishersInsertTest(TestCase):
         api_publishers.ob_insert_adgroup_date(datetime.date(2015,2,1), 
                                               3,
                                               "outbrain",
-                                              [{
-                                                  "ob_section_id": "AAAABBBBB",
-                                                  "clicks": 123,
-                                                  "name": "CNN money",
-                                                  "url": "http://money.cnn.com",
-                                              }])
+                                              [   
+                                                  {
+                                                      "ob_section_id": "AAAABBBBB",
+                                                      "clicks": 20,
+                                                      "name": "CNN money",
+                                                      "url": "http://money.cnn.com",
+                                                  },
+                                                  {
+                                                      "ob_section_id": "AAAABBBBB",
+                                                      "clicks": 80,
+                                                      "name": "CNN money",
+                                                      "url": "http://money.cnn.com",
+                                                  }
+                                              ],
+                                              200
+                                              )
                                        
         mock_cursor.execute.assert_has_calls([
             mock.call('DELETE FROM "ob_publishers_1" WHERE adgroup_id=%s AND date=%s AND exchange=%s', [3, datetime.date(2015, 2, 1), 'outbrain']),
-            mock.call('INSERT INTO ob_publishers_1 (date,adgroup_id,exchange,domain,name,clicks,ob_section_id) VALUES (%s,%s,%s,%s,%s,%s,%s)', [datetime.date(2015, 2, 1), 3, 'outbrain', 'money.cnn.com', 'CNN money', 123, 'AAAABBBBB'])
+            mock.call('INSERT INTO ob_publishers_1 (date,adgroup_id,exchange,domain,name,clicks,cost_micro,ob_section_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s),(%s,%s,%s,%s,%s,%s,%s,%s)', 
+                      [datetime.date(2015, 2, 1), 3, 'outbrain', 'money.cnn.com', 'CNN money', 20, 40000000000.0, 'AAAABBBBB', datetime.date(2015, 2, 1), 3, 'outbrain', 'money.cnn.com', 'CNN money', 80, 160000000000.0, 'AAAABBBBB'])
         ])
 
 

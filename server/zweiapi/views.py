@@ -24,6 +24,7 @@ import dash.api
 import dash.models
 import reports.update
 import reports.api_publishers
+from reports.api import get_day_cost
 
 from utils import request_signer
 from utils import statsd_helper
@@ -373,10 +374,16 @@ def _fetch_reports_by_publisher_callback(action, data):
     valid_response = True
     empty_response = False
     if valid_response and _has_changed(data, ad_group, source, date, "reports_by_publisher"):
+        ret = get_day_cost(date, ad_group=ad_group, source=source)
+        cost = ret['cost']
+        if cost is None:
+            cost = 0
+        
         reports.api_publishers.ob_insert_adgroup_date(	date, 
                                                         ad_group.id, 
                                                         "Outbrain",	# Hardcoding this at the time, the problem is that source.name can change
-                                                        rows_raw)
+                                                        rows_raw, 
+                                                        cost)
         _set_reports_cache(data, ad_group, source, date, "reports_by_publisher")
                                                         
                                                         
