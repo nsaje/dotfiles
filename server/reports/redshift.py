@@ -303,7 +303,6 @@ class RSModel(object):
         fields = []
         for field_name in field_names:
             desc = self.by_sql_mapping[field_name]
-            
             if "calc" in desc:
                 field_expanded = desc["calc"] + " AS \"" + field_name +"\""
             else:
@@ -406,7 +405,6 @@ class RSModel(object):
         order_fields = self.translate_order_fields(order_fields)
         returned_fields = self.get_returned_fields() 
 
-        
         statement= self.form_select_query(
             self.TABLE_NAME,
             breakdown_fields + returned_fields,
