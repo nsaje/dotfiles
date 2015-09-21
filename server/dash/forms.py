@@ -244,8 +244,6 @@ class AccountAgencySettingsForm(forms.Form):
         return sales_representative
 
 
-
-
 def validate_lower_case_only(st):
     if re.search(r'[^a-z]+', st):
         raise forms.ValidationError(message='Please use only lower case letters for unique identifier.')
@@ -261,6 +259,41 @@ class ConversionPixelForm(forms.Form):
             'max_length': 'Unique identifier is too long (%(show_value)d/%(limit_value)d).',
         }
     )
+
+
+class ConversionGoalForm(forms.Form):
+    name = forms.CharField(
+        max_length=100,
+        required=True,
+        error_messages={
+            'required': 'Please specify conversion goal name.',
+            'max_length': 'Conversion goal name is too long (%(show_value)d/%(limit_value)d).',
+        }
+    )
+    type = forms.TypedChoiceField(
+        required=True,
+        choices=constants.ConversionGoalType.get_choices(),
+        coerce=int,
+    )
+    conversion_window = forms.TypedChoiceField(
+        required=False,
+        choices=[(1, '1 day'), (7, '7 days'), (30, '30 days')],
+        coerce=int,
+    )
+    goal_id = forms.CharField(
+        required=False,
+        max_length=100,
+        error_messages={
+            'max_length': 'Conversion goal id is too long (%(show_value)d/%(limit_value)d).',
+        }
+    )
+
+    def clean(self):
+        cleaned_data = super(ConversionGoalForm, self).clean()
+
+        if cleaned_data['type'] == constants.ConversionGoalType.PIXEL:
+            if not cleaned_data.get('conversion_window'):
+                self.add_error('conversion_window', 'Conversion window has to be set.')
 
 
 class CampaignAgencyForm(forms.Form):

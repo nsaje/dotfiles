@@ -378,6 +378,126 @@ class CampaignAgency(api_common.BaseApiView):
                  'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
+class CampaignConversionGoals(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_get')
+    def get(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.manage_conversion_goals'):
+            raise exc.MissingDataError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+
+        rows = []
+        for conversion_goal in campaign.conversiongoal_set.select_related('pixel').all():
+            row = {
+                'id': conversion_goal.id,
+                'type': conversion_goal.type,
+                'name': conversion_goal.name,
+                'conversion_window': conversion_goal.window,
+                'goal_id': conversion_goal.goal_id,
+            }
+
+            if conversion_goal.type == constants.ConversionGoalType.PIXEL:
+                row['pixel'] = {
+                    'id': conversion_goal.pixel.id,
+                    'slug': conversion_goal.pixel.slug,
+                    'archived': conversion_goal.pixel.archived,
+                }
+
+        available_pixels = []
+        for conversion_pixel in campaign.account.conversionpixel_set.filter(archived=False):
+            available_pixels.append({
+                'id': conversion_pixel.id,
+                'slug': conversion_pixel.slug,
+            })
+
+        return self.create_api_response({
+            'rows': rows,
+            'available_pixels': available_pixels
+        })
+
+    @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_post')
+    def post(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.manage_conversion_goals'):
+            raise exc.MissingDataError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+
+        try:
+            data = json.loads(request.body)
+        except ValueError:
+            raise exc.ValidationError()
+
+        name = data.get('name')
+        type = data.get('type')
+        conversion_window = data.get('conversion_window')
+        goal_id = data.get('goal_id')
+
+        form = forms.ConversionGoalForm({
+            'name': name,
+            'type': type,
+            'conversion_window': conversion_window,
+            'goal_id': goal_id,
+        })
+
+        if not form.is_valid():
+            raise exc.ValidationError(message=' '.join(dict(form.errors)['slug']))
+
+        conversion_goal = models.ConversionGoal(campaign_id=campaign.id, type=type, name=name)
+        if type == constants.ConversionGoalType.PIXEL:
+            try:
+                pixel = models.ConversionPixel.objects.get(account_id=campaign.account_id, slug=goal_id)
+            except models.ConversionPixel.DoesNotExist:
+                raise exc.MissingDataError()
+
+            if pixel.archived:
+                raise exc.MissingDataError()
+
+            conversion_goal.pixel = pixel
+            conversion_goal.window = conversion_window
+        else:
+            conversion_goal.goal_id = goal_id
+
+        with transaction.atomic():
+            conversion_goal.save()
+
+            new_settings = campaign.get_current_settings().copy_settings()
+            new_settings.changes_text = u'Added conversion goal with name {} of type {}.'.format(
+                conversion_goal.name,
+                constants.ConversionGoalType.get_text(conversion_goal.type)
+            )
+            new_settings.save(request)
+
+        res = {
+            'id': conversion_goal.id,
+            'name': conversion_goal.name,
+            'type': conversion_goal.type,
+            'goal_id': conversion_goal.goal_id,
+            'conversion_window': conversion_goal.goal_id,
+        }
+
+        if conversion_goal.type == constants.ConversionGoalType.PIXEL:
+            res['pixel'] = {
+                'id': conversion_goal.pixel.id,
+                'slug': conversion_goal.pixel.slug,
+                'archived': conversion_goal.pixel.archived,
+            }
+
+        return self.create_api_response(res)
+
+
+class ConversionGoal(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_delete')
+    def delete(self, request, conversion_goal_id):
+        if not request.user.has_perm('zemauth.manage_conversion_goals'):
+            raise exc.MissingDataError()
+
+        conversion_goal = models.ConversionGoal.objects.get(id=conversion_goal_id)
+        helpers.get_campaign(request.user, conversion_goal.campaign_id)  # check authorization
+
+        conversion_goal.delete()
+        return self.create_api_response()
+
+
 class CampaignSettings(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
     def get(self, request, campaign_id):

@@ -1503,11 +1503,11 @@ class ConversionGoal(models.Model):
     type = models.PositiveSmallIntegerField(
         choices=constants.ContentAdSourceState.get_choices()
     )
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=100)
 
     pixel = models.ForeignKey(ConversionPixel, null=True, on_delete=models.PROTECT)
     window = models.PositiveSmallIntegerField(null=True, blank=True)
-    goal_id = models.CharField(max_length=256, null=True, blank=True)
+    goal_id = models.CharField(max_length=100, null=True, blank=True)
 
 
 class DemoAdGroupRealAdGroup(models.Model):
