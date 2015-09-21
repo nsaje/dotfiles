@@ -125,7 +125,7 @@ class AllAccountsSourcesTable(object):
         return self._last_success_actions
 
     def is_sync_in_progress(self):
-        return actionlog.api.is_sync_in_progress(accounts=self.accounts, sources=self.filtered_sources)
+        return self.reports_api.is_sync_in_progress(accounts=self.accounts, sources=self.filtered_sources)
 
     def get_data_status(self):
         return helpers.get_data_status(
@@ -1052,8 +1052,8 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
             end_date,
-            breakdown = ['content_ad'],
-            constraints = {'ad_group': ad_group,
+            breakdown=['content_ad'],
+            constraints={'ad_group': ad_group,
                            'source': filtered_sources},
         ), request.user)
 
@@ -1533,7 +1533,6 @@ class AccountCampaignsTable(api_common.BaseApiView):
         return rows
 
 
-
 class PublishersTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'zemauth.publishers_table_get')
     def get(self, request, level_, id_=None):
@@ -1547,7 +1546,6 @@ class PublishersTable(api_common.BaseApiView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         constraints = {'ad_group': adgroup.id}
-
 
         page = request.GET.get('page')
         order = request.GET.get('order') or 'cost'
@@ -1649,13 +1647,3 @@ class PublishersTable(api_common.BaseApiView):
             rows.append(row)
 
         return rows
-
-
-
-
-
-
-
-
-
-
