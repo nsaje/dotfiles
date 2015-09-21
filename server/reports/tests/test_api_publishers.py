@@ -145,7 +145,7 @@ class ApiPublishersTest(TestCase):
         self.check_constraints(_get_results, constraints)
         self.check_aggregations(_get_results)
         query = self._get_query(_get_results)
-        self.assertIn("SUM(clicks)=0, cpc_micro", query)
+        self.assertIn("SUM(clicks) = 0, sum(cost_micro) IS NULL, cpc_micro DESC", query)
 
 @mock.patch('reports.redshift._get_cursor')
 class ApiPublishersInsertTest(TestCase):
