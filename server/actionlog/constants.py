@@ -18,7 +18,7 @@ class Action(ConstantBase):
 
     _VALUES = {
         FETCH_REPORTS: 'Get reports',
-        FETCH_REPORTS_BY_PUBLISHER = 'Get reports by publisher'
+        FETCH_REPORTS_BY_PUBLISHER: 'Get reports by publisher',
         FETCH_CAMPAIGN_STATUS: 'Get campaign status',
         SET_CAMPAIGN_STATE: 'Set campaign state',
         SET_PROPERTY: 'Set property',

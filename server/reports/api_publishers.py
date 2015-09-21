@@ -17,16 +17,16 @@ class RSPublishersModel(redshift.RSModel):
 
     #	       SQL NAME               APP NAME           OUTPUT TRANSFORM                    AGGREGATE                            ORDER BY function
     FIELDS = [dict(sql='clicks_sum',      app='clicks',      out=lambda v: v,                    calc='SUM("clicks")'),
-              dict(sql='impressions_sum', app='impressions', out=lambda v: v,                    calc='SUM("impressions")'),    	
+              dict(sql='impressions_sum', app='impressions', out=lambda v: v,                    calc='SUM("impressions")', order="SUM(impressions) = 0, impressions_sum {direction}"),    	
               dict(sql='domain',          app='domain',      out=lambda v: v),
               dict(sql='exchange',        app='exchange',    out=lambda v: v),
               dict(sql='date',            app='date',        out=lambda v: v),
-              dict(sql='cost_micro_sum',  app='cost',        out=lambda v: from_micro_cpm(v),    calc='SUM("cost_micro")'),
-              dict(sql='cpc_micro',       app='cpc',         out=lambda v: from_micro_cpm(v),    calc=sum_div("cost_micro", "clicks"), order="SUM(clicks)=0, cpc_micro"), # makes sure nulls are last
-              dict(sql='ctr',             app='ctr',         out=lambda v: to_percent(v),        calc=sum_div("clicks", "impressions")),
+              dict(sql='cost_micro_sum',  app='cost',        out=lambda v: from_micro_cpm(v),    calc='SUM("cost_micro")', order="SUM(cost_micro) = 0, cost_micro_sum {direction}"),
+              dict(sql='cpc_micro',       app='cpc',         out=lambda v: from_micro_cpm(v),    calc=sum_div("cost_micro", "clicks"), order="SUM(clicks) = 0, sum(cost_micro) IS NULL, cpc_micro {direction}"), # makes sure nulls are last
+              dict(sql='ctr',             app='ctr',         out=lambda v: to_percent(v),        calc=sum_div("clicks", "impressions"), order="sum(impressions) IS NULL, ctr {direction}"),
               dict(sql='adgroup_id',      app='ad_group',    out=lambda v: v),
 
-              ]
+             ]
 
 class RSOutbrainPublishersModel(RSPublishersModel):
     TABLE_NAME = 'ob_publishers_1'
@@ -35,8 +35,6 @@ class RSOutbrainPublishersModel(RSPublishersModel):
               # The following are only available for Outbrain tables
               dict(sql='ob_section_id',   app='ob_section_id',	out=lambda v: v),
               dict(sql='name',            app='name',		out=lambda v: v),
-              dict(sql='clicks',          app='clicks_raw',     out=lambda v: v), # special case to insert into aggregated variable
-              
     ]
 
 
