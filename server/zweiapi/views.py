@@ -372,7 +372,6 @@ def _fetch_reports_by_publisher_callback(action, data):
 
     valid_response = True
     empty_response = False
-    logger.warning("GOT the publishers callback: %s", rows_raw)
     if valid_response and _has_changed(data, ad_group, source, date, "reports_by_publisher"):
         reports.api_publishers.ob_insert_adgroup_date(	date, 
                                                         ad_group.id, 
