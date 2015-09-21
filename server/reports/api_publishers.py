@@ -8,7 +8,7 @@ from reports.rs_helpers import from_micro_cpm, to_percent, sum_div
 logger = logging.getLogger(__name__)
 
 class RSPublishersModel(redshift.RSModel):
-    TABLE_NAME = 'b1_publishers_1'
+    TABLE_NAME = 'joint_publishers_1'
     
     # fields that are always returned (app-based naming)
     DEFAULT_RETURNED_FIELDS_APP = ["clicks", "impressions", "cost", "ctr", "cpc"]
