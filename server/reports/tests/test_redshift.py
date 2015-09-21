@@ -156,7 +156,7 @@ class RedshiftTestRSModel(TestCase):
         date = datetime.date(2015, 1, 2)
         ad_group_id = 1
         source_id = 2
-        TestModel().delete({'date__eq': date, 'ad_group__eq': 4, 'exchange__eq': 'abc'})
+        TestModel().execute_delete({'date__eq': date, 'ad_group__eq': 4, 'exchange__eq': 'abc'})
 
         query = 'DELETE FROM "test_table" WHERE adgroup_id=%s AND date=%s AND exchange=%s'
         params =  [4, datetime.date(2015, 1, 2), 'abc']
@@ -173,7 +173,7 @@ class RedshiftTestRSModel(TestCase):
         source_id = 2
 
         # since this function is _sql, no additional field name checks are done
-        redshift.RSModel().multi_insert_sql(['field1', 'field2'], (('a', 'b'), ('c', 'd'), ('e', 'f')))
+        redshift.RSModel().execute_multi_insert_sql(['field1', 'field2'], (('a', 'b'), ('c', 'd'), ('e', 'f')))
 
         query = 'INSERT INTO test_table (field1,field2) VALUES (%s,%s),(%s,%s),(%s,%s)'
         params = ['a', 'b', 'c', 'd', 'e', 'f']
@@ -189,7 +189,7 @@ class RedshiftTestRSModel(TestCase):
         source_id = 2
         
         # since this function is _sql, no additional field name checks are done
-        redshift.RSModel().multi_insert_sql(['field1', 'field2'], (('a', 'b'), ('c', 'd'), ('e', 'f')), max_at_a_time=2)
+        redshift.RSModel().execute_multi_insert_sql(['field1', 'field2'], (('a', 'b'), ('c', 'd'), ('e', 'f')), max_at_a_time=2)
 
         mock_cursor.execute.assert_has_calls([
                                                 call('INSERT INTO test_table (field1,field2) VALUES (%s,%s),(%s,%s)', ['a', 'b', 'c', 'd']),

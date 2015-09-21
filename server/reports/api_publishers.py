@@ -45,15 +45,11 @@ rs_ob_pub = RSOutbrainPublishersModel()
 
 
 def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}):
-    # add two more constraints
     constraints = copy.copy(constraints)
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
-    
 
-    (statement, params) = rs_pub.get_select_query(breakdown_fields, order_fields, offset, limit, constraints)    
-    results = redshift.general_get_results(statement, params)
-    results = rs_pub.map_results_to_app(results)
+    results = rs_pub.execute_select_query(breakdown_fields, order_fields, offset, limit, constraints)
 
     if breakdown_fields:
         return results
@@ -77,8 +73,8 @@ def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts):
         newrow = (date, ad_group, exchange, url, row['name'], row['clicks'], row['ob_section_id'])
         row_tuples.append(newrow)
     
-    rs_ob_pub.delete({'date__eq': date, 'ad_group__eq': ad_group, 'exchange__eq': exchange})
-    rs_ob_pub.multi_insert_sql(fields_sql, row_tuples)
+    rs_ob_pub.execute_delete({'date__eq': date, 'ad_group__eq': ad_group, 'exchange__eq': exchange})
+    rs_ob_pub.execute_multi_insert_sql(fields_sql, row_tuples)
     
     
 

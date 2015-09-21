@@ -396,8 +396,13 @@ class RSModel(object):
 
         return " AND ".join(result), params
 
+    def execute_select_query(self, breakdown_fields, order_fields, offset, limit, constraints):
+        (statement, params) = self.prepare_select_query(breakdown_fields, order_fields, offset, limit, constraints)    
+        results = general_get_results(statement, params)
+        results = self.map_results_to_app(results)
+        return results
 
-    def get_select_query(self, breakdown_fields, order_fields, offset, limit, constraints):
+    def prepare_select_query(self, breakdown_fields, order_fields, offset, limit, constraints):
         # Takes app-based fields and first checks & translates them and then creates a query
         # first translate constraints into tuples, then create a single constraints str
         (constraint_str, constraint_params) = self.constraints_to_str(constraints)
@@ -467,7 +472,7 @@ class RSModel(object):
 
     MAX_AT_A_TIME = 100
     # This function specifically takes sql-named fields
-    def multi_insert_sql(self, fields_sql, all_row_tuples, max_at_a_time = None):
+    def execute_multi_insert_sql(self, fields_sql, all_row_tuples, max_at_a_time = None):
         if not max_at_a_time:
             max_at_a_time = self.MAX_AT_A_TIME
         fields_str = "(" + ",".join(fields_sql) +")"
@@ -482,7 +487,7 @@ class RSModel(object):
             general_get_results(statement, row_tuples_flat)
 
 
-    def delete(self, constraints = None):
+    def execute_delete(self, constraints = None):
         if not constraints:
             raise exc.ReportsQueryError("Delete query without specifying constraints")
         (constraint_str, constraint_params) = self.constraints_to_str(constraints)
