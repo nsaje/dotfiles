@@ -36,18 +36,26 @@ GOAL_RATE_KEYWORDS = ['conversion rate']
 
 
 def _report_atoi(raw_str):
-    # TODO: Implement locale specific parsing
-    ret_str = (raw_str or '0').replace(',', '')
-    dot_loc = ret_str.find('.')
-    if dot_loc != -1:
-        return int(ret_str[:dot_loc])
-    else:
-        return int(ret_str)
-
+    try:
+        # TODO: Implement locale specific parsing
+        ret_str = (raw_str or '0').replace(',', '')
+        dot_loc = ret_str.find('.')
+        if dot_loc != -1:
+            return int(ret_str[:dot_loc])
+        else:
+            return int(ret_str)
+    except:
+        logger.exception('Failed converting to float {}'.format(raw_str))
+    return 0
 
 def _report_atof(raw_str):
-    # TODO: Implement locale specific parsing
-    return float(raw_str.replace(',', ''))
+    try:
+        ret_str = (raw_str or '0').replace(',', '')
+        # TODO: Implement locale specific parsing
+        return float(ret_str.replace(',', ''))
+    except:
+        logger.exception('Failed converting to float {}'.format(raw_str))
+    return 0.0
 
 
 class ReportRow(object):
