@@ -332,18 +332,18 @@ Day Index,Sessions
         # GA report can potentially contain multiple entries for a single
         # content ad
         complete_csv = """
-# ----------------------------------------
+# ----------------------------------------,,,,,,,
 # All Web Site Data
 # Landing Pages
 # 20150416-20150416
-# ----------------------------------------
-
+# ----------------------------------------,,,,,,,
+,,,,,,,
 Landing Page,Device Category,Sessions,Goal Completions,% New Sessions,Avg. Session Duration,Pages / Session,Bounce Rate,New Users
 /unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,desktop,6,1,0.00%,<00:00:00,1,1.00%,1
 /unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,mobile,6,2,0.00%,00:00:00,1,1.00%,1
 /unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,tablet,6,3,0.00%,00:00:00,1,1.00%,1
 ,,600,96.33%,578,95.50%,1.06,00:00:10,0.00%,0,A$0.00
-
+,,,,,,,
 Day Index,Sessions
 4/16/15,18
 ,18
