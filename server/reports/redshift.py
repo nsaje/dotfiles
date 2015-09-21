@@ -398,7 +398,7 @@ class RSModel(object):
 
     def execute_select_query(self, breakdown_fields, order_fields, offset, limit, constraints):
         (statement, params) = self.prepare_select_query(breakdown_fields, order_fields, offset, limit, constraints)    
-        print statement
+        #print statement
         results = general_get_results(statement, params)
         results = self.map_results_to_app(results)
         return results
