@@ -68,6 +68,7 @@ def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts):
             url = url[8:]
         if url.startswith("http://"):
             url = url[7:]
+        url = url.strip("/")
         newrow = (date, ad_group, exchange, url, row['name'], row['clicks'], row['ob_section_id'])
         row_tuples.append(newrow)
     
