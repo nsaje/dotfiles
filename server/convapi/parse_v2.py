@@ -127,6 +127,10 @@ class GaReportRow(ReportRow):
         return sum(all_row_sessions)
 
     def _parse_duration(self, durstr):
+        if not durstr:
+            logger.warning('Empty duration {}'.format(durstr))
+            return 0
+
         try:
             hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
             return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
@@ -347,6 +351,10 @@ class GAReport(Report):
                 keyword_or_url = entry[self.first_column]
                 if keyword_or_url is None or keyword_or_url.strip() == '':
                     continue
+
+                if keyword_or_url.startswith('Day Index'):
+                    break
+
                 content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
                 goals = self._parse_goals(self.fieldnames, entry)
                 report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, goals)
@@ -359,7 +367,7 @@ class GAReport(Report):
                     existing_entry.merge_with(report_entry)
         except:
             logger.exception("Failed parsing GA report")
-            raise exc.CsvParseException('Could not parse CSV')
+            raise exc.CsvParseException('Could not pars CSV')
 
         if not set(self.fieldnames or []) >= set(REQUIRED_FIELDS):
             missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames or []) & set(REQUIRED_FIELDS)))
