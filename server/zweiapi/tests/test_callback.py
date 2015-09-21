@@ -788,7 +788,7 @@ class FetchReportsByPublisherTestCase(TestCase):
                                               1,
                                               "Outbrain",
                                               [article_row],
-                                              1.9043
+                                              1.9043	# daily cost
                                               )])
 
 
