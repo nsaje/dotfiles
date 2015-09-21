@@ -141,7 +141,7 @@ def cancel_expired_actionlogs():
     waiting_actionlogs = models.ActionLog.objects.\
         filter(
             state=constants.ActionState.WAITING,
-            expiration_dt__lt=datetime.utcnow()
+            expiration_dt=datetime.utcnow(),
         )
 
     for actionlog in waiting_actionlogs:
