@@ -380,7 +380,7 @@ def _fetch_reports_by_publisher_callback(action, data):
     # centralize in order to reduce possibility of mistakes, if you want everything to run again, just increase the number
     change_unique_key = "reports_by_publisher_2"
     
-    if valid_response:  and _has_changed(data, ad_group, source, date, change_unique_key):
+    if valid_response: # and _has_changed(data, ad_group, source, date, change_unique_key):
         ret = get_day_cost(date, ad_group=ad_group, source=source)
         cost = ret['cost']
         if cost is None:
@@ -391,7 +391,7 @@ def _fetch_reports_by_publisher_callback(action, data):
                                                         "Outbrain",	# Hardcoding this at the time, the problem is that source.name can change
                                                         rows_raw, 
                                                         cost)
-        _set_reports_cache(data, ad_group, source, date, change_key)
+        _set_reports_cache(data, ad_group, source, date, change_unique_key)
                                                         
                                                         
     if not valid_response:
