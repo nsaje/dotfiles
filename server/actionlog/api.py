@@ -6,7 +6,7 @@ import collections
 from operator import attrgetter
 import newrelic.agent
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -581,7 +581,7 @@ def _init_fetch_reports_by_publisher(ad_group_source, date, order, request=None)
         action_type=constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
         order=order,
-        expiration_dt__lt=datetime.utcnow() + datetime.timedelta(hours = 3)
+        expiration_dt__lt=datetime.utcnow() + timedelta(hours = 3)
     )
     action.save(request)
 
