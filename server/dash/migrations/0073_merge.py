@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('dash', '0072_auto_20150911_1004'),
-        ('dash', '0072_auto_20150910_1547'),
+        ('dash', '0072_auto_20150910_1547')
     ]
 
     operations = [

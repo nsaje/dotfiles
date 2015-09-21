@@ -2,13 +2,13 @@ import logging
 
 from django.core.management.base import BaseCommand
 
-from automation import budgetdepletion
+import automation.autopilot
 
 logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        logger.info('Notifying depleted budget campaigns.')
+        logger.info('Running bid CPC adjusting Auto-Pilot.')
 
-        budgetdepletion.notify_depleted_budget_campaigns()
+        automation.autopilot.adjust_autopilot_media_sources_bid_cpcs()

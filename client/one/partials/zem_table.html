@@ -112,10 +112,10 @@
                                 <span ng-switch-when="text">
                                     {{ row[col.field] }}
                                 </span>
-                                <span 
+                                <span
                                     ng-switch-when="notification"
-                                    zem-lazy-popover-html-unsafe="{{ notifications[row.id].message }}" 
-                                    zem-lazy-popover-placement="bottom" 
+                                    zem-lazy-popover-html-unsafe="{{ notifications[row.id].message }}"
+                                    zem-lazy-popover-placement="bottom"
                                     zem-lazy-popover-animation-class="fade">
                                     <span ng-if="row[col.field]" class="text" ng-class="{'important': notifications[row.id].important}">{{ row[col.field] }}</span>
                                     <span ng-if="notifications[row.id].inProgress" class="loader"></span>
@@ -134,13 +134,19 @@
                                     <input type="checkbox" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="col.selectCallback(row, row[col.field])"/>
                                 </span>
                                 <span ng-switch-when="state">
-                                    <zem-state-selector 
+                                    <zem-state-selector
                                         id="row.id"
                                         on-change="col.onChange",
+                                        on-autopilot-change="col.onAutopilotChange",
                                         is-editable="isFieldEditable(row, col.field)"
                                         value="row[col.field]"
                                         enabled-value="col.enabledValue"
                                         paused-value="col.pausedValue"
+                                        autopilot-enabled-value="col.autopilotEnabledValue"
+                                        autopilot-paused-value="col.autopilotPausedValue"
+                                        autopilot-value="row.autopilot_state"
+                                        autopilot-internal="col.autopilotInternal"
+                                        autopilot-shown="col.autopilotShown"
                                         disabled-message="col.getDisabledMessage(row)"
                                         archived="row[col.archivedField]">
                                     </zem-state-selector>
@@ -220,5 +226,3 @@
         <img width="80" height="80" ng-src="{{ row[col.field].square }}"/>
     </div>
 </script>
-
-
