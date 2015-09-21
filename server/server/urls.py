@@ -280,12 +280,12 @@ urlpatterns += patterns(
         name='conversion_pixel',
     ),
     url(
-        r'^/api/campaigns/(?P<campaign_id>\d+)/conversion_goals/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/conversion_goals/',
         login_required(dash.views.agency.CampaignConversionGoals.as_view()),
         name='campaign_conversion_goals',
     ),
     url(
-        r'^/api/conversion_goals/(?P<conversion_goal_id>\d+)/',
+        r'^api/conversion_goals/(?P<conversion_goal_id>\d+)/',
         login_required(dash.views.agency.ConversionGoal.as_view()),
         name='conversion_goal',
     ),
