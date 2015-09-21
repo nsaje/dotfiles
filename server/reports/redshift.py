@@ -1,5 +1,5 @@
 import collections
-from itertools import repeat
+import itertools
 
 from django.conf import settings
 from django.db import connections
@@ -150,36 +150,6 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
     return _translate_row(results[0], reverse_field_mapping)
 
 
-def query_general(table_name, start_date, end_date, aggregates, breakdown_fields=None, order_fields_tuples=None, limit=None, offset=None, constraints={}):
-
-    constraints = _prepare_constraints(constraints, field_mapping={})
-    constraints.append('{} >= \'{}\''.format(quote('date'), start_date))
-    constraints.append('{} <= \'{}\''.format(quote('date'), end_date))
-
-    aggregates = _prepare_aggregates_simple(aggregates)
-
-    if breakdown_fields:
-        breakdown_fields = _prepare_breakdown(breakdown_fields, {})
-        statement = _create_select_query(
-            table_name,
-            breakdown_fields + aggregates,
-            constraints,
-            breakdown=breakdown_fields,
-            order_fields_tuples=order_fields_tuples,
-            limit=limit,
-            offset=offset,
-        )
-
-        return _get_results(statement)
-
-    statement = _create_select_query(
-        table_name,
-        aggregates,
-        constraints
-    )
-
-    return _get_results(statement)
-
 
 
 def _prepare_constraints(constraints, field_mapping):
@@ -206,6 +176,7 @@ def _prepare_constraints(constraints, field_mapping):
     return result
 
 
+
 def _prepare_aggregates(aggregates, field_mapping):
     processed_aggrs = []
     for key, aggr in aggregates.iteritems():
@@ -225,20 +196,6 @@ def _prepare_aggregates(aggregates, field_mapping):
 
     return processed_aggrs
 
-def _prepare_aggregates_simple(aggregates):
-    processed_aggrs = []
-    for key, aggr in aggregates.iteritems():
-        field_name = aggr.input_field.name
-        if isinstance(aggr, db_aggregates.SumDivision):
-            divisor = aggr.extra['divisor']
-            processed_aggrs.append(_sum_division_aggregate(field_name, divisor, key))
-        elif isinstance(aggr, Sum):
-            processed_aggrs.append(_sum_aggregate(field_name, key))
-        else:
-            raise exc.ReportsUnknownAggregator('Unknown aggregator')
-
-    return processed_aggrs
-
 
 def _prepare_breakdown(breakdown, field_mapping):
     return [quote(field_mapping.get(field, field)) for field in breakdown]
@@ -248,7 +205,7 @@ def _translate_row(row, reverse_field_mapping):
     return {reverse_field_mapping.get(k, k): v for k, v in row.iteritems()}
 
 
-def _create_select_query(table, fields, constraints, breakdown=None, order_fields_tuples=None, limit = None, offset = None):
+def _create_select_query(table, fields, constraints, breakdown=None, limit = None, offset = None):
     cmd = 'SELECT {fields} FROM {table} WHERE {constraints}'.format(
         fields=','.join(fields),
         table=table,
@@ -258,14 +215,6 @@ def _create_select_query(table, fields, constraints, breakdown=None, order_field
     if breakdown:
         cmd += ' GROUP BY {}'.format(','.join(breakdown))
 
-    if order_fields_tuples:
-        cmd += " ORDER BY " 
-        order_cmds = []
-        for order_field, direction in order_fields_tuples:
-            # order_field might actually be an expression
-            order_cmds.append('{} {}'.format(order_field , direction))
-        cmd += " " + ",".join(order_cmds) + " "
-        
     if limit:
         cmd += " LIMIT " + str(limit)
     if offset:
@@ -309,9 +258,11 @@ def _get_cursor():
     return connections[settings.STATS_DB_NAME].cursor()
 
 
-def _get_results(statement):
+def _get_results(statement, args = None):
     cursor = _get_cursor()
-    cursor.execute(statement, [])
+    if args == None:
+        args = []
+    cursor.execute(statement, args)
 
     results = dictfetchall(cursor)
     cursor.close()
@@ -319,5 +270,244 @@ def _get_results(statement):
 
 
 def _get_row_string(cursor, cols, row):
-    template_string = '(' + ','.join(repeat('%s', len(cols))) + ')'
+    template_string = '(' + ','.join(itertools.repeat('%s', len(cols))) + ')'
     return cursor.mogrify(template_string, [row[col] for col in cols])
+
+# New style API
+
+# iterate in chunks, python recepie
+def grouper(n, iterable):
+    it = iter(iterable)
+    while True:
+       chunk = tuple(itertools.islice(it, n))
+       if not chunk:
+           return
+       yield chunk    
+
+
+class RSModel(object):
+    FIELDS = []
+    TABLE_NAME = "test_table"
+    
+    def __init__(self):
+        self.by_sql_mapping = {d['sql']:d for d in self.FIELDS}
+        self.by_app_mapping = {d['app']:d for d in self.FIELDS}
+
+        # by default all fields are allowed as constraints, overload if needed
+        self.constraints_fields_app = set(self.by_app_mapping.keys())
+
+    def translate_app_fields(self, field_names):
+        return [self.by_app_mapping[field_name]['sql'] for field_name in field_names]
+
+    def expand_sql_fields(self, field_names):
+        fields = []
+        for field_name in field_names:
+            desc = self.by_sql_mapping[field_name]
+            if "calc" in desc:
+                field_expanded = desc["calc"] + " AS \"" + field_name +"\""
+            else:
+                field_expanded = '"' + field_name + '"'
+            fields.append(field_expanded)
+        return fields
+
+    def translate_breakdown_fields(self, breakdown_fields):
+        unknown_fields = set(breakdown_fields) - self.ALLOWED_BREAKDOWN_FIELDS_APP
+        if unknown_fields:
+            raise exc.ReportsQueryError('Invalid breakdowns: {}'.format(str(unknown_fields)))
+        breakdown_fields = self.translate_app_fields(breakdown_fields)
+        return breakdown_fields
+
+
+    def translate_order_fields(self, order_fields):
+        # Order fields have speciality -- a possiblity of - in front of them
+        # map order fields, we decode directions here too
+        # we also support specifying order functions to be used instead of field name 
+        # due to Redshift's inability to use aliased name inside expressions in ORDER BY
+        order_fields_out = []
+        for field in order_fields:
+            direction = "ASC"
+            if field.startswith("-"):
+                direction = "DESC"
+                field = field[1:]
+
+            try: 	
+                field_desc = self.by_app_mapping[field]
+            except KeyError:
+                raise exc.ReportsQueryError('Invalid field to order by: {}'.format(field))
+
+            try:
+                order_statement = field_desc['order']
+            except KeyError:
+                order_statement = field_desc['sql']
+                
+            order_fields_out.append(order_statement + " " + direction)
+
+    
+        return order_fields_out
+
+
+    def translate_constraints(self, constraints):
+        constraint_tuples = []
+        for constraint_name, val in constraints.iteritems():
+            parts = constraint_name.split("__")
+            field_name_app = parts[0]
+            if field_name_app not in self.constraints_fields_app:
+                raise exc.ReportsQueryError("Unsupported field constraint fields: {}".format(field_name_app))
+            field_name_sql = self.by_app_mapping[field_name_app]['sql']
+            
+            if len(parts) == 2:
+                operator = parts[1]
+            else:
+                operator = "eq"
+            
+            constraint_tuples.append((field_name_sql, operator, val))
+        return constraint_tuples
+     
+
+    def get_returned_fields(self):
+        return self.expand_sql_fields(self.translate_app_fields(self.DEFAULT_RETURNED_FIELDS_APP))
+
+    def constraints_to_str(self, constraints):    
+        constraints_tuples = self.translate_constraints(constraints) 
+
+        # returns a string and list of params
+        result = []
+        params = []
+
+        for field_name, operator, value in constraints_tuples:
+            if operator == "lte":
+                result.append('"{}" <= %s'.format(field_name))
+                params.append(value)
+            elif operator == "gte":
+                result.append('"{}" >= %s'.format(field_name))
+                params.append(value)
+            elif operator == "eq":
+                if (isinstance(value, collections.Sequence) or isinstance(value, QuerySet)) and type(value) not in (str, unicode):
+                    if value:
+                        result.append('{} IN ({})'.format(field_name, ','.join(["%s"]*len(value))))
+                        params.extend(value)
+                    else:
+                        result.append('FALSE')
+                else:
+                    result.append('{}=%s'.format(field_name))
+                    params.append(value)
+            else:
+                raise Exception("Unknown constraint type: {}".format(field_name))
+
+        return " AND ".join(result), params
+
+    def execute_select_query(self, breakdown_fields, order_fields, offset, limit, constraints):
+        (statement, params) = self.prepare_select_query(breakdown_fields, order_fields, offset, limit, constraints)    
+        results = general_get_results(statement, params)
+        results = self.map_results_to_app(results)
+        return results
+
+    def prepare_select_query(self, breakdown_fields, order_fields, offset, limit, constraints):
+        # Takes app-based fields and first checks & translates them and then creates a query
+        # first translate constraints into tuples, then create a single constraints str
+        (constraint_str, constraint_params) = self.constraints_to_str(constraints)
+        breakdown_fields = self.translate_breakdown_fields(breakdown_fields)    
+        order_fields = self.translate_order_fields(order_fields)
+        returned_fields = self.get_returned_fields() 
+
+        statement= self.form_select_query(
+            self.TABLE_NAME,
+            breakdown_fields + returned_fields,
+            constraint_str,
+            breakdown_fields=breakdown_fields,
+            order_fields=order_fields,
+            limit=limit,
+            offset=offset,
+        )
+
+        return (statement, constraint_params)
+
+    @staticmethod
+    def form_select_query(table, fields, constraints, breakdown_fields=None, order_fields=None, limit = None, offset = None):
+        cmd = 'SELECT {fields} FROM {table} WHERE {constraints}'.format(
+            fields=','.join(fields),
+            table=table,
+            constraints=constraints,
+        )
+        
+        if breakdown_fields:
+            cmd += ' GROUP BY {}'.format(','.join(breakdown_fields))
+
+        if order_fields:
+            cmd += " ORDER BY " 
+            order_cmds = []
+            for order_field in order_fields:
+                # order_field might actually be an expression
+                order_cmds.append('{}'.format(order_field))
+            cmd += " " + ",".join(order_cmds) + " "
+            
+        if limit:
+            cmd += " LIMIT " + str(limit)
+        if offset:
+            cmd += " OFFSET " + str(offset)
+        return cmd
+
+
+
+
+
+
+    def map_results_to_app(self, rows):
+        # this passthrough just makes testing much easier
+        if len(rows) == 0:
+            return rows
+        return [self.map_result_to_app(row) for row in rows]
+
+    def map_result_to_app(self, row):
+        result = {}
+        for field_name, val in row.items():
+            field_desc = self.by_sql_mapping[field_name]
+            newname = field_desc['app']
+            output_function = field_desc['out']
+            newval = output_function(val)
+            result[newname] = newval
+
+        return result
+
+
+    MAX_AT_A_TIME = 100
+    # This function specifically takes sql-named fields
+    def execute_multi_insert_sql(self, fields_sql, all_row_tuples, max_at_a_time = None):
+        if not max_at_a_time:
+            max_at_a_time = self.MAX_AT_A_TIME
+        fields_str = "(" + ",".join(fields_sql) +")"
+        fields_placeholder = "(" + ",".join(["%s"]*len(fields_sql)) + ")" 
+        for row_tuples in grouper(max_at_a_time, all_row_tuples):
+            statement = "INSERT INTO {table} {fields} VALUES {fields_strs}".format(table=self.TABLE_NAME,
+                                                                        fields=fields_str,
+                                                                        fields_strs=",".join([fields_placeholder]*len(row_tuples))
+                                                                        )
+                                            
+            row_tuples_flat = [item for sublist in row_tuples for item in sublist]
+            general_get_results(statement, row_tuples_flat)
+
+
+    def execute_delete(self, constraints = None):
+        if not constraints:
+            raise exc.ReportsQueryError("Delete query without specifying constraints")
+        (constraint_str, constraint_params) = self.constraints_to_str(constraints)
+               
+        cmd = 'DELETE FROM "{table}" WHERE {constraints_str}'.format(table=self.TABLE_NAME,
+                                                                constraints_str=constraint_str)
+        return general_get_results(cmd, constraint_params)
+
+             
+
+def general_get_results(statement, args):
+    cursor = _get_cursor()
+    cursor.execute(statement, args)
+    results = dictfetchall(cursor)
+    cursor.close()
+    return results
+
+
+
+
+
+
+

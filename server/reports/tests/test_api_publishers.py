@@ -1,12 +1,12 @@
 import datetime
 
-from mock import patch
+import mock
 from django.test import TestCase
 
 from reports import api_publishers
 
 
-@patch('reports.redshift._get_results')
+@mock.patch('reports.redshift.general_get_results')
 class ApiPublishersTest(TestCase):
 
     def _get_query(self, mock_get_results):
@@ -20,7 +20,7 @@ class ApiPublishersTest(TestCase):
             return
         self.assertTrue('GROUP BY' in query)
 
-        breakdown_fields = [api_publishers.BY_APP_MAPPING[f]['sql'] for f in breakdown]
+        breakdown_fields = [api_publishers.rs_pub.by_app_mapping[f]['sql'] for f in breakdown]
 
         # check group by statement if contains breakdown fields
         group_by_fields = query.split('GROUP BY')[1].split('ORDER BY')[0].split(',')
@@ -30,7 +30,7 @@ class ApiPublishersTest(TestCase):
 
         # check select fields if contains breakdown fields
         select_fields = query.split('FROM')[0].split(',')
-        self.assertEqual(len(select_fields), len(breakdown) + len(api_publishers.PUBLISHERS_AGGREGATE_FIELDS))
+        self.assertEqual(len(select_fields), len(breakdown) + len(api_publishers.rs_pub.DEFAULT_RETURNED_FIELDS_APP))
         for bf in breakdown_fields:
             self.assertEqual(1, len([x for x in select_fields if bf in x]))
 
@@ -39,16 +39,17 @@ class ApiPublishersTest(TestCase):
         where_constraints = query.split('WHERE')[1].split('GROUP BY')[0].split('AND')
         self.assertEqual(len(where_constraints), len(constraints))
 
-        self.assertIn('"date" >= \'{}\''.format(constraints['start_date']), query)
-        self.assertIn('"date" <= \'{}\''.format(constraints['end_date']), query)
+        self.assertIn('"date" >= ', query)
+        self.assertIn('"date" <= ', query)
+        # TODO: we need to test parameters here too
 
     def check_aggregations(self, mock_get_results):
         required_statements = [
             '"date"',
-            'CASE WHEN SUM("clicks") <> 0 THEN SUM(CAST("cost_micro" AS FLOAT)) / SUM("clicks") ELSE NULL END as "cpc_micro"',
+            'CASE WHEN SUM("clicks") <> 0 THEN SUM(CAST("cost_micro" AS FLOAT)) / SUM("clicks") ELSE NULL END AS "cpc_micro"',
             'SUM("cost_micro") AS "cost_micro_sum"',
             'SUM("impressions") AS "impressions_sum"',
-            'CASE WHEN SUM("impressions") <> 0 THEN SUM(CAST("clicks" AS FLOAT)) / SUM("impressions") ELSE NULL END as "ctr"',
+            'CASE WHEN SUM("impressions") <> 0 THEN SUM(CAST("clicks" AS FLOAT)) / SUM("impressions") ELSE NULL END AS "ctr"',
             'SUM("clicks") AS "clicks_sum"',
         ]
         query = self._get_query(mock_get_results)
@@ -146,6 +147,22 @@ class ApiPublishersTest(TestCase):
         query = self._get_query(_get_results)
         self.assertIn("SUM(clicks)=0, cpc_micro", query)
 
+    def test_ob_insert_adgroup_date(self, _get_results):
+        api_publishers.ob_insert_adgroup_date(datetime.date(2015,2,1), 
+                                              3,
+                                              "outbrain",
+                                              [{
+                                                  "ob_section_id": "AAAABBBBB",
+                                                  "clicks": 123,
+                                                  "name": "CNN money",
+                                                  "url": "http://money.cnn.com",
+                                              }])
+                                       
+        _get_results.assert_has_calls([
+            mock.call('DELETE FROM "ob_publishers_1" WHERE adgroup_id=%s AND date=%s AND exchange=%s', [3, datetime.date(2015, 2, 1), 'outbrain']),
+            mock.call('INSERT INTO ob_publishers_1 (date,adgroup_id,exchange,domain,name,clicks,ob_section_id) VALUES (%s,%s,%s,%s,%s,%s,%s)', [datetime.date(2015, 2, 1), 3, 'outbrain', 'money.cnn.com', 'CNN money', 123, 'AAAABBBBB'])
+        ])
+
 
 class ApiPublishersMapperTest(TestCase):
     def test_map_rowdict_to_output_nones(self):
@@ -159,7 +176,7 @@ class ApiPublishersMapperTest(TestCase):
                 'ctr': None,
                 'adgroup_id': None,
                 'exchange': None}
-        result = api_publishers._map_rowdict_to_output(input)
+        result = api_publishers.rs_pub.map_result_to_app(input)
         self.assertEqual(result, {   'ad_group': None,
                                      'clicks': None,
                                      'cost': None,
@@ -175,7 +192,7 @@ class ApiPublishersMapperTest(TestCase):
                  'cost_micro_sum': 200000,
                  'ctr': 0.2,
                 }
-        result = api_publishers._map_rowdict_to_output(input)
+        result = api_publishers.rs_pub.map_result_to_app(input)
         self.assertEqual(result, {'cost': 0.0002, 
                                   'cpc': 0.0001, 
                                   'ctr': 20.0
@@ -183,7 +200,7 @@ class ApiPublishersMapperTest(TestCase):
 
     def test_map_unknown_row(self):
         input = {'bah': 100000,}
-        self.assertRaises(KeyError, api_publishers._map_rowdict_to_output, input)
+        self.assertRaises(KeyError, api_publishers.rs_pub.map_result_to_app, input)
         
 
 
