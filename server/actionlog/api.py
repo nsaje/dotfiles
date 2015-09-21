@@ -141,7 +141,7 @@ def cancel_expired_actionlogs():
     waiting_actionlogs = models.ActionLog.objects.\
         filter(
             state=constants.ActionState.WAITING,
-            expiration_dt=datetime.utcnow(),
+            expiration_dt__lt=datetime.utcnow()
         )
 
     for actionlog in waiting_actionlogs:
@@ -581,7 +581,7 @@ def _init_fetch_reports_by_publisher(ad_group_source, date, order, request=None)
         action_type=constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
         order=order,
-        expiration_dt__lt=datetime.utcnow() + timedelta(hours = 3)
+        expiration_dt=datetime.utcnow() + timedelta(hours = 3)
     )
     action.save(request)
 
