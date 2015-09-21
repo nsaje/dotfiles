@@ -299,55 +299,8 @@ class CreateCampaignManualActionsTest(TestCase):
         manual_actions = self._get_created_manual_actions(ad_group_source)
 
         # should create manual actions
-        self.assertTrue(len(manual_actions), 1)
+        self.assertEqual(len(manual_actions), 1)
         self.assertEqual('target_regions', manual_actions[0].payload['property'])
-
-    def test_no_manual_update_after_campaign_creation_auto_targeting(self):
-        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
-
-        self._fire_campaign_creation_callback(
-            ad_group_source,
-            ['GB', '693'],
-            [
-                dash.constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
-                dash.constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
-            ])
-
-        manual_actions = self._get_created_manual_actions(ad_group_source)
-
-        # should not create manual actions
-        self.assertFalse(manual_actions.exists())
-
-    def test_no_manual_update_after_campaign_creation_dma_targeting_not_supported(self):
-        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
-
-        self._fire_campaign_creation_callback(
-            ad_group_source,
-            ['GB', '693'],
-            [
-                dash.constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
-            ])
-
-        manual_actions = self._get_created_manual_actions(ad_group_source)
-
-        # should not create manual actions
-        self.assertFalse(manual_actions.exists())
-
-    def test_no_manual_update_after_campaign_creation_no_dma_targeting(self):
-        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
-
-        self._fire_campaign_creation_callback(
-            ad_group_source,
-            ['GB'],
-            [
-                dash.constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
-                dash.constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
-            ])
-
-        manual_actions = self._get_created_manual_actions(ad_group_source)
-
-        # should not create manual actions
-        self.assertFalse(manual_actions.exists())
 
 
 class SubmitAdGroupTest(TestCase):
@@ -562,14 +515,14 @@ class FetchReportsTestCase(TestCase):
         self._assert_article_stats(ad_group_source, article_row)
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             '7a97d7b612f435a2dba269614e90e3ac'
         )
 
     @override_settings(USE_HASH_CACHE=True)
     def test_fetch_reports_hash_cache_changed_data(self):
         zweiapi.views.cache.clear()
-        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
+        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link', '7a97d7b612f435a2dba269614e90e3ac')
 
         article_row = {
             'title': 'Article 1',
@@ -595,14 +548,14 @@ class FetchReportsTestCase(TestCase):
         self._assert_article_stats(ad_group_source, article_row)
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             'c1cbb0b3e637466d86d39026d93f0772'
         )
 
     @override_settings(USE_HASH_CACHE=True)
     def test_fetch_reports_hash_cache_no_change(self):
         zweiapi.views.cache.clear()
-        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
+        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link', '7a97d7b612f435a2dba269614e90e3ac')
 
         article_row = {
             'title': 'Article 1',
@@ -628,7 +581,7 @@ class FetchReportsTestCase(TestCase):
         )
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             '7a97d7b612f435a2dba269614e90e3ac'
         )
 
@@ -639,7 +592,7 @@ class FetchReportsTestCase(TestCase):
         zweiapi.views.cache.clear()
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             None
         )
 
@@ -659,7 +612,7 @@ class FetchReportsTestCase(TestCase):
         response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             None
         )
 
@@ -670,7 +623,7 @@ class FetchReportsTestCase(TestCase):
         zweiapi.views.cache.clear()
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             None
         )
 
@@ -693,7 +646,7 @@ class FetchReportsTestCase(TestCase):
         response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             None
         )
 
@@ -745,7 +698,7 @@ class FetchReportsTestCase(TestCase):
     @override_settings(USE_HASH_CACHE=True)
     def test_fetch_reports_invalid_empty_rows_with_cache(self):
         zweiapi.views.cache.clear()
-        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01', '7a97d7b612f435a2dba269614e90e3ac')
+        zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link', '7a97d7b612f435a2dba269614e90e3ac')
 
         zwei_response_data = {
             'status': 'success',
@@ -768,7 +721,7 @@ class FetchReportsTestCase(TestCase):
         )
 
         self.assertEqual(
-            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01'),
+            zweiapi.views.cache.get('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link'),
             '7a97d7b612f435a2dba269614e90e3ac'
         )
 
@@ -807,3 +760,67 @@ class FetchReportsTestCase(TestCase):
             content_type='application/json',
             data=json.dumps(zwei_response_data)
         ), action_log
+
+
+
+
+class FetchReportsByPublisherTestCase(TestCase):
+
+    fixtures = ['test_zwei_api.yaml']
+
+    @mock.patch('reports.api_publishers.ob_insert_adgroup_date')
+    def test_fetch_reports_by_publisher(self, ob_insert_adgroup_date):
+        article_row = {
+            'url': 'http://money.cnn.com',
+            'name': 'Some publisher',
+            'clicks': 2,
+            'ob_section_id': 'AABBCCDDEEFF',
+        }
+        zwei_response_data = {
+            'status': 'success',
+            'data': [article_row]
+        }
+
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+        ob_insert_adgroup_date.assert_has_calls ([mock.call(
+                                              datetime.date(2014,7,1), 
+                                              1,
+                                              "Outbrain",
+                                              [article_row]
+                                              )])
+
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.SUCCESS
+        )
+
+
+    def _execute_action(self, ad_group_source, date, zwei_response_data):
+        action_log = actionlog.models.ActionLog(
+            action=actionlog.constants.Action.FETCH_REPORTS_BY_PUBLISHER,
+            state=actionlog.constants.ActionState.WAITING,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            ad_group_source=ad_group_source,
+            payload={
+                'action': actionlog.constants.Action.FETCH_REPORTS_BY_PUBLISHER,
+                'source': ad_group_source.source.source_type.type,
+                'args': {
+                    'partner_campaign_id': '"[fake]"',
+                    'date': date
+                },
+            }
+        )
+
+        action_log.save()
+
+        return self.client.post(
+            reverse('api.zwei_callback', kwargs={'action_id': action_log.id}),
+            content_type='application/json',
+            data=json.dumps(zwei_response_data)
+        ), action_log
+
+
+
+

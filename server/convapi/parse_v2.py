@@ -6,8 +6,7 @@ import re
 import StringIO
 import xlrd
 
-import datetime
-
+import dash
 from utils import url_helper
 
 LANDING_PAGE_COL_NAME = 'Landing Page'
@@ -37,22 +36,44 @@ GOAL_RATE_KEYWORDS = ['conversion rate']
 
 
 def _report_atoi(raw_str):
-    # TODO: Implement locale specific parsing
-    ret_str = raw_str.replace(',', '')
-    dot_loc = ret_str.find('.')
-    if dot_loc != -1:
-        return int(ret_str[:dot_loc])
-    else:
-        return int(ret_str)
+    try:
+        # TODO: Implement locale specific parsing
+        ret_str = (raw_str or '0').replace(',', '')
+        dot_loc = ret_str.find('.')
+        if dot_loc != -1:
+            return int(ret_str[:dot_loc])
+        else:
+            return int(ret_str)
+    except:
+        logger.exception('Failed converting to float {}'.format(raw_str))
+        raise
 
 
 def _report_atof(raw_str):
-    # TODO: Implement locale specific parsing
-    return float(raw_str.replace(',', ''))
+    try:
+        ret_str = (raw_str or '0').replace(',', '')
+        # TODO: Implement locale specific parsing
+        return float(ret_str.replace(',', ''))
+    except:
+        logger.exception('Failed converting to float {}'.format(raw_str))
+        raise
 
 
-class GaReportRow(object):
+class ReportRow(object):
+
+    def __init__(self):
+        self.valid = True
+
+    def is_valid(self):
+        return self.valid
+
+    def mark_invalid(self):
+        self.valid = False
+
+
+class GaReportRow(ReportRow):
     def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
+        ReportRow.__init__(self)
         self.ga_row_dicts = [ga_row_dict]
 
         self.visits = _report_atoi(ga_row_dict.get('Sessions'))
@@ -93,20 +114,12 @@ class GaReportRow(object):
                 self.goals[ga_report_row_goal] = ga_report_row.goals[ga_report_row_goal]
 
     def is_row_valid(self):
+        if not self.is_valid():
+            return False
+
         return self.content_ad_id is not None and\
             self.source_param != '' and\
             self.source_param is not None
-
-    def are_goals_useful(self):
-        if len(self.goals) == 0:
-            return False
-        for key, goal_dict in self.goals.iteritems():
-            if 'conversions' in goal_dict.keys():
-                return True
-        return False
-
-    def get_ga_fields(self, column):
-        return [ga_row_dict.get(column, None) for ga_row_dict in self.ga_row_dicts]
 
     def sessions(self):
         all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
@@ -114,8 +127,16 @@ class GaReportRow(object):
         return sum(all_row_sessions)
 
     def _parse_duration(self, durstr):
-        hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
-        return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
+        if not durstr:
+            logger.warning('Empty duration {}'.format(durstr))
+            return 0
+
+        try:
+            hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
+            return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
+        except:
+            logger.exception('Failed parsing duration {}'.format(durstr))
+            raise
 
     def __str__(self):
         return "{date}-{caid}-{source_param}".format(
@@ -125,8 +146,10 @@ class GaReportRow(object):
         )
 
 
-class OmnitureReportRow(object):
+class OmnitureReportRow(ReportRow):
+
     def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param):
+        ReportRow.__init__(self)
         self.omniture_row_dict = [omniture_row_dict]
 
         self.visits = _report_atoi(omniture_row_dict.get('Visits'))
@@ -135,8 +158,11 @@ class OmnitureReportRow(object):
             self.bounce_rate = _report_atof(omniture_row_dict['Bounce Rate'].replace('%', '')) / 100
         else:
             self.bounce_rate = 0
-        self.pageviews = int(round(_report_atof(omniture_row_dict.get('Pages Views', '0')) * self.visits))
-        self.new_visits = _report_atoi(omniture_row_dict.get('Unique Visits', '0'))
+        self.pageviews = round(_report_atof(omniture_row_dict.get('Page Views', '0')))
+        self.new_visits = _report_atoi(
+            omniture_row_dict.get('Unique Visits',
+                omniture_row_dict.get('Unique Visitors', '0')
+            ))
         self.bounced_visits = int(self.bounce_rate * self.visits)
         self.total_time_on_site = self.visits * _report_atoi(omniture_row_dict.get('Total Seconds Spent', '0'))
 
@@ -149,7 +175,7 @@ class OmnitureReportRow(object):
         return (self.report_date, self.content_ad_id, self.source_param)
 
     def merge_with(self, omniture_report_row):
-        self.omniture_row_dict .extend(omniture_report_row.omniture_row_dict)
+        self.omniture_row_dict.extend(omniture_report_row.omniture_row_dict)
         self.visits += omniture_report_row.visits
         self.bounce_rate = (self.bounce_rate + omniture_report_row.bounce_rate) / 2
         self.pageviews += omniture_report_row.pageviews
@@ -167,29 +193,12 @@ class OmnitureReportRow(object):
                 self.goals[omniture_report_row_goal] = omniture_report_row.goals[omniture_report_row_goal]
 
     def is_row_valid(self):
+        if not self.is_valid():
+            return False
+
         return self.content_ad_id is not None and\
             self.source_param != '' and\
             self.source_param is not None
-
-    def are_goals_useful(self):
-        if len(self.goals) == 0:
-            return False
-        for key, goal_dict in self.goals.iteritems():
-            if 'conversions' in goal_dict.keys():
-                return True
-        return False
-
-    def get_ga_fields(self, column):
-        return [ga_row_dict.get(column, None) for ga_row_dict in self.ga_row_dicts]
-
-    def sessions(self):
-        all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
-        all_row_sessions = [int(raw_sessions) if raw_sessions not in ('', None) else 0 for raw_sessions in all_row_raw_sessions]
-        return sum(all_row_sessions)
-
-    def _atof(self, raw_str):
-        # TODO: Implement locale specific parsing
-        return float(raw_str.replace(',', ''))
 
     def __str__(self):
         return "{date}-{caid}-{source_param}".format(
@@ -205,6 +214,7 @@ class Report(object):
         # mapping from each url in report to corresponding z1 code or utm term
         self.entries = {}
         self.start_date = None
+        self._imported_visits = 0
 
     def is_empty(self):
         return self.entries == {}
@@ -215,25 +225,14 @@ class Report(object):
     def valid_entries(self):
         return [entry for entry in self.entries.values() if entry.is_row_valid()]
 
-    def debug_parsing_overview(self):
-        count_all = len(self.entries.values())
-        count_valid_rows = 0
-        for entry in self.entries.values():
-            if not entry.is_row_valid():
-                continue
-            count_valid_rows += 1
+    def reported_visits(self):
+        return sum(entry.visits for entry in self.valid_entries())
 
-        count_goal_useful = 0
-        for entry in self.entries.values():
-            if not entry.are_goals_useful():
-                continue
-            count_goal_useful += 1
-        return "Overview report_dt: {dt} cads: {count_useful_ca}/{count_all} goals {useful_ga}/{count_all}".format(
-            dt=self.start_date.isoformat() if self.start_date != None else '',
-            count_useful_ca=count_valid_rows,
-            count_all=count_all,
-            useful_ga=count_goal_useful,
-        )
+    def imported_visits(self):
+        return self._imported_visits
+
+    def add_imported_visits(self, count):
+        self._imported_visits += count
 
     def _parse_z11z_keyword(self, keyword):
         result = Z11Z_RE.match(keyword)
@@ -241,34 +240,44 @@ class Report(object):
             return None, ''
         else:
             content_ad_id, source_param = result.group(1), result.group(2)
+        return int(content_ad_id), source_param
 
-        try:
-            content_ad_id = int(content_ad_id)
-        except (ValueError, TypeError):
-            return None, ''
+    def validate(self):
+        '''
+        Check if imported content ads and sources exist in database.
+        If not mark them as invalid.
+        '''
+        # get all sources
+        sources = dash.models.Source.objects.all()
+        track_source_map = {}
+        for source in sources:
+            track_source_map[source.tracking_slug] = source.id
 
-        if source_param == '':
-            logger.warning(
-                'Could not parse keyword %s. content_ad_id: %s, source_param: %s',
-                keyword,
-                self.content_ad_id,
-                self.source_param
-            )
-            return None, ''
+        # slow but since we don't receive many reports this shouldn't hurt much
+        for entry in self.entries.values():
+            caid = entry.content_ad_id
+            source_param = track_source_map.get(entry.source_param)
+            if source_param is None:
+                entry.mark_invalid()
+                continue
 
-        return content_ad_id, source_param
+            if not dash.models.ContentAdSource.objects.filter(
+                content_ad__id=caid,
+                source__id=source_param).exists():
+                entry.mark_invalid()
+                continue
 
     def is_media_source_specified(self):
         media_source_not_specified = []
         for entry in self.entries.values():
-            if entry.source_param == '' is None or entry.source_param == '':
+            if not entry.is_valid() or entry.source_param == '' is None or entry.source_param == '':
                 media_source_not_specified.append(entry.source_param)
         return (len(media_source_not_specified) == 0, list(media_source_not_specified))
 
     def is_content_ad_specified(self):
         content_ad_not_specified = set()
         for entry in self.entries.values():
-            if entry.content_ad_id is None or entry.content_ad_id == '':
+            if not entry.is_valid() or entry.content_ad_id is None or entry.content_ad_id == '':
                 content_ad_not_specified.add(entry.content_ad_id)
         return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
 
@@ -305,9 +314,6 @@ class GAReport(Report):
             raise exc.CsvParseException('Date of the report could not be parsed')
 
         group_dict = m.groupdict()
-        if 'start_date' not in group_dict or 'end_date' not in group_dict:
-            raise exc.CsvParseException('Both, start date and end date, should be specified')
-
         if group_dict['start_date'] != group_dict['end_date']:
             raise exc.CsvParseException('start date and end date should be identical')
 
@@ -345,9 +351,14 @@ class GAReport(Report):
                 keyword_or_url = entry[self.first_column]
                 if keyword_or_url is None or keyword_or_url.strip() == '':
                     continue
+
+                if keyword_or_url.startswith('Day Index'):
+                    break
+
                 content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
                 goals = self._parse_goals(self.fieldnames, entry)
                 report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, goals)
+                self.add_imported_visits(report_entry.visits or 0)
 
                 existing_entry = self.entries.get(report_entry.key())
                 if existing_entry is None:
@@ -355,9 +366,10 @@ class GAReport(Report):
                 else:
                     existing_entry.merge_with(report_entry)
         except:
-            raise exc.CsvParseException('Could not parse CSV')
+            logger.exception("Failed parsing GA report")
+            raise exc.CsvParseException('Could not pars CSV')
 
-        if self.fieldnames is None and not set(self.fieldnames or []) >= set(REQUIRED_FIELDS):
+        if not set(self.fieldnames or []) >= set(REQUIRED_FIELDS):
             missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames or []) & set(REQUIRED_FIELDS)))
             raise exc.CsvParseException('Not all required fields are present. Missing: {}'.format(','.join(missing_fieldnames)))
 
@@ -368,29 +380,6 @@ class GAReport(Report):
             return self._parse_landing_page(data)
         else:
             return self._parse_z11z_keyword(data)
-
-    def _parse_z11z_keyword(self, keyword):
-        result = Z11Z_RE.match(keyword)
-        if not result:
-            return None, ''
-        else:
-            content_ad_id, source_param = result.group(1), result.group(2)
-
-        try:
-            content_ad_id = int(content_ad_id)
-        except (ValueError, TypeError):
-            return None, ''
-
-        if source_param == '':
-            logger.warning(
-                'Could not parse keyword %s. content_ad_id: %s, source_param: %s',
-                keyword,
-                content_ad_id,
-                source_param
-            )
-            return None, ''
-
-        return content_ad_id, source_param
 
     def _parse_landing_page(self, raw_url):
         url, query_params = url_helper.clean_url(raw_url)
@@ -413,7 +402,6 @@ class GAReport(Report):
             results = LANDING_PAGE_MSID_RE.search(source_param)
             if results is not None:
                 source_param = results.group(0)
-
 
         if content_ad_id is None or source_param == '':
             logger.warning(
@@ -549,9 +537,13 @@ class OmnitureReport(Report):
                 if not value:
                     break
                 line.append(value)
-            if len(line) == 1 and ':' in line[0]:
+
+            if len(line) >= 1 and len(line) <= 2 and ':' in line[0]:
                 keyvalue = [(kv or '').strip() for kv in line[0].split(':')]
-                header[keyvalue[0]] = ''.join(keyvalue[1:])
+                val = ''.join(keyvalue[1:])
+                second_col = line[1] if len(line) > 1 else ''
+                header[keyvalue[0].replace('#', '').strip()] = val + second_col
+
         return header
 
     def _extract_date(self, date_raw):
@@ -559,10 +551,8 @@ class OmnitureReport(Report):
         date_raw_split = date_raw.replace('.', '').split(' ')
         date_raw_split = [date_part.strip() for date_part in date_raw_split if date_part.strip() != '']
         date_prefix = ' '.join(date_raw_split[:4])
-        ret = datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
-        if ret:
-            return ret.date()
-        return None
+        parsed_datetime = datetime.datetime.strptime(date_prefix, '%a %d %b %Y')
+        return parsed_datetime.date()
 
     def _check_session_counts(self, totals):
         sessions_sum = sum(entry.visits for entry in self.entries.values())
@@ -586,7 +576,7 @@ class OmnitureReport(Report):
         workbook = xlrd.open_workbook(file_contents=self.xlsx_report_blob)
 
         header = self._parse_header(workbook)
-        date_raw = header.get('Date', '')
+        date_raw = header.get('Date') or header.get('Range')
         self.start_date = self._extract_date(date_raw)
 
         body_found = False
@@ -602,7 +592,9 @@ class OmnitureReport(Report):
                 line.append(value)
 
             if not body_found:
-                if not 'tracking code' in ' '.join(line).lower():
+                if len(line) > 0 and ':' in line[0]:
+                    continue  # header
+                if 'tracking code' not in ' '.join(line[1:]).lower():
                     continue
                 else:
                     body_found = True
@@ -615,14 +607,19 @@ class OmnitureReport(Report):
             keys = [idxel[1] for idxel in enum_columns if idxel[1] != '']
             values = [line[idxel[0]] for idxel in enum_columns if idxel[1] != '']
             omniture_row_dict = dict(zip(keys, values))
-
             if 'Total' in line:  # footer with summary
                 self._check_session_counts(omniture_row_dict)
                 break
 
-            keyword = omniture_row_dict.get('Tracking Code', '')
+            tracking_code_col = 'Tracking Code'
+            for key in keys:
+                if 'tracking code' in key.lower():
+                    tracking_code_col = key
+
+            keyword = omniture_row_dict.get(tracking_code_col, '')
             content_ad_id, source_param = self._parse_z11z_keyword(keyword)
             report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param)
+            self.add_imported_visits(report_entry.visits or 0)
 
             existing_entry = self.entries.get(report_entry.key())
             if existing_entry is None:

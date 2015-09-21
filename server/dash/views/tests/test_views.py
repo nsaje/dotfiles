@@ -69,7 +69,7 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
-                    'show_onboarding_guidance': False,                    
+                    'show_onboarding_guidance': False,
                     'timezone_offset': -14400.0
                 }
             },
@@ -91,7 +91,7 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
-                    'show_onboarding_guidance': False,                    
+                    'show_onboarding_guidance': False,
                     'timezone_offset': -14400.0
                 }
             },
@@ -138,7 +138,6 @@ class AdGroupSourceSettingsTest(TestCase):
             data=json.dumps({'cpc_cc': '0.15'})
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.content), {'success': True})
 
 
 class AdGroupContentAdCSVTest(TestCase):
@@ -787,18 +786,18 @@ class AdGroupAdsPlusUploadTest(TestCase):
             follow=True
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(json.loads(response.content), 
+        self.assertEqual(json.loads(response.content),
                     {
                         "data": {
-                        "message": None, 
+                        "message": None,
                         "errors": {
-                            "display_url": ["This field is required."], 
+                            "display_url": ["This field is required."],
                             "call_to_action": ["This field is required."],
                             "brand_name": ["This field is required."],
                             "description": ["This field is required."],
-                            }, 
+                            },
                         "error_code": "ValidationError"
-                        }, 
+                        },
                         "success": False
                     })
         self.assertFalse(mock_process_async.called)
