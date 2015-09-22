@@ -91,27 +91,42 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
         yesterdays_spend is None,
         current_cpc is None,
         current_daily_budget <= 0,
-        yesterdays_spend <= 0
+        yesterdays_spend <= 0,
+        current_cpc > automation.settings.AUTOPILOT_MAX_CPC,
+        current_cpc < automation.settings.AUTOPILOT_MIN_CPC
     ]):
         return current_cpc
-    if type(current_daily_budget) != decimal.Decimal:
-        current_daily_budget = decimal.Decimal(current_daily_budget)
-    if type(yesterdays_spend) != decimal.Decimal:
-        yesterdays_spend = decimal.Decimal(yesterdays_spend)
-    if type(current_cpc) != decimal.Decimal:
-        current_cpc = decimal.Decimal(current_cpc)
+    assert isinstance(current_daily_budget, decimal.Decimal)
+    assert isinstance(yesterdays_spend, decimal.Decimal)
+    assert isinstance(current_cpc, decimal.Decimal)
     spending_perc = yesterdays_spend / current_daily_budget - 1
     new_cpc = current_cpc
     for row in automation.settings.AUTOPILOT_CPC_CHANGE_TABLE:
         if row['underspend_upper_limit'] <= spending_perc <= row['underspend_lower_limit']:
             new_cpc += current_cpc * decimal.Decimal(row['bid_cpc_procentual_increase'])
-            new_cpc = new_cpc.quantize(
-                decimal.Decimal('0.01'),
-                rounding=decimal.ROUND_HALF_UP)
+            if row['bid_cpc_procentual_increase'] < 0:
+                new_cpc = _threshold_lowering_cpc(current_cpc, new_cpc)
+            new_cpc = _round_cpc(new_cpc)
             break
-    if automation.settings.AUTOPILOT_MINIMUM_CPC > new_cpc > automation.settings.AUTOPILOT_MAXIMUM_CPC:
-        return current_cpc
+    if automation.settings.AUTOPILOT_MIN_CPC > new_cpc:
+        return automation.settings.AUTOPILOT_MIN_CPC
+    if automation.settings.AUTOPILOT_MAX_CPC < new_cpc:
+        return automation.settings.AUTOPILOT_MAX_CPC
     return new_cpc
+
+
+def _threshold_lowering_cpc(current_cpc, new_cpc):
+    if abs(current_cpc - new_cpc) < automation.settings.AUTOPILOT_MIN_LOWERING_CPC_CHANGE:
+        return current_cpc - automation.settings.AUTOPILOT_MIN_LOWERING_CPC_CHANGE
+    if abs(current_cpc - new_cpc) > automation.settings.AUTOPILOT_MAX_LOWERING_CPC_CHANGE:
+        return current_cpc - automation.settings.AUTOPILOT_MAX_LOWERING_CPC_CHANGE
+    return new_cpc
+
+
+def _round_cpc(num):
+    return num.quantize(
+        decimal.Decimal('0.01'),
+        rounding=decimal.ROUND_HALF_UP)
 
 
 def send_autopilot_CPC_changes_email(campaign_name, campaign_id, account_name, emails, changesData):
@@ -120,15 +135,17 @@ def send_autopilot_CPC_changes_email(campaign_name, campaign_id, account_name, e
         changesText.append(
             u'''
 
-AdGroup: {}:'''.format(adg)
+AdGroup: {adg_name} ({adg_url}):'''.format(
+                adg_name=adg[0],
+                adg_url=settings.BASE_URL + '/ad_groups/{}/sources/'.format(adg[1])
+                )
         )
         for change in changes:
             changesText.append(
                 u'''
-- changed CPC bid on {} from ${} to ${}'''.format(change[0], change[1], change[2])
+- changed CPC bid on {} from ${} to ${}'''.format(change['source_name'], change['old_cpc'], change['new_cpc'])
             )
 
-    campaign_url = settings.BASE_URL + '/campaigns/{}/'.format(campaign_id)
     body = u'''Hi account manager of {camp}
 
 On your campaign {camp}, {account}, which is set to auto-pilot, the system made the following changes:{changes}
@@ -141,13 +158,12 @@ Zemanta
     body = body.format(
         camp=campaign_name,
         account=account_name,
-        camp_url=campaign_url,
+        camp_url=settings.BASE_URL + '/campaigns/{}/'.format(campaign_id),
         changes=''.join(changesText)
     )
-
     try:
         send_mail(
-            'Campaign budget low - {camp}, {account}'.format(
+            'Campaign Auto-Pilot Changes - {camp}, {account}'.format(
                 camp=campaign_name,
                 account=account_name
             ),
@@ -208,13 +224,13 @@ def adjust_autopilot_media_sources_bid_cpcs():
 
             if adg.campaign not in changes:
                 changes[adg.campaign] = {}
-            if adg.name not in changes[adg.campaign]:
-                changes[adg.campaign][adg.name] = []
-            changes[adg.campaign][adg.name].append([
-                ad_group_source_settings.ad_group_source.source.name,
-                ad_group_source_settings.cpc_cc,
-                proposed_cpc
-            ])
+            if (adg.name, adg.id) not in changes[adg.campaign]:
+                changes[adg.campaign][(adg.name, adg.id)] = []
+            changes[adg.campaign][(adg.name, adg.id)].append({
+                'source_name': ad_group_source_settings.ad_group_source.source.name,
+                'old_cpc': ad_group_source_settings.cpc_cc,
+                'new_cpc': proposed_cpc
+            })
 
     for camp, adgroup_changes in changes.iteritems():
         send_autopilot_CPC_changes_email(

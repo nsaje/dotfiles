@@ -117,21 +117,38 @@ class BudgetDepletionTestCase(test.TestCase):
 
     @patch('automation.settings.AUTOPILOT_CPC_CHANGE_TABLE', (
         {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.5, 'bid_cpc_procentual_increase': 0.1},
-        {'underspend_upper_limit': -0.5, 'underspend_lower_limit': 0, 'bid_cpc_procentual_increase': 0.5},
+        {'underspend_upper_limit': -0.5, 'underspend_lower_limit': -0.1, 'bid_cpc_procentual_increase': 0.5},
+        {'underspend_upper_limit': -0.1, 'underspend_lower_limit': 0, 'bid_cpc_procentual_increase': -0.5}
         )
     )
+    @patch('automation.settings.AUTOPILOT_MIN_CPC', decimal.Decimal('0.1'))
+    @patch('automation.settings.AUTOPILOT_MAX_CPC', decimal.Decimal('3'))
+    @patch('automation.settings.AUTOPILOT_MIN_LOWERING_CPC_CHANGE', decimal.Decimal('0.2'))
+    @patch('automation.settings.AUTOPILOT_MAX_LOWERING_CPC_CHANGE', decimal.Decimal('0.3'))
     def test_calculate_new_autopilot_cpc(self):
-        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0, 10, 5), decimal.Decimal('0'))
-        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 8), decimal.Decimal('0.75'))
-        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 10), decimal.Decimal('0.75'))
-        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 2), decimal.Decimal('0.55'))
-        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 0), decimal.Decimal('0.5'))
-        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 5), decimal.Decimal('0.55'))
-        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 0, 5), decimal.Decimal('0.5'))
-        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, 0), decimal.Decimal('0.5'))
-        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, -10, 5), decimal.Decimal('0.5'))
-        self.assertEqual(autopilot.calculate_new_autopilot_cpc(0.5, 10, -5), decimal.Decimal('0.5'))
-        self.assertEqual(autopilot.calculate_new_autopilot_cpc(-0.5, 10, 5), decimal.Decimal('0'))
+        t = {
+            ('0', '10', '5', '0'),
+            ('0.5', '10', '8', '0.75'),
+            ('0.5', '10', '10', '0.25'),
+            ('0.5', '10', '2', '0.55'),
+            ('0.5', '10', '0', '0.5'),
+            ('0.5', '10', '5', '0.55'),
+            ('0.5', '0', '5', '0.5'),
+            ('0.5', '10', '0', '0.5'),
+            ('0.5', '-10', '5', '0.5'),
+            ('0.5', '10', '-5', '0.5'),
+            ('-0.5', '10', '5', '0'),
+            ('0.35', '10', '9.96', '0.15'),
+            ('2.8', '10', '9.96', '2.5'),
+            ('3.5', '10', '1', '3.5'),
+            ('0.05', '10', '1', '0.05')
+        }
+        for r in t:
+            self.assertEqual(autopilot.calculate_new_autopilot_cpc(
+                decimal.Decimal(r[0]),
+                decimal.Decimal(r[1]),
+                decimal.Decimal(r[2])),
+                decimal.Decimal(r[3]))
 
     def test_send_autopilot_CPC_changes_email(self):
         autopilot.send_autopilot_CPC_changes_email(
@@ -139,7 +156,11 @@ class BudgetDepletionTestCase(test.TestCase):
             1,
             'account_name',
             ['test@zemanta.com'],
-            {u'AdGroup': [[u'Source', decimal.Decimal('0.0800'), decimal.Decimal('0.09')]]}
+            {(u'Adgroup', 109): [{
+                'old_cpc': decimal.Decimal('0.1800'),
+                'source_name': u'source',
+                'new_cpc': decimal.Decimal('0.21')}
+            ]}
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(
