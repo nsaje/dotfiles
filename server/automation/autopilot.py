@@ -72,6 +72,12 @@ def get_autopilot_ad_group_sources_settings(adgroup):
     autopilot_sources_settings = []
     for current_source_settings in automation.helpers.get_active_ad_group_sources_settings(adgroup):
         if (current_source_settings.autopilot_state == dash.constants.AdGroupSourceSettingsAutopilotState.ACTIVE):
+            if current_source_settings.cpc_cc is None or current_source_settings.daily_budget_cc is None:
+                source_state = automation.helpers.get_latest_ad_group_source_state(current_source_settings.ad_group_source)
+                if current_source_settings.cpc_cc is None and source_state is not None and source_state.cpc_cc is not None:
+                    current_source_settings.cpc_cc = source_state.cpc_cc
+                if current_source_settings.daily_budget_cc is None and source_state is not None and source_state.daily_budget_cc is not None:
+                    current_source_settings.daily_budget_cc = source_state.daily_budget_cc
             autopilot_sources_settings.append(current_source_settings)
     return autopilot_sources_settings
 
@@ -97,8 +103,9 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
     ]):
         return current_cpc
     assert isinstance(current_daily_budget, decimal.Decimal)
-    assert isinstance(yesterdays_spend, decimal.Decimal)
     assert isinstance(current_cpc, decimal.Decimal)
+    if not isinstance(yesterdays_spend, decimal.Decimal):
+        yesterdays_spend = decimal.Decimal(yesterdays_spend)
     spending_perc = yesterdays_spend / current_daily_budget - 1
     new_cpc = current_cpc
     for row in automation.settings.AUTOPILOT_CPC_CHANGE_TABLE:
@@ -126,7 +133,7 @@ def _threshold_lowering_cpc(current_cpc, new_cpc):
 def _round_cpc(num):
     return num.quantize(
         decimal.Decimal('0.01'),
-        rounding=decimal.ROUND_HALF_UP)
+        rounding=decimal.ROUND_UP)
 
 
 def send_autopilot_CPC_changes_email(campaign_name, campaign_id, account_name, emails, changesData):
@@ -205,9 +212,6 @@ def adjust_autopilot_media_sources_bid_cpcs():
                 yesterday_spend
             )
 
-            if ad_group_source_settings.cpc_cc == proposed_cpc:
-                continue
-
             persist_cpc_change_to_admin_log(
                 ad_group_source_settings.ad_group_source,
                 yesterday_spend,
@@ -216,6 +220,9 @@ def adjust_autopilot_media_sources_bid_cpcs():
                 ad_group_source_settings.daily_budget_cc,
                 automation.helpers.get_yesterdays_clicks(ad_group_source_settings.ad_group_source)
             )
+
+            if ad_group_source_settings.cpc_cc == proposed_cpc:
+                continue
 
             update_ad_group_source_cpc(
                 ad_group_source_settings.ad_group_source,

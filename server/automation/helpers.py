@@ -116,3 +116,13 @@ def get_total_daily_budget_amount(campaign):
             if adg_src_set.daily_budget_cc is not None:
                 total_daily_budget += adg_src_set.daily_budget_cc
     return total_daily_budget
+
+
+def get_latest_ad_group_source_state(ad_group_source):
+    try:
+        latest_settings = dash.models.AdGroupSourceState.objects \
+            .filter(ad_group_source=ad_group_source) \
+            .latest('created_dt')
+        return latest_settings
+    except dash.models.AdGroupSourceState.DoesNotExist:
+        return None
