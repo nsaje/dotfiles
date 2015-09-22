@@ -3,7 +3,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.accountManager}">
             <label for="account-manager-select" class="col-xs-3 control-label">
                 Account Manager
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
+                <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
                 <select ui-select2="{minimumResultsForSearch: 5}" id="account-manager-select" class="form-control" ng-model="settings.accountManager">
@@ -16,7 +16,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.salesRepresentative}">
             <label for="sales-representative-select" class="col-xs-3 control-label">
                 Sales Representative
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Sales representative responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
+                <zem-help-popover content="Sales representative responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
                 <select ui-select2="{minimumResultsForSearch: 5}" id="sales-representative-select" class="form-control" ng-model="settings.salesRepresentative">
@@ -29,7 +29,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.IABCategory}">
             <label for="iab-category-select" class="col-xs-3 control-label">
                 IAB Category
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="IAB category under which content of this campaign belongs." placement="top"></zem-help-popover>
+                <zem-help-popover content="IAB category under which content of this campaign belongs." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
                 <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select" class="form-control" ng-model="settings.IABCategory">
@@ -49,7 +49,7 @@
 	</form>
 
     <div class="section table-campaign-agency">
-        <div class="title">History<zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="History of settings changes." placement="top"></zem-help-popover>
+        <div class="title">History<zem-help-popover content="History of settings changes." placement="top"></zem-help-popover>
 </div>
         <div class="loader-container">
             <div class="loader" ng-show="history.length && requestInProgress"></div>

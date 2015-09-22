@@ -686,20 +686,19 @@ class AdGroupSourcesExport(ExportApiView):
 
             sheets_data = [('Per Source Report', date_source_columns, date_source_results)]
 
-            if request.user.has_perm('reports.per_day_sheet_source_export'):
-                date_results = export.generate_rows(
-                    ['date'],
-                    start_date,
-                    end_date,
-                    request.user,
-                    ad_group=ad_group,
-                    source=filtered_sources,
-                )
+            date_results = export.generate_rows(
+                ['date'],
+                start_date,
+                end_date,
+                request.user,
+                ad_group=ad_group,
+                source=filtered_sources,
+            )
 
-                date_columns = list(date_source_columns)  # make a shallow copy
-                date_columns.pop(1)
+            date_columns = list(date_source_columns)  # make a shallow copy
+            date_columns.pop(1)
 
-                sheets_data.insert(0, ('Per Day Report', date_columns, date_results))
+            sheets_data.insert(0, ('Per Day Report', date_columns, date_results))
 
             content = export.get_excel_content(sheets_data)
             return self.create_excel_response(filename, content=content)
