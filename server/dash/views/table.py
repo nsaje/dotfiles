@@ -140,16 +140,17 @@ class AccountSourcesTable(object):
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Account, [self.account])
         self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
         self.filtered_sources = filtered_sources
+        self.reports_api = get_reports_api_module(user)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
-        return reports.api.has_complete_postclick_metrics_accounts(
+        return self.reports_api.has_complete_postclick_metrics_accounts(
             start_date, end_date, [self.account], self.filtered_sources)
 
     def get_sources(self):
         return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_stats(self, start_date, end_date):
-        sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
+        sources_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
             ['source'],
@@ -157,7 +158,7 @@ class AccountSourcesTable(object):
             source=self.filtered_sources
         ), self.user)
 
-        totals_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
+        totals_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
             account=self.account,
@@ -199,16 +200,17 @@ class CampaignSourcesTable(object):
         self.active_ad_group_sources = helpers.get_active_ad_group_sources(models.Campaign, [self.campaign])
         self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
         self.filtered_sources = filtered_sources
+        self.reports_api = get_reports_api_module(user)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
-        return reports.api.has_complete_postclick_metrics_campaigns(
+        return self.reports_api.has_complete_postclick_metrics_campaigns(
             start_date, end_date, [self.campaign], self.filtered_sources)
 
     def get_sources(self):
         return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_stats(self, start_date, end_date):
-        sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
+        sources_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
             ['source'],
@@ -216,7 +218,7 @@ class CampaignSourcesTable(object):
             source=self.filtered_sources,
         ), self.user)
 
-        totals_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
+        totals_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
             campaign=self.campaign,
@@ -226,7 +228,7 @@ class CampaignSourcesTable(object):
         return sources_stats, totals_stats
 
     def get_yesterday_cost(self):
-        yesterday_cost = reports.api.get_yesterday_cost(campaign=self.campaign)
+        yesterday_cost = self.reports_api.get_yesterday_cost(campaign=self.campaign)
         yesterday_total_cost = None
         if yesterday_cost:
             yesterday_total_cost = sum(yesterday_cost.values())
@@ -260,16 +262,17 @@ class AdGroupSourcesTable(object):
         self.ad_group_sources_settings = helpers.get_ad_group_sources_settings(self.active_ad_group_sources)
         self.ad_group_sources_states = helpers.get_ad_group_sources_states(self.active_ad_group_sources)
         self.filtered_sources = filtered_sources
+        self.reports_api = get_reports_api_module(user)
 
     def has_complete_postclick_metrics(self, start_date, end_date):
-        return reports.api.has_complete_postclick_metrics_ad_groups(
+        return self.reports_api.has_complete_postclick_metrics_ad_groups(
             start_date, end_date, [self.ad_group], self.filtered_sources)
 
     def get_sources(self):
         return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
     def get_stats(self, start_date, end_date):
-        sources_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
+        sources_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
             ['source'],
@@ -277,7 +280,7 @@ class AdGroupSourcesTable(object):
             source=self.filtered_sources,
         ), self.user)
 
-        totals_stats = reports.api_helpers.filter_by_permissions(reports.api.query(
+        totals_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
             ad_group=self.ad_group,
@@ -287,7 +290,7 @@ class AdGroupSourcesTable(object):
         return sources_stats, totals_stats
 
     def get_yesterday_cost(self):
-        yesterday_cost = reports.api.get_yesterday_cost(ad_group=self.ad_group)
+        yesterday_cost = self.reports_api.get_yesterday_cost(ad_group=self.ad_group)
         yesterday_total_cost = None
         if yesterday_cost:
             yesterday_total_cost = sum(yesterday_cost.values())
@@ -420,6 +423,7 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
 
 
 class SourcesTable(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
     @newrelic.agent.function_trace()
     def get(self, request, level_, id_=None):
@@ -620,7 +624,8 @@ class SourcesTable(api_common.BaseApiView):
                     source_data = item
                     break
 
-            if source.deprecated and not reports.api.row_has_traffic_data(source_data) and not reports.api.row_has_postclick_data(source_data):
+            reports_api = get_reports_api_module(user)
+            if source.deprecated and not reports_api.row_has_traffic_data(source_data) and not reports_api.row_has_postclick_data(source_data):
                 continue  # deprecated sources without data don't have to be shown
 
             last_sync = last_actions.get(source.id)
@@ -756,7 +761,8 @@ class AccountsAccountsTable(api_common.BaseApiView):
         if page:
             page = int(page)
 
-        accounts_data = reports.api_helpers.filter_by_permissions(reports.api.query(
+        reports_api = get_reports_api_module(user)
+        accounts_data = reports.api_helpers.filter_by_permissions(reports_api.query(
             start_date,
             end_date,
             ['account'],
@@ -764,7 +770,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
             source=filtered_sources,
         ), request.user)
 
-        totals_data = reports.api_helpers.filter_by_permissions(reports.api.query(
+        totals_data = reports.api_helpers.filter_by_permissions(reports_api.query(
             start_date,
             end_date,
             account=accounts,
@@ -801,7 +807,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(rows, page, size)
 
         incomplete_postclick_metrics = \
-            not reports.api.has_complete_postclick_metrics_accounts(
+            not reports_api.has_complete_postclick_metrics_accounts(
                 start_date,
                 end_date,
                 accounts,
@@ -1243,7 +1249,8 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         show_archived = request.GET.get('show_archived') == 'true' and\
             request.user.has_perm('zemauth.view_archived_entities')
 
-        stats = reports.api_helpers.filter_by_permissions(reports.api.query(
+        reports_api = get_reports_api_module(request.user)
+        stats = reports.api_helpers.filter_by_permissions(reports_api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['ad_group'],
@@ -1259,7 +1266,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             order_by('ad_group_id', '-created_dt')
 
         totals_stats = reports.api_helpers.filter_by_permissions(
-            reports.api.query(
+            reports_api.query(
                 start_date,
                 end_date,
                 ad_group=ad_groups,
@@ -1274,7 +1281,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
         incomplete_postclick_metrics = \
-            not reports.api.has_complete_postclick_metrics_campaigns(
+            not reports_api.has_complete_postclick_metrics_campaigns(
                 start_date,
                 end_date,
                 [campaign],
@@ -1283,6 +1290,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
 
         response = {
             'rows': self.get_rows(
+                request.user,
                 ad_groups,
                 ad_groups_settings,
                 stats,
@@ -1316,7 +1324,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             helpers.get_last_sync_messages(ad_groups, last_success_actions),
         )
 
-    def get_rows(self, ad_groups, ad_groups_settings, stats, last_actions,
+    def get_rows(self, user, ad_groups, ad_groups_settings, stats, last_actions,
                  order, has_view_archived_permission, show_archived):
         rows = []
         for ad_group in ad_groups:
@@ -1341,9 +1349,10 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
 
                     break
 
+            reports_api = get_reports_api_module(user)
             if has_view_archived_permission and not show_archived and archived and\
-               not (reports.api.row_has_traffic_data(ad_group_data) or
-                    reports.api.row_has_postclick_data(ad_group_data)):
+               not (reports_api.row_has_traffic_data(ad_group_data) or
+                    reports_api.row_has_postclick_data(ad_group_data)):
                 continue
 
             row['state'] = state
@@ -1392,7 +1401,8 @@ class AccountCampaignsTable(api_common.BaseApiView):
             filter(campaign__in=campaigns).\
             order_by('campaign_id', '-created_dt')
 
-        stats = reports.api_helpers.filter_by_permissions(reports.api.query(
+        reports_api = get_reports_api_module(user)
+        stats = reports.api_helpers.filter_by_permissions(reports_api.query(
             start_date=start_date,
             end_date=end_date,
             breakdown=['campaign'],
@@ -1402,7 +1412,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
         ), request.user)
 
         totals_stats = reports.api_helpers.filter_by_permissions(
-            reports.api.query(
+            reports_api.query(
                 start_date,
                 end_date,
                 campaign=campaigns,
@@ -1427,7 +1437,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
         incomplete_postclick_metrics = \
-            not reports.api.has_complete_postclick_metrics_campaigns(
+            not reports_api.has_complete_postclick_metrics_campaigns(
                 start_date,
                 end_date,
                 campaigns,
@@ -1436,6 +1446,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
 
         response = {
             'rows': self.get_rows(
+                user,
                 campaigns,
                 campaigns_settings,
                 ad_groups_settings,
@@ -1470,7 +1481,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             helpers.get_last_sync_messages(campaigns, last_success_actions),
         )
 
-    def get_rows(self, campaigns, campaigns_settings, ad_groups_settings, stats,
+    def get_rows(self, user, campaigns, campaigns_settings, ad_groups_settings, stats,
                  last_actions, order, has_view_archived_permission, show_archived):
         rows = []
         for campaign in campaigns:
@@ -1494,9 +1505,10 @@ class AccountCampaignsTable(api_common.BaseApiView):
                     archived = campaign_settings.archived
                     break
 
+            reports_api = get_reports_api_module(user)
             if has_view_archived_permission and not show_archived and archived and\
-               not (reports.api.row_has_traffic_data(campaign_stat) or
-                    reports.api.row_has_postclick_data(campaign_stat)):
+               not (reports_api.row_has_traffic_data(campaign_stat) or
+                    reports_api.row_has_postclick_data(campaign_stat)):
                 continue
 
             state = constants.AdGroupSettingsState.INACTIVE
