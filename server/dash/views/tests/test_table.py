@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 import datetime
 import json
-from mock import patch
+from mock import patch, Mock, MagicMock, call
 
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from django.contrib.auth import models as authmodels
 
 from utils.test_helper import QuerySetMatcher
 from zemauth.models import User
@@ -17,6 +16,7 @@ from dash.views import table
 from actionlog.models import ActionLog
 import actionlog.constants
 
+import reports.redshift as redshift
 
 @override_settings(
     R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/1/{content_ad_id}/'
@@ -892,28 +892,28 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
 
 
+@patch('reports.redshift._get_cursor')
 class AllAccountsSourcesTableTest(TestCase):
     fixtures = ['test_aggregation.yaml']
 
     def setUp(self):
         self.normal_user = User.objects.get(pk=1)
         self.redshift_user = User.objects.get(pk=2)
+        redshift.STATS_DB_NAME = 'default'
 
-    def test_get_normal_all_accounts_table(self):
-        sources_table = table.AllAccountsSourcesTable(self.normal_user, 1, [])
-        print sources_table.reports_api
-        print dir(sources_table)
-
+    @patch('reports.redshift._get_results')
+    def test_get_normal_all_accounts_table(self, mock_get_cursor, mock_get_results):
+        t = table.AllAccountsSourcesTable(self.normal_user, 1, [])
         today = datetime.datetime.utcnow()
-        print sources_table.get_stats(today, today)
+        t.get_stats(today, today)
+        self.assertFalse(mock_get_results.called)
 
-    def test_get_redshift_all_accounts_table(self):
-        """
-        sources_table = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
-        print sources_table.reports_api
-        print dir(sources_table)
+    @patch('reports.redshift._get_results')
+    def test_get_redshift_all_accounts_table(self, mock_get_results, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = mock_cursor
 
+        t = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
         today = datetime.datetime.utcnow()
-        print sources_table.get_stats(today, today)
-        """
-        pass
+        t.get_stats(today, today)
+        self.assertTrue(mock_get_results.called)

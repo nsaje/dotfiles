@@ -146,10 +146,7 @@ def query_contentadstats(start_date, end_date, aggregates, field_mapping, breakd
     )
 
     results = _get_results(statement)
-
     return _translate_row(results[0], reverse_field_mapping)
-
-
 
 
 def _prepare_constraints(constraints, field_mapping):
@@ -211,7 +208,7 @@ def _create_select_query(table, fields, constraints, breakdown=None, limit = Non
         table=table,
         constraints=' AND '.join(constraints),
     )
-    
+
     if breakdown:
         cmd += ' GROUP BY {}'.format(','.join(breakdown))
 
@@ -282,13 +279,13 @@ def grouper(n, iterable):
        chunk = tuple(itertools.islice(it, n))
        if not chunk:
            return
-       yield chunk    
+       yield chunk
 
 
 class RSModel(object):
     FIELDS = []
     TABLE_NAME = "test_table"
-    
+
     def __init__(self):
         self.by_sql_mapping = {d['sql']:d for d in self.FIELDS}
         self.by_app_mapping = {d['app']:d for d in self.FIELDS}
@@ -321,7 +318,7 @@ class RSModel(object):
     def translate_order_fields(self, order_fields):
         # Order fields have speciality -- a possiblity of - in front of them
         # map order fields, we decode directions here too
-        # we also support specifying order functions to be used instead of field name 
+        # we also support specifying order functions to be used instead of field name
         # due to Redshift's inability to use aliased name inside expressions in ORDER BY
         order_fields_out = []
         for field in order_fields:
@@ -330,7 +327,7 @@ class RSModel(object):
                 direction = "DESC"
                 field = field[1:]
 
-            try: 	
+            try:
                 field_desc = self.by_app_mapping[field]
             except KeyError:
                 raise exc.ReportsQueryError('Invalid field to order by: {}'.format(field))
@@ -339,10 +336,10 @@ class RSModel(object):
                 order_statement = field_desc['order']
             except KeyError:
                 order_statement = field_desc['sql']
-                
+
             order_fields_out.append(order_statement + " " + direction)
 
-    
+
         return order_fields_out
 
 
@@ -354,21 +351,21 @@ class RSModel(object):
             if field_name_app not in self.constraints_fields_app:
                 raise exc.ReportsQueryError("Unsupported field constraint fields: {}".format(field_name_app))
             field_name_sql = self.by_app_mapping[field_name_app]['sql']
-            
+
             if len(parts) == 2:
                 operator = parts[1]
             else:
                 operator = "eq"
-            
+
             constraint_tuples.append((field_name_sql, operator, val))
         return constraint_tuples
-     
+
 
     def get_returned_fields(self):
         return self.expand_sql_fields(self.translate_app_fields(self.DEFAULT_RETURNED_FIELDS_APP))
 
-    def constraints_to_str(self, constraints):    
-        constraints_tuples = self.translate_constraints(constraints) 
+    def constraints_to_str(self, constraints):
+        constraints_tuples = self.translate_constraints(constraints)
 
         # returns a string and list of params
         result = []
@@ -397,7 +394,7 @@ class RSModel(object):
         return " AND ".join(result), params
 
     def execute_select_query(self, breakdown_fields, order_fields, offset, limit, constraints):
-        (statement, params) = self.prepare_select_query(breakdown_fields, order_fields, offset, limit, constraints)    
+        (statement, params) = self.prepare_select_query(breakdown_fields, order_fields, offset, limit, constraints)
         results = general_get_results(statement, params)
         results = self.map_results_to_app(results)
         return results
@@ -406,9 +403,9 @@ class RSModel(object):
         # Takes app-based fields and first checks & translates them and then creates a query
         # first translate constraints into tuples, then create a single constraints str
         (constraint_str, constraint_params) = self.constraints_to_str(constraints)
-        breakdown_fields = self.translate_breakdown_fields(breakdown_fields)    
+        breakdown_fields = self.translate_breakdown_fields(breakdown_fields)
         order_fields = self.translate_order_fields(order_fields)
-        returned_fields = self.get_returned_fields() 
+        returned_fields = self.get_returned_fields()
 
         statement= self.form_select_query(
             self.TABLE_NAME,
@@ -429,18 +426,18 @@ class RSModel(object):
             table=table,
             constraints=constraints,
         )
-        
+
         if breakdown_fields:
             cmd += ' GROUP BY {}'.format(','.join(breakdown_fields))
 
         if order_fields:
-            cmd += " ORDER BY " 
+            cmd += " ORDER BY "
             order_cmds = []
             for order_field in order_fields:
                 # order_field might actually be an expression
                 order_cmds.append('{}'.format(order_field))
             cmd += " " + ",".join(order_cmds) + " "
-            
+
         if limit:
             cmd += " LIMIT " + str(limit)
         if offset:
@@ -476,13 +473,13 @@ class RSModel(object):
         if not max_at_a_time:
             max_at_a_time = self.MAX_AT_A_TIME
         fields_str = "(" + ",".join(fields_sql) +")"
-        fields_placeholder = "(" + ",".join(["%s"]*len(fields_sql)) + ")" 
+        fields_placeholder = "(" + ",".join(["%s"]*len(fields_sql)) + ")"
         for row_tuples in grouper(max_at_a_time, all_row_tuples):
             statement = "INSERT INTO {table} {fields} VALUES {fields_strs}".format(table=self.TABLE_NAME,
                                                                         fields=fields_str,
                                                                         fields_strs=",".join([fields_placeholder]*len(row_tuples))
                                                                         )
-                                            
+
             row_tuples_flat = [item for sublist in row_tuples for item in sublist]
 #            general_get_results(statement, row_tuples_flat)
             cursor = _get_cursor()
@@ -493,14 +490,14 @@ class RSModel(object):
         if not constraints:
             raise exc.ReportsQueryError("Delete query without specifying constraints")
         (constraint_str, constraint_params) = self.constraints_to_str(constraints)
-               
+
         statement = 'DELETE FROM "{table}" WHERE {constraints_str}'.format(table=self.TABLE_NAME,
                                                                     constraints_str=constraint_str)
         cursor = _get_cursor()
         cursor.execute(statement, constraint_params)
 
 
-             
+
 
 def general_get_results(statement, args):
     cursor = _get_cursor()

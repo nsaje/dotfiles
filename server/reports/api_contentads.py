@@ -129,8 +129,7 @@ def query_all_accounts_source_postclick_metrics(start_date, end_date, accounts, 
     )
 
 
-def query(start_date, end_date, breakdown=None, constraints={}):
-
+def query(start_date, end_date, breakdown=None, **constraints):
     if breakdown and len(set(breakdown) - api_helpers.DIMENSIONS) != 0:
         raise exc.ReportsQueryError('Invalid breakdown')
 

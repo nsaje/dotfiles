@@ -18,7 +18,6 @@ from utils.sort_helper import sort_results
 import reports.api
 import reports.api_helpers
 import reports.api_contentads
-import reports.api_redshift
 import reports.api_publishers
 import actionlog.sync
 
@@ -70,7 +69,7 @@ def has_aggregate_postclick_permission(user):
 
 def get_reports_api_module(user):
     if user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
-        return reports.api_redshift
+        return reports.api_contentads
     else:
         return reports.api
 
