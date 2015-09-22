@@ -352,7 +352,7 @@ class GAReport(Report):
                 if keyword_or_url is None or keyword_or_url.strip() == '':
                     continue
 
-                if keyword_or_url.startswith('Day Index'):
+                if keyword_or_url.startswith('Day Index') or keyword_or_url.startswith('Hour Index'):
                     break
 
                 content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
@@ -484,10 +484,18 @@ class GAReport(Report):
     def _get_sessions_total(self, footer):
         reader = csv.DictReader(footer)
         try:
-            line = reader.next()
-            return int(line['Sessions'].strip().replace(',', ''))
+            for row in reader:
+                if 'Day Index' in row:
+                    return _report_atoi(row['Sessions'])
+                else:
+                    break
+
+            for row in reader:
+                if 'Hour Index' in row and row['Hour Index'] == '':
+                    return _report_atoi(row['Sessions'])
         except:
             raise exc.CsvParseException('Could not parse total sessions')
+        raise exc.CsvParseException('Could not parse total sessions')
 
     def _extract_header_lines(self, raw_report_string):
         # assuming headers are less than 10 lines
@@ -505,18 +513,21 @@ class GAReport(Report):
                 if 'Pages/Session' in line:
                     line = line.replace('Pages/Session', 'Pages / Session')
                 mainlines.append(line)
-            if inside and line.strip() == "" or line.strip().startswith('Day Index'):
+            stripped_line = line.strip()
+            if inside and stripped_line == "" or\
+                stripped_line.startswith('Day Index') or\
+                stripped_line.startswith('Hour Index'):
                 break
 
         inside = False
-        day_index_lines = []
+        index_lines = []
         for line in split_raw_report_string:
-            if not inside and line.startswith('Day Index'):
+            if not inside and (line.startswith('Day Index') or line.startswith('Hour Index')):
                 inside = True
             if inside and line.strip() != "":
-                day_index_lines.append(line)
+                index_lines.append(line)
 
-        return StringIO.StringIO('\n'.join(mainlines)), StringIO.StringIO('\n'.join(day_index_lines))
+        return StringIO.StringIO('\n'.join(mainlines)), StringIO.StringIO('\n'.join(index_lines))
 
 
 class OmnitureReport(Report):
