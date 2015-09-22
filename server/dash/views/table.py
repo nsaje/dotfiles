@@ -124,7 +124,7 @@ class AllAccountsSourcesTable(object):
         return self._last_success_actions
 
     def is_sync_in_progress(self):
-        return self.reports_api.is_sync_in_progress(accounts=self.accounts, sources=self.filtered_sources)
+        return actionlog.api.is_sync_in_progress(accounts=self.accounts, sources=self.filtered_sources)
 
     def get_data_status(self):
         return helpers.get_data_status(

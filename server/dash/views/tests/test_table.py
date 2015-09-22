@@ -929,53 +929,6 @@ class AllAccountsSourcesTableTest(TestCase):
 
         t = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
         today = datetime.datetime.utcnow()
-        self.assertFalse(t.has_complete_postclick_metrics(today, today))
+        self.assertTrue(t.has_complete_postclick_metrics(today, today))
 
-
-        """
-    def has_complete_postclick_metrics(self, start_date, end_date):
-        return self.reports_api.has_complete_postclick_metrics_accounts(
-            start_date, end_date, self.accounts, self.filtered_sources)
-
-    def get_sources(self):
-        return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
-
-    def get_stats(self, start_date, end_date):
-        sources_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
-            start_date,
-            end_date,
-            ['source'],
-            account=self.accounts,
-            source=self.filtered_sources
-        ), self.user)
-
-        totals_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
-            start_date,
-            end_date,
-            account=self.accounts,
-            source=self.filtered_sources,
-        ), self.user)
-
-        return sources_stats, totals_stats
-
-    def get_yesterday_cost(self):
-        yesterday_cost = self.reports_api.get_yesterday_cost(account=self.accounts)
-        yesterday_total_cost = None
-        if yesterday_cost:
-            yesterday_total_cost = sum(yesterday_cost.values())
-
-        return yesterday_cost, yesterday_total_cost
-
-    def get_last_success_actions(self):
-        if not hasattr(self, '_last_success_actions'):
-            self._last_success_actions = actionlog.sync.GlobalSync(
-                sources=self.filtered_sources
-            ).get_latest_source_success()
-        return self._last_success_actions
-
-    def is_sync_in_progress(self):
-        return self.reports_api.is_sync_in_progress(accounts=self.accounts, sources=self.filtered_sources)
-
-    def get_data_status(self):
-
-        """
+        self.assertFalse(t.is_sync_in_progress())
