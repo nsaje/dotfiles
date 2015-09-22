@@ -248,7 +248,11 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
         map_exchange_to_source_name = {}
         # bidder_slug is unique, so no issues with taking all of the sources
         for s in filtered_sources:
-            map_exchange_to_source_name[s.bidder_slug] = s.name
+            if s.bidder_slug:
+                exchange_name = s.bidder_slug
+            else: 
+                exchange_name = s.name
+            map_exchange_to_source_name[exchange_name] = s.name
      
         if totals:
             totals_constraints = {'ad_group': int(ad_group.id)}
@@ -256,7 +260,6 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
         if set(models.Source.objects.all()) != set(filtered_sources):
             totals_constraints['exchange'] = map_exchange_to_source_name.keys()
             
-
         stats = self.get_stats(request, totals_constraints, selected_kwargs=None, group_key='source')
 
         return self.create_api_response(self.get_response_dict(

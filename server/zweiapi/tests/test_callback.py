@@ -766,7 +766,7 @@ class FetchReportsTestCase(TestCase):
 
 class FetchReportsByPublisherTestCase(TestCase):
 
-    fixtures = ['test_zwei_api.yaml']
+    fixtures = ['test_zwei_api.yaml', 'test_article_stats_ob.yaml']
 
     @mock.patch('reports.api_publishers.ob_insert_adgroup_date')
     def test_fetch_reports_by_publisher(self, ob_insert_adgroup_date):
@@ -782,12 +782,13 @@ class FetchReportsByPublisherTestCase(TestCase):
         }
 
         ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
-        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 7, 1), zwei_response_data)
+        response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 6, 4), zwei_response_data)
         ob_insert_adgroup_date.assert_has_calls ([mock.call(
-                                              datetime.date(2014,7,1), 
+                                              datetime.date(2014,6,4), 
                                               1,
                                               "Outbrain",
-                                              [article_row]
+                                              [article_row],
+                                              1.9043	# daily cost
                                               )])
 
 

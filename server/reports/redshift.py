@@ -333,12 +333,11 @@ class RSModel(object):
                 raise exc.ReportsQueryError('Invalid field to order by: {}'.format(field))
 
             try:
-                order_statement = field_desc['order']
+                order_statement = field_desc['order'].format(direction=direction)
             except KeyError:
-                order_statement = field_desc['sql']
+                order_statement = field_desc['sql'] + " " + direction
 
-            order_fields_out.append(order_statement + " " + direction)
-
+            order_fields_out.append(order_statement)
 
         return order_fields_out
 

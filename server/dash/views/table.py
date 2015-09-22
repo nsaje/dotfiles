@@ -1559,8 +1559,11 @@ class PublishersTable(api_common.BaseApiView):
 
         # bidder_slug is unique, so no issues with taking all of the sources
         for s in filtered_sources:
-            map_exchange_to_source_name[s.bidder_slug] = s.name
-
+            if s.bidder_slug:
+                exchange_name = s.bidder_slug
+            else:
+                exchange_name = s.name
+            map_exchange_to_source_name[exchange_name] = s.name
         # this is a really bad practice, but used extensively in models.py
         # it should be factored out at the same time as that
         if set(models.Source.objects.all()) != set(filtered_sources):
