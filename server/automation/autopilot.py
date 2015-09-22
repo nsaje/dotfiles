@@ -102,8 +102,6 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
         current_cpc < automation.settings.AUTOPILOT_MIN_CPC
     ]):
         return current_cpc
-    assert isinstance(current_daily_budget, decimal.Decimal)
-    assert isinstance(current_cpc, decimal.Decimal)
     if not isinstance(yesterdays_spend, decimal.Decimal):
         yesterdays_spend = decimal.Decimal(yesterdays_spend)
     spending_perc = yesterdays_spend / current_daily_budget - 1
@@ -123,9 +121,10 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
 
 
 def _threshold_lowering_cpc(current_cpc, new_cpc):
-    if abs(current_cpc - new_cpc) < automation.settings.AUTOPILOT_MIN_LOWERING_CPC_CHANGE:
+    cpc_change = abs(current_cpc - new_cpc)
+    if cpc_change < automation.settings.AUTOPILOT_MIN_LOWERING_CPC_CHANGE:
         return current_cpc - automation.settings.AUTOPILOT_MIN_LOWERING_CPC_CHANGE
-    if abs(current_cpc - new_cpc) > automation.settings.AUTOPILOT_MAX_LOWERING_CPC_CHANGE:
+    if cpc_change > automation.settings.AUTOPILOT_MAX_LOWERING_CPC_CHANGE:
         return current_cpc - automation.settings.AUTOPILOT_MAX_LOWERING_CPC_CHANGE
     return new_cpc
 
@@ -138,13 +137,13 @@ def _round_cpc(num):
 
 def send_autopilot_CPC_changes_email(campaign_name, campaign_id, account_name, emails, changesData):
     changesText = []
-    for adg, changes in changesData.iteritems():
+    for adgroup, changes in changesData.iteritems():
         changesText.append(
             u'''
 
 AdGroup: {adg_name} ({adg_url}):'''.format(
-                adg_name=adg[0],
-                adg_url=settings.BASE_URL + '/ad_groups/{}/sources/'.format(adg[1])
+                adg_name=adgroup[0],
+                adg_url=settings.BASE_URL + '/ad_groups/{}/sources/'.format(adgroup[1])
                 )
         )
         for change in changes:
@@ -197,10 +196,10 @@ Zemanta
 
 def adjust_autopilot_media_sources_bid_cpcs():
     changes = {}
-    for adg in automation.helpers.get_all_active_ad_groups():
+    for adgroup in automation.helpers.get_all_active_ad_groups():
 
-        yesterday_spends = reports.api.get_yesterday_cost(ad_group=adg)
-        for ad_group_source_settings in get_autopilot_ad_group_sources_settings(adg):
+        yesterday_spends = reports.api.get_yesterday_cost(ad_group=adgroup)
+        for ad_group_source_settings in get_autopilot_ad_group_sources_settings(adgroup):
             if ad_group_sources_daily_budget_was_changed_recently(ad_group_source_settings.ad_group_source):
                 continue
 
@@ -229,11 +228,11 @@ def adjust_autopilot_media_sources_bid_cpcs():
                 proposed_cpc
             )
 
-            if adg.campaign not in changes:
-                changes[adg.campaign] = {}
-            if (adg.name, adg.id) not in changes[adg.campaign]:
-                changes[adg.campaign][(adg.name, adg.id)] = []
-            changes[adg.campaign][(adg.name, adg.id)].append({
+            if adgroup.campaign not in changes:
+                changes[adgroup.campaign] = {}
+            if (adgroup.name, adgroup.id) not in changes[adgroup.campaign]:
+                changes[adgroup.campaign][(adgroup.name, adgroup.id)] = []
+            changes[adgroup.campaign][(adgroup.name, adgroup.id)].append({
                 'source_name': ad_group_source_settings.ad_group_source.source.name,
                 'old_cpc': ad_group_source_settings.cpc_cc,
                 'new_cpc': proposed_cpc

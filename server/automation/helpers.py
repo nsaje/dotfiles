@@ -120,9 +120,9 @@ def get_total_daily_budget_amount(campaign):
 
 def get_latest_ad_group_source_state(ad_group_source):
     try:
-        latest_settings = dash.models.AdGroupSourceState.objects \
+        latest_state = dash.models.AdGroupSourceState.objects \
             .filter(ad_group_source=ad_group_source) \
             .latest('created_dt')
-        return latest_settings
+        return latest_state
     except dash.models.AdGroupSourceState.DoesNotExist:
         return None

@@ -126,7 +126,8 @@ class BudgetDepletionTestCase(test.TestCase):
     @patch('automation.settings.AUTOPILOT_MIN_LOWERING_CPC_CHANGE', decimal.Decimal('0.2'))
     @patch('automation.settings.AUTOPILOT_MAX_LOWERING_CPC_CHANGE', decimal.Decimal('0.3'))
     def test_calculate_new_autopilot_cpc(self):
-        t = {
+        test_cases = {
+            #  cpc, daily_budget, yesterday_spend, new_cpc
             ('0', '10', '5', '0'),
             ('0.5', '10', '8', '0.75'),
             ('0.5', '10', '10', '0.25'),
@@ -143,12 +144,12 @@ class BudgetDepletionTestCase(test.TestCase):
             ('3.5', '10', '1', '3.5'),
             ('0.05', '10', '1', '0.05')
         }
-        for r in t:
+        for test_case in test_cases:
             self.assertEqual(autopilot.calculate_new_autopilot_cpc(
-                decimal.Decimal(r[0]),
-                decimal.Decimal(r[1]),
-                decimal.Decimal(r[2])),
-                decimal.Decimal(r[3]))
+                decimal.Decimal(test_case[0]),
+                decimal.Decimal(test_case[1]),
+                decimal.Decimal(test_case[2])),
+                decimal.Decimal(test_case[3]))
 
     def test_send_autopilot_CPC_changes_email(self):
         autopilot.send_autopilot_CPC_changes_email(
