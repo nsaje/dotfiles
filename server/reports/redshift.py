@@ -292,6 +292,9 @@ class MyCursor(object):
             dict(zip([col[0] for col in desc], row))
             for row in self.cursor.fetchall()
         ]
+        
+    def close(self):
+        self.cursor.close()
 
 
 class RSModel(object):

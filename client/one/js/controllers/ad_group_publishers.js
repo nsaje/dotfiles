@@ -81,7 +81,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             checked: true,
             type: 'currency',
             shown: true,
-            help: "Amount spent per media source.",
+            help: "Amount spent per publisher.",
             totalRow: true,
             order: true,
             initialOrder: 'desc'
