@@ -71,14 +71,16 @@ def ad_group_sources_daily_budget_was_changed_recently(ad_group_source):
 def get_autopilot_ad_group_sources_settings(adgroup):
     autopilot_sources_settings = []
     for current_source_settings in automation.helpers.get_active_ad_group_sources_settings(adgroup):
-        if (current_source_settings.autopilot_state == dash.constants.AdGroupSourceSettingsAutopilotState.ACTIVE):
-            if current_source_settings.cpc_cc is None or current_source_settings.daily_budget_cc is None:
-                source_state = automation.helpers.get_latest_ad_group_source_state(current_source_settings.ad_group_source)
-                if current_source_settings.cpc_cc is None and source_state is not None and source_state.cpc_cc is not None:
-                    current_source_settings.cpc_cc = source_state.cpc_cc
-                if current_source_settings.daily_budget_cc is None and source_state is not None and source_state.daily_budget_cc is not None:
-                    current_source_settings.daily_budget_cc = source_state.daily_budget_cc
-            autopilot_sources_settings.append(current_source_settings)
+        if current_source_settings.autopilot_state != dash.constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
+            continue
+        autopilot_sources_settings.append(current_source_settings)
+        if current_source_settings.cpc_cc is not None and current_source_settings.daily_budget_cc is not None:
+            continue
+        source_state = automation.helpers.get_latest_ad_group_source_state(current_source_settings.ad_group_source)
+        if current_source_settings.cpc_cc is None and source_state is not None and source_state.cpc_cc is not None:
+            current_source_settings.cpc_cc = source_state.cpc_cc
+        if current_source_settings.daily_budget_cc is None and source_state is not None and source_state.daily_budget_cc is not None:
+            current_source_settings.daily_budget_cc = source_state.daily_budget_cc
     return autopilot_sources_settings
 
 
