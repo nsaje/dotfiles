@@ -13,6 +13,7 @@ from django import forms
 from django.core import validators
 
 from dash import constants
+from dash import models
 from dash import regions
 from zemauth.models import User as ZemUser
 
@@ -266,7 +267,6 @@ class ConversionGoalForm(forms.Form):
         max_length=100,
         required=True,
         error_messages={
-            'required': 'Please specify conversion goal name.',
             'max_length': 'Conversion goal name is too long (%(show_value)d/%(limit_value)d).',
         }
     )
@@ -281,19 +281,37 @@ class ConversionGoalForm(forms.Form):
         coerce=int,
     )
     goal_id = forms.CharField(
-        required=False,
+        required=True,
         max_length=100,
         error_messages={
             'max_length': 'Conversion goal id is too long (%(show_value)d/%(limit_value)d).',
         }
     )
 
+    def __init__(self, *args, **kwargs):
+        self.campaign_id = kwargs.pop('campaign_id')
+        super(ConversionGoalForm, self).__init__(*args, **kwargs)
+
     def clean(self):
         cleaned_data = super(ConversionGoalForm, self).clean()
 
-        if cleaned_data['type'] == constants.ConversionGoalType.PIXEL:
+        if cleaned_data.get('type') == constants.ConversionGoalType.PIXEL:
             if not cleaned_data.get('conversion_window'):
-                self.add_error('conversion_window', 'Conversion window has to be set.')
+                self.add_error('conversion_window', 'This field is required.')
+
+        try:
+            models.ConversionGoal.objects.get(campaign_id=self.campaign_id, name=cleaned_data.get('name'))
+            self.add_error('name', 'This field has to be unique.')
+        except models.ConversionGoal.DoesNotExist:
+            pass
+
+        try:
+            models.ConversionGoal.objects.get(campaign_id=self.campaign_id,
+                                              type=cleaned_data.get('type'),
+                                              goal_id=cleaned_data.get('goal_id'))
+            self.add_error('goal_id', 'This field has to be unique.')
+        except models.ConversionGoal.DoesNotExist:
+            pass
 
 
 class CampaignAgencyForm(forms.Form):

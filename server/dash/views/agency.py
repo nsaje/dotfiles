@@ -181,7 +181,7 @@ class CampaignAgency(api_common.BaseApiView):
             'settings': self.get_dict(campaign_settings, campaign),
             'account_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
             'sales_reps': self.get_user_list(campaign_settings, 'campaign_settings_sales_rep'),
-            'history': self.get_history(campaign),
+            'history': self.get_history(campaign, request.user),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
         }
@@ -207,7 +207,7 @@ class CampaignAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, campaign),
-            'history': self.get_history(campaign),
+            'history': self.get_history(campaign, request.user),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
         }
@@ -240,7 +240,7 @@ class CampaignAgency(api_common.BaseApiView):
 
         zwei_actions.send(actions)
 
-    def get_history(self, campaign):
+    def get_history(self, campaign, user):
         settings = models.CampaignSettings.objects.\
             filter(campaign=campaign).\
             order_by('created_dt')
@@ -253,15 +253,20 @@ class CampaignAgency(api_common.BaseApiView):
             changes = old_settings.get_setting_changes(new_settings) \
                 if old_settings is not None else None
 
-            if i > 0 and not changes:
-                continue
-
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
+
+            if new_settings.changes_text is not None:
+                changes_text = new_settings.changes_text
+            else:
+                changes_text = self.convert_changes_to_string(changes, settings_dict)
+
+            if i > 0 and not changes_text:
+                continue
 
             history.append({
                 'datetime': new_settings.created_dt,
                 'changed_by': new_settings.created_by.email,
-                'changes_text': self.convert_changes_to_string(changes, settings_dict),
+                'changes_text': changes_text,
                 'settings': settings_dict.values(),
                 'show_old_settings': old_settings is not None
             })
@@ -387,24 +392,32 @@ class CampaignConversionGoals(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         rows = []
+        pixel_ids_already_added = []
         for conversion_goal in campaign.conversiongoal_set.select_related('pixel').all():
             row = {
                 'id': conversion_goal.id,
                 'type': conversion_goal.type,
                 'name': conversion_goal.name,
-                'conversion_window': conversion_goal.window,
+                'conversion_window': conversion_goal.conversion_window,
                 'goal_id': conversion_goal.goal_id,
             }
 
             if conversion_goal.type == constants.ConversionGoalType.PIXEL:
+                pixel_ids_already_added.append(conversion_goal.pixel.id)
                 row['pixel'] = {
                     'id': conversion_goal.pixel.id,
                     'slug': conversion_goal.pixel.slug,
+                    'url': _get_conversion_pixel_url(campaign.account_id, conversion_goal.pixel.slug),
                     'archived': conversion_goal.pixel.archived,
                 }
 
+            rows.append(row)
+
         available_pixels = []
         for conversion_pixel in campaign.account.conversionpixel_set.filter(archived=False):
+            if conversion_pixel.id in pixel_ids_already_added:
+                continue
+
             available_pixels.append({
                 'id': conversion_pixel.id,
                 'slug': conversion_pixel.slug,
@@ -427,25 +440,24 @@ class CampaignConversionGoals(api_common.BaseApiView):
         except ValueError:
             raise exc.ValidationError()
 
-        name = data.get('name')
-        type = data.get('type')
-        conversion_window = data.get('conversion_window')
-        goal_id = data.get('goal_id')
-
-        form = forms.ConversionGoalForm({
-            'name': name,
-            'type': type,
-            'conversion_window': conversion_window,
-            'goal_id': goal_id,
-        })
+        form = forms.ConversionGoalForm(
+            {
+                'name': data.get('name'),
+                'type': data.get('type'),
+                'conversion_window': data.get('conversion_window'),
+                'goal_id': data.get('goal_id'),
+            },
+            campaign_id=campaign_id
+        )
 
         if not form.is_valid():
-            raise exc.ValidationError(message=' '.join(dict(form.errors)['slug']))
+            raise exc.ValidationError(errors=form.errors)
 
-        conversion_goal = models.ConversionGoal(campaign_id=campaign.id, type=type, name=name)
-        if type == constants.ConversionGoalType.PIXEL:
+        conversion_goal = models.ConversionGoal(campaign_id=campaign.id, type=form.cleaned_data['type'],
+                                                name=form.cleaned_data['name'])
+        if form.cleaned_data['type'] == constants.ConversionGoalType.PIXEL:
             try:
-                pixel = models.ConversionPixel.objects.get(account_id=campaign.account_id, slug=goal_id)
+                pixel = models.ConversionPixel.objects.get(id=form.cleaned_data['goal_id'])
             except models.ConversionPixel.DoesNotExist:
                 raise exc.MissingDataError()
 
@@ -453,36 +465,21 @@ class CampaignConversionGoals(api_common.BaseApiView):
                 raise exc.MissingDataError()
 
             conversion_goal.pixel = pixel
-            conversion_goal.window = conversion_window
+            conversion_goal.conversion_window = form.cleaned_data['conversion_window']
         else:
-            conversion_goal.goal_id = goal_id
+            conversion_goal.goal_id = form.cleaned_data['goal_id']
 
         with transaction.atomic():
             conversion_goal.save()
 
             new_settings = campaign.get_current_settings().copy_settings()
-            new_settings.changes_text = u'Added conversion goal with name {} of type {}.'.format(
+            new_settings.changes_text = u'Added conversion goal with name "{}" of type {}'.format(
                 conversion_goal.name,
                 constants.ConversionGoalType.get_text(conversion_goal.type)
             )
             new_settings.save(request)
 
-        res = {
-            'id': conversion_goal.id,
-            'name': conversion_goal.name,
-            'type': conversion_goal.type,
-            'goal_id': conversion_goal.goal_id,
-            'conversion_window': conversion_goal.goal_id,
-        }
-
-        if conversion_goal.type == constants.ConversionGoalType.PIXEL:
-            res['pixel'] = {
-                'id': conversion_goal.pixel.id,
-                'slug': conversion_goal.pixel.slug,
-                'archived': conversion_goal.pixel.archived,
-            }
-
-        return self.create_api_response(res)
+        return self.create_api_response()
 
 
 class ConversionGoal(api_common.BaseApiView):
@@ -492,9 +489,17 @@ class ConversionGoal(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         conversion_goal = models.ConversionGoal.objects.get(id=conversion_goal_id)
-        helpers.get_campaign(request.user, conversion_goal.campaign_id)  # check authorization
+        campaign = helpers.get_campaign(request.user, conversion_goal.campaign_id)  # checks authorization
 
-        conversion_goal.delete()
+        with transaction.atomic():
+            conversion_goal.delete()
+
+            new_settings = campaign.get_current_settings().copy_settings()
+            new_settings.changes_text = u'Deleted conversion goal "{}"'.format(
+                conversion_goal.name,
+                constants.ConversionGoalType.get_text(conversion_goal.type)
+            )
+            new_settings.save(request)
         return self.create_api_response()
 
 
