@@ -11,9 +11,10 @@ from utils.statsd_helper import statsd_timer
 from utils import db_aggregates
 
 from reports import exc
-from reports.db_raw_helpers import dictfetchall, get_obj_id, quote
+from reports.db_raw_helpers import get_obj_id, quote, dictfetchall
 
 from psycopg2.extensions import adapt as sqladapt
+
 
 @statsd_timer('reports.redshift', 'delete_contentadstats')
 def delete_contentadstats(date, ad_group_id, source_id):
@@ -173,7 +174,6 @@ def _prepare_constraints(constraints, field_mapping):
     return result
 
 
-
 def _prepare_aggregates(aggregates, field_mapping):
     processed_aggrs = []
     for key, aggr in aggregates.iteritems():
@@ -202,7 +202,7 @@ def _translate_row(row, reverse_field_mapping):
     return {reverse_field_mapping.get(k, k): v for k, v in row.iteritems()}
 
 
-def _create_select_query(table, fields, constraints, breakdown=None, limit = None, offset = None):
+def _create_select_query(table, fields, constraints, breakdown=None):
     cmd = 'SELECT {fields} FROM {table} WHERE {constraints}'.format(
         fields=','.join(fields),
         table=table,
@@ -212,10 +212,6 @@ def _create_select_query(table, fields, constraints, breakdown=None, limit = Non
     if breakdown:
         cmd += ' GROUP BY {}'.format(','.join(breakdown))
 
-    if limit:
-        cmd += " LIMIT " + str(limit)
-    if offset:
-        cmd += " OFFSET " + str(offset)
     return cmd
 
 
@@ -255,9 +251,9 @@ def _get_cursor():
     return connections[settings.STATS_DB_NAME].cursor()
 
 
-def _get_results(statement, args = None):
+def _get_results(statement, args=None):
     cursor = _get_cursor()
-    if args == None:
+    if args is None:
         args = []
     cursor.execute(statement, args)
 
@@ -272,14 +268,30 @@ def _get_row_string(cursor, cols, row):
 
 # New style API
 
+
 # iterate in chunks, python recepie
 def grouper(n, iterable):
     it = iter(iterable)
     while True:
-       chunk = tuple(itertools.islice(it, n))
-       if not chunk:
-           return
-       yield chunk
+        chunk = tuple(itertools.islice(it, n))
+        if not chunk:
+            return
+        yield chunk
+
+# In order to make testing easier, we abstract all the DB interactions
+class MyCursor(object):
+    def __init__(self, cursor):
+        self.cursor = cursor
+
+    def execute(self, statement, params):
+        self.cursor.execute(statement, params)
+
+    def dictfetchall(self):
+        desc = self.cursor.description
+        return [
+            dict(zip([col[0] for col in desc], row))
+            for row in self.cursor.fetchall()
+        ]
 
 
 class RSModel(object):
@@ -287,21 +299,22 @@ class RSModel(object):
     TABLE_NAME = "test_table"
 
     def __init__(self):
-        self.by_sql_mapping = {d['sql']:d for d in self.FIELDS}
-        self.by_app_mapping = {d['app']:d for d in self.FIELDS}
+        # set-up lookup tables
+        self.by_sql_mapping = {d['sql']: d for d in self.FIELDS}
+        self.by_app_mapping = {d['app']: d for d in self.FIELDS}
 
-        # by default all fields are allowed as constraints, overload if needed
+        # by default all fields are allowed as constraints
         self.constraints_fields_app = set(self.by_app_mapping.keys())
 
     def translate_app_fields(self, field_names):
         return [self.by_app_mapping[field_name]['sql'] for field_name in field_names]
 
-    def expand_sql_fields(self, field_names):
+    def expand_returned_sql_fields(self, field_names):
         fields = []
         for field_name in field_names:
             desc = self.by_sql_mapping[field_name]
             if "calc" in desc:
-                field_expanded = desc["calc"] + " AS \"" + field_name +"\""
+                field_expanded = desc["calc"] + " AS \"" + field_name + "\""
             else:
                 field_expanded = '"' + field_name + '"'
             fields.append(field_expanded)
@@ -313,7 +326,6 @@ class RSModel(object):
             raise exc.ReportsQueryError('Invalid breakdowns: {}'.format(str(unknown_fields)))
         breakdown_fields = self.translate_app_fields(breakdown_fields)
         return breakdown_fields
-
 
     def translate_order_fields(self, order_fields):
         # Order fields have speciality -- a possiblity of - in front of them
@@ -341,7 +353,6 @@ class RSModel(object):
 
         return order_fields_out
 
-
     def translate_constraints(self, constraints):
         constraint_tuples = []
         for constraint_name, val in constraints.iteritems():
@@ -359,9 +370,8 @@ class RSModel(object):
             constraint_tuples.append((field_name_sql, operator, val))
         return constraint_tuples
 
-
-    def get_returned_fields(self):
-        return self.expand_sql_fields(self.translate_app_fields(self.DEFAULT_RETURNED_FIELDS_APP))
+    def get_returned_fields(self, returned_fields):
+        return self.expand_returned_sql_fields(self.translate_app_fields(returned_fields))
 
     def constraints_to_str(self, constraints):
         constraints_tuples = self.translate_constraints(constraints)
@@ -380,7 +390,7 @@ class RSModel(object):
             elif operator == "eq":
                 if (isinstance(value, collections.Sequence) or isinstance(value, QuerySet)) and type(value) not in (str, unicode):
                     if value:
-                        result.append('{} IN ({})'.format(field_name, ','.join(["%s"]*len(value))))
+                        result.append('{} IN ({})'.format(field_name, ','.join(["%s"] * len(value))))
                         params.extend(value)
                     else:
                         result.append('FALSE')
@@ -392,21 +402,15 @@ class RSModel(object):
 
         return " AND ".join(result), params
 
-    def execute_select_query(self, breakdown_fields, order_fields, offset, limit, constraints):
-        (statement, params) = self.prepare_select_query(breakdown_fields, order_fields, offset, limit, constraints)
-        results = general_get_results(statement, params)
-        results = self.map_results_to_app(results)
-        return results
-
-    def prepare_select_query(self, breakdown_fields, order_fields, offset, limit, constraints):
+    def prepare_select_query(self, returned_fields, breakdown_fields, order_fields, offset, limit, constraints):
         # Takes app-based fields and first checks & translates them and then creates a query
         # first translate constraints into tuples, then create a single constraints str
         (constraint_str, constraint_params) = self.constraints_to_str(constraints)
         breakdown_fields = self.translate_breakdown_fields(breakdown_fields)
         order_fields = self.translate_order_fields(order_fields)
-        returned_fields = self.get_returned_fields()
+        returned_fields = self.get_returned_fields(returned_fields)
 
-        statement= self.form_select_query(
+        statement = self.form_select_query(
             self.TABLE_NAME,
             breakdown_fields + returned_fields,
             constraint_str,
@@ -419,23 +423,18 @@ class RSModel(object):
         return (statement, constraint_params)
 
     @staticmethod
-    def form_select_query(table, fields, constraints, breakdown_fields=None, order_fields=None, limit = None, offset = None):
-        cmd = 'SELECT {fields} FROM {table} WHERE {constraints}'.format(
+    def form_select_query(table, fields, constraint_str, breakdown_fields=None, order_fields=None, limit=None, offset=None):
+        cmd = 'SELECT {fields} FROM {table} WHERE {constraint_str}'.format(
             fields=','.join(fields),
             table=table,
-            constraints=constraints,
+            constraint_str=constraint_str,
         )
 
         if breakdown_fields:
             cmd += ' GROUP BY {}'.format(','.join(breakdown_fields))
 
         if order_fields:
-            cmd += " ORDER BY "
-            order_cmds = []
-            for order_field in order_fields:
-                # order_field might actually be an expression
-                order_cmds.append('{}'.format(order_field))
-            cmd += " " + ",".join(order_cmds) + " "
+            cmd += " ORDER BY " + ",".join(order_fields) + " "
 
         if limit:
             cmd += " LIMIT " + str(limit)
@@ -443,13 +442,8 @@ class RSModel(object):
             cmd += " OFFSET " + str(offset)
         return cmd
 
-
-
-
-
-
     def map_results_to_app(self, rows):
-        # this passthrough just makes testing much easier
+        # this passthrough makes testing much easier as we keep the original mock
         if len(rows) == 0:
             return rows
         return [self.map_result_to_app(row) for row in rows]
@@ -465,49 +459,43 @@ class RSModel(object):
 
         return result
 
+    # Execute functions actually execute the queries
+    # Each one needs cursor passed into it
+    # Default cursor can be obtained by get_cursor()
+
+    def execute_select_query(self, cursor, returned_fields, breakdown_fields, order_fields, offset, limit, constraints):
+        (statement, params) = self.prepare_select_query(returned_fields, breakdown_fields, order_fields, offset, limit, constraints)
+
+        cursor.execute(statement, params)
+        results = cursor.dictfetchall()
+        results = self.map_results_to_app(results)
+        return results
 
     MAX_AT_A_TIME = 100
+
     # This function specifically takes sql-named fields
-    def execute_multi_insert_sql(self, fields_sql, all_row_tuples, max_at_a_time = None):
+    def execute_multi_insert_sql(self, cursor, fields_sql, all_row_tuples, max_at_a_time=None):
         if not max_at_a_time:
             max_at_a_time = self.MAX_AT_A_TIME
-        fields_str = "(" + ",".join(fields_sql) +")"
-        fields_placeholder = "(" + ",".join(["%s"]*len(fields_sql)) + ")"
+        fields_str = "(" + ",".join(fields_sql) + ")"
+        fields_placeholder = "(" + ",".join(["%s"] * len(fields_sql)) + ")"
         for row_tuples in grouper(max_at_a_time, all_row_tuples):
             statement = "INSERT INTO {table} {fields} VALUES {fields_strs}".format(table=self.TABLE_NAME,
-                                                                        fields=fields_str,
-                                                                        fields_strs=",".join([fields_placeholder]*len(row_tuples))
-                                                                        )
+                                                                                   fields=fields_str,
+                                                                                   fields_strs=",".join([fields_placeholder] * len(row_tuples))
+                                                                                   )
 
             row_tuples_flat = [item for sublist in row_tuples for item in sublist]
-#            general_get_results(statement, row_tuples_flat)
-            cursor = _get_cursor()
             cursor.execute(statement, row_tuples_flat)
 
-
-    def execute_delete(self, constraints = None):
+    def execute_delete(self, cursor, constraints=None):
         if not constraints:
             raise exc.ReportsQueryError("Delete query without specifying constraints")
         (constraint_str, constraint_params) = self.constraints_to_str(constraints)
 
-        statement = 'DELETE FROM "{table}" WHERE {constraints_str}'.format(table=self.TABLE_NAME,
-                                                                    constraints_str=constraint_str)
-        cursor = _get_cursor()
+        statement = 'DELETE FROM "{table}" WHERE {constraint_str}'.format(table=self.TABLE_NAME,
+                                                                          constraint_str=constraint_str)
         cursor.execute(statement, constraint_params)
 
-
-
-
-def general_get_results(statement, args):
-    cursor = _get_cursor()
-    cursor.execute(statement, args)
-    results = dictfetchall(cursor)
-    cursor.close()
-    return results
-
-
-
-
-
-
-
+    def get_cursor(self):
+        return MyCursor(connections[settings.STATS_DB_NAME].cursor())

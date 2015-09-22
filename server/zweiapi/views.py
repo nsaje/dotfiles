@@ -324,7 +324,10 @@ def _fetch_reports_callback(action, data):
         if not reports.api.can_delete_traffic_metrics(ad_group, source, date):
             valid_response = False
 
-    if valid_response and _has_changed(data, ad_group, source, date, "reports_by_link"):
+    # centralize in order to reduce possibility of mistake
+    change_unique_key = "reports_by_link"
+
+    if valid_response and _has_changed(data, ad_group, source, date, change_unique_key):
         can_manage_content_ads = action.ad_group_source.can_manage_content_ads
 
         rows = _prepare_report_rows(ad_group, source, data['data'], can_manage_content_ads)
@@ -336,7 +339,7 @@ def _fetch_reports_callback(action, data):
             reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
 
         # set cache only after everything has updated successfully
-        _set_reports_cache(data, ad_group, source, date, "reports_by_link")
+        _set_reports_cache(data, ad_group, source, date, change_unique_key)
 
     if not valid_response:
         msg = 'Update of source traffic for adgroup %d, source %d, datetime '\
@@ -373,7 +376,11 @@ def _fetch_reports_by_publisher_callback(action, data):
 
     valid_response = True
     empty_response = False
-    if valid_response and _has_changed(data, ad_group, source, date, "reports_by_publisher"):
+    
+    # centralize in order to reduce possibility of mistakes, if you want everything to run again, just increase the number
+    change_unique_key = "reports_by_publisher_2"
+    
+    if valid_response: # and _has_changed(data, ad_group, source, date, change_unique_key):
         ret = get_day_cost(date, ad_group=ad_group, source=source)
         cost = ret['cost']
         if cost is None:
@@ -384,7 +391,7 @@ def _fetch_reports_by_publisher_callback(action, data):
                                                         "Outbrain",	# Hardcoding this at the time, the problem is that source.name can change
                                                         rows_raw, 
                                                         cost)
-        _set_reports_cache(data, ad_group, source, date, "reports_by_publisher")
+        _set_reports_cache(data, ad_group, source, date, change_unique_key)
                                                         
                                                         
     if not valid_response:

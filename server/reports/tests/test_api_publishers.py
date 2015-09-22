@@ -6,14 +6,21 @@ from django.test import TestCase
 from reports import api_publishers
 
 
-@mock.patch('reports.redshift.general_get_results')
 class ApiPublishersTest(TestCase):
 
-    def _get_query(self, mock_get_results):
-        return mock_get_results.call_args[0][0]
+    def setUp(self):
+        self.patcher = mock.patch('reports.api_publishers.rs_pub.get_cursor')
+        self.get_cursor = self.patcher.start()
+        self.get_cursor().dictfetchall.side_effects = [[]] 
+     
+    def tearDown(self):
+        self.patcher.stop()
+        
+    def _get_query(self):
+        return self.get_cursor().execute.call_args[0][0]
 
-    def check_breakdown(self, mock_get_results, breakdown):
-        query = self._get_query(mock_get_results)
+    def check_breakdown(self, breakdown):
+        query = self._get_query()
 
         if not breakdown:
             self.assertFalse('GROUP BY' in query)
@@ -34,8 +41,8 @@ class ApiPublishersTest(TestCase):
         for bf in breakdown_fields:
             self.assertEqual(1, len([x for x in select_fields if bf in x]))
 
-    def check_constraints(self, mock_get_results, constraints):
-        query = self._get_query(mock_get_results)
+    def check_constraints(self, constraints):
+        query = self._get_query()
         where_constraints = query.split('WHERE')[1].split('GROUP BY')[0].split('AND')
         self.assertEqual(len(where_constraints), len(constraints))
 
@@ -43,7 +50,7 @@ class ApiPublishersTest(TestCase):
         self.assertIn('"date" <= ', query)
         # TODO: we need to test parameters here too
 
-    def check_aggregations(self, mock_get_results):
+    def check_aggregations(self):
         required_statements = [
             '"date"',
             'CASE WHEN SUM("clicks") <> 0 THEN SUM(CAST("cost_micro" AS FLOAT)) / SUM("clicks") ELSE NULL END AS "cpc_micro"',
@@ -52,13 +59,13 @@ class ApiPublishersTest(TestCase):
             'CASE WHEN SUM("impressions") <> 0 THEN SUM(CAST("clicks" AS FLOAT)) / SUM("impressions") ELSE NULL END AS "ctr"',
             'SUM("clicks") AS "clicks_sum"',
         ]
-        query = self._get_query(mock_get_results)
+        query = self._get_query()
 
         for rs in required_statements:
             self.assertIn(rs, query)
 
-    def test_query_filter_by_ad_group(self, _get_results):
-        _get_results.return_value = [{
+    def test_query_filter_by_ad_group(self):      
+        self.get_cursor().dictfetchall.return_value = [{
             'impressions_sum': 10560,
             'clicks_sum': 123,
             'ctr': 1.0,
@@ -66,7 +73,7 @@ class ApiPublishersTest(TestCase):
             'cost_micro_sum': 26638,
             'date': '2015-01-01',
         }]
-
+        
         constraints = dict(
             ad_group=1
         )
@@ -85,11 +92,11 @@ class ApiPublishersTest(TestCase):
                                         'date': '2015-01-01',
                                     })
 
-        self.check_breakdown(_get_results, breakdown)
-        self.check_constraints(_get_results, constraints)
-        self.check_aggregations(_get_results)
+        self.check_breakdown(breakdown)
+        self.check_constraints(constraints)
+        self.check_aggregations()
 
-    def test_query_breakdown_by_domain(self, _get_results):
+    def test_query_breakdown_by_domain(self):
         constraints = dict(
             ad_group=1
         )
@@ -99,11 +106,11 @@ class ApiPublishersTest(TestCase):
 
         api_publishers.query(start_date, end_date, breakdown_fields=breakdown, constraints=constraints)
         constraints.update({'start_date': start_date, 'end_date': end_date})
-        self.check_breakdown(_get_results, breakdown)
-        self.check_constraints(_get_results, constraints)
-        self.check_aggregations(_get_results)
+        self.check_breakdown(breakdown)
+        self.check_constraints(constraints)
+        self.check_aggregations()
 
-    def test_query_breakdown_by_date(self, _get_results):
+    def test_query_breakdown_by_date(self):
         self.maxDiff = None
         constraints = dict(
             ad_group=1
@@ -114,11 +121,11 @@ class ApiPublishersTest(TestCase):
         api_publishers.query(start_date, end_date, breakdown_fields=breakdown, constraints = constraints)
         constraints.update({'start_date': start_date, 'end_date': end_date})
 
-        self.check_breakdown(_get_results, breakdown)
-        self.check_constraints(_get_results, constraints)
-        self.check_aggregations(_get_results)
+        self.check_breakdown(breakdown)
+        self.check_constraints(constraints)
+        self.check_aggregations()
 
-    def test_query_filter_by_date(self, _get_results):
+    def test_query_filter_by_date(self):
         constraints = dict(
             date=datetime.date(2015, 2, 1),
         )
@@ -127,11 +134,11 @@ class ApiPublishersTest(TestCase):
         api_publishers.query(start_date, end_date, constraints=constraints)
         constraints.update({'start_date': start_date, 'end_date': end_date})
         
-        self.check_constraints(_get_results, constraints)
-        self.check_aggregations(_get_results)
+        self.check_constraints(constraints)
+        self.check_aggregations()
 
 
-    def test_query_order_by_cpc(self, _get_results):
+    def test_query_order_by_cpc(self):
         constraints = dict(
             ad_group=1
         )
@@ -141,13 +148,13 @@ class ApiPublishersTest(TestCase):
 
         api_publishers.query(start_date, end_date, order_fields = ['-cpc'], breakdown_fields=breakdown, constraints=constraints)
         constraints.update({'start_date': start_date, 'end_date': end_date})
-        self.check_breakdown(_get_results, breakdown)
-        self.check_constraints(_get_results, constraints)
-        self.check_aggregations(_get_results)
-        query = self._get_query(_get_results)
+        self.check_breakdown(breakdown)
+        self.check_constraints(constraints)
+        self.check_aggregations()
+        query = self._get_query()
         self.assertIn("SUM(clicks) = 0, sum(cost_micro) IS NULL, cpc_micro DESC", query)
 
-@mock.patch('reports.redshift._get_cursor')
+@mock.patch('reports.api_publishers.rs_ob_pub.get_cursor')
 class ApiPublishersInsertTest(TestCase):
     def test_ob_insert_adgroup_date(self, mock_get_cursor):
         mock_cursor = mock.Mock()
