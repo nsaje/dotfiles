@@ -17,11 +17,21 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('type', models.PositiveSmallIntegerField(choices=[(1, b'Enabled'), (2, b'Paused')])),
-                ('name', models.CharField(max_length=256)),
-                ('window', models.PositiveSmallIntegerField(null=True, blank=True)),
-                ('goal_id', models.CharField(max_length=256, null=True, blank=True)),
+                ('name', models.CharField(max_length=100)),
+                ('conversion_window', models.PositiveSmallIntegerField(null=True, blank=True)),
+                ('goal_id', models.CharField(max_length=100, null=True, blank=True)),
+                ('created_dt', models.DateTimeField(auto_now_add=True, verbose_name=b'Created on')),
                 ('campaign', models.ForeignKey(to='dash.Campaign', on_delete=django.db.models.deletion.PROTECT)),
                 ('pixel', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='dash.ConversionPixel', null=True)),
             ],
+        ),
+        migrations.AddField(
+            model_name='campaignsettings',
+            name='changes_text',
+            field=models.TextField(null=True, blank=True),
+        ),
+        migrations.AlterUniqueTogether(
+            name='conversiongoal',
+            unique_together=set([('campaign', 'type', 'goal_id'), ('campaign', 'pixel'), ('campaign', 'name')]),
         ),
     ]

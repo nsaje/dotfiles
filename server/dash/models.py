@@ -473,6 +473,7 @@ class CampaignSettings(SettingsBase):
     )
 
     archived = models.BooleanField(default=False)
+    changes_text = models.TextField(blank=True, null=True)
 
     def save(self, request, *args, **kwargs):
         if self.pk is None:
@@ -1506,8 +1507,13 @@ class ConversionGoal(models.Model):
     name = models.CharField(max_length=100)
 
     pixel = models.ForeignKey(ConversionPixel, null=True, on_delete=models.PROTECT)
-    window = models.PositiveSmallIntegerField(null=True, blank=True)
+    conversion_window = models.PositiveSmallIntegerField(null=True, blank=True)
     goal_id = models.CharField(max_length=100, null=True, blank=True)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
+
+    class Meta:
+        unique_together = (('campaign', 'name'), ('campaign', 'pixel'), ('campaign', 'type', 'goal_id'))
 
 
 class DemoAdGroupRealAdGroup(models.Model):
