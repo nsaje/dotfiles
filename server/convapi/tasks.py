@@ -283,16 +283,12 @@ def _omniture_dict_to_ga_report_row(omniture_row_dict):
     pages_per_session = "{:.2f}".format(_report_atof(omniture_row_dict['Page Views']) / _report_atof(sessions))
 
     tts = _report_atoi(omniture_row_dict['Total Seconds Spent'])
-    hours = tts/3600
-    minutes = (tts - hours * 3600) / 60
-    seconds = (tts - hours * 3600) % 60
-    avg_session_duration = "{hours:02d}:{minutes:02d}:{seconds:02d}".format(
-        hours=hours,
-        minutes=minutes,
-        seconds=seconds
-    )
-    pageviews = omniture_row_dict['Page Views']
+    if sessions > 0:
+        avg_session_duration = _convert_total_session_duration(tts / int(sessions))
+    else:
+        avg_session_duration = 0
 
+    pageviews = omniture_row_dict['Page Views']
     keyword = None
     for key in omniture_row_dict:
         if 'tracking code' in key.lower():
@@ -317,6 +313,17 @@ def _omniture_dict_to_ga_report_row(omniture_row_dict):
         pages_per_session,
         avg_session_duration,
         pageviews,
+    )
+
+
+def _convert_total_session_duration(num):
+    hours = num/3600
+    minutes = (num - hours * 3600) / 60
+    seconds = (num - hours * 3600) % 60
+    return "{hours:02d}:{minutes:02d}:{seconds:02d}".format(
+        hours=hours,
+        minutes=minutes,
+        seconds=seconds
     )
 
 
