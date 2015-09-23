@@ -1,6 +1,5 @@
 /*globals oneApp,constants,options,moment*/
 oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', function ($scope, $state, $modal, api) {
-    $scope.constants = constants;
     $scope.settings = {};
     $scope.history = [];
     $scope.canArchive = false;
@@ -73,40 +72,36 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', fu
         });
     };
 
-    $scope.getConversionPixelTag = function (url) {
-        return '<img src="' + url + '" height="1" width="1" border="0" alt="" />';
-    };
-
     function constructConversionGoalRow (row) {
         var ret = {
             id: row.id,
             rows: [
                 {title: 'Name', value: row.name},
-                {title: 'Type', value: $scope.getConversionGoalType(row)}
+                {title: 'Type', value: constants.conversionGoalTypeText[row.type]}
             ]
         };
 
         if (row.type === constants.conversionGoalType.PIXEL) {
             ret.rows.push(
-                {title: 'Conversion window', value: $scope.getConversionWindowText(row)},
-                {title: 'Pixel URL',
-                 value: row.pixel.url,
-                 link:
-                 {
-                     text: 'COPY TAG',
-                     click: function () {
-                        var scope = $scope.$new(true);
-                        scope.conversionPixelTag = $scope.getConversionPixelTag(row.pixel.url);
+                {title: 'Conversion window', value: constants.conversionWindowText[row.conversionWindow]},
+                {
+                    title: 'Pixel URL',
+                    value: row.pixel.url,
+                    link: {
+                        text: 'COPY TAG',
+                        click: function () {
+                            var scope = $scope.$new(true);
+                            scope.conversionPixelTag = $scope.getConversionPixelTag(row.pixel.url);
 
-                        var modalInstance = $modal.open({
-                            templateUrl: '/partials/copy_conversion_pixel_modal.html',
-                            windowClass: 'modal',
-                            scope: scope
-                        });
+                            var modalInstance = $modal.open({
+                                templateUrl: '/partials/copy_conversion_pixel_modal.html',
+                                windowClass: 'modal',
+                                scope: scope
+                            });
 
-                        return modalInstance;
-                     }
-                 }
+                            return modalInstance;
+                        }
+                    }
                 }
             );
         } else if (row.type === constants.conversionGoalType.GA) {
@@ -195,30 +190,6 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', fu
          ).finally(function() {
             $scope.removeConversionGoalInProgress = false;
         });
-    };
-
-    $scope.getConversionGoalType = function (goal) {
-        if (goal.type === 1) {
-            return 'Conversion Pixel';
-        } else if (goal.type === 2) {
-            return 'Google Analytics';
-        } else if (goal.type === 3) {
-            return 'Omniture Event';
-        }
-
-        return '';
-    };
-
-    $scope.getConversionWindowText = function (goal) {
-        if (goal.conversionWindow === 1) {
-            return '1 day';
-        } else if (goal.conversionWindow === 7) {
-            return '7 days';
-        } else if (goal.conversionWindow === 30) {
-            return '30 days';
-        }
-
-        return '';
     };
 
     $scope.getSettings();

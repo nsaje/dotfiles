@@ -442,6 +442,16 @@ var constants = {
         GA: 2,
         OMNITURE: 3
     },
+    conversionGoalTypeText: {
+        1: 'ConversionPixel',
+        2: 'Google Analytics',
+        3: 'Omniture Event'
+    },
+    conversionWindowText: {
+        1: '1 day',
+        7: '7 days',
+        30: '30 days'
+    },
     entityType: {
         AD_GROUP: 'adGroup',
         CAMPAIGN: 'campaign',

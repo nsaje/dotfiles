@@ -1,16 +1,12 @@
 /* globals oneApp,options */
 oneApp.controller('AddConversionGoalModalCtrl', ['$scope', '$modalInstance', '$state', 'api', function($scope, $modalInstance, $state, api) {
-    $scope.options = options;
+    $scope.conversionGoalTypes = options.conversionGoalTypes;
+    $scope.conversionWindows = options.conversionWindows;
     $scope.addConversionGoalInProgress = false;
     $scope.error = false;
 
     $scope.conversionGoal = {};
     $scope.errors = {};
-
-    $scope.typeSelectorOptions = {
-        minimumResultsForSearch: -1,
-        placeholder: 'Choose type'
-    };
 
     $scope.addConversionGoal = function () {
         $scope.addConversionGoalInProgress = true;
