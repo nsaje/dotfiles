@@ -19,7 +19,7 @@
                 Type
             </label>
             <div class="col-xs-5">
-                <select ui-select2="typeSelectorOptions" id="goal-type-select" class="form-control" ng-model="conversionGoal.type">
+                <select ui-select2="typeSelectorOptions" id="goal-type-select" class="form-control" ng-model="conversionGoal.type" ng-change="updateTypeChange()">
                     <option></option>
                    <option ng-repeat="goal in options.conversionGoalTypes" value="{{goal.value}}">{{goal.name}}</option>
                 </select>

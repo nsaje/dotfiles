@@ -50,16 +50,12 @@ oneApp.controller('AddConversionGoalModalCtrl', ['$scope', '$modalInstance', '$s
         return $scope.conversionGoal.type === constants.conversionGoalType.OMNITURE.toString();
     };
 
-    $scope.$watch('conversionGoal.type', function (newValue, oldValue) {
-        if (angular.equals(newValue, oldValue)) {
-            return;
-        }
-
+    $scope.updateTypeChange = function () {
         delete $scope.conversionGoal.goalId;
         delete $scope.conversionGoal.conversionWindow;
 
         $scope.clearErrors('type');
         $scope.clearErrors('conversionWindow');
         $scope.clearErrors('goalId');
-    });
+    };
 }]);
