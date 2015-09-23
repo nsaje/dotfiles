@@ -443,7 +443,7 @@ var constants = {
         OMNITURE: 3
     },
     conversionGoalTypeText: {
-        1: 'ConversionPixel',
+        1: 'Conversion Pixel',
         2: 'Google Analytics',
         3: 'Omniture Event'
     },
