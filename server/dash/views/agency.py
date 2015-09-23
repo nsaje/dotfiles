@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 CONVERSION_PIXEL_INACTIVE_DAYS = 7
+MAX_CONVERSION_GOALS_PER_CAMPAIGN = 2
 
 
 def _get_conversion_pixel_url(account_id, slug):
@@ -393,7 +394,7 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
         rows = []
         pixel_ids_already_added = []
-        for conversion_goal in campaign.conversiongoal_set.select_related('pixel').all():
+        for conversion_goal in campaign.conversiongoal_set.select_related('pixel').order_by('created_dt').all():
             row = {
                 'id': conversion_goal.id,
                 'type': conversion_goal.type,
@@ -438,7 +439,7 @@ class CampaignConversionGoals(api_common.BaseApiView):
         try:
             data = json.loads(request.body)
         except ValueError:
-            raise exc.ValidationError()
+            raise exc.ValidationError(message='Invalid json')
 
         form = forms.ConversionGoalForm(
             {
@@ -453,16 +454,19 @@ class CampaignConversionGoals(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=form.errors)
 
+        if models.ConversionGoal.objects.filter(campaign_id=campaign.id).count() >= MAX_CONVERSION_GOALS_PER_CAMPAIGN:
+            raise exc.ValidationError(message='Max conversion goals per campaign exceeded')
+
         conversion_goal = models.ConversionGoal(campaign_id=campaign.id, type=form.cleaned_data['type'],
                                                 name=form.cleaned_data['name'])
         if form.cleaned_data['type'] == constants.ConversionGoalType.PIXEL:
             try:
                 pixel = models.ConversionPixel.objects.get(id=form.cleaned_data['goal_id'])
             except models.ConversionPixel.DoesNotExist:
-                raise exc.MissingDataError()
+                raise exc.MissingDataError(message='Invalid conversion pixel')
 
             if pixel.archived:
-                raise exc.MissingDataError()
+                raise exc.MissingDataError(message='Invalid conversion pixel')
 
             conversion_goal.pixel = pixel
             conversion_goal.conversion_window = form.cleaned_data['conversion_window']
