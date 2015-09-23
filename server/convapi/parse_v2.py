@@ -483,18 +483,14 @@ class GAReport(Report):
 
     def _get_sessions_total(self, footer):
         reader = csv.DictReader(footer)
-        try:
-            for row in reader:
-                if 'Day Index' in row:
-                    return _report_atoi(row['Sessions'])
-                else:
-                    break
+        first_row = reader.next()
+        if 'Day Index' in first_row:
+            return _report_atoi(first_row['Sessions'])
 
-            for row in reader:
-                if 'Hour Index' in row and row['Hour Index'] == '':
-                    return _report_atoi(row['Sessions'])
-        except:
-            raise exc.CsvParseException('Could not parse total sessions')
+        for row in reader:
+            if 'Hour Index' in row and row['Hour Index'] == '':
+                return _report_atoi(row['Sessions'])
+
         raise exc.CsvParseException('Could not parse total sessions')
 
     def _extract_header_lines(self, raw_report_string):
