@@ -63,7 +63,6 @@
                 </div>
             </div>
             <button type="button" class="btn btn-default remove-btn" ng-class="{'disabled': !!removeConversionGoalInProgress || !!goalsError}" ng-click="removeConversionGoal(goal.id)">Remove</button>
-            <a href="#" class="small instructions-label">Set up Conversions/Goals Instructions (PDF)</a>
         </div>
         <button type="button" class="btn btn-default" ng-show="!goalsRequestInProgress && conversionGoals.length < 2" ng-click="addConversionGoal()" ng-class="{'disabled': !!goalsError || !!removeConversionGoalInProgress }">Set up conversion or goal tracking</button>
         <div ng-if="!!goalsError" class="error">
