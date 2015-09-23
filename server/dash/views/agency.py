@@ -241,7 +241,7 @@ class CampaignAgency(api_common.BaseApiView):
 
         zwei_actions.send(actions)
 
-    def get_history(self, campaign, user):
+    def get_history(self, campaign):
         settings = models.CampaignSettings.objects.\
             filter(campaign=campaign).\
             order_by('created_dt')
