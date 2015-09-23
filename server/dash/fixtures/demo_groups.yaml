@@ -19,7 +19,6 @@
     - [campaign_settings_view, zemauth, user]
     - [campaign_sources_view, zemauth, user]
     - [filter_sources, zemauth, user]
-    - [help_view, zemauth, user]
     - [new_content_ads_tab, zemauth, user]
     - [set_content_ad_status, zemauth, user]
     - [supply_dash_link_view, zemauth, user]
@@ -67,7 +66,6 @@
     - [content_ads_postclick_engagement, zemauth, user]
     - [data_status_column, zemauth, user]
     - [filter_sources, zemauth, user]
-    - [help_view, zemauth, user]
     - [see_current_ad_group_source_state, zemauth, user]
     - [set_ad_group_source_settings, zemauth, user]
     - [set_content_ad_status, zemauth, user]
@@ -87,7 +85,6 @@
     - [campaign_sources_view, zemauth, user]
     - [filter_sources, zemauth, user]
     - [group_new_user_add, zemauth, user]
-    - [help_view, zemauth, user]
     - [view_archived_entities, zemauth, user]
   model: auth.group
   pk: 5
