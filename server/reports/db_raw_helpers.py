@@ -1,3 +1,5 @@
+from django.db import models
+
 
 def dictfetchall(cursor):
     desc = cursor.description
@@ -6,6 +8,12 @@ def dictfetchall(cursor):
         dict(zip([col[0] for col in desc], row))
         for row in cursor.fetchall()
     ]
+
+
+def get_obj_id(obj):
+    if isinstance(obj, models.Model):
+        return obj.pk
+    return obj
 
 
 class MyCursor(object):

@@ -8,7 +8,7 @@ from django.db.models.query import QuerySet
 from utils.statsd_helper import statsd_timer
 
 from reports import exc
-from reports.db_raw_helpers import MyCursor
+from reports.db_raw_helpers import MyCursor, get_obj_id
 
 
 @statsd_timer('reports.redshift', 'delete_contentadstats')
@@ -239,20 +239,20 @@ class RSModel(object):
         for field_name, operator, value in constraints_tuples:
             if operator == "lte":
                 result.append('"{}" <= %s'.format(field_name))
-                params.append(value)
+                params.append(get_obj_id(value))
             elif operator == "gte":
                 result.append('"{}" >= %s'.format(field_name))
-                params.append(value)
+                params.append(get_obj_id(value))
             elif operator == "eq":
                 if (isinstance(value, collections.Sequence) or isinstance(value, QuerySet)) and type(value) not in (str, unicode):
                     if value:
                         result.append('{} IN ({})'.format(field_name, ','.join(["%s"] * len(value))))
-                        params.extend(value)
+                        params.extend([get_obj_id(v) for v in value])
                     else:
                         result.append('FALSE')
                 else:
                     result.append('{}=%s'.format(field_name))
-                    params.append(value)
+                    params.append(get_obj_id(value))
             else:
                 raise Exception("Unknown constraint type: {}".format(field_name))
 
