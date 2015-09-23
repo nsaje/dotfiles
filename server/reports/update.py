@@ -283,8 +283,11 @@ def update_touchpoint_conversions(date, conversion_touchpoint_pairs):
 
 @transaction.atomic
 def process_report(date, parsed_report_rows, report_type):
-    """Stores postclick stats and conversion goals stats
-    to DB and updates stats DB"""
+    """
+    Stores postclick stats and conversion goals stats
+    to DB and updates stats DB
+    """
+
     sources = dash.models.Source.objects.all()
     track_source_map = {}
     for source in sources:

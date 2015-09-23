@@ -1,7 +1,3 @@
-from django.db import models
-import collections
-import types
-
 
 def dictfetchall(cursor):
     desc = cursor.description
@@ -12,13 +8,15 @@ def dictfetchall(cursor):
     ]
 
 
-def get_obj_id(obj):
-    if isinstance(obj, models.Model):
-        return obj.pk
-    return obj
+class MyCursor(object):
+    def __init__(self, cursor):
+        self.cursor = cursor
 
+    def execute(self, statement, params):
+        self.cursor.execute(statement, params)
 
-def quote(field):
-    if isinstance(field, collections.Sequence) and not isinstance(field, types.StringTypes):
-        return [quote(f) for f in field]
-    return '"{}"'.format(field)
+    def dictfetchall(self):
+        return dictfetchall()
+
+    def close(self):
+        self.cursor.close()

@@ -9,13 +9,12 @@ from reports import api_publishers
 class ApiPublishersTest(TestCase):
 
     def setUp(self):
-        self.patcher = mock.patch('reports.api_publishers.rs_pub.get_cursor')
+        self.patcher = mock.patch('reports.redshift.get_cursor')
         self.get_cursor = self.patcher.start()
-        self.get_cursor().dictfetchall.side_effects = [[]] 
-     
+
     def tearDown(self):
         self.patcher.stop()
-        
+
     def _get_query(self):
         return self.get_cursor().execute.call_args[0][0]
 
@@ -64,7 +63,7 @@ class ApiPublishersTest(TestCase):
         for rs in required_statements:
             self.assertIn(rs, query)
 
-    def test_query_filter_by_ad_group(self):      
+    def test_query_filter_by_ad_group(self):
         self.get_cursor().dictfetchall.return_value = [{
             'impressions_sum': 10560,
             'clicks_sum': 123,
@@ -73,12 +72,12 @@ class ApiPublishersTest(TestCase):
             'cost_micro_sum': 26638,
             'date': '2015-01-01',
         }]
-        
+
         constraints = dict(
             ad_group=1
         )
-        start_date=datetime.date(2015, 2, 1)
-        end_date=datetime.date(2015, 2, 2)
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
         breakdown = []
 
         stats = api_publishers.query(start_date, end_date, breakdown_fields=breakdown, constraints=constraints)
@@ -137,7 +136,6 @@ class ApiPublishersTest(TestCase):
         self.check_constraints(constraints)
         self.check_aggregations()
 
-
     def test_query_order_by_cpc(self):
         constraints = dict(
             ad_group=1
@@ -154,7 +152,7 @@ class ApiPublishersTest(TestCase):
         query = self._get_query()
         self.assertIn("SUM(clicks) = 0, sum(cost_micro) IS NULL, cpc_micro DESC", query)
 
-@mock.patch('reports.api_publishers.rs_ob_pub.get_cursor')
+@mock.patch('reports.redshift.get_cursor')
 class ApiPublishersInsertTest(TestCase):
     def test_ob_insert_adgroup_date(self, mock_get_cursor):
         mock_cursor = mock.Mock()
@@ -216,14 +214,12 @@ class ApiPublishersMapperTest(TestCase):
                  'ctr': 0.2,
                 }
         result = api_publishers.rs_pub.map_result_to_app(input)
-        self.assertEqual(result, {'cost': 0.0002, 
-                                  'cpc': 0.0001, 
+        self.assertEqual(result, {'cost': 0.0002,
+                                  'cpc': 0.0001,
                                   'ctr': 20.0
-                                  })        
+                                  })
 
     def test_map_unknown_row(self):
         input = {'bah': 100000,}
         self.assertRaises(KeyError, api_publishers.rs_pub.map_result_to_app, input)
-        
-
 
