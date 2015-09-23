@@ -293,8 +293,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             checked: false,
             type: 'currency',
             help: 'Amount that you have spent yesterday for promotion on specific media source.',
-            internal: $scope.isPermissionInternal('reports.yesterday_spend_view'),
-            shown: $scope.hasPermission('reports.yesterday_spend_view'),
+            shown: 'true',
             totalRow: true,
             order: true,
             initialOrder: 'desc'

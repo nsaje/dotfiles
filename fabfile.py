@@ -442,6 +442,7 @@ def switch_django_app(app, params):
 
     print task("Restart service")
     run("supervisorctl restart %s" % app)
+    run("supervisorctl restart eins-celery:*")
     print ok("%s successfully switched at %s" % (app.capitalize(), env.host))
 
 
@@ -472,6 +473,7 @@ def switchback_django_app(app):
 
     print task("Restart service")
     run("supervisorctl restart %s" % app)
+    run("supervisorctl restart eins-celery:*")
 
 
 @parallel
