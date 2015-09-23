@@ -24,7 +24,7 @@ class MyCursor(object):
         self.cursor.execute(statement, params)
 
     def dictfetchall(self):
-        return dictfetchall(self)
+        return dictfetchall(self.cursor)
 
     def close(self):
         self.cursor.close()
