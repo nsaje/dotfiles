@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='ConversionGoal',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('type', models.PositiveSmallIntegerField(choices=[(1, b'Enabled'), (2, b'Paused')])),
+                ('type', models.PositiveSmallIntegerField(choices=[(1, b'Conversion Pixel'), (3, b'Omniture'), (2, b'Google Analytics')])),
                 ('name', models.CharField(max_length=100)),
                 ('conversion_window', models.PositiveSmallIntegerField(null=True, blank=True)),
                 ('goal_id', models.CharField(max_length=100, null=True, blank=True)),

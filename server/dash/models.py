@@ -1502,7 +1502,7 @@ class ConversionPixel(models.Model):
 class ConversionGoal(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT)
     type = models.PositiveSmallIntegerField(
-        choices=constants.ContentAdSourceState.get_choices()
+        choices=constants.ConversionGoalType.get_choices()
     )
     name = models.CharField(max_length=100)
 
