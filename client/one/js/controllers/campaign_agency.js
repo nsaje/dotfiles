@@ -183,6 +183,7 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', fu
 
                     return true;
                 });
+                $scope.getSettings();
             },
             function () {
                 $scope.goalsError = true;
