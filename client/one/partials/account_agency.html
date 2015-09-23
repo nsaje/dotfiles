@@ -3,7 +3,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.name}">
             <label for="name-input" class="col-xs-2 control-label">
                 Name
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Name of the account." placement="top"></zem-help-popover>
+                <zem-help-popover content="Name of the account." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
                 <input id="name-input" type="text" class="form-control" ng-model="settings.name">
@@ -15,7 +15,7 @@
 		<div class="form-group" ng-class="{'has-error': !!errors.defaultAccountManager}">
             <label for="account-manager-select" class="col-xs-2 control-label">
                 Default Account Manager
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
+                <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
                 <select ui-select2="{minimumResultsForSearch: 5}" id="account-manager-select" class="form-control" ng-model="settings.defaultAccountManager">
@@ -28,7 +28,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.defaultSalesRepresentative}">
             <label for="sales-representative-select" class="col-xs-2 control-label">
                 Default Sales Representative
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Sales representative responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
+                <zem-help-popover content="Sales representative responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
                 <select ui-select2="{minimumResultsForSearch: 5}" id="sales-representative-select" class="form-control" ng-model="settings.defaultSalesRepresentative">
@@ -51,7 +51,7 @@
         <div class="form-group">
             <label for="first-name-input" class="col-xs-2 control-label">
                 Access Permissions
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Users who have access to the account you're currently on." placement="top"></zem-help-popover>
+                <zem-help-popover content="Users who have access to the account you're currently on." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-8">
                 <div ng-repeat="user in users" class="form-group existing-user-row">
@@ -162,7 +162,7 @@
     </div>
 
     <div class="section table-account-agency">
-        <div class="title">History<zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="History of settings changes." placement="top"></zem-help-popover>
+        <div class="title">History<zem-help-popover content="History of settings changes." placement="top"></zem-help-popover>
 </div>
         <div class="loader-container">
             <div class="loader" ng-show="history.length && requestInProgress"></div>
