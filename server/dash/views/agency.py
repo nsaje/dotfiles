@@ -512,6 +512,10 @@ class CampaignBudget(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
+
+        if not request.user.has_perm('zemauth.campaign_budget_management_view'):
+            raise exc.MissingDataError()
+
         campaign_budget = budget.CampaignBudget(campaign)
 
         budget_change = json.loads(request.body)
