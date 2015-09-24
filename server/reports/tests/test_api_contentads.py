@@ -1,13 +1,20 @@
 import datetime
-
 from mock import patch
-from django.test import TestCase
 
+from django.test import TestCase
+from django.http import HttpRequest
+from django.db import transaction
+from django.conf import settings
+from utils.test_helper import RedshiftTestCase
+
+import dash.models
 from reports import api_contentads
+
+from zemauth.models import User
 
 
 @patch('reports.redshift.MyCursor')
-class ApiContentAdsTest(TestCase):
+class ApiContentAdsQueryTest(TestCase):
     fixtures = ['test_api_contentads']
 
     def _get_query(self, mock_cursor):
@@ -152,3 +159,92 @@ class ApiContentAdsTest(TestCase):
 
         self.check_constraints(mock_cursor, constraints)
         self.check_aggregations(mock_cursor)
+
+
+class ApiContentAdsPostclickTest(RedshiftTestCase):
+    fixtures = ['test_api_contentads.stats.yaml', 'test_api_contentads.yaml']
+
+    def setUp(self):
+        self.request = HttpRequest()
+        user = User.objects.get(pk=1)
+        self.request.user = user
+
+        super(ApiContentAdsPostclickTest, self).setUp()
+
+    def test_has_complete_postclick_metrics_accounts(self):
+        accounts = dash.models.Account.objects.filter(pk__in=[1])
+        sources = dash.models.Source.objects.filter(pk__in=[1])
+        self.assertTrue(len(accounts))
+        self.assertTrue(len(sources))
+
+        start = datetime.datetime(2014, 6, 15)
+        end = datetime.datetime(2014, 6, 17)
+        result = api_contentads.has_complete_postclick_metrics_accounts(start, end, accounts, sources)
+        self.assertTrue(result)
+
+    def test_has_complete_postclick_metrics_campaigns(self):
+        campaigns = dash.models.Campaign.objects.filter(pk__in=[1])
+        sources = dash.models.Source.objects.filter(pk__in=[1])
+        self.assertTrue(len(campaigns))
+        self.assertTrue(len(sources))
+
+        start = datetime.datetime(2014, 6, 15)
+        end = datetime.datetime(2014, 6, 17)
+        result = api_contentads.has_complete_postclick_metrics_accounts(start, end, campaigns, sources)
+        self.assertTrue(result)
+
+    def test_has_complete_postclick_metrics(self):
+        ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1])
+        sources = dash.models.Source.objects.filter(pk__in=[1])
+        self.assertTrue(len(ad_groups))
+        self.assertTrue(len(sources))
+
+        start = datetime.datetime(2014, 6, 15)
+        end = datetime.datetime(2014, 6, 17)
+        result = api_contentads.has_complete_postclick_metrics_ad_groups(start, end, ad_groups, sources)
+        self.assertTrue(result)
+
+    def test_has_complete_postclick_metrics_not(self):
+        ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1])
+        sources = dash.models.Source.objects.filter(pk__in=[1])
+        self.assertTrue(len(ad_groups))
+        self.assertTrue(len(sources))
+
+        start = datetime.datetime(2014, 6, 15)
+        end = datetime.datetime(2014, 6, 18)  # no metrics no this date
+        result = api_contentads.has_complete_postclick_metrics_ad_groups(start, end, ad_groups, sources)
+        self.assertFalse(result)
+
+    def test_get_ad_group_ids_with_postclick_data(self):
+        key = 'ad_group'
+        ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1, 2, 3])
+        result = api_contentads._get_ad_group_ids_with_postclick_data(key, ad_groups, exclude_archived=False)
+        self.assertEqual(result, [1])
+
+    def test_get_ad_group_ids_with_postclick_data_archived(self):
+        key = 'ad_group'
+        ad_group_1 = dash.models.AdGroup.objects.get(pk=1)
+        ad_group_settings = ad_group_1.get_current_settings()
+        ad_group_settings.archived = True
+        ad_group_settings.save(self.request)
+
+        ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1, 2, 3])
+        result = api_contentads._get_ad_group_ids_with_postclick_data(key, ad_groups, exclude_archived=True)
+        self.assertEqual(result, [])
+
+    def test_get_ad_group_ids_with_postclick_data_account(self):
+        key = 'account'
+        accounts = dash.models.Account.objects.filter(pk__in=[1])
+        result = api_contentads._get_ad_group_ids_with_postclick_data(key, accounts, exclude_archived=False)
+        self.assertEqual(result, [1])
+
+    def test_get_ad_group_ids_with_postclick_data_account_archived(self):
+        key = 'account'
+        ad_group_1 = dash.models.AdGroup.objects.get(pk=1)
+        ad_group_settings = ad_group_1.get_current_settings()
+        ad_group_settings.archived = True
+        ad_group_settings.save(self.request)
+
+        accounts = dash.models.Account.objects.filter(pk__in=[1])
+        result = api_contentads._get_ad_group_ids_with_postclick_data(key, accounts, exclude_archived=True)
+        self.assertEqual(result, [])

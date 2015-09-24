@@ -33,6 +33,13 @@ class AdGroupAdsPlusTableTest(TestCase):
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
+        self.patcher = patch('reports.api_contentads._has_complete_postclick_metrics')
+        mock_has_complete_postclick_metrics = self.patcher.start()
+        mock_has_complete_postclick_metrics.return_value = True
+
+    def tearDown(self):
+        self.patcher.stop()
+
     def test_get(self, mock_query):
         date = datetime.date(2015, 2, 22)
 
@@ -99,8 +106,8 @@ class AdGroupAdsPlusTableTest(TestCase):
         mock_query.assert_any_call(
             date,
             date,
-            constraints = {"ad_group": ad_group,
-                           "source": sources_matcher}
+            constraints={"ad_group": ad_group,
+                         "source": sources_matcher}
         )
 
         result = json.loads(response.content)

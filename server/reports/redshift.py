@@ -184,6 +184,7 @@ class RSModel(object):
             desc = self.by_sql_mapping[field_name]
             if "calc" in desc:
                 field_expanded = desc["calc"] + " AS \"" + field_name + "\""
+
             else:
                 field_expanded = '"' + field_name + '"'
             fields.append(field_expanded)
@@ -271,7 +272,8 @@ class RSModel(object):
 
         return " AND ".join(result), params
 
-    def prepare_select_query(self, returned_fields, breakdown_fields, order_fields, offset, limit, constraints):
+    def _prepare_select_query(self, returned_fields, breakdown_fields, order_fields, offset, limit,
+                              constraints, having_constraints):
         # Takes app-based fields and first checks & translates them and then creates a query
         # first translate constraints into tuples, then create a single constraints str
         (constraint_str, constraint_params) = self.constraints_to_str(constraints)
@@ -279,7 +281,7 @@ class RSModel(object):
         order_fields = self.translate_order_fields(order_fields)
         returned_fields = self.get_returned_fields(returned_fields)
 
-        statement = self.form_select_query(
+        statement = self._form_select_query(
             self.TABLE_NAME,
             breakdown_fields + returned_fields,
             constraint_str,
@@ -287,12 +289,14 @@ class RSModel(object):
             order_fields=order_fields,
             limit=limit,
             offset=offset,
+            having_constraints=having_constraints
         )
 
         return (statement, constraint_params)
 
     @staticmethod
-    def form_select_query(table, fields, constraint_str, breakdown_fields=None, order_fields=None, limit=None, offset=None):
+    def _form_select_query(table, fields, constraint_str, breakdown_fields=None, order_fields=None, limit=None,
+                          offset=None, having_constraints=None):
         cmd = 'SELECT {fields} FROM {table} WHERE {constraint_str}'.format(
             fields=','.join(fields),
             table=table,
@@ -301,6 +305,9 @@ class RSModel(object):
 
         if breakdown_fields:
             cmd += ' GROUP BY {}'.format(','.join(breakdown_fields))
+
+        if having_constraints:
+            cmd += ' HAVING {}'.format(' AND '.join(having_constraints))
 
         if order_fields:
             cmd += " ORDER BY " + ",".join(order_fields) + " "
@@ -332,30 +339,26 @@ class RSModel(object):
     # Each one needs cursor passed into it
     # Default cursor can be obtained by get_cursor()
 
-    def execute_select_query(self, cursor, returned_fields, breakdown_fields, order_fields, offset, limit, constraints):
-        (statement, params) = self.prepare_select_query(returned_fields, breakdown_fields, order_fields, offset, limit, constraints)
+    def execute_select_query(self, cursor, returned_fields, breakdown_fields, order_fields, offset, limit, constraints,
+                             having_constraints=None):
+
+        (statement, params) = self._prepare_select_query(
+            returned_fields,
+            breakdown_fields,
+            order_fields,
+            offset,
+            limit,
+            constraints,
+            having_constraints)
 
         cursor.execute(statement, params)
         results = cursor.dictfetchall()
         results = self.map_results_to_app(results)
         return results
 
-    MAX_AT_A_TIME = 100
-
-    # This function specifically takes sql-named fields
-    def execute_multi_insert_sql(self, cursor, fields_sql, all_row_tuples, max_at_a_time=None):
-        if not max_at_a_time:
-            max_at_a_time = self.MAX_AT_A_TIME
-        fields_str = "(" + ",".join(fields_sql) + ")"
-        fields_placeholder = "(" + ",".join(["%s"] * len(fields_sql)) + ")"
-        for row_tuples in grouper(max_at_a_time, all_row_tuples):
-            statement = "INSERT INTO {table} {fields} VALUES {fields_strs}".\
-                        format(table=self.TABLE_NAME,
-                               fields=fields_str,
-                               fields_strs=",".join([fields_placeholder] * len(row_tuples)))
-
-            row_tuples_flat = [item for sublist in row_tuples for item in sublist]
-            cursor.execute(statement, row_tuples_flat)
+    def execute_multi_insert_sql(self, cursor, fields_sql, all_row_tuples, max_at_a_time=100):
+        # This function specifically takes sql-named fields
+        execute_multi_insert_sql(cursor, self.TABLE_NAME, fields_sql, all_row_tuples, max_at_a_time)
 
     def execute_delete(self, cursor, constraints=None):
         if not constraints:
@@ -365,4 +368,3 @@ class RSModel(object):
         statement = 'DELETE FROM "{table}" WHERE {constraint_str}'.format(table=self.TABLE_NAME,
                                                                           constraint_str=constraint_str)
         cursor.execute(statement, constraint_params)
-

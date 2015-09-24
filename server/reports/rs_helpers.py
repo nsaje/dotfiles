@@ -45,3 +45,7 @@ def click_discrepancy(clicks_col, visits_col):
 
 def sum_agr(expr):
     return 'SUM("{expr}")'.format(expr=expr)
+
+
+def is_all_null(field_names):
+    return 'CASE WHEN ' + ' AND '.join('MAX("{}") IS NULL'.format(f) for f in field_names) + ' THEN 0 ELSE 1 END'
