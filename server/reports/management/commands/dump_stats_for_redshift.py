@@ -1,7 +1,6 @@
 import logging
 import dateutil
 from optparse import make_option
-from django.db.models import Max, Min
 
 from reports import models
 
