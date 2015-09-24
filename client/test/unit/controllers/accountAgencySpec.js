@@ -14,6 +14,7 @@ describe('AccountAgencyCtrl', function () {
             $scope.isPermissionInternal = function() {return true;};
             $scope.hasPermission = function() {return true;};
             $scope.account = {id: 1};
+            $scope.getConversionPixelTag = function () {return '';};
 
             var mockApiFunc = function() {
                 return {
