@@ -162,7 +162,7 @@ class AccountSourcesTable(object):
             start_date,
             end_date,
             account=self.account,
-            source=self.filtered_sources,
+            source=self.filtered_sources
         ), self.user)
 
         return sources_stats, totals_stats
@@ -215,14 +215,14 @@ class CampaignSourcesTable(object):
             end_date,
             ['source'],
             campaign=self.campaign,
-            source=self.filtered_sources,
+            source=self.filtered_sources
         ), self.user)
 
         totals_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
             campaign=self.campaign,
-            source=self.filtered_sources,
+            source=self.filtered_sources
         ), self.user)
 
         return sources_stats, totals_stats
@@ -277,14 +277,14 @@ class AdGroupSourcesTable(object):
             end_date,
             ['source'],
             ad_group=self.ad_group,
-            source=self.filtered_sources,
+            source=self.filtered_sources
         ), self.user)
 
         totals_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
             ad_group=self.ad_group,
-            source=self.filtered_sources,
+            source=self.filtered_sources
         ), self.user)
 
         return sources_stats, totals_stats
@@ -763,14 +763,14 @@ class AccountsAccountsTable(api_common.BaseApiView):
             end_date,
             ['account'],
             account=accounts,
-            source=filtered_sources,
+            source=filtered_sources
         ), request.user)
 
         totals_data = reports.api_helpers.filter_by_permissions(reports_api.query(
             start_date,
             end_date,
             account=accounts,
-            source=filtered_sources,
+            source=filtered_sources
         ), request.user)
 
         all_accounts_budget = budget.GlobalBudget().get_total_by_account()
@@ -908,7 +908,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         page = request.GET.get('page')
         size = request.GET.get('size')
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        start_date = helpers.et_stats_start_dat(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
@@ -1054,8 +1054,8 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             start_date,
             end_date,
             breakdown=['content_ad'],
-            constraints={'ad_group': ad_group,
-                           'source': filtered_sources},
+            ad_group=ad_group,
+            source=filtered_sources
         ), request.user)
 
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
@@ -1083,9 +1083,8 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         total_stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
             end_date,
-            constraints = {'ad_group': ad_group,
-                           'source': filtered_sources
-            }
+            ad_group=ad_group,
+            source=filtered_sources
         ), request.user)
 
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)

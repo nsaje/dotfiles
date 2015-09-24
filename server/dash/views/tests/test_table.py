@@ -94,15 +94,15 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
-            constraints={'ad_group': ad_group,
-                         'source': sources_matcher}
+            ad_group=ad_group,
+            source=sources_matcher
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            constraints={"ad_group": ad_group,
-                           "source": sources_matcher}
+            ad_group=ad_group,
+            source=sources_matcher
         )
 
         result = json.loads(response.content)
@@ -288,15 +288,15 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
-            constraints={'ad_group': ad_group,
-                         'source': sources_matcher}
+            ad_group=ad_group,
+            source=sources_matcher
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            constraints={'ad_group': ad_group,
-                         'source': sources_matcher}
+            ad_group=ad_group,
+            source=sources_matcher
         )
 
         result = json.loads(response.content)
@@ -355,15 +355,15 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
-            constraints={'ad_group': ad_group,
-                         'source': sources_matcher}
+            ad_group=ad_group,
+            source=sources_matcher
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            constraints={'ad_group': ad_group,
-                         'source': sources_matcher}
+            ad_group=ad_group,
+            source=sources_matcher
         )
 
         result = json.loads(response.content)
