@@ -11,6 +11,7 @@ import automation.models
 import automation.settings
 import automation.helpers
 from utils import pagerduty_helper
+from utils.statsd_helper import statsd_timer
 
 logger = logging.getLogger(__name__)
 
@@ -158,6 +159,7 @@ Zemanta
         )
 
 
+@statsd_timer('automation.budgetdepletion', 'notify_depleting_budget_campaigns')
 def notify_depleting_budget_campaigns():
     campaigns = automation.helpers.get_active_campaigns()
     available_budgets = automation.helpers.get_available_budgets(campaigns)
@@ -173,6 +175,7 @@ def notify_depleting_budget_campaigns():
             )
 
 
+@statsd_timer('automation.budgetdepletion', 'stop_and_notify_depleted_budget_campaigns')
 def stop_and_notify_depleted_budget_campaigns():
     campaigns = automation.helpers.get_active_campaigns()
     available_budgets = automation.helpers.get_available_budgets(campaigns)
