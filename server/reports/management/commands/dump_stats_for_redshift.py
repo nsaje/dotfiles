@@ -15,9 +15,9 @@ BATCH_SIZE = 100000
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
-        make_option('--start_id', dest='start_id', default=None, help='Dump ArticleStats starting with id.'),
+        make_option('--start_id', dest='start_id', default=0, help='Dump ArticleStats starting with id.'),
         make_option('--end_date', dest='end_date', default=None, help='Dump ArticleStats up to date.'),
-        make_option('--file', dest='filename', default='articlestats', help='File to which data will be written'),
+        make_option('--file', dest='filename', default='./articlestats', help='File to which data will be written'),
     )
 
     def handle(self, *args, **options):
@@ -30,7 +30,7 @@ class Command(BaseCommand):
         max_id = models.ArticleStats.objects.aggregate(Max('id'))
 
         try:
-            with open(options.get('filename', 'w')) as f:
+            with open(options.get('filename', 'a+')) as f:
                 for batch_start_id in range(min_id, BATCH_SIZE, max_id):
                     current_batch = models.ArticleStats.objects.filter(
                         id__gte=batch_start_id,
@@ -92,35 +92,35 @@ class Command(BaseCommand):
 )
 """
 
-    """
-    # traffic metrics
-    impressions = models.IntegerField(default=0, blank=False, null=False)
-    clicks = models.IntegerField(default=0, blank=False, null=False)
-    cost_cc = models.IntegerField(default=0, blank=False, null=False)
-    data_cost_cc = models.IntegerField(default=0, blank=False, null=False)
+"""
+# traffic metrics
+impressions = models.IntegerField(default=0, blank=False, null=False)
+clicks = models.IntegerField(default=0, blank=False, null=False)
+cost_cc = models.IntegerField(default=0, blank=False, null=False)
+data_cost_cc = models.IntegerField(default=0, blank=False, null=False)
 
-    # postclick metrics
-    visits = models.IntegerField(default=0, blank=False, null=False)
-    new_visits = models.IntegerField(default=0, blank=False, null=False)
-    bounced_visits = models.IntegerField(default=0, blank=False, null=False)
-    pageviews = models.IntegerField(default=0, blank=False, null=False)
-    duration = models.IntegerField(default=0, blank=False, null=False)
+# postclick metrics
+visits = models.IntegerField(default=0, blank=False, null=False)
+new_visits = models.IntegerField(default=0, blank=False, null=False)
+bounced_visits = models.IntegerField(default=0, blank=False, null=False)
+pageviews = models.IntegerField(default=0, blank=False, null=False)
+duration = models.IntegerField(default=0, blank=False, null=False)
 
-    has_traffic_metrics = models.IntegerField(default=0, blank=False, null=False)
-    has_postclick_metrics = models.IntegerField(default=0, blank=False, null=False)
-    has_conversion_metrics = models.IntegerField(default=0, blank=False, null=False)
+has_traffic_metrics = models.IntegerField(default=0, blank=False, null=False)
+has_postclick_metrics = models.IntegerField(default=0, blank=False, null=False)
+has_conversion_metrics = models.IntegerField(default=0, blank=False, null=False)
 
-    class Meta:
-        abstract = True
+class Meta:
+    abstract = True
 
 
 class ArticleStats(StatsMetrics):
 
-    datetime = models.DateTimeField()
+datetime = models.DateTimeField()
 
-    ad_group = models.ForeignKey('dash.AdGroup', on_delete=models.PROTECT)
-    article = models.ForeignKey('dash.Article', on_delete=models.PROTECT)
-    source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
+ad_group = models.ForeignKey('dash.AdGroup', on_delete=models.PROTECT)
+article = models.ForeignKey('dash.Article', on_delete=models.PROTECT)
+source = models.ForeignKey('dash.Source', on_delete=models.PROTECT)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    """
+created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+"""
