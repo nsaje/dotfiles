@@ -144,6 +144,19 @@ def grouper(n, iterable):
         yield chunk
 
 
+def execute_multi_insert_sql(cursor, table, fields_sql, all_row_tuples, max_at_a_time=100):
+    fields_str = "(" + ",".join(fields_sql) + ")"
+    fields_placeholder = "(" + ",".join(["%s"] * len(fields_sql)) + ")"
+    for row_tuples in grouper(max_at_a_time, all_row_tuples):
+        statement = "INSERT INTO {table} {fields} VALUES {fields_strs}".\
+                    format(table=table,
+                           fields=fields_str,
+                           fields_strs=",".join([fields_placeholder] * len(row_tuples)))
+
+        row_tuples_flat = [item for sublist in row_tuples for item in sublist]
+        cursor.execute(statement, row_tuples_flat)
+
+
 class RSModel(object):
     FIELDS = []
     TABLE_NAME = "test_table"

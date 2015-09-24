@@ -1,7 +1,7 @@
 # test contentadstats
 
 -   fields:
-        date: '2014-06-16T12:21:29'
+        date: '2014-06-16T00:00:00'
         content_ad_id: 1
         adgroup_id: 1
         source_id: 1
@@ -19,6 +19,20 @@
     table: contentadstats
 
 -   fields:
+        date: '2014-06-18T00:00:00'
+        content_ad_id: 2
+        adgroup_id: 1
+        source_id: 1
+        campaign_id: 1 
+        account_id: 1
+        impressions: 1
+        clicks: 1
+        cost_cc: 1
+        data_cost_cc: 1
+    table: contentadstats
+
+# no postclick metrics
+-   fields:
         date: '2014-06-16T12:21:29'
         content_ad_id: 2
         adgroup_id: 2
@@ -29,9 +43,4 @@
         clicks: 12
         cost_cc: 12
         data_cost_cc: 12
-        visits: 12
-        new_visits: 12
-        bounced_visits: 12
-        pageviews: 12
-        total_time_on_site: 12
     table: contentadstats

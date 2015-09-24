@@ -64,20 +64,36 @@ class Command(BaseCommand):
         # sort data by tables
         sqlfields_by_table = {}
         rows_by_table = collections.defaultdict(list)
+
         for block_list in data:
             for block in block_list:
                 fields = block['fields']
                 table = block['table']
 
                 sql_fields = sqlfields_by_table.setdefault(table, fields.keys())
-                rows_by_table[table].append(tuple(fields[k] for k in sql_fields))
+
+                # append previously undefined fields
+                diff = set(fields.keys()) - set(sql_fields)
+                for df in diff:
+                    sqlfields_by_table[table].append(df)
+
+                sql_fields = sqlfields_by_table[table]
+
+                rows_by_table[table].append([fields.get(k) for k in sql_fields])
 
         # insert thy data
         cursor = redshift.get_cursor()
         try:
             with transaction.atomic(using=settings.STATS_DB_NAME):
                 for table, fields in sqlfields_by_table.items():
-                    redshift.execute_multi_insert_sql(cursor, table, fields, rows_by_table[table])
+                    max_length = len(sqlfields_by_table[table])
+
+                    # append None to max length of row tuples
+                    rows = []
+                    for row in rows_by_table[table]:
+                        row.extend([None] * (max_length - len(row)))
+                        rows.append(row)
+                    redshift.execute_multi_insert_sql(cursor, table, fields, rows)
         except Exception as e:
             logger.exception(e)
         finally:
