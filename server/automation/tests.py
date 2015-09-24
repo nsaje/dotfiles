@@ -93,7 +93,8 @@ class BudgetDepletionTestCase(test.TestCase):
             0.15,
             0.20,
             30.0,
-            5
+            5,
+            []
         )
         log = automationmodels.AutopilotAdGroupSourceBidCpcLog.objects.all().latest('created_dt')
         self.assertEqual(log.campaign, models.Campaign.objects.get(pk=1))
@@ -127,29 +128,34 @@ class BudgetDepletionTestCase(test.TestCase):
     @patch('automation.settings.AUTOPILOT_MAX_LOWERING_CPC_CHANGE', decimal.Decimal('0.3'))
     def test_calculate_new_autopilot_cpc(self):
         test_cases = {
-            #  cpc, daily_budget, yesterday_spend, new_cpc
-            ('0', '10', '5', '0'),
-            ('0.5', '10', '8', '0.75'),
-            ('0.5', '10', '10', '0.25'),
-            ('0.5', '10', '2', '0.56'),
-            ('0.5', '10', '0', '0.5'),
-            ('0.5', '10', '5', '0.56'),
-            ('0.5', '0', '5', '0.5'),
-            ('0.5', '10', '0', '0.5'),
-            ('0.5', '-10', '5', '0.5'),
-            ('0.5', '10', '-5', '0.5'),
-            ('-0.5', '10', '5', '0'),
-            ('0.35', '10', '9.96', '0.15'),
-            ('2.8', '10', '9.96', '2.5'),
-            ('3.5', '10', '1', '3.5'),
-            ('0.05', '10', '1', '0.05')
+            #  cpc, daily_budget, yesterday_spend, new_cpc, comments
+            ('0', '10', '5', '0', (automation.autopilot.CpcChangeComment.CPC_NOT_SET, automation.autopilot.CpcChangeComment.CURRENT_CPC_TOO_LOW)),
+            ('0.5', '10', '8', '0.75', ()),
+            ('0.5', '10', '10', '0.25', ()),
+            ('0.5', '10', '2', '0.56', ()),
+            ('0.5', '10', '0', '0.5', (automation.autopilot.CpcChangeComment.NO_YESTERDAY_SPEND)),
+            ('0.5', '10', '5', '0.56', ()),
+            ('0.5', '0', '5', '0.5', (automation.autopilot.CpcChangeComment.BUDGET_NOT_SET)),
+            ('0.5', '10', '0', '0.5', (automation.autopilot.CpcChangeComment.NO_YESTERDAY_SPEND)),
+            ('0.5', '-10', '5', '0.5', (automation.autopilot.CpcChangeComment.BUDGET_NOT_SET)),
+            ('0.5', '10', '-5', '0.5', (automation.autopilot.CpcChangeComment.NO_YESTERDAY_SPEND)),
+            ('-0.5', '10', '5', '0', (automation.autopilot.CpcChangeComment.CPC_NOT_SET, autopilot.CpcChangeComment.CURRENT_CPC_TOO_LOW)),
+            ('0.35', '10', '9.96', '0.15', ()),
+            ('2.8', '10', '9.96', '2.5', ()),
+            ('3.5', '10', '1', '3.5', (automation.autopilot.CpcChangeComment.CURRENT_CPC_TOO_HIGH)),
+            ('0.05', '10', '1', '0.05', (automation.autopilot.CpcChangeComment.CURRENT_CPC_TOO_LOW))
         }
+        for test_case in test_cases:
+            print test_case, autopilot.calculate_new_autopilot_cpc(
+                decimal.Decimal(test_case[0]),
+                decimal.Decimal(test_case[1]),
+                decimal.Decimal(test_case[2]))
         for test_case in test_cases:
             self.assertEqual(autopilot.calculate_new_autopilot_cpc(
                 decimal.Decimal(test_case[0]),
                 decimal.Decimal(test_case[1]),
                 decimal.Decimal(test_case[2])),
-                decimal.Decimal(test_case[3]))
+                (decimal.Decimal(test_case[3]), list(test_case[4])))
 
     def test_send_autopilot_CPC_changes_email(self):
         autopilot.send_autopilot_CPC_changes_email(
@@ -160,7 +166,8 @@ class BudgetDepletionTestCase(test.TestCase):
             {(u'Adgroup', 109): [{
                 'old_cpc': decimal.Decimal('0.1800'),
                 'source_name': u'source',
-                'new_cpc': decimal.Decimal('0.21')}
+                'new_cpc': decimal.Decimal('0.21'),
+                'comments': []}
             ]}
         )
         self.assertEqual(len(mail.outbox), 1)
