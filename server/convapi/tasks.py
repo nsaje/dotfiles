@@ -101,6 +101,7 @@ def process_ga_report(ga_report_task):
         report_log.email_subject = ga_report_task.subject
         report_log.from_address = ga_report_task.from_address
         report_log.state = constants.ReportState.RECEIVED
+        report_log.s3_key = ga_report_task.attachment_s3_key
 
         if int(ga_report_task.attachment_count) != 1:
             logger.warning('ERROR: single attachment expected')
@@ -372,6 +373,7 @@ def process_omniture_report_v2(ga_report_task):
 def process_report_v2(report_task, report_type):
     try:
         report_log = models.ReportLog()
+        report_log.s3_key = report_task.attachment_s3_key
         # create report log and validate incoming task
         content = _update_and_validate_report_log_v2(report_task, report_log)
 
@@ -439,6 +441,7 @@ def process_report_v2(report_task, report_type):
 def process_omniture_report(ga_report_task):
     try:
         report_log = models.GAReportLog()
+        report_log.s3_key = ga_report_task.attachment_s3_key
         # create report log and validate incoming task
         content = _update_and_validate_report_log(ga_report_task, report_log)
 

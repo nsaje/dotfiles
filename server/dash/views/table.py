@@ -456,11 +456,7 @@ class SourcesTable(api_common.BaseApiView):
         if ad_group_level:
             ad_group_sources_settings = level_sources_table.ad_group_sources_settings
 
-        yesterday_cost = {}
-        yesterday_total_cost = None
-        if user.has_perm('reports.yesterday_spend_view'):
-            yesterday_cost, yesterday_total_cost = level_sources_table.\
-                get_yesterday_cost()
+        yesterday_cost, yesterday_total_cost = level_sources_table.get_yesterday_cost()
 
         operational_sources = [source.id for source in sources.filter(maintenance=False, deprecated=False)]
         last_success_actions_operational = [v for k, v in last_success_actions.iteritems() if k in operational_sources]

@@ -99,7 +99,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_ad_groups_view', "Can view campaign's ad groups tab in dashboard."),
             ('campaign_settings_account_manager', 'Can be chosen as account manager.'),
             ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),
-            ('help_view', 'Can view help popovers.'),
             ("supply_dash_link_view", "Can view supply dash link."),
             ('ad_group_agency_tab_view', "Can view ad group's agency tab."),
             ('all_accounts_accounts_view', "Can view all accounts's accounts tab."),

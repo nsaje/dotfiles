@@ -20,7 +20,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.batchName}">
             <label for="batch-name-input" class="col-xs-3 control-label">
                 Batch name
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The name of the upload batch." placement="top"></zem-help-popover>
+                <zem-help-popover content="The name of the upload batch." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
                 <input type="text" id="batch-name-input" class="form-control" ng-model="formData.batchName" ng-focus="clearErrors('batchName')">
@@ -33,13 +33,13 @@
         <div class="form-group">
             <div class="col-xs-6">
                 <span class="form-title">Default content ad information</span>
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="These settings will be used as defaults to generate content ads unless otherwise specified in upload CSV. Not all media sources / ad formats require all of them." placement="top"></zem-help-popover>
+                <zem-help-popover content="These settings will be used as defaults to generate content ads unless otherwise specified in upload CSV. Not all media sources / ad formats require all of them." placement="top"></zem-help-popover>
             </div>
         </div>
         <div class="form-group" ng-class="{'has-error': !!errors.displayUrl}">
             <label for="display-url-input" class="col-xs-3 control-label">
                 Display URL
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Advertiser's display URL." placement="top"></zem-help-popover>
+                <zem-help-popover content="Advertiser's display URL." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
                 <input id="display-url-input" type="text" class="form-control" ng-model="formData.displayUrl" ng-focus="clearErrors('displayUrl')">
@@ -52,7 +52,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.brandName}">
             <label for="brand-name-input" class="col-xs-3 control-label">
                 Brand name
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Advertiser's brand name." placement="top"></zem-help-popover>
+                <zem-help-popover content="Advertiser's brand name." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
                 <input id="brand-name-input" type="text" class="form-control" ng-model="formData.brandName" ng-focus="clearErrors('brandName')">
@@ -65,7 +65,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.callToAction}">
             <label for="call-to-action-input" class="col-xs-3 control-label">
                 Call to action
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Call to action text." placement="top"></zem-help-popover>
+                <zem-help-popover content="Call to action text." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
                 <div ui-select2="callToActionSelect2Config" id="call-to-action-input" class="form-control" ng-model="formData.callToAction" zem-select2-model-transform="text"></div>
@@ -78,7 +78,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.description}">
             <label for="description-input" class="col-xs-3 control-label">
                 Description
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Description of a content ad." placement="top"></zem-help-popover>
+                <zem-help-popover content="Description of a content ad." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
                 <textarea id="description-input" type="text" class="form-control" ng-model="formData.description" ng-focus="clearErrors('description')">
