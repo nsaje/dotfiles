@@ -80,7 +80,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
         article_stats.has_traffic_metrics = 1
         article_stats.save()
 
-    #reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group, source=source)
+    reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group, source=source)
 
 
 @statsd_helper.statsd_timer('reports', 'stats_update_adgroup_postclick')
@@ -128,7 +128,7 @@ def stats_update_adgroup_postclick(datetime, ad_group, rows):
         article_stats.save()
 
     # refresh the corresponding adgroup-level pre-aggregations
-    #reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
+    reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
 
 
 def stats_update_adgroup_all(datetime, ad_group, rows):
@@ -177,7 +177,7 @@ def stats_update_adgroup_all(datetime, ad_group, rows):
         article_stats.save()
 
     # refresh the corresponding adgroup-level pre-aggregations
-    #reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
+    reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
 
 
 @statsd_helper.statsd_timer('reports', 'goals_update_adgroup')
@@ -236,8 +236,8 @@ def goals_update_adgroup(datetime, ad_group, rows):
         conv_stats.save()
 
     # refresh the corresponding adgroup-level pre-aggregations
-    #reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
-    #reports.refresh.refresh_adgroup_conversion_stats(datetime=datetime, ad_group=ad_group)
+    reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
+    reports.refresh.refresh_adgroup_conversion_stats(datetime=datetime, ad_group=ad_group)
 
 
 @transaction.atomic
