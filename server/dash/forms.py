@@ -264,8 +264,8 @@ class ConversionPixelForm(forms.Form):
 
 class ConversionGoalForm(forms.Form):
     name = forms.CharField(
-        max_length=100,
         required=True,
+        max_length=100,
         error_messages={
             'max_length': 'Conversion goal name is too long (%(show_value)d/%(limit_value)d).',
         }
@@ -279,6 +279,7 @@ class ConversionGoalForm(forms.Form):
         required=False,
         choices=[(1, '1 day'), (7, '7 days'), (30, '30 days')],
         coerce=int,
+        empty_value=None,
     )
     goal_id = forms.CharField(
         required=True,
@@ -296,7 +297,7 @@ class ConversionGoalForm(forms.Form):
         cleaned_data = super(ConversionGoalForm, self).clean()
 
         if cleaned_data.get('type') == constants.ConversionGoalType.PIXEL:
-            if not cleaned_data.get('conversion_window'):
+            if not cleaned_data.get('conversion_window') and not self.errors.get('conversion_window'):
                 self.add_error('conversion_window', 'This field is required.')
 
         try:

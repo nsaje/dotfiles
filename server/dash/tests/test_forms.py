@@ -7,6 +7,7 @@ from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from dash import forms
+from dash import models
 
 
 class AdGroupSettingsFormTest(TestCase):
@@ -84,6 +85,133 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertTrue(form.is_valid())
         self.assertIn('enable_ga_tracking', form.cleaned_data)
         self.assertFalse(form.cleaned_data['enable_ga_tracking'])
+
+
+class ConversionGoalFormTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def test_name(self):
+        data = {
+            'type': '2',
+            'goal_id': '1'
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'name': ['This field is required.']}, form.errors)
+
+        data['name'] = 'a' * 101
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'name': ['Conversion goal name is too long (101/100).']}, form.errors)
+
+        data['name'] = 'a'
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertTrue(form.is_valid())
+
+    def test_type(self):
+        data = {
+            'name': 'name',
+            'goal_id': '1',
+            'conversion_window': 7,
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'type': ['This field is required.']}, form.errors)
+
+        data['type'] = 98765
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'type': ['Select a valid choice. 98765 is not one of the available choices.']}, form.errors)
+
+        data['type'] = 1
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertTrue(form.is_valid())
+
+    def test_conversion_window(self):
+        data = {
+            'name': 'name',
+            'goal_id': '1',
+            'type': '1',
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'conversion_window': ['This field is required.']}, form.errors)
+
+        data['conversion_window'] = 98765
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'conversion_window': ['Select a valid choice. 98765 is not one of the available choices.']}, form.errors)
+
+        data['conversion_window'] = 1
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertTrue(form.is_valid())
+
+    def test_goal_id(self):
+        data = {
+            'name': 'name',
+            'type': '1',
+            'conversion_window': '7',
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'goal_id': ['This field is required.']}, form.errors)
+
+        data['goal_id'] = 'a' * 101
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'goal_id': ['Conversion goal id is too long (101/100).']}, form.errors)
+
+        data['goal_id'] = 'a'
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertTrue(form.is_valid())
+
+    def test_unique_name(self):
+        models.ConversionGoal.objects.create(campaign_id=1, type=2, goal_id='1', name='Conversion goal')
+        data = {
+            'name': 'Conversion goal',
+            'type': 3,
+            'goal_id': '2'
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'name': ['This field has to be unique.']}, form.errors)
+
+        form = forms.ConversionGoalForm(data, campaign_id=2)
+        self.assertTrue(form.is_valid())
+
+    def test_unique_goal_id(self):
+        models.ConversionGoal.objects.create(campaign_id=1, type=2, goal_id='1', name='Conversion goal')
+        data = {
+            'name': 'Conversion goal 2',
+            'type': 2,
+            'goal_id': '1'
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'goal_id': ['This field has to be unique.']}, form.errors)
+
+        form = forms.ConversionGoalForm(data, campaign_id=2)
+        self.assertTrue(form.is_valid())
+
+        data['type'] = 3
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertTrue(form.is_valid())
 
 
 class AdGroupAdsPlusUploadFormTest(TestCase):
