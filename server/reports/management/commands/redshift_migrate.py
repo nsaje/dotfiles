@@ -2,12 +2,10 @@ import os
 import sys
 import logging
 
-from optparse import make_option
-
 from django.core.management.base import BaseCommand
 
-from django.conf import settings
-from django.db import connections
+from utils.command_helpers import set_logger_verbosity
+from reports import redshift
 
 logger = logging.getLogger(__name__)
 
@@ -17,15 +15,19 @@ def migrate_db(start_index=0):
 
     migration_files = _get_migrations(start_index)
 
-    cursor = connections[settings.STATS_DB_NAME].cursor()
+    cursor = redshift.get_cursor()
 
     logger.info('Applying migrations')
-    for i, mf in enumerate(migration_files):
-        with open(mf, 'r') as f:
-            logger.info('Applying migration {} {}/{} {}'.format(start_index + i, i + 1, len(migration_files), mf))
-            cursor.execute(f.read())
+    try:
+        for i, mf in enumerate(migration_files):
+            with open(mf, 'r') as f:
+                logger.info('Applying migration {} {}/{} {}'.format(start_index + i, i + 1, len(migration_files), mf))
+                cursor.execute(f.read(), [])
+    except Exception as e:
+        logger.exception(e)
+    finally:
+        cursor.close()
 
-    cursor.close()
     logger.info('Done, database migrated.')
 
 
@@ -54,11 +56,12 @@ def _get_migrations(start_index=0):
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--list', help='Lists all of the available migrations', action='store_true'),
-        make_option('--start', help='0-based migration index with which migrate/list is started', type="int"),
-        make_option('--sql', help='Show sql contents of migrations when listing migrations', action='store_true'),
-    )
+
+    def add_arguments(self, parser):
+        parser.add_argument('--list', help='Lists all of the available migrations', action='store_true')
+        parser.add_argument('--start', help='0-based migration index with which migrate/list is started', type=int),
+        parser.add_argument('--sql', help='Show sql contents of migrations when listing migrations',
+                            action='store_true'),
 
     def handle(self, *args, **options):
         try:
@@ -68,6 +71,8 @@ class Command(BaseCommand):
         except:
             logging.exception("Failed parsing command line arguments")
             sys.exit(1)
+
+        set_logger_verbosity(logger, options)
 
         if is_list_action:
             list_migrations(start_index, show_sql)
