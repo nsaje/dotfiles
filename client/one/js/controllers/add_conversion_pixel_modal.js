@@ -1,5 +1,5 @@
 /* globals oneApp */
-oneApp.controller('AddConversionPixelModalCtrl', ['$scope', '$modalInstance', '$state', 'api', function($scope, $modalInstance, $state, api) {
+oneApp.controller('AddConversionPixelModalCtrl', ['$scope', '$modalInstance', 'api', function($scope, $modalInstance, api) {
     $scope.addConversionPixelInProgress = false;
     $scope.slug = '';
     $scope.error = false;
