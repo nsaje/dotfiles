@@ -149,7 +149,8 @@ class ConversionGoalFormTestCase(TestCase):
 
         form = forms.ConversionGoalForm(data, campaign_id=1)
         self.assertFalse(form.is_valid())
-        self.assertEqual({'conversion_window': ['Select a valid choice. 98765 is not one of the available choices.']}, form.errors)
+        self.assertEqual(
+            {'conversion_window': ['Select a valid choice. 98765 is not one of the available choices.']}, form.errors)
 
         data['conversion_window'] = 1
 
