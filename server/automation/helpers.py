@@ -2,6 +2,7 @@ import datetime
 import pytz
 
 from django.conf import settings
+from django.db import transaction
 
 import dash
 import dash.budget
@@ -9,6 +10,7 @@ import decimal
 import reports.api
 import dash.views.helpers
 import actionlog.api
+from actionlog import zwei_actions
 
 
 def get_yesterdays_spends(campaigns):
@@ -134,5 +136,8 @@ def stop_campaign(campaign):
         current_settings = ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
         new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
-        dash.api.order_ad_group_settings_update(ad_group, current_settings, new_settings, None, send=True)
-        actionlog.api.init_pause_ad_group(ad_group, None, send=True)
+        new_settings.save(None)
+        actionlogs_to_send = []
+        with transaction.atomic():
+            actionlogs_to_send = actionlog.api.init_pause_ad_group(ad_group, None, send=False)
+        zwei_actions.send(actionlogs_to_send)
