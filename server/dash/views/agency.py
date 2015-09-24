@@ -182,7 +182,7 @@ class CampaignAgency(api_common.BaseApiView):
             'settings': self.get_dict(campaign_settings, campaign),
             'account_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
             'sales_reps': self.get_user_list(campaign_settings, 'campaign_settings_sales_rep'),
-            'history': self.get_history(campaign, request.user),
+            'history': self.get_history(campaign),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
         }
@@ -208,7 +208,7 @@ class CampaignAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, campaign),
-            'history': self.get_history(campaign, request.user),
+            'history': self.get_history(campaign),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
         }
