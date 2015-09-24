@@ -8,6 +8,7 @@ import dash.budget
 import decimal
 import reports.api
 import dash.views.helpers
+import actionlog.api
 
 
 def get_yesterdays_spends(campaigns):
@@ -126,3 +127,8 @@ def get_latest_ad_group_source_state(ad_group_source):
         return latest_state
     except dash.models.AdGroupSourceState.DoesNotExist:
         return None
+
+
+def stop_campaign(campaign):
+    for ad_group in get_active_ad_groups(campaign):
+        actionlog.api.init_pause_ad_group(ad_group, None)
