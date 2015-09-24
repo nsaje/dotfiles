@@ -26,12 +26,12 @@ class Command(BaseCommand):
         if options.get('end_date') is not None:
             end_date = dateutil.parser.parse(options['end_date']).date()
 
-        min_id = max(models.ArticleStats.objects.aggregate(Min('id')), start_id)
-        max_id = models.ArticleStats.objects.aggregate(Max('id'))
+        min_id = max(models.ArticleStats.objects.all().order_by('id').first() or 0, start_id)
+        max_id = models.ArticleStats.objects.all().order_by('-id').first() or 0
 
         try:
-            with open(options.get('filename', 'a+')) as f:
-                for batch_start_id in range(min_id, BATCH_SIZE, max_id):
+            with open(options.get('filename'), 'w') as f:
+                for batch_start_id in range(min_id, max_id, BATCH_SIZE):
                     current_batch = models.ArticleStats.objects.filter(
                         id__gte=batch_start_id,
                         id__lte=batch_start_id+BATCH_SIZE
