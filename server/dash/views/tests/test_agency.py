@@ -623,6 +623,523 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual('Invalid value', decoded_response['data']['message'])
 
 
+class CampaignConversionGoalsTestCase(TestCase):
+    fixtures = ['test_api.yaml', 'test_views.yaml']
+
+    def setUp(self):
+        user = User.objects.get(pk=1)
+        self.client.login(username=user.email, password='secret')
+
+    def test_get(self):
+        response = self.client.get(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual({
+            'rows': [
+                {
+                    'id': 2,
+                    'type': 2,
+                    'name': 'test conversion goal 2',
+                    'conversion_window': None,
+                    'goal_id': '2',
+                }, {
+                    'id': 1,
+                    'type': 1,
+                    'name': 'test conversion goal',
+                    'conversion_window': 7,
+                    'goal_id': '1',
+                    'pixel': {
+                        'id': 1,
+                        'slug': 'test',
+                        'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+                        'archived': False,
+                    },
+                },
+            ],
+            'available_pixels': []
+        }, decoded_response['data'])
+
+    def test_get_no_permissions(self):
+        permission = Permission.objects.get(codename='manage_conversion_goals')
+        user = User.objects.get(pk=2)
+        user.user_permissions.remove(permission)
+
+        self.client.login(username=user.email, password='secret')
+        response = self.client.get(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
+            follow=True,
+        )
+
+        self.assertEqual(404, response.status_code)
+
+        user.user_permissions.add(permission)
+        self.client.login(username=user.email, password='secret')
+        response = self.client.get(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+
+    def test_get_campaign_no_permissions(self):
+        response = self.client.get(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 3}),
+            follow=True,
+        )
+
+        self.assertEqual(404, response.status_code)
+
+        models.Account.objects.get(id=2).users.add(User.objects.get(id=1))
+        response = self.client.get(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 3}),
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+
+    def test_get_available_pixels(self):
+        new_pixel = models.ConversionPixel.objects.create(
+            account_id=1,
+            slug='new',
+            archived=False,
+        )
+
+        response = self.client.get(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual({
+            'rows': [
+                {
+                    'id': 2,
+                    'type': 2,
+                    'name': 'test conversion goal 2',
+                    'conversion_window': None,
+                    'goal_id': '2',
+                },
+                {
+                    'id': 1,
+                    'type': 1,
+                    'name': 'test conversion goal',
+                    'conversion_window': 7,
+                    'goal_id': '1',
+                    'pixel': {
+                        'id': 1,
+                        'slug': 'test',
+                        'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+                        'archived': False,
+                    },
+                },
+            ],
+            'available_pixels': [{
+                'id': new_pixel.id,
+                'slug': 'new',
+            }]
+        }, decoded_response['data'])
+
+    def test_get_non_existing_campaign(self):
+        response = self.client.get(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 9876}),
+            follow=True
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_post(self):
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion pixel',
+                'type': 2,
+                'goal_id': 'goal',
+            }),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual({'success': True}, decoded_response)
+
+    def test_post_campaign_no_permission(self):
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 3}),
+            json.dumps({
+                'name': 'conversion pixel',
+                'type': 2,
+                'goal_id': 'goal',
+            }),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(404, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual('Campaign does not exist', decoded_response['data']['message'])
+
+        models.Account.objects.get(id=2).users.add(User.objects.get(id=1))
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 3}),
+            json.dumps({
+                'name': 'conversion pixel',
+                'type': 2,
+                'goal_id': 'goal',
+            }),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+
+    def test_post_no_permissions(self):
+        permission = Permission.objects.get(codename='manage_conversion_goals')
+        user = User.objects.get(pk=2)
+        user.user_permissions.remove(permission)
+
+        self.client.login(username=user.email, password='secret')
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion pixel',
+                'type': 2,
+                'goal_id': 'goal',
+            }),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_post_max_conversion_goals(self):
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
+            json.dumps({
+                'name': 'conversion pixel',
+                'type': 2,
+                'goal_id': 'goal',
+            }),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(400, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual('Max conversion goals per campaign exceeded', decoded_response['data']['message'])
+
+    def test_post_pixel_no_conversion_window(self):
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion pixel',
+                'type': 1,
+                'goal_id': '98765',
+            }),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(400, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual(['conversion_window'],  decoded_response['data']['errors'].keys())
+
+    def test_post_not_unique_name(self):
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion goal',
+                'type': 2,
+                'goal_id': '1'
+            }),
+            content_type='application/json',
+            follow=True
+        )
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion goal',
+                'type': 2,
+                'goal_id': '2'
+            }),
+            content_type='application/json',
+            follow=True
+        )
+        self.assertEqual(400, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual({'name': ['This field has to be unique.']}, decoded_response['data']['errors'])
+
+    def test_post_same_name_and_goal_id_different_campaigns(self):
+        models.ConversionGoal.objects.all().delete()
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 1}),
+            json.dumps({
+                'name': 'conversion goal',
+                'type': 2,
+                'goal_id': '1'
+            }),
+            content_type='application/json',
+            follow=True
+        )
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion goal',
+                'type': 2,
+                'goal_id': '2'
+            }),
+            content_type='application/json',
+            follow=True
+        )
+        self.assertEqual(200, response.status_code)
+
+    def test_post_same_goal_id_different_types(self):
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion goal',
+                'type': 2,
+                'goal_id': '1'
+            }),
+            content_type='application/json',
+            follow=True
+        )
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion goal 2',
+                'type': 3,
+                'goal_id': '1'
+            }),
+            content_type='application/json',
+            follow=True
+        )
+        self.assertEqual(200, response.status_code)
+
+    def test_post_not_unique_goal_id(self):
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion goal',
+                'type': 2,
+                'goal_id': '1'
+            }),
+            content_type='application/json',
+            follow=True
+        )
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion goal 2',
+                'type': 2,
+                'goal_id': '1'
+            }),
+            content_type='application/json',
+            follow=True
+        )
+        self.assertEqual(400, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual({'goal_id': ['This field has to be unique.']}, decoded_response['data']['errors'])
+
+    def test_post_non_existing_conversion_pixel(self):
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion pixel',
+                'type': 1,
+                'goal_id': '98765',
+                'conversion_window': 7,
+            }),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual('Invalid conversion pixel', decoded_response['data']['message'])
+
+    def test_post_archived_conversion_pixel(self):
+        data = {
+            'name': 'conversion pixel',
+            'type': 1,
+            'goal_id': '1',
+            'conversion_window': 7,
+        }
+
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps(data),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+
+        models.ConversionGoal.objects.latest('created_dt').delete()
+        models.ConversionPixel.objects.filter(id=1).update(archived=True)
+
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps(data),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual('Invalid conversion pixel', decoded_response['data']['message'])
+
+    def test_post_pixel_not_unique_goal_id(self):
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion goal',
+                'type': 1,
+                'conversion_window': 7,
+                'goal_id': '1'
+            }),
+            content_type='application/json',
+            follow=True
+        )
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion goal 2',
+                'type': 1,
+                'conversion_window': 7,
+                'goal_id': '1'
+            }),
+            content_type='application/json',
+            follow=True
+        )
+        self.assertEqual(400, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual({'goal_id': ['This field has to be unique.']}, decoded_response['data']['errors'])
+
+    def test_post_pixel_invalid_account(self):
+        models.Account.objects.get(id=2).users.add(User.objects.get(id=1))
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
+            json.dumps({
+                'name': 'conversion pixel',
+                'type': 1,
+                'goal_id': '1',
+                'conversion_window': 7,
+            }),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(
+            reverse('campaign_conversion_goals', kwargs={'campaign_id': 3}),
+            json.dumps({
+                'name': 'conversion pixel',
+                'type': 1,
+                'goal_id': '1',
+                'conversion_window': 7,
+            }),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual('Invalid conversion pixel', decoded_response['data']['message'])
+
+
+class ConversionGoalTestCase(TestCase):
+    fixtures = ['test_api.yaml', 'test_views.yaml']
+
+    def setUp(self):
+        user = User.objects.get(pk=1)
+        self.client.login(username=user.email, password='secret')
+
+    def test_delete_no_permissions(self):
+        permission = Permission.objects.get(codename='manage_conversion_goals')
+        user = User.objects.get(pk=2)
+
+        user.user_permissions.remove(permission)
+        self.client.login(username=user.email, password='secret')
+        response = self.client.delete(
+            reverse('conversion_goal', kwargs={'campaign_id': 1, 'conversion_goal_id': 1}),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+
+        user.user_permissions.add(permission)
+        self.client.login(username=user.email, password='secret')
+        response = self.client.delete(
+            reverse('conversion_goal', kwargs={'campaign_id': 1, 'conversion_goal_id': 1}),
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+
+    def test_delete_campaign_no_permissions(self):
+        models.Account.objects.get(id=1).users.remove(User.objects.get(id=1))
+        response = self.client.delete(
+            reverse('conversion_goal', kwargs={'campaign_id': 1, 'conversion_goal_id': 1}),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+
+        models.Account.objects.get(id=1).users.add(User.objects.get(id=1))
+        response = self.client.delete(
+            reverse('conversion_goal', kwargs={'campaign_id': 1, 'conversion_goal_id': 1}),
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+
+    def test_delete_invalid_conversion_goal(self):
+        response = self.client.delete(
+            reverse('conversion_goal', kwargs={'campaign_id': 1, 'conversion_goal_id': 9876}),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual('Invalid conversion goal', decoded_response['data']['message'])
+
+    def test_delete_goal_not_belonging_to_campaign(self):
+        response = self.client.delete(
+            reverse('conversion_goal', kwargs={'campaign_id': 2, 'conversion_goal_id': 1}),
+            follow=True,
+        )
+        self.assertEqual(404, response.status_code)
+
+        decoded_response = json.loads(response.content)
+        self.assertEqual('Invalid conversion goal', decoded_response['data']['message'])
+
+    def test_delete_success(self):
+        conversion_goal = models.ConversionGoal.objects.get(id=1)
+        response = self.client.delete(
+            reverse('conversion_goal', kwargs={'campaign_id': 1, 'conversion_goal_id': conversion_goal.id}),
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+
+        with self.assertRaises(models.ConversionGoal.DoesNotExist):
+            models.ConversionGoal.objects.get(id=1)
+
+
 class UserActivationTest(TestCase):
     fixtures = ['test_views.yaml']
 

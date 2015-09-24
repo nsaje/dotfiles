@@ -2266,9 +2266,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return deferred.promise;
         };
 
-        this.delete = function (conversionGoalId) {
+        this.delete = function (campaignId, conversionGoalId) {
             var deferred = $q.defer();
-            var url = '/api/conversion_goals/' + conversionGoalId + '/';
+            var url = '/api/campaigns/' + campaignId + '/conversion_goals/' + conversionGoalId + '/';
 
             $http.delete(url).
                 success(function (data, status) {

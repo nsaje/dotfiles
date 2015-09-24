@@ -174,7 +174,7 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', fu
 
     $scope.removeConversionGoal = function (id) {
         $scope.removeConversionGoalInProgress = true;
-        api.conversionGoal.delete(id).then(
+        api.conversionGoal.delete($scope.campaign.id, id).then(
             function () {
                 $scope.conversionGoals = $scope.conversionGoals.filter(function (conversionGoalRow) {
                     if (conversionGoalRow.id === id) {

@@ -458,10 +458,11 @@ class CampaignConversionGoals(api_common.BaseApiView):
             raise exc.ValidationError(message='Max conversion goals per campaign exceeded')
 
         conversion_goal = models.ConversionGoal(campaign_id=campaign.id, type=form.cleaned_data['type'],
-                                                name=form.cleaned_data['name'])
+                                                name=form.cleaned_data['name'], goal_id=form.cleaned_data['goal_id'])
         if form.cleaned_data['type'] == constants.ConversionGoalType.PIXEL:
             try:
-                pixel = models.ConversionPixel.objects.get(id=form.cleaned_data['goal_id'])
+                pixel = models.ConversionPixel.objects.get(id=form.cleaned_data['goal_id'],
+                                                           account_id=campaign.account_id)
             except models.ConversionPixel.DoesNotExist:
                 raise exc.MissingDataError(message='Invalid conversion pixel')
 
@@ -470,8 +471,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
             conversion_goal.pixel = pixel
             conversion_goal.conversion_window = form.cleaned_data['conversion_window']
-        else:
-            conversion_goal.goal_id = form.cleaned_data['goal_id']
 
         with transaction.atomic():
             conversion_goal.save()
@@ -488,12 +487,15 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
 class ConversionGoal(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_delete')
-    def delete(self, request, conversion_goal_id):
+    def delete(self, request, campaign_id, conversion_goal_id):
         if not request.user.has_perm('zemauth.manage_conversion_goals'):
             raise exc.MissingDataError()
 
-        conversion_goal = models.ConversionGoal.objects.get(id=conversion_goal_id)
-        campaign = helpers.get_campaign(request.user, conversion_goal.campaign_id)  # checks authorization
+        campaign = helpers.get_campaign(request.user, campaign_id)  # checks authorization
+        try:
+            conversion_goal = models.ConversionGoal.objects.get(id=conversion_goal_id, campaign_id=campaign.id)
+        except models.ConversionGoal.DoesNotExist:
+            raise exc.MissingDataError(message='Invalid conversion goal')
 
         with transaction.atomic():
             conversion_goal.delete()
