@@ -46,9 +46,7 @@ def _get_active_campaigns_subset(campaigns):
         is_active = False
         for adgroup in adgroups:
             adgroup_settings = adgroup.get_current_settings()
-            if adgroup_settings.state == dash.constants.AdGroupSettingsState.ACTIVE and \
-                    not adgroup_settings.archived and \
-                    not adgroup.is_demo:
+            if _is_ad_group_active(adgroup):
                 is_active = True
                 break
         if not is_active:
@@ -91,16 +89,13 @@ def get_all_active_ad_groups():
 
 def _is_ad_group_active(adgroup):
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
-    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
-    today = datetime.date(today.year, today.month, today.day)
+    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None).date()
     adgroup_settings = adgroup.get_current_settings()
-    if (adgroup_settings.state == dash.constants.AdGroupSettingsState.ACTIVE and
-        not adgroup_settings.archived and
-        not adgroup.is_demo and
-        (adgroup_settings.end_date is None or
-            adgroup_settings.end_date >= today)):
-        return True
-    return False
+    return (adgroup_settings.state == dash.constants.AdGroupSettingsState.ACTIVE and
+            not adgroup_settings.archived and
+            not adgroup.is_demo and
+            (adgroup_settings.end_date is None or
+                adgroup_settings.end_date >= today))
 
 
 def get_active_ad_group_sources_settings(adgroup):
