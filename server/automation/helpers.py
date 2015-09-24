@@ -131,4 +131,8 @@ def get_latest_ad_group_source_state(ad_group_source):
 
 def stop_campaign(campaign):
     for ad_group in get_active_ad_groups(campaign):
-        actionlog.api.init_pause_ad_group(ad_group, None)
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
+        dash.api.order_ad_group_settings_update(ad_group, current_settings, new_settings, None, send=True)
+        actionlog.api.init_pause_ad_group(ad_group, None, send=True)
