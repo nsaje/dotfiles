@@ -41,7 +41,7 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(budgetdepletion.budget_is_depleting(100, 500), True)
         self.assertEqual(budgetdepletion.budget_is_depleting(-100, 5), True)
 
-    @patch("automation.budgetdepletion._send_depleted_budget_notification_email")
+    @patch("automation.budgetdepletion._send_depleting_budget_notification_email")
     def test_notify_campaign_with_depleting_budget(self, _):
         budgetdepletion.notify_campaign_with_depleting_budget(
             models.Campaign.objects.get(pk=1),
@@ -53,7 +53,7 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(notif.available_budget, 100)
         self.assertEqual(notif.yesterdays_spend, 150)
 
-    @patch("automation.budgetdepletion._send_depleted_budget_notification_email")
+    @patch("automation.budgetdepletion._send_depleting_budget_notification_email")
     def test_manager_has_been_notified(self, _):
         camp = models.Campaign.objects.get(pk=1)
         self.assertEqual(budgetdepletion.manager_has_been_notified(camp), False)
@@ -61,8 +61,8 @@ class BudgetDepletionTestCase(test.TestCase):
         budgetdepletion.notify_campaign_with_depleting_budget(camp, 100, 150)
         self.assertEqual(budgetdepletion.manager_has_been_notified(camp), True)
 
-    def test_send_depleted_budget_notification_email(self):
-        budgetdepletion._send_depleted_budget_notification_email(
+    def test_send_depleting_budget_notification_email(self):
+        budgetdepletion._send_depleting_budget_notification_email(
             'campaign_name',
             'campaign_url',
             'account_name',
@@ -70,6 +70,19 @@ class BudgetDepletionTestCase(test.TestCase):
             1000,
             1500,
             5000
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(
+            automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL)
+        )
+        self.assertEqual(mail.outbox[0].to, ['test@zemanta.com'])
+
+    def test_send_campaign_stopped_notification_email(self):
+        budgetdepletion._send_campaign_stopped_notification_email(
+            'campaign_name',
+            'campaign_url',
+            'account_name',
+            ['test@zemanta.com']
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(
