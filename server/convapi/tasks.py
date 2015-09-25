@@ -43,6 +43,7 @@ def ad_group_specified_errors(csvreport):
     is_ad_group_specified, ad_group_not_specified = csvreport.is_ad_group_specified()
     if not is_ad_group_specified:
         errors.extend(ad_group_not_specified)
+    errors = [e for e in errors if e is not None]
     return errors
 
 
@@ -51,6 +52,7 @@ def content_ad_specified_errors(csvreport):
     is_content_ad_specified, content_ad_not_specified = csvreport.is_content_ad_specified()
     if not is_content_ad_specified:
         errors.extend(content_ad_not_specified)
+    errors = [e for e in errors if e is not None]
     return errors
 
 
@@ -59,6 +61,7 @@ def media_source_specified_errors(csvreport):
     is_media_source_specified, media_source_not_specified = csvreport.is_media_source_specified()
     if not is_media_source_specified:
         errors.extend(media_source_not_specified)
+    errors = [e for e in errors if e is not None]
     return errors
 
 
@@ -533,7 +536,6 @@ def _update_and_validate_report_log_v2(ga_report_task, report_log):
 def _update_report_log_after_parsing(csvreport, report_log, ga_report_task):
     report_log.for_date = csvreport.get_date()
     report_log.state = constants.ReportState.PARSED
-
     content_ad_errors = content_ad_specified_errors(csvreport)
     media_source_errors = media_source_specified_errors(csvreport)
 
@@ -555,7 +557,7 @@ def _update_report_log_after_parsing(csvreport, report_log, ga_report_task):
 
     if too_many_errors(content_ad_errors, media_source_errors):
         logger.warning("Too many errors in content_ad_errors and media_source_errors lists.")
-        report_log.add_error("Too many errors in urls. Cannot recognize content ad and media sources for some urls:\n %s \n\n %s" % ('\n'.join(content_ad_errors), '\n'.join(media_source_errors)))
+        report_log.add_error("Too many errors in urls. Cannot recognize content ad and media sources for some urls:\n %s \n\n %s" % ('\n'.join(map(str, content_ad_errors)), '\n'.join(map(str, media_source_errors))))
         report_log.state = constants.ReportState.FAILED
         statsd_incr('convapi_v2.too_many_errors')
         report_log.save()

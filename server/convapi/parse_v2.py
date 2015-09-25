@@ -262,19 +262,24 @@ class Report(object):
         for entry in entry_values:
             current_entry_batch.append(entry)
             if len(current_entry_batch) >= BATCH_SIZE:
-                self._mark_invalid(current_entry_batch)
+                self._mark_invalid(current_entry_batch, track_source_map)
 
         if len(current_entry_batch) >= BATCH_SIZE:
-            self._mark_invalid(current_entry_batch)
+            self._mark_invalid(current_entry_batch, track_source_map)
 
-    def _mark_invalid(self, entry_batch):
+    def _mark_invalid(self, entry_batch, track_source_map):
         ids = [entry.content_ad_id for entry in entry_batch]
         existing_cad_sources = dash.models.ContentAdSource.objects.filter(
             content_ad__id__in=tuple(ids)
-        ).values_list('content_ad__id', 'content_ad__source__id')
+        ).values_list('content_ad__id', 'source__id')
 
         for entry in entry_batch:
-            if (entry.content_ad_id, entry.source_id,) not in existing_cad_sources:
+            source_id = track_source_map.get(entry.source_param)
+            if source_id is None:
+                entry.mark_invalid()
+                continue
+
+            if (entry.content_ad_id, source_id,) not in existing_cad_sources:
                 entry.mark_invalid()
 
     def is_media_source_specified(self):
@@ -375,7 +380,7 @@ class GAReport(Report):
                     self.entries[report_entry.key()] = report_entry
                 else:
                     existing_entry.merge_with(report_entry)
-        except:
+        except Exception, e:
             logger.exception("Failed parsing GA report")
             raise exc.CsvParseException('Could not pars CSV')
 
