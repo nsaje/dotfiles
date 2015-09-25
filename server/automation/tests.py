@@ -5,12 +5,15 @@ from mock import patch
 
 from django.core import mail
 from django import test
+from django.http.request import HttpRequest
 
 from automation import budgetdepletion, helpers, autopilot
 from automation import models as automationmodels
 from dash import models
 from reports import refresh
 import automation.settings
+
+from zemauth.models import User
 
 
 class DatetimeMock(datetime.datetime):
@@ -125,7 +128,13 @@ class BudgetDepletionTestCase(test.TestCase):
         settings_writer = dash.api.AdGroupSourceSettingsWriter(models.AdGroupSource.objects.get(id=2))
         resource = dict()
         resource['daily_budget_cc'] = decimal.Decimal(60.00)
-        settings_writer.set(resource, None)
+
+        request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
+        request.user = User.objects.create_user('test@example.com')
+
+        settings_writer.set(resource, request)
         self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=2)))
 
     @patch('automation.settings.AUTOPILOT_CPC_CHANGE_TABLE', (
