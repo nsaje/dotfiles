@@ -17,7 +17,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('alias', metavar='ALIAS', nargs=1, help='Alias of the database to create')
         parser.add_argument('meta', metavar='META', nargs=1,
-                            help='Alias of the database from which the drop will be made')
+                            help='Alias of the database from database will be created')
 
     def handle(self, *args, **options):
         alias = options['alias'][0]
