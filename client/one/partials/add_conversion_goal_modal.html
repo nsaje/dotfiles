@@ -5,6 +5,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.name}">
             <label for="goal-name-input" class="col-xs-4 control-label">
                 Conversion/goal
+                <zem-help-popover content="The name of conversion or goal." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
                 <input type="text" zem-focus-select id="goal-name-input" class="form-control" ng-model="conversionGoal.name" ng-focus="clearErrors('name')" ng-focus="clearError()" placeholder="Name of column in data table" />
@@ -17,6 +18,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.type}">
             <label for="goal-type-select" class="col-xs-4 control-label">
                 Type
+                <zem-help-popover content="The technology used for tracking conversions or goals." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
                 <select ui-select2="{minimumResultsForSearch: -1, placeholder: 'Choose type'}" id="goal-type-select" class="form-control" ng-model="conversionGoal.type" ng-change="updateTypeChange()">
@@ -32,6 +34,7 @@
         <div class="form-group" ng-if="showConversionPixelForm()" ng-class="{'has-error': !!errors.goalId}">
             <label for="pixel-slug-select" class="col-xs-4 control-label">
                 Conversion pixel
+                <zem-help-popover content="One of pre-set conversions pixels. You can add additional ones on agency tab of the account." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-4">
                 <select ui-select2="{minimumResultsForSearch: -1}" id="pixel-slug-select" class="form-control" ng-model="conversionGoal.goalId">
@@ -47,6 +50,7 @@
         <div class="form-group" ng-if="showConversionPixelForm()" ng-class="{'has-error': !!errors.conversionWindow}">
             <label for="pixel-conversion-window-select" class="col-xs-4 control-label">
                 Conversion window
+                <zem-help-popover content="Conversion will be counted if less than the specified amount of time has passed before the first visit and the actual conversion." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-4">
                 <select ui-select2="{minimumResultsForSearch: -1}" id="pixel-conversion-window-select" class="form-control" ng-model="conversionGoal.conversionWindow" select2-focus="clearErrors('conversionWindow')">
@@ -62,6 +66,7 @@
         <div class="form-group" ng-if="showGAForm()" ng-class="{'has-error': !!errors.goalId}">
             <label for="ga-goal-input" class="col-xs-4 control-label">
                 Choose Goal
+                <zem-help-popover content="The name or id of Google Analytics goal that is tracking the conversions." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-4">
                 <input type="text" id="ga-goal-input" class="form-control" ng-model="conversionGoal.goalId" ng-focus="clearErrors('goalId')" />
@@ -74,6 +79,7 @@
         <div class="form-group" ng-if="showOmnitureForm()" ng-class="{'has-error': !!errors.goalId}">
             <label for="omniture-event-input" class="col-xs-4 control-label">
                 Choose Event
+                <zem-help-popover content="The Adobe Analytics event that is tracking the conversions." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-4">
                 <input type="text" id="omniture-event-input" class="form-control" ng-model="conversionGoal.goalId" ng-focus="clearErrors('goalId')"  />

@@ -51,6 +51,7 @@
     <div class="section conversion-goals col-xs-6" ng-if="hasPermission('zemauth.manage_conversion_goals')">
         <div class="title">
             Conversions & Goals
+            <zem-help-popover content="" placement="top"></zem-help-popover>
             <div class="loader" ng-show="goalsRequestInProgress || removeConversionGoalInProgress"></div>
         </div>
         <div class="conversion-goal-entry col-xs-12" ng-repeat="goal in conversionGoals">
