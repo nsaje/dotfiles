@@ -177,85 +177,70 @@ class ApiContentAdsPostclickTest(RedshiftTestCase):
         self.assertEqual(len(ad_groups), 1)
         self.assertEqual(len(sources), 1)
 
-        start = datetime.datetime(2014, 6, 15)
-        end = datetime.datetime(2014, 6, 17)
-        result = api_contentads.has_complete_postclick_metrics_ad_groups(start, end, ad_groups, sources)
+        result = api_contentads.has_complete_postclick_metrics_ad_groups(
+            start_date=datetime.datetime(2014, 6, 15),
+            end_date=datetime.datetime(2014, 6, 17),
+            ad_groups=ad_groups,
+            sources=sources)
         self.assertTrue(result)
 
-    def test_has_complete_postclick_metrics_source_without(self):
-        ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1])
-        sources = dash.models.Source.objects.filter(pk__in=[1, 2])
-        self.assertEqual(len(ad_groups), 1)
-        self.assertEqual(len(sources), 2)
-
-        start = datetime.datetime(2014, 6, 15)
-        end = datetime.datetime(2014, 6, 17)
-        result = api_contentads.has_complete_postclick_metrics_ad_groups(start, end, ad_groups, sources)
-        self.assertTrue(result)
-
-    def test_has_complete_postclick_metrics_not(self):
-        ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1])
-        sources = dash.models.Source.objects.filter(pk__in=[1])
-        self.assertEqual(len(ad_groups), 1)
-        self.assertEqual(len(sources), 1)
-
-        start = datetime.datetime(2014, 6, 15)
-        end = datetime.datetime(2014, 6, 18)  # no metrics on this date
-        result = api_contentads.has_complete_postclick_metrics_ad_groups(start, end, ad_groups, sources)
+        result = api_contentads.has_complete_postclick_metrics_ad_groups(
+            start_date=datetime.datetime(2014, 6, 15),
+            end_date=datetime.datetime(2014, 6, 18),  # no metrics on this date
+            ad_groups=ad_groups,
+            sources=sources)
         self.assertFalse(result)
 
-    def test_get_ad_group_ids_with_postclick_data(self):
-        key = 'ad_group'
-        ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1, 2, 3])
-        result = api_contentads._get_ad_group_ids_with_postclick_data(key, ad_groups, exclude_archived=False)
-        self.assertEqual(result, [1])
-
-    def test_get_ad_group_ids_with_postclick_data_archived(self):
-        key = 'ad_group'
+        # archived ad group
         ad_group_1 = dash.models.AdGroup.objects.get(pk=1)
         ad_group_settings = ad_group_1.get_current_settings()
         ad_group_settings.archived = True
         ad_group_settings.save(self.request)
 
         ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1, 2, 3])
-        result = api_contentads._get_ad_group_ids_with_postclick_data(key, ad_groups, exclude_archived=True)
+        result = api_contentads._get_ad_group_ids_with_postclick_data(
+            key='ad_group',
+            objects=ad_groups,
+            exclude_archived=True)
         self.assertEqual(result, [])
 
-    def test_get_ad_group_ids_with_postclick_data_account(self):
-        key = 'account'
+        # account level archived ad group
         accounts = dash.models.Account.objects.filter(pk__in=[1])
-        result = api_contentads._get_ad_group_ids_with_postclick_data(key, accounts, exclude_archived=False)
-        self.assertEqual(result, [1])
+        result = api_contentads._get_ad_group_ids_with_postclick_data(
+            key='account',
+            objects=accounts,
+            exclude_archived=True)
+        self.assertEqual(result, [])
 
-    def test_get_ad_group_ids_with_postclick_data_account_archived(self):
-        key = 'account'
-        ad_group_1 = dash.models.AdGroup.objects.get(pk=1)
-        ad_group_settings = ad_group_1.get_current_settings()
-        ad_group_settings.archived = True
+        # ad group is not archived
+        ad_group_settings.archived = False
         ad_group_settings.save(self.request)
 
-        accounts = dash.models.Account.objects.filter(pk__in=[1])
-        result = api_contentads._get_ad_group_ids_with_postclick_data(key, accounts, exclude_archived=True)
-        self.assertEqual(result, [])
+        ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1, 2, 3])
+        result = api_contentads._get_ad_group_ids_with_postclick_data(
+            key='ad_group',
+            objects=ad_groups,
+            exclude_archived=False)
+        self.assertEqual(result, [1])
 
-    def test_has_complete_postclick_metrics_accounts(self):
+        # account level not archived
         accounts = dash.models.Account.objects.filter(pk__in=[1])
-        sources = dash.models.Source.objects.filter(pk__in=[1])
-        self.assertEqual(len(accounts), 1)
-        self.assertEqual(len(sources), 1)
+        result = api_contentads._get_ad_group_ids_with_postclick_data(
+            key='account',
+            objects=accounts,
+            exclude_archived=False)
+        self.assertEqual(result, [1])
 
-        start = datetime.datetime(2014, 6, 15)
-        end = datetime.datetime(2014, 6, 17)
-        result = api_contentads.has_complete_postclick_metrics_accounts(start, end, accounts, sources)
+        result = api_contentads.has_complete_postclick_metrics_accounts(
+            start_date=datetime.datetime(2014, 6, 15),
+            end_date=datetime.datetime(2014, 6, 17),
+            accounts=accounts,
+            sources=sources)
         self.assertTrue(result)
 
-    def test_has_complete_postclick_metrics_campaigns(self):
-        campaigns = dash.models.Campaign.objects.filter(pk__in=[1])
-        sources = dash.models.Source.objects.filter(pk__in=[1])
-        self.assertEqual(len(campaigns), 1)
-        self.assertEqual(len(sources), 1)
-
-        start = datetime.datetime(2014, 6, 15)
-        end = datetime.datetime(2014, 6, 17)
-        result = api_contentads.has_complete_postclick_metrics_accounts(start, end, campaigns, sources)
-        self.assertTrue(result)
+        result = api_contentads.has_complete_postclick_metrics_accounts(
+            start_date=datetime.datetime(2014, 6, 15),
+            end_date=datetime.datetime(2014, 6, 18),
+            accounts=accounts,
+            sources=sources)
+        self.assertFalse(result)
