@@ -309,4 +309,8 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
     if ($scope.hasPermission('zemauth.account_agency_access_permissions')) {
         $scope.getUsers();
     }
+
+    $scope.getName = function (user) {
+        return user.name;
+    };
 }]);
