@@ -358,8 +358,8 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             content_ad_source.source_state = data['state']
             changed = True
 
-        if content_ad_source.content_ad.state != data['state']:
-            logger.warning(
+        if data['state'] != content_ad_source.content_ad.state:
+            logger.info(
                 'Found inconsistent content ad state on media source %s for content ad %d: source state=%d, z1 state=%d, source submission status=%d, z1 submission status=%d',
                 content_ad_source.source.name, content_ad_source.content_ad.pk,
                 data.get('state'), content_ad_source.content_ad.state,

@@ -10,6 +10,7 @@ from django import forms
 from django.core import validators
 
 from dash import constants
+from dash import models
 from dash import regions
 from dash import validation_helpers
 from zemauth.models import User as ZemUser
@@ -245,6 +246,59 @@ class ConversionPixelForm(forms.Form):
             'max_length': 'Unique identifier is too long (%(show_value)d/%(limit_value)d).',
         }
     )
+
+
+class ConversionGoalForm(forms.Form):
+    name = forms.CharField(
+        required=True,
+        max_length=100,
+        error_messages={
+            'max_length': 'Conversion goal name is too long (%(show_value)d/%(limit_value)d).',
+        }
+    )
+    type = forms.TypedChoiceField(
+        required=True,
+        choices=constants.ConversionGoalType.get_choices(),
+        coerce=int,
+    )
+    conversion_window = forms.TypedChoiceField(
+        required=False,
+        choices=[(1, '1 day'), (7, '7 days'), (30, '30 days')],
+        coerce=int,
+        empty_value=None,
+    )
+    goal_id = forms.CharField(
+        required=True,
+        max_length=100,
+        error_messages={
+            'max_length': 'Conversion goal id is too long (%(show_value)d/%(limit_value)d).',
+        }
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.campaign_id = kwargs.pop('campaign_id')
+        super(ConversionGoalForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super(ConversionGoalForm, self).clean()
+
+        if cleaned_data.get('type') == constants.ConversionGoalType.PIXEL:
+            if not cleaned_data.get('conversion_window') and not self.errors.get('conversion_window'):
+                self.add_error('conversion_window', 'This field is required.')
+
+        try:
+            models.ConversionGoal.objects.get(campaign_id=self.campaign_id, name=cleaned_data.get('name'))
+            self.add_error('name', 'This field has to be unique.')
+        except models.ConversionGoal.DoesNotExist:
+            pass
+
+        try:
+            models.ConversionGoal.objects.get(campaign_id=self.campaign_id,
+                                              type=cleaned_data.get('type'),
+                                              goal_id=cleaned_data.get('goal_id'))
+            self.add_error('goal_id', 'This field has to be unique.')
+        except models.ConversionGoal.DoesNotExist:
+            pass
 
 
 class CampaignAgencyForm(forms.Form):

@@ -1,12 +1,12 @@
 'use strict';
 
 describe('AddConversionPixelModalCtrl', function() {
-    var $scope, $modalInstance, api, $state, $q, $timeout, openedDeferred;
+    var $scope, $modalInstance, api, $q, $timeout, openedDeferred;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(inject(function($controller, $rootScope, _$q_, _$timeout_, _$state_) {
+    beforeEach(inject(function($controller, $rootScope, _$q_, _$timeout_) {
         $q = _$q_;
         $timeout = _$timeout_;
         $scope = $rootScope.$new();
@@ -36,14 +36,9 @@ describe('AddConversionPixelModalCtrl', function() {
             }
         };
 
-        $state = _$state_;
-        $state.params = {
-            id: 1
-        };
-
         $controller(
             'AddConversionPixelModalCtrl',
-            {$scope: $scope, $modalInstance: $modalInstance, $state: $state, api: api}
+            {$scope: $scope, $modalInstance: $modalInstance, api: api}
         );
     }));
 
