@@ -45,15 +45,21 @@ class SplitTestsRunner(runner.DiscoverRunner):
 
         # HACK: stats connection is removed from connections because we need to handle
         # database creation and migrations separately
-        stats_conn = connections.databases.pop(settings.STATS_DB_NAME)
-        stats_meta_conn = connections.databases.pop(settings.STATS_E2E_DB_NAME)
+
+        stats_conn = None
+        stats_meta_conn = None
+
+        if self.redshift_tests:
+            stats_conn = connections.databases.pop(settings.STATS_DB_NAME, None)
+            stats_meta_conn = connections.databases.pop(settings.STATS_E2E_DB_NAME, None)
+
         old_configs = super(SplitTestsRunner, self).setup_databases(**kwargs)
 
-        # put the connection back as it will be needed
-        if stats_conn:
+        # put the connections back as they will be needed
+        if stats_conn is not None:
             connections.databases[settings.STATS_DB_NAME] = stats_conn
 
-        if stats_meta_conn:
+        if stats_meta_conn is not None:
             connections.databases[settings.STATS_E2E_DB_NAME] = stats_meta_conn
 
         if self.redshift_tests:
