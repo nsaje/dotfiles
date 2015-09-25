@@ -637,6 +637,10 @@ class CampaignBudget(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
+
+        if not request.user.has_perm('zemauth.campaign_budget_management_view'):
+            raise exc.MissingDataError()
+
         response = self.get_response(campaign)
         return self.create_api_response(response)
 
