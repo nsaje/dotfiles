@@ -326,9 +326,13 @@ oneApp.controller('MainCtrl',
             $location.search('end_date', $scope.dateRange.endDate ? $scope.dateRange.endDate.format('YYYY-MM-DD') : null);
         }
     });
- 
+
     $scope.getShowArchived = function () {
         return zemFilterService.getShowArchived();
+    };
+
+    $scope.getConversionPixelTag = function (url) {
+        return '<img src="' + url + '" height="1" width="1" border="0" alt="" />';
     };
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {

@@ -74,3 +74,27 @@
         created_dt: '2015-08-25T09:58:21'
     model: dash.conversionpixel
     pk: 1
+
+# test conversion goals
+
+-   fields:
+        campaign: 1
+        type: 1
+        pixel: 1
+        name: 'test conversion goal'
+        conversion_window: 7
+        goal_id: '1'
+        created_dt: '2015-09-23T09:58:21'
+    model: dash.conversiongoal
+    pk: 1
+
+-   fields:
+        campaign: 1
+        type: 2
+        pixel: null
+        name: 'test conversion goal 2'
+        conversion_window: null
+        goal_id: '2'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 2
