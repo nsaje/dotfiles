@@ -76,6 +76,9 @@ def mailgun_gareps(request):
 
     statsd_incr('convapi.accepted_emails')
     key = None
+    # temporary HACK
+    content_type = 'text/csv'
+
     try:
         ga_report_task = None
 
@@ -90,9 +93,6 @@ def mailgun_gareps(request):
                att_name=attachment_name or '',
                cl=len(content) if content else 0
            ))
-
-        # temporary HACK
-        content_type = 'text/csv'
 
         ga_report_task = GAReportTask(
             request.POST.get('subject'),
