@@ -80,9 +80,8 @@ def mailgun_gareps(request):
     key = None
     # temporary HACK
     content_type = 'text/csv'
-
+    ga_report_task = None
     try:
-        ga_report_task = None
 
         csvreport_date_raw = email.utils.parsedate(request.POST.get('Date'))
         csvreport_date = datetime.datetime.fromtimestamp(time.mktime(csvreport_date_raw))
