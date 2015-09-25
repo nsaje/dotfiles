@@ -21,7 +21,7 @@
                 <zem-help-popover content="The technology used for tracking conversions or goals." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
-                <ui-select theme="select2" search-enabled="false" id="goal-type-select" class="form-control" ng-model="conversionGoal.type" ng-selec="updateTypeChange()">
+                <ui-select theme="select2" search-enabled="false" id="goal-type-select" class="form-control" ng-model="conversionGoal.type" on-select="updateTypeChange()">
                     <ui-select-match placeholder="Choose type">{{$select.selected.name}}</ui-select-match>
                     <ui-select-choices repeat="goal.value as goal in conversionGoalTypes">
                         {{goal.name}}
