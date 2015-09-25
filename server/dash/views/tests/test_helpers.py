@@ -3,13 +3,15 @@ import pytz
 
 from django.test import TestCase
 from django.conf import settings
+from django.http.request import HttpRequest
 
 import actionlog.sync
 from dash.views import helpers
 from dash import models
 from dash import constants
-
 from utils import exc
+from mock import patch
+from zemauth.models import User
 
 
 class ViewHelpersTestCase(TestCase):
@@ -495,3 +497,332 @@ class GetSelectedContentAdsTest(TestCase):
     def _assert_content_ads(self, content_ads, expected_ids):
         self.assertQuerysetEqual(
             content_ads, expected_ids, transform=lambda ad: ad.id, ordered=False)
+
+
+class AdGroupSourceTableEditableFieldsTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    class DatetimeMock(datetime.datetime):
+        @classmethod
+        def utcnow(cls):
+            return datetime.datetime(2015, 6, 5, 13, 22, 23)
+
+    def test_get_editable_fields_status_setting_enabled(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': True,
+            'message': None
+        })
+
+    def test_get_editable_fields_status_setting_disabled(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+
+        ad_group_source.source.source_type.available_actions = []
+
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source must be managed manually.'
+        })
+
+    def test_get_editable_fields_status_setting_maintenance(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.source.maintenance = True
+
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source is currently in maintenance mode.'
+        })
+
+    def test_get_editable_fields_status_setting_no_cms_support(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+
+        ad_group_source.ad_group.content_ads_tab_with_cms = True
+
+        ad_group_source.can_manage_content_ads = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'Please contact support to enable this source.'
+        })
+
+    def test_get_editable_fields_status_setting_no_dma_support(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['693']
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source can not be enabled because it does not support DMA targeting.'
+        })
+
+    def test_get_editable_fields_status_setting_waiting_manual_target_regions_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['693']
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_STATE,
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+        ]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        action_log = actionlog.models.ActionLog(
+            state=actionlog.constants.ActionState.WAITING,
+            action=actionlog.constants.Action.SET_PROPERTY,
+            action_type=actionlog.constants.ActionType.MANUAL,
+            ad_group_source=ad_group_source,
+            payload={'property': 'target_regions', 'value': ['693']}
+        )
+        action_log.save(None)
+
+        for adgs_settings in models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source):
+            adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+            adgs_settings.save(None)
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, adgs_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source needs to set DMA targeting manually,please contact support to enable this source.'
+        })
+
+    def test_get_editable_fields_status_setting_no_manual_target_regions_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['693']
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_STATE,
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+        ]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        for adgs_settings in models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source):
+            adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+            adgs_settings.save(None)
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, adgs_settings)
+
+        self.assertEqual(result, {
+            'enabled': True,
+            'message': None
+        })
+
+    def test_get_editable_fields_bid_cpc_enabled(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
+
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': True,
+            'message': None
+        })
+
+    def test_get_editable_fields_bid_cpc_disabled(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = []
+
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This media source doesn\'t support setting this value through the dashboard.'
+        })
+
+    def test_get_editable_fields_bid_cpc_maintenance(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
+        ad_group_source.source.maintenance = True
+
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This value cannot be edited because the media source is currently in maintenance.'
+        })
+
+    @patch('datetime.datetime', DatetimeMock)
+    def test_get_editable_fields_bid_cpc_end_date_past(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = datetime.datetime(2015, 1, 1)
+
+        ad_group_source.source.source_type.available_actions = []
+
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
+        })
+
+    def test_get_editable_fields_daily_budget_enabled(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC
+        ]
+
+        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': True,
+            'message': None
+        })
+
+    def test_get_editable_fields_daily_budget_disabled(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = []
+
+        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This media source doesn\'t support setting this value through the dashboard.'
+        })
+
+    def test_get_editable_fields_daily_budget_maintenance(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC
+        ]
+        ad_group_source.source.maintenance = True
+
+        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This value cannot be edited because the media source is currently in maintenance.'
+        })
+
+    @patch('datetime.datetime', DatetimeMock)
+    def test_get_editable_fields_daily_budget_end_date_past(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = datetime.datetime(2015, 1, 1)
+
+        ad_group_source.source.source_type.available_actions = []
+
+        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
+        })
+
+
+class SetAdGroupSourceTest(TestCase):
+
+    fixtures = ['test_api']
+
+    def setUp(self):
+        self.request = HttpRequest()
+        self.request.user = User(id=1)
+
+    def test_add_source_to_ad_group(self):
+        ad_group_source_id = 2
+        default_settings = models.DefaultSourceSettings.objects.get(pk=1)
+        self.assertEqual(default_settings.source_id, ad_group_source_id)
+
+        ad_group = models.AdGroup.objects.get(pk=10)
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+
+        # ensure sources are not added before we actually try to add them
+        self.assertFalse(ad_group_sources.exists())
+
+        ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
+        ad_group_source.save()
+
+        self.assertTrue(ad_group_sources.count(), 1)
+
+        ad_group_source = ad_group_sources[0]
+        self.assertEqual(ad_group_source.source, default_settings.source)
+
+    def test_set_ad_group_source_defaults(self):
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=6)
+        # target mobile
+        ad_group_settings.target_devices = ['mobile']
+        ad_group_settings.save(self.request)
+
+        default_settings = models.DefaultSourceSettings.objects.get(pk=1)
+
+        ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group_settings.ad_group)
+        ad_group_source.save()
+
+        helpers.set_ad_group_source_defaults(default_settings, ad_group_settings, ad_group_source, self.request)
+
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
+        self.assertEqual(ad_group_source_settings.count(), 2)
+
+        ad_group_source_settings = ad_group_source_settings.latest()
+        self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
+        self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.mobile_cpc_cc)

@@ -231,6 +231,67 @@ class AdGroupDailyStats(BaseDailyStatsView):
         ))
 
 
+class AdGroupPublishersDailyStats(BaseDailyStatsView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_publishers_daily_stats_get')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_see_publishers'):
+            raise exc.MissingDataError()
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        metrics = request.GET.getlist('metrics')
+        totals = request.GET.get('totals')
+
+        
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        totals_constraints = None
+        map_exchange_to_source_name = {}
+        # bidder_slug is unique, so no issues with taking all of the sources
+        for s in filtered_sources:
+            if s.bidder_slug:
+                exchange_name = s.bidder_slug
+            else: 
+                exchange_name = s.name
+            map_exchange_to_source_name[exchange_name] = s.name
+     
+        if totals:
+            totals_constraints = {'ad_group': int(ad_group.id)}
+
+        if set(models.Source.objects.all()) != set(filtered_sources):
+            totals_constraints['exchange'] = map_exchange_to_source_name.keys()
+            
+        stats = self.get_stats(request, totals_constraints, selected_kwargs=None, group_key='source')
+
+        return self.create_api_response(self.get_response_dict(
+            stats,
+            totals,
+            {},
+            metrics,
+            'domain'
+        ))
+
+    def get_stats(self, request, totals_constraints, selected_kwargs=None, group_key=None):
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        totals_stats = []
+        if totals_constraints:
+            totals_stats = reports.api_publishers.query(
+                start_date,
+                end_date,
+                order_fields=['date'],
+                breakdown_fields=['date'],
+                constraints=totals_constraints
+            )
+
+        breakdown_stats = []
+
+        return breakdown_stats + totals_stats
+
+
+
+
+
 class AccountsDailyStats(BaseDailyStatsView):
     @statsd_helper.statsd_timer('dash.api', 'accounts_daily_stats_get')
     def get(self, request):
@@ -302,9 +363,10 @@ class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
         stats = reports.api_contentads.query(
             start_date,
             end_date,
-            ['date'],
-            ad_group=ad_group_id,
-            source=sources
+            breakdown=['date'],
+            constraints={'ad_group': ad_group_id,
+                         'source': sources}
         )
 
         return sort_results(stats, ['date'])
+

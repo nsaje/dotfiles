@@ -5,9 +5,6 @@ import unicodecsv
 import dateutil.parser
 import rfc3987
 from collections import Counter
-from decimal import Decimal
-
-import utils.string_helper
 
 from django import forms
 from django.core import validators
@@ -15,6 +12,7 @@ from django.core import validators
 from dash import constants
 from dash import models
 from dash import regions
+from dash import validation_helpers
 from zemauth.models import User as ZemUser
 
 
@@ -77,6 +75,10 @@ class AdGroupSettingsForm(forms.Form):
 
     enable_ga_tracking = forms.NullBooleanField(required=False)
 
+    enable_adobe_tracking = forms.NullBooleanField(required=False)
+
+    adobe_tracking_param = forms.CharField(max_length=10, required=False)
+
     def __init__(self, *args, **kwargs):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 
@@ -95,6 +97,10 @@ class AdGroupSettingsForm(forms.Form):
     def clean_enable_ga_tracking(self):
         # return True if the field is not set or set to True
         return self.cleaned_data.get('enable_ga_tracking', True) is not False
+
+    def clean_enable_adobe_tracking(self):
+        # return False if the field is not set or set to False
+        return self.cleaned_data.get('enable_adobe_tracking', False) or False
 
     def clean_tracking_code(self):
         tracking_code = self.cleaned_data.get('tracking_code')
@@ -142,28 +148,9 @@ class AdGroupSourceSettingsCpcForm(forms.Form):
 
     def clean_cpc_cc(self):
         cpc_cc = self.cleaned_data.get('cpc_cc')
-        if cpc_cc < 0:
-            raise forms.ValidationError('This value must be positive')
+        source = self.ad_group_source.source
 
-        decimal_places = self.ad_group_source.source.source_type.cpc_decimal_places
-        if decimal_places is not None and self._has_too_many_decimal_places(cpc_cc, decimal_places):
-            raise forms.ValidationError(
-                'CPC on {} cannot exceed {} decimal place{}.'.format(
-                    self.ad_group_source.source.name, decimal_places, 's' if decimal_places != 1 else ''))
-
-        min_cpc = self.ad_group_source.source.source_type.min_cpc
-        if min_cpc is not None and cpc_cc < min_cpc:
-            raise forms.ValidationError(
-                'Minimum CPC is ${}.'.format(utils.string_helper.format_decimal(min_cpc, 2, 3)))
-
-        max_cpc = self.ad_group_source.source.source_type.max_cpc
-        if max_cpc is not None and cpc_cc > max_cpc:
-            raise forms.ValidationError(
-                'Maximum CPC is ${}.'.format(utils.string_helper.format_decimal(max_cpc, 2, 3)))
-
-    def _has_too_many_decimal_places(self, num, decimal_places):
-        rounded_num = num.quantize(Decimal('1.{}'.format('0' * decimal_places)))
-        return rounded_num != num
+        validation_helpers.validate_cpc_cc(cpc_cc, source)
 
 
 class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
@@ -180,23 +167,22 @@ class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
 
     def clean_daily_budget_cc(self):
         daily_budget_cc = self.cleaned_data.get('daily_budget_cc')
-        if daily_budget_cc < 0:
-            raise forms.ValidationError('This value must be positive')
+        source_type = self.ad_group_source.source.source_type
 
-        min_daily_budget = self.ad_group_source.source.source_type.min_daily_budget
-        if min_daily_budget is not None and daily_budget_cc < min_daily_budget:
-            raise forms.ValidationError('Please provide budget of at least ${}.' \
-                .format(utils.string_helper.format_decimal(min_daily_budget, 0, 0)))
-
-        max_daily_budget = self.ad_group_source.source.source_type.max_daily_budget
-        if max_daily_budget is not None and daily_budget_cc > max_daily_budget:
-            raise forms.ValidationError('Maximum allowed budget is ${}. If you want use a higher daily budget, please contact support.' \
-                .format(utils.string_helper.format_decimal(max_daily_budget, 0, 0)))
+        validation_helpers.validate_daily_budget_cc(daily_budget_cc, source_type)
 
 
 class AdGroupSourceSettingsStateForm(forms.Form):
     state = forms.TypedChoiceField(
         choices=constants.AdGroupSettingsState.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+
+
+class AdGroupSourceSettingsAutopilotStateForm(forms.Form):
+    autopilot_state = forms.TypedChoiceField(
+        choices=constants.AdGroupSourceSettingsAutopilotState.get_choices(),
         coerce=int,
         empty_value=None
     )
@@ -415,6 +401,7 @@ DISPLAY_URL_MAX_LENGTH = 25
 MANDATORY_CSV_FIELDS = ['url', 'title', 'image_url']
 OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']
 
+
 class DisplayURLField(forms.URLField):
     def clean(self, value):
         display_url = super(forms.URLField, self).clean(value)
@@ -464,7 +451,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         label="Description",
         error_messages={
             'max_length': 'Description is too long (%(show_value)d/%(limit_value)d).'
-        } 
+        }
     )
     call_to_action = forms.CharField(
         required=True,
@@ -474,7 +461,6 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             'max_length': 'Call to action is too long (%(show_value)d/%(limit_value)d).'
         }
     )
-
 
     def _get_csv_header(self, lines):
         reader = unicodecsv.reader(lines)
@@ -496,7 +482,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
         if column_names[2] != 'image_url':
             raise forms.ValidationError('Third column in header should be Image URL.')
-        
+
 
         for n, field in enumerate(column_names):
             # We accept "(optional)" in the names of optional columns.
@@ -512,7 +498,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
         # Make sure each column_name appears only once
         for column_name, count in Counter(column_names).iteritems():
-            if count > 1:	
+            if count > 1:
                 raise forms.ValidationError("Column \"{0}\" appears multiple times ({1}) in the CSV file.".format(column_name, count))
 
         return column_names
@@ -585,22 +571,18 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
         return data
 
-    # we validate form as a whole after all fields have been validated to see 
+    # we validate form as a whole after all fields have been validated to see
     # if the fields that are submitted as empty in the form are specified in CSV as columns
     def clean(self):
         cleaned_data = super(AdGroupAdsPlusUploadForm, self).clean()
-        
+
         if self.errors:
             return
-        
-        # after individual fields are validated we need to check if CSV has columns for the ones 
-        # that are submitted empty. We take an advantage of the fact that fields of this form 
+
+        # after individual fields are validated we need to check if CSV has columns for the ones
+        # that are submitted empty. We take an advantage of the fact that fields of this form
         # have exactly the same names as normalized names of csv columns
         for column_and_field_name in ['display_url', 'brand_name', 'description', 'call_to_action']:
             if not self.cleaned_data.get(column_and_field_name): 	# if field is empty in the form
-                if column_and_field_name not in self.csv_column_names:	# and is not present as a CSV column 
+                if column_and_field_name not in self.csv_column_names:	# and is not present as a CSV column
                     self.add_error(column_and_field_name, forms.ValidationError("{0} has to be present here or as a column in CSV.".format(self.fields[column_and_field_name].label)))
-            
-
-
-

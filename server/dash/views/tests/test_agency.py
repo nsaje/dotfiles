@@ -40,7 +40,7 @@ class AdGroupSettingsTest(TestCase):
         user = User.objects.get(pk=1)
         self.client.login(username=user.email, password='secret')
 
-    def test_put(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+    def test_put_update_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
@@ -67,7 +67,9 @@ class AdGroupSettingsTest(TestCase):
                     'target_devices': ['desktop'],
                     'target_regions': ['693', 'GB'],
                     'tracking_code': '',
-                    'enable_ga_tracking': True
+                    'enable_ga_tracking': True,
+                    'enable_adobe_tracking': False,
+                    'adobe_tracking_param': ''
                 }
             },
             'success': True
@@ -83,6 +85,74 @@ class AdGroupSettingsTest(TestCase):
         mock_actionlog_api.init_enable_ad_group.assert_called_with(ad_group, ANY, order=ANY, send=False)
         mock_order_ad_group_settings_update.assert_called_with(
             ad_group, old_settings, new_settings, ANY, send=False)
+
+    def test_put_create_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=10)
+
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        # this ad group does not have settings
+        current_settings = ad_group.get_current_settings()
+        self.assertIsNone(current_settings.pk)
+
+        self.settings_dict['settings']['id'] = 10
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        self.assertEqual(json.loads(response.content), {
+            'data': {
+                'action_is_waiting': True,
+                'settings': {
+                    'cpc_cc': '0.30',
+                    'daily_budget_cc': '200.00',
+                    'end_date': '2015-06-30',
+                    'id': '10',
+                    'name': 'Test ad group name',
+                    'start_date': '2015-05-01',
+                    'state': 1,
+                    'target_devices': ['desktop'],
+                    'target_regions': ['693', 'GB'],
+                    'tracking_code': '',
+                    'enable_ga_tracking': True,
+                    'adobe_tracking_param': '',
+                    'enable_adobe_tracking': False
+
+                }
+            },
+            'success': True
+        })
+
+        new_settings = ad_group.get_current_settings()
+        self.assertIsNotNone(new_settings.pk)
+
+        self.assertFalse(mock_actionlog_api.init_enable_ad_group.called)
+        self.assertFalse(mock_order_ad_group_settings_update.called)
+
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
+        self.assertTrue(default_sources_settings.exists())
+        self.assertEqual(len(ad_group_sources), len(default_sources_settings))
+
+        for ad_group_source in ad_group_sources:
+            default_settings = models.DefaultSourceSettings.objects.get(source=ad_group_source.source)
+            # only one settings per ad group source should exist
+            ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
+
+            # one settings created ad group source save, the second should be our defaults
+            self.assertEqual(ad_group_source_settings.count(), 2)
+
+            ad_group_source_settings = ad_group_source_settings.latest()
+
+            self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
+            # the settings are desktop only
+            self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.default_cpc_cc)
+
+            # auto_add enabled source was added
+            self.assertTrue(default_settings)
 
     def test_put_without_non_propagated_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -286,6 +356,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Call to action', 'value': ''},
                         {'name': 'AdGroup name', 'value': ''},
                         {'name': 'Enable GA tracking', 'value': 'True'},
+                        {'name': 'Enable Adobe tracking', 'value': 'False'},
+                        {'name': 'Adobe tracking parameter', 'value': ''},
                     ],
                     'show_old_settings': False
                 },
@@ -309,6 +381,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Call to action', 'old_value': '', 'value': ''},
                         {'name': 'AdGroup name', 'old_value': '', 'value': ''},
                         {'name': 'Enable GA tracking', 'old_value': 'True', 'value': 'True'},
+                        {'name': 'Enable Adobe tracking', 'old_value': 'False', 'value': 'False'},
+                        {'name': 'Adobe tracking parameter', 'old_value': '', 'value': ''},
                     ],
                     'show_old_settings': True
                 }]

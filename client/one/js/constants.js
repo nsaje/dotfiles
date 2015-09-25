@@ -1,4 +1,4 @@
-var constants = { 
+var constants = {
     adGroupSettingsState: {
         ACTIVE: 1,
         INACTIVE: 2
@@ -10,6 +10,10 @@ var constants = {
     adGroupSourceSettingsState: {
         ACTIVE: 1,
         INACTIVE: 2
+    },
+    adGroupSourceSettingsAutopilotState: {
+      ACTIVE: 1,
+      INACTIVE: 2
     },
     adTargetDevice: {
         DESKTOP: 'desktop',

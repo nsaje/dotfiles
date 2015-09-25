@@ -182,7 +182,7 @@ class CsvReport(IReport):
             self.fieldnames = reader.fieldnames
             self.entries = []
             for entry in reader:
-                if not entry[self.first_col].strip() or entry[self.first_col] == 'Day Index':
+                if not entry[self.first_col].strip() or entry[self.first_col] in ('Day Index', 'Hour Index'):
                     break
                 self.entries.append(entry)
         except:
@@ -215,21 +215,35 @@ class CsvReport(IReport):
             )
 
     def _get_sessions_total(self):
-        day_index_lines = []
+        index_lines = []
         inside = False
+
+        day_index = False
+        hour_index = False
 
         for line in self.lines:
             if not inside and line.startswith('Day Index'):
                 inside = True
+                day_index = True
+            if not inside and line.startswith('Hour Index'):
+                inside = True
+                hour_index = True
             if inside:
-                day_index_lines.append(line)
+                index_lines.append(line)
 
-        reader = csv.DictReader(StringIO.StringIO('\n'.join(day_index_lines)))
-
+        reader = csv.DictReader(StringIO.StringIO('\n'.join(index_lines)))
         try:
-            return int(reader.next()['Sessions'].strip().replace(',', ''))
+            if day_index:
+                return int(reader.next()['Sessions'].strip().replace(',', ''))
+            if hour_index:
+                for row in reader:
+                    if row and row['Hour Index'] == '':
+                        sessions_raw = row['Sessions']
+                        return int(sessions_raw.strip().replace(',', ''))
         except:
             raise exc.CsvParseException('Could not parse total sessions')
+
+        raise exc.CsvParseException('Could not parse total sessions')
 
 
 class AdGroupReport(IReport):

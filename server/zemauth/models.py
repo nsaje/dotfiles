@@ -99,7 +99,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_ad_groups_view', "Can view campaign's ad groups tab in dashboard."),
             ('campaign_settings_account_manager', 'Can be chosen as account manager.'),
             ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),
-            ('help_view', 'Can view help popovers.'),
             ("supply_dash_link_view", "Can view supply dash link."),
             ('ad_group_agency_tab_view', "Can view ad group's agency tab."),
             ('all_accounts_accounts_view', "Can view all accounts's accounts tab."),
@@ -137,11 +136,14 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('get_content_ad_csv', 'Can download bulk content ad csv.'),
             ('content_ads_bulk_actions', 'Can view and use bulk content ads actions.'),
             ('can_toggle_ga_performance_tracking', 'Can toggle Google Analytics performance tracking.'),
+            ('can_toggle_adobe_performance_tracking', 'Can toggle Adobe Analytics performance tracking.'),
             ('can_see_media_source_status_on_submission_popover', 'Can see media source status on submission status popover'),
             ('can_set_dma_targeting', 'Can set DMA targeting'),
+            ('can_set_media_source_to_auto_pilot', 'Can set media source to auto-pilot'),
             ('manage_conversion_pixels', 'Can manage conversion pixels'),
+            ('add_media_sources_automatically', 'Automatically add media sources on ad group creation'),
             ('has_intercom', 'Can see intercom widget'),
-            ('manage_conversion_goals', 'Can manage conversion goals on campaign')
+            ('can_see_publishers', 'Can see publishers'),
         )
 
     def get_full_name(self):

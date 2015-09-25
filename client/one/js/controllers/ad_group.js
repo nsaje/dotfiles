@@ -13,6 +13,12 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
             active: false,
             hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)
         }, {
+            heading: 'Publishers',
+            route: 'main.adGroups.publishers',
+            active: false,
+            hidden: !$scope.hasPermission('zemauth.can_see_publishers'),
+            internal: $scope.isPermissionInternal('zemauth.can_see_publishers')
+        }, {
             heading: 'Settings',
             route: 'main.adGroups.settings',
             active: false,

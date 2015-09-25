@@ -634,7 +634,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertFalse(manual_actions.exists())
 
     @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_ga_tracking_propagation_remove_tracking_ids(self, insert_adgroup_mock):
+    def test_tracking_propagation_remove_tracking_ids(self, insert_adgroup_mock):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
             constants.SourceAction.CAN_MODIFY_TRACKING_CODES
@@ -642,11 +642,15 @@ class UpdateAdGroupSourceSettings(TestCase):
         ad_group_source.source.source_type.save()
 
         adgs1 = models.AdGroupSettings()
+        adgs1.enable_adobe_tracking = True
+        adgs1.adobe_tracking_param = 'cid'
         adgs2 = models.AdGroupSettings()
-        adgs2.enable_ga_tracking = False  # the only change (default is True)
+        adgs2.enable_ga_tracking = False
+        adgs2.enable_adobe_tracking = False
+        adgs2.adobe_tracking_param = ''
 
         api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
-        insert_adgroup_mock.assert_called_with(1, '', disable_auto_tracking=True)
+        insert_adgroup_mock.assert_called_with(1, '', False, False, '')
 
         manual_actions = self._get_manual_set_property_actions(ad_group_source)
         auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
@@ -663,7 +667,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         )
 
     @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_ga_tracking_propagation_add_tracking_ids(self, insert_adgroup_mock):
+    def test_tracking_propagation_add_tracking_ids(self, insert_adgroup_mock):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
             constants.SourceAction.CAN_MODIFY_TRACKING_CODES
@@ -672,11 +676,15 @@ class UpdateAdGroupSourceSettings(TestCase):
 
         adgs1 = models.AdGroupSettings()
         adgs1.enable_ga_tracking = False
+        adgs1.enable_adobe_tracking = False
+        adgs1.adobe_tracking_param = ''
         adgs2 = models.AdGroupSettings()
-        adgs2.enable_ga_tracking = True  # the only change
+        adgs2.enable_ga_tracking = True
+        adgs2.enable_adobe_tracking = True
+        adgs2.adobe_tracking_param = 'cid'
 
         api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
-        insert_adgroup_mock.assert_called_with(1, '', disable_auto_tracking=False)
+        insert_adgroup_mock.assert_called_with(1, '', True, True, 'cid')
 
         manual_actions = self._get_manual_set_property_actions(ad_group_source)
         auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
@@ -835,7 +843,8 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.ad_group_settings.save(request)
         self.assertTrue(self.writer.can_trigger_action())
 
-    def test_should_write_if_no_settings_yet(self):
+    @mock.patch('actionlog.api.set_ad_group_source_settings')
+    def test_should_write_if_no_settings_yet(self, set_ad_group_source_settings):
         self.assertTrue(
             models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).count() > 0
         )
@@ -858,8 +867,10 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(latest_settings.state, 1)
         self.assertTrue(latest_settings.cpc_cc is None)
         self.assertTrue(latest_settings.daily_budget_cc is None)
+        self.assertFalse(set_ad_group_source_settings.called)
 
-    def test_should_write_if_changed(self):
+    @mock.patch('actionlog.api.set_ad_group_source_settings')
+    def test_should_write_if_changed(self, set_ad_group_source_settings):
         latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
@@ -878,8 +889,32 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
         self.assertEqual(new_latest_settings.state, latest_settings.state)
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
+        self.assertTrue(set_ad_group_source_settings.called)
 
-    def test_should_not_write_if_unchanged(self):
+    @mock.patch('actionlog.api.set_ad_group_source_settings')
+    def test_should_write_if_changed_no_action(self, set_ad_group_source_settings):
+        latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        request = HttpRequest()
+        request.user = User.objects.create_user('test@example.com')
+
+        self.writer.set({'cpc_cc': decimal.Decimal(0.1)}, request, send_action=False)
+
+        new_latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.assertNotEqual(new_latest_settings.id, latest_settings.id)
+        self.assertEqual(float(new_latest_settings.cpc_cc), 0.1)
+        self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
+        self.assertEqual(new_latest_settings.state, latest_settings.state)
+        self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
+        self.assertFalse(set_ad_group_source_settings.called)
+
+    @mock.patch('actionlog.api.set_ad_group_source_settings')
+    def test_should_not_write_if_unchanged(self, set_ad_group_source_settings):
         latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
@@ -896,6 +931,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(latest_settings.state, new_latest_settings.state)
         self.assertEqual(latest_settings.cpc_cc, new_latest_settings.cpc_cc)
         self.assertEqual(latest_settings.daily_budget_cc, new_latest_settings.daily_budget_cc)
+        self.assertFalse(set_ad_group_source_settings.called)
 
 
 class AdGroupSettingsOrderTest(TestCase):
@@ -1672,3 +1708,121 @@ class SubmitContentAdsBatchTest(TestCase):
             action=actionlog.constants.Action.SUBMIT_AD_GROUP
         )
         self.assertFalse(submit_actionlogs.exists())
+
+
+class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
+    fixtures = ['test_zwei_api.yaml']
+
+    def setUp(self):
+        password = 'secret'
+        user = User.objects.get(pk=1)
+
+        self.request = HttpRequest()
+        self.request.user = user
+        self.client.login(username=user.email, password=password)
+
+    def _fire_campaign_creation_callback(self, ad_group_source, target_regions=None, available_actions=None):
+        if available_actions:
+            ad_group_source.source.source_type.available_actions.extend(available_actions)
+            ad_group_source.source.source_type.save()
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.target_regions = target_regions
+        ad_group_settings.save(self.request)
+
+        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
+
+    def _get_created_manual_actions(self, ad_group_source):
+        return actionlog.models.ActionLog.objects.filter(
+            action=actionlog.constants.Action.SET_PROPERTY,
+            ad_group_source=ad_group_source,
+            action_type=actionlog.constants.ActionType.MANUAL
+        )
+
+    def _get_set_campaign_state_actions(self, ad_group_source):
+        return actionlog.models.ActionLog.objects.filter(
+            action=actionlog.constants.Action.SET_CAMPAIGN_STATE,
+            ad_group_source=ad_group_source
+        )
+
+    def test_manual_update_after_campaign_creation_manual_dma_targeting(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=3)
+
+        self._fire_campaign_creation_callback(
+            ad_group_source,
+            ['GB', '693'],
+            [
+                constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL,
+                constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
+            ])
+
+        manual_actions = self._get_created_manual_actions(ad_group_source)
+
+        # should create manual actions
+        self.assertEqual(len(manual_actions), 1)
+        self.assertEqual('target_regions', manual_actions[0].payload['property'])
+
+    def test_no_manual_update_after_campaign_creation_auto_targeting(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=3)
+
+        self._fire_campaign_creation_callback(
+            ad_group_source,
+            ['GB', '693'],
+            [
+                constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+                constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
+            ])
+
+        manual_actions = self._get_created_manual_actions(ad_group_source)
+
+        # should not create manual actions
+        self.assertFalse(manual_actions.exists())
+
+    def test_no_manual_update_after_campaign_creation_dma_targeting_not_supported(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=3)
+
+        self._fire_campaign_creation_callback(
+            ad_group_source,
+            ['GB', '693'],
+            [
+                constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
+            ])
+
+        manual_actions = self._get_created_manual_actions(ad_group_source)
+
+        # should not create manual actions
+        self.assertFalse(manual_actions.exists())
+
+    def test_no_manual_update_after_campaign_creation_no_dma_targeting(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=3)
+
+        self._fire_campaign_creation_callback(
+            ad_group_source,
+            ['GB'],
+            [
+                constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+                constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
+            ])
+
+        manual_actions = self._get_created_manual_actions(ad_group_source)
+
+        # should not create manual actions
+        self.assertFalse(manual_actions.exists())
+
+    def test_source_settings_update_after_campaign_creation_no_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=5)
+
+        self._fire_campaign_creation_callback(ad_group_source)
+
+        self.assertFalse(self._get_set_campaign_state_actions(ad_group_source).exists())
+
+    def test_source_settings_update_after_campaign_creation_create_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=3)
+
+        self._fire_campaign_creation_callback(ad_group_source)
+
+        actions = self._get_set_campaign_state_actions(ad_group_source)
+        self.assertEqual(actions.count(), 1)
+        self.assertDictEqual(actions.first().payload['args']['conf'], {
+            'cpc_cc': 1200
+        })

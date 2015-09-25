@@ -1,11 +1,13 @@
-
+import unittest
 from zemauth.models import User
 from utils.migrationtest import MigrationTest
 from utils.test_decorators import skipIfNoMigrations
 
 # based on https://github.com/plumdog/django_migration_testcase
 
-@skipIfNoMigrations
+#we will skip this migration test as it is long gone-by
+#@skipIfNoMigrations
+@unittest.skip
 class ContentAdBatchMigrationTest(MigrationTest):
 
     # At present, we can only run migrations for one app at a time.

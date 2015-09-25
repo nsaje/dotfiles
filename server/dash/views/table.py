@@ -1,8 +1,5 @@
-import datetime
-
 import pytz
 from slugify import slugify
-from django.core import urlresolvers
 from django.conf import settings
 import newrelic.agent
 
@@ -21,7 +18,10 @@ from utils.sort_helper import sort_results
 import reports.api
 import reports.api_helpers
 import reports.api_contentads
+import reports.api_publishers
 import actionlog.sync
+
+from django.core import urlresolvers
 
 
 def sort_rows_by_order_and_archived(rows, order):
@@ -386,6 +386,7 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
                     'current_bid_cpc': current_bid_cpc,
                     'daily_budget': daily_budget,
                     'current_daily_budget': current_daily_budget,
+                    'autopilot_state': setting.autopilot_state
                 }
 
             response['rows'] = rows
@@ -443,11 +444,7 @@ class SourcesTable(api_common.BaseApiView):
         if ad_group_level:
             ad_group_sources_settings = level_sources_table.ad_group_sources_settings
 
-        yesterday_cost = {}
-        yesterday_total_cost = None
-        if user.has_perm('reports.yesterday_spend_view'):
-            yesterday_cost, yesterday_total_cost = level_sources_table.\
-                get_yesterday_cost()
+        yesterday_cost, yesterday_total_cost = level_sources_table.get_yesterday_cost()
 
         operational_sources = [source.id for source in sources.filter(maintenance=False, deprecated=False)]
         last_success_actions_operational = [v for k, v in last_success_actions.iteritems() if k in operational_sources]
@@ -557,126 +554,6 @@ class SourcesTable(api_common.BaseApiView):
 
         return constants.AdGroupSourceSettingsState.INACTIVE
 
-    def _is_end_date_past(self, ad_group_settings):
-        end_utc_datetime = ad_group_settings.get_utc_end_datetime()
-
-        if end_utc_datetime is None:  # user will stop adgroup manually
-            return False
-
-        # if end date is in the past then we can't edit cpc and budget
-        return end_utc_datetime < datetime.datetime.utcnow()
-
-    def _get_editable_fields(self, ad_group_source, ad_group_settings, ad_group_source_settings, user):
-        editable_fields = {}
-
-        if not user.has_perm('zemauth.set_ad_group_source_settings'):
-            return editable_fields
-
-        editable_fields['status_setting'] = self._get_editable_fields_status_setting(ad_group_source, ad_group_settings,
-                                                                                     ad_group_source_settings)
-        editable_fields['bid_cpc'] = self._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
-        editable_fields['daily_budget'] = self._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
-
-        return editable_fields
-
-    def _get_editable_fields_bid_cpc(self, ad_group_source, ad_group_settings):
-        enabled = True
-        message = None
-
-        if not ad_group_source.source.can_update_cpc() or self._is_end_date_past(ad_group_settings):
-            enabled = False
-            message = self._get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
-
-        return {
-            'enabled': enabled,
-            'message': message
-        }
-
-    def _get_editable_fields_daily_budget(self, ad_group_source, ad_group_settings):
-        enabled = True
-        message = None
-
-        if not ad_group_source.source.can_update_daily_budget_automatic() and\
-           not ad_group_source.source.can_update_daily_budget_manual() or\
-           self._is_end_date_past(ad_group_settings):
-            enabled = False
-            message = self._get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
-
-        return {
-            'enabled': enabled,
-            'message': message
-        }
-
-    def _get_editable_fields_status_setting(self, ad_group_source, ad_group_settings, ad_group_source_settings):
-        message = None
-
-        if not ad_group_source.source.can_update_state() or (
-           ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
-            message = self._get_status_setting_disabled_message(ad_group_source)
-        elif ad_group_source_settings is not None and\
-                ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
-            message = self._get_status_setting_disabled_message_for_target_regions(
-                ad_group_source, ad_group_settings, ad_group_source_settings)
-
-        return {
-            'enabled': message is None,
-            'message': message
-        }
-
-    def _get_status_setting_disabled_message(self, ad_group_source):
-        if ad_group_source.source.maintenance:
-            return 'This source is currently in maintenance mode.'
-
-        if ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads:
-            return 'Please contact support to enable this source.'
-
-        return 'This source must be managed manually.'
-
-    def _get_status_setting_disabled_message_for_target_regions(self, ad_group_source, ad_group_settings,
-                                                                ad_group_source_settings):
-
-        source = ad_group_source.source
-        if not source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma():
-            return 'This source can not be enabled because it does not support DMA targeting.'
-        else:
-            targets_countries = ad_group_settings.targets_countries()
-            targets_dma = ad_group_settings.targets_dma()
-
-            activation_settings = models.AdGroupSourceSettings.objects.filter(
-                ad_group_source=ad_group_source, state=constants.AdGroupSourceSettingsState.ACTIVE)
-
-            # disable when waiting for manual actions for target_regions after campaign creation
-            # message this only when the source is about to be enabled for the first time
-            if api.can_modify_selected_target_regions_manually(source, targets_countries, targets_dma) and\
-               actionlog.api.is_waiting_for_manual_set_target_regions_action(ad_group_source) and\
-               not activation_settings.exists():
-
-                message = ('This source needs to set {} targeting manually,'
-                           'please contact support to enable this source.')
-
-                return message.format('DMA' if source.can_modify_dma_targeting_manual() else 'country')
-
-        return None
-
-    def _get_bid_cpc_daily_budget_disabled_message(self, ad_group_source, ad_group_settings):
-        if ad_group_source.source.maintenance:
-            return 'This value cannot be edited because the media source is currently in maintenance.'
-
-        if self._is_end_date_past(ad_group_settings):
-            return 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
-
-        return 'This media source doesn\'t support setting this value through the dashboard.'
-
-    def _get_supply_dash_disabled_message(self, ad_group_source):
-        if not ad_group_source.source.has_3rd_party_dashboard():
-            return "This media source doesn't have a dashboard of its own. " \
-                   "All campaign management is done through Zemanta One dashboard."
-        elif ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
-            return "Dashboard of this media source is not yet available because the " \
-                   "media source is still being set up for this ad group."
-
-        return None
-
     def _get_supply_dash_url(self, ad_group_source):
         if not ad_group_source.source.has_3rd_party_dashboard() or\
                ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
@@ -687,6 +564,16 @@ class SourcesTable(api_common.BaseApiView):
             ad_group_source.ad_group.id,
             ad_group_source.source.id
         )
+
+    def _get_supply_dash_disabled_message(self, ad_group_source):
+        if not ad_group_source.source.has_3rd_party_dashboard():
+            return "This media source doesn't have a dashboard of its own. " \
+                   "All campaign management is done through Zemanta One dashboard."
+        elif ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
+            return "Dashboard of this media source is not yet available because the " \
+                   "media source is still being set up for this ad group."
+
+        return None
 
     @newrelic.agent.function_trace()
     def get_rows(
@@ -773,7 +660,7 @@ class SourcesTable(api_common.BaseApiView):
 
                 ad_group_settings = level_sources_table.ad_group_settings
 
-                row['editable_fields'] = self._get_editable_fields(ad_group_source, ad_group_settings,
+                row['editable_fields'] = helpers.get_editable_fields(ad_group_source, ad_group_settings,
                                                                    source_settings, user)
 
                 if user.has_perm('zemauth.set_ad_group_source_settings')\
@@ -802,6 +689,9 @@ class SourcesTable(api_common.BaseApiView):
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
                     row['current_bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
                     row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
+
+                if source_settings is not None:
+                    row['autopilot_state'] = source_settings.autopilot_state
 
             elif len(bid_cpc_values) > 0:
                 row['min_bid_cpc'] = float(min(bid_cpc_values))
@@ -1149,9 +1039,9 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
             end_date,
-            breakdown=['content_ad'],
-            ad_group=ad_group,
-            source=filtered_sources,
+            breakdown = ['content_ad'],
+            constraints = {'ad_group': ad_group,
+                           'source': filtered_sources},
         ), request.user)
 
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
@@ -1179,8 +1069,9 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         total_stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
             end_date,
-            ad_group=ad_group,
-            source=filtered_sources,
+            constraints = {'ad_group': ad_group,
+                           'source': filtered_sources
+            }
         ), request.user)
 
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
@@ -1627,3 +1518,135 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 rows = sort_results(rows, [order])
 
         return rows
+
+
+
+class PublishersTable(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'zemauth.publishers_table_get')
+    def get(self, request, level_, id_=None):
+        newrelic.agent.set_transaction_name('dash.views.table:PublishersTable#%s' % (level_))
+        if not request.user.has_perm('zemauth.can_see_publishers'):
+            raise exc.MissingDataError()
+
+        user = request.user
+        adgroup = helpers.get_ad_group(user, id_)
+        
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        constraints = {'ad_group': adgroup.id}
+
+
+        page = request.GET.get('page')
+        order = request.GET.get('order') or 'cost'
+        size = request.GET.get('size')
+        size = max(min(int(size or 5), 4294967295), 1)
+
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+
+        # Translation table for "exchange" in b1 to name of the source in One
+        # At the same time keys of this array are what we're filtering exchanges to
+        map_exchange_to_source_name = {}
+
+        # bidder_slug is unique, so no issues with taking all of the sources
+        for s in filtered_sources:
+            if s.bidder_slug:
+                exchange_name = s.bidder_slug
+            else: 
+                exchange_name = s.name
+            map_exchange_to_source_name[exchange_name] = s.name
+        
+        # this is a really bad practice, but used extensively in models.py
+        # it should be factored out at the same time as that
+        if set(models.Source.objects.all()) != set(filtered_sources):
+            constraints['exchange'] = map_exchange_to_source_name.keys()
+        
+        publishers_data = reports.api_publishers.query(
+            start_date,
+            end_date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=[order],
+            constraints=constraints,
+        )
+
+        totals_data = reports.api_publishers.query(
+            start_date,
+            end_date,
+            constraints=constraints,
+        )            
+
+        # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
+        publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(publishers_data, page, size)
+        response = {
+            'rows': self.get_rows(
+                map_exchange_to_source_name,
+                publishers_data=publishers_data,
+            ),
+            'pagination': {
+                'currentPage': current_page,
+                'numPages': num_pages,
+                'count': count,
+                'startIndex': start_index,
+                'endIndex': end_index,
+                'size': size
+            },
+
+            'totals': self.get_totals(
+                user,
+                totals_data,
+            ),
+            'order': order,
+        }
+
+        return self.create_api_response(response)
+
+    def get_totals(self,
+                   user,
+                   totals_data):
+        result = {
+            'cost': totals_data.get('cost', 0),
+            'cpc': totals_data.get('cpc', 0),
+            'clicks': totals_data['clicks'],
+            'impressions': totals_data['impressions'],
+            'ctr': totals_data['ctr'],
+        }
+        return result
+
+    def get_rows(
+            self,
+            map_exchange_to_source_name,
+            publishers_data):
+
+        rows = []
+        for publisher_data in publishers_data:
+            exchange = publisher_data.get('exchange', None)
+            source_name = map_exchange_to_source_name.get(exchange, exchange)
+            domain = publisher_data.get('domain', None)
+            if domain: 
+                domain_link = "http://" + domain
+            else:
+                domain_link = ""
+            
+            row = {
+                'domain': domain,
+                'domain_link': domain_link,
+                'exchange': source_name, 
+                'cost': publisher_data.get('cost', 0),
+                'cpc': publisher_data.get('cpc', 0),
+                'clicks': publisher_data.get('clicks', None),
+                'impressions': publisher_data.get('impressions', None),
+                'ctr': publisher_data.get('ctr', None),
+            }
+
+            rows.append(row)
+
+        return rows
+
+
+
+
+
+
+
+
+
+

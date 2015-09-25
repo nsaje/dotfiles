@@ -88,8 +88,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         {
             'name': 'Traffic Acquisition',
             'fields': [
-               'bid_cpc', 'daily_budget', 'cost', 
-               'cpc', 'clicks', 'impressions', 'ctr', 
+               'bid_cpc', 'daily_budget', 'cost',
+               'cpc', 'clicks', 'impressions', 'ctr',
                'yesterday_cost', 'supply_dash_url',
                'current_bid_cpc', 'current_daily_budget'
             ]
@@ -98,7 +98,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             'name': 'Audience Metrics',
             'fields': [
                 'visits', 'pageviews', 'percent_new_users',
-                'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'click_discrepancy'
             ]
         },
@@ -126,8 +126,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             nameCssClass: 'active-circle-icon-gray',
             field: 'status_setting',
             type: 'state',
-            enabledValue: constants.adGroupSettingsState.ACTIVE,
-            pausedValue: constants.adGroupSettingsState.INACTIVE,
+            enabledValue: constants.adGroupSourceSettingsState.ACTIVE,
+            pausedValue: constants.adGroupSourceSettingsState.INACTIVE,
+            autopilotEnabledValue: constants.adGroupSourceSettingsAutopilotState.ACTIVE,
+            autopilotPausedValue: constants.adGroupSourceSettingsAutopilotState.INACTIVE,
+            autopilotInternal: $scope.isPermissionInternal('zemauth.can_set_media_source_to_auto_pilot'),
+            autopilotShown: $scope.hasPermission('zemauth.can_set_media_source_to_auto_pilot'),
             internal: $scope.isPermissionInternal('zemauth.set_ad_group_source_settings'),
             shown: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
             checked: true,
@@ -140,6 +144,20 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                         $scope.pollSourcesTableUpdates();
                     }
                 );
+            },
+            onAutopilotChange: function (sourceId, value) {
+              api.adGroupSourceSettings.save($state.params.id, sourceId, {autopilot_state: value}).then(
+                  function (data) {
+
+                    $scope.rows.forEach(function (row) {
+                        if (row.id === sourceId) {
+                            row.editable_fields = data.editable_fields
+                        }
+                    });
+
+                      $scope.pollSourcesTableUpdates();
+                  }
+              );
             },
             getDisabledMessage: function (row) {
                 var editableFields = row.editable_fields;
@@ -275,8 +293,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             checked: false,
             type: 'currency',
             help: 'Amount that you have spent yesterday for promotion on specific media source.',
-            internal: $scope.isPermissionInternal('reports.yesterday_spend_view'),
-            shown: $scope.hasPermission('reports.yesterday_spend_view'),
+            shown: 'true',
             totalRow: true,
             order: true,
             initialOrder: 'desc'
@@ -364,8 +381,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     ];
 
     $scope.initColumns = function () {
-        var cols;
-
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
             $scope.columns.length - 2,
@@ -380,7 +395,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
         );
 
-        cols = zemCustomTableColsService.load('adGroupSources', $scope.columns);
+        var cols = zemCustomTableColsService.load('adGroupSources', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
 
         $scope.$watch('columns', function (newValue, oldValue) {

@@ -100,6 +100,11 @@ urlpatterns += patterns(
         login_required(dash.views.table.SourcesTable.as_view()),
     ),
     url(
+        r'^api/(?P<level_>(ad_groups))/(?P<id_>\d+)/publishers/table/',
+        login_required(dash.views.table.PublishersTable.as_view()),
+        name='ad_group_publishers_table'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
         login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
     ),
@@ -208,6 +213,11 @@ urlpatterns += patterns(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/daily_stats/',
         login_required(dash.views.daily_stats.AdGroupAdsPlusDailyStats.as_view()),
         name='ad_group_ads_plus_daily_stats'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/daily_stats/',
+        login_required(dash.views.daily_stats.AdGroupPublishersDailyStats.as_view()),
+        name='ad_group_publishers_daily_stats'
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/daily_stats/',

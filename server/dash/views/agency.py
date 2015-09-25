@@ -18,6 +18,7 @@ from dash import models
 from dash import api
 from dash import budget
 from dash import constants
+import automation.settings
 from reports import redshift
 from utils import api_common
 from utils import statsd_helper
@@ -86,42 +87,30 @@ class AdGroupSettings(api_common.BaseApiView):
 
         self.set_ad_group(ad_group, form.cleaned_data)
 
-        settings = current_settings.copy_settings()
-        self.set_settings(settings, form.cleaned_data,
-                          request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'))
+        new_settings = current_settings.copy_settings()
+        self.set_settings(new_settings, form.cleaned_data,
+                          request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'),
+                          request.user.has_perm('zemauth.can_toggle_adobe_performance_tracking'))
 
-        actionlogs_to_send = []
-        with transaction.atomic():
-            order = actionlog_models.ActionLogOrder.objects.create(
-                order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
-            )
-            ad_group.save(request)
-            settings.save(request)
+        # update ad group name
+        current_settings.ad_group_name = previous_ad_group_name
+        new_settings.ad_group_name = ad_group.name
 
-            if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
-                    and settings.state == constants.AdGroupSettingsState.ACTIVE:
-                actionlogs_to_send.extend(actionlog_api.init_enable_ad_group(
-                    ad_group, request, order=order, send=False))
+        if request.user.has_perm('zemauth.add_media_sources_automatically') and\
+           current_settings.pk is None and\
+           not models.AdGroupSource.objects.filter(ad_group=ad_group).exists():
 
-            if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
-                    and settings.state == constants.AdGroupSettingsState.INACTIVE:
-                actionlogs_to_send.extend(actionlog_api.init_pause_ad_group(
-                    ad_group, request, order=order, send=False))
+            self._add_media_sources(ad_group, new_settings, request)
+            # no need to create updates as campaigns are not created yet
+        else:
+            self._send_update_actions(ad_group, current_settings, new_settings, request)
 
-            current_settings.ad_group_name = previous_ad_group_name
-            settings.ad_group_name = ad_group.name
-
-            actionlogs_to_send.extend(api.order_ad_group_settings_update(ad_group, current_settings, settings, request, send=False))
-
-        user = request.user
-        changes = current_settings.get_setting_changes(settings)
+        changes = current_settings.get_setting_changes(new_settings)
         if changes:
-            email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
-
-        zwei_actions.send(actionlogs_to_send)
+            email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, request.user, request)
 
         response = {
-            'settings': self.get_dict(settings, ad_group),
+            'settings': self.get_dict(new_settings, ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group)
         }
 
@@ -146,7 +135,9 @@ class AdGroupSettings(api_common.BaseApiView):
                 'target_devices': settings.target_devices,
                 'target_regions': settings.target_regions,
                 'tracking_code': settings.tracking_code,
-                'enable_ga_tracking': settings.enable_ga_tracking
+                'enable_ga_tracking': settings.enable_ga_tracking,
+                'enable_adobe_tracking': settings.enable_adobe_tracking,
+                'adobe_tracking_param': settings.adobe_tracking_param
             }
 
         return result
@@ -154,7 +145,7 @@ class AdGroupSettings(api_common.BaseApiView):
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
 
-    def set_settings(self, settings, resource, can_set_tracking_codes):
+    def set_settings(self, settings, resource, can_set_ga_tracking_params, can_set_adobe_tracking_params):
         settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
@@ -163,9 +154,81 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.ad_group_name = resource['name']
-        if can_set_tracking_codes:
+
+        if can_set_ga_tracking_params:
             settings.enable_ga_tracking = resource['enable_ga_tracking']
             settings.tracking_code = resource['tracking_code']
+
+        if can_set_adobe_tracking_params:
+            settings.enable_adobe_tracking = resource['enable_adobe_tracking']
+            settings.adobe_tracking_param = resource['adobe_tracking_param']
+
+    def _send_update_actions(self, ad_group, current_settings, new_settings, request):
+        actionlogs_to_send = []
+
+        with transaction.atomic():
+            order = actionlog_models.ActionLogOrder.objects.create(
+                order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+            )
+            ad_group.save(request)
+            new_settings.save(request)
+
+            if current_settings.state == constants.AdGroupSettingsState.INACTIVE and\
+               new_settings.state == constants.AdGroupSettingsState.ACTIVE:
+
+                actionlogs_to_send.extend(
+                    actionlog_api.init_enable_ad_group(
+                        ad_group, request, order=order, send=False))
+
+            if current_settings.state == constants.AdGroupSettingsState.ACTIVE and\
+               new_settings.state == constants.AdGroupSettingsState.INACTIVE:
+
+                actionlogs_to_send.extend(
+                    actionlog_api.init_pause_ad_group(
+                        ad_group, request, order=order, send=False))
+
+            actionlogs_to_send.extend(
+                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False))
+
+        zwei_actions.send(actionlogs_to_send)
+
+    def _add_media_sources(self, ad_group, new_settings, request):
+        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
+
+        ad_group_sources_w_defaults = []
+        actionlogs_to_send = []
+        with transaction.atomic():
+            ad_group.save(request)
+            new_settings.save(request)
+
+            for default_settings in default_sources_settings:
+
+                ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
+                ad_group_source.save(request)
+
+                ad_group_sources_w_defaults.append((ad_group_source, default_settings))
+
+                external_name = ad_group_source.get_external_name()
+
+                action = actionlog_api.create_campaign(ad_group_source, external_name, request, send=False)
+                if action:
+                    actionlogs_to_send.append(action)
+
+            # note changes in history. If no changes text is set the default message will be shown.
+            if ad_group_sources_w_defaults:
+                changes_text = 'Created settings and automatically created campaigns for {}'.format(
+                    ', '.join([x.source.name for x, _ in ad_group_sources_w_defaults]))
+                new_settings.changes_text = changes_text
+
+            new_settings.save(request)
+
+        zwei_actions.send(actionlogs_to_send)
+
+        # set defaults for created ad group sources
+        for ad_group_source, default_settings in ad_group_sources_w_defaults:
+
+            # the update campaign actions should be created on create campaign callback
+            helpers.set_ad_group_source_defaults(default_settings, new_settings, ad_group_source, request)
 
 
 class CampaignAgency(api_common.BaseApiView):
@@ -222,10 +285,10 @@ class CampaignAgency(api_common.BaseApiView):
         with transaction.atomic():
             campaign.save(request)
             settings.save(request)
-        
+
             # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
             campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-    
+
             for ad_group in campaign_ad_groups:
                 adgroup_settings = ad_group.get_current_settings()
                 actions.extend(
@@ -580,6 +643,10 @@ class CampaignBudget(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
+
+        if not request.user.has_perm('zemauth.campaign_budget_management_view'):
+            raise exc.MissingDataError()
+
         campaign_budget = budget.CampaignBudget(campaign)
 
         budget_change = json.loads(request.body)
@@ -935,15 +1002,15 @@ class AdGroupAgency(api_common.BaseApiView):
 
     @newrelic.agent.function_trace()
     def get_history(self, ad_group, user):
-        settings = models.AdGroupSettings.objects.\
+        ad_group_settings = models.AdGroupSettings.objects.\
             filter(ad_group=ad_group).\
             order_by('created_dt').\
             select_related('created_by')
 
         history = []
-        for i in range(0, len(settings)):
-            old_settings = settings[i - 1] if i > 0 else None
-            new_settings = settings[i]
+        for i in range(0, len(ad_group_settings)):
+            old_settings = ad_group_settings[i - 1] if i > 0 else None
+            new_settings = ad_group_settings[i]
 
             changes = old_settings.get_setting_changes(new_settings) \
                 if old_settings is not None else None
@@ -957,10 +1024,13 @@ class AdGroupAgency(api_common.BaseApiView):
                 continue
 
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings, user)
-
+            if new_settings.created_by is None:
+                changed_by = automation.settings.AUTOMATION_AI_NAME
+            else:
+                changed_by = new_settings.created_by.email
             history.append({
                 'datetime': new_settings.created_dt,
-                'changed_by': new_settings.created_by.email,
+                'changed_by': changed_by,
                 'changes_text': changes_text,
                 'settings': settings_dict.values(),
                 'show_old_settings': old_settings is not None
@@ -994,6 +1064,10 @@ class AdGroupAgency(api_common.BaseApiView):
         for field in models.AdGroupSettings._settings_fields:
             if field in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
                     not user.has_perm('zemauth.new_content_ads_tab'):
+                continue
+
+            if field in ['enable_adobe_tracking', 'adobe_tracking_param'] and\
+                    not user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
                 continue
 
             settings_dict[field] = {

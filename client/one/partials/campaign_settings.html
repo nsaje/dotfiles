@@ -3,7 +3,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.name}">
             <label for="name-input" class="col-xs-3 control-label">
                 Name
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Name of the campaign." placement="top"></zem-help-popover>
+                <zem-help-popover content="Name of the campaign." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-4">
                 <input id="name-input" type="text" class="form-control" ng-model="settings.name">
@@ -15,7 +15,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.campaignGoal}">
             <label for="goal-input-label" class="col-xs-3 control-label">
                 Campaign goal
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The top level goal of this campaign." placement="top"></zem-help-popover>
+                <zem-help-popover content="The top level goal of this campaign." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-4 form-inline">
                 <label id="goal-input-label" class="col-xs-6" for="goal-input">Meet or beat the goal of</label>

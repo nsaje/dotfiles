@@ -14,7 +14,7 @@
         <div class="form-group">
             <label for="campaign-state-switch" class="col-xs-2 control-label">
                 Ad Group Status
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="This is the current state of the Ad Group. If you enable the Ad Group you must then go enable preferred Media Sources too.
+                <zem-help-popover content="This is the current state of the Ad Group. If you enable the Ad Group you must then go enable preferred Media Sources too.
                                                                                       If you pause it, all Media Sources get paused." placement="bottom"></zem-help-popover>
             </label>
             <div id="campaign-state-switch" class="col-xs-4">
@@ -27,7 +27,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.name}">
             <label for="name-input" class="col-xs-2 control-label">
                 Name
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The name of the ad group." placement="top"></zem-help-popover>
+                <zem-help-popover content="The name of the ad group." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
                 <input id="name-input" type="text" class="form-control" ng-model="settings.name">
@@ -39,7 +39,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.startDate}">
             <label for="start-date-input" class="col-xs-2 control-label">
                 Start date
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The date when content promotion commenced." placement="top"></zem-help-popover>
+                <zem-help-popover content="The date when content promotion commenced." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
                 <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="settings.startDate" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')">
@@ -51,7 +51,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.endDate}">
             <label for="end-date-input" class="col-xs-2 control-label">
                 End date
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The date when content promotion paused." placement="top"></zem-help-popover>
+                <zem-help-popover content="The date when content promotion paused." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
                 <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="settings.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
@@ -70,7 +70,7 @@
             <div class="form-group" ng-class="{'has-error': !!errors.targetDevices}">
                 <label class="col-xs-2 control-label">
                     Device targeting
-                    <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The devices on which your content ads should be shown." placement="top"></zem-help-popover>
+                    <zem-help-popover content="The devices on which your content ads should be shown." placement="top"></zem-help-popover>
                 </label>
                 <div class="col"
 			 zem-tutorial-popover-condition-promise="adGroupHasFreshSettings()"
@@ -89,7 +89,7 @@
             <div ng-if="!hasPermission('zemauth.can_set_dma_targeting')" class="form-group" ng-class="{'has-error': !!errors.targetRegions}">
                 <label class="col-xs-2 control-label">
                     Geographical targeting
-                    <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The countries where your content ads should be shown." placement="top"></zem-help-popover>
+                    <zem-help-popover content="The countries where your content ads should be shown." placement="top"></zem-help-popover>
                 </label>
                 <div class="col">
                     <div class="radio">
@@ -115,7 +115,7 @@
                 <label class="col-xs-2 control-label">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_dma_targeting')" popover-placement="right"></zem-internal-feature>
                     Locations
-                    <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The countries and DMA regions where your content ads should be shown." placement="top"></zem-help-popover>
+                    <zem-help-popover content="The countries and DMA regions where your content ads should be shown." placement="top"></zem-help-popover>
                 </label>
 
                 <div class="col-xs-6 col-md-4">
@@ -128,7 +128,7 @@
             <div class="form-group" ng-class="{'has-error': !!errors.trackingCode}">
                 <label for="tracking-input" class="col-xs-2 control-label">
                     Tracking codes
-                    <zem-help-popover ng-if="hasPermission('zemauth.help_view') && !hasPermission('zemauth.can_toggle_ga_performance_tracking')" content="The tracking code / UTM to be appended to all URLs being promoted. Please contact your account manager for setting this field." placement="top"></zem-help-popover>
+                    <zem-help-popover ng-if="!hasPermission('zemauth.can_toggle_ga_performance_tracking')" content="The tracking code / UTM to be appended to all URLs being promoted. Please contact your account manager for setting this field." placement="top"></zem-help-popover>
                 </label>
                 <div class="col-xs-4">
                     <textarea id="tracking-input" type="text" ng-readonly="!hasPermission('zemauth.can_toggle_ga_performance_tracking')" class="form-control" rows="4" ng-model="settings.trackingCode"></textarea>
@@ -139,12 +139,33 @@
                 <div class="checkbox col-xs-10" ng-if="hasPermission('zemauth.can_toggle_ga_performance_tracking')">
                     <label>
                         <input type="checkbox" id="enable-ga-tracking" ng-model="settings.enableGaTracking"> Enable Google Analytics performance tracking
-                        <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="This adds performance tracking codes (_z1_msid, _z1_adgid, _z1_caid) to all URLs." placement="top"></zem-help-popover>
+                        <zem-help-popover content="This adds performance tracking codes (_z1_msid, _z1_adgid, _z1_caid) to all URLs." placement="top"></zem-help-popover>
                         <br />
                         <a href="{{ config.static_url }}/one/assets/SettingUpAutomatedGoogleAnalyticsReports.pdf" target="_self">Download a guide to setting up Automated Google Analytics Report</a>
                     </label>
                 </div>
+
+                <div class="checkbox col-xs-10" ng-if="hasPermission('zemauth.can_toggle_adobe_performance_tracking')">
+                    <label>
+                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_toggle_adobe_performance_tracking')" popover-placement="right"></zem-internal-feature>
+                        <input type="checkbox" id="enable-adobe-tracking" ng-model="settings.enableAdobeTracking"> Enable Adobe Analytics performance tracking
+                        <zem-help-popover content="This adds performance tracking codes to all URLs." placement="top"></zem-help-popover>
+                    </label>
+                </div>
             </div>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.name}" ng-if="hasPermission('zemauth.can_toggle_adobe_performance_tracking')">
+            <label for="adobe-tracking-param-input" class="col-xs-2 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_toggle_adobe_performance_tracking')" popover-placement="right"></zem-internal-feature>
+                Adobe tracking param
+                <zem-help-popover content="Name of the tracking parameter used for Adobe Analytics." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-1">
+                <input id="adobe-tracking-param-input" type="text" class="form-control" ng-model="settings.adobeTrackingParam">
+            </div>
+
+            <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
         </div>
 
 		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>

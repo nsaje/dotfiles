@@ -49,7 +49,9 @@ class AdGroupSettingsTest(TestCase):
             'description': 'Example description',
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
-            'enable_ga_tracking': True
+            'enable_ga_tracking': True,
+            'enable_adobe_tracking': False,
+            'adobe_tracking_param': ''
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -331,7 +333,7 @@ class AdGroupTestCase(TestCase):
     def test_queryset_exclude_archived(self):
         qs = models.AdGroup.objects.all().exclude_archived()
 
-        self.assertEqual(len(qs), 6)
+        self.assertEqual(len(qs), 7)
 
 
 class CampaignTestCase(TestCase):

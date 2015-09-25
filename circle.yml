@@ -2,6 +2,8 @@ general:
     artifacts:
         - ./server/coverage_report.txt
         - ./client/coverage/text/*
+        - ./server.tar.gz
+        - ./client.tar.gz
 
 machine:
     python:
@@ -30,9 +32,12 @@ checkout:
 
 test:
     override:
-        - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test  ;; 1) cd client && grunt test && cd .. && ./run_e2e.sh ;; esac':
+        - 'git rev-parse HEAD > server/git_commit_hash.txt'
+        - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test  ;; 1) cd client && grunt test && cd .. && ./run_e2e.sh && git rev-parse HEAD > client/dist/git_commit_hash.txt && cd client && tar -pc dist/ -zf ../client.tar.gz ;; esac':
             parallel: true
     post:
+        - 'if [[ "$CIRCLE_NODE_INDEX" = "0" ]]; then  tar -pc * -zf ../server.tar.gz; fi':
+            pwd: server
         - coverage report > coverage_report.txt:
             pwd: server
         - coverage xml:

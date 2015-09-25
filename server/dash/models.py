@@ -610,6 +610,11 @@ class SourceType(models.Model):
     def supports_dma_targeting(self):
         return self.can_modify_dma_targeting_manual() or self.can_modify_dma_targeting_automatic()
 
+    def can_fetch_report_by_publisher(self):
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_FETCH_REPORT_BY_PUBLISHER in self.available_actions
+
+
     def __str__(self):
         return self.type
 
@@ -705,6 +710,9 @@ class Source(models.Model):
     def update_tracking_codes_on_content_ads(self):
         return self.source_type.update_tracking_codes_on_content_ads()
 
+    def can_fetch_report_by_publisher(self):
+        return self.source_type.can_fetch_report_by_publisher()
+
     def __unicode__(self):
         return self.name
 
@@ -765,6 +773,41 @@ class DefaultSourceSettings(models.Model):
         verbose_name='Additional action parameters',
         help_text='Information about format can be found here: <a href="https://sites.google.com/a/zemanta.com/root/content-ads-dsp/additional-source-parameters-format" target="_blank">Zemanta Pages</a>'
     )
+
+    default_cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Default CPC'
+    )
+
+    mobile_cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Default CPC (if ad group is targeting mobile only)'
+    )
+
+    daily_budget_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Default daily budget'
+    )
+
+    auto_add = models.BooleanField(null=False,
+                                   blank=False,
+                                   default=False,
+                                   verbose_name='Automatically add this source to ad group at creation')
+
+    objects = QuerySetManager()
+
+    class QuerySet(models.QuerySet):
+        def with_credentials(self):
+            return self.exclude(credentials__isnull=True)
 
     class Meta:
         verbose_name_plural = "Default Source Settings"
@@ -989,13 +1032,15 @@ class AdGroupSettings(SettingsBase):
         'description',
         'call_to_action',
         'ad_group_name',
-        'enable_ga_tracking'
+        'enable_ga_tracking',
+        'enable_adobe_tracking',
+        'adobe_tracking_param',
     ]
 
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(AdGroup, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True, blank=True)
     state = models.IntegerField(
         default=constants.AdGroupSettingsState.INACTIVE,
         choices=constants.AdGroupSettingsState.get_choices()
@@ -1020,6 +1065,8 @@ class AdGroupSettings(SettingsBase):
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
     enable_ga_tracking = models.BooleanField(default=True)
+    enable_adobe_tracking = models.BooleanField(default=False)
+    adobe_tracking_param = models.CharField(max_length=10, blank=True, default='')
     archived = models.BooleanField(default=False)
     display_url = models.CharField(max_length=25, blank=True, default='')
     brand_name = models.CharField(max_length=25, blank=True, default='')
@@ -1043,7 +1090,7 @@ class AdGroupSettings(SettingsBase):
         if self.start_date <= now and (self.end_date is None or now <= self.end_date):
             return constants.AdGroupRunningStatus.ACTIVE
         return constants.AdGroupRunningStatus.INACTIVE
-        
+
     def _convert_date_utc_datetime(self, date):
         dt = datetime.datetime(
             date.year,
@@ -1068,10 +1115,13 @@ class AdGroupSettings(SettingsBase):
         return dt
 
     def targets_dma(self):
-        return any(tr in regions.DMA_BY_CODE for tr in self.target_regions)
+        return any(tr in regions.DMA_BY_CODE for tr in self.target_regions) if self.target_regions else False
 
     def targets_countries(self):
-        return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions)
+        return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions) if self.target_regions else False
+
+    def is_mobile_only(self):
+        return self.target_devices and len(self.target_devices) == 1 and constants.AdTargetDevice.MOBILE in self.target_devices
 
     @classmethod
     def get_defaults_dict(cls):
@@ -1105,7 +1155,10 @@ class AdGroupSettings(SettingsBase):
             'description': 'Description',
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
-            'enable_ga_tracking': 'Enable GA tracking'
+            'enable_ga_tracking': 'Enable GA tracking',
+            'autopilot_state': 'Auto-Pilot',
+            'enable_adobe_tracking': 'Enable Adobe tracking',
+            'adobe_tracking_param': 'Adobe tracking parameter'
         }
 
         return NAMES[prop_name]
@@ -1114,6 +1167,8 @@ class AdGroupSettings(SettingsBase):
     def get_human_value(cls, prop_name, value):
         if prop_name == 'state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
+        elif prop_name == 'autopilot_state':
+            value = constants.AdGroupSourceSettingsAutopilotState.get_text(value)
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
@@ -1127,7 +1182,7 @@ class AdGroupSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
-        elif prop_name in ('archived', 'enable_ga_tracking'):
+        elif prop_name in ('archived', 'enable_ga_tracking', 'enable_adobe_tracking'):
             value = str(value)
 
         return value
@@ -1138,7 +1193,10 @@ class AdGroupSettings(SettingsBase):
 
     def save(self, request, *args, **kwargs):
         if self.pk is None:
-            self.created_by = request.user
+            if request is None:
+                self.created_by = None
+            else:
+                self.created_by = request.user
 
         super(AdGroupSettings, self).save(*args, **kwargs)
 
@@ -1215,6 +1273,10 @@ class AdGroupSourceSettings(models.Model):
         blank=True,
         null=True,
         verbose_name='Daily budget'
+    )
+    autopilot_state = models.IntegerField(
+        default=constants.AdGroupSourceSettingsAutopilotState.INACTIVE,
+        choices=constants.AdGroupSourceSettingsAutopilotState.get_choices()
     )
 
     def save(self, request, *args, **kwargs):

@@ -6,7 +6,7 @@ import collections
 from operator import attrgetter
 import newrelic.agent
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -123,13 +123,17 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
     return send_delayed_actionlogs([ad_group_source], send=send)
 
 
-def create_campaign(ad_group_source, name, request):
+def create_campaign(ad_group_source, name, request, send=True):
+    action = None
     try:
         action = _init_create_campaign(ad_group_source, name, request)
     except exceptions.InsertActionException:
         pass
     else:
-        zwei_actions.send(action)
+        if send:
+            zwei_actions.send(action)
+
+    return action
 
 
 @transaction.atomic
@@ -528,6 +532,56 @@ def _init_fetch_reports(ad_group_source, date, order, request=None):
         action_type=constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
         order=order
+    )
+    action.save(request)
+
+    try:
+        with transaction.atomic():
+            callback = urlparse.urljoin(
+                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+            )
+
+            payload = {
+                'action': action.action,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
+                'expiration_dt': action.expiration_dt,
+                'args': {
+                    'source_campaign_key': ad_group_source.source_campaign_key,
+                    'date': date.strftime('%Y-%m-%d'),
+                },
+                'callback_url': callback,
+            }
+
+            action.payload = payload
+            action.save(request)
+
+            return action
+
+    except Exception as e:
+        logger.exception('An exception occurred while initializing get_reports action')
+        _handle_error(action, e, request)
+
+        et, ei, tb = sys.exc_info()
+        raise exceptions.InsertActionException, ei, tb
+
+def _init_fetch_reports_by_publisher(ad_group_source, date, order, request=None):
+    if not ad_group_source.source.can_fetch_report_by_publisher():
+        logger.error('Trying to _init_fetch_reports_by_publisher() on source that does not support it: {}'.format(ad_group_source.id))
+        raise exceptions.InsertActionException('Trying to _init_fetch_reports_by_publisher() on source that does not support it: {}'.format(ad_group_source.id))
+
+    
+    msg = '_init_fetch_reports started: ad_group_source.id: {}, date: {}'.format(
+        ad_group_source.id,
+        repr(date)
+    )
+    logger.info(msg)
+
+    action = models.ActionLog(
+        action=constants.Action.FETCH_REPORTS_BY_PUBLISHER,
+        action_type=constants.ActionType.AUTOMATIC,
+        ad_group_source=ad_group_source,
+        order=order,
+        expiration_dt=datetime.utcnow() + timedelta(hours = 3)
     )
     action.save(request)
 
