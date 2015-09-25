@@ -48,6 +48,8 @@ def _first_valid_report_attachment(files):
     valid_suffixes = ['.csv', '.xls']
     for key in files:
         attachment = files[key].name
+        if attachment is None or attachment == '':
+            continue
         if any(attachment.endswith(valid_suffix) for valid_suffix in valid_suffixes):
             content = files.get(key).read()
             return attachment, content

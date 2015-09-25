@@ -453,6 +453,45 @@ Segment: All Visits (No Segment),,,,,,,,,,
             report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_file))
             report.parse()
 
+    def test_parse_invalid(self):
+        csv_file = """
+######################################################################
+# Company:,Zemanta
+# URL:,.
+# Site:,Global
+# Range:,Sat. 12 Sep. 2015
+# Report:,Tracking Code Report
+# Description:,""
+######################################################################
+# Report Options:
+# Report Type: ,"Ranked"
+# Selected Metrics: ,"Visits, New Sessions, Unique Visitors, Bounce Rate, Pages/Session, Avg. Session Duration, Entries, Bounces, Page Views, Total Seconds Spent"
+# Broken Down by: ,"None"
+# Data Filter: ,"RANDOM"
+# Compare to Report Suite: ,"None"
+# Compare to Segment: ,"None"
+# Item Filter: ,"None"
+# Percent Shown as: ,"Number"
+# Segment: ,"All Visits (No Segment)"
+######################################################################
+#
+# Copyright 2015 Adobe Systems Incorporated. All rights reserved.
+# Use of this document signifies your agreement to the Terms of Use (http://marketing.adobe.com/resources/help/terms.html?type=prod&locale=en_US) and Online Privacy Policy (http://my.omniture.com/x/privacy).
+# Adobe Systems Incorporated products and services are licensed under the following Netratings patents: 5675510 5796952 6115680 6108637 6138155 6643696 and 6763386.
+#
+######################################################################
+
+,Tracking Code,Visits,,New Sessions,Unique Visitors,,Bounce Rate,Pages/Session,Avg. Session Duration,Entries,,Bounces,,Page Views,,Total Seconds Spent,
+1.,CSY-PB-ZM-AB-M-z111z:Gandalf-Is-Coming-Get-Ready-for-Winter-Storms,10,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,40,0.4%,0,0.0%
+,Total,10,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,40,0.4%,0,0.0%
+""".strip().decode('utf-8')
+
+        report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_file))
+        report.parse()
+        report.validate()
+
+        self.assertFalse(all(entry.is_row_valid() for entry in report.entries.values()))
+
     def test_parse(self):
         csv_file = """
 ######################################################################
@@ -489,6 +528,8 @@ Segment: All Visits (No Segment),,,,,,,,,,
         report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_file))
         report.parse()
         report.validate()
+
+        self.assertTrue(all(entry.is_row_valid() for entry in report.entries.values()))
 
         self.assertEqual(datetime.date(2015, 9, 12), report.start_date)
         valid_entries = report.valid_entries()

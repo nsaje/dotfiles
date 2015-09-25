@@ -253,19 +253,29 @@ class Report(object):
         for source in sources:
             track_source_map[source.tracking_slug] = source.id
 
-        # slow but since we don't receive many reports this shouldn't hurt much
-        for entry in self.entries.values():
-            caid = entry.content_ad_id
-            source_param = track_source_map.get(entry.source_param)
-            if source_param is None:
-                entry.mark_invalid()
-                continue
 
-            if not dash.models.ContentAdSource.objects.filter(
-                content_ad__id=caid,
-                source__id=source_param).exists():
+        # check 100 content ads at a time
+        BATCH_SIZE = 100
+        current_entry_batch = []
+        entry_values = self.entries.values()
+        processing_last_entry = False
+        for entry in entry_values:
+            current_entry_batch.append(entry)
+            if len(current_entry_batch) >= BATCH_SIZE:
+                self._mark_invalid(current_entry_batch)
+
+        if len(current_entry_batch) >= BATCH_SIZE:
+            self._mark_invalid(current_entry_batch)
+
+    def _mark_invalid(self, entry_batch):
+        ids = [entry.content_ad_id for entry in entry_batch]
+        existing_cad_sources = dash.models.ContentAdSource.objects.filter(
+            content_ad__id__in=tuple(ids)
+        ).values_list('content_ad__id', 'content_ad__source__id')
+
+        for entry in entry_batch:
+            if (entry.content_ad_id, entry.source_id,) not in existing_cad_sources:
                 entry.mark_invalid()
-                continue
 
     def is_media_source_specified(self):
         media_source_not_specified = []
