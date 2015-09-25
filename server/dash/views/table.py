@@ -908,7 +908,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
 
         page = request.GET.get('page')
         size = request.GET.get('size')
-        start_date = helpers.et_stats_start_dat(request.GET.get('start_date'))
+        start_date = helpers.get_stats_start_dat(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         order = request.GET.get('order') or '-clicks'
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
