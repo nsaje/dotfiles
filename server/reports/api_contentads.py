@@ -2,7 +2,7 @@ import logging
 import copy
 
 from reports import redshift
-from reports import models
+from reports.db_raw_helpers import extract_obj_ids
 import reports.rs_helpers as rsh
 
 import dash.models
@@ -14,7 +14,7 @@ class RSContentAdStatsModel(redshift.RSModel):
     TABLE_NAME = 'contentadstats'
 
     # 	SQL NAME                   APP NAME           OUTPUT TRANSFORM      AGGREGATE
-    _DIMENSIONS_FIELDS = [
+    _BREAKDOWN_FIELDS = [
         dict(sql='date',          app='date',        out=rsh.unchanged),
         dict(sql='content_ad_id', app='content_ad',  out=rsh.unchanged),
         dict(sql='source_id',     app='source',      out=rsh.unchanged),
@@ -45,10 +45,16 @@ class RSContentAdStatsModel(redshift.RSModel):
         dict(sql='avg_tos',            app='avg_tos',           out=rsh.unchanged,   calc=rsh.sum_div('total_time_on_site', 'visits')),
     ]
 
-    FIELDS = _DIMENSIONS_FIELDS + _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS
+    _OTHER_AGGREGATIONS = [
+        dict(sql='total_time_on_site', app='duration', out=rsh.unchanged),
+        dict(sql='has_postclick_metrics', app='has_postclick_metrics', out=rsh.unchanged,
+             calc=rsh.is_all_null(['visits', 'pageviews', 'new_visits', 'bounced_visits', 'total_time_on_site']))
+    ]
+
+    FIELDS = _BREAKDOWN_FIELDS + _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _OTHER_AGGREGATIONS
 
     DEFAULT_RETURNED_FIELDS_APP = [f['app'] for f in _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS]
-    ALLOWED_BREAKDOWN_FIELDS_APP = set(f['app'] for f in _DIMENSIONS_FIELDS)
+    ALLOWED_BREAKDOWN_FIELDS_APP = set(f['app'] for f in _BREAKDOWN_FIELDS)
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +73,7 @@ def query(start_date, end_date, breakdown=[], constraints={}):
 
     results = RSContentAdStats.execute_select_query(
         cursor,
-        RSContentAdStats.DEFAULT_RETURNED_FIELDS_APP,
+        returned_fields=RSContentAdStats.DEFAULT_RETURNED_FIELDS_APP,
         breakdown_fields=breakdown,
         order_fields=[],
         offset=None,
@@ -84,83 +90,61 @@ def query(start_date, end_date, breakdown=[], constraints={}):
 
 
 def has_complete_postclick_metrics_accounts(start_date, end_date, accounts, sources):
-    return _has_complete_postclick_metrics(
+    # TODO: helper functions are temporary untill we merge with postclick everywhere
+    return has_complete_postclick_metrics(
         start_date,
         end_date,
-        'account',
-        accounts,
-        sources,
+        level_constraints={'account': accounts},
+        sources=sources,
     )
 
 
 def has_complete_postclick_metrics_campaigns(start_date, end_date, campaigns, sources):
-    return _has_complete_postclick_metrics(
+    # TODO: helper functions are temporary untill we merge with postclick everywhere
+    return has_complete_postclick_metrics(
         start_date,
         end_date,
-        'campaign',
-        campaigns,
-        sources
+        level_constraints={'campaign': campaigns},
+        sources=sources,
     )
 
 
 def has_complete_postclick_metrics_ad_groups(start_date, end_date, ad_groups, sources):
-
-    return _has_complete_postclick_metrics(
+    # TODO: helper functions are temporary untill we merge with postclick everywhere
+    return has_complete_postclick_metrics(
         start_date,
         end_date,
-        'ad_group',
-        ad_groups,
-        sources
+        level_constraints={'ad_group': ad_groups},
+        sources=sources,
     )
 
 
-#  app_name: sql_name
-POSTCLICK_METRICS_TABLE_MAPPING = {
-    'duration': 'total_time_on_site'
-}
-
-HAS_POSTCLICK_METRICS_CONDITION = rsh.is_all_null([POSTCLICK_METRICS_TABLE_MAPPING.get(f, f) for f in models.POSTCLICK_METRICS])
-
-
-class RSHasPostclickMetricsModel(RSContentAdStatsModel):
-
-    FIELDS = copy.copy(RSContentAdStatsModel.FIELDS) + [
-        dict(sql='has_postclick_metrics', app='has_postclick_metrics', out=rsh.unchanged,
-             calc=HAS_POSTCLICK_METRICS_CONDITION),
-    ]
-
-
-RSHasPostclickMetrics = RSHasPostclickMetricsModel()
-
-
-def _get_ad_group_ids_with_postclick_data(key, objects, exclude_archived=True):
+def _get_ad_group_ids_with_postclick_data(cursor, level_constraints_ids, exclude_archived=True):
     """
     Filters the objects that are passed in and returns ids
     of only those that have any postclick metric data.
     """
 
-    constraints = {
-        key: objects
-    }
+    constraints = level_constraints_ids
 
     if exclude_archived:
         ad_groups = dash.models.AdGroup.objects.all().exclude_archived()
 
-        if key == 'ad_group':
-            ad_groups = ad_groups.filter(pk__in=[adg.pk for adg in objects])
+        if 'ad_group' in constraints:
+            ad_groups = ad_groups.filter(pk__in=constraints['ad_group'])
 
-        constraints['ad_group'] = ad_groups
+        # be sure to select only ids
+        constraints['ad_group'] = ad_groups.values_list('pk', flat=True)
 
+    has_postclick_metrics_sql = RSContentAdStats.by_app_mapping['has_postclick_metrics']['calc']
     having_constraints = [
-        '({})=1'.format(HAS_POSTCLICK_METRICS_CONDITION)
+        '({})=1'.format(has_postclick_metrics_sql)
     ]
 
-    cursor = redshift.get_cursor()
-
-    results = RSHasPostclickMetrics.execute_select_query(
+    results = RSContentAdStats.execute_select_query(
         cursor,
-        ['has_postclick_metrics'],
-        ['ad_group'],
+        returned_fields=['has_postclick_metrics'],
+        breakdown_fields=['ad_group'],
         order_fields=[],
         offset=None,
         limit=None,
@@ -168,17 +152,21 @@ def _get_ad_group_ids_with_postclick_data(key, objects, exclude_archived=True):
         having_constraints=having_constraints
     )
 
-    cursor.close()
     return [x['ad_group'] for x in results]
 
 
-def _has_complete_postclick_metrics(start_date, end_date, key, objects, sources):
+def has_complete_postclick_metrics(start_date, end_date, level_constraints, sources):
     """
     Returns True if passed-in objects have complete postclick data for the
     specfied date range. All objects that don't have this data at all are ignored.
     """
 
-    ad_group_ids = _get_ad_group_ids_with_postclick_data(key, objects)
+    cursor = redshift.get_cursor()
+
+    level_constraints_ids = extract_obj_ids(copy.copy(level_constraints))
+    source_ids = extract_obj_ids(sources)
+
+    ad_group_ids = _get_ad_group_ids_with_postclick_data(cursor, level_constraints_ids)
     if len(ad_group_ids) == 0:
         return True
 
@@ -186,15 +174,13 @@ def _has_complete_postclick_metrics(start_date, end_date, key, objects, sources)
         'date__gte': start_date,
         'date__lte': end_date,
         'ad_group': ad_group_ids,
-        'source': sources
+        'source': source_ids
     }
 
-    cursor = redshift.get_cursor()
-
-    results = RSHasPostclickMetrics.execute_select_query(
+    results = RSContentAdStats.execute_select_query(
         cursor,
-        ['ad_group', 'date', 'has_postclick_metrics'],
-        ['ad_group', 'date'],
+        returned_fields=['ad_group', 'date', 'has_postclick_metrics'],
+        breakdown_fields=['ad_group', 'date'],
         order_fields=[],
         offset=None,
         limit=None,

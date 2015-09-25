@@ -3,17 +3,16 @@ from mock import patch
 
 from django.test import TestCase
 from django.http import HttpRequest
-from django.db import transaction
-from django.conf import settings
 from utils.test_helper import RedshiftTestCase
 
 import dash.models
 from reports import api_contentads
+from reports import redshift
 
 from zemauth.models import User
 
 
-@patch('reports.redshift.MyCursor')
+@patch('reports.redshift.get_cursor')
 class ApiContentAdsQueryTest(TestCase):
     fixtures = ['test_api_contentads']
 
@@ -161,7 +160,7 @@ class ApiContentAdsQueryTest(TestCase):
         self.check_aggregations(mock_cursor)
 
 
-class ApiContentAdsPostclickTest(RedshiftTestCase):
+class ApiContentAdsPostclickRedshiftTest(RedshiftTestCase):
     fixtures = ['test_api_contentads.stats.yaml', 'test_api_contentads.yaml']
 
     def setUp(self):
@@ -169,7 +168,7 @@ class ApiContentAdsPostclickTest(RedshiftTestCase):
         user = User.objects.get(pk=1)
         self.request.user = user
 
-        super(ApiContentAdsPostclickTest, self).setUp()
+        super(ApiContentAdsPostclickRedshiftTest, self).setUp()
 
     def test_has_complete_postclick_metrics(self):
         ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1])
@@ -197,18 +196,20 @@ class ApiContentAdsPostclickTest(RedshiftTestCase):
         ad_group_settings.archived = True
         ad_group_settings.save(self.request)
 
+        cursor = redshift.get_cursor()
+
         ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1, 2, 3])
         result = api_contentads._get_ad_group_ids_with_postclick_data(
-            key='ad_group',
-            objects=ad_groups,
+            cursor,
+            level_constraints_ids={'ad_group': [x.pk for x in ad_groups]},
             exclude_archived=True)
         self.assertEqual(result, [])
 
         # account level archived ad group
         accounts = dash.models.Account.objects.filter(pk__in=[1])
         result = api_contentads._get_ad_group_ids_with_postclick_data(
-            key='account',
-            objects=accounts,
+            cursor,
+            level_constraints_ids={'account': [x.pk for x in accounts]},
             exclude_archived=True)
         self.assertEqual(result, [])
 
@@ -218,16 +219,16 @@ class ApiContentAdsPostclickTest(RedshiftTestCase):
 
         ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1, 2, 3])
         result = api_contentads._get_ad_group_ids_with_postclick_data(
-            key='ad_group',
-            objects=ad_groups,
+            cursor,
+            level_constraints_ids={'ad_group': [x.pk for x in ad_groups]},
             exclude_archived=False)
         self.assertEqual(result, [1])
 
         # account level not archived
         accounts = dash.models.Account.objects.filter(pk__in=[1])
         result = api_contentads._get_ad_group_ids_with_postclick_data(
-            key='account',
-            objects=accounts,
+            cursor,
+            level_constraints_ids={'account': [x.pk for x in accounts]},
             exclude_archived=False)
         self.assertEqual(result, [1])
 
@@ -244,3 +245,4 @@ class ApiContentAdsPostclickTest(RedshiftTestCase):
             accounts=accounts,
             sources=sources)
         self.assertFalse(result)
+

@@ -128,14 +128,22 @@ class RedshiftTestCase(TestCase):
         # load fixtures for every test
         if self._instance_fixtures:
             try:
+
+                kwargs = {
+                    'verbosity': 0
+                }
+
+                # be interactive only once
+                if not RedshiftTestCase.is_first_time:
+                    kwargs['interactive'] = False
+
                 call_command('redshift_loaddata',
                              *self._instance_fixtures,
-                             **{
-                                 'verbosity': 0,
-                             })
+                             **kwargs)
             except Exception:
                 self._rollback_instance_atomics()
                 raise
+        RedshiftTestCase.is_first_time = False
 
     def tearDown(self):
         self._rollback_instance_atomics()
@@ -143,6 +151,7 @@ class RedshiftTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.cls_atomics = cls._enter_atomics()
+        RedshiftTestCase.is_first_time = True
 
         if cls.fixtures:
             fixtures_by_db = {}

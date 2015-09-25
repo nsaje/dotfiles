@@ -33,7 +33,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
-        self.patcher = patch('reports.api_contentads._has_complete_postclick_metrics')
+        self.patcher = patch('reports.api_contentads.has_complete_postclick_metrics')
         mock_has_complete_postclick_metrics = self.patcher.start()
         mock_has_complete_postclick_metrics.return_value = True
 

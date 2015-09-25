@@ -1,14 +1,12 @@
-import collections
 import itertools
 
 from django.conf import settings
 from django.db import connections
-from django.db.models.query import QuerySet
 
 from utils.statsd_helper import statsd_timer
 
 from reports import exc
-from reports.db_raw_helpers import MyCursor, get_obj_id
+from reports.db_raw_helpers import MyCursor, is_collection
 
 
 @statsd_timer('reports.redshift', 'delete_contentadstats')
@@ -253,20 +251,20 @@ class RSModel(object):
         for field_name, operator, value in constraints_tuples:
             if operator == "lte":
                 result.append('"{}" <= %s'.format(field_name))
-                params.append(get_obj_id(value))
+                params.append(value)
             elif operator == "gte":
                 result.append('"{}" >= %s'.format(field_name))
-                params.append(get_obj_id(value))
+                params.append(value)
             elif operator == "eq":
-                if (isinstance(value, collections.Sequence) or isinstance(value, QuerySet)) and type(value) not in (str, unicode):
+                if is_collection(value):
                     if value:
                         result.append('{} IN ({})'.format(field_name, ','.join(["%s"] * len(value))))
-                        params.extend([get_obj_id(v) for v in value])
+                        params.extend(value)
                     else:
                         result.append('FALSE')
                 else:
                     result.append('{}=%s'.format(field_name))
-                    params.append(get_obj_id(value))
+                    params.append(value)
             else:
                 raise Exception("Unknown constraint type: {}".format(field_name))
 

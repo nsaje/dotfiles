@@ -22,9 +22,12 @@ class Command(BaseCommand):
     help = "Loads fixtures into the stats database"
 
     def add_arguments(self, parser):
-        parser.add_argument('fixtures', metavar='FIXTURES', nargs='+', help='Fixtures to load')
+        parser.add_argument('fixtures', metavar='FIXTURES', nargs='+',
+                            help='A list of fixture labels to load. Separated with spaces.')
         parser.add_argument('--app', action='store', dest='app_label',
                             default=None, help='Only look for fixtures in the specified app.')
+        parser.add_argument('--noinput', dest='interactive', action='store_false', default=True,
+                            help='Suppress input prompts, automatically answer YES')
 
     def find_fixtures(self, fixture_name):
         """
@@ -51,7 +54,21 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         fixtures = options['fixtures']
         self.app_label = options.get('app_label')
+        interactive = options.get('interactive', True)
         set_logger_verbosity(logger, options)
+
+        confirm = 'no'
+        if interactive:
+            confirm = raw_input("""You have requested to load fixtures into the '%s' database on host '%s'.
+
+Are you sure you want to do this?
+    Type the database name to continue, or 'no' to cancel: """ % (settings.DATABASES[settings.STATS_DB_NAME]['NAME'],
+                                                                  settings.DATABASES[settings.STATS_DB_NAME]['HOST']))
+        else:
+            confirm = settings.DATABASES[settings.STATS_DB_NAME]['NAME']
+
+        if confirm != settings.DATABASES[settings.STATS_DB_NAME]['NAME']:
+            self.stdout.write("Fixtures loading was cancelled.\n")
 
         # load data from fixtures
         data = []

@@ -6,7 +6,7 @@ from django.test import TestCase
 from reports import redshift
 
 
-@patch('reports.redshift.MyCursor')
+@patch('reports.redshift.get_cursor')
 class RedshiftTest(TestCase):
     def setUp(self):
         redshift.STATS_DB_NAME = 'default'
