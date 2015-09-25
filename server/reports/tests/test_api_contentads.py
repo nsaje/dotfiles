@@ -171,33 +171,22 @@ class ApiContentAdsPostclickTest(RedshiftTestCase):
 
         super(ApiContentAdsPostclickTest, self).setUp()
 
-    def test_has_complete_postclick_metrics_accounts(self):
-        accounts = dash.models.Account.objects.filter(pk__in=[1])
-        sources = dash.models.Source.objects.filter(pk__in=[1])
-        self.assertTrue(len(accounts))
-        self.assertTrue(len(sources))
-
-        start = datetime.datetime(2014, 6, 15)
-        end = datetime.datetime(2014, 6, 17)
-        result = api_contentads.has_complete_postclick_metrics_accounts(start, end, accounts, sources)
-        self.assertTrue(result)
-
-    def test_has_complete_postclick_metrics_campaigns(self):
-        campaigns = dash.models.Campaign.objects.filter(pk__in=[1])
-        sources = dash.models.Source.objects.filter(pk__in=[1])
-        self.assertTrue(len(campaigns))
-        self.assertTrue(len(sources))
-
-        start = datetime.datetime(2014, 6, 15)
-        end = datetime.datetime(2014, 6, 17)
-        result = api_contentads.has_complete_postclick_metrics_accounts(start, end, campaigns, sources)
-        self.assertTrue(result)
-
     def test_has_complete_postclick_metrics(self):
         ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1])
         sources = dash.models.Source.objects.filter(pk__in=[1])
-        self.assertTrue(len(ad_groups))
-        self.assertTrue(len(sources))
+        self.assertEqual(len(ad_groups), 1)
+        self.assertEqual(len(sources), 1)
+
+        start = datetime.datetime(2014, 6, 15)
+        end = datetime.datetime(2014, 6, 17)
+        result = api_contentads.has_complete_postclick_metrics_ad_groups(start, end, ad_groups, sources)
+        self.assertTrue(result)
+
+    def test_has_complete_postclick_metrics_source_without(self):
+        ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1])
+        sources = dash.models.Source.objects.filter(pk__in=[1, 2])
+        self.assertEqual(len(ad_groups), 1)
+        self.assertEqual(len(sources), 2)
 
         start = datetime.datetime(2014, 6, 15)
         end = datetime.datetime(2014, 6, 17)
@@ -207,11 +196,11 @@ class ApiContentAdsPostclickTest(RedshiftTestCase):
     def test_has_complete_postclick_metrics_not(self):
         ad_groups = dash.models.AdGroup.objects.filter(pk__in=[1])
         sources = dash.models.Source.objects.filter(pk__in=[1])
-        self.assertTrue(len(ad_groups))
-        self.assertTrue(len(sources))
+        self.assertEqual(len(ad_groups), 1)
+        self.assertEqual(len(sources), 1)
 
         start = datetime.datetime(2014, 6, 15)
-        end = datetime.datetime(2014, 6, 18)  # no metrics no this date
+        end = datetime.datetime(2014, 6, 18)  # no metrics on this date
         result = api_contentads.has_complete_postclick_metrics_ad_groups(start, end, ad_groups, sources)
         self.assertFalse(result)
 
@@ -248,3 +237,25 @@ class ApiContentAdsPostclickTest(RedshiftTestCase):
         accounts = dash.models.Account.objects.filter(pk__in=[1])
         result = api_contentads._get_ad_group_ids_with_postclick_data(key, accounts, exclude_archived=True)
         self.assertEqual(result, [])
+
+    def test_has_complete_postclick_metrics_accounts(self):
+        accounts = dash.models.Account.objects.filter(pk__in=[1])
+        sources = dash.models.Source.objects.filter(pk__in=[1])
+        self.assertEqual(len(accounts), 1)
+        self.assertEqual(len(sources), 1)
+
+        start = datetime.datetime(2014, 6, 15)
+        end = datetime.datetime(2014, 6, 17)
+        result = api_contentads.has_complete_postclick_metrics_accounts(start, end, accounts, sources)
+        self.assertTrue(result)
+
+    def test_has_complete_postclick_metrics_campaigns(self):
+        campaigns = dash.models.Campaign.objects.filter(pk__in=[1])
+        sources = dash.models.Source.objects.filter(pk__in=[1])
+        self.assertEqual(len(campaigns), 1)
+        self.assertEqual(len(sources), 1)
+
+        start = datetime.datetime(2014, 6, 15)
+        end = datetime.datetime(2014, 6, 17)
+        result = api_contentads.has_complete_postclick_metrics_accounts(start, end, campaigns, sources)
+        self.assertTrue(result)
