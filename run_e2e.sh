@@ -38,6 +38,6 @@ fuser -k $SERVER_PORT/tcp 1> /dev/null || lsof -P | grep ":$SERVER_PORT" | awk '
 fuser -k $STATIC_PORT/tcp 1> /dev/null || lsof -P | grep ":$STATIC_PORT" | awk '{print $2}' | xargs kill;
 
 echo "Cleaning up"
-$SCRIPTPATH/server/manage.py redshift_dropdb stats stats_e2e &&
+$SCRIPTPATH/server/manage.py redshift_dropdb stats stats_e2e --noinput &&
 
 exit $STATUS
