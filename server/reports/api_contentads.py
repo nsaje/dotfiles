@@ -69,6 +69,8 @@ def query(start_date, end_date, breakdown=[], constraints={}):
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
 
+    constraints = extract_obj_ids(constraints)
+
     cursor = redshift.get_cursor()
 
     results = RSContentAdStats.execute_select_query(
