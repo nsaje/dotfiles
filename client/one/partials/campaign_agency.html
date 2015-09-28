@@ -6,9 +6,12 @@
                 <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
-                <select ui-select2="{minimumResultsForSearch: 5}" id="account-manager-select" class="form-control" ng-model="settings.accountManager">
-                    <option ng-repeat="manager in accountManagers | orderBy:getName" value="{{ manager.id }}">{{ manager.name }}</option>
-                </select>
+                <ui-select theme="select2" id="account-manager-select" class="form-control" ng-model="settings.accountManager">
+                    <ui-select-match>{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="manager.id as manager in accountManagers | orderBy:getName | filter:$select.search">
+                        <div ng-bind-html="manager.name | highlight: $select.search"></div>
+                    </ui-select-choices>
+                </ui-select>
             </div>
             <label ng-repeat="error in errors.accountManager" class="control-label error" for="account-manager-select">{{ error }}</label>
         </div>
@@ -19,9 +22,12 @@
                 <zem-help-popover content="Sales representative responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
-                <select ui-select2="{minimumResultsForSearch: 5}" id="sales-representative-select" class="form-control" ng-model="settings.salesRepresentative">
-                    <option ng-repeat="rep in salesReps | orderBy:getName" value="{{ rep.id }}">{{ rep.name }}</option>
-                </select>
+                <ui-select theme="select2" id="sales-representative-select" class="form-control" ng-model="settings.salesRepresentative">
+                    <ui-select-match>{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="rep.id as rep in salesReps | orderBy:getName | filter:$select.search">
+                        <div ng-bind-html="rep.name | highlight: $select.search"></div>
+                    </ui-select-choices>
+                </ui-select>
             </div>
             <label ng-repeat="error in errors.salesRepresentative" class="control-label error" for="sales-representative-select">{{ error }}</label>
         </div>

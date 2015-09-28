@@ -2796,6 +2796,21 @@ zem-submission-status {
     }
 }
 
+.ui-select-container {
+    cursor: pointer;
+
+    .ui-select-dropdown {
+        /* parent element has border (1px) so dropdown needs positioning) */
+        left: -1px;
+        width: calc(~"100% + 2px");
+
+        .ui-select-highlight {
+            font-weight: normal;
+            text-decoration: underline;
+        }
+    }
+}
+
 .select2-result-label .location-dma-tag {
     float: right;
     font-size: 10px;
