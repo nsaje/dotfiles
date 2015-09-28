@@ -1262,7 +1262,6 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             start_date=start_date,
             end_date=end_date,
             breakdown=['ad_group'],
-            order=[order],
             campaign=campaign,
             source=filtered_sources,
         ), request.user)
