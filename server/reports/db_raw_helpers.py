@@ -51,3 +51,6 @@ class MyCursor(object):
 
     def close(self):
         self.cursor.close()
+
+    def mogrify(self, *args, **kwargs):
+        return self.cursor.mogrify(*args, **kwargs)
