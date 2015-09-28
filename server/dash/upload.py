@@ -2,7 +2,7 @@ import json
 import logging
 import unicodecsv
 import StringIO
- 
+
 from functools import partial
 from multiprocessing.pool import ThreadPool
 
@@ -21,7 +21,7 @@ from dash import models
 from dash import api
 from dash import constants
 from dash import image_helper
-from dash.forms import AdGroupAdsPlusUploadForm, MANDATORY_CSV_FIELDS, OPTIONAL_CSV_FIELDS # to get fields & validators
+from dash.forms import AdGroupAdsPlusUploadForm, MANDATORY_CSV_FIELDS, OPTIONAL_CSV_FIELDS  # to get fields & validators
 
 logger = logging.getLogger(__name__)
 
@@ -354,4 +354,4 @@ def _add_to_history(request, batch, ad_group):
     settings = ad_group.get_current_settings().copy_settings()
     settings.changes_text = changes_text
     settings.save(request)
-    email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, request.user, request)
+    email_helper.send_ad_group_notification_email(ad_group, request)

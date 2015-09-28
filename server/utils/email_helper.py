@@ -12,7 +12,33 @@ from utils import pagerduty_helper
 logger = logging.getLogger(__name__)
 
 
-def send_ad_group_settings_change_email(user, account_manager, request, ad_group, campaign_url):
+def send_notification_mail(account_manager, subject, body, campaign_url):
+    try:
+        send_mail(
+            subject,
+            body,
+            'Zemanta <{}>'.format(settings.FROM_EMAIL),
+            [account_manager.email],
+            fail_silently=False
+        )
+    except Exception as e:
+        logger.exception('Account manager email notification was not sent because an exception was raised')
+
+        desc = {
+            'campaign_settings_url': campaign_url
+        }
+        pagerduty_helper.trigger(
+            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+            incident_key='account_manager_notification_mail_failed',
+            description='Account manager email notification was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
+            details=desc,
+        )
+
+
+def send_ad_group_notification_email(ad_group, request):
+    if not should_send_notification_mail(ad_group.campaign, request.user, request):
+        return
+
     subject = u'Settings change - ad group {}, campaign {}, account {}'.format(
         ad_group.name,
         ad_group.campaign.name,
@@ -30,33 +56,49 @@ Yours truly,
 Zemanta
     '''
     body = body.format(
-        user=user,
+        user=request.user,
         ad_group=ad_group,
         campaign=ad_group.campaign,
         account=ad_group.campaign.account,
         link_url=link_url
     )
 
-    try:
-        send_mail(
-            subject,
-            body,
-            'Zemanta <{}>'.format(settings.FROM_EMAIL),
-            [account_manager.email],
-            fail_silently=False
-        )
-    except Exception as e:
-        logger.error('E-mail notification for ad group settings (ad group id: %d) change was not sent because an exception was raised: %s', ad_group.pk, traceback.format_exc(e))
+    campaign_settings = ad_group.campaign.get_current_settings()
 
-        desc = {
-            'campaign_settings_url': campaign_url
-        }
-        pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
-            incident_key='ad_group_settings_change_mail_failed',
-            description='E-mail notification for ad group settings change was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
-            details=desc,
-        )
+    send_notification_mail(
+        campaign_settings.account_manager, subject, body, ad_group.campaign.get_campaign_url(request))
+
+
+def send_campaign_notification_email(campaign, request):
+    if not should_send_notification_mail(campaign, request.user, request):
+        return
+
+    subject = u'Settings change - campaign {}, account {}'.format(
+        campaign.name,
+        campaign.account.name
+    )
+
+    link_url = request.build_absolute_uri('/campaigns/{}/agency'.format(campaign.pk))
+    link_url = link_url.replace('http://', 'https://')
+
+    body = u'''Hi account manager of {campaign.name}
+
+We'd like to notify you that {user.email} has made a change in the settings of campaign {campaign.name}, account {account.name}. Please check {link_url} for details.
+
+Yours truly,
+Zemanta
+    '''
+    body = body.format(
+        user=request.user,
+        campaign=campaign,
+        account=campaign.account,
+        link_url=link_url
+    )
+
+    campaign_settings = campaign.get_current_settings()
+
+    send_notification_mail(
+        campaign_settings.account_manager, subject, body, campaign.get_campaign_url(request))
 
 
 def send_password_reset_email(user, request):
@@ -197,33 +239,30 @@ The reporting data is an estimate. Final amounts are tallied and should be invoi
         logger.error('Supply report e-mail to %s was not sent because an exception was raised: %s', email, traceback.format_exc(e))
 
 
-def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
-    if not settings.SEND_AD_GROUP_SETTINGS_CHANGE_MAIL:
-        return
+def should_send_notification_mail(campaign, user, request):
+    if not settings.SEND_NOTIFICATION_MAIL:
+        return False
 
-    campaign_settings = ad_group.campaign.get_current_settings()
+    campaign_settings = campaign.get_current_settings()
 
     if not campaign_settings or not campaign_settings.account_manager:
-        logger.error('Could not send e-mail because there is no account manager set for campaign with id %s.', ad_group.campaign.pk)
+        logger.error(
+            'Could not send e-mail because there is no account manager set for campaign with id %s.',
+            campaign.pk
+        )
 
         desc = {
-            'campaign_settings_url': ad_group.campaign.get_campaign_url(request)
+            'campaign_settings_url': campaign.get_campaign_url(request)
         }
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
-            incident_key='ad_group_settings_change_mail_failed',
-            description='E-mail notification for ad group settings change was not sent because the campaign settings or account manager is not set.',
+            incident_key='notification_mail_failed',
+            description='E-mail notification was not sent because account manager is not set.',
             details=desc,
         )
-        return
+        return False
 
     if user.pk == campaign_settings.account_manager.pk:
-        return
+        return False
 
-    send_ad_group_settings_change_email(
-        user,
-        campaign_settings.account_manager,
-        request,
-        ad_group,
-        ad_group.campaign.get_campaign_url(request)
-    )
+    return True

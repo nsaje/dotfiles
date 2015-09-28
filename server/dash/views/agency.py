@@ -107,7 +107,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
-            email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, request.user, request)
+            email_helper.send_ad_group_notification_email(ad_group, request)
 
         response = {
             'settings': self.get_dict(new_settings, ad_group),
