@@ -1,4 +1,8 @@
 import logging
+import datetime
+import pytz
+
+from django.conf import settings
 
 from reports import aggregate_fields
 from reports import api_helpers
@@ -58,6 +62,7 @@ def has_complete_postclick_metrics_ad_groups(start_date, end_date, ad_groups, so
     # TODO: Implement
     return True
 
+
 def row_has_traffic_data(row):
     # TODO: Implement
     return True
@@ -66,3 +71,25 @@ def row_has_traffic_data(row):
 def row_has_postclick_data(row):
     # TODO: Implement
     return True
+
+
+def get_yesterday_cost(**constraints):
+    today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
+    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
+    today = datetime.datetime(today.year, today.month, today.day)
+    yesterday = today - datetime.timedelta(days=1)
+
+    rs = get_day_cost(yesterday, breakdown=['source'], **constraints)
+
+    result = {row['source']: row['cost'] for row in rs}
+    return result
+
+
+def get_day_cost(day, breakdown=None, **constraints):
+    rs = query(
+        start_date=day,
+        end_date=day,
+        breakdown=breakdown,
+        **constraints
+    )
+    return rs
