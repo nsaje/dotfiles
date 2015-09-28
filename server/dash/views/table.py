@@ -1402,7 +1402,6 @@ class AccountCampaignsTable(api_common.BaseApiView):
             start_date=start_date,
             end_date=end_date,
             breakdown=['campaign'],
-            order=[order],
             campaign=campaigns,
             source=filtered_sources,
         ), request.user)
