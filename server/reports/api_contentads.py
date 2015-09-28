@@ -216,7 +216,7 @@ def get_yesterday_cost(**constraints):
 
     rs = get_day_cost(yesterday, breakdown=['source'], **constraints)
 
-    result = {row['source']: row['cost'] for row in rs}
+    result = {row['source']: row['cost'] if row['cost'] else 0.0 for row in rs}
     return result
 
 
