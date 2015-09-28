@@ -70,6 +70,9 @@
                     * Reporting metrics synced {{ lastSyncDate.fromNow() }}. Managed service fee not included. The reporting data is an estimate, and the final amount will be reflected on your invoice.
                 </span>
             </div>
+            <div ng-show="isIncompletePostclickMetrics">
+                * Postclick metrics are incomplete for the selected date range. Please check the graph for more details.
+            </div>
             <div>* All times are in Eastern Standard Time (EST).</div>
         </div>
 

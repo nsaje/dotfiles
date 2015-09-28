@@ -14,7 +14,7 @@ from utils import csv_utils
 from reports import redshift
 
 
-@patch('reports.redshift._get_cursor')
+@patch('reports.redshift.get_cursor')
 class TasksTest(TestCase):
     fixtures = ['test_ga_aggregation.yaml']
 

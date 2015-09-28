@@ -1,6 +1,7 @@
-from django.db import models
 import collections
-import types
+
+from django.db import models
+from django.db.models.query import QuerySet
 
 
 def dictfetchall(cursor):
@@ -12,13 +13,41 @@ def dictfetchall(cursor):
     ]
 
 
+def is_collection(value):
+    return ((isinstance(value, collections.Iterable) or isinstance(value, QuerySet))
+            and type(value) not in (str, unicode))
+
+
+def extract_obj_ids(objects):
+
+    if isinstance(objects, dict):
+        for key, value in objects.items():
+            if is_collection(value):
+                objects[key] = [get_obj_id(item) for item in value]
+            else:
+                objects[key] = get_obj_id(value)
+
+    elif is_collection(objects):
+        return [get_obj_id(item) for item in objects]
+
+    return objects
+
+
 def get_obj_id(obj):
     if isinstance(obj, models.Model):
         return obj.pk
     return obj
 
 
-def quote(field):
-    if isinstance(field, collections.Sequence) and not isinstance(field, types.StringTypes):
-        return [quote(f) for f in field]
-    return '"{}"'.format(field)
+class MyCursor(object):
+    def __init__(self, cursor):
+        self.cursor = cursor
+
+    def execute(self, statement, params):
+        self.cursor.execute(statement, params)
+
+    def dictfetchall(self):
+        return dictfetchall(self.cursor)
+
+    def close(self):
+        self.cursor.close()

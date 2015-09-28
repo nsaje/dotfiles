@@ -242,7 +242,6 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
         metrics = request.GET.getlist('metrics')
         totals = request.GET.get('totals')
 
-
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         totals_constraints = None
         map_exchange_to_source_name = {}

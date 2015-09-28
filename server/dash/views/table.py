@@ -95,7 +95,7 @@ class AllAccountsSourcesTable(object):
         sources_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
-            ['source'],
+            breakdown=['source'],
             account=self.accounts,
             source=self.filtered_sources
         ), self.user)
@@ -154,7 +154,7 @@ class AccountSourcesTable(object):
         sources_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
-            ['source'],
+            breakdown=['source'],
             account=self.account,
             source=self.filtered_sources
         ), self.user)
@@ -214,7 +214,7 @@ class CampaignSourcesTable(object):
         sources_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
-            ['source'],
+            breakdown=['source'],
             campaign=self.campaign,
             source=self.filtered_sources
         ), self.user)
@@ -276,7 +276,7 @@ class AdGroupSourcesTable(object):
         sources_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
-            ['source'],
+            breakdown=['source'],
             ad_group=self.ad_group,
             source=self.filtered_sources
         ), self.user)
@@ -762,7 +762,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
         accounts_data = reports.api_helpers.filter_by_permissions(reports_api.query(
             start_date,
             end_date,
-            ['account'],
+            breakdown=['account'],
             account=accounts,
             source=filtered_sources
         ), request.user)
@@ -1056,7 +1056,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             end_date,
             breakdown=['content_ad'],
             ad_group=ad_group,
-            source=filtered_sources
+            source=filtered_sources,
         ), request.user)
 
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
@@ -1092,6 +1092,15 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         last_success_actions = ad_group_sync.get_latest_success_by_child()
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
+        incomplete_postclick_metrics = \
+            not reports.api_contentads.has_complete_postclick_metrics_ad_groups(
+                start_date,
+                end_date,
+                [ad_group],
+                filtered_sources,
+            ) if (request.user.has_perm('zemauth.content_ads_postclick_acquisition') or
+                  request.user.has_perm('zemauth.content_ads_postclick_engagement')) else False
+
         response_dict = {
             'rows': rows,
             'batches': [{'id': batch.id, 'name': batch.name} for batch in batches],
@@ -1110,6 +1119,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group], sources=filtered_sources),
+            'incomplete_postclick_metrics': incomplete_postclick_metrics,
         }
 
         if user.has_perm('zemauth.data_status_column'):
@@ -1571,6 +1581,7 @@ class PublishersTable(api_common.BaseApiView):
             else:
                 exchange_name = s.name
             map_exchange_to_source_name[exchange_name] = s.name
+
         # this is a really bad practice, but used extensively in models.py
         # it should be factored out at the same time as that
         if set(models.Source.objects.all()) != set(filtered_sources):
