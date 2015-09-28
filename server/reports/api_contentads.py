@@ -6,6 +6,7 @@ import pytz
 from django.conf import settings
 
 from reports import redshift
+from reports import api
 from reports.db_raw_helpers import extract_obj_ids
 import reports.rs_helpers as rsh
 
@@ -65,7 +66,9 @@ RSContentAdStats = RSContentAdStatsModel()
 
 
 def query(start_date, end_date, breakdown=[], **constraints):
-    # TODO: constraints could be a dict
+    # TODO: it would be nicer if 'constraints' would be a dict, but we use kwargs to maintain
+    # compatibility with reports.api
+
     constraints = copy.copy(constraints)
 
     constraints['date__gte'] = start_date
@@ -79,7 +82,7 @@ def query(start_date, end_date, breakdown=[], **constraints):
         cursor,
         returned_fields=RSContentAdStats.DEFAULT_RETURNED_FIELDS_APP,
         breakdown_fields=breakdown,
-        order_fields=[], 
+        order_fields=[],
         offset=None,
         limit=None,
         constraints=constraints
@@ -162,7 +165,7 @@ def _get_ad_group_ids_with_postclick_data(cursor, level_constraints_ids, exclude
 def has_complete_postclick_metrics(start_date, end_date, level_constraints, sources):
     """
     Returns True if passed-in objects have complete postclick data for the
-    specfied date range. All objects that don't have this data at all are ignored.
+    specified date range. All objects that don't have this data at all are ignored.
     """
 
     cursor = redshift.get_cursor()
@@ -196,13 +199,13 @@ def has_complete_postclick_metrics(start_date, end_date, level_constraints, sour
 
 
 def row_has_traffic_data(row):
-    # TODO: Implement
-    return True
+    # TODO: helper function for compatibility with reports.api
+    return api.row_has_traffic_data(row)
 
 
 def row_has_postclick_data(row):
-    # TODO: Implement NOW
-    return True
+    # TODO: helper function for compatibility with reports.api
+    return api.row_has_postclick_data(row)
 
 
 def get_yesterday_cost(**constraints):
