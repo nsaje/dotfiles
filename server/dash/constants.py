@@ -992,6 +992,18 @@ class ConversionPixelStatus(ConstantBase):
     }
 
 
+class ConversionGoalType(ConstantBase):
+    PIXEL = 1
+    GA = 2
+    OMNITURE = 3
+
+    _VALUES = {
+        PIXEL: 'Conversion Pixel',
+        GA: 'Google Analytics',
+        OMNITURE: 'Omniture',
+    }
+
+
 class UploadBatchStatus(ConstantBase):
     DONE = 1
     FAILED = 2

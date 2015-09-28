@@ -2,12 +2,15 @@ import datetime
 import pytz
 
 from django.conf import settings
+from django.db import transaction
 
 import dash
 import dash.budget
 import decimal
 import reports.api
 import dash.views.helpers
+import actionlog.api
+from actionlog import zwei_actions
 
 
 def get_yesterdays_spends(campaigns):
@@ -43,9 +46,7 @@ def _get_active_campaigns_subset(campaigns):
         is_active = False
         for adgroup in adgroups:
             adgroup_settings = adgroup.get_current_settings()
-            if adgroup_settings.state == dash.constants.AdGroupSettingsState.ACTIVE and \
-                    not adgroup_settings.archived and \
-                    not adgroup.is_demo:
+            if _is_ad_group_active(adgroup):
                 is_active = True
                 break
         if not is_active:
@@ -88,16 +89,13 @@ def get_all_active_ad_groups():
 
 def _is_ad_group_active(adgroup):
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
-    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
-    today = datetime.date(today.year, today.month, today.day)
+    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None).date()
     adgroup_settings = adgroup.get_current_settings()
-    if (adgroup_settings.state == dash.constants.AdGroupSettingsState.ACTIVE and
-        not adgroup_settings.archived and
-        not adgroup.is_demo and
-        (adgroup_settings.end_date is None or
-            adgroup_settings.end_date >= today)):
-        return True
-    return False
+    return (adgroup_settings.state == dash.constants.AdGroupSettingsState.ACTIVE and
+            not adgroup_settings.archived and
+            not adgroup.is_demo and
+            (adgroup_settings.end_date is None or
+                adgroup_settings.end_date >= today))
 
 
 def get_active_ad_group_sources_settings(adgroup):
@@ -126,3 +124,15 @@ def get_latest_ad_group_source_state(ad_group_source):
         return latest_state
     except dash.models.AdGroupSourceState.DoesNotExist:
         return None
+
+
+def stop_campaign(campaign):
+    for ad_group in get_active_ad_groups(campaign):
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
+        new_settings.save(None)
+        actionlogs_to_send = []
+        with transaction.atomic():
+            actionlogs_to_send = actionlog.api.init_pause_ad_group(ad_group, None, send=False)
+        zwei_actions.send(actionlogs_to_send)

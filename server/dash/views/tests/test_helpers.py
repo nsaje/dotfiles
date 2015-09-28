@@ -786,6 +786,8 @@ class SetAdGroupSourceTest(TestCase):
 
     def setUp(self):
         self.request = HttpRequest()
+        self.request.META['SERVER_NAME'] = 'testname'
+        self.request.META['SERVER_PORT'] = 1234
         self.request.user = User(id=1)
 
     def test_add_source_to_ad_group(self):

@@ -252,9 +252,11 @@ def _has_changed(data, ad_group, source, date, key_type):
 
     key, val = _get_reports_cache_key_val(data, ad_group, source, date, key_type)
     old_val = cache.get(key)
+
     if old_val is None or val != old_val:
-        logger.info('Reports data has changed since last sync for ad group: {}, source: {}, date: {}, key type {}'.format(
+        logger.info('Change of data for ad group: {}, source: {}, date: {}, key type {}'.format(
             ad_group.id, source.id, date, key_type))
+        logger.info("Old key {}, new key {}".format(old_val, val))
 
         return True
 

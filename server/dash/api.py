@@ -12,6 +12,7 @@ import actionlog.api_contentads
 import actionlog.models
 import actionlog.constants
 from utils import redirector_helper
+from utils import email_helper
 
 from dash import exc
 from dash import models
@@ -358,8 +359,8 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             content_ad_source.source_state = data['state']
             changed = True
 
-        if content_ad_source.content_ad.state != data['state']:
-            logger.warning(
+        if data['state'] != content_ad_source.content_ad.state:
+            logger.info(
                 'Found inconsistent content ad state on media source %s for content ad %d: source state=%d, z1 state=%d, source submission status=%d, z1 submission status=%d',
                 content_ad_source.source.name, content_ad_source.content_ad.pk,
                 data.get('state'), content_ad_source.content_ad.state,
@@ -766,6 +767,7 @@ class AdGroupSourceSettingsWriter(object):
             new_settings.save(request)
 
             self.add_to_history(settings_obj, old_settings_obj, request)
+            email_helper.send_ad_group_settings_change_mail_if_necessary(self.ad_group_source.ad_group, request.user, request)
 
             if send_action:
                 filtered_settings_obj = {k:v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}

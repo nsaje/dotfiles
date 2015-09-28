@@ -2,12 +2,12 @@
 
 - fields:
     date_joined: '2014-06-04T09:58:21'
-    email: ''
-    first_name: ''
+    email: 'normal@zemanta.com'
+    first_name: 'Normal user'
     groups: []
     is_active: true
-    is_staff: true
-    is_superuser: true
+    is_staff: false
+    is_superuser: false
     last_login: '2014-06-04T12:20:46'
     last_name: ''
     password: pbkdf2_sha256$12000$CWOT1c1UlFEr$GDTv3fbQ6bmJffEg1bvb+O49VfwD9Bg/DyylA3jcWvg=
@@ -16,14 +16,38 @@
   model: zemauth.user
   pk: 1
 
+- fields:
+    date_joined: '2014-06-04T09:58:21'
+    email: 'redshift@zemanta.com'
+    first_name: 'Redshift user'
+    groups: []
+    is_active: true
+    is_staff: true
+    is_superuser: true
+    last_login: '2014-06-04T12:20:46'
+    last_name: ''
+    password: pbkdf2_sha256$12000$CWOT1c1UlFEr$GDTv3fbQ6bmJffEg1bvb+O49VfwD9Bg/DyylA3jcWvg=
+    user_permissions: [] # 197]  # 'Can see Redshift postclick statistics'
+    username: test_user
+  model: zemauth.user
+  pk: 2
+
 # Accounts
 - fields:
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
-    name: 'Accounting for Beer'
+    name: 'Accounting for Water'
   model: dash.account
   pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    name: 'Accounting for Elixir'
+  model: dash.account
+  pk: 2
 
 # Campaigns
 - fields:
@@ -31,9 +55,18 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     account: 1
-    name: 'Beer is good'
+    name: 'Water is good'
   model: dash.campaign
   pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 2
+    name: 'Water is amazing'
+  model: dash.campaign
+  pk: 2
 
 # Ad Groups
 - fields:
@@ -41,9 +74,18 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     campaign: 1
-    name: 'Beer is good indeed'
+    name: 'Water is good indeed'
   model: dash.adgroup
   pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 2
+    name: 'Water is amazing indeed'
+  model: dash.adgroup
+  pk: 2
 
 # Source Types
 
@@ -104,85 +146,7 @@
   model: dash.source
   pk: 4
 
-
-# Articles
-
-- fields:
-    url: 'http://beer.com/lasko'
-    title: 'A Cold Lasko is all You Need'
-    ad_group: 1
-    created_dt: '2014-06-04T09:58:21'
-  model: dash.article
-  pk: 1
-
-- fields:
-    url: 'http://beer.com/union'
-    title: 'Union: United by the Love of Beer'
-    ad_group: 1
-    created_dt: '2014-06-04T09:58:21'
-  model: dash.article
-  pk: 2
-
-- fields:
-    url: 'http://beer.com/erdinger'
-    title: '5 Reasons why you Should Drink Erdinger Today. Number 3 is hilarious.'
-    ad_group: 1
-    created_dt: '2014-06-04T09:58:21'
-  model: dash.article
-  pk: 3
-
-- fields:
-    url: 'http://beer.com/mercatorpivo'
-    title: 'The pinacle of horrible taste.'
-    ad_group: 1
-    created_dt: '2014-06-04T09:58:21'
-  model: dash.article
-  pk: 4
-
-
-# ArticleStats
-- fields:
-    datetime: '2014-09-01T00:00:00'
-    ad_group: 1
-    article: 1
-    source: 1
-    impressions: 1264
-    clicks: 21
-    cost_cc: 11426
-    visits: 18
-    new_visits: 9
-    pageviews: 42
-    bounced_visits: 14
-    duration: 84
-    created_dt: '2014-09-01T00:00:00'
-  model: reports.articlestats
-  pk: 1
-
-# GoalConversionStats
-- fields:
-    datetime: '2014-09-01T00:00:00'
-    ad_group: 1
-    article: 1
-    source: 1
-    goal_name: 'Buy Beer (Goal 1)'
-    conversions: 5
-    conversions_value_cc: 5000
-  model: reports.goalconversionstats
-  pk: 1
-
-- fields:
-    datetime: '2014-09-01T00:00:00'
-    ad_group: 1
-    article: 1
-    source: 1
-    goal_name: 'Get Drunk (Goal 2)'
-    conversions: 2
-    conversions_value_cc: 4000
-  model: reports.goalconversionstats
-  pk: 2
-
 # UploadBatch
-
 - fields:
     name: 'batch 1'
     created_dt: '2015-02-23T00:00:00'
@@ -190,7 +154,6 @@
   pk: 1
 
 # ContentAd
-
 - fields:
     image_id: '123456789'
     image_width: 200
@@ -211,7 +174,6 @@
   pk: 1
 
 # ContentAdSource
-
 -   fields:
         source: 1
         content_ad: 1
@@ -223,3 +185,44 @@
         modified_dt: '2015-02-23T00:00:00'
     model: dash.contentadsource
     pk: 1
+
+# AdGroupStats
+-   fields:
+        datetime: '2015-01-01T00:00:00'
+        ad_group: 1
+        source: 1
+        created_dt: '2015-01-01T00:00:00'
+        impressions: 1000
+        clicks: 10
+        cost_cc: 100
+        data_cost_cc: 0
+        visits: 100
+        new_visits: 10
+        bounced_visits: 1
+        pageviews: 500
+        duration: 5
+        has_traffic_metrics: 1
+        has_postclick_metrics: 1
+        has_conversion_metrics : 1
+    model: reports.adgroupstats
+    pk: 1
+
+-   fields:
+        datetime: '2015-01-01T00:00:00'
+        ad_group: 2
+        source: 1
+        created_dt: '2015-01-01T00:00:00'
+        impressions: 1000
+        clicks: 10
+        cost_cc: 100
+        data_cost_cc: 0
+        visits: 100
+        new_visits: 10
+        bounced_visits: 1
+        pageviews: 500
+        duration: 5
+        has_traffic_metrics: 1
+        has_postclick_metrics: 1
+        has_conversion_metrics : 1
+    model: reports.adgroupstats
+    pk: 2

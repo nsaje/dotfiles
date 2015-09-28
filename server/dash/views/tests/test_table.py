@@ -3,6 +3,7 @@
 import datetime
 import json
 from mock import patch
+from django.contrib.auth import models as authmodels
 
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
@@ -16,6 +17,7 @@ from dash.views import table
 from actionlog.models import ActionLog
 import actionlog.constants
 
+import reports.redshift as redshift
 
 @override_settings(
     R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/1/{content_ad_id}/'
@@ -99,15 +101,15 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
-            constraints={'ad_group': ad_group,
-                         'source': sources_matcher}
+            ad_group=ad_group,
+            source=sources_matcher
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            constraints={"ad_group": ad_group,
-                         "source": sources_matcher}
+            ad_group=ad_group,
+            source=sources_matcher
         )
 
         result = json.loads(response.content)
@@ -293,15 +295,15 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
-            constraints={'ad_group':ad_group,
-                         'source': sources_matcher}
+            ad_group=ad_group,
+            source=sources_matcher
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            constraints={'ad_group': ad_group,
-                         'source': sources_matcher}
+            ad_group=ad_group,
+            source=sources_matcher
         )
 
         result = json.loads(response.content)
@@ -360,15 +362,15 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
-            constraints={'ad_group': ad_group,
-                         'source': sources_matcher}
+            ad_group=ad_group,
+            source=sources_matcher
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            constraints={'ad_group': ad_group,
-                         'source': sources_matcher}
+            ad_group=ad_group,
+            source=sources_matcher
         )
 
         result = json.loads(response.content)
@@ -649,6 +651,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
                          "Dashboard of this media source is not yet available because the "
                          "media source is still being set up for this ad group.")
 
+
 @override_settings(
     R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/1/{content_ad_id}/'
 )
@@ -717,7 +720,7 @@ class AdGroupPublishersTableTest(TestCase):
         mock_query.assert_any_call(
             date,
             date,
-            constraints = {"ad_group": ad_group.id},
+            constraints={"ad_group": ad_group.id},
         )
 
         result = json.loads(response.content)
@@ -726,7 +729,6 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertEqual(result['success'], True)
 
         self.assertIn('data', result)
-
 
         self.assertIn('order', result['data'])
         self.assertEqual(result['data']['order'], 'domain')
@@ -877,13 +879,13 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=['-cost'],
-            constraints={'ad_group': ad_group.id,}
+            constraints={'ad_group': ad_group.id, }
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            constraints = {"ad_group": ad_group.id,}
+            constraints={"ad_group": ad_group.id, }
         )
 
         result = json.loads(response.content)
@@ -896,3 +898,36 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
         self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
+
+
+@patch('reports.redshift.get_cursor')
+class AllAccountsSourcesTableTest(TestCase):
+    fixtures = ['test_aggregation.yaml']
+
+    def setUp(self):
+        self.normal_user = User.objects.get(pk=1)
+        self.redshift_user = User.objects.get(pk=2)
+
+        redshift_perm = authmodels.Permission.objects.get(codename="can_see_redshift_postclick_statistics")
+        self.redshift_user.user_permissions.add(redshift_perm)
+
+        redshift.STATS_DB_NAME = 'default'
+
+    def test_get_normal_all_accounts_table(self, mock_get_cursor):
+        t = table.AllAccountsSourcesTable(self.normal_user, 1, [])
+        today = datetime.datetime.utcnow()
+        t.get_stats(today, today)
+        self.assertFalse(mock_get_cursor().dictfetchall.called)
+
+    def test_get_redshift_all_accounts_table(self, mock_get_cursor):
+        t = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
+        today = datetime.datetime.utcnow()
+        t.get_stats(today, today)
+        self.assertTrue(mock_get_cursor().dictfetchall.called)
+
+    def test_funcs(self, mock_get_cursor):
+        t = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
+        today = datetime.datetime.utcnow()
+        self.assertTrue(t.has_complete_postclick_metrics(today, today))
+
+        self.assertFalse(t.is_sync_in_progress())

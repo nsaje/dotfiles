@@ -5,6 +5,17 @@ POSTCLICK_ENGAGEMENT_FIELDS = [
     'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals'
 ]
 
+CONTENTADSTATS_FIELD_MAPPING = {
+    'date': 'date',
+    'duration': 'total_time_on_site',
+    'content_ad': 'content_ad_id',
+    'source': 'source_id',
+    'campaign': 'campaign_id',
+    'account': 'account_id',
+    'ad_group': 'adgroup_id'
+}
+CONTENTADSTATS_FIELD_REVERSE_MAPPING = {v: k for k, v in CONTENTADSTATS_FIELD_MAPPING.iteritems()}
+
 
 def filter_by_permissions(result, user):
     '''

@@ -336,8 +336,8 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
             start_date,
             end_date,
             breakdown=['date'],
-            constraints={ 'ad_group': 1,
-                          'source': matcher}
+            ad_group=1,
+            source=matcher
         )
 
         self.assertJSONEqual(response.content, {

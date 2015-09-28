@@ -1,5 +1,9 @@
 import logging
 import copy
+import datetime
+import pytz
+
+from django.conf import settings
 
 from reports import redshift
 from reports.db_raw_helpers import extract_obj_ids
@@ -56,14 +60,12 @@ class RSContentAdStatsModel(redshift.RSModel):
     DEFAULT_RETURNED_FIELDS_APP = [f['app'] for f in _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS]
     ALLOWED_BREAKDOWN_FIELDS_APP = set(f['app'] for f in _BREAKDOWN_FIELDS)
 
-logger = logging.getLogger(__name__)
-
 
 RSContentAdStats = RSContentAdStatsModel()
 
 
-def query(start_date, end_date, breakdown=[], constraints={}):
-
+def query(start_date, end_date, breakdown=[], **constraints):
+    # TODO: constraints could be a dict
     constraints = copy.copy(constraints)
 
     constraints['date__gte'] = start_date
@@ -77,7 +79,7 @@ def query(start_date, end_date, breakdown=[], constraints={}):
         cursor,
         returned_fields=RSContentAdStats.DEFAULT_RETURNED_FIELDS_APP,
         breakdown_fields=breakdown,
-        order_fields=[],
+        order_fields=[], 
         offset=None,
         limit=None,
         constraints=constraints
@@ -92,7 +94,7 @@ def query(start_date, end_date, breakdown=[], constraints={}):
 
 
 def has_complete_postclick_metrics_accounts(start_date, end_date, accounts, sources):
-    # TODO: helper functions are temporary untill we merge with postclick everywhere
+    # helper function for compatibility with reports.api
     return has_complete_postclick_metrics(
         start_date,
         end_date,
@@ -102,7 +104,7 @@ def has_complete_postclick_metrics_accounts(start_date, end_date, accounts, sour
 
 
 def has_complete_postclick_metrics_campaigns(start_date, end_date, campaigns, sources):
-    # TODO: helper functions are temporary untill we merge with postclick everywhere
+    # helper function for compatibility with reports.api
     return has_complete_postclick_metrics(
         start_date,
         end_date,
@@ -112,7 +114,7 @@ def has_complete_postclick_metrics_campaigns(start_date, end_date, campaigns, so
 
 
 def has_complete_postclick_metrics_ad_groups(start_date, end_date, ad_groups, sources):
-    # TODO: helper functions are temporary untill we merge with postclick everywhere
+    # helper function for compatibility with reports.api
     return has_complete_postclick_metrics(
         start_date,
         end_date,
@@ -191,3 +193,35 @@ def has_complete_postclick_metrics(start_date, end_date, level_constraints, sour
 
     cursor.close()
     return all(x['has_postclick_metrics'] for x in results)
+
+
+def row_has_traffic_data(row):
+    # TODO: Implement
+    return True
+
+
+def row_has_postclick_data(row):
+    # TODO: Implement NOW
+    return True
+
+
+def get_yesterday_cost(**constraints):
+    today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
+    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
+    today = datetime.datetime(today.year, today.month, today.day)
+    yesterday = today - datetime.timedelta(days=1)
+
+    rs = get_day_cost(yesterday, breakdown=['source'], **constraints)
+
+    result = {row['source']: row['cost'] for row in rs}
+    return result
+
+
+def get_day_cost(day, breakdown=None, **constraints):
+    rs = query(
+        start_date=day,
+        end_date=day,
+        breakdown=breakdown,
+        **constraints
+    )
+    return rs
