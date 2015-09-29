@@ -356,7 +356,6 @@ class RSModel(object):
 
     def map_result_to_app(self, row, json_fields):
         result = {}
-        print json_fields
         for field_name, val in row.items():
             field_part, json_key = self._extract_json_key(field_name)
             field_desc = self.by_sql_mapping[field_part]
