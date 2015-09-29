@@ -45,7 +45,6 @@ def _get_active_campaigns_subset(campaigns):
         adgroups = dash.models.AdGroup.objects.filter(campaign=campaign)
         is_active = False
         for adgroup in adgroups:
-            adgroup_settings = adgroup.get_current_settings()
             if _is_ad_group_active(adgroup):
                 is_active = True
                 break

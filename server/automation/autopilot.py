@@ -9,6 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 
 import dash
+import actionlog.sync
 from automation import models
 import automation.helpers
 import automation.settings
@@ -227,8 +228,8 @@ def _get_email_source_changes_text(change):
         return u'''
 - changed CPC bid on {} from ${} to ${}'''.format(
             change['source_name'],
-            change['old_cpc'],
-            change['new_cpc'])
+            change['old_cpc'].normalize(),
+            change['new_cpc'].normalize())
     return u'''
 - no changes on {} because {}'''.format(
         change['source_name'],

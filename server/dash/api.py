@@ -767,7 +767,8 @@ class AdGroupSourceSettingsWriter(object):
             new_settings.save(request)
 
             self.add_to_history(settings_obj, old_settings_obj, request)
-            email_helper.send_ad_group_settings_change_mail_if_necessary(self.ad_group_source.ad_group, request.user, request)
+            if request:
+                email_helper.send_ad_group_settings_change_mail_if_necessary(self.ad_group_source.ad_group, request.user, request)
 
             if send_action:
                 filtered_settings_obj = {k:v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}
