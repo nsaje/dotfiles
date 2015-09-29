@@ -897,6 +897,27 @@ class AdGroupSourceSettingsWriterTest(TestCase):
 
         mock_send_change_mail.assert_called_with(self.ad_group_source.ad_group, request.user, request)
 
+    @mock.patch('actionlog.api.set_ad_group_source_settings')
+    def test_should_write_if_request_none(self, set_ad_group_source_settings):
+        latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        request = None
+
+        self.writer.set({'cpc_cc': decimal.Decimal(0.1)}, request)
+
+        new_latest_settings = models.AdGroupSourceSettings.objects \
+            .filter(ad_group_source=self.ad_group_source) \
+            .latest('created_dt')
+
+        self.assertNotEqual(new_latest_settings.id, latest_settings.id)
+        self.assertEqual(float(new_latest_settings.cpc_cc), 0.1)
+        self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
+        self.assertEqual(new_latest_settings.state, latest_settings.state)
+        self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
+        self.assertTrue(set_ad_group_source_settings.called)
+
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_settings_change_mail_if_necessary')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
     def test_should_write_if_changed_no_action(self, set_ad_group_source_settings, mock_send_change_mail):

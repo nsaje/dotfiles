@@ -9,7 +9,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 
 import dash
-import actionlog.sync
 from automation import models
 import automation.helpers
 import automation.settings
@@ -17,6 +16,7 @@ from dash import constants
 import reports
 from utils import pagerduty_helper
 from utils.constant_base import ConstantBase
+from utils.statsd_helper import statsd_timer
 
 logger = logging.getLogger(__name__)
 
@@ -236,6 +236,7 @@ def _get_email_source_changes_text(change):
         ' and '.join(CpcChangeComment.get_text(comment) for comment in change['comments']))
 
 
+@statsd_timer('automation.autopilot', 'adjust_autopilot_media_sources_bid_cpcs')
 def adjust_autopilot_media_sources_bid_cpcs():
     changes = {}
     for adgroup in automation.helpers.get_all_active_ad_groups():
