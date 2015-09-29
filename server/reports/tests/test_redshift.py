@@ -18,8 +18,8 @@ class RedshiftTest(TestCase):
 
         redshift.delete_contentadstats(date, ad_group_id, source_id)
 
-        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND source_id = %s'
-        params = ['2015-01-01', 1, 2]
+        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND id != %d AND source_id = %s'
+        params = ['2015-01-01', 1, -1, 2]
 
         mock_cursor().execute.assert_called_with(query, params)
 
@@ -29,8 +29,8 @@ class RedshiftTest(TestCase):
 
         redshift.delete_contentadstats(date, ad_group_id, None)
 
-        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s'
-        params = ['2015-01-01', 1]
+        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND id != %d'
+        params = ['2015-01-01', 1, -1]
 
         mock_cursor().execute.assert_called_with(query, params)
 
@@ -145,7 +145,7 @@ class RedshiftTestRSModel(TestCase):
 
         query = 'DELETE FROM "test_table" WHERE adgroup_id=%s AND date=%s AND exchange=%s'
         params =  [4, datetime.date(2015, 1, 2), 'abc']
-        
+
         mock_cursor.execute.assert_called_with(query, params)
 
     def test_multi_insert_general(self):
@@ -168,7 +168,7 @@ class RedshiftTestRSModel(TestCase):
         date = datetime.date(2015, 1, 2)
         ad_group_id = 1
         source_id = 2
-        
+
         # since this function is _sql, no additional field name checks are done
         redshift.RSModel().execute_multi_insert_sql(mock_cursor, ['field1', 'field2'], (('a', 'b'), ('c', 'd'), ('e', 'f')), max_at_a_time=2)
 
@@ -178,7 +178,7 @@ class RedshiftTestRSModel(TestCase):
                                             ])
 
     def test_constraints_to_tuples_str(self):
-        constraint_str, params = TestModel().constraints_to_str({"exchange": ["ab", "cd"], "date": datetime.date(2015, 1,2)}) 
+        constraint_str, params = TestModel().constraints_to_str({"exchange": ["ab", "cd"], "date": datetime.date(2015, 1,2)})
         self.assertEqual(constraint_str, "date=%s AND exchange IN (%s,%s)")
         self.assertEqual(params, [datetime.date(2015, 1, 2), 'ab', 'cd'])
 
