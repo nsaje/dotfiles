@@ -9,12 +9,19 @@ from reports import exc
 from reports.db_raw_helpers import MyCursor, is_collection
 
 
+# historically we have migrated data to Redshift partially
+# but there are differences and missing data for older
+# postclick statistics - this id stores the difference generated
+# with a script on fea_redshift_migration /
+REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+
+
 @statsd_timer('reports.redshift', 'delete_contentadstats')
 def delete_contentadstats(date, ad_group_id, source_id):
     cursor = get_cursor()
 
-    query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s'
-    params = [date.isoformat(), ad_group_id]
+    query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND id != %d'
+    params = [date.isoformat(), ad_group_id, REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
 
     if source_id:
         query = query + ' AND source_id = %s'
