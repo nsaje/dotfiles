@@ -20,7 +20,7 @@ REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
 def delete_contentadstats(date, ad_group_id, source_id):
     cursor = get_cursor()
 
-    query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND id != %s'
+    query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND content_ad_id != %s'
     params = [date.isoformat(), ad_group_id, REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
 
     if source_id:
@@ -78,10 +78,11 @@ def insert_touchpoint_conversions(rows):
 
 @statsd_timer('reports.redshift', 'sum_contentadstats')
 def sum_contentadstats():
-    query = 'SELECT SUM(impressions) as impressions, SUM(visits) as visits FROM contentadstats'
+    query = 'SELECT SUM(impressions) as impressions, SUM(visits) as visits FROM contentadstats WHERE content_ad_id != %s'
+    params = [REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
 
     cursor = get_cursor()
-    cursor.execute(query, [])
+    cursor.execute(query, params)
 
     result = cursor.dictfetchall()
 
