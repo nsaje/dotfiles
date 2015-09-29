@@ -68,10 +68,7 @@ def has_aggregate_postclick_permission(user):
 
 
 def get_reports_api_module(user):
-    if user.has_perm('zemauth.can_see_redshift_postclick_statistics') and\
-        user.id in (142, 293, 379) or\
-        user.has_perm('zemauth.can_see_redshift_postclick_statistics') and\
-        settings.TESTING:
+    if user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
         return reports.api_contentads
     else:
         return reports.api
