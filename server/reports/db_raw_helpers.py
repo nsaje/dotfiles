@@ -46,6 +46,9 @@ class MyCursor(object):
     def execute(self, statement, params):
         self.cursor.execute(statement, params)
 
+    def fetchall(self):
+        return self.cursor.fetchall()
+
     def dictfetchall(self):
         return dictfetchall(self.cursor)
 
