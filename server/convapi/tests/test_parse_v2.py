@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import json
 import traceback
 
 from convapi import exc
@@ -491,6 +492,29 @@ Segment: All Visits (No Segment),,,,,,,,,,
         report.validate()
 
         self.assertFalse(all(entry.is_row_valid() for entry in report.entries.values()))
+
+
+        source_specified, source_errors = report.is_media_source_specified()
+        cad_specified, cad_errors = report.is_content_ad_specified()
+
+        self.assertFalse(source_specified)
+        blob = {
+            "Pages/Session": "1.00",
+            "New Sessions": "100.00%",
+            "Bounce Rate": "100.0%",
+            "Avg. Session Duration": "605:12:39",
+            "Bounces": "20",
+            "Visits": "10",
+            "Tracking Code": "CSY-PB-ZM-AB-M-z111z:Gandalf-Is-Coming-Get-Ready-for-Winter-Storms",
+            "Total Seconds Spent": "0",
+            "Entries": "20",
+            "Unique Visitors": "20",
+            "Page Views": "40"
+        }
+
+        self.assertEqual(blob, json.loads(source_errors[0]))
+        self.assertFalse(cad_specified)
+        self.assertEqual(blob, json.loads(cad_errors[0]))
 
     def test_parse(self):
         csv_file = """

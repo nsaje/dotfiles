@@ -1,6 +1,7 @@
 import csv
 import datetime
 import exc
+import json
 import logging
 import re
 import StringIO
@@ -63,6 +64,7 @@ class ReportRow(object):
 
     def __init__(self):
         self.valid = True
+        self.raw_row = ''
 
     def is_valid(self):
         return self.valid
@@ -70,10 +72,14 @@ class ReportRow(object):
     def mark_invalid(self):
         self.valid = False
 
+    def __str__(self):
+        return self.raw_row
+
 
 class GaReportRow(ReportRow):
     def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
         ReportRow.__init__(self)
+        self.raw_row = json.dumps(ga_row_dict or {})
         self.ga_row_dicts = [ga_row_dict]
 
         self.visits = _report_atoi(ga_row_dict.get('Sessions'))
@@ -138,19 +144,13 @@ class GaReportRow(ReportRow):
             logger.exception('Failed parsing duration {}'.format(durstr))
             raise
 
-    def __str__(self):
-        return "{date}-{caid}-{source_param}".format(
-            date=self.report_date,
-            caid=self.content_ad_id,
-            source_param=self.source_param,
-        )
-
 
 class OmnitureReportRow(ReportRow):
 
     def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param):
         ReportRow.__init__(self)
         self.omniture_row_dict = [omniture_row_dict]
+        self.raw_row = json.dumps(omniture_row_dict or {})
 
         self.visits = _report_atoi(omniture_row_dict.get('Visits'))
         self.bounce_rate_raw = omniture_row_dict.get('Bounce Rate')
@@ -160,9 +160,11 @@ class OmnitureReportRow(ReportRow):
             self.bounce_rate = 0
         self.pageviews = round(_report_atof(omniture_row_dict.get('Page Views', '0')))
         self.new_visits = _report_atoi(
-            omniture_row_dict.get('Unique Visits',
+            omniture_row_dict.get(
+                'Unique Visits',
                 omniture_row_dict.get('Unique Visitors', '0')
-            ))
+            )
+        )
         self.bounced_visits = int(self.bounce_rate * self.visits)
         self.total_time_on_site = _report_atoi(omniture_row_dict.get('Total Seconds Spent', '0'))
 
@@ -199,13 +201,6 @@ class OmnitureReportRow(ReportRow):
         return self.content_ad_id is not None and\
             self.source_param != '' and\
             self.source_param is not None
-
-    def __str__(self):
-        return "{date}-{caid}-{source_param}".format(
-            date=self.report_date,
-            caid=self.content_ad_id,
-            source_param=self.source_param,
-        )
 
 
 class Report(object):
@@ -253,18 +248,16 @@ class Report(object):
         for source in sources:
             track_source_map[source.tracking_slug] = source.id
 
-
         # check 100 content ads at a time
         BATCH_SIZE = 100
         current_entry_batch = []
         entry_values = self.entries.values()
-        processing_last_entry = False
         for entry in entry_values:
             current_entry_batch.append(entry)
             if len(current_entry_batch) >= BATCH_SIZE:
                 self._mark_invalid(current_entry_batch, track_source_map)
 
-        if len(current_entry_batch) >= BATCH_SIZE:
+        if len(current_entry_batch) > 0:
             self._mark_invalid(current_entry_batch, track_source_map)
 
     def _mark_invalid(self, entry_batch, track_source_map):
@@ -286,14 +279,14 @@ class Report(object):
         media_source_not_specified = []
         for entry in self.entries.values():
             if not entry.is_valid() or entry.source_param == '' is None or entry.source_param == '':
-                media_source_not_specified.append(entry.source_param)
+                media_source_not_specified.append(str(entry))
         return (len(media_source_not_specified) == 0, list(media_source_not_specified))
 
     def is_content_ad_specified(self):
         content_ad_not_specified = set()
         for entry in self.entries.values():
             if not entry.is_valid() or entry.content_ad_id is None or entry.content_ad_id == '':
-                content_ad_not_specified.add(entry.content_ad_id)
+                content_ad_not_specified.add(str(entry))
         return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
 
 
@@ -380,9 +373,9 @@ class GAReport(Report):
                     self.entries[report_entry.key()] = report_entry
                 else:
                     existing_entry.merge_with(report_entry)
-        except Exception, e:
+        except:
             logger.exception("Failed parsing GA report")
-            raise exc.CsvParseException('Could not pars CSV')
+            raise exc.CsvParseException('Could not parse CSV')
 
         if not set(self.fieldnames or []) >= set(REQUIRED_FIELDS):
             missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames or []) & set(REQUIRED_FIELDS)))
