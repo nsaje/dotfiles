@@ -45,7 +45,7 @@ def media_source_specified_errors(csvreport):
 
 
 def _first_valid_report_attachment(files):
-    valid_suffixes = ['.csv', '.xls']
+    valid_suffixes = ['.csv', '.xls', '*.zip']
     for key in files:
         attachment = files[key].name
         if attachment is None or attachment == '':
@@ -55,6 +55,20 @@ def _first_valid_report_attachment(files):
             return attachment, content
 
     return None, None
+
+
+def _extract_content_type(name):
+    if not name:
+        return 'text/plain'
+
+    if name.endswith('.csv'):
+        return 'text/csv'
+    elif name.endswith('.zip'):
+        return 'application/zip'
+    elif name.endswith('.xls'):
+        return 'application/vnd.ms-excel'
+
+    return 'text/plain'
 
 
 @csrf_exempt
@@ -78,8 +92,8 @@ def mailgun_gareps(request):
 
     statsd_incr('convapi.accepted_emails')
     key = None
-    # temporary HACK
-    content_type = 'text/csv'
+
+    attachment_name = ''
     ga_report_task = None
     try:
 
@@ -87,6 +101,7 @@ def mailgun_gareps(request):
         csvreport_date = datetime.datetime.fromtimestamp(time.mktime(csvreport_date_raw))
 
         attachment_name, content = _first_valid_report_attachment(request.FILES)
+        content_type = _extract_content_type(attachment_name)
 
         key = store_to_s3(csvreport_date, attachment_name, content)
         logger.info("Storing to S3 {date}-{att_name}-{cl}".format(
@@ -124,6 +139,7 @@ def mailgun_gareps(request):
 
     report_task = None
     try:
+        content_type = _extract_content_type(attachment_name)
         report_task = GAReportTask(
             request.POST.get('subject'),
             request.POST.get('Date'),

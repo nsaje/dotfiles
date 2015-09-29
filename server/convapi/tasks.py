@@ -122,10 +122,10 @@ def process_ga_report(ga_report_task):
         if ga_report_task.attachment_name.endswith('.xls'):
             content = _convert_ga_omniture(content, ga_report_task.attachment_name)
 
-        if ga_report_task.attachment_content_type != 'text/csv':
+        if ga_report_task.attachment_content_type not in('text/csv', 'application/vnd.ms-excel'):
             # assume content is omniture and convert it to GA report
-            logger.warning('ERROR: content type is not CSV')
-            report_log.add_error('ERROR: content type is not CSV')
+            logger.warning('ERROR: content type is invalid')
+            report_log.add_error('ERROR: content type is invalid')
             report_log.state = constants.ReportState.FAILED
             report_log.save()
 
@@ -493,9 +493,9 @@ def _update_and_validate_report_log(ga_report_task, report_log):
         report_log.state = constants.ReportState.FAILED
         report_log.save()
 
-    if ga_report_task.attachment_content_type != 'text/csv':
-        logger.warning('ERROR: content type is not CSV')
-        report_log.add_error('ERROR: content type is not CSV')
+    if ga_report_task.attachment_content_type not in ('text/csv', 'application/vnd.ms-excel'):
+        logger.warning('ERROR: content type is invalid')
+        report_log.add_error('ERROR: content type is invalid')
         report_log.state = constants.ReportState.FAILED
         report_log.save()
 
@@ -522,9 +522,9 @@ def _update_and_validate_report_log_v2(ga_report_task, report_log):
         report_log.state = constants.ReportState.FAILED
         report_log.save()
 
-    if ga_report_task.attachment_content_type != 'text/csv':
-        logger.warning('ERROR: content type is not CSV')
-        report_log.add_error('ERROR: content type is not CSV')
+    if ga_report_task.attachment_content_type not in ('text/csv', 'application/vnd.ms-excel', 'application/zip'):
+        logger.warning('ERROR: content type is invalid')
+        report_log.add_error('ERROR: content type is invalid')
         report_log.state = constants.ReportState.FAILED
         report_log.save()
 
