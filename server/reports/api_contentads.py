@@ -50,13 +50,17 @@ class RSContentAdStatsModel(redshift.RSModel):
         dict(sql='avg_tos',            app='avg_tos',           out=rsh.unchanged,   calc=rsh.sum_div('total_time_on_site', 'visits')),
     ]
 
+    _CONVERSION_GOAL_FIELDS = [
+        dict(sql='conversions', app='conversions', out=rsh.decimal_to_int_exact, calc=rsh.sum_expr(rsh.extract_json_or_null('conversions')), json_params=2)
+    ]
+
     _OTHER_AGGREGATIONS = [
         dict(sql='total_time_on_site', app='duration', out=rsh.unchanged),
         dict(sql='has_postclick_metrics', app='has_postclick_metrics', out=rsh.unchanged,
              calc=rsh.is_all_null(['visits', 'pageviews', 'new_visits', 'bounced_visits', 'total_time_on_site']))
     ]
 
-    FIELDS = _BREAKDOWN_FIELDS + _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _OTHER_AGGREGATIONS
+    FIELDS = _BREAKDOWN_FIELDS + _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _CONVERSION_GOAL_FIELDS + _OTHER_AGGREGATIONS
 
     DEFAULT_RETURNED_FIELDS_APP = [f['app'] for f in _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS]
     ALLOWED_BREAKDOWN_FIELDS_APP = set(f['app'] for f in _BREAKDOWN_FIELDS)
@@ -65,11 +69,12 @@ class RSContentAdStatsModel(redshift.RSModel):
 RSContentAdStats = RSContentAdStatsModel()
 
 
-def query(start_date, end_date, breakdown=[], **constraints):
+def query(start_date, end_date, breakdown=[], conversions=[], **constraints):
     # TODO: it would be nicer if 'constraints' would be a dict, but we use kwargs to maintain
     # compatibility with reports.api
-
     constraints = copy.copy(constraints)
+    breakdown = copy.copy(breakdown)
+    conversions = copy.copy(conversions)
 
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
@@ -78,9 +83,13 @@ def query(start_date, end_date, breakdown=[], **constraints):
 
     cursor = redshift.get_cursor()
 
+    returned_fields = RSContentAdStats.DEFAULT_RETURNED_FIELDS_APP
+    for label in conversions:
+        returned_fields.append('conversions__' + label)
+
     results = RSContentAdStats.execute_select_query(
         cursor,
-        returned_fields=RSContentAdStats.DEFAULT_RETURNED_FIELDS_APP,
+        returned_fields,
         breakdown_fields=breakdown,
         order_fields=[],
         offset=None,

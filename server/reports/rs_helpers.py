@@ -27,6 +27,10 @@ def to_percent(num):
         return num * 100
 
 
+def decimal_to_int_exact(num):
+    return int(num.to_integral_exact(context=decimal.Context(traps=[decimal.Inexact])))
+
+
 def sum_div(expr, divisor):
     return ('CASE WHEN SUM("{divisor}") <> 0 THEN SUM(CAST("{expr}" AS FLOAT)) / SUM("{divisor}") '
             'ELSE NULL END').format(
@@ -47,5 +51,16 @@ def sum_agr(expr):
     return 'SUM("{expr}")'.format(expr=expr)
 
 
+def sum_expr(expr):
+    return 'SUM({expr})'.format(expr=expr)
+
+
 def is_all_null(field_names):
     return 'CASE WHEN ' + ' AND '.join('MAX("{}") IS NULL'.format(f) for f in field_names) + ' THEN 0 ELSE 1 END'
+
+
+def extract_json_or_null(field_name):
+    return "CASE JSON_EXTRACT_PATH_TEXT({field_name}, %s) WHEN '' "\
+        "THEN NULL ELSE JSON_EXTRACT_PATH_TEXT({field_name}, %s) END".format(
+            field_name=field_name
+        )

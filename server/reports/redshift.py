@@ -6,6 +6,7 @@ from django.db import connections
 from utils.statsd_helper import statsd_timer
 
 from reports import exc
+from reports import rs_helpers as rsh
 from reports.db_raw_helpers import MyCursor, is_collection
 
 
@@ -180,20 +181,43 @@ class RSModel(object):
         # by default all fields are allowed as constraints
         self.constraints_fields_app = set(self.by_app_mapping.keys())
 
+    def _extract_json_key(self, field_name):
+        if '__' not in field_name:
+            return field_name, None
+
+        return field_name.split('__', 1)
+
     def translate_app_fields(self, field_names):
-        return [self.by_app_mapping[field_name]['sql'] for field_name in field_names]
+        sql_names = []
+        for field_name in field_names:
+            field_part, json_key = self._extract_json_key(field_name)
+            sql_name = self.by_app_mapping[field_part]['sql']
+            if json_key:
+                sql_name += '__' + json_key
+            sql_names.append(sql_name)
+        return sql_names
 
     def expand_returned_sql_fields(self, field_names):
         fields = []
+        params = []
+        json_fields = []
         for field_name in field_names:
-            desc = self.by_sql_mapping[field_name]
+            field_part, json_key = self._extract_json_key(field_name)
+            desc = self.by_sql_mapping[field_part]
+
+            if json_key:
+                field_name = field_name.replace('__' + json_key, '__{}'.format(len(json_fields)))
+                json_fields.append(json_key)
+                params.extend([json_key] * (desc['json_params']))
+
             if "calc" in desc:
                 field_expanded = desc["calc"] + " AS \"" + field_name + "\""
-
             else:
                 field_expanded = '"' + field_name + '"'
+
             fields.append(field_expanded)
-        return fields
+
+        return fields, params, json_fields
 
     def translate_breakdown_fields(self, breakdown_fields):
         unknown_fields = set(breakdown_fields) - self.ALLOWED_BREAKDOWN_FIELDS_APP
@@ -284,8 +308,9 @@ class RSModel(object):
         (constraint_str, constraint_params) = self.constraints_to_str(constraints)
         breakdown_fields = self.translate_breakdown_fields(breakdown_fields)
         order_fields = self.translate_order_fields(order_fields)
-        returned_fields = self.get_returned_fields(returned_fields)
+        returned_fields, returned_params, json_fields = self.get_returned_fields(returned_fields)
 
+        params = returned_params + constraint_params
         statement = self._form_select_query(
             self.TABLE_NAME,
             breakdown_fields + returned_fields,
@@ -297,7 +322,7 @@ class RSModel(object):
             having_constraints=having_constraints
         )
 
-        return (statement, constraint_params)
+        return (statement, params, json_fields)
 
     @staticmethod
     def _form_select_query(table, fields, constraint_str, breakdown_fields=None, order_fields=None, limit=None,
@@ -323,17 +348,21 @@ class RSModel(object):
             cmd += " OFFSET " + str(offset)
         return cmd
 
-    def map_results_to_app(self, rows):
+    def map_results_to_app(self, rows, json_fields):
         # this passthrough makes testing much easier as we keep the original mock
         if len(rows) == 0:
             return rows
-        return [self.map_result_to_app(row) for row in rows]
+        return [self.map_result_to_app(row, json_fields) for row in rows]
 
-    def map_result_to_app(self, row):
+    def map_result_to_app(self, row, json_fields):
         result = {}
+        print json_fields
         for field_name, val in row.items():
-            field_desc = self.by_sql_mapping[field_name]
+            field_part, json_key = self._extract_json_key(field_name)
+            field_desc = self.by_sql_mapping[field_part]
             newname = field_desc['app']
+            if json_key:
+                newname += '__' + json_fields[int(json_key)]
             output_function = field_desc['out']
             newval = output_function(val)
             result[newname] = newval
@@ -347,7 +376,7 @@ class RSModel(object):
     def execute_select_query(self, cursor, returned_fields, breakdown_fields, order_fields, offset, limit, constraints,
                              having_constraints=None):
 
-        (statement, params) = self._prepare_select_query(
+        (statement, params, json_fields) = self._prepare_select_query(
             returned_fields,
             breakdown_fields,
             order_fields,
@@ -358,7 +387,7 @@ class RSModel(object):
 
         cursor.execute(statement, params)
         results = cursor.dictfetchall()
-        results = self.map_results_to_app(results)
+        results = self.map_results_to_app(results, json_fields)
         return results
 
     def execute_multi_insert_sql(self, cursor, fields_sql, all_row_tuples, max_at_a_time=100):
