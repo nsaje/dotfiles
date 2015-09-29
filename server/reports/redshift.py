@@ -20,7 +20,7 @@ REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
 def delete_contentadstats(date, ad_group_id, source_id):
     cursor = get_cursor()
 
-    query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND id != %d'
+    query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND id != %s'
     params = [date.isoformat(), ad_group_id, REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
 
     if source_id:
