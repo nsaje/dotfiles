@@ -76,16 +76,16 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
         def lookups(self, request, model_admin):
             return [
                 (1, 'self-managed'),
-                (2, 'internal (@zemanta.com)'),
+                (2, 'internal (@zemanta)'),
             ]
 
         def queryset(self, request, queryset):
             if self.value():
                 val = int(self.value())
                 if val == 1:
-                    return queryset.exclude(created_by__email__endswith='@zemanta.com')
+                    return queryset.exclude(created_by__email__contains='@zemanta')
                 elif val == 2:
-                    return queryset.filter(created_by__email__endswith='@zemanta.com')
+                    return queryset.filter(created_by__email__contains='@zemanta')
             return queryset
 
     search_fields = (
