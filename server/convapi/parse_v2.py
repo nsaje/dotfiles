@@ -9,6 +9,8 @@ import xlrd
 
 import dash
 from utils import url_helper
+from utils.statsd_helper import statsd_timer
+
 
 LANDING_PAGE_COL_NAME = 'Landing Page'
 KEYWORD_COL_NAME = 'Keyword'
@@ -237,6 +239,7 @@ class Report(object):
             content_ad_id, source_param = result.group(1), result.group(2)
         return int(content_ad_id), source_param
 
+    @statsd_timer('convapi.parse_v2', 'validate')
     def validate(self):
         '''
         Check if imported content ads and sources exist in database.
@@ -248,8 +251,8 @@ class Report(object):
         for source in sources:
             track_source_map[source.tracking_slug] = source.id
 
-        # check 100 content ads at a time
-        BATCH_SIZE = 100
+        # check <size> content ads at a time
+        BATCH_SIZE = 10000
         current_entry_batch = []
         entry_values = self.entries.values()
         for entry in entry_values:
@@ -345,6 +348,7 @@ class GAReport(Report):
     def _contains_column(self, lines, name):
         return any(name in line for line in lines)
 
+    @statsd_timer('convapi.parse_v2', 'ga_parse')
     def parse(self):
         report_date, first_column_name = self._parse_header(self._extract_header_lines(self.csv_report_text))
         self.first_column = first_column_name
@@ -587,6 +591,7 @@ class OmnitureReport(Report):
                     sessions_total, sessions_sum)
             )
 
+    @statsd_timer('convapi.parse_v2', 'omni_parse')
     def parse(self):
         workbook = xlrd.open_workbook(file_contents=self.xlsx_report_blob)
 

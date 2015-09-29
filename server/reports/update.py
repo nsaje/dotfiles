@@ -12,6 +12,7 @@ import reports.refresh
 import reports.models
 from reports import refresh
 from reports import redshift
+from utils.statsd_helper import statsd_timer
 
 from utils import statsd_helper
 
@@ -280,7 +281,7 @@ def update_touchpoint_conversions(date, conversion_touchpoint_pairs):
     redshift.delete_touchpoint_conversions(date)
     redshift.insert_touchpoint_conversions(conversion_touchpoint_pairs)
 
-
+@statsd_timer('reports.update', 'process_report')
 @transaction.atomic
 def process_report(date, parsed_report_rows, report_type):
     """
