@@ -41,7 +41,7 @@ oneApp.directive('zemDropdown', function() {
 
                 element.text(object.text);
 
-                if (option.internal !== undefined) {
+                if (option.internal) {
                     var internal = $compile(angular.element(document.createElement('zem-internal-feature')))($scope);
                     element.append(internal);
                 }

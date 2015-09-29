@@ -158,7 +158,6 @@
   model: reports.articlestats
   pk: 1
 
-
 # GoalConversionStats
 - fields:
     datetime: '2014-09-01T00:00:00'

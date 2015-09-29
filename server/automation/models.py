@@ -38,6 +38,7 @@ class CampaignBudgetDepletionNotification(models.Model):
         default=0,
         verbose_name='Campaign\'s yesterday\'s spend'
     )
+    stopped = models.BooleanField(default=False)
 
     def __unicode__(self):
         return '{0} {1}'.format(self.account_manager_id, self.campaign_id)

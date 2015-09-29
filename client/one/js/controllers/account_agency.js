@@ -282,10 +282,6 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
         });
     };
 
-    $scope.getConversionPixelTag = function (url) {
-        return '<img src="' + url + '" height="1" width="1" border="0" alt="" />';
-    };
-
     $scope.copyConversionPixelTag = function (conversionPixel) {
         var scope = $scope.$new(true);
         scope.conversionPixelTag = $scope.getConversionPixelTag(conversionPixel.url);
@@ -313,4 +309,8 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
     if ($scope.hasPermission('zemauth.account_agency_access_permissions')) {
         $scope.getUsers();
     }
+
+    $scope.getName = function (user) {
+        return user.name;
+    };
 }]);

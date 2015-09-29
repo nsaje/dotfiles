@@ -139,8 +139,8 @@ class ExportTestCase(test.TestCase):
         mock_query.assert_called_with(
             start_date,
             end_date,
-            dimensions,
-            {
+            breakdown=dimensions,
+            **{
                 'source': sources_matcher,
                 'campaign': campaign
             }

@@ -164,7 +164,7 @@ class OmnitureReportRow(ReportRow):
                 omniture_row_dict.get('Unique Visitors', '0')
             ))
         self.bounced_visits = int(self.bounce_rate * self.visits)
-        self.total_time_on_site = self.visits * _report_atoi(omniture_row_dict.get('Total Seconds Spent', '0'))
+        self.total_time_on_site = _report_atoi(omniture_row_dict.get('Total Seconds Spent', '0'))
 
         self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id

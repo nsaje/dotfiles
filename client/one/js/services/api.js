@@ -2239,6 +2239,104 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function ConversionGoal() {
+        function convertFromApi(conversionGoal) {
+            var ret = {
+                id: conversionGoal.id,
+                type: conversionGoal.type,
+                name: conversionGoal.name,
+                conversionWindow: conversionGoal.conversion_window,
+                goalId: conversionGoal.goal_id
+            };
+
+            if (conversionGoal.pixel !== undefined) {
+                ret.pixel = conversionGoal.pixel;
+            }
+
+            return ret;
+        }
+
+        function convertValidationErrorsFromApi(errors) {
+            var ret = {};
+
+            if (errors.hasOwnProperty('name')) {
+                ret.name = errors.name;
+            }
+
+            if (errors.hasOwnProperty('type')) {
+                ret.type = errors.type;
+            }
+
+            if (errors.hasOwnProperty('conversion_window')) {
+                ret.conversionWindow = errors.conversion_window;
+            }
+
+            if (errors.hasOwnProperty('goal_id')) {
+                ret.goalId = errors.goal_id;
+            }
+
+            return ret;
+        }
+
+        this.list = function(campaignId) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + campaignId + '/conversion_goals/';
+
+            $http.get(url).
+                success(function (data, status) {
+                    deferred.resolve({
+                        rows: data.data.rows.map(convertFromApi),
+                        availablePixels: data.data.available_pixels
+                    });
+                }).
+                error(function (data, status) {
+                    deferred.reject();
+                });
+
+            return deferred.promise;
+        };
+
+        this.post = function(campaignId, conversionGoal) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + campaignId + '/conversion_goals/';
+            var config = {
+                name: conversionGoal.name,
+                type: conversionGoal.type,
+                conversion_window: conversionGoal.conversionWindow,
+                goal_id: conversionGoal.goalId
+            };
+
+            $http.post(url, config).
+                success(function (data, status) {
+                    deferred.resolve();
+                }).
+                error(function (data, status) {
+                    var errors = null;
+                    if(data.data.hasOwnProperty('errors') && data.data.errors != null) {
+                        errors = convertValidationErrorsFromApi(data.data.errors);
+                    }
+                    return deferred.reject(errors);
+                });
+
+            return deferred.promise;
+        };
+
+        this.delete = function (campaignId, conversionGoalId) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + campaignId + '/conversion_goals/' + conversionGoalId + '/';
+
+            $http.delete(url).
+                success(function (data, status) {
+                    deferred.resolve();
+                }).
+                error(function (data, status) {
+                    deferred.reject();
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function ConversionPixel() {
         function convertFromApi(conversionPixel) {
             return {
@@ -2264,7 +2362,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
                     deferred.resolve(ret);
                 }).
-                error(function (data, status){
+                error(function (data, status) {
                     deferred.reject();
                 });
 
@@ -2409,6 +2507,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupAdsPlusUpload: new AdGroupAdsPlusUpload(),
         availableSources: new AvailableSources(),
         conversionPixel: new ConversionPixel(),
+        conversionGoal: new ConversionGoal(),
         adGroupContentAdState: new AdGroupContentAdState(),
         adGroupContentAdArchive: new AdGroupContentAdArchive()
         // Also, don't forget to add me to DEMO!

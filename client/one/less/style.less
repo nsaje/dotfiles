@@ -1796,6 +1796,7 @@ div[datepicker] {
     .section.table-campaign-budget,
     .section.table-account-agency,
     .section.table-conversion-pixels,
+    .section.conversion-goals,
     .table-access-permissions {
         margin-top: 30px;
 
@@ -2402,6 +2403,50 @@ div[datepicker] {
     }
 }
 
+.page-campaign-agency {
+    .section.conversion-goals {
+        margin-left: -15px;
+        margin-bottom: 30px;
+        padding-right: 0px;
+
+        .conversion-goal-entry {
+            background-color: #F7F7F7;
+            border: 1px solid @default-color;
+            .border-radius(2px);
+            margin-bottom: 15px;
+
+            padding-top: 10px;
+            padding-right: 15px;
+            padding-left: 15px;
+            padding-bottom: 12px;
+
+            .small {
+                font-size: 12px;
+                font-weight: 400;
+            }
+
+            .instructions-label {
+                display: inline-block;
+                margin-top: 15px;
+            }
+
+            .remove-btn {
+                position: absolute;
+                top: 20px;
+                right: 15px;
+            }
+
+            &:first-child {
+                margin-top: 10px;
+            }
+
+            .row:not(:last-child) {
+                margin-bottom: 5px;
+            }
+        }
+    }
+}
+
 zem-editable-currency-field {
     .edit-icon {
         width: 13px;
@@ -2505,6 +2550,12 @@ zem-editable-currency-field {
                 margin: 7px 0;
             }
 
+            .control-label.small {
+                font-size: 12px;
+                font-weight: 400;
+                padding-top: 9px;
+            }
+
             .conversion-pixel-form {
                 margin-bottom: 20px;
 
@@ -2544,6 +2595,20 @@ zem-editable-currency-field {
                 }
             }
 
+            .conversion-goal-form {
+                .conversion-pixel-form;
+
+                .form-group:last-child {
+                    margin-top: 150px;
+                    margin-bottom: 0;
+                }
+
+                .form-group {
+                    margin-right: 0;
+                }
+
+            }
+
             .upload-form {
                 .form-group:last-child {
                     margin-top: 50px;
@@ -2556,10 +2621,6 @@ zem-editable-currency-field {
                 }
 
                 .control-label.small {
-                    font-size: 12px;
-                    font-weight: 400;
-                    padding-top: 9px;
-
                     &[for=file-input].error {
                         padding-top: 3px;
                         line-height: 14px;
@@ -2731,6 +2792,21 @@ zem-submission-status {
                 display: inline-block;
                 width: 7px;
             }
+        }
+    }
+}
+
+.ui-select-container {
+    cursor: pointer;
+
+    .ui-select-dropdown {
+        /* parent element has border (1px) so dropdown needs positioning) */
+        left: -1px;
+        width: calc(~"100% + 2px");
+
+        .ui-select-highlight {
+            font-weight: normal;
+            text-decoration: underline;
         }
     }
 }

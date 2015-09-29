@@ -427,7 +427,7 @@ var constants = {
         IAB26_1: "IAB26-1",
         IAB26_2: "IAB26-2",
         IAB26_3: "IAB26-3",
-        IAB26_4: "IAB26-4",
+        IAB26_4: "IAB26-4"
     },
     promotionGoal: {
         BRAND_BUILDING: 1,
@@ -440,6 +440,21 @@ var constants = {
         NEW_UNIQUE_VISITORS: 3,
         SECONDS_TIME_ON_SITE: 4,
         PAGES_PER_SESSION: 5
+    },
+    conversionGoalType: {
+        PIXEL: 1,
+        GA: 2,
+        OMNITURE: 3
+    },
+    conversionGoalTypeText: {
+        1: 'Conversion Pixel',
+        2: 'Google Analytics',
+        3: 'Omniture Event'
+    },
+    conversionWindowText: {
+        1: '1 day',
+        7: '7 days',
+        30: '30 days'
     },
     entityType: {
         AD_GROUP: 'adGroup',
@@ -919,6 +934,16 @@ var options = {
         {name: 'new unique visitors', value: constants.campaignGoal.NEW_UNIQUE_VISITORS},
         {name: 'seconds time on site', value: constants.campaignGoal.SECONDS_TIME_ON_SITE},
         {name: 'pages per session', value: constants.campaignGoal.PAGES_PER_SESSION}
+    ],
+    conversionGoalTypes: [
+        {name: 'Conversion Pixel', value: constants.conversionGoalType.PIXEL},
+        {name: 'Google Analytics', value: constants.conversionGoalType.GA},
+        {name: 'Omniture', value: constants.conversionGoalType.OMNITURE}
+    ],
+    conversionWindows: [
+        {name: '1 day', value: 1},
+        {name: '7 days', value: 7},
+        {name: '30 days', value: 30}
     ]
 };
 

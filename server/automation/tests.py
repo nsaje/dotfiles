@@ -5,12 +5,15 @@ from mock import patch
 
 from django.core import mail
 from django import test
+from django.http.request import HttpRequest
 
 from automation import budgetdepletion, helpers, autopilot
 from automation import models as automationmodels
 from dash import models
 from reports import refresh
 import automation.settings
+
+from zemauth.models import User
 
 
 class DatetimeMock(datetime.datetime):
@@ -41,7 +44,7 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(budgetdepletion.budget_is_depleting(100, 500), True)
         self.assertEqual(budgetdepletion.budget_is_depleting(-100, 5), True)
 
-    @patch("automation.budgetdepletion._send_depleted_budget_notification_email")
+    @patch("automation.budgetdepletion._send_depleting_budget_notification_email")
     def test_notify_campaign_with_depleting_budget(self, _):
         budgetdepletion.notify_campaign_with_depleting_budget(
             models.Campaign.objects.get(pk=1),
@@ -53,7 +56,7 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(notif.available_budget, 100)
         self.assertEqual(notif.yesterdays_spend, 150)
 
-    @patch("automation.budgetdepletion._send_depleted_budget_notification_email")
+    @patch("automation.budgetdepletion._send_depleting_budget_notification_email")
     def test_manager_has_been_notified(self, _):
         camp = models.Campaign.objects.get(pk=1)
         self.assertEqual(budgetdepletion.manager_has_been_notified(camp), False)
@@ -61,8 +64,8 @@ class BudgetDepletionTestCase(test.TestCase):
         budgetdepletion.notify_campaign_with_depleting_budget(camp, 100, 150)
         self.assertEqual(budgetdepletion.manager_has_been_notified(camp), True)
 
-    def test_send_depleted_budget_notification_email(self):
-        budgetdepletion._send_depleted_budget_notification_email(
+    def test_send_depleting_budget_notification_email(self):
+        budgetdepletion._send_depleting_budget_notification_email(
             'campaign_name',
             'campaign_url',
             'account_name',
@@ -70,6 +73,19 @@ class BudgetDepletionTestCase(test.TestCase):
             1000,
             1500,
             5000
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(
+            automation.settings.DEPLETING_CAMPAIGN_BUDGET_EMAIL)
+        )
+        self.assertEqual(mail.outbox[0].to, ['test@zemanta.com'])
+
+    def test_send_campaign_stopped_notification_email(self):
+        budgetdepletion._send_campaign_stopped_notification_email(
+            'campaign_name',
+            'campaign_url',
+            'account_name',
+            ['test@zemanta.com']
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(
@@ -113,7 +129,13 @@ class BudgetDepletionTestCase(test.TestCase):
         settings_writer = dash.api.AdGroupSourceSettingsWriter(models.AdGroupSource.objects.get(id=2))
         resource = dict()
         resource['daily_budget_cc'] = decimal.Decimal(60.00)
-        settings_writer.set(resource, None)
+
+        request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
+        request.user = User.objects.create_user('test@example.com')
+
+        settings_writer.set(resource, request)
         self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=2)))
 
     @patch('automation.settings.AUTOPILOT_CPC_CHANGE_TABLE', (
