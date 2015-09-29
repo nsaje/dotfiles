@@ -21,10 +21,12 @@
                 <zem-help-popover content="The technology used for tracking conversions or goals." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
-                <select ui-select2="{minimumResultsForSearch: -1, placeholder: 'Choose type'}" id="goal-type-select" class="form-control" ng-model="conversionGoal.type" ng-change="updateTypeChange()">
-                    <option></option>
-                   <option ng-repeat="goal in conversionGoalTypes" value="{{goal.value}}">{{goal.name}}</option>
-                </select>
+                <ui-select theme="select2" search-enabled="false" id="goal-type-select" class="form-control" ng-model="conversionGoal.type" on-select="updateTypeChange()">
+                    <ui-select-match placeholder="Choose type">{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="goal.value as goal in conversionGoalTypes">
+                        {{goal.name}}
+                    </ui-select-choices>
+                </ui-select>
             </div>
             <div class="col-xs-3">
                 <label ng-repeat="error in errors.type" class="control-label small error" for="goal-type-select">{{ error }}</label>
@@ -37,10 +39,12 @@
                 <zem-help-popover content="One of pre-set conversions pixels. You can add additional ones on agency tab of the account." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-4">
-                <select ui-select2="{minimumResultsForSearch: -1}" id="pixel-slug-select" class="form-control" ng-model="conversionGoal.goalId">
-                    <option></option>
-                    <option ng-repeat="pixel in availablePixels" value="{{pixel.id}}">{{pixel.slug}}</option>
-                </select>
+                <ui-select theme="select2" search-enabled="false" id="pixel-slug-select" class="form-control" ng-model="conversionGoal.goalId">
+                    <ui-select-match>{{$select.selected.slug}}</ui-select-match>
+                    <ui-select-choices repeat="pixel.id as pixel in availablePixels">
+                        {{pixel.slug}}
+                    </ui-select-choices>
+                </ui-select>
             </div>
             <div class="col-xs-4">
                 <label ng-repeat="error in errors.goalId" class="control-label small error" for="pixel-slug-select">{{ error }}</label>
@@ -53,10 +57,12 @@
                 <zem-help-popover content="Conversion will be counted if less than the specified amount of time has passed before the first visit and the actual conversion." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-4">
-                <select ui-select2="{minimumResultsForSearch: -1}" id="pixel-conversion-window-select" class="form-control" ng-model="conversionGoal.conversionWindow" select2-focus="clearErrors('conversionWindow')">
-                    <option></option>
-                    <option ng-repeat="window in conversionWindows" value="{{window.value}}">{{window.name}}</option>
-                </select>
+                <ui-select theme="select2" search-enabled="false" id="pixel-conversion-window-select" class="form-control" ng-model="conversionGoal.conversionWindow">
+                    <ui-select-match>{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="window.value as window in conversionWindows">
+                        {{window.name}}
+                    </ui-select-choices>
+                </ui-select>
             </div>
             <div class="col-xs-4">
                 <label ng-repeat="error in errors.conversionWindow" class="control-label small error" for="pixel-conversion-window-select">{{ error }}</label>

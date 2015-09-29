@@ -35,15 +35,15 @@ oneApp.controller('AddConversionGoalModalCtrl', ['$scope', '$modalInstance', 'ap
     };
 
     $scope.showConversionPixelForm = function () {
-        return $scope.conversionGoal.type === constants.conversionGoalType.PIXEL.toString();
+        return $scope.conversionGoal.type === constants.conversionGoalType.PIXEL;
     };
 
     $scope.showGAForm = function () {
-        return $scope.conversionGoal.type === constants.conversionGoalType.GA.toString();
+        return $scope.conversionGoal.type === constants.conversionGoalType.GA;
     };
 
     $scope.showOmnitureForm = function () {
-        return $scope.conversionGoal.type === constants.conversionGoalType.OMNITURE.toString();
+        return $scope.conversionGoal.type === constants.conversionGoalType.OMNITURE;
     };
 
     $scope.updateTypeChange = function () {

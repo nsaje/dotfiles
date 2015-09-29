@@ -84,6 +84,7 @@ module.exports = function (grunt) {
                         'lib/components/bootstrap/dist/css/bootstrap.min.css',
                         'lib/components/angular-bootstrap-datetimepicker/src/css/datetimepicker.css',
                         'lib/components/bootstrap-multiselect/css/bootstrap-multiselect.css',
+                        'lib/components/angular-ui-select/dist/select.css',
                         'lib/components/select2/select2.css',
                         'lib/components/select2/select2-bootstrap.css',
                         'lib/components/bootstrap-daterangepicker/daterangepicker-bs3.css'
@@ -94,7 +95,7 @@ module.exports = function (grunt) {
             actionlog_lib: {
                 files: [{
                     src: 'dist/actionlog/zemanta-one.actionlog.lib.css',
-                    dest: 'dist/actionlog/zemanta-one.actionlog.lib.min.css',
+                    dest: 'dist/actionlog/zemanta-one.actionlog.lib.min.css'
                 }]
             }
         },
@@ -249,7 +250,7 @@ module.exports = function (grunt) {
         karma: {
             local: {
                 configFile: 'test/karma.conf.js',
-                singleRun: true,
+                singleRun: true
             },
             sauce: {
                 configFile: 'test/karma.conf-sauce.js'

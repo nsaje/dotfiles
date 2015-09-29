@@ -242,7 +242,6 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
         metrics = request.GET.getlist('metrics')
         totals = request.GET.get('totals')
 
-        
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         totals_constraints = None
         map_exchange_to_source_name = {}
@@ -250,16 +249,16 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
         for s in filtered_sources:
             if s.bidder_slug:
                 exchange_name = s.bidder_slug
-            else: 
+            else:
                 exchange_name = s.name
             map_exchange_to_source_name[exchange_name] = s.name
-     
+
         if totals:
             totals_constraints = {'ad_group': int(ad_group.id)}
 
         if set(models.Source.objects.all()) != set(filtered_sources):
             totals_constraints['exchange'] = map_exchange_to_source_name.keys()
-            
+
         stats = self.get_stats(request, totals_constraints, selected_kwargs=None, group_key='source')
 
         return self.create_api_response(self.get_response_dict(
@@ -364,8 +363,7 @@ class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
             start_date,
             end_date,
             breakdown=['date'],
-            constraints={'ad_group': ad_group_id,
-                         'source': sources}
+            **{'ad_group': ad_group_id, 'source': sources}
         )
 
         return sort_results(stats, ['date'])

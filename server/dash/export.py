@@ -59,8 +59,8 @@ def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, 
     stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
         start_date,
         end_date,
-        dimensions,
-        constraints
+        breakdown=dimensions,
+        **constraints
     ), user)
 
     for stat in stats:

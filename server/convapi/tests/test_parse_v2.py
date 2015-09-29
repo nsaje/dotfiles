@@ -13,7 +13,7 @@ from convapi import parse_v2
 from utils import csv_utils
 
 
-@patch('reports.redshift._get_cursor')
+@patch('reports.redshift.get_cursor')
 class ParseReportTest(TestCase):
 
     fixtures = ['test_ga_aggregation.yaml']

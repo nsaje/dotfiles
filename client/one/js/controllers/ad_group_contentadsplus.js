@@ -10,6 +10,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.lastChangeTimeout = null;
     $scope.rows = null;
     $scope.totals = null;
+    $scope.isIncompletePostclickMetrics = false;
 
     $scope.chartHidden = false;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
@@ -654,6 +655,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
                 $scope.pollTableUpdates();
                 $scope.updateContentAdSelection();
+
+                $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
 
                 initUploadBatches(data.batches);
                 contentAdsNotLoaded.resolve($scope.rows.length === 0);

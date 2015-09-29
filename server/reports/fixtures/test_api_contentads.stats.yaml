@@ -1,0 +1,74 @@
+# test contentadstats
+
+-   fields:
+        date: '2014-06-16T00:00:00'
+        content_ad_id: 1
+        adgroup_id: 1
+        source_id: 1
+        campaign_id: 1 
+        account_id: 1
+        impressions: 1
+        clicks: 1
+        cost_cc: 1
+        data_cost_cc: 1
+        visits: 1
+        new_visits: 1
+        bounced_visits: 1
+        pageviews: 1
+        total_time_on_site: 1
+    table: contentadstats
+
+-   fields:
+        date: '2014-06-17T00:00:00'
+        content_ad_id: 2
+        adgroup_id: 1
+        source_id: 1
+        campaign_id: 1 
+        account_id: 1
+        impressions: 1
+        clicks: 1
+        cost_cc: 1
+        data_cost_cc: 1
+        total_time_on_site:   0  # the only postclick metrics
+    table: contentadstats
+
+# no postclick metrics
+
+-   fields:
+        date: '2014-06-18T00:00:00'
+        content_ad_id: 2
+        adgroup_id: 1
+        source_id: 1
+        campaign_id: 1 
+        account_id: 1
+        impressions: 1
+        clicks: 1
+        cost_cc: 1
+        data_cost_cc: 1
+    table: contentadstats
+
+-   fields:
+        date: '2014-06-17T00:00:00'
+        content_ad_id: 3
+        adgroup_id: 1
+        source_id: 2  # another source
+        campaign_id: 1 
+        account_id: 1
+        impressions: 1
+        clicks: 1
+        cost_cc: 1
+        data_cost_cc: 1
+    table: contentadstats
+
+-   fields:
+        date: '2014-06-16T12:21:29'
+        content_ad_id: 2
+        adgroup_id: 2
+        source_id: 2
+        campaign_id: 2 
+        account_id: 2
+        impressions: 12
+        clicks: 12
+        cost_cc: 12
+        data_cost_cc: 12
+    table: contentadstats
