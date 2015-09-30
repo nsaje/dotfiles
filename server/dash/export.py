@@ -64,7 +64,9 @@ def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, 
     ), user)
 
     for stat in stats:
-        content_ad = content_ads[stat['content_ad']]
+        content_ad = content_ads.get(stat['content_ad'], None)
+        if content_ad is None:
+            continue
         stat['title'] = content_ad.title
         stat['url'] = content_ad.url
         stat['image_url'] = content_ad.get_image_url()
