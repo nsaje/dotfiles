@@ -199,7 +199,7 @@ class RSModel(object):
             field_part, json_key = field_name, None
 
             if self._is_json_field(field_name):
-                # for json fields the key part needs to be ignored to get the correct matching sql field
+                # for json fields the key part needs to be ignored in order to get the correct matching sql field
                 field_part, json_key = self._extract_json_key(field_name)
 
             sql_name = self.by_app_mapping[field_part]['sql']
