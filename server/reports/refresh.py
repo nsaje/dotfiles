@@ -109,7 +109,7 @@ def _get_goals_json(goals):
     return json.dumps(result)
 
 
-# @transaction.atomic(using=settings.STATS_DB_NAME)
+@transaction.atomic(using=settings.STATS_DB_NAME)
 def refresh_contentadstats(date, ad_group, source=None):
     source_id = source.id if source is not None else None
 
@@ -120,8 +120,8 @@ def refresh_contentadstats(date, ad_group, source=None):
     rows = [_add_goals(row, goals_dict) for row in rows]
     rows = [_add_ids(row, ad_group) for row in rows]
 
-    # redshift.delete_contentadstats(date, ad_group.id, source_id)
-    # redshift.insert_contentadstats(rows)
+    redshift.delete_contentadstats(date, ad_group.id, source_id)
+    redshift.insert_contentadstats(rows)
 
 
 def refresh_adgroup_stats(**constraints):

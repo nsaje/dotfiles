@@ -10,6 +10,7 @@ import dash.models
 import reports.api
 import reports.refresh
 import reports.models
+from reports import refresh
 from reports import redshift
 from utils.statsd_helper import statsd_timer
 
@@ -236,8 +237,8 @@ def goals_update_adgroup(datetime, ad_group, rows):
         conv_stats.save()
 
     # refresh the corresponding adgroup-level pre-aggregations
-    # reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
-    # reports.refresh.refresh_adgroup_conversion_stats(datetime=datetime, ad_group=ad_group)
+    reports.refresh.refresh_adgroup_stats(datetime=datetime, ad_group=ad_group)
+    reports.refresh.refresh_adgroup_conversion_stats(datetime=datetime, ad_group=ad_group)
 
 
 @transaction.atomic
