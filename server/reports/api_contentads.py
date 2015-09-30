@@ -51,7 +51,7 @@ class RSContentAdStatsModel(redshift.RSModel):
     ]
 
     _CONVERSION_GOAL_FIELDS = [
-        dict(sql='conversions', app='conversions', out=rsh.decimal_to_int_exact, calc=rsh.sum_expr(rsh.extract_json_or_null('conversions')), json_params=2)
+        dict(sql='conversions', app='conversions', out=rsh.decimal_to_int_exact, calc=rsh.sum_expr(rsh.extract_json_or_null('conversions')), num_json_params=2)
     ]
 
     _OTHER_AGGREGATIONS = [

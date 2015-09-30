@@ -184,62 +184,57 @@ class RSModel(object):
     def _is_json_field(self, field_name):
         return JSON_KEY_DELIMITER in field_name
 
-    def _extract_field_part(self, field_name):
-        return field_name.split(JSON_KEY_DELIMITER, 1)[0]
-
-    def _extract_json_key(self, field_name):
-        return field_name.split(JSON_KEY_DELIMITER, 1)[1]
+    def _extract_json_key_parts(self, field_name):
+        return field_name.split(JSON_KEY_DELIMITER, 1)
 
     def _replace_json_key(self, field_name, json_key, rep):
-        return field_name.replace(JSON_KEY_DELIMITER + json_key, '__{}'.format(rep))
+        return field_name.replace(JSON_KEY_DELIMITER + json_key, JSON_KEY_DELIMITER + str(rep))
 
     def _append_json_key(self, field_name, json_key):
         return field_name + JSON_KEY_DELIMITER + json_key
 
+    def _translate_app_field_to_sql(self, field_name):
+        if not self._is_json_field(field_name):
+            return self.by_app_mapping[field_name]['sql']
+
+        # for json fields the key part needs to be ignored in order to get the correct matching sql field
+        field_part, json_key = self._extract_json_key_parts(field_name)
+        return self._append_json_key(self.by_app_mapping[field_part]['sql'], json_key)
+
     def translate_app_fields(self, field_names):
-        sql_names = []
-        for field_name in field_names:
-            field_part = field_name
-            if self._is_json_field(field_name):
-                # for json fields the key part needs to be ignored in order to get the correct matching sql field
-                field_part = self._extract_field_part(field_name)
+        return [self._translate_app_field_to_sql(field_name) for field_name in field_names]
 
-            sql_name = self.by_app_mapping[field_part]['sql']
-            if self._is_json_field(field_name):
-                json_key = self._extract_json_key(field_name)
-                sql_name = self._append_json_key(sql_name, json_key)
+    def _get_expanded_field_sql(self, field_name, desc):
+        if "calc" in desc:
+            return desc["calc"] + " AS \"" + field_name + "\""
 
-            sql_names.append(sql_name)
-        return sql_names
+        if self._is_json_field(field_name):
+            raise exc.ReportsQueryError('json field has to have calc defined')
+
+        return '"' + field_name + '"'
 
     def expand_returned_sql_fields(self, field_names):
-
         # returns the expanded fields, params used in them and json field mapping
         fields = []
         params = []
         json_fields = []
 
         for field_name in field_names:
-            field_part = field_name
-            if self._is_json_field(field_name):
-                field_part = self._extract_field_part(field_name)
+            if not self._is_json_field(field_name):
+                desc = self.by_sql_mapping[field_name]
+                fields.append(self._get_expanded_field_sql(field_name, desc))
+                continue
 
+            # store the json field name in the mapping and replace it with the index to that mapping
+            # resulting in an sql column name format {field_name}{JSON_KEY_DELIMITER}{index_to_mapping}
+            field_part, json_key = self._extract_json_key_parts(field_name)
             desc = self.by_sql_mapping[field_part]
-            if self._is_json_field(field_name):
-                # store the json field name in the mapping and replace it with the index to that mapping
-                json_key = self._extract_json_key(field_name)
-                field_name = self._replace_json_key(field_name, json_key, len(json_fields))
-                json_fields.append(json_key)
-                params.extend([json_key] * (desc['json_params']))
 
-            if "calc" in desc:
-                field_expanded = desc["calc"] + " AS \"" + field_name + "\""
-            else:
-                if self._is_json_field(field_name):
-                    raise Exception('json field has to have calc defined')
+            field_name = self._replace_json_key(field_name, json_key, len(json_fields))
+            json_fields.append(json_key)
+            params.extend([json_key] * (desc['num_json_params']))
 
-                field_expanded = '"' + field_name + '"'
-
+            field_expanded = self._get_expanded_field_sql(field_name, desc)
             fields.append(field_expanded)
 
         return fields, params, json_fields
@@ -248,6 +243,8 @@ class RSModel(object):
         unknown_fields = set(breakdown_fields) - self.ALLOWED_BREAKDOWN_FIELDS_APP
         if unknown_fields:
             raise exc.ReportsQueryError('Invalid breakdowns: {}'.format(str(unknown_fields)))
+        if any(self._is_json_field(field_name) for field_name in breakdown_fields):
+            raise exc.ReportsQueryError('Json field in breakdown is not supported: {}'.format(str(breakdown_fields)))
         breakdown_fields = self.translate_app_fields(breakdown_fields)
         return breakdown_fields
 
@@ -282,6 +279,8 @@ class RSModel(object):
         for constraint_name, val in constraints.iteritems():
             parts = constraint_name.split("__")
             field_name_app = parts[0]
+            if self._is_json_field(field_name_app):
+                raise exc.ReportsQueryError("Unsopported json field in constraints: {}".format(field_name_app))
             if field_name_app not in self.constraints_fields_app:
                 raise exc.ReportsQueryError("Unsupported field constraint fields: {}".format(field_name_app))
             field_name_sql = self.by_app_mapping[field_name_app]['sql']
@@ -382,17 +381,19 @@ class RSModel(object):
     def map_result_to_app(self, row, json_fields):
         result = {}
         for field_name, val in row.items():
-            field_part = field_name
-            if self._is_json_field(field_name):
-                field_part = self._extract_field_part(field_name)
+            if not self._is_json_field(field_name):
+                field_desc = self.by_sql_mapping[field_name]
+                newname = field_desc['app']
+                output_function = field_desc['out']
+                newval = output_function(val)
+                result[newname] = newval
+                continue
 
+            # get the matching json field back from the mapping by index that is in the sql column name
+            field_part, json_key = self._extract_json_key_parts(field_name)
             field_desc = self.by_sql_mapping[field_part]
-            newname = field_desc['app']
-            if self._is_json_field(field_name):
-                # get the matching json field back from the mapping by index that is in the sql column name
-                json_key = self._extract_json_key(field_name)
-                newname = self._append_json_key(newname, json_fields[int(json_key)])
 
+            newname = self._append_json_key(field_desc['app'], json_fields[int(json_key)])
             output_function = field_desc['out']
             newval = output_function(val)
             result[newname] = newval
