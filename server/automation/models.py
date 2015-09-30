@@ -97,6 +97,7 @@ class AutopilotAdGroupSourceBidCpcLog(models.Model):
         null=True,
         verbose_name='Daily budget'
     )
+    comments = models.CharField(max_length=1024, null=True, blank=True)
 
     def __unicode__(self):
         return '{0} {1}'.format(

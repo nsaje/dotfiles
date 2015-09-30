@@ -29,7 +29,8 @@ class AutopilotAdGroupSourceBidCpcLogAdmin(admin.ModelAdmin):
         'yesterdays_spend_cc',
         'current_daily_budget_cc',
         'yesterdays_clicks',
-        'created_dt'
+        'created_dt',
+        'comments'
     )
     readonly_fields = ['created_dt']
 
