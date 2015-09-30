@@ -77,15 +77,18 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
             return [
                 (1, 'self-managed'),
                 (2, 'internal (@zemanta)'),
+                (3, 'automatically created'),
             ]
 
         def queryset(self, request, queryset):
             if self.value():
                 val = int(self.value())
                 if val == 1:
-                    return queryset.exclude(created_by__email__contains='@zemanta')
+                    return queryset.exclude(db_models.Q(created_by=None) | db_models.Q(created_by__email__contains='@zemanta'))
                 elif val == 2:
                     return queryset.filter(created_by__email__contains='@zemanta')
+                elif val == 3:
+                    return queryset.filter(created_by=None)
             return queryset
 
     search_fields = (
