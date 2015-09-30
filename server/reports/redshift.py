@@ -184,11 +184,14 @@ class RSModel(object):
     def _is_json_field(self, field_name):
         return '__' in field_name
 
-    def _extract_json_key(self, field_name):
-        return field_name.split('__', 1)
+    def _extract_field_part(self, field_name):
+        return field_name.split('__', 1)[0]
 
-    def _replace_json_key(self, field_name, json_key, num):
-        return field_name.replace('__' + json_key, '__{}'.format(num))
+    def _extract_json_key(self, field_name):
+        return field_name.split('__', 1)[1]
+
+    def _replace_json_key(self, field_name, json_key, rep):
+        return field_name.replace('__' + json_key, '__{}'.format(rep))
 
     def _append_json_key(self, field_name, json_key):
         return field_name + '__' + json_key
@@ -196,34 +199,35 @@ class RSModel(object):
     def translate_app_fields(self, field_names):
         sql_names = []
         for field_name in field_names:
-            field_part, json_key = field_name, None
-
+            field_part = field_name
             if self._is_json_field(field_name):
                 # for json fields the key part needs to be ignored in order to get the correct matching sql field
-                field_part, json_key = self._extract_json_key(field_name)
+                field_part = self._extract_field_part(field_name)
 
             sql_name = self.by_app_mapping[field_part]['sql']
-
             if self._is_json_field(field_name):
+                json_key = self._extract_json_key(field_name)
                 sql_name = self._append_json_key(field_name, json_key)
 
             sql_names.append(sql_name)
         return sql_names
 
     def expand_returned_sql_fields(self, field_names):
+
         # returns the expanded fields, params used in them and json field mapping
         fields = []
         params = []
         json_fields = []
 
         for field_name in field_names:
-            field_part, json_key = field_name, None
-            if self._is_json_field(field_part):
-                field_part, json_key = self._extract_json_key(field_name)
+            field_part = field_name
+            if self._is_json_field(field_name):
+                field_part = self._extract_field_part(field_name)
 
             desc = self.by_sql_mapping[field_part]
-            if json_key:
+            if self._is_json_field(field_name):
                 # store the json field name in the mapping and replace it with the index to that mapping
+                json_key = self._extract_json_key(field_name)
                 field_name = self._replace_json_key(field_name, json_key, len(json_fields))
                 json_fields.append(json_key)
                 params.extend([json_key] * (desc['json_params']))
@@ -231,7 +235,7 @@ class RSModel(object):
             if "calc" in desc:
                 field_expanded = desc["calc"] + " AS \"" + field_name + "\""
             else:
-                if json_key:
+                if self._is_json_field(field_name):
                     raise Exception('json field has to have calc defined')
 
                 field_expanded = '"' + field_name + '"'
@@ -378,14 +382,15 @@ class RSModel(object):
     def map_result_to_app(self, row, json_fields):
         result = {}
         for field_name, val in row.items():
-            field_part, json_key = field_name, None
+            field_part = field_name
             if self._is_json_field(field_name):
-                field_part, json_key = self._extract_json_key(field_name)
+                field_part = self._extract_field_part(field_name)
 
             field_desc = self.by_sql_mapping[field_part]
             newname = field_desc['app']
             if self._is_json_field(field_name):
-                # get the matching json field back from the mapping by index that is in sql column name
+                # get the matching json field back from the mapping by index that is in the sql column name
+                json_key = self._extract_json_key(field_name)
                 newname = self._append_json_key(newname, json_fields[int(json_key)])
 
             output_function = field_desc['out']
