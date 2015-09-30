@@ -49,7 +49,8 @@ class ApiContentAdsQueryTest(TestCase):
         self.assertEqual(len(where_constraints), len(constraints))
 
         self.assertIn('"date" >= ', query)
-        self.assertIn('"date" <= ', query)
+        self.assertIn('"date" >= ', query)
+        self.assertIn('content_ad_id!=', query)
 
     def check_aggregations(self, mock_cursor):
         required_statements = [
@@ -97,7 +98,11 @@ class ApiContentAdsQueryTest(TestCase):
         breakdown = []
 
         stats = api_contentads.query(start_date, end_date, breakdown=breakdown, **constraints)
-        constraints.update({'start_date': start_date, 'end_date': end_date})
+        constraints.update({
+            'start_date': start_date,
+            'end_date': end_date,
+            'content_ad_id': redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID
+        })
 
         self.assertDictEqual(stats, {
             'avg_tos': 1.0,
@@ -128,7 +133,11 @@ class ApiContentAdsQueryTest(TestCase):
         breakdown = ['content_ad']
 
         api_contentads.query(start_date, end_date, breakdown=breakdown, **constraints)
-        constraints.update({'start_date': start_date, 'end_date': end_date})
+        constraints.update({
+            'start_date': start_date,
+            'end_date': end_date,
+            'content_ad_id': redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID
+        })
         self.check_breakdown(mock_cursor, breakdown)
         self.check_constraints(mock_cursor, constraints)
         self.check_aggregations(mock_cursor)
@@ -141,7 +150,11 @@ class ApiContentAdsQueryTest(TestCase):
         end_date = datetime.date(2015, 2, 2)
         breakdown = ['date']
         api_contentads.query(start_date, end_date, breakdown=breakdown, **constraints)
-        constraints.update({'start_date': start_date, 'end_date': end_date})
+        constraints.update({
+            'start_date': start_date,
+            'end_date': end_date,
+            'content_ad_id': redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID
+        })
 
         self.check_breakdown(mock_cursor, breakdown)
         self.check_constraints(mock_cursor, constraints)
@@ -154,7 +167,11 @@ class ApiContentAdsQueryTest(TestCase):
         start_date = datetime.date(2015, 2, 1)
         end_date = datetime.date(2015, 2, 2)
         api_contentads.query(start_date, end_date, breakdown=[], **constraints)
-        constraints.update({'start_date': start_date, 'end_date': end_date})
+        constraints.update({
+            'start_date': start_date,
+            'end_date': end_date,
+            'content_ad_id': redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID
+        })
 
         self.check_constraints(mock_cursor, constraints)
         self.check_aggregations(mock_cursor)

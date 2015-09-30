@@ -65,7 +65,7 @@ class RSContentAdStatsModel(redshift.RSModel):
 RSContentAdStats = RSContentAdStatsModel()
 
 
-def query(start_date, end_date, breakdown=[], **constraints):
+def query(start_date, end_date, breakdown=[], ignore_diff_rows=False, **constraints):
     # TODO: it would be nicer if 'constraints' would be a dict, but we use kwargs to maintain
     # compatibility with reports.api
 
@@ -73,6 +73,7 @@ def query(start_date, end_date, breakdown=[], **constraints):
 
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
+    constraints['content_ad__neq'] = redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID
 
     constraints = extract_obj_ids(constraints)
 
