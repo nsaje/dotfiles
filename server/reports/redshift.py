@@ -416,7 +416,6 @@ class RSModel(object):
             constraints,
             having_constraints)
 
-        print statement, params
         cursor.execute(statement, params)
         results = cursor.dictfetchall()
         results = self.map_results_to_app(results, json_fields)
