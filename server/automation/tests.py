@@ -12,6 +12,7 @@ from automation import models as automationmodels
 from dash import models
 from reports import refresh
 import automation.settings
+import automation.constants
 
 from zemauth.models import User
 
@@ -139,9 +140,9 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=2)))
 
     @patch('automation.settings.AUTOPILOT_CPC_CHANGE_TABLE', (
-        {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.5, 'bid_cpc_procentual_increase': 0.1},
-        {'underspend_upper_limit': -0.5, 'underspend_lower_limit': -0.1, 'bid_cpc_procentual_increase': 0.5},
-        {'underspend_upper_limit': -0.1, 'underspend_lower_limit': 0, 'bid_cpc_procentual_increase': -0.5}
+        {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.5, 'bid_cpc_procentual_increase': decimal.Decimal('0.1')},
+        {'underspend_upper_limit': -0.5, 'underspend_lower_limit': -0.1, 'bid_cpc_procentual_increase': decimal.Decimal('0.5')},
+        {'underspend_upper_limit': -0.1, 'underspend_lower_limit': 0, 'bid_cpc_procentual_increase': decimal.Decimal('-0.5')}
         )
     )
     @patch('automation.settings.AUTOPILOT_MIN_CPC', decimal.Decimal('0.1'))
@@ -151,21 +152,21 @@ class BudgetDepletionTestCase(test.TestCase):
     def test_calculate_new_autopilot_cpc(self):
         test_cases = (
             #  cpc, daily_budget, yesterday_spend, new_cpc, comments
-            ('0', '10', '5', '0', [automation.autopilot.CpcChangeComment.CPC_NOT_SET, automation.autopilot.CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('0', '10', '5', '0', [automation.constants.CpcChangeComment.CPC_NOT_SET, automation.constants.CpcChangeComment.CURRENT_CPC_TOO_LOW]),
             ('0.5', '10', '8', '0.75', []),
             ('0.5', '10', '10', '0.25', []),
-            ('0.5', '10', '2', '0.56', []),
-            ('0.5', '10', '0', '0.5', [automation.autopilot.CpcChangeComment.NO_YESTERDAY_SPEND]),
-            ('0.5', '10', '5', '0.56', []),
-            ('0.5', '0', '5', '0.5', [automation.autopilot.CpcChangeComment.BUDGET_NOT_SET]),
-            ('0.5', '10', '0', '0.5', [automation.autopilot.CpcChangeComment.NO_YESTERDAY_SPEND]),
-            ('0.5', '-10', '5', '0.5', [automation.autopilot.CpcChangeComment.BUDGET_NOT_SET]),
-            ('0.5', '10', '-5', '0.5', [automation.autopilot.CpcChangeComment.NO_YESTERDAY_SPEND]),
-            ('-0.5', '10', '5', '-0.5', [automation.autopilot.CpcChangeComment.CPC_NOT_SET, autopilot.CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('0.5', '10', '2', '0.55', []),
+            ('0.5', '10', '0', '0.5', [automation.constants.CpcChangeComment.NO_YESTERDAY_SPEND]),
+            ('0.5', '10', '5', '0.55', []),
+            ('0.5', '0', '5', '0.5', [automation.constants.CpcChangeComment.BUDGET_NOT_SET]),
+            ('0.5', '10', '0', '0.5', [automation.constants.CpcChangeComment.NO_YESTERDAY_SPEND]),
+            ('0.5', '-10', '5', '0.5', [automation.constants.CpcChangeComment.BUDGET_NOT_SET]),
+            ('0.5', '10', '-5', '0.5', [automation.constants.CpcChangeComment.NO_YESTERDAY_SPEND]),
+            ('-0.5', '10', '5', '-0.5', [automation.constants.CpcChangeComment.CPC_NOT_SET, automation.constants.CpcChangeComment.CURRENT_CPC_TOO_LOW]),
             ('0.35', '10', '9.96', '0.15', []),
             ('2.8', '10', '9.96', '2.5', []),
-            ('3.5', '10', '1', '3.5', [automation.autopilot.CpcChangeComment.CURRENT_CPC_TOO_HIGH]),
-            ('0.05', '10', '1', '0.05', [automation.autopilot.CpcChangeComment.CURRENT_CPC_TOO_LOW])
+            ('3.5', '10', '1', '3.5', [automation.constants.CpcChangeComment.CURRENT_CPC_TOO_HIGH]),
+            ('0.05', '10', '1', '0.05', [automation.constants.CpcChangeComment.CURRENT_CPC_TOO_LOW])
         )
         for test_case in test_cases:
             self.assertEqual(autopilot.calculate_new_autopilot_cpc(

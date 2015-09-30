@@ -12,10 +12,10 @@ import dash
 from automation import models
 import automation.helpers
 import automation.settings
+import automation.constants
 from dash import constants
 import reports
 from utils import pagerduty_helper
-from utils.constant_base import ConstantBase
 from utils.statsd_helper import statsd_timer
 
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ def persist_cpc_change_to_admin_log(
         new_cpc_cc=new_cpc,
         current_daily_budget_cc=daily_budget,
         yesterdays_clicks=yesterday_clicks,
-        comments=', '.join(CpcChangeComment.get_text(comment) for comment in comments)
+        comments=', '.join(automation.constants.CpcChangeComment.get_text(comment) for comment in comments)
     ).save()
 
 
@@ -105,17 +105,17 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
     cpc_change_comments = _get_calculate_cpc_comments(current_cpc, current_daily_budget, yesterdays_spend)
     spending_perc = _calculate_spending_perc(yesterdays_spend, current_daily_budget)
     if spending_perc is not None and spending_perc > automation.settings.AUTOPILOT_MAX_ALLOWED_SPENDING:
-        cpc_change_comments.append(CpcChangeComment.HIGH_OVERSPEND)
+        cpc_change_comments.append(automation.constants.CpcChangeComment.HIGH_OVERSPEND)
 
-    if cpc_change_comments != []:
+    if cpc_change_comments:
         return (current_cpc, cpc_change_comments)
 
     new_cpc = current_cpc
     for change_interval in automation.settings.AUTOPILOT_CPC_CHANGE_TABLE:
         if change_interval['underspend_upper_limit'] <= spending_perc <= change_interval['underspend_lower_limit']:
-            new_cpc += current_cpc * decimal.Decimal(change_interval['bid_cpc_procentual_increase'])
+            new_cpc += current_cpc * change_interval['bid_cpc_procentual_increase']
             if change_interval['bid_cpc_procentual_increase'] == decimal.Decimal('0'):
-                return (current_cpc, [CpcChangeComment.OPTIMAL_SPEND])
+                return (current_cpc, [automation.constants.CpcChangeComment.OPTIMAL_SPEND])
             if change_interval['bid_cpc_procentual_increase'] < 0:
                 new_cpc = _threshold_lowering_cpc(current_cpc, new_cpc)
             new_cpc = _round_cpc(new_cpc)
@@ -130,15 +130,15 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
 def _get_calculate_cpc_comments(current_cpc, current_daily_budget, yesterdays_spend):
     cpc_change_comments = []
     if current_daily_budget is None or current_daily_budget <= 0:
-        cpc_change_comments.append(CpcChangeComment.BUDGET_NOT_SET)
+        cpc_change_comments.append(automation.constants.CpcChangeComment.BUDGET_NOT_SET)
     if yesterdays_spend is None or yesterdays_spend <= 0:
-        cpc_change_comments.append(CpcChangeComment.NO_YESTERDAY_SPEND)
+        cpc_change_comments.append(automation.constants.CpcChangeComment.NO_YESTERDAY_SPEND)
     if current_cpc is None or current_cpc <= 0:
-        cpc_change_comments.append(CpcChangeComment.CPC_NOT_SET)
+        cpc_change_comments.append(automation.constants.CpcChangeComment.CPC_NOT_SET)
     if current_cpc > automation.settings.AUTOPILOT_MAX_CPC:
-        cpc_change_comments.append(CpcChangeComment.CURRENT_CPC_TOO_HIGH)
+        cpc_change_comments.append(automation.constants.CpcChangeComment.CURRENT_CPC_TOO_HIGH)
     if current_cpc < automation.settings.AUTOPILOT_MIN_CPC:
-        cpc_change_comments.append(CpcChangeComment.CURRENT_CPC_TOO_LOW)
+        cpc_change_comments.append(automation.constants.CpcChangeComment.CURRENT_CPC_TOO_LOW)
     return cpc_change_comments
 
 
@@ -233,7 +233,7 @@ def _get_email_source_changes_text(change):
     return u'''
 - no changes on {} because {}'''.format(
         change['source_name'],
-        ' and '.join(CpcChangeComment.get_text(comment) for comment in change['comments']))
+        ' and '.join(automation.constants.CpcChangeComment.get_text(comment) for comment in change['comments']))
 
 
 @statsd_timer('automation.autopilot', 'adjust_autopilot_media_sources_bid_cpcs')
@@ -246,7 +246,7 @@ def adjust_autopilot_media_sources_bid_cpcs():
             cpc_change_comments = []
 
             if ad_group_sources_daily_budget_was_changed_recently(ad_group_source_settings.ad_group_source):
-                cpc_change_comments.append(CpcChangeComment.BUDGET_MANUALLY_CHANGED)
+                cpc_change_comments.append(automation.constants.CpcChangeComment.BUDGET_MANUALLY_CHANGED)
 
             yesterday_spend = yesterday_spends.get(ad_group_source_settings.ad_group_source.source_id)
 
@@ -256,12 +256,12 @@ def adjust_autopilot_media_sources_bid_cpcs():
                 yesterday_spend
             )
             cpc_change_comments += calculation_comments
-
+            new_cpc = proposed_cpc if cpc_change_comments == [] else ad_group_source_settings.cpc_cc
             persist_cpc_change_to_admin_log(
                 ad_group_source_settings.ad_group_source,
                 yesterday_spend,
                 ad_group_source_settings.cpc_cc,
-                proposed_cpc if cpc_change_comments == [] else ad_group_source_settings.cpc_cc,
+                new_cpc,
                 ad_group_source_settings.daily_budget_cc,
                 automation.helpers.get_yesterdays_clicks(ad_group_source_settings.ad_group_source),
                 cpc_change_comments
@@ -274,7 +274,7 @@ def adjust_autopilot_media_sources_bid_cpcs():
             changes[adgroup.campaign][(adgroup.name, adgroup.id)].append({
                 'source_name': ad_group_source_settings.ad_group_source.source.name,
                 'old_cpc': ad_group_source_settings.cpc_cc,
-                'new_cpc': proposed_cpc if cpc_change_comments == [] else ad_group_source_settings.cpc_cc,
+                'new_cpc': new_cpc,
                 'comments': cpc_change_comments
             })
 
@@ -292,27 +292,3 @@ def adjust_autopilot_media_sources_bid_cpcs():
             [camp.get_current_settings().account_manager.email],
             adgroup_changes
         )
-
-
-class CpcChangeComment(ConstantBase):
-    BUDGET_MANUALLY_CHANGED = 1
-    NO_YESTERDAY_SPEND = 2
-    HIGH_OVERSPEND = 3
-    OLD_DATA = 4
-    OPTIMAL_SPEND = 5
-    BUDGET_NOT_SET = 6
-    CPC_NOT_SET = 7
-    CURRENT_CPC_TOO_HIGH = 8
-    CURRENT_CPC_TOO_LOW = 9
-
-    _VALUES = {
-        BUDGET_MANUALLY_CHANGED: 'budget was manually changed recently',
-        NO_YESTERDAY_SPEND: 'there was no spend yesterday',
-        HIGH_OVERSPEND: 'media source overspent significantly',
-        OLD_DATA: 'latest data was not available',
-        OPTIMAL_SPEND: 'it is running at optimal price for given budget',
-        BUDGET_NOT_SET: 'daily budget was not set',
-        CPC_NOT_SET: 'CPC was not set',
-        CURRENT_CPC_TOO_HIGH: 'Auto-Pilot can not operate on such high CPC',
-        CURRENT_CPC_TOO_LOW: 'Auto-Pilot can not operate on such low CPC'
-    }
