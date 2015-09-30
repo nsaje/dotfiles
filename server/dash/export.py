@@ -11,7 +11,7 @@ from utils.sort_helper import sort_results
 from dash import models
 
 
-def generate_rows(dimensions, start_date, end_date, user, **kwargs):
+def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False, **kwargs):
     ordering = ['date'] if 'date' in dimensions else []
 
     if 'content_ad' in dimensions:
@@ -21,6 +21,7 @@ def generate_rows(dimensions, start_date, end_date, user, **kwargs):
             end_date,
             user,
             ordering,
+            ignore_diff_rows,
             **kwargs
         )
 
@@ -29,6 +30,7 @@ def generate_rows(dimensions, start_date, end_date, user, **kwargs):
         end_date,
         dimensions,
         ordering,
+        ignore_diff_rows=ignore_diff_rows,
         **kwargs
     ), user)
 
@@ -53,20 +55,19 @@ def _get_content_ads(constraints):
     return {c.id: c for c in content_ads}
 
 
-def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, **constraints):
+def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows, **constraints):
     content_ads = _get_content_ads(constraints)
 
     stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
         start_date,
         end_date,
         breakdown=dimensions,
+        ignore_diff_rows=ignore_diff_rows,
         **constraints
     ), user)
 
     for stat in stats:
-        content_ad = content_ads.get(stat['content_ad'], None)
-        if content_ad is None:
-            continue
+        content_ad = content_ads[stat['content_ad']]
         stat['title'] = content_ad.title
         stat['url'] = content_ad.url
         stat['image_url'] = content_ad.get_image_url()

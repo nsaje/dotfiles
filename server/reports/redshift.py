@@ -273,6 +273,16 @@ class RSModel(object):
                 else:
                     result.append('{}=%s'.format(field_name))
                     params.append(value)
+            elif operator == "neq":
+                if is_collection(value):
+                    if value:
+                        result.append('{} NOT IN ({})'.format(field_name, ','.join(["%s"] * len(value))))
+                        params.extend(value)
+                    else:
+                        result.append('TRUE')
+                else:
+                    result.append('{}!=%s'.format(field_name))
+                    params.append(value)
             else:
                 raise Exception("Unknown constraint type: {}".format(field_name))
 

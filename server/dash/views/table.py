@@ -1054,6 +1054,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             start_date,
             end_date,
             breakdown=['content_ad'],
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=filtered_sources,
         ), request.user)
@@ -1083,6 +1084,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         total_stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
             end_date,
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=filtered_sources
         ), request.user)

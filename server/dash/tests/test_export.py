@@ -97,6 +97,7 @@ class ExportTestCase(test.TestCase):
             end_date,
             dimensions,
             ['date'],
+            ignore_diff_rows=False,
             source=source
         )
 
@@ -132,6 +133,7 @@ class ExportTestCase(test.TestCase):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             source=sources,
             campaign=campaign
         )
@@ -140,6 +142,7 @@ class ExportTestCase(test.TestCase):
             start_date,
             end_date,
             breakdown=dimensions,
+            ignore_diff_rows=True,
             **{
                 'source': sources_matcher,
                 'campaign': campaign
