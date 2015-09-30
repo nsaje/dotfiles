@@ -321,7 +321,7 @@ class RSModel(object):
                     result.append('{}=%s'.format(field_name))
                     params.append(value)
             else:
-                raise Exception("Unknown constraint type: {}".format(field_name))
+                raise Exception("Unknown constraint type: {}".format(operator))
 
         return " AND ".join(result), params
 
@@ -416,6 +416,7 @@ class RSModel(object):
             constraints,
             having_constraints)
 
+        print statement, params
         cursor.execute(statement, params)
         results = cursor.dictfetchall()
         results = self.map_results_to_app(results, json_fields)

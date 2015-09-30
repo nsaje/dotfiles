@@ -51,6 +51,10 @@ def click_discrepancy(clicks_col, visits_col):
                 visits=visits_col)
 
 
+def count_expr(expr):
+    return 'COUNT({expr})'.format(expr=expr)
+
+
 def sum_agr(field_name):
     return 'SUM("{field_name}")'.format(field_name=field_name)
 
