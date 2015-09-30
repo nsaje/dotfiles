@@ -101,7 +101,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
 
     list_filter = ('ad_group_source__source', 'state', 'action', 'action_type', AgeFilter, SelfManagedFilter)
 
-    list_display = ('action_', 'ad_group_source_', 'created_dt', 'modified_dt', 'action_type', 'state_', 'order_')
+    list_display = ('action_', 'ad_group_source_', 'created_by', 'created_dt', 'modified_dt', 'action_type', 'state_', 'order_')
 
     fields = (
         'action_', 'ad_group_source_', 'content_ad_source', 'state', 'action_type', 'expiration_dt',
