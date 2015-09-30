@@ -69,6 +69,25 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
                     'display': title,
                 }
 
+    class SelfManagedFilter(admin.SimpleListFilter):
+        title = 'Self-managed user status'
+        parameter_name = 'created_by__is_self_managed'
+
+        def lookups(self, request, model_admin):
+            return [
+                (1, 'self-managed'),
+                (2, 'internal (@zemanta)'),
+            ]
+
+        def queryset(self, request, queryset):
+            if self.value():
+                val = int(self.value())
+                if val == 1:
+                    return queryset.exclude(created_by__email__contains='@zemanta')
+                elif val == 2:
+                    return queryset.filter(created_by__email__contains='@zemanta')
+            return queryset
+
     search_fields = (
         'action',
         'ad_group_source__ad_group__name',
@@ -77,7 +96,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
         'ad_group_source__source__name',
     )
 
-    list_filter = ('ad_group_source__source', 'state', 'action', 'action_type', AgeFilter)
+    list_filter = ('ad_group_source__source', 'state', 'action', 'action_type', AgeFilter, SelfManagedFilter)
 
     list_display = ('action_', 'ad_group_source_', 'created_dt', 'modified_dt', 'action_type', 'state_', 'order_')
 
