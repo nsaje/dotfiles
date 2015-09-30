@@ -6,9 +6,9 @@ from django.db import connections
 from utils.statsd_helper import statsd_timer
 
 from reports import exc
-from reports import rs_helpers as rsh
 from reports.db_raw_helpers import MyCursor, is_collection
 
+JSON_KEY_DELIMITER = '--'
 
 # historically we have migrated data to Redshift partially
 # but there are differences and missing data for older
@@ -182,19 +182,19 @@ class RSModel(object):
         self.constraints_fields_app = set(self.by_app_mapping.keys())
 
     def _is_json_field(self, field_name):
-        return '__' in field_name
+        return JSON_KEY_DELIMITER in field_name
 
     def _extract_field_part(self, field_name):
-        return field_name.split('__', 1)[0]
+        return field_name.split(JSON_KEY_DELIMITER, 1)[0]
 
     def _extract_json_key(self, field_name):
-        return field_name.split('__', 1)[1]
+        return field_name.split(JSON_KEY_DELIMITER, 1)[1]
 
     def _replace_json_key(self, field_name, json_key, rep):
-        return field_name.replace('__' + json_key, '__{}'.format(rep))
+        return field_name.replace(JSON_KEY_DELIMITER + json_key, '__{}'.format(rep))
 
     def _append_json_key(self, field_name, json_key):
-        return field_name + '__' + json_key
+        return field_name + JSON_KEY_DELIMITER + json_key
 
     def translate_app_fields(self, field_names):
         sql_names = []
