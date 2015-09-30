@@ -28,6 +28,10 @@ def to_percent(num):
 
 
 def decimal_to_int_exact(num):
+    '''
+    Converts a decimal.Decimal number to integer.
+    Raises decimal.Inexact if non-zero digits were discarded during rounding.
+    '''
     return int(num.to_integral_exact(context=decimal.Context(traps=[decimal.Inexact])))
 
 
@@ -47,8 +51,8 @@ def click_discrepancy(clicks_col, visits_col):
                 visits=visits_col)
 
 
-def sum_agr(expr):
-    return 'SUM("{expr}")'.format(expr=expr)
+def sum_agr(field_name):
+    return 'SUM("{field_name}")'.format(field_name=field_name)
 
 
 def sum_expr(expr):
