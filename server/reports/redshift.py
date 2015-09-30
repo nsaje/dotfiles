@@ -225,17 +225,17 @@ class RSModel(object):
                 fields.append(self._get_expanded_field_sql(field_name, desc))
                 continue
 
-            # store the json field name in the mapping and replace it with the index to that mapping
-            # resulting in an sql column name format {field_name}{JSON_KEY_DELIMITER}{index_to_mapping}
             field_part, json_key = self._extract_json_key_parts(field_name)
             desc = self.by_sql_mapping[field_part]
 
+            # store the json field name in the mapping and generate sql column name of format
+            # {field_name}{JSON_KEY_DELIMITER}{index_to_mapping}
             field_name = self._replace_json_key(field_name, json_key, len(json_fields))
             json_fields.append(json_key)
-            params.extend([json_key] * (desc['num_json_params']))
 
             field_expanded = self._get_expanded_field_sql(field_name, desc)
             fields.append(field_expanded)
+            params.extend([json_key] * (desc['num_json_params']))
 
         return fields, params, json_fields
 
