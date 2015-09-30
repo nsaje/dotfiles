@@ -207,7 +207,7 @@ class RSModel(object):
             sql_name = self.by_app_mapping[field_part]['sql']
             if self._is_json_field(field_name):
                 json_key = self._extract_json_key(field_name)
-                sql_name = self._append_json_key(field_name, json_key)
+                sql_name = self._append_json_key(sql_name, json_key)
 
             sql_names.append(sql_name)
         return sql_names
@@ -351,7 +351,7 @@ class RSModel(object):
 
     @staticmethod
     def _form_select_query(table, fields, constraint_str, breakdown_fields=None, order_fields=None, limit=None,
-                          offset=None, having_constraints=None):
+                           offset=None, having_constraints=None):
         cmd = 'SELECT {fields} FROM {table} WHERE {constraint_str}'.format(
             fields=','.join(fields),
             table=table,

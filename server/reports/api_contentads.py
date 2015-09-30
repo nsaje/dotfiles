@@ -85,7 +85,7 @@ def query(start_date, end_date, breakdown=[], conversions=[], **constraints):
 
     returned_fields = RSContentAdStats.DEFAULT_RETURNED_FIELDS_APP
     for label in conversions:
-        returned_fields.append('conversions__' + label)
+        returned_fields.append('conversions' + redshift.JSON_KEY_DELIMITER + label)
 
     results = RSContentAdStats.execute_select_query(
         cursor,
