@@ -241,10 +241,10 @@ class RSModel(object):
 
     def translate_breakdown_fields(self, breakdown_fields):
         unknown_fields = set(breakdown_fields) - self.ALLOWED_BREAKDOWN_FIELDS_APP
+        if any(self._is_json_field(field_name) for field_name in breakdown_fields):
+            raise exc.ReportsQueryError('Json fields are not supported in breakdown: {}'.format(str(breakdown_fields)))
         if unknown_fields:
             raise exc.ReportsQueryError('Invalid breakdowns: {}'.format(str(unknown_fields)))
-        if any(self._is_json_field(field_name) for field_name in breakdown_fields):
-            raise exc.ReportsQueryError('Json field in breakdown is not supported: {}'.format(str(breakdown_fields)))
         breakdown_fields = self.translate_app_fields(breakdown_fields)
         return breakdown_fields
 
@@ -280,7 +280,7 @@ class RSModel(object):
             parts = constraint_name.split("__")
             field_name_app = parts[0]
             if self._is_json_field(field_name_app):
-                raise exc.ReportsQueryError("Unsopported json field in constraints: {}".format(field_name_app))
+                raise exc.ReportsQueryError("Json fields not supported in constraints: {}".format(field_name_app))
             if field_name_app not in self.constraints_fields_app:
                 raise exc.ReportsQueryError("Unsupported field constraint fields: {}".format(field_name_app))
             field_name_sql = self.by_app_mapping[field_name_app]['sql']

@@ -197,7 +197,7 @@ class ApiPublishersMapperTest(TestCase):
                 'ctr': None,
                 'adgroup_id': None,
                 'exchange': None}
-        result = api_publishers.rs_pub.map_result_to_app(input)
+        result = api_publishers.rs_pub.map_result_to_app(input, json_fields=[])
         self.assertEqual(result, {   'ad_group': None,
                                      'clicks': None,
                                      'cost': None,
@@ -213,7 +213,7 @@ class ApiPublishersMapperTest(TestCase):
                  'cost_micro_sum': 200000,
                  'ctr': 0.2,
                 }
-        result = api_publishers.rs_pub.map_result_to_app(input)
+        result = api_publishers.rs_pub.map_result_to_app(input, json_fields=[])
         self.assertEqual(result, {'cost': 0.0002,
                                   'cpc': 0.0001,
                                   'ctr': 20.0
@@ -221,5 +221,5 @@ class ApiPublishersMapperTest(TestCase):
 
     def test_map_unknown_row(self):
         input = {'bah': 100000,}
-        self.assertRaises(KeyError, api_publishers.rs_pub.map_result_to_app, input)
+        self.assertRaises(KeyError, api_publishers.rs_pub.map_result_to_app, input, json_fields=[])
 
