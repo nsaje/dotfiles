@@ -102,6 +102,16 @@ def ad_group_source_is_on_autopilot(ad_group_source):
     return setting.autopilot_state == constants.AdGroupSourceSettingsAutopilotState.ACTIVE
 
 
+def _ad_group_source_is_synced(ad_group_source):
+    min_sync_date = datetime.datetime.utcnow() - datetime.timedelta(
+        hours=automation.settings.SYNC_IS_RECENT_HOURS
+    )
+    last_sync = ad_group_source.last_successful_sync_dt
+    if last_sync is None:
+        return False
+    return last_sync >= min_sync_date
+
+
 def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_spend):
     cpc_change_comments = _get_calculate_cpc_comments(current_cpc, current_daily_budget, yesterdays_spend)
     spending_perc = _calculate_spending_perc(yesterdays_spend, current_daily_budget)
@@ -248,6 +258,9 @@ def adjust_autopilot_media_sources_bid_cpcs():
 
             if ad_group_sources_daily_budget_was_changed_recently(ad_group_source_settings.ad_group_source):
                 cpc_change_comments.append(automation.constants.CpcChangeComment.BUDGET_MANUALLY_CHANGED)
+
+            if not _ad_group_source_is_synced(ad_group_source_settings.ad_group_source):
+                cpc_change_comments.append(automation.constants.CpcChangeComment.OLD_DATA)
 
             yesterday_spend = yesterday_spends.get(ad_group_source_settings.ad_group_source.source_id)
 
