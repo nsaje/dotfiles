@@ -49,7 +49,7 @@ class ApiContentAdsQueryTest(TestCase):
         self.assertEqual(len(where_constraints), len(constraints))
 
         self.assertIn('"date" >= ', query)
-        self.assertIn('"date" >= ', query)
+        self.assertIn('"date" <= ', query)
         self.assertIn('content_ad_id!=', query)
 
     def check_aggregations(self, mock_cursor):
