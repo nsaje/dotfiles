@@ -40,9 +40,6 @@ def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False
     ), user)
 
 
-def generate_redshift_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False, **kwargs):
-    ordering = ['date'] if 'date' in dimensions else []
-
 def _get_content_ads(constraints):
     sources = None
     fields = {}
