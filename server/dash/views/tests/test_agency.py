@@ -14,6 +14,7 @@ from django.conf import settings
 from zemauth.models import User
 from dash import models
 from dash import constants
+from dash.views import agency
 
 
 @patch('dash.views.agency.api.order_ad_group_settings_update')
@@ -134,8 +135,8 @@ class AdGroupSettingsTest(TestCase):
 
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
         default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
-        self.assertTrue(default_sources_settings.exists())
-        self.assertEqual(len(ad_group_sources), len(default_sources_settings))
+        self.assertEqual(default_sources_settings.count(), 2)
+        self.assertEqual(ad_group_sources.count(), 1)
 
         for ad_group_source in ad_group_sources:
             default_settings = models.DefaultSourceSettings.objects.get(source=ad_group_source.source)
@@ -153,6 +154,56 @@ class AdGroupSettingsTest(TestCase):
 
             # auto_add enabled source was added
             self.assertTrue(default_settings)
+
+    def test_put_create_settings_dont_auto_add_mobile(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=10)
+        current_settings = ad_group.get_current_settings()
+
+        current_settings.target_devices = ['mobile']
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        agency.AdGroupSettings()._add_media_sources(ad_group, current_settings, request)
+
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
+        self.assertEqual(default_sources_settings.count(), 2)
+        self.assertEqual(ad_group_sources.count(), 2)
+
+        for ad_group_source in ad_group_sources:
+            default_settings = models.DefaultSourceSettings.objects.get(source=ad_group_source.source)
+            # only one settings per ad group source should exist
+            ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source).latest()
+
+            self.assertIsNotNone(default_settings.mobile_cpc_cc)
+            self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
+            self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.mobile_cpc_cc)
+
+    def test_put_create_settings_dont_auto_add_desktop(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=10)
+        current_settings = ad_group.get_current_settings()
+
+        current_settings.target_devices = ['desktop']
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        agency.AdGroupSettings()._add_media_sources(ad_group, current_settings, request)
+
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
+        self.assertEqual(default_sources_settings.count(), 2)
+        self.assertEqual(ad_group_sources.count(), 1)
+
+        for ad_group_source in ad_group_sources:
+            default_settings = models.DefaultSourceSettings.objects.get(source=ad_group_source.source)
+            # only one settings per ad group source should exist
+            ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source).latest()
+
+            self.assertIsNotNone(default_settings.default_cpc_cc)
+            self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
+            self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.default_cpc_cc)
 
     def test_put_without_non_propagated_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
