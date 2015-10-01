@@ -14,12 +14,7 @@ from dash import models
 def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False, **kwargs):
     ordering = ['date'] if 'date' in dimensions else []
 
-
-    # TODO: Remove reports.api query below after we discard 'old' Z1 statistics
-    if 'content_ad' in dimensions or (
-        user.has_perm('zemauth.can_see_redshift_postclick_statistics') and\
-        'content_ad' not in dimensions and\
-        'article' not in dimensions) and user.id in (142,):
+    if 'content_ad' in dimensions:
         return _generate_content_ad_rows(
             dimensions,
             start_date,
@@ -29,6 +24,16 @@ def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False
             ignore_diff_rows,
             **kwargs
         )
+
+    if user.has_perm('zemauth.can_see_redshift_postclick_statistics') and 'article' not in dimensions:
+        return reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
+            start_date,
+            end_date,
+            dimensions,
+            ordering,
+            ignore_diff_rows=ignore_diff_rows,
+            **kwargs
+        ), user)
 
     return reports.api_helpers.filter_by_permissions(reports.api.query(
         start_date,
