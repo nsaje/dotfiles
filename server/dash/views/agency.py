@@ -196,9 +196,9 @@ class AdGroupSettings(api_common.BaseApiView):
         default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
 
         # only select relevant media sources
-        if 'mobile' in new_settings.target_devices and 'desktop' not in new_settings.target_devices:
+        if new_settings.is_mobile_only():
             default_sources_settings = default_sources_settings.exclude(mobile_cpc_cc=None)
-        elif 'desktop' in new_settings.target_devices and 'mobile' not in new_settings.target_devices:
+        else:
             default_sources_settings = default_sources_settings.exclude(default_cpc_cc=None)
 
         ad_group_sources_w_defaults = []
