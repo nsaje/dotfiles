@@ -73,6 +73,6 @@ def is_all_null(field_names):
 
 def extract_json_or_null(field_name):
     return "CASE JSON_EXTRACT_PATH_TEXT({field_name}, %s) WHEN '' "\
-        "THEN NULL ELSE JSON_EXTRACT_PATH_TEXT({field_name}, %s) END".format(
+        "THEN '0' ELSE JSON_EXTRACT_PATH_TEXT({field_name}, %s) END".format(
             field_name=field_name
         )
