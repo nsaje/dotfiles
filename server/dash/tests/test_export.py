@@ -17,6 +17,8 @@ from zemauth.models import User
 
 class ExportTestCase(test.TestCase):
 
+    fixtures=['test_api']
+
     def _assert_row(self, worksheet, row_num, row_cell_list):
         for cell_num, cell_value in enumerate(row_cell_list):
             self.assertEqual(worksheet.cell_value(row_num, cell_num), cell_value)
@@ -41,9 +43,6 @@ class ExportTestCase(test.TestCase):
             }
         ]
 
-        #user = User.objects.get(pk=1)
-        #redshift_perm = authmodels.Permission.objects.get(codename="can_see_redshift_postclick_statistics")
-        #user.user_permissions.add(redshift_perm)
         redshift.STATS_DB_NAME = 'default'
 
     def test_get_csv_content(self):

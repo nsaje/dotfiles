@@ -37,7 +37,7 @@ def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False
         end_date,
         dimensions,
         ordering,
-        ignore_diff_rows=True,
+        ignore_diff_rows=ignore_diff_rows,
         **kwargs
     ), user)
 
