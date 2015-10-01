@@ -331,7 +331,7 @@ def process_report(date, parsed_report_rows, report_type):
 
     # refresh aggregation table
     for ad_group in dash.models.AdGroup.objects.filter(contentad__id__in=content_ad_ids):
-        refresh.refresh_contentadstats(date, ad_group)
+        reports.refresh.refresh_contentadstats(date, ad_group)
 
 
 def _create_contentad_postclick_stats(entry, track_source_map):

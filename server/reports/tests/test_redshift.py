@@ -18,7 +18,7 @@ class RedshiftTest(TestCase):
 
         redshift.delete_contentadstats(date, ad_group_id, source_id)
 
-        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND id != %s AND source_id = %s'
+        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND content_ad_id != %s AND source_id = %s'
         params = ['2015-01-01', 1, -1, 2]
 
         mock_cursor().execute.assert_called_with(query, params)
@@ -29,7 +29,7 @@ class RedshiftTest(TestCase):
 
         redshift.delete_contentadstats(date, ad_group_id, None)
 
-        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND id != %s'
+        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND content_ad_id != %s'
         params = ['2015-01-01', 1, -1]
 
         mock_cursor().execute.assert_called_with(query, params)
@@ -50,8 +50,10 @@ class RedshiftTest(TestCase):
     def test_sum_contentadstats(self, mock_cursor):
         redshift.sum_contentadstats()
 
-        query = 'SELECT SUM(impressions) as impressions, SUM(visits) as visits FROM contentadstats'
-        mock_cursor().execute.assert_called_with(query, [])
+        query = 'SELECT SUM(impressions) as impressions, SUM(visits) as visits FROM contentadstats WHERE content_ad_id != %s'
+        params = [redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
+
+        mock_cursor().execute.assert_called_with(query, params)
 
     def test_get_pixels_last_verified_dt(self, mock_get_cursor):
         mock_cursor = Mock()

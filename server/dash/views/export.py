@@ -530,6 +530,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources
         )
@@ -544,6 +545,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources
         )
@@ -552,6 +554,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources
         )
@@ -575,6 +578,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources
         )
@@ -583,6 +587,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources
         )
@@ -605,6 +610,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources
         )

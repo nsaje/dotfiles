@@ -194,7 +194,7 @@ def stop_and_notify_depleted_budget_campaigns():
 def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterdays_spend):
     account_manager = campaign.get_current_settings().account_manager
     sales_rep = campaign.get_current_settings().sales_representative
-    emails = ['bostjan@zemanta.com', 'davorin.kopic@zemanta.com'] #  HACK - Remove testing emails before 30/09/2015
+    emails = ['bostjan@zemanta.com', 'davorin.kopic@zemanta.com'] #  NOTE - Testing emails to be removed
     if account_manager is not None:
         emails.append(account_manager.email)
     if sales_rep is not None:
