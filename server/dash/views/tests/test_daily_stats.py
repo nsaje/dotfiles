@@ -2,6 +2,7 @@ from mock import patch
 import datetime
 import json
 
+from django.contrib.auth import models as authmodels
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
@@ -15,7 +16,7 @@ class BaseDailyStatsTest(TestCase):
 
     def setUp(self):
         password = 'secret'
-        self.user = User.objects.get(pk=1)
+        self.user = User.objects.get(pk=2)
 
         self.client.login(username=self.user.email, password=password)
 
@@ -89,6 +90,8 @@ class BaseDailyStatsTest(TestCase):
 
 class AccountsDailyStatsTest(BaseDailyStatsTest):
     def test_get_by_source(self):
+        perm = authmodels.Permission.objects.get(codename='all_accounts_accounts_view')
+        self.user.user_permissions.add(perm)
         source_id = 3
 
         self._prepare_mock('source', source_id)
