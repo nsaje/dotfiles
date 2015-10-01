@@ -53,10 +53,6 @@ def _get_active_campaigns_subset(campaigns):
     return campaigns
 
 
-def campaign_is_in_sales_group(campaign):
-    return campaign.account.groups.filter(name='sales').count() > 0
-
-
 def get_yesterdays_clicks(ad_group_source):
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
     today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)

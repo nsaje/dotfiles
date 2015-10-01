@@ -337,6 +337,8 @@ def _report_trends_metrics(today_min, today_max):
     for source in yesterdays_changed_cpc_logs.values('ad_group_source_id').distinct().values_list('ad_group_source_id'):
         yesterdays = yesterdays_changed_cpc_logs.filter(ad_group_source=source).latest('created_dt')
         todays = todays_changed_cpc_logs.filter(ad_group_source=source).latest('created_dt')
+        if yesterdays.current_daily_budget_cc <= 0 or todays.current_daily_budget_cc <= 0:
+            continue
         yesterdays_spend = (yesterdays.yesterdays_spend_cc / yesterdays.current_daily_budget_cc) - 1
         todays_spend = (todays.yesterdays_spend_cc / todays.current_daily_budget_cc) - 1
         spend_trends.append(
