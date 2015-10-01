@@ -16,7 +16,6 @@ from zemauth.models import User
 
 
 class ExportTestCase(test.TestCase):
-
     fixtures=['test_api']
 
     def _assert_row(self, worksheet, row_num, row_cell_list):
@@ -92,7 +91,7 @@ class ExportTestCase(test.TestCase):
         dimensions = ['date', 'article']
         start_date = datetime.date(2015, 2, 1)
         end_date = datetime.date(2015, 2, 2)
-        user = User(pk=1)
+        user = User.objects.get(pk=1)
 
         source = models.Source(id=1)
 
@@ -109,7 +108,36 @@ class ExportTestCase(test.TestCase):
 
         self.assertEqual(rows, mock_stats)
 
-    fixtures = ['test_api.yaml']
+    @patch('dash.export.reports.api.query')
+    def test_generate_redshift_rows(self, mock_query):
+        mock_stats = [{
+            'date': datetime.date(2015, 2, 1),
+            'cpc': '0.0200',
+            'clicks': 1500,
+            'source': 1
+        }]
+
+        mock_query.return_value = mock_stats
+
+        dimensions = ['date', 'article']
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
+        user = User.objects.get(pk=2)
+
+        source = models.Source(id=1)
+
+        rows = export.generate_rows(dimensions, start_date, end_date, user, source=source)
+
+        mock_query.assert_called_with(
+            start_date,
+            end_date,
+            dimensions,
+            ['date'],
+            ignore_diff_rows=False,
+            source=source
+        )
+
+        self.assertEqual(rows, mock_stats)
 
     @patch('dash.export.reports.api_contentads.query')
     def test_generate_rows_content_ad(self, mock_query):
