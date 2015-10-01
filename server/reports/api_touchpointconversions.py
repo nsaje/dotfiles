@@ -19,7 +19,8 @@ class RSTouchpointConversionsModel(redshift.RSModel):
     ]
 
     _OTHER_FIELDS = [
-        dict(sql='conversion_id', app='count', out=rs_helpers.unchanged, calc=rs_helpers.count_expr('conversion_id'))
+        dict(sql='conversion_id', app='conversion_count', out=rs_helpers.unchanged, calc=rs_helpers.count_distinct_agr('conversion_id')),
+        dict(sql='touchpoint_id', app='touchpoint_count', out=rs_helpers.unchanged, calc=rs_helpers.count_agr('touchpoint_id'))
     ]
 
     FIELDS = _BREAKDOWN_FIELDS + _OTHER_FIELDS
