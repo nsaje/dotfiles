@@ -32,17 +32,12 @@ def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False
             **kwargs
         )
 
-    reports_api = get_reports_api_module(user)
-    if user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
-        ignore_diff_for_rs = True
-    else:
-        ignore_diff_for_rs = ignore_diff_rows
-    return reports.api_helpers.filter_by_permissions(reports_api.query(
+    return reports.api_helpers.filter_by_permissions(reports.api.query(
         start_date,
         end_date,
         dimensions,
         ordering,
-        ignore_diff_rows=ignore_diff_for_rs,
+        ignore_diff_rows=True,
         **kwargs
     ), user)
 
