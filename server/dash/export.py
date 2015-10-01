@@ -19,7 +19,7 @@ def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False
     if 'content_ad' in dimensions or (
         user.has_perm('zemauth.can_see_redshift_postclick_statistics') and\
         'content_ad' not in dimensions and\
-        'article' not in dimensions):
+        'article' not in dimensions) and user.id in (142,):
         return _generate_content_ad_rows(
             dimensions,
             start_date,
