@@ -18,24 +18,31 @@ class RSTouchpointConversionsModel(redshift.RSModel):
         dict(sql='slug',          app='slug',       out=rs_helpers.unchanged),
     ]
 
-    _OTHER_FIELDS = [
+    _CONVERSION_FIELDS = [
         dict(sql='conversion_id', app='conversion_count', out=rs_helpers.unchanged, calc=rs_helpers.count_distinct_agr('conversion_id')),
         dict(sql='touchpoint_id', app='touchpoint_count', out=rs_helpers.unchanged, calc=rs_helpers.count_agr('touchpoint_id'))
     ]
 
-    FIELDS = _BREAKDOWN_FIELDS + _OTHER_FIELDS
-    DEFAULT_RETURNED_FIELDS_APP = [f['app'] for f in _OTHER_FIELDS]
+    _OTHER_FIELDS = [
+        dict(sql='conversion_lag', app='conversion_lag', out=rs_helpers.unchanged)
+    ]
+
+    FIELDS = _BREAKDOWN_FIELDS + _CONVERSION_FIELDS + _OTHER_FIELDS
+    DEFAULT_RETURNED_FIELDS_APP = [f['app'] for f in _CONVERSION_FIELDS]
     ALLOWED_BREAKDOWN_FIELDS_APP = set(f['app'] for f in _BREAKDOWN_FIELDS)
 
 RSTouchpointConversions = RSTouchpointConversionsModel()
 
 
-def query(start_date, end_date, breakdown=None, constraints=None):
+def query(start_date, end_date, breakdown=None, constraints=None, constraints_plus=None):
     if not breakdown:
         breakdown = []
 
     if not constraints:
-        constraints = []
+        constraints = {}
+
+    if not constraints_plus:
+        constraints_plus = []
 
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
@@ -49,7 +56,8 @@ def query(start_date, end_date, breakdown=None, constraints=None):
         order_fields=[],
         offset=None,
         limit=None,
-        constraints=constraints
+        constraints=constraints,
+        constraints_plus=constraints_plus
     )
 
     cursor.close()

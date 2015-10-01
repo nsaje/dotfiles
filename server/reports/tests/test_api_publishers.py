@@ -45,8 +45,8 @@ class ApiPublishersTest(TestCase):
         where_constraints = query.split('WHERE')[1].split('GROUP BY')[0].split('AND')
         self.assertEqual(len(where_constraints), len(constraints))
 
-        self.assertIn('"date" >= ', query)
-        self.assertIn('"date" <= ', query)
+        self.assertIn('"date">=', query)
+        self.assertIn('"date"<=', query)
         # TODO: we need to test parameters here too
 
     def check_aggregations(self):
@@ -179,7 +179,7 @@ class ApiPublishersInsertTest(TestCase):
                                               )
                                        
         mock_cursor.execute.assert_has_calls([
-            mock.call('DELETE FROM "ob_publishers_1" WHERE adgroup_id=%s AND date=%s AND exchange=%s', [3, datetime.date(2015, 2, 1), 'outbrain']),
+            mock.call('DELETE FROM "ob_publishers_1" WHERE (adgroup_id=%s AND date=%s AND exchange=%s)', [3, datetime.date(2015, 2, 1), 'outbrain']),
             mock.call('INSERT INTO ob_publishers_1 (date,adgroup_id,exchange,domain,name,clicks,cost_micro,ob_section_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s),(%s,%s,%s,%s,%s,%s,%s,%s)', 
                       [datetime.date(2015, 2, 1), 3, 'outbrain', 'money.cnn.com', 'CNN money', 20, 40000000000.0, 'AAAABBBBB', datetime.date(2015, 2, 1), 3, 'outbrain', 'money.cnn.com', 'CNN money', 80, 160000000000.0, 'AAAABBBBB'])
         ])
