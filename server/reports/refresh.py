@@ -12,30 +12,41 @@ import dash.models
 
 
 def _get_joined_stats_rows(date, ad_group_id, source_id):
-    query = '''SELECT s.source_id as source_id1, p.source_id as source_id2,
-                      s.content_ad_id as content_ad_id1, p.content_ad_id as content_ad_id2,
-                      s.date as date1, p.date as date2, cost_cc, data_cost_cc, impressions, clicks,
-                      visits, new_visits, bounced_visits, pageviews, total_time_on_site
-            FROM reports_contentadstats s FULL OUTER JOIN reports_contentadpostclickstats p
-            ON s.date = p.date AND s.content_ad_id = p.content_ad_id AND s.source_id = p.source_id
-            WHERE (s.date = %(date)s OR p.date = %(date)s)
-            AND (s.content_ad_id IN (
-                SELECT id FROM dash_contentad WHERE ad_group_id = %(ad_group_id)s
-            ) OR p.content_ad_id IN (
-                SELECT id FROM dash_contentad WHERE ad_group_id = %(ad_group_id)s
-            ))'''
+    query_1 = '''SELECT source_id, content_ad_id, date, cost_cc, data_cost_cc, impressions, clicks FROM reports_contentadstats WHERE date = %(date)s AND content_ad_id IN (
+                SELECT id FROM dash_contentad WHERE ad_group_id = %(ad_group_id)s)'''
+    query_2 = '''SELECT source_id, content_ad_id, date, visits, new_visits, bounced_visits, pageviews, total_time_on_site FROM reports_contentadpostclickstats WHERE date = %(date)s AND content_ad_id IN (
+                SELECT id FROM dash_contentad WHERE ad_group_id = %(ad_group_id)s)'''
 
     params = {'date': date.isoformat(), 'ad_group_id': ad_group_id}
 
     if source_id:
-        query = query + ' AND (s.source_id = %(source_id)s OR p.source_id = %(source_id)s)'
+        query_1 = query_1 + ' AND source_id = %(source_id)s'
+        query_2 = query_2 + ' AND source_id = %(source_id)s'
         params['source_id'] = source_id
 
     with connection.cursor() as cursor:
-        cursor.execute(query, params)
-        rows = dictfetchall(cursor)
+        cursor.execute(query_1, params)
+        rows_1 = dictfetchall(cursor)
+        cursor.execute(query_2, params)
+        rows_2 = dictfetchall(cursor)
 
-    return map(_normalize_join_cols, rows)
+    rows_dict = {}
+
+    keys = {'source_id', 'content_ad_id', 'date', 'cost_cc', 'data_cost_cc', 'impressions', 'clicks', 'visits',
+            'new_visits', 'bounced_visits', 'pageviews', 'total_time_on_site'}
+
+    for r1 in rows_1:
+        key = (r1['content_ad_id'], r1['source_id'])
+        rows_dict[key] = {k: r1.get(k) for k in keys}
+
+    for r2 in rows_2:
+        key = (r2['content_ad_id'], r2['source_id'])
+        if key in rows_dict:
+            rows_dict[key].update({k: r2.get(k) for k in keys if r2.get(k) is not None})
+        else:
+            rows_dict[key] = {k: r2.get(k) for k in keys}
+
+    return rows_dict.values()
 
 
 def _normalize_join_cols(row):
