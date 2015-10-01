@@ -336,6 +336,7 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
             start_date,
             end_date,
             breakdown=['date'],
+            ignore_diff_rows=True,
             ad_group=1,
             source=matcher
         )
@@ -360,7 +361,6 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
             },
             'success': True
         })
-
 
 
 @patch('dash.views.daily_stats.reports.api_publishers.query')

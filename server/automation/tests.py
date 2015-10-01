@@ -12,6 +12,7 @@ from automation import models as automationmodels
 from dash import models
 from reports import refresh
 import automation.settings
+import automation.constants
 
 from zemauth.models import User
 
@@ -109,7 +110,8 @@ class BudgetDepletionTestCase(test.TestCase):
             0.15,
             0.20,
             30.0,
-            5
+            5,
+            []
         )
         log = automationmodels.AutopilotAdGroupSourceBidCpcLog.objects.all().latest('created_dt')
         self.assertEqual(log.campaign, models.Campaign.objects.get(pk=1))
@@ -138,9 +140,9 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=2)))
 
     @patch('automation.settings.AUTOPILOT_CPC_CHANGE_TABLE', (
-        {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.5, 'bid_cpc_procentual_increase': 0.1},
-        {'underspend_upper_limit': -0.5, 'underspend_lower_limit': -0.1, 'bid_cpc_procentual_increase': 0.5},
-        {'underspend_upper_limit': -0.1, 'underspend_lower_limit': 0, 'bid_cpc_procentual_increase': -0.5}
+        {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.5, 'bid_cpc_procentual_increase': decimal.Decimal('0.1')},
+        {'underspend_upper_limit': -0.5, 'underspend_lower_limit': -0.1, 'bid_cpc_procentual_increase': decimal.Decimal('0.5')},
+        {'underspend_upper_limit': -0.1, 'underspend_lower_limit': 0, 'bid_cpc_procentual_increase': decimal.Decimal('-0.5')}
         )
     )
     @patch('automation.settings.AUTOPILOT_MIN_CPC', decimal.Decimal('0.1'))
@@ -148,30 +150,30 @@ class BudgetDepletionTestCase(test.TestCase):
     @patch('automation.settings.AUTOPILOT_MIN_LOWERING_CPC_CHANGE', decimal.Decimal('0.2'))
     @patch('automation.settings.AUTOPILOT_MAX_LOWERING_CPC_CHANGE', decimal.Decimal('0.3'))
     def test_calculate_new_autopilot_cpc(self):
-        test_cases = {
-            #  cpc, daily_budget, yesterday_spend, new_cpc
-            ('0', '10', '5', '0'),
-            ('0.5', '10', '8', '0.75'),
-            ('0.5', '10', '10', '0.25'),
-            ('0.5', '10', '2', '0.56'),
-            ('0.5', '10', '0', '0.5'),
-            ('0.5', '10', '5', '0.56'),
-            ('0.5', '0', '5', '0.5'),
-            ('0.5', '10', '0', '0.5'),
-            ('0.5', '-10', '5', '0.5'),
-            ('0.5', '10', '-5', '0.5'),
-            ('-0.5', '10', '5', '0'),
-            ('0.35', '10', '9.96', '0.15'),
-            ('2.8', '10', '9.96', '2.5'),
-            ('3.5', '10', '1', '3.5'),
-            ('0.05', '10', '1', '0.05')
-        }
+        test_cases = (
+            #  cpc, daily_budget, yesterday_spend, new_cpc, comments
+            ('0', '10', '5', '0', [automation.constants.CpcChangeComment.CPC_NOT_SET, automation.constants.CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('0.5', '10', '8', '0.75', []),
+            ('0.5', '10', '10', '0.25', []),
+            ('0.5', '10', '2', '0.55', []),
+            ('0.5', '10', '0', '0.5', [automation.constants.CpcChangeComment.NO_YESTERDAY_SPEND]),
+            ('0.5', '10', '5', '0.55', []),
+            ('0.5', '0', '5', '0.5', [automation.constants.CpcChangeComment.BUDGET_NOT_SET]),
+            ('0.5', '10', '0', '0.5', [automation.constants.CpcChangeComment.NO_YESTERDAY_SPEND]),
+            ('0.5', '-10', '5', '0.5', [automation.constants.CpcChangeComment.BUDGET_NOT_SET]),
+            ('0.5', '10', '-5', '0.5', [automation.constants.CpcChangeComment.NO_YESTERDAY_SPEND]),
+            ('-0.5', '10', '5', '-0.5', [automation.constants.CpcChangeComment.CPC_NOT_SET, automation.constants.CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('0.35', '10', '9.96', '0.15', []),
+            ('2.8', '10', '9.96', '2.5', []),
+            ('3.5', '10', '1', '3.5', [automation.constants.CpcChangeComment.CURRENT_CPC_TOO_HIGH]),
+            ('0.05', '10', '1', '0.05', [automation.constants.CpcChangeComment.CURRENT_CPC_TOO_LOW])
+        )
         for test_case in test_cases:
             self.assertEqual(autopilot.calculate_new_autopilot_cpc(
                 decimal.Decimal(test_case[0]),
                 decimal.Decimal(test_case[1]),
                 decimal.Decimal(test_case[2])),
-                decimal.Decimal(test_case[3]))
+                (decimal.Decimal(test_case[3]), test_case[4]))
 
     def test_send_autopilot_CPC_changes_email(self):
         autopilot.send_autopilot_CPC_changes_email(
@@ -182,7 +184,8 @@ class BudgetDepletionTestCase(test.TestCase):
             {(u'Adgroup', 109): [{
                 'old_cpc': decimal.Decimal('0.1800'),
                 'source_name': u'source',
-                'new_cpc': decimal.Decimal('0.21')}
+                'new_cpc': decimal.Decimal('0.21'),
+                'comments': []}
             ]}
         )
         self.assertEqual(len(mail.outbox), 1)
@@ -192,33 +195,39 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(mail.outbox[0].to, ['test@zemanta.com'])
 
     def test_get_active_ad_group_sources_settings(self):
-            adg1 = models.AdGroup.objects.get(id=1)
-            actives = helpers.get_active_ad_group_sources_settings(adg1)
-            self.assertEqual(len(actives), 1)
+        adg1 = models.AdGroup.objects.get(id=1)
+        actives = helpers.get_active_ad_group_sources_settings(adg1)
+        self.assertEqual(len(actives), 1)
 
-            adg2 = models.AdGroup.objects.get(id=2)
-            actives2 = helpers.get_active_ad_group_sources_settings(adg2)
-            self.assertEqual(len(actives2), 1)
+        adg2 = models.AdGroup.objects.get(id=2)
+        actives2 = helpers.get_active_ad_group_sources_settings(adg2)
+        self.assertEqual(len(actives2), 1)
 
     def test_get_autopilot_ad_group_sources_settings(self):
-            adg1 = models.AdGroup.objects.get(id=1)
-            actives = autopilot.get_autopilot_ad_group_sources_settings(adg1)
-            self.assertEqual(len(actives), 0)
+        adg1 = models.AdGroup.objects.get(id=1)
+        actives = autopilot.get_autopilot_ad_group_sources_settings(adg1)
+        self.assertEqual(len(actives), 0)
 
-            adg2 = models.AdGroup.objects.get(id=2)
-            actives2 = autopilot.get_autopilot_ad_group_sources_settings(adg2)
-            self.assertEqual(len(actives2), 1)
+        adg2 = models.AdGroup.objects.get(id=2)
+        actives2 = autopilot.get_autopilot_ad_group_sources_settings(adg2)
+        self.assertEqual(len(actives2), 1)
 
     def test_ad_group_source_is_on_autopilot(self):
-            adgs1 = models.AdGroupSource.objects.get(id=1)
-            self.assertFalse(autopilot.ad_group_source_is_on_autopilot(adgs1))
+        adgs1 = models.AdGroupSource.objects.get(id=1)
+        self.assertFalse(autopilot.ad_group_source_is_on_autopilot(adgs1))
 
-            adgs2 = models.AdGroupSource.objects.get(id=2)
-            self.assertTrue(autopilot.ad_group_source_is_on_autopilot(adgs2))
+        adgs2 = models.AdGroupSource.objects.get(id=2)
+        self.assertTrue(autopilot.ad_group_source_is_on_autopilot(adgs2))
 
     def test_get_total_daily_budget_amount(self):
-            camp1 = models.Campaign.objects.get(id=1)
-            self.assertEqual(helpers.get_total_daily_budget_amount(camp1), decimal.Decimal('60'))
+        camp1 = models.Campaign.objects.get(id=1)
+        self.assertEqual(helpers.get_total_daily_budget_amount(camp1), decimal.Decimal('60'))
 
-            camp2 = models.Campaign.objects.get(id=2)
-            self.assertEqual(helpers.get_total_daily_budget_amount(camp2), decimal.Decimal('0'))
+        camp2 = models.Campaign.objects.get(id=2)
+        self.assertEqual(helpers.get_total_daily_budget_amount(camp2), decimal.Decimal('0'))
+
+    def test_stop_campaign(self):
+        camp = models.Campaign.objects.get(id=1)
+        self.assertTrue(len(helpers.get_active_ad_groups(camp)) > 0)
+        helpers.stop_campaign(camp)
+        self.assertEqual(len(helpers.get_active_ad_groups(camp)), 0)

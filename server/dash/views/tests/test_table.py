@@ -102,6 +102,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             breakdown=['content_ad'],
             ad_group=ad_group,
+            ignore_diff_rows=True,
             source=sources_matcher
         )
 
@@ -109,6 +110,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             ad_group=ad_group,
+            ignore_diff_rows=True,
             source=sources_matcher
         )
 
@@ -296,6 +298,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             breakdown=['content_ad'],
             ad_group=ad_group,
+            ignore_diff_rows=True,
             source=sources_matcher
         )
 
@@ -303,6 +306,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             ad_group=ad_group,
+            ignore_diff_rows=True,
             source=sources_matcher
         )
 
@@ -362,6 +366,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources_matcher
         )
@@ -370,6 +375,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             ad_group=ad_group,
+            ignore_diff_rows=True,
             source=sources_matcher
         )
 
