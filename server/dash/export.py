@@ -11,6 +11,13 @@ from utils.sort_helper import sort_results
 from dash import models
 
 
+def get_reports_api_module(user):
+    if user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
+        return reports.api_contentads
+    else:
+        return reports.api
+
+
 def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False, **kwargs):
     ordering = ['date'] if 'date' in dimensions else []
 
@@ -25,12 +32,17 @@ def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False
             **kwargs
         )
 
-    return reports.api_helpers.filter_by_permissions(reports.api.query(
+    reports_api = get_reports_api_module(user)
+    if user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
+        ignore_diff_for_rs = True
+    else:
+        ignore_diff_for_rs = ignore_diff_rows
+    return reports.api_helpers.filter_by_permissions(reports_api.query(
         start_date,
         end_date,
         dimensions,
         ordering,
-        ignore_diff_rows=ignore_diff_rows,
+        ignore_diff_rows=ignore_diff_for_rs,
         **kwargs
     ), user)
 
@@ -58,7 +70,8 @@ def _get_content_ads(constraints):
 def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows, **constraints):
     content_ads = _get_content_ads(constraints)
 
-    stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
+    reports_api = get_reports_api_module(user)
+    stats = reports.api_helpers.filter_by_permissions(reports_api.query(
         start_date,
         end_date,
         breakdown=dimensions,
