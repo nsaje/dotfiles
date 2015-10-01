@@ -10,6 +10,7 @@ from django.conf import settings
 import xlrd
 
 from dash.views import export
+from zemauth import models
 from utils import exc
 
 class AssertRowMixin(object):
@@ -279,8 +280,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['type'] = 'csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.user = Mock()
-        request.user.id = 1
+        request.user = models.User.objects.get(pk=2)
 
         response = export.AdGroupAdsExport().get(request, self.ad_group_id)
 
@@ -313,9 +313,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
         request.method = 'get'
-        request.user = Mock()
-        request.user.email = 'something'
-        request.user.id = 1
+        request.user = models.User.objects.get(pk=2)
 
         with self.assertRaises(exc.MissingDataError):
             response = export.AdGroupAdsExport().get(request, 100000)
@@ -337,9 +335,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
         request.method = 'get'
-        request.user = Mock()
-        request.user.email = 'something'
-        request.user.id = 1
+        request.user = models.User.objects.get(pk=2)
 
         with self.assertRaises(exc.MissingDataError):
             response = export.AdGroupAdsExport().get(request, 100000)
@@ -355,8 +351,7 @@ class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['type'] = 'excel'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.user = Mock()
-        request.user.id = 1
+        request.user = models.User.objects.get(pk=2)
 
         response = export.AdGroupAdsExport().get(request, self.ad_group_id)
 
@@ -436,8 +431,7 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['type'] = 'csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.user = Mock()
-        request.user.id = 1
+        request.user = models.User.objects.get(pk=2)
 
         response = export.AdGroupSourcesExport().get(request, self.ad_group_id)
 
@@ -463,8 +457,7 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['type'] = 'excel'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.user = Mock()
-        request.user.id = 1
+        request.user = models.User.objects.get(pk=2)
 
         response = export.AdGroupSourcesExport().get(request, self.ad_group_id)
 

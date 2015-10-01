@@ -16,13 +16,29 @@
     model: zemauth.user
     pk: 1
 
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: mad.max@zemanta.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: false
+        is_superuser: false
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 2
+
 # test account
 
 -   fields:
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
-        users: [1]
+        users: [1, 2]
         name: 'test account 1 Čžš'
     model: dash.account
     pk: 1
