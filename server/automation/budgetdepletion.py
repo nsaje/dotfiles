@@ -204,7 +204,7 @@ def stop_and_notify_depleted_budget_campaigns():
                 available_budgets.get(camp.id),
                 yesterdays_spends.get(camp.id)
             )
-    _log_yesterday_costs_for_analysis():  # NOTE - Only temporory logging, remove before 12.10.2015
+    _log_yesterday_costs_for_analysis()  # NOTE - Only temporory logging, remove before 12.10.2015
 
 
 def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterdays_spend):
