@@ -139,17 +139,12 @@ def refresh_contentadstats(date, ad_group, source=None):
 
 
 def refresh_contentadstats_diff(date, ad_group, source=None):
+    adgroup_stats_batch = reports.models.AdGroupStats.objects.filter(
+        datetime__contains=date,
+        ad_group=ad_group
+    )
     if source is not None:
-        adgroup_stats_batch = reports.models.AdGroupStats.objects.filter(
-            datetime__contains=date,
-            ad_group=ad_group,
-            source=source
-        )
-    else:
-        adgroup_stats_batch = reports.models.AdGroupStats.objects.filter(
-            datetime__contains=date,
-            ad_group=ad_group
-        )
+        adgroup_stats_batch = adgroup_stats_batch.filter(source=source)
 
     diff_rows = []
     for adgroup_stats in adgroup_stats_batch:
@@ -197,14 +192,14 @@ def refresh_contentadstats_diff(date, ad_group, source=None):
             (adgroup_stats.bounced_visits or 0) - (contentad_postclickstats_aggregate['bounced_visits_sum'] or 0),
             (adgroup_stats.pageviews or 0) - (contentad_postclickstats_aggregate['pageviews_sum'] or 0),
             (adgroup_stats.duration or 0) - (contentad_postclickstats_aggregate['total_time_on_site_sum'] or 0),
-            '{}'  # TODO: Ignore for now.
+            '{}'
         ]
 
         keys = (
             'date', 'content_ad_id', 'adgroup_id', 'source_id', 'campaign_id',
             'account_id', 'impressions', 'clicks',  'cost_cc', 'data_cost_cc',
             'visits', 'new_visits', 'bounced_visits', 'pageviews',
-            'total_time_on_site'
+            'total_time_on_site', 'conversions'
         )
         row_dict = dict(zip(keys, data))
         diff_rows.append(row_dict)
