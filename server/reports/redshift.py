@@ -375,10 +375,10 @@ class RSModel(object):
         return self.expand_returned_sql_fields(self.translate_app_fields(returned_fields))
 
     def _prepare_select_query(self, returned_fields, breakdown_fields, order_fields, offset, limit,
-                              constraints, constraints_plus, having_constraints):
+                              constraints, constraints_list, having_constraints):
         # Takes app-based fields and first checks & translates them and then creates a query
         # first translate constraints into tuples, then create a single constraints str
-        (constraint_str, constraint_params) = RSQ(*constraints_plus, **constraints).expand(self)
+        (constraint_str, constraint_params) = RSQ(*constraints_list, **constraints).expand(self)
         breakdown_fields = self.translate_breakdown_fields(breakdown_fields)
         order_fields = self.translate_order_fields(order_fields)
         returned_fields, returned_params, json_fields = self.get_returned_fields(returned_fields)
@@ -454,7 +454,7 @@ class RSModel(object):
     # Default cursor can be obtained by get_cursor()
 
     def execute_select_query(self, cursor, returned_fields, breakdown_fields, order_fields, offset, limit, constraints,
-                             constraints_plus=None, having_constraints=None):
+                             constraints_list=None, having_constraints=None):
 
         (statement, params, json_fields) = self._prepare_select_query(
             returned_fields,
@@ -463,7 +463,7 @@ class RSModel(object):
             offset,
             limit,
             constraints,
-            constraints_plus if constraints_plus else [],
+            constraints_list if constraints_list else [],
             having_constraints)
 
         cursor.execute(statement, params)

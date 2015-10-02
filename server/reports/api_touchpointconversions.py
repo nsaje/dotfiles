@@ -34,15 +34,15 @@ class RSTouchpointConversionsModel(redshift.RSModel):
 RSTouchpointConversions = RSTouchpointConversionsModel()
 
 
-def query(start_date, end_date, breakdown=None, constraints=None, constraints_plus=None):
+def query(start_date, end_date, breakdown=None, constraints=None, constraints_list=None):
     if not breakdown:
         breakdown = []
 
     if not constraints:
         constraints = {}
 
-    if not constraints_plus:
-        constraints_plus = []
+    if not constraints_list:
+        constraints_list = []
 
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
@@ -57,7 +57,7 @@ def query(start_date, end_date, breakdown=None, constraints=None, constraints_pl
         offset=None,
         limit=None,
         constraints=constraints,
-        constraints_plus=constraints_plus
+        constraints_list=constraints_list
     )
 
     cursor.close()
