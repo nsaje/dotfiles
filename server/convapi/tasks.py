@@ -402,7 +402,7 @@ def process_report_v2(report_task, report_type):
                 magic_string = '\xef\xbb\xbf'
                 start_of_content = content[:3]
                 if start_of_content == magic_string:
-                    content = content.decode('utf-8')[len(magic_string):]
+                    content = content[len(magic_string):]
 
                 content = convert_to_xls(content)
 
