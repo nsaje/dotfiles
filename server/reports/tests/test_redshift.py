@@ -187,7 +187,7 @@ class RedshiftTestRSModel(TestCase):
 
 class RedshiftRSQTestCase(TestCase):
 
-    def test_kwargs_only(self):
+    def test_dict_only(self):
         constraints = {'date__lte': datetime.date(2015, 9, 30), 'ad_group': 1}
         constraint_str, params = redshift.RSQ(**constraints).expand(TestModel())
         self.assertEqual(constraint_str, '(adgroup_id=%s AND "date"<=%s)')
@@ -208,7 +208,7 @@ class RedshiftRSQTestCase(TestCase):
         self.assertEqual(constraint_str, 'NOT (adgroup_id=%s)')
         self.assertEqual(params, [1])
 
-    def test_kwargs_with_rsq(self):
+    def test_dict_with_rsq(self):
         constraint_str, params = redshift.RSQ(redshift.RSQ(date=datetime.date(2015, 9, 30)) | redshift.RSQ(ad_group=1), exchange='adiant').expand(TestModel())
         self.assertEqual(constraint_str, '(((date=%s) OR (adgroup_id=%s)) AND exchange=%s)')
         self.assertEqual(params, [datetime.date(2015, 9, 30), 1, 'adiant'])
