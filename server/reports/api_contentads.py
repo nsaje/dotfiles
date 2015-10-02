@@ -65,7 +65,7 @@ class RSContentAdStatsModel(redshift.RSModel):
 RSContentAdStats = RSContentAdStatsModel()
 
 
-def query(start_date, end_date, breakdown=[], order=None, ignore_diff_rows=False, **constraints):
+def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, **constraints):
     # order is ignored here however is necessary in order for this func
     # signature to be interchangeable with api.py - this can be removed once we
     # remove old processing pipeline(parser, tables, UI, etc.)
@@ -94,7 +94,7 @@ def query(start_date, end_date, breakdown=[], order=None, ignore_diff_rows=False
         cursor,
         returned_fields=RSContentAdStats.DEFAULT_RETURNED_FIELDS_APP,
         breakdown_fields=breakdown,
-        order_fields=[],
+        order_fields=order,
         offset=None,
         limit=None,
         constraints=constraints
