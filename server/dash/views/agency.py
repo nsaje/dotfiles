@@ -195,6 +195,12 @@ class AdGroupSettings(api_common.BaseApiView):
     def _add_media_sources(self, ad_group, new_settings, request):
         default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
 
+        # only select relevant media sources
+        if new_settings.is_mobile_only():
+            default_sources_settings = default_sources_settings.exclude(mobile_cpc_cc=None)
+        else:
+            default_sources_settings = default_sources_settings.exclude(default_cpc_cc=None)
+
         ad_group_sources_w_defaults = []
         actionlogs_to_send = []
         with transaction.atomic():
