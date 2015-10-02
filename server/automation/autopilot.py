@@ -332,7 +332,11 @@ def _report_trends_metrics(today_min, today_max):
         created_dt__range=(today_min - datetime.timedelta(days=1), today_max - datetime.timedelta(days=1)),
         ad_group_source_id__in=todays_changed_cpc_logs.values('ad_group_source_id').distinct(),
         comments='')
+    _report_spend_trends(todays_changed_cpc_logs, yesterdays_changed_cpc_logs)
+    _report_clicks_trends(todays_changed_cpc_logs, yesterdays_changed_cpc_logs)
 
+
+def _report_spend_trends(todays_changed_cpc_logs, yesterdays_changed_cpc_logs):
     spend_trends = []
     for source in yesterdays_changed_cpc_logs.values('ad_group_source_id').distinct().values_list('ad_group_source_id'):
         yesterdays = yesterdays_changed_cpc_logs.filter(ad_group_source=source).latest('created_dt')
@@ -347,6 +351,22 @@ def _report_trends_metrics(today_min, today_max):
 
     if len(spend_trends) > 0:
         statsd_gauge('automation.autopilot.avg_trend_of_spend_towards_optimal_spend',
-                     sum(spend_trends)/len(spend_trends))
+                     sum(spend_trends) / decimal.Decimal(len(spend_trends)))
         statsd_gauge('automation.autopilot.perc_of_improved_spends',
                      sum([1 for spend in spend_trends if spend > decimal.Decimal('0')]) / float(len(spend_trends)))
+
+
+def _report_clicks_trends(todays_changed_cpc_logs, yesterdays_changed_cpc_logs):
+    click_increases = []
+    for source in yesterdays_changed_cpc_logs.values('ad_group_source_id').distinct().values_list('ad_group_source_id'):
+        yesterdays = yesterdays_changed_cpc_logs.filter(ad_group_source=source).latest('created_dt')
+        todays = todays_changed_cpc_logs.filter(ad_group_source=source).latest('created_dt')
+        if yesterdays.yesterdays_clicks <= 0 or todays.yesterdays_clicks <= 0:
+            continue
+        click_increases.append(1 - yesterdays.yesterdays_clicks / float(todays.yesterdays_clicks))
+
+    if len(click_increases) > 0:
+        statsd_gauge('automation.autopilot.avg_proc_increase_in_clicks',
+                     sum(click_increases) / float(len(click_increases)))
+        statsd_gauge('automation.autopilot.perc_of_increased_clicks',
+                     sum([1 for clicks in click_increases if clicks > 0]) / float(len(click_increases)))
