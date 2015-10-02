@@ -61,7 +61,28 @@ class RefreshContentAdStats(test.TestCase):
             'campaign_id': 1,
             'account_id': 1
         }]
-        mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
+
+        diff_rows = [{
+            'cost_cc': -400000,
+            'pageviews': -4000,
+            'account_id': 1,
+            'content_ad_id': -1,
+            'new_visits': -300,
+            'total_time_on_site': -130,
+            'campaign_id': 1,
+            'visits': -3000,
+            'data_cost_cc': -400000,
+            'bounced_visits': -400,
+            'source_id': 1,
+            'date': '2015-02-01',
+            'impressions': -3000000,
+            'clicks': -300,
+            'adgroup_id': 1
+        }]
+
+
+        mock_redshift.insert_contentadstats.assert_has_call(test_helper.ListMatcher(rows))
+        mock_redshift.insert_contentadstats.assert_any_call(diff_rows)
 
     def test_refresh_contentadstats_no_source_id(self, mock_redshift):
         date = datetime.datetime(2015, 2, 2)

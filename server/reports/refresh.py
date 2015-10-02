@@ -132,8 +132,85 @@ def refresh_contentadstats(date, ad_group, source=None):
     rows = [_add_ids(row, ad_group) for row in rows]
 
     redshift.delete_contentadstats(date, ad_group.id, source_id)
-    redshift.insert_contentadstats(rows)
+    redshift.delete_contentadstats_diff(date, ad_group.id, source_id)
 
+    redshift.insert_contentadstats(rows)
+    refresh_contentadstats_diff(date, ad_group, source=source)
+
+
+def refresh_contentadstats_diff(date, ad_group, source=None):
+    if source is not None:
+        adgroup_stats_batch = reports.models.AdGroupStats.objects.filter(
+            datetime__contains=date,
+            ad_group=ad_group,
+            source=source
+        )
+    else:
+        adgroup_stats_batch = reports.models.AdGroupStats.objects.filter(
+            datetime__contains=date,
+            ad_group=ad_group
+        )
+
+    diff_rows = []
+    for adgroup_stats in adgroup_stats_batch:
+        # also remove and recalculate difference between adgroup stats and
+        # contentadstats - this will be needed until we deprecated adgroupstats
+        contentadstats_aggregate = reports.models.ContentAdStats.objects.filter(
+            content_ad__ad_group=adgroup_stats.ad_group,
+            source=adgroup_stats.source,
+            date=adgroup_stats.datetime.date()
+        ).aggregate(
+            impressions_sum=Sum('impressions'),
+            clicks_sum=Sum('clicks'),
+            cost_cc_sum=Sum('cost_cc'),
+            data_cost_cc_sum=Sum('data_cost_cc'),
+        )
+
+        contentad_postclickstats_aggregate = reports.models.ContentAdPostclickStats.objects.filter(
+            content_ad__ad_group=adgroup_stats.ad_group,
+            source=adgroup_stats.source,
+            date=adgroup_stats.datetime.date()
+        ).aggregate(
+            visits_sum=Sum('visits'),
+            new_visits_sum=Sum('new_visits'),
+            bounced_visits_sum=Sum('bounced_visits'),
+            pageviews_sum=Sum('pageviews'),
+            total_time_on_site_sum=Sum('total_time_on_site')
+        )
+
+        MAGIC_ADGROUP_CADS_DIFFERENCE_ID = -1
+        # adgroup_stats.id - can't dump id's
+        data = [
+            adgroup_stats.datetime.date().isoformat(),
+            MAGIC_ADGROUP_CADS_DIFFERENCE_ID,
+            adgroup_stats.ad_group.id,
+            adgroup_stats.source.id,
+            adgroup_stats.ad_group.campaign.id,
+            adgroup_stats.ad_group.campaign.account.id,
+
+            (adgroup_stats.impressions or 0) - (contentadstats_aggregate['impressions_sum'] or 0),
+            (adgroup_stats.clicks or 0) - (contentadstats_aggregate['clicks_sum'] or 0),
+            (adgroup_stats.cost_cc or 0) - (contentadstats_aggregate['cost_cc_sum'] or 0),
+            (adgroup_stats.data_cost_cc or 0) - (contentadstats_aggregate['data_cost_cc_sum'] or 0),
+            (adgroup_stats.visits or 0) - (contentad_postclickstats_aggregate['visits_sum'] or 0),
+            (adgroup_stats.new_visits or 0) - (contentad_postclickstats_aggregate['new_visits_sum'] or 0),
+            (adgroup_stats.bounced_visits or 0) - (contentad_postclickstats_aggregate['bounced_visits_sum'] or 0),
+            (adgroup_stats.pageviews or 0) - (contentad_postclickstats_aggregate['pageviews_sum'] or 0),
+            (adgroup_stats.duration or 0) - (contentad_postclickstats_aggregate['total_time_on_site_sum'] or 0),
+            '{}'  # TODO: Ignore for now.
+        ]
+
+        keys = (
+            'date', 'content_ad_id', 'adgroup_id', 'source_id', 'campaign_id',
+            'account_id', 'impressions', 'clicks',  'cost_cc', 'data_cost_cc',
+            'visits', 'new_visits', 'bounced_visits', 'pageviews',
+            'total_time_on_site'
+        )
+        row_dict = dict(zip(keys, data))
+        diff_rows.append(row_dict)
+
+    if diff_rows != []:
+       redshift.insert_contentadstats(diff_rows)
 
 def refresh_adgroup_stats(**constraints):
     # make sure we only filter by the allowed dimensions

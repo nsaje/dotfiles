@@ -211,6 +211,19 @@
     model: dash.contentadsource
     pk: 6
 
+# test adgroupstats
+
+-   fields:
+        datetime: '2015-02-01T00:00:00'
+        ad_group: 1
+        source: 1
+        impressions: 0
+        clicks: 0
+        cost_cc: 0
+        created_dt: '2014-06-04T09:58:21'
+    model: reports.adgroupstats
+    pk: 1
+
 # test contentadstats
 
 -   fields:
