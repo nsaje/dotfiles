@@ -11,6 +11,8 @@ class CpcChangeComment(ConstantBase):
     CPC_NOT_SET = 7
     CURRENT_CPC_TOO_HIGH = 8
     CURRENT_CPC_TOO_LOW = 9
+    OVER_SOURCE_MAX_CPC = 10
+    UNDER_SOURCE_MIN_CPC = 11
 
     _VALUES = {
         BUDGET_MANUALLY_CHANGED: 'budget was manually changed recently',
@@ -21,5 +23,7 @@ class CpcChangeComment(ConstantBase):
         BUDGET_NOT_SET: 'daily budget was not set',
         CPC_NOT_SET: 'bid CPC was not set',
         CURRENT_CPC_TOO_HIGH: 'Auto-Pilot can not operate on such high CPC',
-        CURRENT_CPC_TOO_LOW: 'Auto-Pilot can not operate on such low CPC'
+        CURRENT_CPC_TOO_LOW: 'Auto-Pilot can not operate on such low CPC',
+        OVER_SOURCE_MAX_CPC: 'new bid CPC would exceed media source\'s CPC constraints',
+        UNDER_SOURCE_MIN_CPC: 'new bid CPC would not meet media source\'s minimum CPC constraint'
     }

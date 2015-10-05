@@ -170,16 +170,25 @@ def _threshold_lowering_cpc(current_cpc, new_cpc):
     return new_cpc
 
 
+def _check_source_constraints(proposed_cpc, source_min_cpc, source_max_cpc):
+    if proposed_cpc > source_max_cpc:
+        return [automation.constants.CpcChangeComment.OVER_SOURCE_MAX_CPC]
+    if proposed_cpc < source_min_cpc:
+        return [automation.constants.CpcChangeComment.UNDER_SOURCE_MIN_CPC]
+    return []
+
+
 def _round_cpc(num):
     return num.quantize(
         decimal.Decimal('0.01'),
         rounding=decimal.ROUND_UP)
 
 
-def send_autopilot_CPC_changes_email(campaign_name, campaign_id, account_name, emails, changesData):
+def send_autopilot_CPC_changes_email(campaign_name, campaign_id, account_name, emails, changes_data):
     changesText = []
-    for adgroup, source_changes in changesData.iteritems():
+    for adgroup, source_changes in changes_data.iteritems():
         changesText.append(_get_email_adgroup_text(adgroup))
+        source_changes.sort(key=lambda k: k['source_name'])
         for change in source_changes:
             changesText.append(_get_email_source_changes_text(change))
 
@@ -267,9 +276,12 @@ def adjust_autopilot_media_sources_bid_cpcs():
             proposed_cpc, calculation_comments = calculate_new_autopilot_cpc(
                 ad_group_source_settings.cpc_cc,
                 ad_group_source_settings.daily_budget_cc,
-                yesterday_spend
-            )
+                yesterday_spend)
             cpc_change_comments += calculation_comments
+            cpc_change_comments += _check_source_constraints(
+                proposed_cpc,
+                ad_group_source_settings.ad_group_source.source.source_type.min_cpc,
+                ad_group_source_settings.ad_group_source.source.source_type.max_cpc)
             new_cpc = proposed_cpc if cpc_change_comments == [] else ad_group_source_settings.cpc_cc
             persist_cpc_change_to_admin_log(
                 ad_group_source_settings.ad_group_source,
