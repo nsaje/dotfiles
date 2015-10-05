@@ -363,7 +363,7 @@ def _report_clicks_trends(todays_changed_cpc_logs, yesterdays_changed_cpc_logs):
         todays = todays_changed_cpc_logs.filter(ad_group_source=source).latest('created_dt')
         if yesterdays.yesterdays_clicks <= 0 or todays.yesterdays_clicks <= 0:
             continue
-        click_increases.append(1 - yesterdays.yesterdays_clicks / float(todays.yesterdays_clicks))
+        click_increases.append(todays.yesterdays_clicks / float(yesterdays.yesterdays_clicks) - 1)
 
     if len(click_increases) > 0:
         statsd_gauge('automation.autopilot.avg_proc_increase_in_clicks',
