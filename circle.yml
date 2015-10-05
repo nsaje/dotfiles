@@ -37,7 +37,7 @@ test:
         - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test  ;; 1) cd client && grunt test && cd .. && ./run_e2e.sh ;; esac':
             parallel: true
     post:
-        - 'git rev-parse HEAD | tee server/git_commit_hash.txt client/dist/git_commit_hash.txt'
+        - 'mkdir client/dist && git rev-parse HEAD | tee server/git_commit_hash.txt client/dist/git_commit_hash.txt'
         - 'if [[ "$CIRCLE_NODE_INDEX" = "0" ]]; then  tar -pc * -zf ../server.tar.gz; fi':
             pwd: server
         - 'if [[ "$CIRCLE_NODE_INDEX" = "1" ]]; then  tar -pc dist/ ../server/static -zf ../client.tar.gz; fi':
