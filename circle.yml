@@ -40,7 +40,7 @@ test:
         - 'mkdir client/dist && git rev-parse HEAD | tee server/git_commit_hash.txt client/dist/git_commit_hash.txt'
         - 'if [[ "$CIRCLE_NODE_INDEX" = "0" ]]; then  tar -pc * -zf ../server.tar.gz; fi':
             pwd: server
-        - 'if [[ "$CIRCLE_NODE_INDEX" = "1" ]]; then  tar -pc dist/ ../server/static -zf ../client.tar.gz; fi':
+        - 'if [[ "$CIRCLE_NODE_INDEX" = "1" ]]; then  tar -pc dist/ ../server/static -zf ../client.tar.gz; else export; fi':
             pwd: client
         - coverage report > coverage_report.txt:
             pwd: server
