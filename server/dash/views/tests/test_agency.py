@@ -14,6 +14,7 @@ from django.conf import settings
 from zemauth.models import User
 from dash import models
 from dash import constants
+from dash.views import agency
 
 
 @patch('dash.views.agency.api.order_ad_group_settings_update')
@@ -134,8 +135,8 @@ class AdGroupSettingsTest(TestCase):
 
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
         default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
-        self.assertTrue(default_sources_settings.exists())
-        self.assertEqual(len(ad_group_sources), len(default_sources_settings))
+        self.assertEqual(default_sources_settings.count(), 2)
+        self.assertEqual(ad_group_sources.count(), 1)
 
         for ad_group_source in ad_group_sources:
             default_settings = models.DefaultSourceSettings.objects.get(source=ad_group_source.source)
@@ -278,6 +279,86 @@ class AdGroupSettingsTest(TestCase):
             'supports_dma_targeting': False,
             'id': 3
         }])
+
+
+@patch('dash.views.agency.api.order_ad_group_settings_update')
+@patch('dash.views.agency.actionlog_api')
+class AdGroupSettingsAutoAddMediaSourcesTest(TestCase):
+    fixtures = ['test_api.yaml', 'test_views.yaml']
+
+    def setUp(self):
+        self.request = HttpRequest()
+        self.request.user = User(id=1)
+
+    def test_put_create_settings_dont_auto_add_mobile(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=10)
+        current_settings = ad_group.get_current_settings()
+
+        current_settings.target_devices = ['mobile']
+
+        agency.AdGroupSettings()._add_media_sources(ad_group, current_settings, self.request)
+
+        # media sources with default settings that include mobile_cpc_cc should be added
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
+        self.assertEqual(default_sources_settings.count(), 2)
+        self.assertEqual(ad_group_sources.count(), 2)
+
+        for ad_group_source in ad_group_sources:
+            default_settings = models.DefaultSourceSettings.objects.get(source=ad_group_source.source)
+
+            ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source).latest()
+
+            self.assertIsNotNone(default_settings.mobile_cpc_cc)
+            self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
+            self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.mobile_cpc_cc)
+
+    def test_put_create_settings_dont_auto_add_desktop(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=10)
+        current_settings = ad_group.get_current_settings()
+
+        current_settings.target_devices = ['desktop']
+
+        agency.AdGroupSettings()._add_media_sources(ad_group, current_settings, self.request)
+
+        # media sources with default settings that include default_cpc_cc should be added
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
+        self.assertEqual(default_sources_settings.count(), 2)
+        self.assertEqual(ad_group_sources.count(), 1)
+
+        for ad_group_source in ad_group_sources:
+            default_settings = models.DefaultSourceSettings.objects.get(source=ad_group_source.source)
+
+            ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source).latest()
+
+            self.assertIsNotNone(default_settings.default_cpc_cc)
+            self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
+            self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.default_cpc_cc)
+
+    def test_put_create_settings_dont_auto_add_mobile_and_desktop(self, mock_actionlog_api,
+                                                                  mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=10)
+        current_settings = ad_group.get_current_settings()
+
+        current_settings.target_devices = ['desktop', 'mobile']
+
+        agency.AdGroupSettings()._add_media_sources(ad_group, current_settings, self.request)
+
+        # media sources with default settings that include default_cpc_cc should be added
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
+        self.assertEqual(default_sources_settings.count(), 2)
+        self.assertEqual(ad_group_sources.count(), 1)
+
+        for ad_group_source in ad_group_sources:
+            default_settings = models.DefaultSourceSettings.objects.get(source=ad_group_source.source)
+
+            ad_group_source_settings = models.AdGroupSourceSettings.objects\
+                                                                   .filter(ad_group_source=ad_group_source).latest()
+
+            self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
+            self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.default_cpc_cc)
 
 
 class AdGroupAgencyTest(TestCase):

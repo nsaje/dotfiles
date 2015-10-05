@@ -135,7 +135,7 @@ class AccountDailyStats(BaseDailyStatsView):
             totals_kwargs = {'account': int(account.id), 'source': filtered_sources}
 
         if selected_ids:
-            ids = [int(x) for x in selected_ids]
+            ids = map(int, selected_ids)
 
             selected_kwargs = {
                 'account': int(account.id),
@@ -224,12 +224,11 @@ class AdGroupDailyStats(BaseDailyStatsView):
             totals_kwargs = {'ad_group': int(ad_group.id), 'source': filtered_sources}
 
         if selected_ids:
-            ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'ad_group': int(ad_group.id), 'source_id': ids}
+            ids = map(int, selected_ids)
+            sources = models.Source.objects.filter(id__in=tuple(ids))
+            selected_kwargs = {'ad_group': int(ad_group.id), 'source': sources}
 
-            sources = models.Source.objects.filter(pk__in=ids)
-
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'source')
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key='source')
 
         return self.create_api_response(self.get_response_dict(
             stats,
@@ -324,8 +323,9 @@ class AccountsDailyStats(BaseDailyStatsView):
             totals_kwargs = {'account': accounts, 'source': filtered_sources}
 
         if selected_ids:
-            ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'account': accounts, 'source_id': ids}
+            ids = map(int, selected_ids)
+            sources = models.Source.objects.filter(id__in=tuple(ids))
+            selected_kwargs = {'account': accounts, 'source': sources}
 
             group_key = 'source'
 
