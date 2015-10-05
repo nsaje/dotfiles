@@ -3,6 +3,8 @@ import dateutil.parser
 import pytz
 import newrelic.agent
 
+from decimal import Decimal
+
 from django.conf import settings
 from django.db.models import Q, Max
 from django.core.exceptions import ObjectDoesNotExist
@@ -897,3 +899,7 @@ def set_ad_group_source_defaults(default_source_settings, ad_group_settings, ad_
 
 def format_decimal_to_percent(num):
     return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
+
+
+def format_percent_to_decimal(num):
+    return Decimal(num) / 100

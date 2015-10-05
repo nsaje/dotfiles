@@ -4,6 +4,8 @@ import datetime
 from mock import patch, ANY
 import pytz
 
+from decimal import Decimal
+
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
@@ -1462,3 +1464,72 @@ class CampaignSettingsTest(TestCase):
         content = json.loads(response.content)
         self.assertFalse(content['success'])
         self.assertTrue('campaign_goal' in content['data']['errors'])
+
+
+class AccountAgencyTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def setUp(self):
+        password = 'secret'
+        self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
+
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
+
+    def test_get(self):
+        response = self.client.get(
+            reverse('account_agency', kwargs={'account_id': 1}),
+            follow=True
+        )
+
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertDictEqual(content['data']['settings'], {
+            'name': 'test account 1',
+            'service_fee': '13',
+            'default_sales_representative': '3',
+            'default_account_manager': '2',
+            'id': '1',
+            'archived': False
+        })
+
+    def test_post(self):
+        permission = Permission.objects.get(codename='campaign_settings_account_manager')
+        user = User.objects.get(pk=3)
+        user.user_permissions.add(permission)
+        user.save()
+
+        permission = Permission.objects.get(codename='campaign_settings_sales_rep')
+        user = User.objects.get(pk=1)
+        user.user_permissions.add(permission)
+        user.save()
+
+        response = self.client.put(
+            reverse('account_agency', kwargs={'account_id': 1}),
+            json.dumps({
+                'settings': {
+                    'name': 'changed name',
+                    'service_fee': '15',
+                    'default_sales_representative': '1',
+                    'default_account_manager': '3',
+                    'id': '1',
+                }
+            }),
+            content_type='application/json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertTrue(content['success'])
+
+        account = models.Account.objects.get(pk=1)
+        account_settings = account.get_current_settings()
+
+        self.assertDictEqual(account_settings.get_settings_dict(), {
+            'archived': False,
+            'default_sales_representative': User.objects.get(pk=1),
+            'default_account_manager': User.objects.get(pk=3),
+            'name': 'changed name',
+            'service_fee': Decimal('0.1500')
+        })

@@ -4,7 +4,6 @@ import logging
 import newrelic.agent
 
 from collections import OrderedDict
-from decimal import Decimal
 from django.db import transaction
 from django.conf import settings
 from django.contrib.auth import models as authmodels
@@ -883,7 +882,7 @@ class AccountAgency(api_common.BaseApiView):
         settings.name = resource['name']
         settings.default_account_manager = resource['default_account_manager']
         settings.default_sales_representative = resource['default_sales_representative']
-        settings.service_fee = Decimal(resource['service_fee']) / 100
+        settings.service_fee = helpers.format_percent_to_decimal(resource['service_fee'])
 
     def get_dict(self, settings, account):
         result = {}
