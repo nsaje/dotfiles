@@ -16,7 +16,6 @@ from dash import api
 from utils import exc
 from utils import statsd_helper
 import automation.autopilot
-from dash import api
 
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
@@ -894,3 +893,7 @@ def set_ad_group_source_defaults(default_source_settings, ad_group_settings, ad_
     if resource:
         settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
         settings_writer.set(resource, request, send_action=send_action)
+
+
+def format_decimal_to_percent(num):
+    return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')

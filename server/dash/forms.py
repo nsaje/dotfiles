@@ -198,6 +198,11 @@ class AccountAgencySettingsForm(forms.Form):
     default_sales_representative = forms.IntegerField(
         required=False
     )
+    service_fee = forms.DecimalField(
+        min_value=0,
+        max_value=100,
+        decimal_places=2,
+    )
 
     def clean_default_account_manager(self):
         account_manager_id = self.cleaned_data.get('default_account_manager')
