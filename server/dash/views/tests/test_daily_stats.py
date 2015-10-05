@@ -114,13 +114,14 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
             source=sources_matcher
         )
 
+        source_matcher = QuerySetMatcher(models.Source.objects.filter(pk=source_id))
         self.mock_query.assert_any_call(
             self.date,
             self.date,
             ['date', 'source'],
             ['date'],
             account=accounts_matcher,
-            source_id=[source_id]
+            source=source_matcher
         )
 
         source = models.Source.objects.get(pk=source_id)
@@ -284,13 +285,14 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
             source=matcher
         )
 
+        match_source = QuerySetMatcher(models.Source.objects.filter(pk=source_id))
         self.mock_query.assert_any_call(
             self.date,
             self.date,
             ['date', 'source'],
             ['date'],
             ad_group=1,
-            source_id=[source_id]
+            source=match_source
         )
 
         source = models.Source.objects.get(pk=source_id)
