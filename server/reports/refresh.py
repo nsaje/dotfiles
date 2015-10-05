@@ -173,9 +173,10 @@ def refresh_contentadstats_diff(date, ad_group, source=None):
             total_time_on_site_sum=Sum('total_time_on_site')
         )
 
+        content_ad_id = redshift.MAGIC_ADGROUP_CADS_DIFFERENCE_ID
         data = [
             adgroup_stats.datetime.date().isoformat(),
-            redshift.MAGIC_ADGROUP_CADS_DIFFERENCE_ID,
+            content_ad_id,
             adgroup_stats.ad_group.id,
             adgroup_stats.source.id,
             adgroup_stats.ad_group.campaign.id,

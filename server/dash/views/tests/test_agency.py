@@ -289,6 +289,8 @@ class AdGroupSettingsAutoAddMediaSourcesTest(TestCase):
     def setUp(self):
         self.request = HttpRequest()
         self.request.user = User(id=1)
+        self.request.META['SERVER_NAME'] = 'testname'
+        self.request.META['SERVER_PORT'] = 1234
 
     def test_put_create_settings_dont_auto_add_mobile(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=10)
@@ -1424,7 +1426,7 @@ class CampaignSettingsTest(TestCase):
         )
         content = json.loads(response.content)
         self.assertTrue(content['success'])
-        
+
         campaign = models.Campaign.objects.get(pk=1)
         settings = campaign.get_current_settings()
         self.assertEqual(campaign.name, 'test campaign 2')

@@ -1,4 +1,5 @@
-from mock import patch
+import mock
+from mock import patch, MagicMock
 import datetime
 
 from django import test
@@ -12,11 +13,26 @@ import dash.models
 from utils import test_helper
 
 
+class DictMatcher():
+    def __init__(self, obj):
+        self.obj = obj
+
+    def __eq__(self, other):
+        obj_copy = dict(self.obj[0])
+        other_copy = dict(other[0])
+        del obj_copy['content_ad_id']
+        del other_copy['content_ad_id']
+        return obj_copy == other_copy
+
+
 @patch('reports.refresh.redshift')
 class RefreshContentAdStats(test.TestCase):
     fixtures = ['test_api_contentads.yaml']
 
     def test_refresh_contentadstats(self, mock_redshift):
+
+        mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+
         date = datetime.datetime(2015, 2, 1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         source = dash.models.Source.objects.get(pk=1)
@@ -63,6 +79,7 @@ class RefreshContentAdStats(test.TestCase):
         }]
 
         diff_rows = [{
+            'conversions': '{}',
             'cost_cc': -400000,
             'pageviews': -4000,
             'account_id': 1,
@@ -77,12 +94,14 @@ class RefreshContentAdStats(test.TestCase):
             'date': '2015-02-01',
             'impressions': -3000000,
             'clicks': -300,
-            'adgroup_id': 1
+            'adgroup_id': 1,
         }]
 
-
         mock_redshift.insert_contentadstats.assert_has_call(test_helper.ListMatcher(rows))
-        mock_redshift.insert_contentadstats.assert_any_call(diff_rows)
+        # DictMatcher here is needed because we mock redshift module which
+        # causes comparisons to fail because redshift constants are also mocked
+        # (ie. DIFF caid -1 becomes a MagicMock
+        mock_redshift.insert_contentadstats.assert_any_call(DictMatcher(diff_rows))
 
     def test_refresh_contentadstats_no_source_id(self, mock_redshift):
         date = datetime.datetime(2015, 2, 2)
