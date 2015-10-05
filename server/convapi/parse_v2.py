@@ -170,7 +170,7 @@ class OmnitureReportRow(ReportRow):
             else:
                 self.bounce_rate = 0
         else:
-           self.bounced_visits = int(self.bounce_rate * self.visits)
+            self.bounced_visits = int(self.bounce_rate * self.visits)
 
         self.pageviews = round(_report_atof(omniture_row_dict.get('Page Views', '0')))
         self.new_visits = _report_atoi(
