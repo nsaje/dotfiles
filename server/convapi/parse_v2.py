@@ -160,6 +160,18 @@ class OmnitureReportRow(ReportRow):
             self.bounce_rate = _report_atof(omniture_row_dict['Bounce Rate'].replace('%', '')) / 100
         else:
             self.bounce_rate = 0
+
+        # Omniture reports can come in multiple flavors having either Bounce
+        # Rate or Bounces
+        if not self.bounce_rate_raw and omniture_row_dict.get('Bounces') is not None:
+            self.bounced_visits = _report_atoi(omniture_row_dict.get('Bounces'))
+            if self.visits > 0:
+                self.bounce_rate = float(self.bounced_visits) / float(self.visits)
+            else:
+                self.bounce_rate = 0
+        else:
+           self.bounced_visits = int(self.bounce_rate * self.visits)
+
         self.pageviews = round(_report_atof(omniture_row_dict.get('Page Views', '0')))
         self.new_visits = _report_atoi(
             omniture_row_dict.get(
@@ -167,7 +179,7 @@ class OmnitureReportRow(ReportRow):
                 omniture_row_dict.get('Unique Visitors', '0')
             )
         )
-        self.bounced_visits = int(self.bounce_rate * self.visits)
+
         self.total_time_on_site = _report_atoi(omniture_row_dict.get('Total Seconds Spent', '0'))
 
         self.report_date = report_date.isoformat()
