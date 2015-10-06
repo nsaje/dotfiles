@@ -1057,12 +1057,8 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         touchpoint_conversion_goals = []
         report_goals = []
         if request.user.has_perm('zemauth.conversion_reports'):
-            for cg in conversion_goals:
-                if cg.type == constants.ConversionGoalType.PIXEL:
-                    touchpoint_conversion_goals.append(cg)
-                    continue
-
-                report_goals.append(cg)
+            touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == constants.ConversionGoalType.PIXEL]
+            report_goals = [cg for cg in conversion_goals if cg.type != constants.ConversionGoalType.PIXEL]
 
         stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
