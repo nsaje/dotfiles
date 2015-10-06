@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.db.models import Sum, Max
 from django.db import connection, transaction
@@ -9,6 +10,8 @@ from reports.db_raw_helpers import dictfetchall
 from reports import redshift
 
 import dash.models
+
+logger = logging.getLogger(__name__)
 
 
 def _get_joined_stats_rows(date, ad_group_id, source_id):
@@ -139,6 +142,7 @@ def refresh_contentadstats(date, ad_group, source=None):
 
 
 def refresh_contentadstats_diff(date, ad_group, source=None):
+    logger.info('Refreshing adgroup and contentad stats in Redshift')
     adgroup_stats_batch = reports.models.AdGroupStats.objects.filter(
         datetime__contains=date,
         ad_group=ad_group
@@ -201,10 +205,12 @@ def refresh_contentadstats_diff(date, ad_group, source=None):
             'total_time_on_site', 'conversions'
         )
         row_dict = dict(zip(keys, data))
+        logger.info(json.dumps(row_dict))
         diff_rows.append(row_dict)
 
     if diff_rows != []:
-       redshift.insert_contentadstats(diff_rows)
+        redshift.insert_contentadstats(diff_rows)
+    logger.info('Inserted {count} diff rows into redshift'.format(count=len(diff_rows)))
 
 def refresh_adgroup_stats(**constraints):
     # make sure we only filter by the allowed dimensions
