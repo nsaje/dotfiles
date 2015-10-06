@@ -18,7 +18,10 @@ from utils.sort_helper import sort_results
 import reports.api
 import reports.api_helpers
 import reports.api_contentads
+import reports.api_touchpointconversions
 import reports.api_publishers
+import reports.constants
+import reports.redshift
 import actionlog.sync
 
 from django.core import urlresolvers
@@ -1050,21 +1053,49 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         content_ads = models.ContentAd.objects.filter(
             ad_group=ad_group).filter_by_sources(filtered_sources).select_related('batch')
 
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        touchpoint_conversion_goals = []
+        report_goals = []
+        if request.user.has_perm('zemauth.conversion_reports'):
+            for cg in conversion_goals:
+                if cg.type == constants.ConversionGoalType.PIXEL:
+                    touchpoint_conversion_goals.append(cg)
+                    continue
+
+                report_goals.append(cg)
+
         stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
             start_date,
             end_date,
             breakdown=['content_ad'],
             ignore_diff_rows=True,
+            conversion_goals=report_goals,
             ad_group=ad_group,
             source=filtered_sources,
         ), request.user)
+
+        touchpoint_conversions_stats = []
+        if touchpoint_conversion_goals:
+            rsq = reports.redshift.RSQ(account=ad_group.campaign.account_id, slug=cg.pixel.slug,
+                                       conversion_lag__lte=cg.conversion_window)
+            for cg in touchpoint_conversion_goals[1:]:
+                rsq |= reports.redshift.RSQ(account=ad_group.campaign.account_id, slug=cg.pixel.slug,
+                                            conversion_lag__lte=cg.conversion_window)
+
+            touchpoint_conversions_stats = reports.api_touchpointconversions.query(
+                start_date,
+                end_date,
+                breakdown=['content_ad', 'slug'],
+                constraints={'ad_group': ad_group.id},
+                constraints_list=[rsq]
+            )
 
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
         show_archived = request.GET.get('show_archived') == 'true' and\
             request.user.has_perm('zemauth.view_archived_entities')
 
-        rows = self._get_rows(content_ads, stats, ad_group,
-                              has_view_archived_permission,
+        rows = self._get_rows(content_ads, stats, ad_group, conversion_goals,
+                              touchpoint_conversions_stats, has_view_archived_permission,
                               show_archived)
 
         batches = []
@@ -1085,9 +1116,26 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             start_date,
             end_date,
             ignore_diff_rows=True,
+            conversion_goals=report_goals,
             ad_group=ad_group,
             source=filtered_sources
         ), request.user)
+
+        total_touchpoint_conversions_stats = []
+        if touchpoint_conversion_goals:
+            rsq = reports.redshift.RSQ(account=ad_group.campaign.account_id, slug=cg.pixel.slug,
+                                       conversion_lag__lte=cg.conversion_window)
+            for cg in touchpoint_conversion_goals[1:]:
+                rsq |= reports.redshift.RSQ(account=ad_group.campaign.account_id, slug=cg.pixel.slug,
+                                            conversion_lag__lte=cg.conversion_window)
+
+            total_touchpoint_conversions_stats = reports.api_touchpointconversions.query(
+                start_date,
+                end_date,
+                breakdown=['slug'],
+                constraints={'ad_group': ad_group.id},
+                constraints_list=[rsq]
+            )
 
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
         last_success_actions = ad_group_sync.get_latest_success_by_child()
@@ -1105,7 +1153,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         response_dict = {
             'rows': rows,
             'batches': [{'id': batch.id, 'name': batch.name} for batch in batches],
-            'totals': self._get_total_row(total_stats),
+            'totals': self._get_total_row(total_stats, total_touchpoint_conversions_stats, conversion_goals),
             'order': order,
             'pagination': {
                 'currentPage': current_page,
@@ -1133,8 +1181,19 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         return self.create_api_response(response_dict)
 
     @newrelic.agent.function_trace()
-    def _get_total_row(self, stats):
+    def _get_total_row(self, stats, total_touchpoint_conversion_stats, conversion_goals):
         totals = {}
+        total_touchpoint_conversion_stats = {s['slug']: s for s in total_touchpoint_conversion_stats}
+        for conversion_goal in conversion_goals:
+            if conversion_goal.type == constants.ConversionGoalType.GA or\
+               conversion_goal.type == constants.ConversionGoalType.OMNITURE:
+                cg_stat = stats.get('conversions', {}).get(conversion_goal.get_stats_key())
+            elif conversion_goal.type == constants.ConversionGoalType.PIXEL:
+                tp_conv_stat = total_touchpoint_conversion_stats.get(conversion_goal.pixel.slug, {})
+                cg_stat = tp_conv_stat.get('conversion_count')
+
+            totals['conversion_goal__' + conversion_goal.name] = cg_stat
+
         helpers.copy_stats_to_row(stats, totals)
         return totals
 
@@ -1154,8 +1213,12 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         )
 
     @newrelic.agent.function_trace()
-    def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived):
+    def _get_rows(self, content_ads, stats, ad_group, conversion_goals, touchpoint_conversions_stats, has_view_archived_permission, show_archived):
         stats = {s['content_ad']: s for s in stats}
+        print touchpoint_conversions_stats
+        touchpoint_conversions_stats = {(s['content_ad'], s['slug']): s for s in touchpoint_conversions_stats}
+        print touchpoint_conversions_stats
+
         rows = []
 
         is_demo = ad_group in models.AdGroup.demo_objects.all()
@@ -1190,6 +1253,17 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 },
             }
             helpers.copy_stats_to_row(stat, row)
+
+            for conversion_goal in conversion_goals:
+                if conversion_goal.type == constants.ConversionGoalType.GA or\
+                   conversion_goal.type == constants.ConversionGoalType.OMNITURE:
+                    cg_stat = stat.get('conversions', {}).get(conversion_goal.get_stats_key())
+                elif conversion_goal.type == constants.ConversionGoalType.PIXEL:
+                    key = (content_ad.id, conversion_goal.pixel.slug)
+                    tp_conv_stat = touchpoint_conversions_stats.get(key, {})
+                    cg_stat = tp_conv_stat.get('conversion_count')
+
+                row['conversion_goal__' + conversion_goal.name] = cg_stat
 
             if has_view_archived_permission:
                 row['archived'] = archived

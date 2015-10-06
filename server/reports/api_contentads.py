@@ -6,11 +6,14 @@ import pytz
 from django.conf import settings
 
 from reports import redshift
+from reports import constants
 from reports import api
+from reports import exc
 from reports.db_raw_helpers import extract_obj_ids
 import reports.rs_helpers as rsh
 
 import dash.models
+import dash.constants
 
 logger = logging.getLogger(__name__)
 
@@ -69,12 +72,11 @@ class RSContentAdStatsModel(redshift.RSModel):
 RSContentAdStats = RSContentAdStatsModel()
 
 
-def query(start_date, end_date, breakdown=[], ignore_diff_rows=False, conversions=[], **constraints):
+def query(start_date, end_date, breakdown=[], ignore_diff_rows=False, conversion_goals=[], **constraints):
     # TODO: it would be nicer if 'constraints' would be a dict, but we use kwargs to maintain
     # compatibility with reports.api
-    constraints = copy.copy(constraints)
     breakdown = copy.copy(breakdown)
-    conversions = copy.copy(conversions)
+    conversion_goals = copy.copy(conversion_goals)
 
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
@@ -92,8 +94,8 @@ def query(start_date, end_date, breakdown=[], ignore_diff_rows=False, conversion
     cursor = redshift.get_cursor()
 
     returned_fields = RSContentAdStats.DEFAULT_RETURNED_FIELDS_APP[:]
-    for label in conversions:
-        returned_fields.append('conversions' + redshift.JSON_KEY_DELIMITER + label)
+    for conversion_goal in conversion_goals:
+        returned_fields.append('conversions' + redshift.JSON_KEY_DELIMITER + conversion_goal.get_stats_key())
 
     results = RSContentAdStats.execute_select_query(
         cursor,
@@ -107,10 +109,26 @@ def query(start_date, end_date, breakdown=[], ignore_diff_rows=False, conversion
 
     cursor.close()
 
+    results = _transform_conversions(results, conversion_goals)
     if breakdown:
         return results
 
     return results[0]
+
+
+def _transform_conversions(rows, converison_goals):
+    results = []
+    for row in rows:
+        new_row = {}
+        for key, val in row.iteritems():
+            if key.startswith('conversions'):
+                _, json_key = redshift.extract_json_key_parts(key)
+                new_row.setdefault('conversions', {})
+                new_row['conversions'][json_key] = val
+                continue
+            new_row[key] = val
+        results.append(new_row)
+    return results
 
 
 def has_complete_postclick_metrics_accounts(start_date, end_date, accounts, sources):

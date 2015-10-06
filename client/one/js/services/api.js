@@ -2312,7 +2312,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 }).
                 error(function (data, status) {
                     var errors = null;
-                    if(data.data.hasOwnProperty('errors') && data.data.errors != null) {
+                    if(data.data && data.data.errors) {
                         errors = convertValidationErrorsFromApi(data.data.errors);
                     }
                     return deferred.reject(errors);

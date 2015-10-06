@@ -417,7 +417,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 if($scope.hasPermission('zemauth.aggregate_postclick_engagement')) {
-                    zemPostclickMetricsService.insertGoalColumns(
+                    zemPostclickMetricsService.insertConversionGoalColumns(
                         $scope.columns,
                         $scope.columns.length - 2,
                         data.rows,

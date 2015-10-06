@@ -17,6 +17,7 @@ import utils.string_helper
 
 from dash import constants
 from dash import regions
+import reports.constants
 from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
@@ -1576,6 +1577,16 @@ class ConversionGoal(models.Model):
 
     class Meta:
         unique_together = (('campaign', 'name'), ('campaign', 'pixel'), ('campaign', 'type', 'goal_id'))
+
+    def get_stats_key(self):
+        if self.type == constants.ConversionGoalType.GA:
+            prefix = reports.constants.ReportType.GOOGLE_ANALYTICS
+        elif self.type == constants.ConversionGoalType.OMNITURE:
+            prefix = reports.constants.ReportType.OMNITURE
+        else:
+            exc.ReportsQueryError('Invalid conversion goal type')
+
+        return prefix + '__' + self.goal_id
 
 
 class DemoAdGroupRealAdGroup(models.Model):

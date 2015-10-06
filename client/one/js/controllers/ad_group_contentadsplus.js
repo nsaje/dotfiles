@@ -403,6 +403,9 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     }, {
         'name': 'Audience Metrics',
         'fields': ['percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'visits', 'pageviews', 'click_discrepancy']
+    }, {
+        name: 'Conversions',
+        fields: []
     }];
 
     $scope.addContentAds = function() {
@@ -641,6 +644,15 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         api.adGroupAdsPlusTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function(data) {
+                zemPostclickMetricsService.insertConversionGoalColumns(
+                    $scope.columns,
+                    $scope.columns.length - 2,
+                    data.rows,
+                    $scope.columnCategories[3],
+                    $scope.hasPermission('zemauth.conversion_reports'),
+                    $scope.isPermissionInternal('zemauth.conversion_reports')
+                );
+
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.order = data.order;
