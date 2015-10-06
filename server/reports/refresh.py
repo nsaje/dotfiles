@@ -142,7 +142,7 @@ def refresh_contentadstats(date, ad_group, source=None):
 
 
 def refresh_contentadstats_diff(date, ad_group, source=None):
-    logger.info('Refreshing adgroup and contentad stats in Redshift')
+    logger.info('refresh_contentadstats_diff: Refreshing adgroup and contentad stats in Redshift')
     adgroup_stats_batch = reports.models.AdGroupStats.objects.filter(
         datetime__contains=date,
         ad_group=ad_group
@@ -205,12 +205,12 @@ def refresh_contentadstats_diff(date, ad_group, source=None):
             'total_time_on_site', 'conversions'
         )
         row_dict = dict(zip(keys, data))
-        logger.info(json.dumps(row_dict))
+        logger.info('refresh_contentadstats_diff: {}'.format(json.dumps(row_dict)))
         diff_rows.append(row_dict)
 
     if diff_rows != []:
         redshift.insert_contentadstats(diff_rows)
-    logger.info('Inserted {count} diff rows into redshift'.format(count=len(diff_rows)))
+        logger.info('refresh_contentadstats_diff: Inserted {count} diff rows into redshift'.format(count=len(diff_rows)))
 
 def refresh_adgroup_stats(**constraints):
     # make sure we only filter by the allowed dimensions
