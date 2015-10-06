@@ -1072,18 +1072,12 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         touchpoint_conversions_stats = []
         if touchpoint_conversion_goals:
-            rsq = reports.redshift.RSQ(account=ad_group.campaign.account_id, slug=cg.pixel.slug,
-                                       conversion_lag__lte=cg.conversion_window)
-            for cg in touchpoint_conversion_goals[1:]:
-                rsq |= reports.redshift.RSQ(account=ad_group.campaign.account_id, slug=cg.pixel.slug,
-                                            conversion_lag__lte=cg.conversion_window)
-
             touchpoint_conversions_stats = reports.api_touchpointconversions.query(
                 start_date,
                 end_date,
                 breakdown=['content_ad', 'slug'],
+                conversion_goals=touchpoint_conversion_goals,
                 constraints={'ad_group': ad_group.id},
-                constraints_list=[rsq]
             )
 
         has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
@@ -1119,18 +1113,12 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         total_touchpoint_conversions_stats = []
         if touchpoint_conversion_goals:
-            rsq = reports.redshift.RSQ(account=ad_group.campaign.account_id, slug=cg.pixel.slug,
-                                       conversion_lag__lte=cg.conversion_window)
-            for cg in touchpoint_conversion_goals[1:]:
-                rsq |= reports.redshift.RSQ(account=ad_group.campaign.account_id, slug=cg.pixel.slug,
-                                            conversion_lag__lte=cg.conversion_window)
-
             total_touchpoint_conversions_stats = reports.api_touchpointconversions.query(
                 start_date,
                 end_date,
                 breakdown=['slug'],
+                conversion_goals=touchpoint_conversion_goals,
                 constraints={'ad_group': ad_group.id},
-                constraints_list=[rsq]
             )
 
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)

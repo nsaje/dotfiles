@@ -34,18 +34,26 @@ class RSTouchpointConversionsModel(redshift.RSModel):
 RSTouchpointConversions = RSTouchpointConversionsModel()
 
 
-def query(start_date, end_date, breakdown=None, constraints=None, constraints_list=None):
+def query(start_date, end_date, breakdown=None, conversion_goals=None, constraints=None):
     if not breakdown:
         breakdown = []
 
     if not constraints:
         constraints = {}
 
-    if not constraints_list:
-        constraints_list = []
+    if not conversion_goals:
+        conversion_goals = []
 
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
+
+    constraints_list = []
+    if conversion_goals:
+        rsq = redshift.RSQ(account=conversion_goals[0].pixel.account_id, slug=conversion_goals[0].pixel.slug,
+                           conversion_lag__lte=conversion_goals[0].conversion_window)
+        for conversion_goal in conversion_goals[1:]:
+            rsq |= redshift.RSQ(account=conversion_goal.pixel.account_id, slug=conversion_goal.pixel.slug,
+                                conversion_lag__lte=conversion_goal.conversion_window)
 
     cursor = redshift.get_cursor()
 
