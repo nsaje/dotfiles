@@ -26,6 +26,10 @@ class QueryTestCase(test.TestCase):
     fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml']
 
     def setUp(self):
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
+
         refresh.refresh_adgroup_stats()
 
     def test_date_breakdown(self):
@@ -405,6 +409,10 @@ class YesterdayCostTestCase(test.TestCase):
     fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml']
 
     def setUp(self):
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
+
         refresh.refresh_adgroup_stats()
 
     @patch('reports.api.datetime')
@@ -464,6 +472,11 @@ class ApiTestCase(test.TestCase):
 class UpsertReportsTestCase(test.TestCase):
 
     fixtures = ['test_reports_base.yaml']
+
+    def setUp(self):
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
 
     def test_save_reports(self):
         date1 = datetime.date(2014, 7, 1)

@@ -2,6 +2,7 @@ import datetime
 import json
 import mock
 
+from mock import patch
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
@@ -21,6 +22,7 @@ import zemauth.models
 class CampaignStatusTest(TestCase):
 
     fixtures = ['test_zwei_api.yaml']
+
 
     def test_update_status(self):
         zwei_response_data = {
@@ -74,7 +76,7 @@ class GetContentAdStatusTest(TestCase):
 
         ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
         content_ad_source = dash.models.ContentAdSource.objects.get(id=1)
-        
+
         content_ad_source.content_ad.state = dash.constants.ContentAdSourceState.INACTIVE
         content_ad_source.content_ad.save()
 
@@ -128,7 +130,7 @@ class GetContentAdStatusTest(TestCase):
 
         ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
         content_ad_source = dash.models.ContentAdSource.objects.get(id=1)
-        
+
         content_ad_source.content_ad.state = dash.constants.ContentAdSourceState.ACTIVE
         content_ad_source.content_ad.save()
 
@@ -464,6 +466,11 @@ class FetchReportsTestCase(TestCase):
 
     fixtures = ['test_zwei_api.yaml']
 
+    def setUp(self):
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
+
     def test_fetch_reports(self):
         article_row = {
             'title': 'Article 1',
@@ -784,7 +791,7 @@ class FetchReportsByPublisherTestCase(TestCase):
         ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
         response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 6, 4), zwei_response_data)
         ob_insert_adgroup_date.assert_has_calls ([mock.call(
-                                              datetime.date(2014,6,4), 
+                                              datetime.date(2014,6,4),
                                               1,
                                               "Outbrain",
                                               [article_row],
