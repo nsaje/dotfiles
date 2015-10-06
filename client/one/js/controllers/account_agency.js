@@ -22,17 +22,16 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
     $scope.addUserData = {};
     $scope.addUserErrors = null;
     $scope.conversionPixelTagPrefix = '';
+    $scope.getServiceFees = function(search) {
+        // use fresh instance because we modify the collection on the fly
+        var fees = ['15', '20', '25'];
 
-    $scope.serviceFeeSelect2Config = {
-        dropdownCssClass: 'service-fee-select2',
-        createSearchChoice: function (term, data) {
-            if ($(data).filter(function() {
-                return this.text.localeCompare(term)===0;
-            }).length===0) {
-                return {id: term, text: term + '%'};
-            }
-        },
-        data: [{id: '15', text: '15%'}, {id: '20', text: '20%'}, {id: '25', text: '25%'}]
+        // adds the searched for value to the array
+        if (search && fees.indexOf(search) === -1) {
+            fees.unshift(search);
+        }
+
+        return fees;
     };
 
     $scope.userActionChange = function (action, userId) {
