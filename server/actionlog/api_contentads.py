@@ -72,6 +72,9 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
         args['extra']['campaign_name'] = ad_group_source.get_external_name()
         args['extra']['batch_name'] = batch.name
 
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        args['extra']['brand_name'] = ad_group_settings.brand_name
+
         if request and request.user:
             args['extra']['user_email'] = request.user.email
 

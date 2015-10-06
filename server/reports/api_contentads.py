@@ -69,7 +69,11 @@ class RSContentAdStatsModel(redshift.RSModel):
 RSContentAdStats = RSContentAdStatsModel()
 
 
-def query(start_date, end_date, breakdown=[], ignore_diff_rows=False, conversions=[], **constraints):
+def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, conversions=[], **constraints):
+    # order is ignored here however is necessary in order for this func
+    # signature to be interchangeable with api.py - this can be removed once we
+    # remove old processing pipeline(parser, tables, UI, etc.)
+
     # TODO: it would be nicer if 'constraints' would be a dict, but we use kwargs to maintain
     # compatibility with reports.api
     constraints = copy.copy(constraints)
@@ -99,7 +103,7 @@ def query(start_date, end_date, breakdown=[], ignore_diff_rows=False, conversion
         cursor,
         returned_fields,
         breakdown_fields=breakdown,
-        order_fields=[],
+        order_fields=order,
         offset=None,
         limit=None,
         constraints=constraints

@@ -11,14 +11,23 @@ from utils import exc
 from utils.sort_helper import sort_results
 
 
+def get_reports_api_module(user):
+    if user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
+        return reports.api_contentads
+
+    return reports.api
+
+
 class BaseDailyStatsView(api_common.BaseApiView):
     def get_stats(self, request, totals_kwargs, selected_kwargs=None, group_key=None):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         totals_stats = []
+
+        reports_api = get_reports_api_module(request.user)
         if totals_kwargs:
-            totals_stats = reports.api.query(
+            totals_stats = reports_api.query(
                 start_date,
                 end_date,
                 ['date'],
@@ -29,7 +38,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
         breakdown_stats = []
 
         if selected_kwargs:
-            breakdown_stats = reports.api.query(
+            breakdown_stats = reports_api.query(
                 start_date,
                 end_date,
                 ['date', group_key],
@@ -126,7 +135,7 @@ class AccountDailyStats(BaseDailyStatsView):
             totals_kwargs = {'account': int(account.id), 'source': filtered_sources}
 
         if selected_ids:
-            ids = [int(x) for x in selected_ids]
+            ids = map(int, selected_ids)
 
             selected_kwargs = {
                 'account': int(account.id),
@@ -215,12 +224,11 @@ class AdGroupDailyStats(BaseDailyStatsView):
             totals_kwargs = {'ad_group': int(ad_group.id), 'source': filtered_sources}
 
         if selected_ids:
-            ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'ad_group': int(ad_group.id), 'source_id': ids}
+            ids = map(int, selected_ids)
+            sources = models.Source.objects.filter(id__in=tuple(ids))
+            selected_kwargs = {'ad_group': int(ad_group.id), 'source': sources}
 
-            sources = models.Source.objects.filter(pk__in=ids)
-
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'source')
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key='source')
 
         return self.create_api_response(self.get_response_dict(
             stats,
@@ -315,8 +323,9 @@ class AccountsDailyStats(BaseDailyStatsView):
             totals_kwargs = {'account': accounts, 'source': filtered_sources}
 
         if selected_ids:
-            ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'account': accounts, 'source_id': ids}
+            ids = map(int, selected_ids)
+            sources = models.Source.objects.filter(id__in=tuple(ids))
+            selected_kwargs = {'account': accounts, 'source': sources}
 
             group_key = 'source'
 

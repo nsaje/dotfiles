@@ -396,6 +396,14 @@ def process_report_v2(report_task, report_type):
             if attachment_name.endswith('.csv'):
                 # instead of writing yet another parser variant we convert it
                 # to an xls
+
+                # OnStar hack - some reports are coming in with a special byte
+                # marker(probably magic number)
+                magic_string = '\xef\xbb\xbf'
+                start_of_content = content[:3]
+                if start_of_content == magic_string:
+                    content = content[len(magic_string):]
+
                 content = convert_to_xls(content)
 
             report = parse_v2.OmnitureReport(content)

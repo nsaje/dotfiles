@@ -226,6 +226,8 @@ class ContentAdsApiTestCase(TestCase):
             source=content_ad_source.source
         )
 
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+
         batch = dash.models.UploadBatch.objects.get(pk=1)
 
         request = HttpRequest()
@@ -238,7 +240,8 @@ class ContentAdsApiTestCase(TestCase):
             'batch_name': batch.name,
             'campaign_name': ad_group_source.get_external_name(),
             'ad_group_id': ad_group_source.ad_group.id,
-            'user_email': request.user.email
+            'user_email': request.user.email,
+            'brand_name': ad_group_settings.brand_name
         })
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)

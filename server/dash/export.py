@@ -25,6 +25,16 @@ def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False
             **kwargs
         )
 
+    if user.has_perm('zemauth.can_see_redshift_postclick_statistics') and 'article' not in dimensions:
+        return reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
+            start_date,
+            end_date,
+            dimensions,
+            ordering,
+            ignore_diff_rows=ignore_diff_rows,
+            **kwargs
+        ), user)
+
     return reports.api_helpers.filter_by_permissions(reports.api.query(
         start_date,
         end_date,
