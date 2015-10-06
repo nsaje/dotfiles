@@ -13,10 +13,107 @@ from dash.views import export
 from zemauth import models
 from utils import exc
 
+
 class AssertRowMixin(object):
     def _assert_row(self, worksheet, row_num, row_cell_list):
         for cell_num, cell_value in enumerate(row_cell_list):
             self.assertEqual(worksheet.cell_value(row_num, cell_num), cell_value)
+
+
+class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
+    fixtures = ['test_api']
+
+    def setUp(self):
+        self.query_patcher = patch('dash.export.reports.api_contentads.query')
+        self.mock_query = self.query_patcher.start()
+        self.mock_query.side_effect = [
+            [{
+                'account': 1,
+                'campaign': 1,
+                'content_ad': 1,
+                'date': datetime.date(2014, 7, 1),
+                'cost': 1000.12,
+                'cpc': 10.23,
+                'clicks': 103,
+                'impressions': 100000,
+                'ctr': 1.03,
+                'visits': 40,
+                'click_discrepancy': 0.2,
+                'pageviews': 123,
+                'percent_new_users': 33.0,
+                'bounce_rate': 12.0,
+                'pv_per_visit': 0.9,
+                'avg_tos': 1.0,
+                'some_random_metric': '12'
+            }],
+            [{
+                'account': 1,
+                'campaign': 1,
+                'content_ad': 1,
+                'source': 1,
+                'date': datetime.date(2014, 7, 1),
+                'cost': 1000.12,
+                'cpc': 10.23,
+                'clicks': 103,
+                'impressions': 100000,
+                'ctr': 1.03,
+                'visits': 30,
+                'click_discrepancy': 0.1,
+                'pageviews': 122,
+                'percent_new_users': 32.0,
+                'bounce_rate': 11.0,
+                'pv_per_visit': 0.8,
+                'avg_tos': 0.9,
+                'some_random_metric': '13'
+            }]
+        ]
+
+    def tearDown(self):
+        super(AllAccountsExportTestCase, self).tearDown()
+        self.query_patcher.stop()
+
+    def test_get_detailed_report_excel(self):
+        request = http.HttpRequest()
+        request.GET['type'] = 'excel'
+        request.GET['start_date'] = '2014-06-30'
+        request.GET['end_date'] = '2014-07-01'
+        request.user = Mock()
+        request.user.id = 1
+
+        response = export.AllAccountsExport().get(request)
+
+        filename = 'all_accounts_report_2014-06-30_2014-07-01.xlsx'
+
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        self.assertEqual(
+            response['Content-Disposition'],
+            'attachment; filename="%s"' % filename
+        )
+
+        workbook = xlrd.open_workbook(file_contents=response.content)
+        self.assertIsNotNone(workbook)
+
+        worksheet = workbook.sheet_by_name('Detailed Report')
+        self.assertIsNotNone(worksheet)
+
+        self._assert_row(
+            worksheet, 4,
+            ['Date', 'Account', 'Campaign', 'Account Manager', 'Sales Representative',
+             'Service Fee', 'IAB Category', 'Promotion Goal', 'Spend', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR',
+             'Fee Amount', 'Total Amount']
+        )
+
+        service_fee = 0.2
+        cost = 1000.12
+        fee_amount = round((cost / (1.0 - service_fee)) - cost, ndigits=2)
+        total_amount = fee_amount + cost
+
+        self._assert_row(
+            worksheet, 5,
+            [41821.0, u'test account 1 \u010c\u017e\u0161', u'test campaign 1 \u010c\u017e\u0161', 'N/A', 'N/A',
+             service_fee, 'N/A', 'N/A', cost, 10.23, 103.0, 100000.0, 0.0103,
+             fee_amount, total_amount]
+        )
 
 
 class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
