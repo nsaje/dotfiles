@@ -1055,7 +1055,9 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
         touchpoint_conversion_goals = []
         report_goals = []
-        if request.user.has_perm('zemauth.conversion_reports'):
+
+        has_conversion_goals_permission = request.user.has_perm('zemauth.conversion_reports')
+        if has_conversion_goals_permission:
             touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == constants.ConversionGoalType.PIXEL]
             report_goals = [cg for cg in conversion_goals if cg.type != constants.ConversionGoalType.PIXEL]
 
@@ -1083,7 +1085,6 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         show_archived = request.GET.get('show_archived') == 'true' and\
             request.user.has_perm('zemauth.view_archived_entities')
 
-        has_conversion_goals_permission = request.user.has_perm('zemauth.conversion_reports')
         rows = self._get_rows(content_ads, stats, ad_group, conversion_goals,
                               touchpoint_conversion_stats, has_conversion_goals_permission,
                               has_view_archived_permission, show_archived)
