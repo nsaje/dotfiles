@@ -208,10 +208,14 @@ def refresh_contentadstats_diff(date, ad_group, source=None):
         row_dict = dict(zip(keys, data))
         logger.info('refresh_contentadstats_diff: {}'.format(json.dumps(row_dict)))
 
-        if row_dict['clicks'] > 0:
-            statsd_incr('reports.refresh.contentadstats_diff_clicks', row_dict['clicks'])
-        if row_dict['impressions'] > 0:
-            statsd_incr('reports.refresh.contentadstats_diff_impressions', row_dict['impressions'])
+        statsd_keys = (
+            'impressions', 'clicks',  'cost_cc', 'data_cost_cc',
+            'visits', 'new_visits', 'bounced_visits', 'pageviews',
+            'total_time_on_site'
+        )
+        for statsd_key in statsd_keys:
+            if row_dict[statsd_key] > 0:
+                statsd_incr('reports.refresh.contentadstats_diff_{}'.format(row_dict[statsd_key]), row_dict[statsd_key])
 
         diff_rows.append(row_dict)
 
