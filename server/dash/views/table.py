@@ -21,7 +21,6 @@ import reports.api_contentads
 import reports.api_touchpointconversions
 import reports.api_publishers
 import reports.constants
-import reports.redshift
 import actionlog.sync
 
 from django.core import urlresolvers
@@ -1084,9 +1083,10 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         show_archived = request.GET.get('show_archived') == 'true' and\
             request.user.has_perm('zemauth.view_archived_entities')
 
+        has_conversion_goals_permission = request.user.has_perm('zemauth.conversion_reports')
         rows = self._get_rows(content_ads, stats, ad_group, conversion_goals,
-                              touchpoint_conversion_stats, has_view_archived_permission,
-                              show_archived)
+                              touchpoint_conversion_stats, has_conversion_goals_permission,
+                              has_view_archived_permission, show_archived)
 
         batches = []
         if request.user.has_perm('zemauth.content_ads_bulk_actions'):
@@ -1137,7 +1137,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         response_dict = {
             'rows': rows,
             'batches': [{'id': batch.id, 'name': batch.name} for batch in batches],
-            'totals': self._get_total_row(total_stats, total_touchpoint_conversion_stats, conversion_goals),
+            'totals': self._get_total_row(total_stats, total_touchpoint_conversion_stats, conversion_goals, has_conversion_goals_permission),
             'order': order,
             'pagination': {
                 'currentPage': current_page,
@@ -1175,12 +1175,15 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         return 'conversion_goal__' + conversion_goal.name, cg_stat
 
     @newrelic.agent.function_trace()
-    def _get_total_row(self, stats, total_touchpoint_conversion_stats, conversion_goals):
+    def _get_total_row(self, stats, total_touchpoint_conversion_stats,
+                       conversion_goals, has_conversion_goals_permission):
         totals = {}
         total_touchpoint_conversion_stats = {s['slug']: s for s in total_touchpoint_conversion_stats}
-        for conversion_goal in conversion_goals:
-            cg_key, cg_val = self._get_conversion_goal_stat(conversion_goal, totals, total_touchpoint_conversion_stats)
-            totals[cg_key] = cg_val
+        if has_conversion_goals_permission:
+            for conversion_goal in conversion_goals:
+                cg_key, cg_val = self._get_conversion_goal_stat(conversion_goal, totals,
+                                                                total_touchpoint_conversion_stats)
+                totals[cg_key] = cg_val
 
         helpers.copy_stats_to_row(stats, totals)
         return totals
@@ -1202,7 +1205,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
     @newrelic.agent.function_trace()
     def _get_rows(self, content_ads, stats, ad_group, conversion_goals, touchpoint_conversion_stats,
-                  has_view_archived_permission, show_archived):
+                  has_conversion_goals_permission, has_view_archived_permission, show_archived):
         stats = {s['content_ad']: s for s in stats}
         touchpoint_conversion_stats = {
             s['content_ad']: {s1['slug']: s1 for s1 in touchpoint_conversion_stats if s1['content_ad'] == s['content_ad']}
@@ -1244,9 +1247,12 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             }
             helpers.copy_stats_to_row(stat, row)
 
-            for conversion_goal in conversion_goals:
-                cg_key, cg_val = self._get_conversion_goal_stat(conversion_goal, stat, touchpoint_conversion_stats.get(content_ad.id, {}))
-                row[cg_key] = cg_val
+            if has_conversion_goals_permission:
+                for conversion_goal in conversion_goals:
+                    cg_key, cg_val = self._get_conversion_goal_stat(conversion_goal,
+                                                                    stat,
+                                                                    touchpoint_conversion_stats.get(content_ad.id, {}))
+                    row[cg_key] = cg_val
 
             if has_view_archived_permission:
                 row['archived'] = archived
