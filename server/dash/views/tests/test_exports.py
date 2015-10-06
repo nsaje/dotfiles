@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import copy
 from mock import patch, Mock
 import datetime
 import slugify
@@ -10,6 +11,8 @@ from django.conf import settings
 import xlrd
 
 from dash.views import export
+import dash.models
+
 from zemauth import models
 from utils import exc
 
@@ -114,6 +117,70 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
              service_fee, 'N/A', 'N/A', cost, 10.23, 103.0, 100000.0, 0.0103,
              fee_amount, total_amount]
         )
+
+    def test_add_campaign_data(self):
+        request = http.HttpRequest()
+        request.user = models.User.objects.get(pk=2)
+
+        results = [{
+            'account': 1
+        }]
+        accounts = dash.models.Account.objects.filter(pk=1)
+
+        account = accounts[0]
+        account_settings = account.get_current_settings()
+        account_settings.service_fee = 0.13
+        account_settings.save(request)
+
+        export.AllAccountsExport().add_account_data(results, accounts)
+
+        self.assertItemsEqual(results, [{
+            'account': account.name,
+            'service_fee': 0.13
+        }])
+
+        results[0].update({
+            'campaign': 1,
+            'cost': 957.97
+        })
+
+        results_copy = copy.copy(results)
+        export.AllAccountsExport().add_campaign_data(results_copy, accounts)
+
+        self.assertItemsEqual(results_copy, [{
+            'account': u'test account 1 \u010c\u017e\u0161',
+            'iab_category': 'N/A',
+            'total_amount': 1101.1149425287356,
+            'campaign': u'test campaign 1 \u010c\u017e\u0161',
+            'fee_amount': 143.14494252873556,
+            'account_manager': 'N/A',
+            'promotion_goal': 'N/A',
+            'cost': 957.97,
+            'service_fee': 0.13,
+            'sales_representative': 'N/A'
+        }])
+
+        results[0].update({
+            'campaign': 1,
+            'cost': 957.97,
+            'service_fee': 'N/A'
+        })
+
+        results_copy = copy.copy(results)
+        export.AllAccountsExport().add_campaign_data(results_copy, accounts)
+
+        self.assertItemsEqual(results_copy, [{
+            'account': u'test account 1 \u010c\u017e\u0161',
+            'iab_category': 'N/A',
+            'total_amount': 'N/A',
+            'campaign': u'test campaign 1 \u010c\u017e\u0161',
+            'fee_amount': 'N/A',
+            'account_manager': 'N/A',
+            'promotion_goal': 'N/A',
+            'cost': 957.97,
+            'service_fee': 'N/A',
+            'sales_representative': 'N/A'
+        }])
 
 
 class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
