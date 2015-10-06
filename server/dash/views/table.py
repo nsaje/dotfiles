@@ -1245,7 +1245,6 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             helpers.copy_stats_to_row(stat, row)
 
             for conversion_goal in conversion_goals:
-                print touchpoint_conversion_stats
                 cg_key, cg_val = self._get_conversion_goal_stat(conversion_goal, stat, touchpoint_conversion_stats.get(content_ad.id, {}))
                 row[cg_key] = cg_val
 
