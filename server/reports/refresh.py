@@ -8,6 +8,7 @@ from django.conf import settings
 import reports.models
 from reports.db_raw_helpers import dictfetchall
 from reports import redshift
+from utils.statsd_helper import statsd_incr
 
 import dash.models
 
@@ -206,6 +207,12 @@ def refresh_contentadstats_diff(date, ad_group, source=None):
         )
         row_dict = dict(zip(keys, data))
         logger.info('refresh_contentadstats_diff: {}'.format(json.dumps(row_dict)))
+
+        if row_dict['clicks'] > 0:
+            statsd_incr('reports.refresh.contentadstats_diff_clicks', row_dict['clicks'])
+        if row_dict['impressions'] > 0:
+            statsd_incr('reports.refresh.contentadstats_diff_impressions', row_dict['impressions'])
+
         diff_rows.append(row_dict)
 
     if diff_rows != []:
