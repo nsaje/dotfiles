@@ -1211,9 +1211,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
     @newrelic.agent.function_trace()
     def _get_rows(self, content_ads, stats, ad_group, conversion_goals, touchpoint_conversions_stats, has_view_archived_permission, show_archived):
         stats = {s['content_ad']: s for s in stats}
-        print touchpoint_conversions_stats
         touchpoint_conversions_stats = {(s['content_ad'], s['slug']): s for s in touchpoint_conversions_stats}
-        print touchpoint_conversions_stats
 
         rows = []
 
