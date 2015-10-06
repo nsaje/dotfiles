@@ -41,9 +41,6 @@ def query(start_date, end_date, breakdown=None, conversion_goals=None, constrain
     if not constraints:
         constraints = {}
 
-    if not conversion_goals:
-        conversion_goals = []
-
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
 
@@ -54,6 +51,7 @@ def query(start_date, end_date, breakdown=None, conversion_goals=None, constrain
         for conversion_goal in conversion_goals[1:]:
             rsq |= redshift.RSQ(account=conversion_goal.pixel.account_id, slug=conversion_goal.pixel.slug,
                                 conversion_lag__lte=conversion_goal.conversion_window)
+        constraints_list = [rsq]
 
     cursor = redshift.get_cursor()
 
