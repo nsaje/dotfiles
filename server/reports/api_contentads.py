@@ -113,7 +113,7 @@ def query(start_date, end_date, breakdown=[], ignore_diff_rows=False, conversion
     if breakdown:
         return results
 
-    return results[0]
+    return results[0] if len(results) else {}
 
 
 def _transform_conversions(rows, converison_goals):

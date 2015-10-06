@@ -22,6 +22,7 @@ import reports.redshift as redshift
 @override_settings(
     R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/1/{content_ad_id}/'
 )
+@patch('dash.views.table.reports.api_touchpointconversions.query')
 @patch('dash.views.table.reports.api_contentads.query')
 class AdGroupAdsPlusTableTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
@@ -42,7 +43,7 @@ class AdGroupAdsPlusTableTest(TestCase):
     def tearDown(self):
         self.patcher.stop()
 
-    def test_get(self, mock_query):
+    def test_get(self, mock_query, mock_touchpointconversins_query):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
@@ -101,6 +102,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
+            conversion_goals=[cg for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
             ad_group=ad_group,
             ignore_diff_rows=True,
             source=sources_matcher
@@ -110,6 +112,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             ad_group=ad_group,
+            conversion_goals=[cg for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
             ignore_diff_rows=True,
             source=sources_matcher
         )
@@ -151,6 +154,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             'description': 'Example description',
             'call_to_action': 'Call to action',
             'clicks': 1000,
+            'conversion_goal__test conversion goal': None,
+            'conversion_goal__test conversion goal 2': None,
             'cost': 100,
             'cpc': '0.0100',
             'ctr': '12.5000',
@@ -200,6 +205,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             'url': 'http://testurl.com',
             'redirector_url': 'http://example.com/b/abc/z1/1/2/',
             'clicks': None,
+            'conversion_goal__test conversion goal': None,
+            'conversion_goal__test conversion goal 2': None,
             'cpc': None,
             'image_urls': {
                 'square': '/123456789/160x160.jpg',
@@ -230,6 +237,8 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertEqual(result['data']['totals'], {
             'clicks': 1500,
+            'conversion_goal__test conversion goal': None,
+            'conversion_goal__test conversion goal 2': None,
             'cost': 200,
             'cpc': '0.0200',
             'ctr': '15.5000',
@@ -251,7 +260,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertIn('batches', result['data'])
         self.assertEqual(result['data']['batches'], [])
 
-    def test_get_filtered_sources(self, mock_query):
+    def test_get_filtered_sources(self, mock_query, mock_touchpointconversions_query):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
@@ -297,6 +306,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
+            conversion_goals=[cg for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
             ad_group=ad_group,
             ignore_diff_rows=True,
             source=sources_matcher
@@ -306,6 +316,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             ad_group=ad_group,
+            conversion_goals=[cg for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
             ignore_diff_rows=True,
             source=sources_matcher
         )
@@ -321,7 +332,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertEqual(len(result['data']['rows']), 1)
         self.assertEqual(result['data']['rows'][0]['id'], '1')
 
-    def test_get_order(self, mock_query):
+    def test_get_order(self, mock_query, mock_touchpointconversions_query):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
@@ -366,6 +377,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
+            conversion_goals=[cg for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
             ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources_matcher
@@ -375,6 +387,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             ad_group=ad_group,
+            conversion_goals=[cg for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
             ignore_diff_rows=True,
             source=sources_matcher
         )
@@ -394,7 +407,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertEqual(result['data']['rows'][0]['title'], u'Test Article with no content_ad_sources 1')
         self.assertEqual(result['data']['rows'][1]['title'], u'Test Article unicode \u010c\u017e\u0161')
 
-    def test_get_batches(self, mock_query):
+    def test_get_batches(self, mock_query, mock_touchpointconversions_query):
         ad_group = models.AdGroup.objects.get(pk=1)
         date = datetime.date(2015, 2, 22)
 
@@ -445,7 +458,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'name': 'batch 1'
         }])
 
-    def test_get_batches_without_permission(self, mock_query):
+    def test_get_batches_without_permission(self, mock_query, mock_touchpointconversions_query):
 
         # login without superuser permissions
         self.user = User.objects.get(pk=2)
