@@ -185,6 +185,11 @@ class RefreshContentAdStats(test.TestCase):
 class RefreshAdGroupStatsTestCase(test.TestCase):
     fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml']
 
+    def setUp(self):
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
+
     def test_refresh_all(self):
         refresh.refresh_adgroup_stats()
 

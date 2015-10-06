@@ -1,6 +1,7 @@
 import datetime
 
 from django.test import TestCase
+from mock import patch
 
 import convapi.parse
 import convapi.models
@@ -8,6 +9,7 @@ import convapi.aggregate
 import convapi.views
 import reports.api
 import reports.models
+from reports import redshift
 
 
 class GAReportsAggregationTest(TestCase):
@@ -28,6 +30,11 @@ class GAReportsAggregationTest(TestCase):
             report=self.csvreport,
             report_log=self.report_log
         )
+
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
+        redshift.STATS_DB_NAME = 'default'
 
     def test_is_ad_group_specified(self):
         self.assertEqual((False, ['/lasko?_z1_a&_z1_msid=yahoo.com&_z1_kid=beer']),
@@ -97,6 +104,12 @@ class GAReportsAggregationTest(TestCase):
 class GAReportsAggregationKeywordTest(TestCase):
 
     fixtures = ['test_ga_aggregation.yaml']
+
+    def setUp(self):
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
+
 
     def test_report_init(self):
         report_log = convapi.models.GAReportLog()

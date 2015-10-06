@@ -250,6 +250,10 @@ def refresh_adgroup_stats(**constraints):
             row['ad_group'] = ad_group_lookup[ad_group_id]
             row['source'] = source_lookup[source_id]
 
+            date = row['datetime'].date()
+            redshift.delete_contentadstats_diff(date, ad_group_id, source_id)
+            refresh_contentadstats_diff(date, ad_group_lookup[ad_group_id], source=source_lookup[source_id])
+
             reports.models.AdGroupStats.objects.create(**row)
 
 

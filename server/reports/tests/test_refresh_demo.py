@@ -2,6 +2,7 @@ import datetime
 import mock
 
 from django import test
+from mock import patch
 
 import reports.refresh
 import reports.demo
@@ -15,6 +16,10 @@ class RefreshDemoTestCase(test.TestCase):
     fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml', 'test_demo.yaml']
 
     def setUp(self):
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
+
         reports.refresh.refresh_adgroup_stats()
         reports.refresh.refresh_adgroup_conversion_stats()
         self.start_date = datetime.date(2014, 6, 4)
