@@ -135,7 +135,7 @@ class EmailHelperTestCase(TestCase):
         email_helper.send_campaign_notification_email(campaign, self.request)
 
         subject = 'Settings change - campaign , account '
-        body = 'Hi account manager of \n\nWe\'d like to notify you that test@user.com has made a change in the settings of campaign , account . Please check https://testserver/campaigns/48/agency for details.\n\nYours truly,\nZemanta\n    '
+        body = 'Hi account manager of \n\nWe\'d like to notify you that test@user.com has made a change in the settings or budget of campaign , account . Please check https://testserver/campaigns/48/agency for details.\n\nYours truly,\nZemanta\n    '
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)

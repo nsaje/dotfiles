@@ -83,7 +83,7 @@ def send_campaign_notification_email(campaign, request):
 
     body = u'''Hi account manager of {campaign.name}
 
-We'd like to notify you that {user.email} has made a change in the settings of campaign {campaign.name}, account {account.name}. Please check {link_url} for details.
+We'd like to notify you that {user.email} has made a change in the settings or budget of campaign {campaign.name}, account {account.name}. Please check {link_url} for details.
 
 Yours truly,
 Zemanta
