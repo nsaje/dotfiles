@@ -9,9 +9,6 @@ SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 STATS_DB_NAME = 'stats'
 STATS_E2E_DB_NAME = 'stats_e2e'
 
-##declare -x DB_PORT_5432_TCP_ADDR="172.17.0.3"
-##declare -x DB_PORT_5432_TCP_PORT="5432"
-os.environ.get('', '')
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 DATABASES = {
@@ -67,8 +64,8 @@ MAILGUN_API_KEY = ''
 LOG_FILE = '/app/logs/eins-log.log'
 
 # Stats
-STATSD_HOST = 'localhost'
-STATSD_PORT = 8125
+STATSD_HOST = os.environ.get('STATSD_PORT_8125_UDP_ADDR', 'statsd')
+STATSD_PORT = int(os.environ.get('STATSD_PORT_8125_UDP_PORT', '8125'))
 
 # Saucelabs
 SAUCELABS_USERNAME = ''
