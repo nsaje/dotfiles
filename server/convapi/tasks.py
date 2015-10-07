@@ -122,6 +122,13 @@ def process_ga_report(ga_report_task):
         if ga_report_task.attachment_name.endswith('.xls'):
             content = _convert_ga_omniture(content, ga_report_task.attachment_name)
 
+        # OnStar hack - some reports are coming in with a special byte
+        # marker(probably magic number)
+        magic_string = '\xef\xbb\xbf'
+        start_of_content = content[:3]
+        if start_of_content == magic_string:
+            content = content[len(magic_string):]
+
         if ga_report_task.attachment_content_type not in('text/csv', 'application/vnd.ms-excel'):
             # assume content is omniture and convert it to GA report
             logger.warning('ERROR: content type is invalid')
