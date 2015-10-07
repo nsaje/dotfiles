@@ -39,6 +39,7 @@ eins:
     volumes:
       - "$HOME/docker-vols/eins/logs/:/app/logs/"
       - "./server/:/app/zemanta-eins/"
+      - "./server/server/localsettings.py.docker:/app/zemanta-eins/server/localsettings.py"
     working_dir: /app/zemanta-eins/
     entrypoint: /bin/bash
     command: run-docker-dev.sh
