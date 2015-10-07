@@ -12,6 +12,13 @@ echo "PostgreSQL opened port"
 
 # Fail hard and fast
 set -eo pipefail
+# Check if all requirements are installed
+
+if [[ "$(cat requirements.txt|md5sum)" != "$(cat /requirements.txt-installed|md5sum)" ]]; then
+    echo "IMPORTANT: Requirements change detected. I will install it but please update your image to reduce initialization time";
+    pip install -U -r requirements.txt
+else
+    echo "Requirements are up-to-date"
 
 python manage.py migrate
 
