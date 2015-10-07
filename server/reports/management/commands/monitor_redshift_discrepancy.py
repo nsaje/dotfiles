@@ -31,13 +31,13 @@ class Command(BaseCommand):
         stats_field_keys = cad_stats.keys()
         for stats_field_key in stats_field_keys:
             prefix = 'reports.contentadstats'
-            cads_total_name = '{prefix}.{stat_name}_z1'.format(
+            cads_total_name = '{prefix}.{stat_name}_total'.format(
                 prefix=prefix,
                 stat_name=stats_field_key
             )
             statsd_gauge(cads_total_name, cad_stats.get(stats_field_key, 0))
 
-            cads_redshift_name = '{prefix}.{stat_name}_redshift'.format(
+            cads_redshift_name = '{prefix}.{stat_name}_total_aggr'.format(
                 prefix=prefix,
                 stat_name=stats_field_key
             )
@@ -46,13 +46,13 @@ class Command(BaseCommand):
         post_stats_field_keys = cad_post_stats.keys()
         for post_stats_field_key in post_stats_field_keys:
             prefix = 'reports.contentadstats'
-            cads_total_name = '{prefix}.{stat_name}_z1'.format(
+            cads_total_name = '{prefix}.{stat_name}_total'.format(
                 prefix=prefix,
                 stat_name=post_stats_field_key
             )
             statsd_gauge(cads_total_name, cad_stats.get(post_stats_field_key, 0))
 
-            cads_redshift_name = '{prefix}.{stat_name}_redshift'.format(
+            cads_redshift_name = '{prefix}.{stat_name}_total_aggr'.format(
                 prefix=prefix,
                 stat_name=post_stats_field_key
             )
