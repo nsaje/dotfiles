@@ -173,6 +173,9 @@ class AdGroupSettings(api_common.BaseApiView):
             ad_group.save(request)
             new_settings.save(request)
 
+            actionlogs_to_send.extend(
+                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False))
+
             if current_settings.state == constants.AdGroupSettingsState.INACTIVE and\
                new_settings.state == constants.AdGroupSettingsState.ACTIVE:
 
@@ -187,13 +190,16 @@ class AdGroupSettings(api_common.BaseApiView):
                     actionlog_api.init_pause_ad_group(
                         ad_group, request, order=order, send=False))
 
-            actionlogs_to_send.extend(
-                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False))
-
         zwei_actions.send(actionlogs_to_send)
 
     def _add_media_sources(self, ad_group, new_settings, request):
         default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
+
+        # only select relevant media sources
+        if new_settings.is_mobile_only():
+            default_sources_settings = default_sources_settings.exclude(mobile_cpc_cc=None)
+        else:
+            default_sources_settings = default_sources_settings.exclude(default_cpc_cc=None)
 
         ad_group_sources_w_defaults = []
         actionlogs_to_send = []

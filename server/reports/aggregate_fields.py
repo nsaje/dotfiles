@@ -46,9 +46,6 @@ GOAL_AGGREGATE_FIELDS = dict(
     conversions_value_cc_sum=Sum('conversions_value_cc'),
 )
 
-ALL_AGGREGATE_FIELDS = AGGREGATE_FIELDS.copy()
-ALL_AGGREGATE_FIELDS.update(POSTCLICK_AGGREGATE_FIELDS)
-
 
 def transform_name(name):
     name_translate = {

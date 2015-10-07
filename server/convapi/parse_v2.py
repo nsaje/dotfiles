@@ -1,6 +1,7 @@
 import csv
 import datetime
 import exc
+import json
 import logging
 import re
 import StringIO
@@ -8,6 +9,8 @@ import xlrd
 
 import dash
 from utils import url_helper
+from utils.statsd_helper import statsd_timer
+
 
 LANDING_PAGE_COL_NAME = 'Landing Page'
 KEYWORD_COL_NAME = 'Keyword'
@@ -63,6 +66,7 @@ class ReportRow(object):
 
     def __init__(self):
         self.valid = True
+        self.raw_row = ''
 
     def is_valid(self):
         return self.valid
@@ -70,10 +74,14 @@ class ReportRow(object):
     def mark_invalid(self):
         self.valid = False
 
+    def __str__(self):
+        return self.raw_row
+
 
 class GaReportRow(ReportRow):
     def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
         ReportRow.__init__(self)
+        self.raw_row = json.dumps(ga_row_dict or {})
         self.ga_row_dicts = [ga_row_dict]
 
         self.visits = _report_atoi(ga_row_dict.get('Sessions'))
@@ -138,19 +146,13 @@ class GaReportRow(ReportRow):
             logger.exception('Failed parsing duration {}'.format(durstr))
             raise
 
-    def __str__(self):
-        return "{date}-{caid}-{source_param}".format(
-            date=self.report_date,
-            caid=self.content_ad_id,
-            source_param=self.source_param,
-        )
-
 
 class OmnitureReportRow(ReportRow):
 
     def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param):
         ReportRow.__init__(self)
         self.omniture_row_dict = [omniture_row_dict]
+        self.raw_row = json.dumps(omniture_row_dict or {})
 
         self.visits = _report_atoi(omniture_row_dict.get('Visits'))
         self.bounce_rate_raw = omniture_row_dict.get('Bounce Rate')
@@ -158,12 +160,26 @@ class OmnitureReportRow(ReportRow):
             self.bounce_rate = _report_atof(omniture_row_dict['Bounce Rate'].replace('%', '')) / 100
         else:
             self.bounce_rate = 0
+
+        # Omniture reports can come in multiple flavors having either Bounce
+        # Rate or Bounces
+        if not self.bounce_rate_raw and omniture_row_dict.get('Bounces') is not None:
+            self.bounced_visits = _report_atoi(omniture_row_dict.get('Bounces'))
+            if self.visits > 0:
+                self.bounce_rate = float(self.bounced_visits) / float(self.visits)
+            else:
+                self.bounce_rate = 0
+        else:
+            self.bounced_visits = int(self.bounce_rate * self.visits)
+
         self.pageviews = round(_report_atof(omniture_row_dict.get('Page Views', '0')))
         self.new_visits = _report_atoi(
-            omniture_row_dict.get('Unique Visits',
+            omniture_row_dict.get(
+                'Unique Visits',
                 omniture_row_dict.get('Unique Visitors', '0')
-            ))
-        self.bounced_visits = int(self.bounce_rate * self.visits)
+            )
+        )
+
         self.total_time_on_site = _report_atoi(omniture_row_dict.get('Total Seconds Spent', '0'))
 
         self.report_date = report_date.isoformat()
@@ -200,13 +216,6 @@ class OmnitureReportRow(ReportRow):
             self.source_param != '' and\
             self.source_param is not None
 
-    def __str__(self):
-        return "{date}-{caid}-{source_param}".format(
-            date=self.report_date,
-            caid=self.content_ad_id,
-            source_param=self.source_param,
-        )
-
 
 class Report(object):
 
@@ -242,6 +251,7 @@ class Report(object):
             content_ad_id, source_param = result.group(1), result.group(2)
         return int(content_ad_id), source_param
 
+    @statsd_timer('convapi.parse_v2', 'validate')
     def validate(self):
         '''
         Check if imported content ads and sources exist in database.
@@ -253,32 +263,45 @@ class Report(object):
         for source in sources:
             track_source_map[source.tracking_slug] = source.id
 
-        # slow but since we don't receive many reports this shouldn't hurt much
-        for entry in self.entries.values():
-            caid = entry.content_ad_id
-            source_param = track_source_map.get(entry.source_param)
-            if source_param is None:
+        # check <size> content ads at a time
+        BATCH_SIZE = 10000
+        current_entry_batch = []
+        entry_values = self.entries.values()
+        for entry in entry_values:
+            current_entry_batch.append(entry)
+            if len(current_entry_batch) >= BATCH_SIZE:
+                self._mark_invalid(current_entry_batch, track_source_map)
+
+        if len(current_entry_batch) > 0:
+            self._mark_invalid(current_entry_batch, track_source_map)
+
+    def _mark_invalid(self, entry_batch, track_source_map):
+        ids = [entry.content_ad_id for entry in entry_batch]
+        existing_cad_sources = dash.models.ContentAdSource.objects.filter(
+            content_ad__id__in=tuple(ids)
+        ).values_list('content_ad__id', 'source__id')
+
+        for entry in entry_batch:
+            source_id = track_source_map.get(entry.source_param)
+            if source_id is None:
                 entry.mark_invalid()
                 continue
 
-            if not dash.models.ContentAdSource.objects.filter(
-                content_ad__id=caid,
-                source__id=source_param).exists():
+            if (entry.content_ad_id, source_id,) not in existing_cad_sources:
                 entry.mark_invalid()
-                continue
 
     def is_media_source_specified(self):
         media_source_not_specified = []
         for entry in self.entries.values():
             if not entry.is_valid() or entry.source_param == '' is None or entry.source_param == '':
-                media_source_not_specified.append(entry.source_param)
+                media_source_not_specified.append(str(entry))
         return (len(media_source_not_specified) == 0, list(media_source_not_specified))
 
     def is_content_ad_specified(self):
         content_ad_not_specified = set()
         for entry in self.entries.values():
             if not entry.is_valid() or entry.content_ad_id is None or entry.content_ad_id == '':
-                content_ad_not_specified.add(entry.content_ad_id)
+                content_ad_not_specified.add(str(entry))
         return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
 
 
@@ -337,6 +360,7 @@ class GAReport(Report):
     def _contains_column(self, lines, name):
         return any(name in line for line in lines)
 
+    @statsd_timer('convapi.parse_v2', 'ga_parse')
     def parse(self):
         report_date, first_column_name = self._parse_header(self._extract_header_lines(self.csv_report_text))
         self.first_column = first_column_name
@@ -367,7 +391,7 @@ class GAReport(Report):
                     existing_entry.merge_with(report_entry)
         except:
             logger.exception("Failed parsing GA report")
-            raise exc.CsvParseException('Could not pars CSV')
+            raise exc.CsvParseException('Could not parse CSV')
 
         if not set(self.fieldnames or []) >= set(REQUIRED_FIELDS):
             missing_fieldnames = list(set(REQUIRED_FIELDS) - (set(self.fieldnames or []) & set(REQUIRED_FIELDS)))
@@ -579,6 +603,7 @@ class OmnitureReport(Report):
                     sessions_total, sessions_sum)
             )
 
+    @statsd_timer('convapi.parse_v2', 'omni_parse')
     def parse(self):
         workbook = xlrd.open_workbook(file_contents=self.xlsx_report_blob)
 

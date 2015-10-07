@@ -12,6 +12,7 @@ import reports.refresh
 import reports.models
 from reports import refresh
 from reports import redshift
+from utils.statsd_helper import statsd_timer
 
 from utils import statsd_helper
 
@@ -280,30 +281,42 @@ def update_touchpoint_conversions(date, conversion_touchpoint_pairs):
     redshift.delete_touchpoint_conversions(date)
     redshift.insert_touchpoint_conversions(conversion_touchpoint_pairs)
 
-
+@statsd_timer('reports.update', 'process_report')
 @transaction.atomic
 def process_report(date, parsed_report_rows, report_type):
-    """Stores postclick stats and conversion goals stats
-    to DB and updates stats DB"""
-    sources = dash.models.Source.objects.all()
-    track_source_map = {}
-    for source in sources:
-        track_source_map[source.tracking_slug] = source.id
+    """
+    Stores postclick stats and conversion goals stats
+    to DB and updates stats DB
+    """
+    try:
+        sources = dash.models.Source.objects.all()
+        track_source_map = {}
+        for source in sources:
+            track_source_map[source.tracking_slug] = source.id
 
-    bulk_contentad_stats = []
-    bulk_goal_conversion_stats = []
-    content_ad_ids = set()
-    for entry in parsed_report_rows:
-        content_ad_ids.add(entry.content_ad_id)
+        bulk_contentad_stats = []
+        bulk_goal_conversion_stats = []
+        content_ad_ids = set()
+        for entry in parsed_report_rows:
+            content_ad_ids.add(entry.content_ad_id)
 
-        stats = _create_contentad_postclick_stats(entry, track_source_map)
-        if stats is None:
-            continue
-        bulk_contentad_stats.append(stats)
+            stats = _create_contentad_postclick_stats(entry, track_source_map)
+            if stats is None:
+                continue
+            bulk_contentad_stats.append(stats)
 
-        goal_conversion_stats = _create_contentad_goal_conversion_stats(entry, report_type, track_source_map)
-        bulk_goal_conversion_stats.extend(goal_conversion_stats)
+            goal_conversion_stats = _create_contentad_goal_conversion_stats(entry, report_type, track_source_map)
+            bulk_goal_conversion_stats.extend(goal_conversion_stats)
 
+        _delete_and_restore_bulk_stats(report_type, bulk_contentad_stats, bulk_goal_conversion_stats)
+        _refresh_contentadstats(date, content_ad_ids)
+    except:
+        logger.exception('Failed processing report')
+        raise
+
+
+@statsd_timer('reports.update', '_delete_and_restore_bulk_stats')
+def _delete_and_restore_bulk_stats(report_type, bulk_contentad_stats, bulk_goal_conversion_stats):
     for obj in bulk_contentad_stats:
         reports.models.ContentAdPostclickStats.objects.filter(
             date=obj.date,
@@ -325,9 +338,12 @@ def process_report(date, parsed_report_rows, report_type):
     for obj in bulk_goal_conversion_stats:
         obj.save()
 
+
+@statsd_timer('reports.update', '_refresh_contentadstats')
+def _refresh_contentadstats(date, content_ad_ids):
     # refresh aggregation table
     for ad_group in dash.models.AdGroup.objects.filter(contentad__id__in=content_ad_ids):
-        refresh.refresh_contentadstats(date, ad_group)
+        reports.refresh.refresh_contentadstats(date, ad_group)
 
 
 def _create_contentad_postclick_stats(entry, track_source_map):

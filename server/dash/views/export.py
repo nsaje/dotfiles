@@ -530,6 +530,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources
         )
@@ -544,6 +545,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources
         )
@@ -552,6 +554,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources
         )
@@ -575,6 +578,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources
         )
@@ -583,6 +587,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources
         )
@@ -605,6 +610,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources
         )
@@ -833,5 +839,5 @@ class AllAccountsExport(ExportApiView):
             result['service_fee'] = float(cs.service_fee) if cs is not None else 'N/A'
             result['iab_category'] = cs.iab_category if cs is not None else 'N/A'
             result['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal) if cs is not None else 'N/A'
-            result['fee_amount'] = result['cost'] * result['service_fee'] if cs is not None else 'N/A'
-            result['total_amount'] = result['cost'] + result['fee_amount'] if cs is not None else 'N/A'
+            result['fee_amount'] = result['cost'] or 0 * result['service_fee'] if cs is not None else 'N/A'
+            result['total_amount'] = result['cost'] or 0 + result['fee_amount'] if cs is not None else 'N/A'

@@ -19,6 +19,10 @@ class StatsUpdateTestCase(test.TestCase):
     fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml']
 
     def setUp(self):
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
+
         refresh.refresh_adgroup_stats()
 
     def test_update_adgroup_source_traffic(self):
@@ -307,6 +311,11 @@ class StatsUpdateTestCase(test.TestCase):
 
 class DeleteOnEmptyReportTestCase(test.TestCase):
     fixtures = ['test_reports_base.yaml', 'test_article_stats_empty_report.yaml']
+
+    def setUp(self):
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
 
     def test_empty_with_flag(self):
         dt1 = datetime.datetime(2015, 4, 19)

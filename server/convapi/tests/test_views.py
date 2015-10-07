@@ -8,8 +8,8 @@ import hashlib
 import datetime
 import StringIO
 from convapi import views
-from convapi import models
 from django.conf import settings
+
 
 class ViewsTest(TestCase):
 

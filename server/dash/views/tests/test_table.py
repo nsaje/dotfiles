@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import json
-from mock import patch, Mock, MagicMock, call
+from mock import patch
 from django.contrib.auth import models as authmodels
 
 from django.test import TestCase, override_settings
@@ -34,6 +34,13 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
+
+        self.patcher = patch('reports.api_contentads.has_complete_postclick_metrics')
+        mock_has_complete_postclick_metrics = self.patcher.start()
+        mock_has_complete_postclick_metrics.return_value = True
+
+    def tearDown(self):
+        self.patcher.stop()
 
     def test_get(self, mock_query):
         date = datetime.date(2015, 2, 22)
@@ -95,6 +102,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             breakdown=['content_ad'],
             ad_group=ad_group,
+            ignore_diff_rows=True,
             source=sources_matcher
         )
 
@@ -102,6 +110,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             ad_group=ad_group,
+            ignore_diff_rows=True,
             source=sources_matcher
         )
 
@@ -289,6 +298,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             breakdown=['content_ad'],
             ad_group=ad_group,
+            ignore_diff_rows=True,
             source=sources_matcher
         )
 
@@ -296,6 +306,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             ad_group=ad_group,
+            ignore_diff_rows=True,
             source=sources_matcher
         )
 
@@ -355,6 +366,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources_matcher
         )
@@ -363,6 +375,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             ad_group=ad_group,
+            ignore_diff_rows=True,
             source=sources_matcher
         )
 
@@ -893,7 +906,7 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
 
 
-@patch('reports.redshift._get_cursor')
+@patch('reports.redshift.get_cursor')
 class AllAccountsSourcesTableTest(TestCase):
     fixtures = ['test_aggregation.yaml']
 
@@ -906,27 +919,19 @@ class AllAccountsSourcesTableTest(TestCase):
 
         redshift.STATS_DB_NAME = 'default'
 
-    @patch('reports.redshift._get_results')
-    def test_get_normal_all_accounts_table(self, mock_get_cursor, mock_get_results):
+    def test_get_normal_all_accounts_table(self, mock_get_cursor):
         t = table.AllAccountsSourcesTable(self.normal_user, 1, [])
         today = datetime.datetime.utcnow()
         t.get_stats(today, today)
-        self.assertFalse(mock_get_results.called)
+        self.assertFalse(mock_get_cursor().dictfetchall.called)
 
-    @patch('reports.redshift._get_results')
-    def test_get_redshift_all_accounts_table(self, mock_get_results, mock_get_cursor):
-        mock_cursor = Mock()
-        mock_get_cursor.return_value = mock_cursor
-
+    def test_get_redshift_all_accounts_table(self, mock_get_cursor):
         t = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
         today = datetime.datetime.utcnow()
         t.get_stats(today, today)
-        self.assertTrue(mock_get_results.called)
+        self.assertTrue(mock_get_cursor().dictfetchall.called)
 
     def test_funcs(self, mock_get_cursor):
-        mock_cursor = Mock()
-        mock_get_cursor.return_value = mock_cursor
-
         t = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
         today = datetime.datetime.utcnow()
         self.assertTrue(t.has_complete_postclick_metrics(today, today))

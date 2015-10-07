@@ -196,7 +196,7 @@ def _join_with_conversions(breakdown, report_results, conversion_results):
     return results.values()
 
 
-def query(start_date, end_date, breakdown=None, order=None, **constraints):
+def query(start_date, end_date, breakdown=None, order=None, ignore_diff_rows=False, **constraints):
     report_results = _get_report_results(start_date, end_date, breakdown, **constraints)
     conversion_results = _get_conversion_results(start_date, end_date, breakdown, **constraints)
     results = _join_with_conversions(breakdown, report_results, conversion_results)
@@ -242,6 +242,7 @@ def get_yesterday_cost(**constraints):
 
     result = {row['source']: row['cost'] for row in rs}
     return result
+
 
 def get_day_cost(day, breakdown=None, **constraints):
     rs = query(

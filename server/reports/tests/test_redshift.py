@@ -6,44 +6,36 @@ from django.test import TestCase
 from reports import redshift
 
 
-@patch('reports.redshift._get_cursor')
+@patch('reports.redshift.get_cursor')
 class RedshiftTest(TestCase):
     def setUp(self):
         redshift.STATS_DB_NAME = 'default'
 
-    def test_delete_contentadstats(self, mock_get_cursor):
-        mock_cursor = Mock()
-        mock_get_cursor.return_value = mock_cursor
-
+    def test_delete_contentadstats(self, mock_cursor):
         date = datetime.date(2015, 1, 1)
         ad_group_id = 1
         source_id = 2
 
         redshift.delete_contentadstats(date, ad_group_id, source_id)
 
-        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND source_id = %s'
-        params = ['2015-01-01', 1, 2]
+        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND content_ad_id != %s AND source_id = %s'
+        params = ['2015-01-01', 1, -1, 2]
 
-        mock_cursor.execute.assert_called_with(query, params)
+        mock_cursor().execute.assert_called_with(query, params)
 
-    def test_delete_contentadstats_no_source(self, mock_get_cursor):
-        mock_cursor = Mock()
-        mock_get_cursor.return_value = mock_cursor
-
+    def test_delete_contentadstats_no_source(self, mock_cursor):
         date = datetime.date(2015, 1, 1)
         ad_group_id = 1
 
         redshift.delete_contentadstats(date, ad_group_id, None)
 
-        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s'
-        params = ['2015-01-01', 1]
+        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND content_ad_id != %s'
+        params = ['2015-01-01', 1, -1]
 
-        mock_cursor.execute.assert_called_with(query, params)
+        mock_cursor().execute.assert_called_with(query, params)
 
-    def test_insert_contentadstats(self, mock_get_cursor):
-        mock_cursor = Mock()
-        mock_cursor.mogrify.side_effect = ["('a',1)", "('b',2)"]
-        mock_get_cursor.return_value = mock_cursor
+    def test_insert_contentadstats(self, mock_cursor):
+        mock_cursor().mogrify.side_effect = ["('a',1)", "('b',2)"]
 
         rows = [{'x': 1, 'y': 'a'}, {'x': 2, 'y': 'b'}]
 
@@ -51,19 +43,17 @@ class RedshiftTest(TestCase):
 
         query = "INSERT INTO contentadstats (y,x) VALUES ('a',1),('b',2)"
 
-        mock_cursor.mogrify.assert_any_call('(%s,%s)', ['a', 1])
-        mock_cursor.mogrify.assert_any_call('(%s,%s)', ['b', 2])
-        mock_cursor.execute.assert_called_with(query, [])
+        mock_cursor().mogrify.assert_any_call('(%s,%s)', ['a', 1])
+        mock_cursor().mogrify.assert_any_call('(%s,%s)', ['b', 2])
+        mock_cursor().execute.assert_called_with(query, [])
 
-    @patch('reports.redshift.dictfetchall')
-    def test_sum_contentadstats(self, _, mock_get_cursor):
-        mock_cursor = Mock()
-        mock_get_cursor.return_value = mock_cursor
-
+    def test_sum_contentadstats(self, mock_cursor):
         redshift.sum_contentadstats()
 
-        query = 'SELECT SUM(impressions) as impressions, SUM(visits) as visits FROM contentadstats'
-        mock_cursor.execute.assert_called_with(query, [])
+        query = 'SELECT SUM(impressions) as impressions, SUM(visits) as visits FROM contentadstats WHERE content_ad_id != %s'
+        params = [redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
+
+        mock_cursor().execute.assert_called_with(query, params)
 
     def test_get_pixels_last_verified_dt(self, mock_get_cursor):
         mock_cursor = Mock()
@@ -157,7 +147,7 @@ class RedshiftTestRSModel(TestCase):
 
         query = 'DELETE FROM "test_table" WHERE adgroup_id=%s AND date=%s AND exchange=%s'
         params =  [4, datetime.date(2015, 1, 2), 'abc']
-        
+
         mock_cursor.execute.assert_called_with(query, params)
 
     def test_multi_insert_general(self):
@@ -180,7 +170,7 @@ class RedshiftTestRSModel(TestCase):
         date = datetime.date(2015, 1, 2)
         ad_group_id = 1
         source_id = 2
-        
+
         # since this function is _sql, no additional field name checks are done
         redshift.RSModel().execute_multi_insert_sql(mock_cursor, ['field1', 'field2'], (('a', 'b'), ('c', 'd'), ('e', 'f')), max_at_a_time=2)
 
@@ -190,7 +180,7 @@ class RedshiftTestRSModel(TestCase):
                                             ])
 
     def test_constraints_to_tuples_str(self):
-        constraint_str, params = TestModel().constraints_to_str({"exchange": ["ab", "cd"], "date": datetime.date(2015, 1,2)}) 
+        constraint_str, params = TestModel().constraints_to_str({"exchange": ["ab", "cd"], "date": datetime.date(2015, 1,2)})
         self.assertEqual(constraint_str, "date=%s AND exchange IN (%s,%s)")
         self.assertEqual(params, [datetime.date(2015, 1, 2), 'ab', 'cd'])
 

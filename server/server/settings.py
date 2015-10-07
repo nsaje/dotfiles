@@ -180,15 +180,11 @@ if TESTING:
     CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_DEFAULT_CONVAPI_QUEUE
     CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_DEFAULT_CONVAPI_V2_QUEUE
 
-    DATABASES.pop(STATS_DB_NAME, None)
-    STATS_DB_NAME = 'default'
-
-    # does not need to be defined in production environment
-    try:
+    if len(sys.argv) > 1 and '--redshift' not in sys.argv:
+        # if not redshift testing
+        DATABASES.pop(STATS_DB_NAME, None)
         DATABASES.pop(STATS_E2E_DB_NAME, None)
-    except NameError:
-        print 'E2E DB name not specified'
-
+        STATS_DB_NAME = 'default'
 
 # App specific
 ACTIONLOG_RECENT_HOURS = 2
@@ -245,4 +241,3 @@ if 'e2e' in DATABASES:
 
 # User agent used when validating uploaded content ads URLs
 URL_VALIDATOR_USER_AGENT = 'Mozilla/5.0 (compatible; Zemanta/1.0; +http://www.zemanta.com)'
-

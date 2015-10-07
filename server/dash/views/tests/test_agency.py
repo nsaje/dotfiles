@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import datetime
-from mock import patch, ANY
+from mock import patch, ANY, Mock, call
 import pytz
 
 from django.test import TestCase
@@ -14,6 +14,7 @@ from django.conf import settings
 from zemauth.models import User
 from dash import models
 from dash import constants
+from dash.views import agency
 
 
 @patch('dash.views.agency.api.order_ad_group_settings_update')
@@ -44,6 +45,11 @@ class AdGroupSettingsTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        # we need this to track call order across multiple mocks
+        mock_manager = Mock()
+        mock_manager.attach_mock(mock_actionlog_api, 'mock_actionlog_api')
+        mock_manager.attach_mock(mock_order_ad_group_settings_update, 'mock_order_ad_group_settings_update')
 
         old_settings = ad_group.get_current_settings()
 
@@ -82,9 +88,18 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(new_settings.description, 'Example description')
         self.assertEqual(new_settings.call_to_action, 'Call to action')
 
-        mock_actionlog_api.init_enable_ad_group.assert_called_with(ad_group, ANY, order=ANY, send=False)
-        mock_order_ad_group_settings_update.assert_called_with(
-            ad_group, old_settings, new_settings, ANY, send=False)
+        # this checks if updates to other settings happen before
+        # changing the state of the campaign. This fixes a bug where
+        # setting state to enabled and changing end date from past date
+        # to a future date at the same time would cause a failed ActionLog
+        # on Yahoo because enabling campaign is not possible when
+        # end date is in the past.
+        mock_manager.assert_has_calls([
+            call.mock_order_ad_group_settings_update(
+                ad_group, old_settings, new_settings, ANY, send=False),
+            ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
+            call.mock_actionlog_api.init_enable_ad_group(ad_group, ANY, order=ANY, send=False)
+        ])
 
     def test_put_create_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=10)
@@ -134,8 +149,8 @@ class AdGroupSettingsTest(TestCase):
 
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
         default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
-        self.assertTrue(default_sources_settings.exists())
-        self.assertEqual(len(ad_group_sources), len(default_sources_settings))
+        self.assertEqual(default_sources_settings.count(), 2)
+        self.assertEqual(ad_group_sources.count(), 1)
 
         for ad_group_source in ad_group_sources:
             default_settings = models.DefaultSourceSettings.objects.get(source=ad_group_source.source)
@@ -278,6 +293,88 @@ class AdGroupSettingsTest(TestCase):
             'supports_dma_targeting': False,
             'id': 3
         }])
+
+
+@patch('dash.views.agency.api.order_ad_group_settings_update')
+@patch('dash.views.agency.actionlog_api')
+class AdGroupSettingsAutoAddMediaSourcesTest(TestCase):
+    fixtures = ['test_api.yaml', 'test_views.yaml']
+
+    def setUp(self):
+        self.request = HttpRequest()
+        self.request.user = User(id=1)
+        self.request.META['SERVER_NAME'] = 'testname'
+        self.request.META['SERVER_PORT'] = 1234
+
+    def test_put_create_settings_dont_auto_add_mobile(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=10)
+        current_settings = ad_group.get_current_settings()
+
+        current_settings.target_devices = ['mobile']
+
+        agency.AdGroupSettings()._add_media_sources(ad_group, current_settings, self.request)
+
+        # media sources with default settings that include mobile_cpc_cc should be added
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
+        self.assertEqual(default_sources_settings.count(), 2)
+        self.assertEqual(ad_group_sources.count(), 2)
+
+        for ad_group_source in ad_group_sources:
+            default_settings = models.DefaultSourceSettings.objects.get(source=ad_group_source.source)
+
+            ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source).latest()
+
+            self.assertIsNotNone(default_settings.mobile_cpc_cc)
+            self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
+            self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.mobile_cpc_cc)
+
+    def test_put_create_settings_dont_auto_add_desktop(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=10)
+        current_settings = ad_group.get_current_settings()
+
+        current_settings.target_devices = ['desktop']
+
+        agency.AdGroupSettings()._add_media_sources(ad_group, current_settings, self.request)
+
+        # media sources with default settings that include default_cpc_cc should be added
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
+        self.assertEqual(default_sources_settings.count(), 2)
+        self.assertEqual(ad_group_sources.count(), 1)
+
+        for ad_group_source in ad_group_sources:
+            default_settings = models.DefaultSourceSettings.objects.get(source=ad_group_source.source)
+
+            ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source).latest()
+
+            self.assertIsNotNone(default_settings.default_cpc_cc)
+            self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
+            self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.default_cpc_cc)
+
+    def test_put_create_settings_dont_auto_add_mobile_and_desktop(self, mock_actionlog_api,
+                                                                  mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=10)
+        current_settings = ad_group.get_current_settings()
+
+        current_settings.target_devices = ['desktop', 'mobile']
+
+        agency.AdGroupSettings()._add_media_sources(ad_group, current_settings, self.request)
+
+        # media sources with default settings that include default_cpc_cc should be added
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
+        self.assertEqual(default_sources_settings.count(), 2)
+        self.assertEqual(ad_group_sources.count(), 1)
+
+        for ad_group_source in ad_group_sources:
+            default_settings = models.DefaultSourceSettings.objects.get(source=ad_group_source.source)
+
+            ad_group_source_settings = models.AdGroupSourceSettings.objects\
+                                                                   .filter(ad_group_source=ad_group_source).latest()
+
+            self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
+            self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.default_cpc_cc)
 
 
 class AdGroupAgencyTest(TestCase):
@@ -1343,7 +1440,7 @@ class CampaignSettingsTest(TestCase):
         )
         content = json.loads(response.content)
         self.assertTrue(content['success'])
-        
+
         campaign = models.Campaign.objects.get(pk=1)
         settings = campaign.get_current_settings()
         self.assertEqual(campaign.name, 'test campaign 2')
