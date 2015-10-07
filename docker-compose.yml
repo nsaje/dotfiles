@@ -1,0 +1,46 @@
+postgres:
+    image: postgres:9.3
+    environment:
+      - POSTGRES_PASSWORD=devpwd
+      - POSTGRES_DB=one
+      - POSTGRES_USER=eins
+    expose:
+      - "5432"
+    volumes:
+      - "./fixtures/:/docker-entrypoint-initdb.d/"
+
+
+# this is fake statsd
+statsd:
+    image: defensative/socat-ubuntu
+    container_name: statsd
+    expose:
+      - "8125:8125/udp"
+    entrypoint: /usr/bin/socat
+    command: udp-recv:8125 -
+    tty: true
+
+
+memcached:
+    image: memcached
+    container_name: memcached
+    expose:
+      - "11211"
+eins:
+    container_name: eins
+    hostname: eins
+    image: zemanta/z1
+    ports:
+      - "8001:8000"
+    links:
+      - "postgres:db"
+      - "statsd:statsd"
+      - "memcached:memcached"
+    volumes:
+      - "$HOME/docker-vols/eins/logs/:/app/logs/"
+      - "./server/:/app/zemanta-eins/"
+    working_dir: /app/zemanta-eins/
+    entrypoint: /bin/bash
+    command: run-docker-dev.sh
+    tty: true
+    stdin_open: true
