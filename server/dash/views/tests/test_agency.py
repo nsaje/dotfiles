@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import datetime
-from mock import patch, ANY
+from mock import patch, ANY, Mock, call
 import pytz
 
 from django.test import TestCase
@@ -46,6 +46,11 @@ class AdGroupSettingsTest(TestCase):
 
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
+        # we need this to track call order across multiple mocks
+        mock_manager = Mock()
+        mock_manager.attach_mock(mock_actionlog_api, 'mock_actionlog_api')
+        mock_manager.attach_mock(mock_order_ad_group_settings_update, 'mock_order_ad_group_settings_update')
+
         old_settings = ad_group.get_current_settings()
 
         response = self.client.put(
@@ -83,9 +88,18 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(new_settings.description, 'Example description')
         self.assertEqual(new_settings.call_to_action, 'Call to action')
 
-        mock_actionlog_api.init_enable_ad_group.assert_called_with(ad_group, ANY, order=ANY, send=False)
-        mock_order_ad_group_settings_update.assert_called_with(
-            ad_group, old_settings, new_settings, ANY, send=False)
+        # this checks if updates to other settings happen before
+        # changing the state of the campaign. This fixes a bug where
+        # setting state to enabled and changing end date from past date
+        # to a future date at the same time would cause a failed ActionLog
+        # on Yahoo because enabling campaign is not possible when
+        # end date is in the past.
+        mock_manager.assert_has_calls([
+            call.mock_order_ad_group_settings_update(
+                ad_group, old_settings, new_settings, ANY, send=False),
+            ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
+            call.mock_actionlog_api.init_enable_ad_group(ad_group, ANY, order=ANY, send=False)
+        ])
 
     def test_put_create_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=10)

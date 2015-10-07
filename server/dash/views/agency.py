@@ -173,6 +173,9 @@ class AdGroupSettings(api_common.BaseApiView):
             ad_group.save(request)
             new_settings.save(request)
 
+            actionlogs_to_send.extend(
+                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False))
+
             if current_settings.state == constants.AdGroupSettingsState.INACTIVE and\
                new_settings.state == constants.AdGroupSettingsState.ACTIVE:
 
@@ -186,9 +189,6 @@ class AdGroupSettings(api_common.BaseApiView):
                 actionlogs_to_send.extend(
                     actionlog_api.init_pause_ad_group(
                         ad_group, request, order=order, send=False))
-
-            actionlogs_to_send.extend(
-                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False))
 
         zwei_actions.send(actionlogs_to_send)
 
