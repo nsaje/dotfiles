@@ -8,12 +8,13 @@ postgres:
       - "5432"
     volumes:
       - "./fixtures/:/docker-entrypoint-initdb.d/"
+# If you like to have persistent data store you can uncomment following line
+#      - "$HOME/docker-vols/postgres-eins:/var/lib/postgresql"
 
 
 # this is fake statsd
 statsd:
-    image: defensative/socat-ubuntu
-    container_name: statsd
+    image: verb/socat
     expose:
       - "8125:8125/udp"
     entrypoint: /usr/bin/socat
@@ -23,11 +24,12 @@ statsd:
 
 memcached:
     image: memcached
-    container_name: memcached
     expose:
       - "11211"
+
 eins:
     container_name: eins
+    restart: always
     hostname: eins
     image: zemanta/z1
     ports:
