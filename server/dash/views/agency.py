@@ -343,9 +343,6 @@ class CampaignAgency(api_common.BaseApiView):
 
         return history
 
-    def format_decimal_to_percent(self, num):
-        return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
-
     def convert_settings_to_dict(self, old_settings, new_settings):
         settings_dict = OrderedDict([
             ('name', {
@@ -374,7 +371,7 @@ class CampaignAgency(api_common.BaseApiView):
             }),
             ('service_fee', {
                 'name': 'Service Fee',
-                'value': self.format_decimal_to_percent(new_settings.service_fee) + '%'
+                'value': helpers.format_decimal_to_percent(new_settings.service_fee) + '%'
             }),
             ('promotion_goal', {
                 'name': 'Promotion Goal',
@@ -688,7 +685,7 @@ class CampaignBudget(api_common.BaseApiView):
             'total': total,
             'available': available,
             'spend': spend,
-            'history': self.format_history(campaign_budget.get_history())
+            'history': helpers.format_history(campaign_budget.get_history())
         }
         return response
 
@@ -885,6 +882,7 @@ class AccountAgency(api_common.BaseApiView):
         settings.name = resource['name']
         settings.default_account_manager = resource['default_account_manager']
         settings.default_sales_representative = resource['default_sales_representative']
+        settings.service_fee = helpers.format_percent_to_decimal(resource['service_fee'])
 
     def get_dict(self, settings, account):
         result = {}
@@ -900,6 +898,7 @@ class AccountAgency(api_common.BaseApiView):
                 'default_sales_representative':
                     str(settings.default_sales_representative.id)
                     if settings.default_sales_representative is not None else None,
+                'service_fee': helpers.format_decimal_to_percent(settings.service_fee),
             }
 
         return result
@@ -968,6 +967,10 @@ class AccountAgency(api_common.BaseApiView):
                 'name': 'Default Sales Representative',
                 'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
             }),
+            ('service_fee', {
+                'name': 'Service Fee',
+                'value': helpers.format_decimal_to_percent(new_settings.service_fee) + '%'
+            }),
         ])
 
         if old_settings is not None:
@@ -981,6 +984,9 @@ class AccountAgency(api_common.BaseApiView):
             if old_settings.default_sales_representative is not None:
                 settings_dict['default_sales_representative']['old_value'] = \
                     helpers.get_user_full_name_or_email(old_settings.default_sales_representative)
+
+            settings_dict['service_fee']['old_value'] = \
+                helpers.format_decimal_to_percent(old_settings.service_fee) + '%'
 
         return settings_dict
 

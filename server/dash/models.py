@@ -375,7 +375,8 @@ class AccountSettings(SettingsBase):
         'name',
         'archived',
         'default_account_manager',
-        'default_sales_representative'
+        'default_sales_representative',
+        'service_fee'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -397,6 +398,11 @@ class AccountSettings(SettingsBase):
         null=True,
         related_name="+",
         on_delete=models.PROTECT
+    )
+    service_fee = models.DecimalField(
+        decimal_places=4,
+        max_digits=5,
+        default=Decimal('0.2000'),
     )
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
@@ -613,7 +619,6 @@ class SourceType(models.Model):
     def can_fetch_report_by_publisher(self):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_FETCH_REPORT_BY_PUBLISHER in self.available_actions
-
 
     def __str__(self):
         return self.type

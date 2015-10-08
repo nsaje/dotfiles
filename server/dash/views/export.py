@@ -813,10 +813,14 @@ class AllAccountsExport(ExportApiView):
             return self.create_csv_response(filename, content=content)
 
     def add_account_data(self, results, accounts):
-        account_names = {account.id: account.name for account in accounts}
+        accounts_by_id = {account.id: account.name for account in accounts}
+        account_settings_by_id = {account.id: account.get_current_settings() for account in accounts}
 
         for result in results:
-            result['account'] = account_names[result['account']]
+            account_id = result['account']
+            result['account'] = accounts_by_id[account_id]
+            result['service_fee'] = (float(account_settings_by_id[account_id].service_fee) if
+                                     account_settings_by_id.get(account_id) else 'N/A')
 
     def add_campaign_data(self, results, accounts):
         campaign_names = {campaign.id: campaign.name for campaign in
@@ -833,11 +837,12 @@ class AllAccountsExport(ExportApiView):
             campaign_id = result['campaign']
             cs = campaign_settings.get(campaign_id)
 
+            has_service_fee = result.get('service_fee') and result['service_fee'] != 'N/A'
+            cost = result['cost'] or 0
             result['campaign'] = campaign_names[campaign_id]
             result['account_manager'] = cs.account_manager.email if cs is not None and cs.account_manager is not None else 'N/A'
             result['sales_representative'] = cs.sales_representative.email if cs is not None and cs.sales_representative is not None else 'N/A'
-            result['service_fee'] = float(cs.service_fee) if cs is not None else 'N/A'
             result['iab_category'] = cs.iab_category if cs is not None else 'N/A'
             result['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal) if cs is not None else 'N/A'
-            result['fee_amount'] = result['cost'] or 0 * result['service_fee'] if cs is not None else 'N/A'
-            result['total_amount'] = result['cost'] or 0 + result['fee_amount'] if cs is not None else 'N/A'
+            result['fee_amount'] = (cost / (1.0 - result['service_fee'])) - cost if has_service_fee else 'N/A'
+            result['total_amount'] = cost + result['fee_amount'] if has_service_fee else 'N/A'

@@ -12,7 +12,7 @@
             <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
         </div>
 
-		<div class="form-group" ng-class="{'has-error': !!errors.defaultAccountManager}">
+        <div class="form-group" ng-class="{'has-error': !!errors.defaultAccountManager}">
             <label for="account-manager-select" class="col-xs-2 control-label">
                 Default Account Manager
                 <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
@@ -42,6 +42,21 @@
                 </ui-select>
             </div>
             <label ng-repeat="error in errors.defaultSalesRepresentative" class="control-label error" for="sales-representative-select">{{ error }}</label>
+        </div>
+        <div class="form-group" ng-class="{'has-error': !!errors.serviceFee}">
+            <label for="service-fee-select" class="col-xs-2 control-label">
+                Service Fee
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Fee for management of the account; calculated based on media spend." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <ui-select theme="select2" id="service-fee-select" class="form-control" ng-model="settings.serviceFee">
+                    <ui-select-match>{{$select.selected}}%</ui-select-match>
+                    <ui-select-choices repeat="fee in getServiceFees($select.search) | filter: $select.search">
+                        <span ng-bind-html="fee"></span>%
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+            <label ng-repeat="error in errors.serviceFee" class="control-label error" for="service-fee-select">{{ error }}</label>
         </div>
 
         <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
@@ -98,7 +113,8 @@
                     <div class="col-xs-4">
                         <button type="button" class="btn btn-default" ng-click="addUser()">Add new user</button>
                         <div class="loader" ng-show="addUserRequestInProgress"></div>
-                    </div><br />
+                    </div>
+                    <br />
                     <div class="col-xs-12" ng-show="addUserErrors">
                         <label class="error">{{addUserErrors.message}}</label>
                         <label ng-show="addUserErrors.conflict" class="error"></label>
@@ -144,7 +160,7 @@
                         <td class="no-wrap pixel-last-verified">{{ (item.lastVerifiedDt | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                         <td>
                             <div class="dropdown" dropdown aria-haspopup="true">
-                                <a href class="btn btn-default btn-big dropdown-toggle" ng-class="{'disabled': item.requestInProgress}"dropdown-toggle>Actions&nbsp;<span class="caret" /></a>
+                                <a href class="btn btn-default btn-big dropdown-toggle" ng-class="{'disabled': item.requestInProgress}" dropdown-toggle>Actions&nbsp;<span class="caret" /></a>
                                 <ul class="dropdown-menu dropdown-menu-activation" role="menu">
                                     <li ng-if="!item.archived"><a tabindex="-1" ng-click="archiveConversionPixel(item)" href="#">Archive</a></li>
                                     <li ng-if="!!item.archived"><a tabindex="-1" ng-click="restoreConversionPixel(item)" href="#">Restore</a></li>
@@ -161,15 +177,16 @@
                 </tbody>
             </table>
         </div>
-        <button type="button" class="btn btn-default" ng-class="{'disabled': !!listPixelsInProgress || !!listPixelsError}"ng-click="addConversionPixel()">Add Pixel</button>
+        <button type="button" class="btn btn-default" ng-class="{'disabled': !!listPixelsInProgress || !!listPixelsError}" ng-click="addConversionPixel()">Add Pixel</button>
         <span ng-if="!!listPixelsError" class="error">
             An error has occured while loading conversion pixels. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
         </span>
     </div>
 
     <div class="section table-account-agency">
-        <div class="title">History<zem-help-popover content="History of settings changes." placement="top"></zem-help-popover>
-</div>
+        <div class="title">History
+            <zem-help-popover content="History of settings changes." placement="top"></zem-help-popover>
+        </div>
         <div class="loader-container">
             <div class="loader" ng-show="history.length && requestInProgress"></div>
             <table class="table table-hover">
