@@ -315,6 +315,10 @@ def _fetch_reports_callback(action, data):
     ad_group = action.ad_group_source.ad_group
     source = action.ad_group_source.source
 
+    logger.info('_fetch_reports_callback: Processing reports callback for adgroup {adgroup_id}  source {source_id}'.format(
+        adgroup_id=ad_group.id, source_id=source.id if source is not None else 0)
+    )
+
     traffic_metrics_exist = reports.api.traffic_metrics_exist(ad_group, source, date)
     rows_raw = data['data']
 
@@ -328,6 +332,11 @@ def _fetch_reports_callback(action, data):
 
     # centralize in order to reduce possibility of mistake
     change_unique_key = "reports_by_link"
+
+    if not _has_changed(data, ad_group, source, date, change_unique_key):
+        logger.info('_fetch_reports_callback: no changes adgroup {adgroup_id}  source {source_id}'.format(
+            adgroup_id=ad_group.id, source_id=source.id if source is not None else 0)
+        )
 
     if valid_response and _has_changed(data, ad_group, source, date, change_unique_key):
         can_manage_content_ads = action.ad_group_source.can_manage_content_ads
