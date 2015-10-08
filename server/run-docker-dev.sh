@@ -19,6 +19,7 @@ if [[ "$(cat requirements.txt|md5sum)" != "$(cat /requirements.txt-installed|md5
     pip install -U -r requirements.txt
 else
     echo "Requirements are up-to-date"
+fi
 
 python manage.py migrate
 
