@@ -685,7 +685,7 @@ class CampaignBudget(api_common.BaseApiView):
             'total': total,
             'available': available,
             'spend': spend,
-            'history': helpers.format_history(campaign_budget.get_history())
+            'history': self.format_history(campaign_budget.get_history())
         }
         return response
 
