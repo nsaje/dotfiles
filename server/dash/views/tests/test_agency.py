@@ -1361,6 +1361,127 @@ class UserActivationTest(TestCase):
         self.assertFalse(decoded_response.get('success'), 'Failed sending message')
 
 
+class CampaignBudgetTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def setUp(self):
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
+
+    @patch('dash.views.agency.budget.CampaignBudget')
+    def test_get(self, MockCampaignBudget):
+        password = 'secret'
+        self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
+
+        MockCampaignBudget.return_value.get_total.return_value = 1000
+        MockCampaignBudget.return_value.get_spend.return_value = 666
+        MockCampaignBudget.return_value.get_history.return_value = [models.CampaignBudgetSettings.
+                                                                    objects.get(pk=1)]
+
+        response = self.client.get(
+            '/api/campaigns/1/budget/'
+        )
+        content = json.loads(response.content)
+
+        self.assertTrue(content['success'])
+        self.assertEqual(content['data']['total'], 1000)
+        self.assertEqual(content['data']['available'], 334)
+        self.assertEqual(content['data']['spend'], 666)
+        self.assertEqual(content['data']['history'], [{
+            'comment': u'Added budget',
+            'revoke': 0.0,
+            'datetime': u'2015-09-23T05:57:22',
+            'user': u'superuser@test.com',
+            'total': 1000.0,
+            'allocate': 1000.0
+        }])
+
+    def test_get_no_permission(self):
+        password = 'secret'
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password=password)
+
+        permission = Permission.objects.get(codename='campaign_budget_management_view')
+        self.user.user_permissions.remove(permission)
+
+        response = self.client.get(
+            '/api/campaigns/1/budget/'
+        )
+        content = json.loads(response.content)
+
+        self.assertFalse(content['success'])
+        self.assertEqual(response.status_code, 404)
+
+    @patch('dash.views.agency.budget.CampaignBudget')
+    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
+    def test_put(self, mock_send_campaign_notification_email, MockCampaignBudget):
+        password = 'secret'
+        self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
+
+        MockCampaignBudget.return_value.get_total.return_value = 1000
+        MockCampaignBudget.return_value.get_spend.return_value = 666
+        MockCampaignBudget.return_value.get_history.return_value = [models.CampaignBudgetSettings.
+                                                                    objects.get(pk=1)]
+
+        response = self.client.put(
+            '/api/campaigns/1/budget/',
+            json.dumps({
+                'action': 'allocate',
+                'amount': 1000,
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+
+        campaign = models.Campaign.objects.get(pk=1)
+
+        self.assertTrue(content['success'])
+        self.assertEqual(content['data']['total'], 1000)
+        self.assertEqual(content['data']['available'], 334)
+        self.assertEqual(content['data']['spend'], 666)
+        self.assertEqual(content['data']['history'], [{
+            'comment': u'Added budget',
+            'revoke': 0.0,
+            'datetime': u'2015-09-23T05:57:22',
+            'user': u'superuser@test.com',
+            'total': 1000.0,
+            'allocate': 1000.0
+        }])
+
+        MockCampaignBudget.return_value.edit.assert_called_with(
+            revoke_amount=0, allocate_amount=1000.0, request=response.wsgi_request
+        )
+        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
+
+    @patch('dash.views.agency.budget.CampaignBudget')
+    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
+    def test_put_no_permission(self, mock_send_campaign_notification_email, MockCampaignBudget):
+        password = 'secret'
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password=password)
+
+        permission = Permission.objects.get(codename='campaign_budget_management_view')
+        self.user.user_permissions.remove(permission)
+
+        response = self.client.put(
+            '/api/campaigns/1/budget/',
+            json.dumps({
+                'action': 'allocate',
+                'amount': 1000,
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+
+        self.assertFalse(content['success'])
+        self.assertEqual(response.status_code, 404)
+
+        self.assertFalse(MockCampaignBudget.return_value.edit.called)
+        self.assertFalse(mock_send_campaign_notification_email.called)
+
+
 class CampaignAgencyTest(TestCase):
     fixtures = ['test_views.yaml']
 
@@ -1381,7 +1502,8 @@ class CampaignAgencyTest(TestCase):
         self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
         self.assertEqual(content['data']['settings']['iab_category'], 'IAB24')
 
-    def test_post(self):
+    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
+    def test_post(self, mock_send_campaign_notification_email):
         response = self.client.put(
             '/api/campaigns/1/agency/',
             json.dumps({
@@ -1405,6 +1527,8 @@ class CampaignAgencyTest(TestCase):
         self.assertEqual(settings.account_manager_id, 1)
         self.assertEqual(settings.iab_category, 'IAB17')
 
+        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
+
 
 class CampaignSettingsTest(TestCase):
     fixtures = ['test_views.yaml']
@@ -1427,7 +1551,8 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['campaign_goal'], 3)
         self.assertEqual(content['data']['settings']['goal_quantity'], 0)
 
-    def test_post(self):
+    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
+    def test_post(self, mock_send_campaign_notification_email):
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -1448,6 +1573,8 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(campaign.name, 'test campaign 2')
         self.assertEqual(settings.goal_quantity, 10)
         self.assertEqual(settings.campaign_goal, 2)
+
+        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
 
     def test_validation(self):
         response = self.client.put(

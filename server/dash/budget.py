@@ -88,7 +88,7 @@ class CampaignBudget(object):
         r = reports.api.query(start_date=start_date, end_date=end_date, campaign=self.campaign)
         return r.get('cost') or 0
 
-    def edit(self, allocate_amount, revoke_amount, comment, request):
+    def edit(self, allocate_amount, revoke_amount, request, comment=''):
         if not allocate_amount and not revoke_amount and not comment:
             # nothing to change
             return

@@ -107,7 +107,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
-            email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, request.user, request)
+            email_helper.send_ad_group_notification_email(ad_group, request)
 
         response = {
             'settings': self.get_dict(new_settings, ad_group),
@@ -308,6 +308,7 @@ class CampaignAgency(api_common.BaseApiView):
                     )
                 )
 
+        email_helper.send_campaign_notification_email(campaign, request)
         zwei_actions.send(actions)
 
     def get_history(self, campaign):
@@ -667,11 +668,11 @@ class CampaignBudget(api_common.BaseApiView):
             allocate_amount=form.get_allocate_amount(),
             revoke_amount=form.get_revoke_amount(),
             request=request,
-            comment='',
         )
 
-        response = self.get_response(campaign)
+        email_helper.send_campaign_notification_email(campaign, request)
 
+        response = self.get_response(campaign)
         return self.create_api_response(response)
 
     def get_response(self, campaign):
