@@ -326,7 +326,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     var getDailyStats = function () {
         api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, getDailyStatsMetrics(), null).then(
             function (data) {
-                console.log(data);
                 setChartOptions(data.conversionGoals);
                 $scope.chartData = data.chartData;
             },
