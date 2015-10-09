@@ -6,9 +6,7 @@ import pytz
 from django.conf import settings
 
 from reports import redshift
-from reports import constants
 from reports import api
-from reports import exc
 from reports.db_raw_helpers import extract_obj_ids
 import reports.rs_helpers as rsh
 
@@ -72,10 +70,12 @@ class RSContentAdStatsModel(redshift.RSModel):
 RSContentAdStats = RSContentAdStatsModel()
 
 
-def query(start_date, end_date, breakdown=[], ignore_diff_rows=False, conversion_goals=[], **constraints):
+def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, conversion_goals=[], **constraints):
     # TODO: it would be nicer if 'constraints' would be a dict, but we use kwargs to maintain
     # compatibility with reports.api
     breakdown = copy.copy(breakdown)
+    conversion_goals = copy.copy(conversion_goals)
+    order = copy.copy(order)
     conversion_goals = copy.copy(conversion_goals)
 
     constraints['date__gte'] = start_date

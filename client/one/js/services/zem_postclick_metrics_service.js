@@ -111,44 +111,29 @@ oneApp.factory('zemPostclickMetricsService', function() {
         }));
     }
 
-    function insertConversionGoalColumns(columns, position, rows, goalCategory, isShown, isInternal) {
-        for(var i = 0; i < rows.length; i++) {
-            for(var field in rows[i]) {
-                if(field.indexOf('conversion_goal__') != 0) {
-                    continue;
-                }
+    function insertConversionGoalColumns(columns, position, conversionGoals, goalCategory, isShown, isInternal) {
+        if (!conversionGoals) {
+            return;
+        }
 
-                if(columnsContainField(columns, field)) {
-                    continue;
-                }
+        for(var i = 0; i < conversionGoals.length; i++) {
+            var columnDescription = {
+                name: conversionGoals[i].name,
+                field: 'conversion_goal__' + conversionGoals[i].name,
+                checked: false,
+                type: 'number',
+                help: 'Number of completions of the conversion goal',
+                shown: isShown,
+                internal: isInternal,
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc'
+            };
 
-                var columnDescription = {
-                    name: field.substr('conversion_goal__'.length),
-                    field: field,
-                    checked: false,
-                    type: 'number',
-                    help: 'Number of completions of the conversion goal',
-                    shown: isShown,
-                    internal: isInternal,
-                    totalRow: true,
-                    order: true,
-                    initialOrder: 'desc'
-                };
-
-                columns.splice(position, 0, columnDescription);
-                goalCategory.fields.push(columnDescription.field);
-            }
+            columns.splice(position, 0, columnDescription);
+            goalCategory.fields.push(columnDescription.field);
         }
     };
-
-    function columnsContainField(columns, field) {
-        for(var i = 0; i < columns.length; i++) {
-            if(field == columns[i]['field']) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     return {
         insertAcquisitionColumns: insertAcquisitionColumns,

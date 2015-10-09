@@ -738,6 +738,9 @@ def copy_stats_to_row(stat, row):
                 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
         row[key] = stat.get(key)
 
+    for key in [k for k  in stat.keys() if k.startswith('conversion_goal__')]:
+        row[key] = stat.get(key)
+
 
 def _is_end_date_past(ad_group_settings):
     end_utc_datetime = ad_group_settings.get_utc_end_datetime()

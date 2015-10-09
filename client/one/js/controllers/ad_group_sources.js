@@ -103,6 +103,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             ]
         },
         {
+            'name': 'Conversions',
+            'fields': []
+        },
+        {
             'name': 'Data Sync',
             'fields': ['last_sync']
         }
@@ -416,15 +420,14 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
         api.adGroupSourcesTable.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
-                if($scope.hasPermission('zemauth.aggregate_postclick_engagement')) {
-                    zemPostclickMetricsService.insertConversionGoalColumns(
-                        $scope.columns,
-                        $scope.columns.length - 2,
-                        data.rows,
-                        $scope.columnCategories[1],
-                        $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
-                    );
-                }
+                zemPostclickMetricsService.insertConversionGoalColumns(
+                    $scope.columns,
+                    $scope.columns.length - 2,
+                    data.conversionGoals,
+                    $scope.columnCategories[2],
+                    $scope.hasPermission('zemauth.conversion_reports'),
+                    $scope.isPermissionInternal('zemauth.conversion_reports')
+                );
 
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;

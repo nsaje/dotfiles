@@ -756,11 +756,6 @@ div[datepicker] {
     }
 }
 
-/* chart metric select */
-.select2-drop.metric2 {
-    border: 1px solid @default-color;
-}
-
 .select2-container {
     &.select2-dropdown-open .select2-choice {
         .border-radius(2px 2px 0 0);
@@ -2798,12 +2793,15 @@ zem-submission-status {
 
 .ui-select-container {
     cursor: pointer;
+    box-sizing: border-box;
 
-    .ui-select-dropdown {
+    &.form-control .ui-select-dropdown {
         /* parent element has border (1px) so dropdown needs positioning) */
         left: -1px;
         width: calc(~"100% + 2px");
+    }
 
+    .ui-select-dropdown {
         .ui-select-highlight {
             font-weight: normal;
             text-decoration: underline;

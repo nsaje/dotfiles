@@ -1,6 +1,4 @@
-import logging
-import datetime
-
+from reports import db_raw_helpers
 from reports import redshift
 from reports import rs_helpers
 
@@ -43,6 +41,8 @@ def query(start_date, end_date, breakdown=None, conversion_goals=None, constrain
 
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
+
+    constraints = db_raw_helpers.extract_obj_ids(constraints)
 
     constraints_list = []
     if conversion_goals:

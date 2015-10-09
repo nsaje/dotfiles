@@ -1584,7 +1584,7 @@ class ConversionGoal(models.Model):
         elif self.type == constants.ConversionGoalType.OMNITURE:
             prefix = reports.constants.ReportType.OMNITURE
         else:
-            exc.ReportsQueryError('Invalid conversion goal type')
+            raise Exception('Invalid conversion goal type')
 
         return prefix + '__' + self.goal_id
 
