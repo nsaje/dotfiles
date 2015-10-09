@@ -14,7 +14,7 @@ from utils import statsd_helper
 logger = logging.getLogger(__name__)
 
 # special source param designating url's from zemanta dashboard
-Z1_SOURCE_PARAM = 'Z1'
+Z1_SOURCE_PARAM = 'z1'
 
 
 class ReportEmail(object):
