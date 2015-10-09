@@ -110,7 +110,7 @@ def sum_of_stats():
     SUM(clicks) as clicks,
     SUM(cost_cc) as cost_cc,
     SUM(data_cost_cc) as data_cost_cc,
-    SUM(new_visits_cc) as new_visits_cc,
+    SUM(new_visits) as new_visits,
     SUM(bounced_visits) as bounced_visits,
     SUM(pageviews) as pageviews,
     SUM(total_time_on_site) as total_time_on_site
