@@ -721,7 +721,9 @@ class UserActionLogAdmin(admin.ModelAdmin):
         'account_settings_changes_text_',
     )
 
-    list_filter = ('action_type', ('created_dt', admin.DateFieldListFilter))
+    list_filter = ('action_type',
+                   ('created_dt', admin.DateFieldListFilter),
+                   ('created_by', admin.RelatedOnlyFieldListFilter))
 
     def ad_group_settings_changes_text_(self, user_action_log):
         return self._get_changes_link(
