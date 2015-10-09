@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from dash import constants
 
 import reports.api
@@ -40,6 +42,7 @@ def get_stats_with_conversions(user, start_date, end_date, conversion_goals=None
     content_ad_stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
         start_date,
         end_date,
+        order=order,
         breakdown=breakdown,
         ignore_diff_rows=ignore_diff_rows,
         conversion_goals=report_conversion_goals,
@@ -48,7 +51,8 @@ def get_stats_with_conversions(user, start_date, end_date, conversion_goals=None
     if not breakdown:
         content_ad_stats = [content_ad_stats]
 
-    ca_stats_by_breakdown = {tuple(s[b] for b in breakdown): s for s in content_ad_stats}
+    # use ordered dict to retain order from db
+    ca_stats_by_breakdown = OrderedDict((tuple(s[b] for b in breakdown), s) for s in content_ad_stats)
     for ca_stat in ca_stats_by_breakdown.values():
         for conversion_goal in report_conversion_goals:
             key = conversion_goal.get_stats_key()
@@ -64,6 +68,7 @@ def get_stats_with_conversions(user, start_date, end_date, conversion_goals=None
     touchpoint_conversion_stats = reports.api_touchpointconversions.query(
         start_date,
         end_date,
+        order=order,
         breakdown=breakdown + ['slug'],
         conversion_goals=touchpoint_conversion_goals,
         constraints=constraints
