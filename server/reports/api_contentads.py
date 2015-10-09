@@ -101,7 +101,7 @@ def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, 
         cursor,
         returned_fields,
         breakdown_fields=breakdown,
-        order_fields=[],
+        order_fields=order,
         offset=None,
         limit=None,
         constraints=constraints

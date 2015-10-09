@@ -17,6 +17,7 @@ from dash import constants
 import reports
 from utils import pagerduty_helper
 from utils.statsd_helper import statsd_timer
+from utils.statsd_helper import statsd_gauge
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +102,16 @@ def ad_group_source_is_on_autopilot(ad_group_source):
     return setting.autopilot_state == constants.AdGroupSourceSettingsAutopilotState.ACTIVE
 
 
+def _ad_group_source_is_synced(ad_group_source):
+    min_sync_date = datetime.datetime.utcnow() - datetime.timedelta(
+        hours=automation.settings.SYNC_IS_RECENT_HOURS
+    )
+    last_sync = ad_group_source.last_successful_sync_dt
+    if last_sync is None:
+        return False
+    return last_sync >= min_sync_date
+
+
 def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_spend):
     cpc_change_comments = _get_calculate_cpc_comments(current_cpc, current_daily_budget, yesterdays_spend)
     spending_perc = _calculate_spending_perc(yesterdays_spend, current_daily_budget)
@@ -159,16 +170,25 @@ def _threshold_lowering_cpc(current_cpc, new_cpc):
     return new_cpc
 
 
+def _check_source_constraints(proposed_cpc, source_min_cpc, source_max_cpc):
+    if proposed_cpc > source_max_cpc:
+        return [automation.constants.CpcChangeComment.OVER_SOURCE_MAX_CPC]
+    if proposed_cpc < source_min_cpc:
+        return [automation.constants.CpcChangeComment.UNDER_SOURCE_MIN_CPC]
+    return []
+
+
 def _round_cpc(num):
     return num.quantize(
         decimal.Decimal('0.01'),
         rounding=decimal.ROUND_UP)
 
 
-def send_autopilot_CPC_changes_email(campaign_name, campaign_id, account_name, emails, changesData):
+def send_autopilot_CPC_changes_email(campaign_name, campaign_id, account_name, emails, changes_data):
     changesText = []
-    for adgroup, source_changes in changesData.iteritems():
+    for adgroup, source_changes in changes_data.iteritems():
         changesText.append(_get_email_adgroup_text(adgroup))
+        source_changes.sort(key=lambda k: k['source_name'])
         for change in source_changes:
             changesText.append(_get_email_source_changes_text(change))
 
@@ -248,14 +268,20 @@ def adjust_autopilot_media_sources_bid_cpcs():
             if ad_group_sources_daily_budget_was_changed_recently(ad_group_source_settings.ad_group_source):
                 cpc_change_comments.append(automation.constants.CpcChangeComment.BUDGET_MANUALLY_CHANGED)
 
+            if not _ad_group_source_is_synced(ad_group_source_settings.ad_group_source):
+                cpc_change_comments.append(automation.constants.CpcChangeComment.OLD_DATA)
+
             yesterday_spend = yesterday_spends.get(ad_group_source_settings.ad_group_source.source_id)
 
             proposed_cpc, calculation_comments = calculate_new_autopilot_cpc(
                 ad_group_source_settings.cpc_cc,
                 ad_group_source_settings.daily_budget_cc,
-                yesterday_spend
-            )
+                yesterday_spend)
             cpc_change_comments += calculation_comments
+            cpc_change_comments += _check_source_constraints(
+                proposed_cpc,
+                ad_group_source_settings.ad_group_source.source.source_type.min_cpc,
+                ad_group_source_settings.ad_group_source.source.source_type.max_cpc)
             new_cpc = proposed_cpc if cpc_change_comments == [] else ad_group_source_settings.cpc_cc
             persist_cpc_change_to_admin_log(
                 ad_group_source_settings.ad_group_source,
@@ -292,3 +318,67 @@ def adjust_autopilot_media_sources_bid_cpcs():
             [camp.get_current_settings().account_manager.email],
             adgroup_changes
         )
+    report_autopilot_metrics()
+
+
+def report_autopilot_metrics():
+    today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
+    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
+    today_min = datetime.datetime.combine(today, datetime.time.min)
+    today_max = datetime.datetime.combine(today, datetime.time.max)
+
+    _report_trends_metrics(today_min, today_max)
+    _report_cpc_autopilot_log_sources_count_metrics(today_min, today_max)
+
+
+def _report_cpc_autopilot_log_sources_count_metrics(today_min, today_max):
+    sources_on_autopilot_logs_count = automation.models.AutopilotAdGroupSourceBidCpcLog.objects.filter(
+        created_dt__range=(today_min, today_max)).values('ad_group_source_id').distinct().count()
+    statsd_gauge('automation.autopilot.cpc_autopilot_log_sources_count', sources_on_autopilot_logs_count)
+
+
+def _report_trends_metrics(today_min, today_max):
+    todays_changed_cpc_logs = automation.models.AutopilotAdGroupSourceBidCpcLog.objects.filter(
+        created_dt__range=(today_min, today_max), comments='')
+    yesterdays_changed_cpc_logs = automation.models.AutopilotAdGroupSourceBidCpcLog.objects.filter(
+        created_dt__range=(today_min - datetime.timedelta(days=1), today_max - datetime.timedelta(days=1)),
+        ad_group_source_id__in=todays_changed_cpc_logs.values('ad_group_source_id').distinct(),
+        comments='')
+    _report_spend_trends(todays_changed_cpc_logs, yesterdays_changed_cpc_logs)
+    _report_clicks_trends(todays_changed_cpc_logs, yesterdays_changed_cpc_logs)
+
+
+def _report_spend_trends(todays_changed_cpc_logs, yesterdays_changed_cpc_logs):
+    spend_trends = []
+    for source in yesterdays_changed_cpc_logs.values('ad_group_source_id').distinct().values_list('ad_group_source_id'):
+        yesterdays = yesterdays_changed_cpc_logs.filter(ad_group_source=source).latest('created_dt')
+        todays = todays_changed_cpc_logs.filter(ad_group_source=source).latest('created_dt')
+        if yesterdays.current_daily_budget_cc <= 0 or todays.current_daily_budget_cc <= 0:
+            continue
+        yesterdays_spend = (yesterdays.yesterdays_spend_cc / yesterdays.current_daily_budget_cc) - 1
+        todays_spend = (todays.yesterdays_spend_cc / todays.current_daily_budget_cc) - 1
+        spend_trends.append(
+            abs(automation.settings.AUTOPILOT_OPTIMAL_SPEND-yesterdays_spend) - abs(automation.settings.AUTOPILOT_OPTIMAL_SPEND-todays_spend)
+        )
+
+    if len(spend_trends) > 0:
+        statsd_gauge('automation.autopilot.avg_trend_of_spend_towards_optimal_spend',
+                     sum(spend_trends) / decimal.Decimal(len(spend_trends)))
+        statsd_gauge('automation.autopilot.perc_of_improved_spends',
+                     sum([1 for spend in spend_trends if spend > decimal.Decimal('0')]) / float(len(spend_trends)))
+
+
+def _report_clicks_trends(todays_changed_cpc_logs, yesterdays_changed_cpc_logs):
+    click_increases = []
+    for source in yesterdays_changed_cpc_logs.values('ad_group_source_id').distinct().values_list('ad_group_source_id'):
+        yesterdays = yesterdays_changed_cpc_logs.filter(ad_group_source=source).latest('created_dt')
+        todays = todays_changed_cpc_logs.filter(ad_group_source=source).latest('created_dt')
+        if yesterdays.yesterdays_clicks <= 0 or todays.yesterdays_clicks <= 0:
+            continue
+        click_increases.append(todays.yesterdays_clicks / float(yesterdays.yesterdays_clicks) - 1)
+
+    if len(click_increases) > 0:
+        statsd_gauge('automation.autopilot.avg_proc_increase_in_clicks',
+                     sum(click_increases) / float(len(click_increases)))
+        statsd_gauge('automation.autopilot.perc_of_increased_clicks',
+                     sum([1 for clicks in click_increases if clicks > 0]) / float(len(click_increases)))

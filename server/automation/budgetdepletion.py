@@ -2,10 +2,12 @@ import datetime
 import logging
 import pytz
 import traceback
+import decimal
 
 from django.db.models import Q
 from django.conf import settings
 from django.core.mail import send_mail
+from django.contrib.auth import models as authmodels
 
 import automation.models
 import automation.settings
@@ -26,6 +28,11 @@ def manager_has_been_notified(campaign):
         Q(campaign=campaign),
         Q(account_manager=account_manager),
         Q(created_dt__gte=yesterday)).count() > 0
+
+
+def _allowed_to_automatically_stop_campaign(campaign):
+    perm = authmodels.Permission.objects.get(codename='group_campaign_stop_on_budget_depleted')
+    return campaign.account.groups.filter(permissions=perm).exists()
 
 
 def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays_spend):
@@ -81,9 +88,9 @@ Zemanta
         camp=campaign_name,
         account=account_name,
         camp_url=campaign_url,
-        avail=available_budget,
-        cap=total_daily_budget,
-        yest=yesterdays_spend
+        avail=_round_budget(available_budget),
+        cap=_round_budget(total_daily_budget),
+        yest=_round_budget(yesterdays_spend)
     )
     try:
         send_mail(
@@ -110,6 +117,12 @@ Zemanta
             description='Budget depletion e-mail for campaign was not sent because an exception was raised: {}'.format(traceback.format_exc(e)),
             details=desc
         )
+
+
+def _round_budget(budget):
+    return decimal.Decimal(budget).quantize(
+        decimal.Decimal('0.01'),
+        rounding=decimal.ROUND_HALF_UP)
 
 
 def _send_campaign_stopped_notification_email(
@@ -182,6 +195,8 @@ def stop_and_notify_depleted_budget_campaigns():
     yesterdays_spends = automation.helpers.get_yesterdays_spends(campaigns)
 
     for camp in campaigns:
+        if not _allowed_to_automatically_stop_campaign(camp):
+            continue
         if available_budgets.get(camp.id) <= 0:
             automation.helpers.stop_campaign(camp)
             _notify_depleted_budget_campaign_stopped(
@@ -189,6 +204,7 @@ def stop_and_notify_depleted_budget_campaigns():
                 available_budgets.get(camp.id),
                 yesterdays_spends.get(camp.id)
             )
+    _log_yesterday_costs_for_analysis()  # NOTE - Only temporory logging, remove before 12.10.2015
 
 
 def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterdays_spend):
@@ -213,3 +229,16 @@ def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterd
         yesterdays_spend=yesterdays_spend,
         account_manager=account_manager,
         stopped=True).save()
+
+
+def _log_yesterday_costs_for_analysis():  # NOTE - Only temporory logging, remove before 12.10.2015
+    import dash.models
+    import reports.api
+    logger_analysis = logging.getLogger('automation_analysis_yesterday_costs')
+    adgroup_ids = [701, 700, 707, 840, 841, 842, 501, 508, 1085, 307, 1083, 1084, 1082, 791, 1169, 1170, 1171, 1172, 885, 890]
+    for adgroup in dash.models.AdGroup.objects.filter(id__in=adgroup_ids):
+        s = ''
+        for source, cost in reports.api.get_yesterday_cost(ad_group=adgroup).iteritems():
+            if source in [2, 3, 4]:
+                s = ','.join([s, str(source) + ':' + str(cost)])
+        logger_analysis.info(''.join([adgroup.name, s]))

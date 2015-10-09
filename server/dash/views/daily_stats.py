@@ -16,6 +16,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         totals_stats = []
+
         if totals_kwargs:
             totals_stats = stats_helper.get_stats_with_conversions(
                 request.user,
@@ -115,7 +116,7 @@ class AccountDailyStats(BaseDailyStatsView):
             totals_kwargs = {'account': int(account.id), 'source': filtered_sources}
 
         if selected_ids:
-            ids = [int(x) for x in selected_ids]
+            ids = map(int, selected_ids)
 
             selected_kwargs = {
                 'account': int(account.id),
@@ -208,10 +209,9 @@ class AdGroupDailyStats(BaseDailyStatsView):
             totals_kwargs = {'ad_group': int(ad_group.id), 'source': filtered_sources}
 
         if selected_ids:
-            ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'ad_group': int(ad_group.id), 'source_id': ids}
-
-            sources = models.Source.objects.filter(pk__in=ids)
+            ids = map(int, selected_ids)
+            sources = models.Source.objects.filter(id__in=tuple(ids))
+            selected_kwargs = {'ad_group': int(ad_group.id), 'source': sources}
 
         conversion_goals = ad_group.campaign.conversiongoal_set.all()
         stats = self.get_stats(
@@ -219,6 +219,7 @@ class AdGroupDailyStats(BaseDailyStatsView):
             group_key='source', conversion_goals=conversion_goals)
 
         return self.create_api_response(self.get_response_dict(
+            request.user,
             stats,
             totals,
             {source.id: source.name for source in sources},
@@ -309,8 +310,9 @@ class AccountsDailyStats(BaseDailyStatsView):
             totals_kwargs = {'account': accounts, 'source': filtered_sources}
 
         if selected_ids:
-            ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'account': accounts, 'source_id': ids}
+            ids = map(int, selected_ids)
+            sources = models.Source.objects.filter(id__in=tuple(ids))
+            selected_kwargs = {'account': accounts, 'source': sources}
 
             group_key = 'source'
 
