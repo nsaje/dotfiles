@@ -350,21 +350,19 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var getDailyStatsMetrics = function () {
-        var metrics = [$scope.chartMetric1, $scope.chartMetric2];
-
-        var values = $scope.chartMetrics.map(function (option) {
+        var values = $scope.chartMetricOptions.map(function (option) {
             return option.value;
         });
 
         if (values.indexOf($scope.chartMetric1) === -1) {
-            metrics.push(constants.chartMetric.CLICKS);
+            $scope.chartMetric1 = constants.chartMetric.CLICKS;
         }
 
-        if (values.indexOf($scope.chartMetric2) === -1) {
-            metrics.push(constants.chartMetric.IMPRESSIONS);
+        if ($scope.chartMetric2 !== 'none' && values.indexOf($scope.chartMetric2) === -1) {
+            $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
         }
 
-        return metrics;
+        return [$scope.chartMetric1, $scope.chartMetric2];
     };
 
     $scope.orderTableData = function(order) {
