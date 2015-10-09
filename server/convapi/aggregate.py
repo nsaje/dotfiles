@@ -101,11 +101,7 @@ class ReportEmail(object):
         for entry in self.report.get_entries():
             identifier = self.report.get_identifier_object(entry)
 
-            if identifier.source_param not in source_resolve_lookup:
-                source_resolve_lookup[identifier.source_param] = resolve_source(identifier.source_param)
-            source = source_resolve_lookup[identifier.source_param]
-
-            if source == Z1_SOURCE_PARAM:
+            if identifier.source_param == Z1_SOURCE_PARAM:
                 logger.warning('ERROR: Not resolving z1 dashboard source for (ad_group=%s, sender=%s,\
 recipient=%s, subject=%s, maildate=%s, \
 landing_page_url=%s',
@@ -118,7 +114,13 @@ landing_page_url=%s',
                 )
                 self.report_log.add_error(
                     'Not resolving z1 dashboard source for url=%s' % identifier.id.decode('ascii', 'ignore'))
-            elif source is None:
+                continue
+
+            if identifier.source_param not in source_resolve_lookup:
+                source_resolve_lookup[identifier.source_param] = resolve_source(identifier.source_param)
+            source = source_resolve_lookup[identifier.source_param]
+
+            if source is None:
                 errors_count += 1
                 logger.warning('ERROR: Cannot resolve source for (ad_group=%s, sender=%s,\
 recipient=%s, subject=%s, maildate=%s, \
