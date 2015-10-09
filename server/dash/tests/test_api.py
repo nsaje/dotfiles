@@ -110,6 +110,27 @@ class UpdateContentAdSourceState(TestCase):
         self.assertEqual(content_ad_source.source_state, data['source_state'])
         self.assertEqual(content_ad_source.submission_status, data['submission_status'])
 
+class IgnorePendingContentAdSourceSubmissionWhenLocalStatusIsRejected(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def test_update_content_ad_source_state(self):
+        #modify a ContentAdSource to represent a locally REJECTED ContentAdSource on Outbrain
+        self.content_ad_source = models.ContentAdSource.objects.get(id=1)
+        self.content_ad_source.source.source_type = models.SourceType.objects.get(type=constants.SourceType.OUTBRAIN)
+        self.content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
+        self.content_ad_source.save()
+
+        #create an incoming data object containing the submission_status PENDING
+        self.content_ad_data = {'submission_status': constants.ContentAdSubmissionStatus.PENDING}
+
+        #pass the objects to update_content_ad_source_state
+        api.update_content_ad_source_state(self.content_ad_source, self.content_ad_data)
+
+        #refresh the ContentAdSource and assert the status is still REJECTED
+        self.content_ad_source.refresh_from_db()
+        self.assertEqual(self.content_ad_source.submission_status, constants.ContentAdSubmissionStatus.REJECTED)
+
 
 class AutomaticallyApproveContentAdSourceSubmissionStatus(TestCase):
 
