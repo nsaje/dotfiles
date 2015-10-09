@@ -50,7 +50,7 @@ class Command(BaseCommand):
                 prefix=prefix,
                 stat_name=post_stats_field_key
             )
-            statsd_gauge(cads_total_name, cad_stats.get(post_stats_field_key, 0))
+            statsd_gauge(cads_total_name, cad_post_stats.get(post_stats_field_key, 0))
 
             cads_redshift_name = '{prefix}.{stat_name}_total_aggr'.format(
                 prefix=prefix,
