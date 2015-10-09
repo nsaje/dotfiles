@@ -116,7 +116,7 @@ landing_page_url=%s',
                 self.report_log.add_error(
                     'Cannot resolve source for url=%s' % identifier.id.decode('ascii', 'ignore'))
                 if errors_count > ALLOWED_ERRORS_COUNT:
-                    self.report_log = convapi_constants.ReportState.FAILED
+                    self.report_log.state = convapi_constants.ReportState.FAILED
                     self.report_log.add_error(
                         'There are too many errors in urls. Adgroup or sources missing in GA report.')
                     self.report_log.save()
