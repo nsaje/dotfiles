@@ -739,16 +739,6 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
         self.assertNotEqual(ad_group_source.source_campaign_key, {})
         self.assertIsNone(api._init_set_ad_group_source_settings(ad_group_source, {}, request, order=None))
 
-    def test_init_ad_group_source_settings_no_source_key(self):
-        ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
-        ad_group_source.source_campaign_key = {}
-
-        request = HttpRequest()
-        request.user = User.objects.create_user('test@example.com')
-
-        with self.assertRaises(exceptions.InsertActionException):
-            api._init_set_ad_group_source_settings(ad_group_source, {}, request, order=None)
-
     def test_init_ad_group_source_settings_pending_source_key(self):
         ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
         ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
