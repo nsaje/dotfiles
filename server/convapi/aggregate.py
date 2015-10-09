@@ -13,6 +13,9 @@ from utils import statsd_helper
 
 logger = logging.getLogger(__name__)
 
+# special source param designating url's from zemanta dashboard
+Z1_SOURCE_PARAM = 'Z1'
+
 
 class ReportEmail(object):
 
@@ -101,7 +104,21 @@ class ReportEmail(object):
             if identifier.source_param not in source_resolve_lookup:
                 source_resolve_lookup[identifier.source_param] = resolve_source(identifier.source_param)
             source = source_resolve_lookup[identifier.source_param]
-            if source is None:
+
+            if source == Z1_SOURCE_PARAM:
+                logger.warning('ERROR: Not resolving z1 dashboard source for (ad_group=%s, sender=%s,\
+recipient=%s, subject=%s, maildate=%s, \
+landing_page_url=%s',
+                    identifier.ad_group_id,
+                    self.sender,
+                    self.recipient,
+                    self.subject,
+                    self.date,
+                    identifier.id.decode('ascii', 'ignore')
+                )
+                self.report_log.add_error(
+                    'Not resolving z1 dashboard source for url=%s' % identifier.id.decode('ascii', 'ignore'))
+            elif source is None:
                 errors_count += 1
                 logger.warning('ERROR: Cannot resolve source for (ad_group=%s, sender=%s,\
 recipient=%s, subject=%s, maildate=%s, \
