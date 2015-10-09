@@ -246,6 +246,8 @@ def refresh_adgroup_stats(**constraints):
 
     ad_group_lookup = {}
     source_lookup = {}
+    diff_data = set([])
+
     with transaction.atomic():
         reports.models.AdGroupStats.objects.filter(**constraints).delete()
 
@@ -262,10 +264,15 @@ def refresh_adgroup_stats(**constraints):
             row['source'] = source_lookup[source_id]
 
             date = row['datetime'].date()
-            redshift.delete_contentadstats_diff(date, ad_group_id, source_id)
-            refresh_contentadstats_diff(date, ad_group_lookup[ad_group_id], source=source_lookup[source_id])
+
+            diff_data.add( (date, ad_group_id, source_id,) )
 
             reports.models.AdGroupStats.objects.create(**row)
+
+    # TODO: Remove this after deprecation of adgroupstats and articlestats
+    for (date, ad_group_id, source_id) in diff_data:
+        redshift.delete_contentadstats_diff(date, ad_group_id, source_id)
+        refresh_contentadstats_diff(date, ad_group_lookup[ad_group_id], source=source_lookup[source_id])
 
 
 def refresh_adgroup_conversion_stats(**constraints):

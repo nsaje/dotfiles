@@ -35,9 +35,11 @@ class Command(BaseCommand):
         logger.debug('Connected successfully')
 
         try:
-            cursor.execute('CREATE DATABASE {} WITH OWNER {}'.format(alias_db['NAME'], alias_db['USER']))
+            query = 'CREATE DATABASE {} WITH OWNER {}'.format(alias_db['NAME'], alias_db['USER'])
+            logger.info(query)
+            cursor.execute(query)
         except ProgrammingError as e:
-            logger.error('Cannot create database', e)
+            logger.exception('Cannot create database', e)
         else:
             logger.debug('Database created')
         finally:

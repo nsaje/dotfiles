@@ -48,9 +48,9 @@ def _report_atoi(raw_str):
         else:
             return int(ret_str)
     except:
-        logger.exception('Failed converting to float {}'.format(raw_str))
-        raise
+        logger.exception('Failed converting to int {}'.format(raw_str))
 
+    return None
 
 def _report_atof(raw_str):
     try:
@@ -59,7 +59,8 @@ def _report_atof(raw_str):
         return float(ret_str.replace(',', ''))
     except:
         logger.exception('Failed converting to float {}'.format(raw_str))
-        raise
+
+    return None
 
 
 class ReportRow(object):
@@ -84,14 +85,14 @@ class GaReportRow(ReportRow):
         self.raw_row = json.dumps(ga_row_dict or {})
         self.ga_row_dicts = [ga_row_dict]
 
-        self.visits = _report_atoi(ga_row_dict.get('Sessions'))
+        self.visits = _report_atoi(ga_row_dict.get('Sessions')) or 0
         self.bounce_rate_raw = ga_row_dict.get('Bounce Rate')
         if ga_row_dict.get('Bounce Rate') is not None:
-            self.bounce_rate = _report_atof(ga_row_dict['Bounce Rate'].replace('%', '')) / 100
+            self.bounce_rate = (_report_atof(ga_row_dict['Bounce Rate'].replace('%', '')) or 0) / 100
         else:
             self.bounce_rate = 0
-        self.pageviews = int(round(_report_atof(ga_row_dict.get('Pages / Session', '0')) * self.visits))
-        self.new_visits = _report_atoi(ga_row_dict.get('New Users', '0'))
+        self.pageviews = int(round(_report_atof(ga_row_dict.get('Pages / Session', '0') or 0) * self.visits))
+        self.new_visits = _report_atoi(ga_row_dict.get('New Users', '0')) or 0
         self.bounced_visits = int(self.bounce_rate * self.visits)
         self.total_time_on_site = self.visits * self._parse_duration(ga_row_dict.get('Avg. Session Duration', '00:00:00'))
 
@@ -157,14 +158,14 @@ class OmnitureReportRow(ReportRow):
         self.visits = _report_atoi(omniture_row_dict.get('Visits'))
         self.bounce_rate_raw = omniture_row_dict.get('Bounce Rate')
         if omniture_row_dict.get('Bounce Rate') is not None:
-            self.bounce_rate = _report_atof(omniture_row_dict['Bounce Rate'].replace('%', '')) / 100
+            self.bounce_rate = (_report_atof(omniture_row_dict['Bounce Rate'].replace('%', '')) or 0) / 100
         else:
             self.bounce_rate = 0
 
         # Omniture reports can come in multiple flavors having either Bounce
         # Rate or Bounces
         if not self.bounce_rate_raw and omniture_row_dict.get('Bounces') is not None:
-            self.bounced_visits = _report_atoi(omniture_row_dict.get('Bounces'))
+            self.bounced_visits = _report_atoi(omniture_row_dict.get('Bounces')) or 0
             if self.visits > 0:
                 self.bounce_rate = float(self.bounced_visits) / float(self.visits)
             else:
@@ -172,7 +173,7 @@ class OmnitureReportRow(ReportRow):
         else:
             self.bounced_visits = int(self.bounce_rate * self.visits)
 
-        self.pageviews = round(_report_atof(omniture_row_dict.get('Page Views', '0')))
+        self.pageviews = round(_report_atof(omniture_row_dict.get('Page Views', '0')) or 0)
         self.new_visits = _report_atoi(
             omniture_row_dict.get(
                 'Unique Visits',
@@ -180,7 +181,7 @@ class OmnitureReportRow(ReportRow):
             )
         )
 
-        self.total_time_on_site = _report_atoi(omniture_row_dict.get('Total Seconds Spent', '0'))
+        self.total_time_on_site = _report_atoi(omniture_row_dict.get('Total Seconds Spent', '0')) or 0
 
         self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id
