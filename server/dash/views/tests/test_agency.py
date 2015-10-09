@@ -43,7 +43,9 @@ class AdGroupSettingsTest(TestCase):
         user = User.objects.get(pk=1)
         self.client.login(username=user.email, password='secret')
 
-    def test_put_update_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_put_update_settings(self, mock_log_useraction, mock_actionlog_api,
+                                 mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
@@ -102,8 +104,12 @@ class AdGroupSettingsTest(TestCase):
             ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
             call.mock_actionlog_api.init_enable_ad_group(ad_group, ANY, order=ANY, send=False)
         ])
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request, constants.UserActionType.SET_AD_GROUP_SETTINGS, ad_group=ad_group)
 
-    def test_put_create_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_put_create_settings(self, mock_log_useraction, mock_actionlog_api,
+                                 mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=10)
 
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
@@ -170,6 +176,11 @@ class AdGroupSettingsTest(TestCase):
 
             # auto_add enabled source was added
             self.assertTrue(default_settings)
+
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.SET_AD_GROUP_SETTINGS_WITH_AUTO_ADD_MEDIA_SOURCES,
+            ad_group=ad_group)
 
     def test_put_without_non_propagated_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -568,7 +579,8 @@ class AccountConversionPixelsTestCase(TestCase):
         )
         self.assertEqual(404, response.status_code)
 
-    def test_post(self):
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_post(self, mock_log_useraction):
         response = self.client.post(
             reverse('account_conversion_pixels', kwargs={'account_id': 1}),
             json.dumps({'slug': 'slug'}),
@@ -591,6 +603,10 @@ class AccountConversionPixelsTestCase(TestCase):
         latest_account_settings = models.AccountSettings.objects.latest('created_dt')
         self.assertEqual('Added conversion pixel with unique identifier slug.',
                          latest_account_settings.changes_text)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.CREATE_CONVERSION_PIXEL,
+            account=models.Account.objects.get(pk=1))
 
     def test_post_without_permissions(self):
         permission = Permission.objects.get(codename='manage_conversion_pixels')
@@ -704,7 +720,8 @@ class ConversionPixelTestCase(TestCase):
         user = User.objects.get(pk=1)
         self.client.login(username=user.email, password='secret')
 
-    def test_put(self):
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_put(self, mock_log_useraction):
         response = self.client.put(
             reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
             json.dumps({'archived': True}),
@@ -723,6 +740,10 @@ class ConversionPixelTestCase(TestCase):
         latest_account_settings = models.AccountSettings.objects.latest('created_dt')
         self.assertEqual('Archived conversion pixel with unique identifier test.',
                          latest_account_settings.changes_text)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
+            account=models.Account.objects.get(pk=1))
 
     def test_put_no_permissions(self):
         permission = Permission.objects.get(codename='manage_conversion_pixels')
@@ -925,7 +946,8 @@ class CampaignConversionGoalsTestCase(TestCase):
         )
         self.assertEqual(404, response.status_code)
 
-    def test_post(self):
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_post(self, mock_log_useraction):
         response = self.client.post(
             reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
             json.dumps({
@@ -941,6 +963,11 @@ class CampaignConversionGoalsTestCase(TestCase):
 
         decoded_response = json.loads(response.content)
         self.assertEqual({'success': True}, decoded_response)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.CREATE_CONVERSION_GOAL,
+            campaign=models.Campaign.objects.get(pk=2)
+        )
 
     def test_post_campaign_no_permission(self):
         response = self.client.post(
@@ -1301,7 +1328,8 @@ class ConversionGoalTestCase(TestCase):
         decoded_response = json.loads(response.content)
         self.assertEqual('Invalid conversion goal', decoded_response['data']['message'])
 
-    def test_delete_success(self):
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_delete_success(self, mock_log_useraction):
         conversion_goal = models.ConversionGoal.objects.get(id=1)
         response = self.client.delete(
             reverse('conversion_goal', kwargs={'campaign_id': 1, 'conversion_goal_id': conversion_goal.id}),
@@ -1311,6 +1339,11 @@ class ConversionGoalTestCase(TestCase):
 
         with self.assertRaises(models.ConversionGoal.DoesNotExist):
             models.ConversionGoal.objects.get(id=1)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.DELETE_CONVERSION_GOAL,
+            campaign=models.Campaign.objects.get(pk=1)
+        )
 
 
 class UserActivationTest(TestCase):
@@ -1413,9 +1446,10 @@ class CampaignBudgetTest(TestCase):
         self.assertFalse(content['success'])
         self.assertEqual(response.status_code, 404)
 
+    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.budget.CampaignBudget')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_put(self, mock_send_campaign_notification_email, MockCampaignBudget):
+    def test_put(self, mock_send_campaign_notification_email, MockCampaignBudget, mock_log_useraction):
         password = 'secret'
         self.user = User.objects.get(pk=1)
         self.client.login(username=self.user.email, password=password)
@@ -1454,6 +1488,11 @@ class CampaignBudgetTest(TestCase):
             revoke_amount=0, allocate_amount=1000.0, request=response.wsgi_request
         )
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.SET_CAMPAIGN_BUDGET,
+            campaign=campaign
+        )
 
     @patch('dash.views.agency.budget.CampaignBudget')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
@@ -1502,8 +1541,9 @@ class CampaignAgencyTest(TestCase):
         self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
         self.assertEqual(content['data']['settings']['iab_category'], 'IAB24')
 
+    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_post(self, mock_send_campaign_notification_email):
+    def test_post(self, mock_send_campaign_notification_email, mock_log_useraction):
         response = self.client.put(
             '/api/campaigns/1/agency/',
             json.dumps({
@@ -1528,6 +1568,11 @@ class CampaignAgencyTest(TestCase):
         self.assertEqual(settings.iab_category, 'IAB17')
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS,
+            campaign=campaign
+        )
 
 
 class CampaignSettingsTest(TestCase):
@@ -1551,8 +1596,9 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['campaign_goal'], 3)
         self.assertEqual(content['data']['settings']['goal_quantity'], 0)
 
+    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_post(self, mock_send_campaign_notification_email):
+    def test_post(self, mock_send_campaign_notification_email, mock_log_useraction):
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -1575,6 +1621,10 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(settings.campaign_goal, 2)
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.SET_CAMPAIGN_SETTINGS,
+            campaign=campaign)
 
     def test_validation(self):
         response = self.client.put(
@@ -1637,7 +1687,8 @@ class AccountAgencyTest(TestCase):
             'archived': False
         })
 
-    def test_post(self):
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_post(self, mock_log_useraction):
         permission = Permission.objects.get(codename='campaign_settings_account_manager')
         user = User.objects.get(pk=3)
         user.user_permissions.add(permission)
@@ -1676,3 +1727,8 @@ class AccountAgencyTest(TestCase):
             'name': 'changed name',
             'service_fee': Decimal('0.1500')
         })
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
+            account=account
+        )

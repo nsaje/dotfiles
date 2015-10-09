@@ -199,6 +199,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
 
         return getattr(self, perm_cache_name)
 
+    def is_self_managed(self):
+        return self.email and '@zemanta' in self.email
 
 class InternalGroup(models.Model):
     group = models.OneToOneField(auth_models.Group, on_delete=models.PROTECT)

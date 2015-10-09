@@ -96,18 +96,25 @@ class AdGroupSettings(api_common.BaseApiView):
         current_settings.ad_group_name = previous_ad_group_name
         new_settings.ad_group_name = ad_group.name
 
+        user_action_type = None
+
         if request.user.has_perm('zemauth.add_media_sources_automatically') and\
            current_settings.pk is None and\
            not models.AdGroupSource.objects.filter(ad_group=ad_group).exists():
 
+            user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS_WITH_AUTO_ADD_MEDIA_SOURCES
+
             self._add_media_sources(ad_group, new_settings, request)
             # no need to create updates as campaigns are not created yet
         else:
+            user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS
+
             self._send_update_actions(ad_group, current_settings, new_settings, request)
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
             email_helper.send_ad_group_notification_email(ad_group, request)
+            helpers.log_useraction_if_necessary(request, user_action_type, ad_group=ad_group)
 
         response = {
             'settings': self.get_dict(new_settings, ad_group),
@@ -270,10 +277,17 @@ class CampaignAgency(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        settings = campaign.get_current_settings().copy_settings()
+        prev_settings = campaign.get_current_settings()
+        settings = prev_settings.copy_settings()
         self.set_settings(settings, campaign, form.cleaned_data)
 
         self.propagate_and_save(campaign, settings, request)
+
+        changes = prev_settings.get_setting_changes(settings)
+        if changes:
+            helpers.log_useraction_if_necessary(request,
+                                                constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS,
+                                                campaign=campaign)
 
         response = {
             'settings': self.get_dict(settings, campaign),
@@ -549,6 +563,8 @@ class CampaignConversionGoals(api_common.BaseApiView):
             )
             new_settings.save(request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CONVERSION_GOAL, campaign=campaign)
+
         return self.create_api_response()
 
 
@@ -573,6 +589,9 @@ class ConversionGoal(api_common.BaseApiView):
                 constants.ConversionGoalType.get_text(conversion_goal.type)
             )
             new_settings.save(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.DELETE_CONVERSION_GOAL, campaign=campaign)
+
         return self.create_api_response()
 
 
@@ -608,6 +627,8 @@ class CampaignSettings(api_common.BaseApiView):
         self.set_campaign(campaign, form.cleaned_data)
 
         CampaignAgency.propagate_and_save(campaign, settings, request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_SETTINGS, campaign=campaign)
 
         response = {
             'settings': self.get_dict(settings, campaign)
@@ -671,6 +692,8 @@ class CampaignBudget(api_common.BaseApiView):
         )
 
         email_helper.send_campaign_notification_email(campaign, request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_BUDGET, campaign=campaign)
 
         response = self.get_response(campaign)
         return self.create_api_response(response)
@@ -771,6 +794,8 @@ class AccountConversionPixels(api_common.BaseApiView):
             new_settings.changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
             new_settings.save(request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CONVERSION_PIXEL, account=account)
+
         return self.create_api_response({
             'id': conversion_pixel.id,
             'slug': conversion_pixel.slug,
@@ -817,6 +842,9 @@ class ConversionPixel(api_common.BaseApiView):
                     conversion_pixel.slug
                 )
                 new_settings.save(request)
+
+            helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
+                                                account=account)
 
         return self.create_api_response({
             'id': conversion_pixel.id,
@@ -865,6 +893,9 @@ class AccountAgency(api_common.BaseApiView):
         with transaction.atomic():
             account.save(request)
             settings.save(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
+                                            account=account)
 
         response = {
             'settings': self.get_dict(settings, account),
