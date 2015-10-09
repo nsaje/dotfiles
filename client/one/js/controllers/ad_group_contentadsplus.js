@@ -887,8 +887,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         if (convesionGoals) {
             $scope.chartMetricOptions = $scope.chartMetricOptions.concat(convesionGoals.map(function (goal) {
                 return {
-                    name: goal.name,
-                    value: 'conversion_goal__' + goal.name,
+                    name: goal,
+                    value: 'conversion_goal__' + goal,
                     internal: $scope.isPermissionInternal('zemauth.conversion_reports')
                 };
             }));

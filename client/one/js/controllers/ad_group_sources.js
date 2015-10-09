@@ -12,7 +12,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.chartData = undefined;
     $scope.chartHidden = false;
     $scope.chartMetricOptions = [];
-    $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-cost';
     $scope.sources = [];
@@ -472,7 +471,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         return [$scope.chartMetric1, $scope.chartMetric2];
     };
 
-    var setChartOptions = function (goals) {
+    var setChartOptions = function (conversionGoals) {
         $scope.chartMetricOptions = options.adGroupChartMetrics;
 
         if ($scope.hasPermission('zemauth.aggregate_postclick_acquisition')) {
@@ -482,42 +481,23 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             );
         }
 
-        if ($scope.hasPermission('zemauth.aggregate_postclick_engagement')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
-                $scope.chartMetricOptions,
-                $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
-            );
-
-            if (goals) {
-                $scope.chartMetricOptions = $scope.chartMetricOptions.concat(Object.keys(goals).map(function (goalId) {
-                    var typeName = {
-                        'conversions': 'Conversions',
-                        'conversion_rate': 'Conversion Rate'
-                    }[goals[goalId].type];
-
-                    if (typeName === undefined) {
-                        return;
-                    }
-
-                    return {
-                        name: goals[goalId].name + ': ' + typeName,
-                        value: goalId,
-                        internal: $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
-                    };
-                }).filter(function (option) {
-                    return option !== undefined;
-                }));
-            }
+        if (conversionGoals) {
+            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(conversionGoals.map(function (goal) {
+                return {
+                    name: goal,
+                    value: 'conversion_goal__' + goal,
+                    internal: $scope.isPermissionInternal('zemauth.conversion_reports')
+                };
+            }));
         }
     };
 
     var getDailyStats = function () {
         api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), null).then(
             function (data) {
-                setChartOptions(data.goals);
+                setChartOptions(data.conversionGoals);
 
                 $scope.chartData = data.chartData;
-                $scope.chartGoalMetrics = data.goals;
             },
             function (data) {
                 // error
@@ -618,7 +598,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         userSettings.register('order');
         userSettings.registerGlobal('chartHidden');
 
-        setChartOptions();
+        setChartOptions(null);
 
         if (sourceIds) {
             $scope.selectedSourceIds = sourceIds.split(',');

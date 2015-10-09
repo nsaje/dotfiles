@@ -118,8 +118,8 @@ oneApp.factory('zemPostclickMetricsService', function() {
 
         for(var i = 0; i < conversionGoals.length; i++) {
             var columnDescription = {
-                name: conversionGoals[i].name,
-                field: 'conversion_goal__' + conversionGoals[i].name,
+                name: conversionGoals[i],
+                field: 'conversion_goal__' + conversionGoals[i],
                 checked: false,
                 type: 'number',
                 help: 'Number of completions of the conversion goal',

@@ -511,9 +511,7 @@ class SourcesTable(api_common.BaseApiView):
 
         if user.has_perm('zemauth.conversion_reports') and hasattr(level_sources_table, 'conversion_goals'):
             # only on ad group and campaign level
-            response['conversion_goals'] = [
-                {'id': cg.id, 'name': cg.name} for cg in level_sources_table.conversion_goals
-            ]
+            response['conversion_goals'] = [cg.name for cg in level_sources_table.conversion_goals]
 
         if user.has_perm('zemauth.data_status_column'):
             if ad_group_level:
@@ -1119,9 +1117,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         if user.has_perm('zemauth.conversion_reports'):
             conversion_goals = ad_group.campaign.conversiongoal_set.all()
-            response_dict['conversion_goals'] = [
-                {'id': cg.id, 'name': cg.name} for cg in conversion_goals
-            ]
+            response_dict['conversion_goals'] = [cg.name for cg in conversion_goals]
 
         if user.has_perm('zemauth.data_status_column'):
             shown_content_ads = models.ContentAd.objects.filter(id__in=[row['id'] for row in rows])
@@ -1318,9 +1314,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
 
         if request.user.has_perm('zemauth.conversion_reports'):
             conversion_goals = campaign.conversiongoal_set.all()
-            response['conversion_goals'] = [
-                {'id': cg.id, 'name': cg.name} for cg in conversion_goals
-            ]
+            response['conversion_goals'] = [cg.name for cg in conversion_goals]
 
         if request.user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(

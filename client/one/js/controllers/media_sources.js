@@ -452,8 +452,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         if (conversionGoals) {
             $scope.chartMetricOptions = $scope.chartMetricOptions.concat(conversionGoals.map(function (goal) {
                 return {
-                    name: goal.name,
-                    value: 'conversion_goal__' + goal.name,
+                    name: goal,
+                    value: 'conversion_goal__' + goal,
                     internal: $scope.isPermissionInternal('zemauth.conversion_reports')
                 };
             }));
