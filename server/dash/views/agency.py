@@ -96,8 +96,6 @@ class AdGroupSettings(api_common.BaseApiView):
         current_settings.ad_group_name = previous_ad_group_name
         new_settings.ad_group_name = ad_group.name
 
-        user_action_type = None
-
         if request.user.has_perm('zemauth.add_media_sources_automatically') and\
            current_settings.pk is None and\
            not models.AdGroupSource.objects.filter(ad_group=ad_group).exists():

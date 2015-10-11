@@ -725,6 +725,19 @@ class UserActionLogAdmin(admin.ModelAdmin):
                    ('created_dt', admin.DateFieldListFilter),
                    ('created_by', admin.RelatedOnlyFieldListFilter))
 
+    def changelist_view(self, request, extra_context=None):
+
+        response = super(UserActionLogAdmin, self).changelist_view(request, extra_context=extra_context)
+        qs = response.context_data['cl'].queryset
+        extra_context = {
+            'self_managed_users': (qs.order_by('created_by').distinct('created_by')
+                                   .values_list('created_by__email', flat=True))
+        }
+
+        response.context_data.update(extra_context)
+
+        return response
+
     def ad_group_settings_changes_text_(self, user_action_log):
         return self._get_changes_link(
             user_action_log.ad_group,
