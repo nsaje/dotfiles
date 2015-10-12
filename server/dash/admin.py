@@ -772,15 +772,9 @@ def reject_content_ad_sources(modeladmin, request, queryset):
         )
     )
 
-    actions = []
     for content_ad_source in queryset:
         content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
         content_ad_source.save()
-        actions.extend(api.update_content_ads_submission_status(content_ad_source))
-    '''
-    threads.SendActionLogsThread(actions).start()
-    '''
-    return
 reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
 
 class ContentAdSourceAdmin(admin.ModelAdmin):
