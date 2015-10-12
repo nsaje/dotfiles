@@ -248,7 +248,7 @@ class CreateCampaignManualActionsTest(TestCase):
         self.request.user = user
         self.client.login(username=user.email, password=password)
 
-    def _fire_campaign_creation_callback(self, ad_group_source, target_regions=None, available_actions=None):
+    def _setup_ad_group_source(self, ad_group_source, target_regions=None, available_actions=None):
         if available_actions:
             ad_group_source.source.source_type.available_actions.extend(available_actions)
             ad_group_source.source.source_type.save()
@@ -257,6 +257,7 @@ class CreateCampaignManualActionsTest(TestCase):
         ad_group_settings.target_regions = target_regions
         ad_group_settings.save(self.request)
 
+    def _fire_campaign_creation_callback(self, ad_group_source):
         # setup actionlog
         action_log = actionlog.models.ActionLog(
             action=actionlog.constants.Action.CREATE_CAMPAIGN,
@@ -287,16 +288,41 @@ class CreateCampaignManualActionsTest(TestCase):
             action_type=actionlog.constants.ActionType.MANUAL
         )
 
+    @patch('dash.api.order_additional_updates_after_campaign_creation')
+    def test_order_additional_updates_after_campaign_creation_fires(self, mock_order_additional_updates):
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
+
+        self._fire_campaign_creation_callback(ad_group_source)
+
+        mock_order_additional_updates.assert_called_with(ad_group_source, request=None)
+
+    @patch('dash.consistency.SettingsStateConsistence')
+    @patch('actionlog.api.set_ad_group_source_settings')
+    def test_set_ad_group_source_settings_fires(self, mock_set_ad_group_source_settings, mock_consistence):
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
+
+        changes = {
+            'daily_budget_cc': 123
+        }
+
+        mock_consistence().get_needed_state_updates.return_value = changes
+
+        self._fire_campaign_creation_callback(ad_group_source)
+
+        mock_set_ad_group_source_settings.assert_called_with(changes, ad_group_source, request=None, send=True)
+
     def test_manual_update_after_campaign_creation_manual_dma_targeting(self):
         ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
 
-        self._fire_campaign_creation_callback(
+        self._setup_ad_group_source(
             ad_group_source,
             ['GB', '693'],
             [
                 dash.constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL,
                 dash.constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             ])
+
+        self._fire_campaign_creation_callback(ad_group_source)
 
         manual_actions = self._get_created_manual_actions(ad_group_source)
 
