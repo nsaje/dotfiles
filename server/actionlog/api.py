@@ -445,11 +445,6 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
 
     try:
         with transaction.atomic():
-            if ad_group_source.source_campaign_key == {} and\
-                ad_group_source.source.source_type.type and\
-                ad_group_source.source.source_type.type == dash.constants.SourceType.B1:
-                raise Exception("Failed updating settings. Adgroup source campaign keys not set.")
-
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )

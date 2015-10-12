@@ -19,6 +19,13 @@ class ParseReportTest(TestCase):
 
     fixtures = ['test_ga_aggregation.yaml']
 
+    def test_report_utils(self, cursor):
+        self.assertEqual(10, parse_v2._report_atoi("10"))
+        self.assertEqual(None, parse_v2._report_atoi('#DIV/0'))
+
+        self.assertEqual(0.0, parse_v2._report_atof("0.0"))
+        self.assertEqual(None, parse_v2._report_atof('#DIV/0'))
+
     def test_parse_header(self, cursor):
         complete_head = """
 # ----------------------------------------
