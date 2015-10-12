@@ -218,8 +218,8 @@ class CampaignSourcesTable(object):
             request.user,
             start_date,
             end_date,
-            conversion_goals=self.campaign.conversiongoal_set.all(),
             breakdown=['source'],
+            conversion_goals=self.campaign.conversiongoal_set.all(),
             constraints={'campaign': self.campaign, 'source': self.filtered_sources}
         )
 
@@ -283,8 +283,8 @@ class AdGroupSourcesTable(object):
             request.user,
             start_date,
             end_date,
-            conversion_goals=self.ad_group.campaign.conversiongoal_set.all(),
             breakdown=['source'],
+            conversion_goals=self.ad_group.campaign.conversiongoal_set.all(),
             constraints={'ad_group': self.ad_group, 'source': self.filtered_sources}
         )
 
@@ -1046,9 +1046,9 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             request.user,
             start_date,
             end_date,
-            conversion_goals=ad_group.campaign.conversiongoal_set.all(),
-            ignore_diff_rows=True,
             breakdown=['content_ad'],
+            ignore_diff_rows=True,
+            conversion_goals=ad_group.campaign.conversiongoal_set.all(),
             constraints={'ad_group': ad_group, 'source': filtered_sources}
         )
 
@@ -1258,8 +1258,8 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             request.user,
             start_date=start_date,
             end_date=end_date,
-            conversion_goals=campaign.conversiongoal_set.all(),
             breakdown=['ad_group'],
+            conversion_goals=campaign.conversiongoal_set.all(),
             constraints={'campaign': campaign, 'source': filtered_sources}
         )
 

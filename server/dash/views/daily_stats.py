@@ -22,9 +22,9 @@ class BaseDailyStatsView(api_common.BaseApiView):
                 request.user,
                 start_date,
                 end_date,
-                conversion_goals=conversion_goals,
                 breakdown=['date'],
                 order=['date'],
+                conversion_goals=conversion_goals,
                 constraints=totals_kwargs
             )
 
@@ -35,9 +35,9 @@ class BaseDailyStatsView(api_common.BaseApiView):
                 request.user,
                 start_date,
                 end_date,
-                conversion_goals=conversion_goals,
                 breakdown=['date', group_key],
                 order=['date'],
+                conversion_goals=conversion_goals,
                 constraints=selected_kwargs,
             )
 
@@ -364,9 +364,9 @@ class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
             request.user,
             start_date,
             end_date,
+            breakdown=['date'],
             ignore_diff_rows=True,
             conversion_goals=conversion_goals,
-            breakdown=['date'],
             constraints={'ad_group': ad_group.id, 'source': sources}
         )
 

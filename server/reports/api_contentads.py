@@ -109,14 +109,14 @@ def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, 
 
     cursor.close()
 
-    results = _transform_conversions(results, conversion_goals)
+    results = _transform_conversions(results)
     if breakdown:
         return results
 
     return results[0] if len(results) else {}
 
 
-def _transform_conversions(rows, converison_goals):
+def _transform_conversions(rows):
     results = []
     for row in rows:
         new_row = {}

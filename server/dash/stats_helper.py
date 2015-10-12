@@ -15,8 +15,15 @@ def get_reports_api_module(user):
         return reports.api
 
 
-def get_stats_with_conversions(user, start_date, end_date, conversion_goals=None, order=None,
-                               ignore_diff_rows=False, breakdown=None, constraints=None):
+def get_stats_with_conversions(
+        user,
+        start_date,
+        end_date,
+        breakdown=None,
+        order=None,
+        ignore_diff_rows=False,
+        conversion_goals=None,
+        constraints=None):
     can_see_redshift_stats = user.has_perm('zemauth.can_see_redshift_postclick_statistics')
     can_see_conversions = can_see_redshift_stats and user.has_perm('zemauth.conversion_reports')
 
