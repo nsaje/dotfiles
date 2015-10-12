@@ -47,7 +47,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             numNotSelected = 0;
 
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
-            if ($scope.selectedPublisherStatus[publisherId])["checked"] {
+            if ($scope.selectedPublisherStatus[publisherId]["checked"]) {
                 numSelected += 1;
             } else {
                 numNotSelected += 1;
@@ -144,7 +144,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             'fields': [
                'publisher_selected',
                'domain',
-               'blacklisted_status'
+               'blacklisted_status',
                'domain_link',
                'exchange',
                'cost', 
