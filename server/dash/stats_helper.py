@@ -60,6 +60,7 @@ def get_stats_with_conversions(
     ca_stats_by_breakdown = OrderedDict((tuple(s[b] for b in breakdown), s) for s in content_ad_stats)
     for ca_stat in ca_stats_by_breakdown.values():
         for conversion_goal in report_conversion_goals:
+            # map goals from reports (by id) to goal names
             key = conversion_goal.get_stats_key()
             ca_stat['conversion_goal__' + conversion_goal.name] = ca_stat.get('conversions', {}).get(key)
 

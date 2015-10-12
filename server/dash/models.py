@@ -1579,6 +1579,7 @@ class ConversionGoal(models.Model):
         unique_together = (('campaign', 'name'), ('campaign', 'pixel'), ('campaign', 'type', 'goal_id'))
 
     def get_stats_key(self):
+        # map conversion goal to the key under which they are stored in stats database
         if self.type == constants.ConversionGoalType.GA:
             prefix = reports.constants.ReportType.GOOGLE_ANALYTICS
         elif self.type == constants.ConversionGoalType.OMNITURE:
