@@ -867,7 +867,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         );
     };
 
-    var setChartOptions = function (convesionGoals) {
+    var setChartOptions = function (conversionGoals) {
         $scope.chartMetricOptions = options.adGroupChartMetrics;
 
         if ($scope.hasPermission('zemauth.content_ads_postclick_acquisition')) {
@@ -884,8 +884,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             );
         }
 
-        if (convesionGoals) {
-            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(convesionGoals.map(function (goal) {
+        if (conversionGoals) {
+            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(conversionGoals.map(function (goal) {
                 return {
                     name: goal,
                     value: 'conversion_goal__' + goal,
