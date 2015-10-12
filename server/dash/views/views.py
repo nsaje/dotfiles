@@ -786,7 +786,7 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
         content_ads = content_ads.all()
 
         api.add_content_ads_archived_change_to_history(ad_group, content_ads, True, request)
-        email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, request.user, request)
+        email_helper.send_ad_group_notification_email(ad_group, request)
 
         with transaction.atomic():
             for content_ad in content_ads:
@@ -831,7 +831,7 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
         )
 
         api.add_content_ads_archived_change_to_history(ad_group, content_ads, False, request)
-        email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, request.user, request)
+        email_helper.send_ad_group_notification_email(ad_group, request)
 
         with transaction.atomic():
             for content_ad in content_ads:
@@ -875,7 +875,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
         api.update_content_ads_state(content_ads, state, request)
         api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
-        email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, request.user, request)
+        email_helper.send_ad_group_notification_email(ad_group, request)
 
         return self.create_api_response()
 

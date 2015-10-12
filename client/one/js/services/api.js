@@ -1046,7 +1046,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 id: settings.id,
                 name: settings.name,
                 defaultAccountManager: settings.default_account_manager,
-                defaultSalesRepresentative: settings.default_sales_representative
+                defaultSalesRepresentative: settings.default_sales_representative,
+                serviceFee: settings.service_fee
             };
         }
 
@@ -1055,7 +1056,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 id: settings.id,
                 name: settings.name,
                 default_account_manager: settings.defaultAccountManager,
-                default_sales_representative: settings.defaultSalesRepresentative
+                default_sales_representative: settings.defaultSalesRepresentative,
+                service_fee: settings.serviceFee
             };
         }
 
@@ -1064,7 +1066,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 id: errors.id,
                 name: errors.name,
                 defaultAccountManager: errors.default_account_manager,
-                defaultSalesRepresentative: errors.default_sales_representative
+                defaultSalesRepresentative: errors.default_sales_representative,
+                serviceFee: errors.service_fee
             };
         }
 
