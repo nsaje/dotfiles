@@ -2,6 +2,7 @@
 
 oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, $window, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
     $scope.selectedTotals = true;
+    $scope.selectedColumnsCount = 0;
     $scope.constants = constants;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
@@ -18,13 +19,82 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         currentPage: 1
     };
 
-
     var userSettings = zemUserSettings.getInstance($scope, 'adGroupPublishers');
+
+    $scope.selectionMenuConfig = {};
+    // selection settings - all or specific publishers can be selected
+    $scope.selectedAll = false;
+    $scope.selectedPublisherStatus = {};
+
+    $scope.selectedPublisherChanged = function(row, checked) {
+        $scope.selectedPublisherStatus[row.id] = checked;
+
+        var numSelected = 0,
+            numNotSelected = 0;
+
+        Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
+            if ($scope.selectedPublisherStatus[publisherId]) {
+                numSelected += 1;
+            } else {
+                numNotSelected += 1;
+            }
+        });
+
+        if ($scope.selectedAll) {
+            $scope.selectionMenuConfig.partialSelection = numNotSelected > 0;
+        }  
+    };
+
+    $scope.selectionMenuConfig.selectAllCallback = function (selected) {
+        $scope.selectionMenuConfig.partialSelection = false;
+        $scope.selectedAll = selected;
+        $scope.selectedPublisherStatus = {};
+
+        if (selected) {
+            $scope.updatePublisherSelection();
+        } else {
+            $scope.clearPublisherSelection();
+        }
+    };
+
+    $scope.clearPublisherSelection = function () {
+        $scope.rows.forEach(function (row) {
+            row.publisher_selected = false;
+        });
+    };
+
+    $scope.updatePublisherSelection = function() {
+        $scope.rows.forEach(function(row) {
+            if ($scope.selectedPublisherStatus[row.id] !== undefined) {
+                row.publisher_selected = $scope.selectedPublisherStatus[row.id];
+            } else if ($scope.selectedAll) {
+                row.publisher_selected = true;
+            } else {
+                row.publisher_selected = false;
+            }
+        });
+    };
+
+    $scope.isAnythingSelected = function() {
+        if ($scope.selectedAll) {
+            return true;
+        }
+
+        for (var publisherId in $scope.selectedPublisherStatus) {
+            if ($scope.selectedPublisherStatus.hasOwnProperty(publisherId)
+                    && $scope.selectedPublisherStatus[publisherId]) {
+                return true;
+            }
+        }
+
+        return false;
+    };
 
     $scope.columnCategories = [
         {
             'name': 'Traffic Acquisition',
             'fields': [
+               'publisher_selected',
                'domain', 
                'domain_link',
                'exchange',
@@ -37,7 +107,21 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
     ];
 
-    $scope.columns = [
+    $scope.columns = [{
+            name: '',
+            field: 'publisher_selected',
+            type: 'checkbox',
+            showSelectionMenu: true,
+            shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
+            hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status'),
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            order: false,
+            selectCallback: $scope.selectedPublisherChanged,
+            disabled: false
+            selectionMenuConfig: $scope.selectionMenuConfig
+        },
         {
             name: 'Domain',
             field: 'domain',
@@ -164,6 +248,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.lastChange = data.lastChange;
                 $scope.pagination = data.pagination;
 
+                $scope.updatePublisherSelection();
             },
             function (data) {
                 // error
