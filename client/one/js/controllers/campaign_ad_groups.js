@@ -315,8 +315,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         if (conversionGoals) {
             $scope.chartMetricOptions = $scope.chartMetricOptions.concat(conversionGoals.map(function (goal) {
                 return {
-                    name: goal,
-                    value: 'conversion_goal__' + goal,
+                    name: goal['name'],
+                    value: 'conversion_goal_' + goal['id'],
                     internal: $scope.isPermissionInternal('zemauth.conversion_reports')
                 };
             }));

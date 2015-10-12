@@ -87,7 +87,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
         }
 
         if user.has_perm('zemauth.conversion_reports') and conversion_goals is not None:
-            result['conversion_goals'] = [cg.name for cg in conversion_goals]
+            result['conversion_goals'] = [{'id': cg.id, 'name': cg.name} for cg in conversion_goals]
 
         return result
 
