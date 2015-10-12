@@ -26,6 +26,16 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.selectedAll = false;
     $scope.selectedPublisherStatus = {};
 
+    $scope.bulkActions = [{
+        name: 'Blacklist',
+        value: 'blacklist',
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+    }, {
+        name: 'Re-enable',
+        value: 'activate',
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+    }];
+
     $scope.selectedPublisherChanged = function(row, checked) {
         $scope.selectedPublisherStatus[row.id] = checked;
 
@@ -88,6 +98,40 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
 
         return false;
+    };
+
+    $scope.executeBulkAction = function (action) {
+        if (!$scope.isAnythingSelected()) {
+            return;
+        }
+
+        var publisherIdsSelected = [],
+            publisherIdsNotSelected = [];
+
+        Object.keys($scope.selectedContentAdsStatus).forEach(function (contentAdId) {
+            if ($scope.selectedContentAdsStatus[contentAdId]) {
+                publisherIdsSelected.push(contentAdId);
+            } else {
+                publisherIdsNotSelected.push(contentAdId);
+            }
+        });
+
+        switch (action) {
+            case 'blacklist':
+                bulkUpdatePublishers(
+                    publisherIdsSelected,
+                    publisherIdsNotSelected,
+                    constants.publisherState.BLACKLISTED
+                );
+                break;
+            case 'restore':
+                bulkUpdatePublishers(
+                    publisherIdsSelected,
+                    publisherIdsNotSelected,
+                    constants.AdSourceState.ACTIVE
+                );
+                break;
+        }
     };
 
     $scope.columnCategories = [
@@ -235,6 +279,22 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.order = order;
         getTableData();
     };
+
+
+    var bulkUpdatePublishers = function (publisherIdsSelected, publisherIdsNotSelected, state) {
+        updatePublisherStates(state);
+
+        api.adGroupPublisherState.save(
+            $state.params.id,
+            state,
+            publisherIdsSelected,
+            publisherIdsNotSelected,
+            $scope.selectedAll
+        ).then(function () {
+            $scope.pollTableUpdates();
+        });
+    };
+
 
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
