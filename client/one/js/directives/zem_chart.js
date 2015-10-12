@@ -27,7 +27,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             var usedColors = {};
 
             function getMetric2Options (metricOptions) {
-                // add (default) option to hide 2nd metric
+                // add (default) option to disable second metric
                 return $.merge([{'value': 'none', 'name': 'None'}], metricOptions);
             }
 
