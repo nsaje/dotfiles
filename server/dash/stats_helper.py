@@ -40,9 +40,10 @@ def get_stats_with_conversions(
         constraints = {}
 
     report_conversion_goals = []
+    touchpoint_conversion_goals = []
     if can_see_conversions:
-        touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == constants.ConversionGoalType.PIXEL]
         report_conversion_goals = [cg for cg in conversion_goals if cg.type != constants.ConversionGoalType.PIXEL]
+        touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == constants.ConversionGoalType.PIXEL]
 
     content_ad_stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
         start_date,
@@ -50,7 +51,7 @@ def get_stats_with_conversions(
         order=order,
         breakdown=breakdown,
         ignore_diff_rows=ignore_diff_rows,
-        conversion_goals=report_conversion_goals,
+        conversion_goals=[cg.get_stats_key() for cg in report_conversion_goals],
         **constraints), user)
 
     if not breakdown:

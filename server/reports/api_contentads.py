@@ -94,8 +94,8 @@ def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, 
     cursor = redshift.get_cursor()
 
     returned_fields = RSContentAdStats.DEFAULT_RETURNED_FIELDS_APP[:]
-    for conversion_goal in conversion_goals:
-        returned_fields.append('conversions' + redshift.JSON_KEY_DELIMITER + conversion_goal.get_stats_key())
+    for label in conversion_goals:
+        returned_fields.append('conversions' + redshift.JSON_KEY_DELIMITER + label)
 
     results = RSContentAdStats.execute_select_query(
         cursor,
