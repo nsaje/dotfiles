@@ -1011,17 +1011,6 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
         return self.create_api_response(response_dict)
 
 
-def _get_conversion_goal_stat(conversion_goal, stats, touchpoint_conversion_stats):
-    if conversion_goal.type == constants.ConversionGoalType.GA or\
-       conversion_goal.type == constants.ConversionGoalType.OMNITURE:
-        cg_stat = stats.get('conversions', {}).get(conversion_goal.get_stats_key())
-    elif conversion_goal.type == constants.ConversionGoalType.PIXEL:
-        tp_conv_stat = touchpoint_conversion_stats.get(conversion_goal.pixel.slug, {})
-        cg_stat = tp_conv_stat.get('conversion_count')
-
-    return 'conversion_goal__' + conversion_goal.name, cg_stat
-
-
 class AdGroupAdsPlusTable(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_get')
     def get(self, request, ad_group_id):
