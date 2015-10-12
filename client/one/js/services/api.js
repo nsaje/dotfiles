@@ -322,6 +322,26 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function AdGroupPublishersState() {
+        this.save = function(state, publishersSelected, publishersNotSelected, selectedAll) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/publishers/blacklist/';
+
+            $http.post(url, {
+                    state: state,
+                    publishers_selected: publisherIdsSelected,
+                    publishers_not_selected: publisherIdsNotSelected,
+                    select_all: selectedAll,
+                }).
+                success(function(data) {
+                   deferred.resolve(data);
+                }).error(function(data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
 
     function AdGroupAdsTable() {
         function convertFromApi(row) {
@@ -2476,6 +2496,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         sourcesTable: new SourcesTable(),
         adGroupSourcesTable: new AdGroupSourcesTable(),
         adGroupPublishersTable: new AdGroupPublishersTable(),
+        adGroupPublishersState: new AdGroupPublishersState(),
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupAdsPlusTable: new AdGroupAdsPlusTable(),
         adGroupSync: new AdGroupSync(),

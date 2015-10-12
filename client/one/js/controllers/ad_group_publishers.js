@@ -37,13 +37,17 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     }];
 
     $scope.selectedPublisherChanged = function(row, checked) {
-        $scope.selectedPublisherStatus[row.id] = checked;
+        $scope.selectedPublisherStatus[row.id] = {
+            "checked": checked,
+            "source_id": row['exchange'],
+            "domain": row['domain']
+        }
 
         var numSelected = 0,
             numNotSelected = 0;
 
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
-            if ($scope.selectedPublisherStatus[publisherId]) {
+            if ($scope.selectedPublisherStatus[publisherId])["checked"] {
                 numSelected += 1;
             } else {
                 numNotSelected += 1;
@@ -75,8 +79,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.updatePublisherSelection = function() {
         $scope.rows.forEach(function(row) {
-            if ($scope.selectedPublisherStatus[row.id] !== undefined) {
-                row.publisher_selected = $scope.selectedPublisherStatus[row.id];
+            if ($scope.selectedPublisherStatus[row.id]["checked"] !== undefined) {
+                row.publisher_selected = $scope.selectedPublisherStatus[row.id]["checked"];
             } else if ($scope.selectedAll) {
                 row.publisher_selected = true;
             } else {
@@ -92,7 +96,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         for (var publisherId in $scope.selectedPublisherStatus) {
             if ($scope.selectedPublisherStatus.hasOwnProperty(publisherId)
-                    && $scope.selectedPublisherStatus[publisherId]) {
+                    && $scope.selectedPublisherStatus[publisherId]["checked"]) {
                 return true;
             }
         }
@@ -105,29 +109,29 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             return;
         }
 
-        var publisherIdsSelected = [],
-            publisherIdsNotSelected = [];
+        var publishersSelected = [],
+            publishersNotSelected = [];
 
-        Object.keys($scope.selectedContentAdsStatus).forEach(function (contentAdId) {
-            if ($scope.selectedContentAdsStatus[contentAdId]) {
-                publisherIdsSelected.push(contentAdId);
+        Object.keys($scope.selectedContentAdsStatus).forEach(function (publisherId) {
+            if ($scope.selectedPublisherStatus[publisherId]["checked"]) {
+                publishersSelected.push($scope.selectedPublisherStatus[publisherId]);
             } else {
-                publisherIdsNotSelected.push(contentAdId);
+                publishersNotSelected.push($scope.selectedPublisherStatus[publisherId]);
             }
         });
 
         switch (action) {
             case 'blacklist':
                 bulkUpdatePublishers(
-                    publisherIdsSelected,
-                    publisherIdsNotSelected,
+                    publishersSelected,
+                    publishersNotSelected,
                     constants.publisherState.BLACKLISTED
                 );
                 break;
-            case 'restore':
+            case 'enable':
                 bulkUpdatePublishers(
-                    publisherIdsSelected,
-                    publisherIdsNotSelected,
+                    publishersSelected,
+                    publishersNotSelected,
                     constants.AdSourceState.ACTIVE
                 );
                 break;
@@ -296,10 +300,10 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     };
 
 
-    var bulkUpdatePublishers = function (publisherIdsSelected, publisherIdsNotSelected, state) {
+    var bulkUpdatePublishers = function (publishersSelected, publishersNotSelected, state) {
         updatePublisherStates(state);
 
-        api.adGroupPublisherState.save(
+        api.adGroupPublishersState.save(
             $state.params.id,
             state,
             publisherIdsSelected,
