@@ -11,6 +11,7 @@ import actionlog.api
 import actionlog.api_contentads
 import actionlog.models
 import actionlog.constants
+import utils.exc
 from utils import redirector_helper
 from utils import email_helper
 
@@ -756,6 +757,9 @@ class AdGroupSourceSettingsWriter(object):
             if state is not None:
                 new_settings.state = state
             if autopilot_state is not None:
+                if new_settings.state == constants.AdGroupSettingsState.INACTIVE and\
+                        autopilot_state == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
+                    raise utils.exc.ValidationError('Auto-pilot can not be enabled when source is disabled.')
                 old_settings_obj['autopilot_state'] = latest_settings.autopilot_state
                 new_settings.autopilot_state = autopilot_state
             if cpc_cc is not None:

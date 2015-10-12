@@ -1587,3 +1587,23 @@ class DemoAdGroupRealAdGroup(models.Model):
     demo_ad_group = models.OneToOneField(AdGroup, on_delete=models.PROTECT, related_name='+')
     real_ad_group = models.OneToOneField(AdGroup, on_delete=models.PROTECT, related_name='+')
     multiplication_factor = models.IntegerField(null=False, blank=False, default=1)
+
+
+class UserActionLog(models.Model):
+
+    id = models.AutoField(primary_key=True)
+
+    action_type = models.PositiveSmallIntegerField(
+        choices=constants.UserActionType.get_choices()
+    )
+
+    ad_group = models.ForeignKey(AdGroup, null=True, blank=True, on_delete=models.PROTECT)
+    ad_group_settings = models.ForeignKey(AdGroupSettings, null=True, blank=True, on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, null=True, blank=True, on_delete=models.PROTECT)
+    campaign_settings = models.ForeignKey(CampaignSettings, null=True, blank=True, on_delete=models.PROTECT)
+    account = models.ForeignKey(Account, null=True, blank=True, on_delete=models.PROTECT)
+    account_settings = models.ForeignKey(AccountSettings, null=True, blank=True, on_delete=models.PROTECT)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True,
+                                   blank=True)
