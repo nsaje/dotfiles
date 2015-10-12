@@ -5,6 +5,7 @@ import json
 from mock import patch
 from django.contrib.auth import models as authmodels
 
+from django.http.request import HttpRequest
 from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -102,9 +103,10 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
-            conversion_goals=[cg for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
-            ad_group=ad_group,
+            order=[],
             ignore_diff_rows=True,
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            ad_group=ad_group,
             source=sources_matcher
         )
 
@@ -112,7 +114,9 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             ad_group=ad_group,
-            conversion_goals=[cg for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            breakdown=[],
+            order=[],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
             ignore_diff_rows=True,
             source=sources_matcher
         )
@@ -154,8 +158,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             'description': 'Example description',
             'call_to_action': 'Call to action',
             'clicks': 1000,
-            'conversion_goal__test conversion goal': None,
-            'conversion_goal__test conversion goal 2': None,
+            'conversion_goal_1': None,
+            'conversion_goal_2': None,
             'cost': 100,
             'cpc': '0.0100',
             'ctr': '12.5000',
@@ -205,8 +209,6 @@ class AdGroupAdsPlusTableTest(TestCase):
             'url': 'http://testurl.com',
             'redirector_url': 'http://example.com/b/abc/z1/1/2/',
             'clicks': None,
-            'conversion_goal__test conversion goal': None,
-            'conversion_goal__test conversion goal 2': None,
             'cpc': None,
             'image_urls': {
                 'square': '/123456789/160x160.jpg',
@@ -237,8 +239,8 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertEqual(result['data']['totals'], {
             'clicks': 1500,
-            'conversion_goal__test conversion goal': None,
-            'conversion_goal__test conversion goal 2': None,
+            'conversion_goal_1': None,
+            'conversion_goal_2': None,
             'cost': 200,
             'cpc': '0.0200',
             'ctr': '15.5000',
@@ -306,7 +308,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
-            conversion_goals=[cg for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            order=[],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
             ad_group=ad_group,
             ignore_diff_rows=True,
             source=sources_matcher
@@ -315,9 +318,11 @@ class AdGroupAdsPlusTableTest(TestCase):
         mock_query.assert_any_call(
             date,
             date,
-            ad_group=ad_group,
-            conversion_goals=[cg for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            breakdown=[],
+            order=[],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
             ignore_diff_rows=True,
+            ad_group=ad_group,
             source=sources_matcher
         )
 
@@ -377,7 +382,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
-            conversion_goals=[cg for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            order=[],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
             ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources_matcher
@@ -387,7 +393,9 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             ad_group=ad_group,
-            conversion_goals=[cg for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            breakdown=[],
+            order=[],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
             ignore_diff_rows=True,
             source=sources_matcher
         )
@@ -935,13 +943,15 @@ class AllAccountsSourcesTableTest(TestCase):
     def test_get_normal_all_accounts_table(self, mock_get_cursor):
         t = table.AllAccountsSourcesTable(self.normal_user, 1, [])
         today = datetime.datetime.utcnow()
-        t.get_stats(today, today)
+        r = HttpRequest()
+        t.get_stats(r, today, today)
         self.assertFalse(mock_get_cursor().dictfetchall.called)
 
     def test_get_redshift_all_accounts_table(self, mock_get_cursor):
         t = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
         today = datetime.datetime.utcnow()
-        t.get_stats(today, today)
+        r = HttpRequest()
+        t.get_stats(r, today, today)
         self.assertTrue(mock_get_cursor().dictfetchall.called)
 
     def test_funcs(self, mock_get_cursor):
