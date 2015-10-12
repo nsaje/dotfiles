@@ -146,7 +146,9 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_publishers', 'Can see publishers'),
             ('manage_conversion_goals', 'Can manage conversion goals on campaign level'),
             ('can_see_redshift_postclick_statistics', 'Can see Redshift postclick statistics'),
-            ('group_campaign_stop_on_budget_depleted', 'Automatic campaign stop on depleted budget applies to campaigns in this group')
+            ('group_campaign_stop_on_budget_depleted', 'Automatic campaign stop on depleted budget applies to campaigns in this group'),
+            ('can_see_publisher_blacklist_status', 'Can see publishers blacklist status'),
+            ('can_modify_publisher_blacklist_status', 'Can modify publishers blacklist status'),
         )
 
     def get_full_name(self):
