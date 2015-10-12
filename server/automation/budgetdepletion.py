@@ -204,13 +204,12 @@ def stop_and_notify_depleted_budget_campaigns():
                 available_budgets.get(camp.id),
                 yesterdays_spends.get(camp.id)
             )
-    _log_yesterday_costs_for_analysis()  # NOTE - Only temporory logging, remove before 12.10.2015
 
 
 def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterdays_spend):
     account_manager = campaign.get_current_settings().account_manager
     sales_rep = campaign.get_current_settings().sales_representative
-    emails = ['bostjan@zemanta.com', 'davorin.kopic@zemanta.com'] #  NOTE - Testing emails to be removed
+    emails = []
     if account_manager is not None:
         emails.append(account_manager.email)
     if sales_rep is not None:
@@ -229,16 +228,3 @@ def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterd
         yesterdays_spend=yesterdays_spend,
         account_manager=account_manager,
         stopped=True).save()
-
-
-def _log_yesterday_costs_for_analysis():  # NOTE - Only temporory logging, remove before 12.10.2015
-    import dash.models
-    import reports.api
-    logger_analysis = logging.getLogger('automation_analysis_yesterday_costs')
-    adgroup_ids = [701, 700, 707, 840, 841, 842, 501, 508, 1085, 307, 1083, 1084, 1082, 791, 1169, 1170, 1171, 1172, 885, 890]
-    for adgroup in dash.models.AdGroup.objects.filter(id__in=adgroup_ids):
-        s = ''
-        for source, cost in reports.api.get_yesterday_cost(ad_group=adgroup).iteritems():
-            if source in [2, 3, 4]:
-                s = ','.join([s, str(source) + ':' + str(cost)])
-        logger_analysis.info(''.join([adgroup.name, s]))
