@@ -732,11 +732,10 @@ class AdGroupSourcesExport(ExportApiView):
                 {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
             ]
 
-            if conversion_goals:
-                for cg in conversion_goals:
-                    date_source_columns.append(
-                        {'key': 'conversion_goal_' + str(cg.id), 'name': cg.name}
-                    )
+            for cg in conversion_goals:
+                date_source_columns.append(
+                    {'key': 'conversion_goal_' + str(cg.id), 'name': cg.name}
+                )
 
             sheets_data = [('Per Source Report', date_source_columns, date_source_results)]
 
