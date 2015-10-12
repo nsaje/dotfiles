@@ -139,6 +139,23 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_logs_user_action(self, mock_log_useraction):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        settings = ad_group.get_current_settings()
+        settings.end_date = datetime.date.today()
+        settings.save(None)
+
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '0.15'})
+        )
+        self.assertEqual(response.status_code, 200)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
+            ad_group=ad_group)
+
 
 class AdGroupContentAdCSVTest(TestCase):
     fixtures = ['test_api', 'test_views']
@@ -263,7 +280,8 @@ class AdGroupContentAdStateTest(TestCase):
             follow=True
         )
 
-    def test_post(self):
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_post(self, mock_log_useraction):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
@@ -289,6 +307,11 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertJSONEqual(response.content, {
             'success': True
         })
+
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.SET_CONTENT_AD_STATE,
+            ad_group=models.AdGroup.objects.get(pk=1))
 
     def test_state_set_all(self):
         username = User.objects.get(pk=1).email
@@ -435,8 +458,9 @@ class AdGroupContentAdArchive(TestCase):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
+    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
-    def test_post(self, mock_send_mail):
+    def test_post(self, mock_send_mail, mock_log_useraction):
         ad_group = models.AdGroup.objects.get(pk=1)
         content_ad_id = 2
 
@@ -459,6 +483,11 @@ class AdGroupContentAdArchive(TestCase):
             }})
 
         mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
+            ad_group=ad_group
+        )
 
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
     def test_archive_set_all(self, mock_send_mail):
@@ -603,8 +632,9 @@ class AdGroupContentAdRestore(TestCase):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
+    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
-    def test_post(self, mock_send_mail):
+    def test_post(self, mock_send_mail, mock_log_useraction):
         ad_group = models.AdGroup.objects.get(pk=1)
         content_ad_id = 2
 
@@ -627,6 +657,11 @@ class AdGroupContentAdRestore(TestCase):
         self.assertEqual(response_dict['data']['rows'], {'2': {'archived': False, 'status_setting': content_ad.state}})
 
         mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
+            ad_group=ad_group
+        )
 
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
     def test_restore_set_all(self, mock_send_mail):
@@ -766,8 +801,9 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
         return client
 
+    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.views.upload.process_async')
-    def test_post(self, mock_process_async):
+    def test_post(self, mock_process_async, mock_log_useraction):
         request = HttpRequest()
         request.user = User(id=1)
 
@@ -793,6 +829,10 @@ class AdGroupAdsPlusUploadTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(mock_process_async.called)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.UPLOAD_CONTENT_ADS,
+            ad_group=models.AdGroup.objects.get(pk=1))
 
     @patch('dash.views.views.upload.process_async')
     def test_post_empty_fields_not_in_csv(self, mock_process_async):

@@ -276,6 +276,8 @@ class AccountArchive(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account.archive(request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_ACCOUNT, account=account)
+
         return self.create_api_response({})
 
 
@@ -290,6 +292,8 @@ class AccountRestore(api_common.BaseApiView):
 
         actionlog.sync.AccountSync(account).trigger_all(self.request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_ACCOUNT, account=account)
+
         return self.create_api_response({})
 
 
@@ -301,6 +305,9 @@ class CampaignArchive(api_common.BaseApiView):
 
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign.archive(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CAMPAIGN,
+                                            campaign=campaign)
 
         return self.create_api_response({})
 
@@ -316,6 +323,9 @@ class CampaignRestore(api_common.BaseApiView):
 
         actionlog.sync.CampaignSync(campaign).trigger_all(self.request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CAMPAIGN,
+                                            campaign=campaign)
+
         return self.create_api_response({})
 
 
@@ -327,6 +337,9 @@ class AdGroupArchive(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group.archive(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_AD_GROUP,
+                                            ad_group=ad_group)
 
         return self.create_api_response({})
 
@@ -341,6 +354,9 @@ class AdGroupRestore(api_common.BaseApiView):
         ad_group.restore(request)
 
         actionlog.sync.AdGroupSync(ad_group).trigger_all(self.request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_AD_GROUP,
+                                            ad_group=ad_group)
 
         return self.create_api_response({})
 
@@ -358,6 +374,9 @@ class CampaignAdGroups(api_common.BaseApiView):
             campaign=campaign
         )
         ad_group.save(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_AD_GROUP,
+                                            ad_group=ad_group, campaign=campaign)
 
         response = {
             'name': ad_group.name,
@@ -485,6 +504,9 @@ class AdGroupSources(api_common.BaseApiView):
         actionlog.api.create_campaign(ad_group_source, external_name, request)
         self._add_to_history(ad_group_source, request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_MEDIA_SOURCE_CAMPAIGN,
+                                            ad_group=ad_group)
+
         if request.user.has_perm('zemauth.add_media_sources_automatically'):
             helpers.set_ad_group_source_defaults(default_settings, ad_group.get_current_settings(), ad_group_source,
                                                  request)
@@ -497,7 +519,6 @@ class AdGroupSources(api_common.BaseApiView):
         settings = ad_group_source.ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
-
 
     def _can_target_existing_regions(self, source, ad_group_settings):
         return (source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma()) or\
@@ -512,6 +533,8 @@ class Account(api_common.BaseApiView):
 
         account = models.Account(name=create_name(models.Account.objects, 'New account'))
         account.save(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_ACCOUNT, account=account)
 
         response = {
             'name': account.name,
@@ -547,6 +570,9 @@ class AccountCampaigns(api_common.BaseApiView):
                                   if account_settings.default_sales_representative else None)
         )
         settings.save(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CAMPAIGN,
+                                            campaign=campaign)
 
         response = {
             'name': campaign.name,
@@ -614,6 +640,9 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         settings_writer.set(resource, request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
+                                            ad_group=ad_group)
+
         return self.create_api_response({
             'editable_fields': helpers.get_editable_fields(
                 ad_group_source,
@@ -656,7 +685,6 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
 
         batch_name = form.cleaned_data['batch_name']
         content_ads = form.cleaned_data['content_ads']
-        display_url = form.cleaned_data['display_url']
 
         # we could have passed form.cleaned_data around,
         # but it's better to have a version that is more predictable
@@ -682,6 +710,9 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         new_settings.call_to_action = upload_form_cleaned_fields['call_to_action']
 
         new_settings.save(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.UPLOAD_CONTENT_ADS,
+                                            ad_group=ad_group)
 
         upload.process_async(
             content_ads,
@@ -788,6 +819,9 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
         api.add_content_ads_archived_change_to_history(ad_group, content_ads, True, request)
         email_helper.send_ad_group_notification_email(ad_group, request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
+                                            ad_group=ad_group)
+
         with transaction.atomic():
             for content_ad in content_ads:
                 content_ad.archived = True
@@ -833,6 +867,9 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
         api.add_content_ads_archived_change_to_history(ad_group, content_ads, False, request)
         email_helper.send_ad_group_notification_email(ad_group, request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
+                                            ad_group=ad_group)
+
         with transaction.atomic():
             for content_ad in content_ads:
                 content_ad.archived = False
@@ -876,6 +913,9 @@ class AdGroupContentAdState(api_common.BaseApiView):
         api.update_content_ads_state(content_ads, state, request)
         api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
         email_helper.send_ad_group_notification_email(ad_group, request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CONTENT_AD_STATE,
+                                            ad_group=ad_group)
 
         return self.create_api_response()
 

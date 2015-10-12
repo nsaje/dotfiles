@@ -903,3 +903,19 @@ def format_decimal_to_percent(num):
 
 def format_percent_to_decimal(num):
     return Decimal(num) / 100
+
+
+def log_useraction_if_necessary(request, user_action_type, account=None, campaign=None, ad_group=None):
+    if request.user.is_self_managed():
+
+        user_action_log = models.UserActionLog(
+            action_type=user_action_type,
+            created_by=request.user,
+            account=account,
+            campaign=campaign,
+            ad_group=ad_group,
+            account_settings_id=account.get_current_settings().id if account else None,
+            campaign_settings_id=campaign.get_current_settings().id if campaign else None,
+            ad_group_settings_id=ad_group.get_current_settings().id if ad_group else None
+        )
+        user_action_log.save()
