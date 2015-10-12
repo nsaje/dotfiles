@@ -139,7 +139,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             'name': 'Traffic Acquisition',
             'fields': [
                'publisher_selected',
-               'domain', 
+               'domain',
+               'blacklisted_status'
                'domain_link',
                'exchange',
                'cost', 
@@ -165,7 +166,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             selectCallback: $scope.selectedPublisherChanged,
             disabled: false
             selectionMenuConfig: $scope.selectionMenuConfig
-        },
+        },    
         {
             name: 'Domain',
             field: 'domain',
@@ -177,6 +178,20 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             totalRow: false,
             help: 'A publisher where your content is being promoted.',
             order: true,
+            initialOrder: 'asc'
+        },
+        {
+            name: 'Blacklisted',
+            field: 'blacklisted_status',
+            unselectable: true,
+            checked: true,
+            type: 'notification',
+            extraTdCss: 'notification',
+            shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
+            totalRow: false,
+            help: 'Blacklist status of a particular publisher (blacklisted or enabled).',
+            order: true,
+            orderField: 'blacklisted_status',
             initialOrder: 'asc'
         },
         {
