@@ -3,6 +3,7 @@ import logging
 import urllib
 
 from django.contrib import admin
+from django.contrib import messages
 from django import forms
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
@@ -772,9 +773,19 @@ def reject_content_ad_sources(modeladmin, request, queryset):
         )
     )
 
+    source = models.Source.objects.filter(name='Outbrain').first()
+    ignored = []
+
     for content_ad_source in queryset:
-        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
-        content_ad_source.save()
+        if content_ad_source.source == source:
+            content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
+            content_ad_source.save()
+        else:
+            ignored.append(content_ad_source.content_ad_id)
+
+    if len(ignored) > 0:
+        messages.warning(request, 'Marking content ad sources as rejected is only supported for the Outbrain source,\
+                                   content ad sources with content ad ids %s ignored' % ignored)
 reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
 
 class ContentAdSourceAdmin(admin.ModelAdmin):
