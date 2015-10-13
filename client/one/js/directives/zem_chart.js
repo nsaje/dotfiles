@@ -222,7 +222,6 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             metricFormats[constants.chartMetric.CPC] = {'type': 'currency', 'fractionSize': 3};
             metricFormats[constants.chartMetric.COST] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.CTR] = {'type': 'percent', 'fractionSize': 2};
-            metricFormats[constants.chartMetric.CONVERSION_RATE] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.NEW_USERS] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.BOUNCE_RATE] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.PV_PER_VISIT] = {'fractionSize': 2};
