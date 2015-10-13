@@ -1014,3 +1014,57 @@ class UploadBatchStatus(ConstantBase):
         FAILED: 'Failed',
         IN_PROGRESS: 'In progress'
     }
+
+
+class UserActionType(ConstantBase):
+    UPLOAD_CONTENT_ADS = 1
+    SET_CONTENT_AD_STATE = 2
+    ARCHIVE_RESTORE_CONTENT_AD = 3
+
+    CREATE_AD_GROUP = 4
+    SET_AD_GROUP_SETTINGS = 5
+    SET_AD_GROUP_SETTINGS_WITH_AUTO_ADD_MEDIA_SOURCES = 6
+    ARCHIVE_RESTORE_AD_GROUP = 7
+
+    CREATE_ACCOUNT = 8
+    SET_ACCOUNT_AGENCY_SETTINGS = 9
+    ARCHIVE_RESTORE_ACCOUNT = 10
+
+    CREATE_CAMPAIGN = 11
+    SET_CAMPAIGN_SETTINGS = 12
+    SET_CAMPAIGN_AGENCY_SETTINGS = 13
+    SET_CAMPAIGN_BUDGET = 14
+    ARCHIVE_RESTORE_CAMPAIGN = 15
+
+    CREATE_CONVERSION_GOAL = 16
+    DELETE_CONVERSION_GOAL = 17
+
+    CREATE_CONVERSION_PIXEL = 18
+    ARCHIVE_RESTORE_CONVERSION_PIXEL = 19
+
+    CREATE_MEDIA_SOURCE_CAMPAIGN = 20
+    SET_MEDIA_SOURCE_SETTINGS = 21
+
+    _VALUES = {
+        UPLOAD_CONTENT_ADS: 'Upload Content Ads',
+        SET_CONTENT_AD_STATE: 'Set Content Ad(s) State',
+        ARCHIVE_RESTORE_CONTENT_AD: 'Archive/Restore Content Ad(s)',
+        CREATE_AD_GROUP: 'Create Ad Group',
+        SET_AD_GROUP_SETTINGS: 'Set Ad Group Settings',
+        SET_AD_GROUP_SETTINGS_WITH_AUTO_ADD_MEDIA_SOURCES: 'Set Ad Group Settings (with auto added Media Sources)',
+        ARCHIVE_RESTORE_AD_GROUP: 'Archive/Restore Ad Group',
+        CREATE_ACCOUNT: 'Create Account',
+        SET_ACCOUNT_AGENCY_SETTINGS: 'Set Account Agency Settings',
+        ARCHIVE_RESTORE_ACCOUNT: 'Archive/Restore Account',
+        CREATE_CAMPAIGN: 'Create Campaign',
+        SET_CAMPAIGN_SETTINGS: 'Set Campaign Settings',
+        SET_CAMPAIGN_AGENCY_SETTINGS: 'Set Campaign Agency Settings',
+        SET_CAMPAIGN_BUDGET: 'Set Campaign Budget',
+        ARCHIVE_RESTORE_CAMPAIGN: 'Archive/Restore Campaign',
+        CREATE_CONVERSION_GOAL: 'Create Conversion Goal',
+        DELETE_CONVERSION_GOAL: 'Delete Conversion Goal',
+        CREATE_CONVERSION_PIXEL: 'Create Conversion Pixel',
+        ARCHIVE_RESTORE_CONVERSION_PIXEL: 'Archive/Restore Conversion Pixel',
+        CREATE_MEDIA_SOURCE_CAMPAIGN: 'Create Media Source Campaign',
+        SET_MEDIA_SOURCE_SETTINGS: 'Set Media Source Settings',
+    }

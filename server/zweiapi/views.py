@@ -188,10 +188,13 @@ def _process_zwei_response(action, data, request):
                 request
             )
 
+            logger.info('Submitting content ads after campaign creation. Action %s', action)
             content_ad_sources = dash.api.add_content_ad_sources(action.ad_group_source)
             actions.extend(dash.api.submit_content_ads(content_ad_sources, request=None))
 
-            dash.api.order_additional_updates_after_campaign_creation(action.ad_group_source, request=None)
+            logger.info('Ordering additional updates after campaign creation. Action %s', action)
+            dash.api.order_additional_updates_after_campaign_creation(action.ad_group_source,
+                                                                      request=None)
 
         elif action.action == actionlog.constants.Action.INSERT_CONTENT_AD:
             if 'source_content_ad_id' in data['data']:
@@ -228,9 +231,7 @@ def _process_zwei_response(action, data, request):
                 )
             )
 
-
         logger.info('Process action successful. Action: %s', action)
-
 
     actionlog.zwei_actions.send(actions)
 

@@ -128,7 +128,9 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
             if change_interval['bid_cpc_procentual_increase'] == decimal.Decimal('0'):
                 return (current_cpc, [automation.constants.CpcChangeComment.OPTIMAL_SPEND])
             if change_interval['bid_cpc_procentual_increase'] < 0:
-                new_cpc = _threshold_lowering_cpc(current_cpc, new_cpc)
+                new_cpc = _threshold_reducing_cpc(current_cpc, new_cpc)
+            else:
+                new_cpc = _threshold_increasing_cpc(current_cpc, new_cpc)
             new_cpc = _round_cpc(new_cpc)
             break
     if automation.settings.AUTOPILOT_MIN_CPC > new_cpc:
@@ -161,12 +163,21 @@ def _calculate_spending_perc(yesterdays_spend, current_daily_budget):
     return None
 
 
-def _threshold_lowering_cpc(current_cpc, new_cpc):
+def _threshold_reducing_cpc(current_cpc, new_cpc):
     cpc_change = abs(current_cpc - new_cpc)
-    if cpc_change < automation.settings.AUTOPILOT_MIN_LOWERING_CPC_CHANGE:
-        return current_cpc - automation.settings.AUTOPILOT_MIN_LOWERING_CPC_CHANGE
-    if cpc_change > automation.settings.AUTOPILOT_MAX_LOWERING_CPC_CHANGE:
-        return current_cpc - automation.settings.AUTOPILOT_MAX_LOWERING_CPC_CHANGE
+    if cpc_change < automation.settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE:
+        return current_cpc - automation.settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE
+    if cpc_change > automation.settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE:
+        return current_cpc - automation.settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE
+    return new_cpc
+
+
+def _threshold_increasing_cpc(current_cpc, new_cpc):
+    cpc_change = abs(current_cpc - new_cpc)
+    if cpc_change < automation.settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE:
+        return current_cpc + automation.settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE
+    if cpc_change > automation.settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE:
+        return current_cpc + automation.settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE
     return new_cpc
 
 
