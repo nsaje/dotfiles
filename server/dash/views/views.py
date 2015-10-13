@@ -46,6 +46,8 @@ from dash import api
 from dash import forms
 from dash import upload
 
+import reports.api_publishers
+
 logger = logging.getLogger(__name__)
 
 
@@ -1003,19 +1005,74 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
 
 class PublishersBlacklistStatus(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_publisher_blacklist_state_post')
     def put(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        publishers = json.loads(request.body)['source_id']
+        body = json.loads(request.body)
+
+        state = int(body[state])
+
+        start_date = helpers.parse_datetime(body.get('start_date'))
+        end_date = helpers.parse_datetime(body.get('end_date'))
+
+        # publishers_selected = body["publishers_selected"]
+        # publishers_not_selected = body["publisherIdsNotSelected"]
+        select_all = body[selectedAll]
+
+        if select_all:
+
+            # get all publishers from date range with statistics
+            # (they represent all)
+            pass
+
+        if publishers_selected:
+            pass
+
+        # izved query
+
+        publishers = []
+
+        constraints = {
+            "ad_group_id": ad_group_id
+        }
+
+        result = reports.publishers_api.query(start_date, end_date, **constraints)
+        publishers = result
+
+        blacklist_list = []
+        source_cache = {}
         for publisher in publishers:
             domain = publisher['domain']
             source_id = publisher['source']
+            if source_id not in source_cache:
+                source_cache[source_id] = models.Source.objects.get(pk=source_id)
             # store blacklisted publishers and push to other sources
+            blacklist_list.append(
+                models.PublisherBlacklist(
+                    name=domain,
+                    ad_group=ad_group,
+                    source=source_cache[source_id]
+                )
+            )
 
-
+        if blacklist_list:
+            if state == constants.PublisherStatus.BLACKLISTED:
+                models.Source.objects.bulk_create(blacklist_list)
+            elif state == constants.PublisherStatus.ENABLED:
+                query_set = models.PublisherBlacklist.objects.none()
+                for pub_blacklist in blacklist_list:
+                    query_set = query_set | models.PublisherBlacklist.objects.filter(
+                        name=pub_blacklist.name,
+                        ad_group=pub_blacklist.ad_group,
+                        source=pub_blacklist.source
+                    )
+                query_set.delete()
+            else:
+                raise Exception("Not implemented")
 
         response = {
             "success": True,

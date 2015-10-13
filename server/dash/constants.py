@@ -87,6 +87,16 @@ class ContentAdSourceState(ConstantBase):
     }
 
 
+class PublisherStatus(ConstantBase):
+    ENABLED = 1
+    BLACKLISTED = 2
+
+    _VALUES = {
+        ENABLED: 'Enabled',
+        BLACKLISTED: 'Blacklisted'
+    }
+
+
 class IABCategory(ConstantBase):
     IAB1 = "IAB1"
     IAB1_1 = "IAB1-1"
