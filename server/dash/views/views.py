@@ -1002,6 +1002,27 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
         return string.getvalue()
 
 
+class PublishersBlacklistStatus(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_publisher_blacklist_state_post')
+    def put(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
+            raise exc.AuthorizationError()
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        publishers = json.loads(request.body)['source_id']
+        for publisher in publishers:
+            domain = publisher['domain']
+            source_id = publisher['source']
+            # store blacklisted publishers and push to other sources
+
+
+
+        response = {
+            "success": True,
+        }
+        return self.create_api_response(response)
+
+
 @statsd_helper.statsd_timer('dash', 'healthcheck')
 def healthcheck(request):
     return HttpResponse('OK')

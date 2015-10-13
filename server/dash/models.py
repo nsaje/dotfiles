@@ -1607,3 +1607,14 @@ class UserActionLog(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True,
                                    blank=True)
+
+
+class PublisherBlacklist(models.Model):
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=127, blank=False, null=False)
+    ad_group = models.ForeignKey(AdGroup, null=False, related_name='ad_group', on_delete=models.PROTECT)
+    source = models.ForeignKey(AdGroup, null=False, on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = (('name', 'ad_group', 'source'), )
