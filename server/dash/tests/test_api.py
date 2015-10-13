@@ -115,20 +115,23 @@ class IgnorePendingContentAdSourceSubmissionWhenLocalStatusIsRejected(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):
-        #create a reference to the Outbrain source
-        self.source = models.Source.objects.filter(name='Outbrain').first()
-        self.ad_group_source = models.AdGroupSource.objects.filter(source=self.source).first()
-        self.batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
+        #create reference to an Outbrain AdGroupSource
+        source = models.Source.objects.get(source_type__type=constants.SourceType.OUTBRAIN)
+        self.ad_group_source = models.AdGroupSource.objects.filter(source=source).first()
 
-        self.content_ad = models.ContentAd.objects.create(
+        #create ContentAd
+        batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
+
+        content_ad = models.ContentAd.objects.create(
             url='test.com',
             title='test',
             ad_group=self.ad_group_source.ad_group,
-            batch=self.batch
+            batch=batch
         )
 
+        #create ContentAdSource
         self.content_ad_source = models.ContentAdSource.objects.create(
-            content_ad=self.content_ad,
+            content_ad=content_ad,
             source=self.ad_group_source.source,
             submission_status=constants.ContentAdSubmissionStatus.REJECTED,
             source_content_ad_id=None,
@@ -136,44 +139,29 @@ class IgnorePendingContentAdSourceSubmissionWhenLocalStatusIsRejected(TestCase):
         )
 
     def test_update_content_ad_source_state(self):
-        #switch local state to rejected
-        self.content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
-        self.content_ad_source.save()
-
         #create an incoming data object containing the submission_status PENDING
-        self.content_ad_data = {'submission_status': constants.ContentAdSubmissionStatus.PENDING}
+        content_ad_data = {'submission_status': constants.ContentAdSubmissionStatus.PENDING}
 
         #pass the objects to update_content_ad_source_state
-        api.update_content_ad_source_state(self.content_ad_source, self.content_ad_data)
+        api.update_content_ad_source_state(self.content_ad_source, content_ad_data)
 
         #refresh the ContentAdSource and assert the status is still REJECTED
         self.content_ad_source.refresh_from_db()
         self.assertEqual(self.content_ad_source.submission_status, constants.ContentAdSubmissionStatus.REJECTED)
 
     def test_update_multiple_content_ad_source_states(self):
-        #switch local state to rejected
-        self.content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
-        self.content_ad_source.save()
-
         #create an incoming data object containing the submission_status PENDING
-	self.content_ad_data = [{'id': self.content_ad_source.get_source_id(),
-                                 'state': self.content_ad_source.source_state,
-                                 'submission_status': constants.ContentAdSubmissionStatus.PENDING}]
+        content_ad_data = [{'id': self.content_ad_source.get_source_id(),
+                            'state': self.content_ad_source.source_state,
+                            'submission_status': constants.ContentAdSubmissionStatus.PENDING}]
 
-        #ensure our ContentAdSource is returned by the filter call in the api call
-        self.found = False
-
-        for content_ad_source in models.ContentAdSource.objects.filter(
+        #ensure our ContentAdSource is found by the filter, otherwise the test will PASS without testing anything
+        self.assertTrue(self.content_ad_source in models.ContentAdSource.objects.filter(
                 content_ad__ad_group=self.ad_group_source.ad_group,
-                source=self.ad_group_source.source):
-            if content_ad_source == self.content_ad_source:
-                self.found = True
-                break
-
-        self.assertTrue(self.found)
+                source=self.ad_group_source.source))
 
         #pass the AdGroupSource and incoming data to update_multiple_content_ad_source_states
-        api.update_multiple_content_ad_source_states(self.ad_group_source, self.content_ad_data)
+        api.update_multiple_content_ad_source_states(self.ad_group_source, content_ad_data)
 
         #refresh the ContentAdSource and assert the status is still REJECTED
         self.content_ad_source.refresh_from_db()
