@@ -49,6 +49,7 @@ def query(start_date, end_date, order=None, breakdown=None, conversion_goals=Non
 
     constraints_list = []
     if conversion_goals:
+        # create a base object, then OR onto it
         rsq = redshift.RSQ(account=conversion_goals[0].pixel.account_id, slug=conversion_goals[0].pixel.slug,
                            conversion_lag__lte=conversion_goals[0].conversion_window)
         for conversion_goal in conversion_goals[1:]:
