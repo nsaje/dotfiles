@@ -8,7 +8,8 @@ oneApp.directive('zemFilter', ['config', function(config) {
         scope: {
             hasPermission: '=zemHasPermission',
             isPermissionInternal: '=zemIsPermissionInternal',
-            enablePublisherFilter: '=enablePublisherFilter '
+            enablePublisherFilter: '=enablePublisherFilter ',
+            showPublisherSelected: '=showPublisherSelected'
         },
         link: function ($scope, element) {
             element.on('click', function(e) {
@@ -18,6 +19,7 @@ oneApp.directive('zemFilter', ['config', function(config) {
         controller: ['$scope', 'zemFilterService', 'zemUserSettings', 'api', function ($scope, zemFilterService, zemUserSettings, api) {
             $scope.availableSources = [];
             $scope.config = config;
+            $scope.showPublisherSelected = "all";
 
             $scope.refreshAvailableSources = function () {
                 api.availableSources.list().then(function (data) {

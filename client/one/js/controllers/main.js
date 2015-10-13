@@ -37,6 +37,7 @@ oneApp.controller('MainCtrl',
     $scope.maxDate = zemMoment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.enablePublisherFilter = false;
+    $scope.showSelectedPublisher = null;
 
     $scope.remindToAddBudget = $q.defer(); 
 
@@ -258,7 +259,7 @@ oneApp.controller('MainCtrl',
     };
 
     $scope.setPublisherFilterVisible = function (visible) {
-       $scope.enablePublisherFilter = visible;
+        $scope.enablePublisherFilter = visible;
     };
 
     $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {

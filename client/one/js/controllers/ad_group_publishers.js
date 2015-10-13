@@ -21,7 +21,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     var userSettings = zemUserSettings.getInstance($scope, 'adGroupPublishers');
 
-    $scope.setPublisherFilterVisible(true);
     $scope.selectionMenuConfig = {};
     // selection settings - all or specific publishers can be selected
     $scope.selectedAll = false;
@@ -442,7 +441,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.init = function() {
         var data = $scope.adGroupData[$state.params.id];
-
+        $scope.setPublisherFilterVisible(true);
 
         var page = parseInt($location.search().page)
         if (isNaN(page)) {
@@ -481,8 +480,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         getTableData();
         getDailyStats();
-
-        $scope.enablePublisherFilter = true;
     };
 
 
@@ -507,6 +504,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
 
     $scope.$on('$destroy', function () {
+        $scope.setPublisherFilterVisible(false);
         $timeout.cancel($scope.lastChangeTimeout);
     });
 
