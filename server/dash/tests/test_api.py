@@ -1757,7 +1757,7 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
         self.request.user = user
         self.client.login(username=user.email, password=password)
 
-    def _fire_campaign_creation_callback(self, ad_group_source, target_regions=None, available_actions=None):
+    def _setup_ad_group(self, ad_group_source, target_regions=None, available_actions=None):
         if available_actions:
             ad_group_source.source.source_type.available_actions.extend(available_actions)
             ad_group_source.source.source_type.save()
@@ -1765,8 +1765,6 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
         ad_group_settings = ad_group_source.ad_group.get_current_settings()
         ad_group_settings.target_regions = target_regions
         ad_group_settings.save(self.request)
-
-        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
     def _get_created_manual_actions(self, ad_group_source):
         return actionlog.models.ActionLog.objects.filter(
@@ -1784,13 +1782,12 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
     def test_manual_update_after_campaign_creation_manual_dma_targeting(self):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
-        self._fire_campaign_creation_callback(
-            ad_group_source,
-            ['GB', '693'],
-            [
-                constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL,
-                constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
-            ])
+        self._setup_ad_group(ad_group_source, ['GB', '693'], [
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL,
+            constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
+        ])
+
+        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
         manual_actions = self._get_created_manual_actions(ad_group_source)
 
@@ -1801,13 +1798,15 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
     def test_no_manual_update_after_campaign_creation_auto_targeting(self):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
-        self._fire_campaign_creation_callback(
+        self._setup_ad_group(
             ad_group_source,
             ['GB', '693'],
             [
                 constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
                 constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             ])
+
+        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
         manual_actions = self._get_created_manual_actions(ad_group_source)
 
@@ -1817,12 +1816,13 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
     def test_no_manual_update_after_campaign_creation_dma_targeting_not_supported(self):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
-        self._fire_campaign_creation_callback(
+        self._setup_ad_group(
             ad_group_source,
             ['GB', '693'],
-            [
-                constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
-            ])
+            [constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING]
+        )
+
+        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
         manual_actions = self._get_created_manual_actions(ad_group_source)
 
@@ -1832,13 +1832,15 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
     def test_no_manual_update_after_campaign_creation_no_dma_targeting(self):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
-        self._fire_campaign_creation_callback(
+        self._setup_ad_group(
             ad_group_source,
             ['GB'],
             [
                 constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
                 constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             ])
+
+        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
         manual_actions = self._get_created_manual_actions(ad_group_source)
 
@@ -1848,14 +1850,14 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
     def test_source_settings_update_after_campaign_creation_no_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=5)
 
-        self._fire_campaign_creation_callback(ad_group_source)
+        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
         self.assertFalse(self._get_set_campaign_state_actions(ad_group_source).exists())
 
     def test_source_settings_update_after_campaign_creation_create_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
-        self._fire_campaign_creation_callback(ad_group_source)
+        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
         actions = self._get_set_campaign_state_actions(ad_group_source)
         self.assertEqual(actions.count(), 1)
