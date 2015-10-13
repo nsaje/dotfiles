@@ -663,7 +663,7 @@ def _update_content_ad_source_submission_status(content_ad_source, submission_st
     if content_ad_source.source.source_type.type == constants.SourceType.OUTBRAIN and\
        content_ad_source.submission_status == constants.ContentAdSubmissionStatus.REJECTED and\
        submission_status == constants.ContentAdSubmissionStatus.PENDING:
-        return False;
+        return False
 
     if content_ad_source.source.source_type.type == constants.SourceType.OUTBRAIN and\
        submission_status == constants.ContentAdSubmissionStatus.PENDING and\
@@ -672,7 +672,7 @@ def _update_content_ad_source_submission_status(content_ad_source, submission_st
     else:
         content_ad_source.submission_status = submission_status
 
-    return True;
+    return True
 
 
 @newrelic.agent.function_trace()
