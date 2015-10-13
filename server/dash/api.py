@@ -104,7 +104,6 @@ def create_campaign_callback(ad_group_source, source_campaign_key, request):
 
 
 def order_additional_updates_after_campaign_creation(ad_group_source, request):
-
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
     source = ad_group_source.source
 
@@ -129,7 +128,7 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
     cons = consistency.SettingsStateConsistence(ad_group_source)
     settings_changes = cons.get_needed_state_updates()
     if settings_changes:
-        actionlog.api.set_ad_group_source_settings(settings_changes, ad_group_source, request)
+        actionlog.api.set_ad_group_source_settings(settings_changes, ad_group_source, request=request, send=True)
 
 
 def insert_content_ad_callback(
