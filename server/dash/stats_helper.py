@@ -80,26 +80,19 @@ def get_stats_with_conversions(
         constraints=constraints
     )
 
-    # add touchpoint conversions to existing content ad stats
-    tp_conv_stats_by_breakdown = OrderedDict((tuple(s[b] for b in breakdown), s) for s in touchpoint_conversion_stats)
-    for key, ca_stat in ca_stats_by_breakdown.iteritems():
-        for conversion_goal in touchpoint_conversion_goals:
-            tp_conv_key = tuple(list(key) + [conversion_goal.pixel.slug])
-            ca_stat['conversion_goal_' + str(conversion_goal.id)] = None
-            if tp_conv_key in tp_conv_stats_by_breakdown:
-                ca_stat['conversion_goal_' + str(conversion_goal.id)] = tp_conv_stats_by_breakdown[tp_conv_key]
-
-    # add rows that are only in touchpoint conversion stats to content ad stats
+    tp_conv_goals_by_slug = {cg.pixel.slug: cg for cg in touchpoint_conversion_goals}
     for tp_conv_stat in touchpoint_conversion_stats:
         key = tuple(tp_conv_stat[b] for b in breakdown)
         if key in ca_stats_by_breakdown:
+            ca_stats_by_breakdown[key]['conversion_goal_' + str(conversion_goal.id)] = tp_conv_stat['conversion_count']
             continue
 
-        ca_stats_by_breakdown[key] = {b: tp_conv_stat[b] for b in breakdown}
-        ca_stat = ca_stats_by_breakdown[key]
+        ca_stat = {b: tp_conv_stat[b] for b in key}
 
-        conversion_goal = conversion_goals.get(pixel__slug=tp_conv_stat['slug'])
+        conversion_goal = tp_conv_goals_by_slug[tp_conv_stat['slug']]
         ca_stat['conversion_goal_' + str(conversion_goal.id)] = tp_conv_stat['conversion_count']
+
+        ca_stats_by_breakdown[key] = ca_stat
 
     result = ca_stats_by_breakdown.values()
     if breakdown:
