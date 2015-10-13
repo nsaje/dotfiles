@@ -7,7 +7,8 @@ oneApp.directive('zemFilter', ['config', function(config) {
         templateUrl: '/partials/zem_filter.html',
         scope: {
             hasPermission: '=zemHasPermission',
-            isPermissionInternal: '=zemIsPermissionInternal'
+            isPermissionInternal: '=zemIsPermissionInternal',
+            enablePublisherFilter: '=enablePublisherFilter '
         },
         link: function ($scope, element) {
             element.on('click', function(e) {

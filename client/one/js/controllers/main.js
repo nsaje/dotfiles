@@ -36,6 +36,7 @@ oneApp.controller('MainCtrl',
     $scope.inputDateFormat = 'M/D/YYYY';
     $scope.maxDate = zemMoment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
+    $scope.enablePublisherFilter = false;
 
     $scope.remindToAddBudget = $q.defer(); 
 
@@ -254,6 +255,10 @@ oneApp.controller('MainCtrl',
 
     $scope.setAdGroup = function (adGroup) {
         $scope.adGroup = adGroup;
+    };
+
+    $scope.setPublisherFilterVisible = function (visible) {
+       $scope.enablePublisherFilter = visible;
     };
 
     $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {

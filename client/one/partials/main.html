@@ -55,7 +55,7 @@
                     <input type="daterange" class="form-control" ng-model="dateRange" max-date="{{ maxDateStr }}" format="{{ inputDateFormat }}" ranges="{{ dateRanges }}" opens="left">
                 </div>
             </form>
-            <zem-filter zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"></zem-filter>
+            <zem-filter zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal" enable-publisher-filter=enablePublisherFilter></zem-filter>
             <div ui-view></div>
         </div>
 

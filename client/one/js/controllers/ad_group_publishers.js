@@ -12,15 +12,16 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-cost';
-
     $scope.sizeRange = [5, 10, 20, 50];
     $scope.size = $scope.sizeRange[0];
     $scope.pagination = {
         currentPage: 1
     };
 
+
     var userSettings = zemUserSettings.getInstance($scope, 'adGroupPublishers');
 
+    $scope.setPublisherFilterVisible(true);
     $scope.selectionMenuConfig = {};
     // selection settings - all or specific publishers can be selected
     $scope.selectedAll = false;
@@ -480,6 +481,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         getTableData();
         getDailyStats();
+
+        $scope.enablePublisherFilter = true;
     };
 
 

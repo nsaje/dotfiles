@@ -41,14 +41,13 @@
                     <label><input type="checkbox" ng-model="showArchivedSelected">Show archived items</label>
                 </div>
             </li>
-
-            <li ng-show="{{publisher-filter}} && hasPermission('zemauth.can_see_publisher_blacklist_status')">
+            <li ng-show="enablePublisherFilter && hasPermission('zemauth.can_see_publisher_blacklist_status')">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_see_publisher_blacklist_status')" popover-placement="left"></zem-internal-feature>
                 <div class="title">Filter by Publisher Status</div>
                 <div class="radio">
-                    <label><input type="radio" ng-model="showPublishers">Show all publishers</label>
-                    <label><input type="radio" ng-model="showPublishers">Show only active publishers</label>
-                    <label><input type="radio" ng-model="showPublishers">Show only blacklisted publishers</label>
+                    <label><input name="showPublishers" type="radio" ng-model="showPublishers" class="ng-touched">Show all publishers</label>
+                    <label><input name="showPublishers" type="radio" ng-model="showPublishers">Show only active publishers</label>
+                    <label><input name="showPublishers" type="radio" ng-model="showPublishers">Show only blacklisted publishers</label>
                 </div>
             </li>
 
