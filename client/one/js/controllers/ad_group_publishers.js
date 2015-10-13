@@ -168,7 +168,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             unselectable: true,
             order: false,
             selectCallback: $scope.selectedPublisherChanged,
-            disabled: false
+            disabled: false,
             selectionMenuConfig: $scope.selectionMenuConfig
         },    
         {
