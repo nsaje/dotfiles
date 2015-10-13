@@ -5,17 +5,6 @@
 
     <div class="section table-ad-group-sources">
         <div class="button-bar">
-            <div class="button-bar-item" ng-show="hasPermission('zemauth.can_modify_publisher_blacklist_status')">
-                <zem-dropdown
-                   zem-placeholder="Bulk Actions"
-                   zem-on-select="executeBulkAction(selected)"
-                   zem-disabled-title="At least one Publisher has to be selected before using Bulk Actions."
-                   zem-check-disabled="!isAnythingSelected()"
-                   zem-dropdown-options="bulkActions"
-                   zem-css-class="show-rows">
-                </zem-dropdown>
-            </div>
-
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories"></zem-custom-table-cols>
 
             <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
