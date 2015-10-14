@@ -114,7 +114,7 @@ class ApiContentAdsQueryTest(TestCase):
             'bounce_rate': 100.0
         })
 
-        sql_constraints = ['adgroup_id=', '"date" <=', '"date" >=']
+        sql_constraints = ['adgroup_id=', '"date"<=', '"date">=']
 
         self.check_breakdown(mock_cursor, breakdown)
         self.check_constraints(mock_cursor, sql_constraints)
@@ -129,7 +129,7 @@ class ApiContentAdsQueryTest(TestCase):
         breakdown = ['content_ad']
 
         api_contentads.query(start_date, end_date, breakdown=breakdown, **constraints)
-        sql_constraints = ['adgroup_id=', '"date" <=', '"date" >=']
+        sql_constraints = ['adgroup_id=', '"date"<=', '"date">=']
 
         self.check_breakdown(mock_cursor, breakdown)
         self.check_constraints(mock_cursor, sql_constraints)
@@ -143,7 +143,7 @@ class ApiContentAdsQueryTest(TestCase):
         end_date = datetime.date(2015, 2, 2)
         breakdown = ['date']
         api_contentads.query(start_date, end_date, breakdown=breakdown, **constraints)
-        sql_constraints = ['adgroup_id=', '"date" <=', '"date" >=']
+        sql_constraints = ['adgroup_id=', '"date"<=', '"date">=']
 
         self.check_breakdown(mock_cursor, breakdown)
         self.check_constraints(mock_cursor, sql_constraints)
@@ -156,7 +156,7 @@ class ApiContentAdsQueryTest(TestCase):
         start_date = datetime.date(2015, 2, 1)
         end_date = datetime.date(2015, 2, 2)
         api_contentads.query(start_date, end_date, breakdown=[], **constraints)
-        sql_constraints = ['date=', '"date" <=', '"date" >=']
+        sql_constraints = ['date=', '"date"<=', '"date">=']
 
         self.check_constraints(mock_cursor, sql_constraints)
         self.check_aggregations(mock_cursor)
@@ -166,7 +166,7 @@ class ApiContentAdsQueryTest(TestCase):
         start_date = datetime.date(2015, 2, 1)
         end_date = datetime.date(2015, 2, 2)
         api_contentads.query(start_date, end_date, breakdown=[], ignore_diff_rows=True, **constraints)
-        sql_constraints = ['"date" <=', '"date" >=', 'content_ad_id!=']
+        sql_constraints = ['"date"<=', '"date">=', 'content_ad_id!=']
 
         self.check_constraints(mock_cursor, sql_constraints)
         self.check_aggregations(mock_cursor)

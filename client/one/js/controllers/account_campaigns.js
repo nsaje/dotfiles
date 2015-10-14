@@ -266,8 +266,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
                         } else {
                             $state.go('main.campaigns.settings', {id: campaignData.id});
                         }
-                        
-
                     }
                 });
             },

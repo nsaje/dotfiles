@@ -179,6 +179,118 @@ def execute_multi_insert_sql(cursor, table, fields_sql, all_row_tuples, max_at_a
         cursor.execute(statement, row_tuples_flat)
 
 
+class RSQ(object):
+    '''
+    Used for constructing the WHERE filter of the query that supports AND, OR and NOT,
+    similar to django Q (https://github.com/django/django/blob/master/django/db/models/query_utils.py)
+    '''
+
+    AND = ' AND '
+    OR = ' OR '
+
+    def __init__(self, *args, **kwargs):
+        self.negate = False
+        self.join_operator = self.AND
+        self.children = list(args) + list(kwargs.iteritems())
+
+    def _combine(self, other, join_operator):
+        parent = type(self)(*[self, other])
+        parent.join_operator = join_operator
+        return parent
+
+    def __and__(self, other):
+        return self._combine(other, self.AND)
+
+    def __or__(self, other):
+        return self._combine(other, self.OR)
+
+    def __invert__(self):
+        self.negate = not self.negate
+        return self
+
+    def expand(self, rs_model):
+        parts = []
+        params = []
+
+        for child in self.children:
+            if isinstance(child, type(self)):
+                child_parts, child_params = child.expand(rs_model)
+            else:
+                child_parts, child_params = self._generate_sql(child, rs_model)
+
+            parts.append(child_parts)
+            params.extend(child_params)
+
+        ret = '(' + self.join_operator.join(parts) + ')'
+        if self.negate:
+            ret = 'NOT ' + ret
+
+        return ret, params
+
+    def _prepare_constraint(self, constraint, rs_model):
+        constraint_name, value = constraint
+
+        parts = constraint_name.split("__")
+        field_name_app = parts[0]
+        if is_json_field(field_name_app):
+            raise exc.ReportsQueryError("Json fields not supported in constraints: {}".format(field_name_app))
+        if field_name_app not in rs_model.constraints_fields_app:
+            raise exc.ReportsQueryError("Unsupported field constraint fields: {}".format(field_name_app))
+        field_name_sql = rs_model.by_app_mapping[field_name_app]['sql']
+
+        if len(parts) == 2:
+            operator = parts[1]
+        else:
+            operator = "eq"
+
+        return field_name_sql, operator, value
+
+    def _generate_sql(self, constraint, rs_model):
+        field_name, operator, value = self._prepare_constraint(constraint, rs_model)
+        if operator == "lte":
+            return '"{}"<=%s'.format(field_name), [value]
+        elif operator == "lt":
+            return '"{}"<%s'.format(field_name), [value]
+        elif operator == "gte":
+            return '"{}">=%s'.format(field_name), [value]
+        elif operator == "gt":
+            return '"{}">%s'.format(field_name), [value]
+        elif operator == "eq":
+            if is_collection(value):
+                if value:
+                    return '{} IN ({})'.format(field_name, ','.join(["%s"] * len(value))), value
+                else:
+                    return 'FALSE', []
+            else:
+                return '{}=%s'.format(field_name), [value]
+        elif operator == "neq":
+            if is_collection(value):
+                if value:
+                    return '{} NOT IN ({})'.format(field_name, ','.join(["%s"] * len(value))), value
+                else:
+                    return 'TRUE', []
+            else:
+                return '{}!=%s'.format(field_name), [value]
+        else:
+            raise Exception("Unknown constraint type: {}".format(operator))
+
+
+def is_json_field(field_name):
+    return JSON_KEY_DELIMITER in field_name
+
+
+def extract_json_key_parts(field_name):
+    return field_name.split(JSON_KEY_DELIMITER, 1)
+
+
+def replace_json_key(field_name, json_key, rep):
+    return field_name.replace(JSON_KEY_DELIMITER + json_key, JSON_KEY_DELIMITER + str(rep))
+
+
+def append_json_key(field_name, json_key):
+    return field_name + JSON_KEY_DELIMITER + json_key
+
+
 class RSModel(object):
     FIELDS = []
     TABLE_NAME = "test_table"
@@ -197,25 +309,13 @@ class RSModel(object):
         # by default all fields are allowed as constraints
         self.constraints_fields_app = set(self.by_app_mapping.keys())
 
-    def _is_json_field(self, field_name):
-        return JSON_KEY_DELIMITER in field_name
-
-    def _extract_json_key_parts(self, field_name):
-        return field_name.split(JSON_KEY_DELIMITER, 1)
-
-    def _replace_json_key(self, field_name, json_key, rep):
-        return field_name.replace(JSON_KEY_DELIMITER + json_key, JSON_KEY_DELIMITER + str(rep))
-
-    def _append_json_key(self, field_name, json_key):
-        return field_name + JSON_KEY_DELIMITER + json_key
-
     def _translate_app_field_to_sql(self, field_name):
-        if not self._is_json_field(field_name):
+        if not is_json_field(field_name):
             return self.by_app_mapping[field_name]['sql']
 
         # for json fields the key part needs to be ignored in order to get the correct matching sql field
-        field_part, json_key = self._extract_json_key_parts(field_name)
-        return self._append_json_key(self.by_app_mapping[field_part]['sql'], json_key)
+        field_part, json_key = extract_json_key_parts(field_name)
+        return append_json_key(self.by_app_mapping[field_part]['sql'], json_key)
 
     def translate_app_fields(self, field_names):
         return [self._translate_app_field_to_sql(field_name) for field_name in field_names]
@@ -224,7 +324,7 @@ class RSModel(object):
         if "calc" in desc:
             return desc["calc"] + " AS \"" + field_name + "\""
 
-        if self._is_json_field(field_name):
+        if is_json_field(field_name):
             raise exc.ReportsQueryError('json field has to have calc defined')
 
         return '"' + field_name + '"'
@@ -236,17 +336,17 @@ class RSModel(object):
         json_fields = []
 
         for field_name in field_names:
-            if not self._is_json_field(field_name):
+            if not is_json_field(field_name):
                 desc = self.by_sql_mapping[field_name]
                 fields.append(self._get_expanded_field_sql(field_name, desc))
                 continue
 
-            field_part, json_key = self._extract_json_key_parts(field_name)
+            field_part, json_key = extract_json_key_parts(field_name)
             desc = self.by_sql_mapping[field_part]
 
             # store the json field name in the mapping and generate sql column name of format
             # {field_name}{JSON_KEY_DELIMITER}{index_to_mapping}
-            field_name = self._replace_json_key(field_name, json_key, len(json_fields))
+            field_name = replace_json_key(field_name, json_key, len(json_fields))
             json_fields.append(json_key)
 
             field_expanded = self._get_expanded_field_sql(field_name, desc)
@@ -257,7 +357,7 @@ class RSModel(object):
 
     def translate_breakdown_fields(self, breakdown_fields):
         unknown_fields = set(breakdown_fields) - self.ALLOWED_BREAKDOWN_FIELDS_APP
-        if any(self._is_json_field(field_name) for field_name in breakdown_fields):
+        if any(is_json_field(field_name) for field_name in breakdown_fields):
             raise exc.ReportsQueryError('Json fields are not supported in breakdown: {}'.format(str(breakdown_fields)))
         if unknown_fields:
             raise exc.ReportsQueryError('Invalid breakdowns: {}'.format(str(unknown_fields)))
@@ -290,72 +390,14 @@ class RSModel(object):
 
         return order_fields_out
 
-    def translate_constraints(self, constraints):
-        constraint_tuples = []
-        for constraint_name, val in constraints.iteritems():
-            parts = constraint_name.split("__")
-            field_name_app = parts[0]
-            if self._is_json_field(field_name_app):
-                raise exc.ReportsQueryError("Json fields not supported in constraints: {}".format(field_name_app))
-            if field_name_app not in self.constraints_fields_app:
-                raise exc.ReportsQueryError("Unsupported field constraint fields: {}".format(field_name_app))
-            field_name_sql = self.by_app_mapping[field_name_app]['sql']
-
-            if len(parts) == 2:
-                operator = parts[1]
-            else:
-                operator = "eq"
-
-            constraint_tuples.append((field_name_sql, operator, val))
-        return constraint_tuples
-
     def get_returned_fields(self, returned_fields):
         return self.expand_returned_sql_fields(self.translate_app_fields(returned_fields))
 
-    def constraints_to_str(self, constraints):
-        constraints_tuples = self.translate_constraints(constraints)
-
-        # returns a string and list of params
-        result = []
-        params = []
-
-        for field_name, operator, value in constraints_tuples:
-            if operator == "lte":
-                result.append('"{}" <= %s'.format(field_name))
-                params.append(value)
-            elif operator == "gte":
-                result.append('"{}" >= %s'.format(field_name))
-                params.append(value)
-            elif operator == "eq":
-                if is_collection(value):
-                    if value:
-                        result.append('{} IN ({})'.format(field_name, ','.join(["%s"] * len(value))))
-                        params.extend(value)
-                    else:
-                        result.append('FALSE')
-                else:
-                    result.append('{}=%s'.format(field_name))
-                    params.append(value)
-            elif operator == "neq":
-                if is_collection(value):
-                    if value:
-                        result.append('{} NOT IN ({})'.format(field_name, ','.join(["%s"] * len(value))))
-                        params.extend(value)
-                    else:
-                        result.append('TRUE')
-                else:
-                    result.append('{}!=%s'.format(field_name))
-                    params.append(value)
-            else:
-                raise Exception("Unknown constraint type: {}".format(field_name))
-
-        return " AND ".join(result), params
-
     def _prepare_select_query(self, returned_fields, breakdown_fields, order_fields, offset, limit,
-                              constraints, having_constraints):
+                              constraints, constraints_list, having_constraints):
         # Takes app-based fields and first checks & translates them and then creates a query
         # first translate constraints into tuples, then create a single constraints str
-        (constraint_str, constraint_params) = self.constraints_to_str(constraints)
+        (constraint_str, constraint_params) = RSQ(*constraints_list, **constraints).expand(self)
         breakdown_fields = self.translate_breakdown_fields(breakdown_fields)
         order_fields = self.translate_order_fields(order_fields)
         returned_fields, returned_params, json_fields = self.get_returned_fields(returned_fields)
@@ -407,7 +449,7 @@ class RSModel(object):
     def map_result_to_app(self, row, json_fields):
         result = {}
         for field_name, val in row.items():
-            if not self._is_json_field(field_name):
+            if not is_json_field(field_name):
                 field_desc = self.by_sql_mapping[field_name]
                 newname = field_desc['app']
                 output_function = field_desc['out']
@@ -416,10 +458,10 @@ class RSModel(object):
                 continue
 
             # get the matching json field back from the mapping by index that is in the sql column name
-            field_part, json_key = self._extract_json_key_parts(field_name)
+            field_part, json_key = extract_json_key_parts(field_name)
             field_desc = self.by_sql_mapping[field_part]
 
-            newname = self._append_json_key(field_desc['app'], json_fields[int(json_key)])
+            newname = append_json_key(field_desc['app'], json_fields[int(json_key)])
             output_function = field_desc['out']
             newval = output_function(val)
             result[newname] = newval
@@ -431,7 +473,7 @@ class RSModel(object):
     # Default cursor can be obtained by get_cursor()
 
     def execute_select_query(self, cursor, returned_fields, breakdown_fields, order_fields, offset, limit, constraints,
-                             having_constraints=None):
+                             constraints_list=None, having_constraints=None):
 
         (statement, params, json_fields) = self._prepare_select_query(
             returned_fields,
@@ -440,6 +482,7 @@ class RSModel(object):
             offset,
             limit,
             constraints,
+            constraints_list if constraints_list else [],
             having_constraints)
 
         cursor.execute(statement, params)
@@ -454,7 +497,7 @@ class RSModel(object):
     def execute_delete(self, cursor, constraints=None):
         if not constraints:
             raise exc.ReportsQueryError("Delete query without specifying constraints")
-        (constraint_str, constraint_params) = self.constraints_to_str(constraints)
+        (constraint_str, constraint_params) = RSQ(**constraints).expand(self)
 
         statement = 'DELETE FROM "{table}" WHERE {constraint_str}'.format(table=self.TABLE_NAME,
                                                                           constraint_str=constraint_str)
