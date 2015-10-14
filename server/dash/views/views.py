@@ -1040,8 +1040,15 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         #    pass
         publishers = result
 
+
+        existing_blacklisted_publishers = set(models.PublisherBlacklist.objects.filter(
+            ad_group=ad_group
+        ).values_list('name', 'ad_group__id', 'source__tracking_slug'))
+
         blacklist_list = []
         source_cache = {}
+        failed_publisher_mappings = set([])
+        count_failed_publisher = 0
         for publisher in publishers:
             domain = publisher['domain']
             source_slug = publisher['exchange']
@@ -1049,7 +1056,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 source_cache[source_slug] = models.Source.objects.filter(tracking_slug=source_slug).first()
 
             if not source_cache[source_slug]:
-                logger.warning('Failed mapping publisher source slug {slug}'.format(slug=source_slug))
+                failed_publisher_mappings.add(source_slug)
+                count_failed_publisher += 1
+                continue
+
+            if (domain, ad_group.id, source_cache[source_slug].tracking_slug,) in existing_blacklisted_publishers:
                 continue
 
             # store blacklisted publishers and push to other sources
@@ -1059,6 +1070,12 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                     ad_group=ad_group,
                     source=source_cache[source_slug]
                 )
+            )
+
+        if len(failed_publisher_mappings) > 0:
+            logger.warning('Failed mapping {count} publisher source slugs {slug}'.format(
+                count=count_failed_publisher,
+                slug=','.join(failed_publisher_mappings))
             )
 
         if blacklist_list:

@@ -32,7 +32,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
     }, {
         name: 'Re-enable',
-        value: 'activate',
+        value: 'enable',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
     }];
 
@@ -118,7 +118,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         var publishersSelected = [],
             publishersNotSelected = [];
 
-        console.log("a");
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
             if ($scope.selectedPublisherStatus[publisherId] !== undefined) {
                 if ($scope.selectedPublisherStatus[publisherId]["checked"]) {
@@ -310,8 +309,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
 
     var bulkUpdatePublishers = function (publishersSelected, publishersNotSelected, state) {
-        console.log("bulkUpdatePublishers")
-        console.log($state.params.id);
         api.adGroupPublishersState.save(
             $state.params.id,
             state,
