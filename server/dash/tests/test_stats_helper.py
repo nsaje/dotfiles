@@ -12,6 +12,7 @@ from zemauth.models import User
 
 def _update_with_defaults(ret, keys, defaults={}):
     # a value in defaults should be a list that included the value for each new row separately
+    # by default, the default value for inserted keys is 1
     if not keys:
         return ret
     defaults_counter = {k: 0 for k in defaults.keys()}
