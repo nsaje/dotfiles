@@ -11,6 +11,7 @@ from zemauth.models import User
 
 
 def _update_with_defaults(ret, keys, defaults={}):
+    # a value in defaults should be a list that included the value for each new row separately
     if not keys:
         return ret
     defaults_counter = {k: 0 for k in defaults.keys()}
@@ -67,7 +68,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
             }
         ]
         defaults = {'slug': [cg.pixel.slug for cg in conversion_goals]}
-        if self.use_separate_values_for_tp_conversions:
+        if self.use_separate_rows_for_tp_conversions:
             for b in set(breakdown) - set(['slug']):
                 defaults[b] = [9999 for cg in conversion_goals]
 
@@ -76,7 +77,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
         return touchpoint_conversion_stats
 
     def setUp(self):
-        self.use_separate_values_for_tp_conversions = False
+        self.use_separate_rows_for_tp_conversions = False
 
         self.superuser = User.objects.get(id=1)
         self.user = User.objects.get(id=2)
@@ -232,7 +233,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
         mock_ca_query.side_effect = self._get_content_ad_stats
         mock_tp_query.side_effect = self._get_touchpoint_conversion_stats
 
-        self.use_separate_values_for_tp_conversions = True
+        self.use_separate_rows_for_tp_conversions = True
         conversion_goals = models.ConversionGoal.objects.filter(pk__in=[1, 2])
         stats = stats_helper.get_stats_with_conversions(self.superuser, datetime.date(2015, 10, 1),
                                                         datetime.date(2015, 10, 31), breakdown=['ad_group'], order=[],
