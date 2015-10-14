@@ -769,6 +769,9 @@ class AdGroupSourcesExport(ExportApiView):
                 ('ctr', 'CTR')
             ])
 
+            for cg in conversion_goals:
+                fieldnames['conversion_goal_' + str(cg.id)] = cg.name
+
             content = export.get_csv_content(fieldnames, date_source_results)
             return self.create_csv_response(filename, content=content)
 
