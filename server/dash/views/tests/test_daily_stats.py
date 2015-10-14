@@ -20,7 +20,7 @@ class BaseDailyStatsTest(TestCase):
 
         self.client.login(username=self.user.email, password=password)
 
-        self.patcher = patch('dash.stats_helper.reports.api_contentads.query')
+        self.patcher = patch('dash.stats_helper.get_stats_with_conversions')
         self.mock_query = self.patcher.start()
 
         self.date = datetime.date(2015, 2, 22)
@@ -105,26 +105,24 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
         accounts_matcher = QuerySetMatcher(models.Account.objects.all().filter_by_user(self.user))
 
         self.mock_query.assert_any_call(
+            self.user,
             self.date,
             self.date,
             breakdown=['date'],
             order=['date'],
-            ignore_diff_rows=False,
-            conversion_goals=[],
-            account=accounts_matcher,
-            source=sources_matcher
+            conversion_goals=None,
+            constraints={'account': accounts_matcher, 'source': sources_matcher}
         )
 
         source_matcher = QuerySetMatcher(models.Source.objects.filter(pk=source_id))
         self.mock_query.assert_any_call(
+            self.user,
             self.date,
             self.date,
             breakdown=['date', 'source'],
             order=['date'],
-            ignore_diff_rows=False,
-            conversion_goals=[],
-            account=accounts_matcher,
-            source=source_matcher
+            conversion_goals=None,
+            constraints={'account': accounts_matcher, 'source': source_matcher}
         )
 
         source = models.Source.objects.get(pk=source_id)
@@ -145,25 +143,23 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
 
         matcher = QuerySetMatcher(models.Source.objects.all())
         self.mock_query.assert_any_call(
+            self.user,
             self.date,
             self.date,
             breakdown=['date'],
             order=['date'],
-            ignore_diff_rows=False,
-            conversion_goals=[],
-            account=1,
-            source=matcher
+            conversion_goals=None,
+            constraints={'account': 1, 'source': matcher},
         )
 
         self.mock_query.assert_any_call(
+            self.user,
             self.date,
             self.date,
             breakdown=['date', 'source'],
             order=['date'],
-            ignore_diff_rows=False,
-            conversion_goals=[],
-            account=1,
-            source_id=[source_id]
+            conversion_goals=None,
+            constraints={'account': 1, 'source_id': [source_id]}
         )
 
         source = models.Source.objects.get(pk=source_id)
@@ -182,25 +178,23 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
 
         matcher = QuerySetMatcher(models.Source.objects.all())
         self.mock_query.assert_any_call(
+            self.user,
             self.date,
             self.date,
             breakdown=['date'],
             order=['date'],
-            ignore_diff_rows=False,
-            conversion_goals=[],
-            account=1,
-            source=matcher
+            conversion_goals=None,
+            constraints={'account': 1, 'source': matcher}
         )
 
         self.mock_query.assert_any_call(
+            self.user,
             self.date,
             self.date,
             breakdown=['date', 'campaign'],
             order=['date'],
-            ignore_diff_rows=False,
-            conversion_goals=[],
-            account=1,
-            ad_group__campaign__id=[campaign_id]
+            conversion_goals=None,
+            constraints={'account': 1, 'ad_group__campaign__id': [campaign_id]}
         )
 
         campaign = models.Campaign.objects.get(pk=campaign_id)
@@ -220,26 +214,26 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
         )
 
         matcher = QuerySetMatcher(models.Source.objects.all())
+        conversion_goals = models.ConversionGoal.objects.filter(campaign_id=1)
+        conversion_goals_matcher = QuerySetMatcher(conversion_goals)
         self.mock_query.assert_any_call(
+            self.user,
             self.date,
             self.date,
             breakdown=['date'],
             order=['date'],
-            ignore_diff_rows=False,
-            conversion_goals=[],
-            campaign=1,
-            source=matcher
+            conversion_goals=conversion_goals_matcher,
+            constraints={'campaign': 1, 'source': matcher}
         )
 
         self.mock_query.assert_any_call(
+            self.user,
             self.date,
             self.date,
             breakdown=['date', 'source'],
             order=['date'],
-            ignore_diff_rows=False,
-            conversion_goals=[],
-            campaign=1,
-            source_id=[source_id]
+            conversion_goals=conversion_goals_matcher,
+            constraints={'campaign': 1, 'source_id': [source_id]}
         )
 
         source = models.Source.objects.get(pk=source_id)
@@ -257,26 +251,26 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
         )
 
         matcher = QuerySetMatcher(models.Source.objects.all())
+        conversion_goals = models.AdGroup.objects.get(id=1).campaign.conversiongoal_set.all()
+        conversion_goals_matcher = QuerySetMatcher(conversion_goals)
         self.mock_query.assert_any_call(
+            self.user,
             self.date,
             self.date,
             breakdown=['date'],
             order=['date'],
-            ignore_diff_rows=False,
-            conversion_goals=[],
-            campaign=1,
-            source=matcher
+            conversion_goals=conversion_goals_matcher,
+            constraints={'campaign': 1, 'source': matcher}
         )
 
         self.mock_query.assert_any_call(
+            self.user,
             self.date,
             self.date,
             breakdown=['date', 'ad_group'],
             order=['date'],
-            ignore_diff_rows=False,
-            conversion_goals=[],
-            campaign=1,
-            ad_group_id=[ad_group_id]
+            conversion_goals=conversion_goals_matcher,
+            constraints={'campaign': 1, 'ad_group_id': [ad_group_id]}
         )
 
         ad_group = models.AdGroup.objects.get(pk=ad_group_id)
@@ -296,27 +290,27 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
         )
 
         matcher = QuerySetMatcher(models.Source.objects.all())
+        conversion_goals = models.AdGroup.objects.get(id=1).campaign.conversiongoal_set.all()
+        conversion_goals_matcher = QuerySetMatcher(conversion_goals)
         self.mock_query.assert_any_call(
+            self.user,
             self.date,
             self.date,
             breakdown=['date'],
             order=['date'],
-            ignore_diff_rows=False,
-            conversion_goals=[],
-            ad_group=1,
-            source=matcher
+            conversion_goals=conversion_goals_matcher,
+            constraints={'ad_group': 1, 'source': matcher}
         )
 
         match_source = QuerySetMatcher(models.Source.objects.filter(pk=source_id))
         self.mock_query.assert_any_call(
+            self.user,
             self.date,
             self.date,
             breakdown=['date', 'source'],
             order=['date'],
-            ignore_diff_rows=False,
-            conversion_goals=[],
-            ad_group=1,
-            source=match_source
+            conversion_goals=conversion_goals_matcher,
+            constraints={'ad_group': 1, 'source': match_source}
         )
 
         source = models.Source.objects.get(pk=source_id)
