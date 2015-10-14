@@ -5,10 +5,10 @@ var Nav = function () {
 
 var Chart = function () {
     this.metric1Select = element(by.css('.select2-container.metric1 .select2-choice'));
-    this.metric1SelectOptions = element.all(by.css('.select2-drop.metric1 ul.select2-results li'));
+    this.metric1SelectOptions = element.all(by.css('.select2-container.metric1 .select2-drop ul.select2-results li'));
 
     this.metric2Select = element(by.css('.select2-container.metric2 .select2-choice'));
-    this.metric2SelectOptions = element.all(by.css('.select2-drop.metric2 ul.select2-results li'));
+    this.metric2SelectOptions = element.all(by.css('.select2-container.metric2 .select2-drop ul.select2-results li'));
 
     this.container = element(by.css('.page .section:first-child'));
     this.hideButton = element(by.id('chart-btn'));

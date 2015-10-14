@@ -196,7 +196,7 @@ def _join_with_conversions(breakdown, report_results, conversion_results):
     return results.values()
 
 
-def query(start_date, end_date, breakdown=None, order=None, ignore_diff_rows=False, **constraints):
+def query(start_date, end_date, breakdown=None, order=None, ignore_diff_rows=False, conversion_goals=[], **constraints):
     report_results = _get_report_results(start_date, end_date, breakdown, **constraints)
     conversion_results = _get_conversion_results(start_date, end_date, breakdown, **constraints)
     results = _join_with_conversions(breakdown, report_results, conversion_results)
