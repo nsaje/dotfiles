@@ -47,7 +47,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 // property on an object on scope
                 // (https://github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
                 $scope.metric1 = newValue;
-            });
+            }, true);
 
             $scope.$watch('metrics.metric2', function(newValue) {
                 // we use $scope.metrcis because ui-select doesn't work well with
@@ -55,7 +55,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 // property on an object on scope
                 // (https://github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
                 $scope.metric2 = newValue;
-            });
+            }, true);
 
             $scope.$watch('metricOptions', function(newValue) {
                 $scope.metric2Options = getMetric2Options($scope.metricOptions);
