@@ -1023,10 +1023,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
         select_all = body["select_all"]
         publishers = []
-        publishers = []
         if select_all:
             # get all publishers from date range with statistics
-            # (they represent all selection)
+            # (they represent select-all)
             constraints = {
                 'ad_group': ad_group.id,
             }
@@ -1074,7 +1073,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             if publisher_tuple in ignored_publishers:
                 continue
 
-
             publishers_to_add.add((domain, ad_group.id, source_cache[source_slug].tracking_slug,))
             # store blacklisted publishers and push to other sources
             blacklist_list.append(
@@ -1106,10 +1104,23 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             else:
                 raise Exception("Not implemented")
 
+        self._add_to_history(request, ad_group, state, blacklist_list)
         response = {
             "success": True,
         }
         return self.create_api_response(response)
+
+    def _add_to_history(self, request, ad_group, state, blacklist):
+        changes_text = '{action} the following publishers {pubs}.'.format(
+            action="Blacklisted" if state == constants.PublisherStatus.BLACKLISTED else "Enabled",
+            pubs=",".join( ("{pub} on {slug}".format(pub=pub_bl.name, slug=pub_bl.source.name)
+                 for pub_bl in blacklist)
+            )
+        )
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.changes_text = changes_text
+        settings.save(request)
+        email_helper.send_ad_group_notification_email(ad_group, request)
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
