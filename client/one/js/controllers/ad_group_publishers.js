@@ -44,7 +44,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.selectedPublisherChanged = function(row, checked) {
         $scope.selectedPublisherStatus[$scope.calculatePublisherHash(row)] = {
             "checked": checked,
-            "source_id": row['exchange'],
+            "source": row['exchange'],
             "domain": row['domain']
         }
 
@@ -318,7 +318,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             publishersNotSelected,
             $scope.selectedAll
         ).then(function () {
-            $scope.pollTableUpdates();
+            // TODO
+            // $scope.pollTableUpdates();
         });
     };
 

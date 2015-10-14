@@ -1018,9 +1018,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         end_date = helpers.parse_datetime(body.get('end_date'))
         state = int(body.get('state'))
 
-        # publishers_selected = body["publishers_selected"]
-        # publishers_not_selected = body["publisherIdsNotSelected"]
+        publishers_selected = body["publishers_selected"]
+        publishers_not_selected = body["publishers_not_selected"]
+
         select_all = body["select_all"]
+        publishers = []
         publishers = []
         if select_all:
             # get all publishers from date range with statistics
@@ -1029,29 +1031,31 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 'ad_group': ad_group.id,
             }
             breakdown = ['exchange', 'domain']
-            result = reports.api_publishers.query_publisher_list(
+            publishers = reports.api_publishers.query_publisher_list(
                 start_date,
                 end_date,
                 breakdown_fields=breakdown,
                 constraints=constraints
             )
 
-        #if publishers_selected:
-        #    pass
-        publishers = result
-
-
         existing_blacklisted_publishers = set(models.PublisherBlacklist.objects.filter(
             ad_group=ad_group
         ).values_list('name', 'ad_group__id', 'source__tracking_slug'))
+
+        ignored_publishers = set( [(pub['domain'], ad_group.id, pub['source'],)
+            for pub in publishers_not_selected]
+        )
+
+        publishers_to_add = set([])
 
         blacklist_list = []
         source_cache = {}
         failed_publisher_mappings = set([])
         count_failed_publisher = 0
-        for publisher in publishers:
+        for publisher in publishers + publishers_selected:
             domain = publisher['domain']
-            source_slug = publisher['exchange']
+            # exchange in redshift but source from client selected publishers
+            source_slug = publisher.get('exchange') or publisher.get('source')
             if source_slug not in source_cache:
                 source_cache[source_slug] = models.Source.objects.filter(tracking_slug=source_slug).first()
 
@@ -1060,9 +1064,18 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 count_failed_publisher += 1
                 continue
 
-            if (domain, ad_group.id, source_cache[source_slug].tracking_slug,) in existing_blacklisted_publishers:
+            publisher_tuple = (domain, ad_group.id, source_cache[source_slug].tracking_slug,)
+            if publisher_tuple in publishers_to_add:
                 continue
 
+            if publisher_tuple in existing_blacklisted_publishers:
+                continue
+
+            if publisher_tuple in ignored_publishers:
+                continue
+
+
+            publishers_to_add.add((domain, ad_group.id, source_cache[source_slug].tracking_slug,))
             # store blacklisted publishers and push to other sources
             blacklist_list.append(
                 models.PublisherBlacklist(
