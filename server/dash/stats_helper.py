@@ -45,7 +45,8 @@ def get_stats_with_conversions(
         report_conversion_goals = [cg for cg in conversion_goals if cg.type != constants.ConversionGoalType.PIXEL]
         touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == constants.ConversionGoalType.PIXEL]
 
-    content_ad_stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
+    reports_api = get_reports_api_module(user)
+    content_ad_stats = reports.api_helpers.filter_by_permissions(reports_api.query(
         start_date,
         end_date,
         order=order,
@@ -63,6 +64,10 @@ def get_stats_with_conversions(
         for conversion_goal in report_conversion_goals:
             key = conversion_goal.get_stats_key()
             ca_stat['conversion_goal_' + str(conversion_goal.id)] = ca_stat.get('conversions', {}).get(key)
+
+        if 'conversions' in ca_stat:
+            # mapping done, this is not needed anymore
+            del ca_stat['conversions']
 
     if not can_see_conversions or not touchpoint_conversion_goals:
         result = ca_stats_by_breakdown.values()
@@ -83,15 +88,14 @@ def get_stats_with_conversions(
     tp_conv_goals_by_slug = {cg.pixel.slug: cg for cg in touchpoint_conversion_goals}
     for tp_conv_stat in touchpoint_conversion_stats:
         key = tuple(tp_conv_stat[b] for b in breakdown)
+        conversion_goal = tp_conv_goals_by_slug[tp_conv_stat['slug']]
+
         if key in ca_stats_by_breakdown:
             ca_stats_by_breakdown[key]['conversion_goal_' + str(conversion_goal.id)] = tp_conv_stat['conversion_count']
             continue
 
-        ca_stat = {b: tp_conv_stat[b] for b in key}
-
-        conversion_goal = tp_conv_goals_by_slug[tp_conv_stat['slug']]
+        ca_stat = {b: tp_conv_stat[b] for b in breakdown}
         ca_stat['conversion_goal_' + str(conversion_goal.id)] = tp_conv_stat['conversion_count']
-
         ca_stats_by_breakdown[key] = ca_stat
 
     result = ca_stats_by_breakdown.values()
