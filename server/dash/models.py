@@ -1614,7 +1614,7 @@ class PublisherBlacklist(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, blank=False, null=False)
     ad_group = models.ForeignKey(AdGroup, null=False, related_name='ad_group', on_delete=models.PROTECT)
-    source = models.ForeignKey(AdGroup, null=False, on_delete=models.PROTECT)
+    source = models.ForeignKey(Source, null=False, on_delete=models.PROTECT)
 
     class Meta:
         unique_together = (('name', 'ad_group', 'source'), )

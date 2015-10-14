@@ -1007,61 +1007,63 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 class PublishersBlacklistStatus(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_publisher_blacklist_state_post')
-    def put(self, request, ad_group_id):
+    def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         body = json.loads(request.body)
 
-        state = int(body[state])
-
         start_date = helpers.parse_datetime(body.get('start_date'))
         end_date = helpers.parse_datetime(body.get('end_date'))
+        state = int(body.get('state'))
 
         # publishers_selected = body["publishers_selected"]
         # publishers_not_selected = body["publisherIdsNotSelected"]
-        select_all = body[selectedAll]
-
-        if select_all:
-
-            # get all publishers from date range with statistics
-            # (they represent all)
-            pass
-
-        if publishers_selected:
-            pass
-
-        # izved query
-
+        select_all = body["select_all"]
         publishers = []
+        if select_all:
+            # get all publishers from date range with statistics
+            # (they represent all selection)
+            constraints = {
+                'ad_group': ad_group.id,
+            }
+            breakdown = ['exchange', 'domain']
+            result = reports.api_publishers.query_publisher_list(
+                start_date,
+                end_date,
+                breakdown_fields=breakdown,
+                constraints=constraints
+            )
 
-        constraints = {
-            "ad_group_id": ad_group_id
-        }
-
-        result = reports.publishers_api.query(start_date, end_date, **constraints)
+        #if publishers_selected:
+        #    pass
         publishers = result
 
         blacklist_list = []
         source_cache = {}
         for publisher in publishers:
             domain = publisher['domain']
-            source_id = publisher['source']
-            if source_id not in source_cache:
-                source_cache[source_id] = models.Source.objects.get(pk=source_id)
+            source_slug = publisher['exchange']
+            if source_slug not in source_cache:
+                source_cache[source_slug] = models.Source.objects.filter(tracking_slug=source_slug).first()
+
+            if not source_cache[source_slug]:
+                logger.warning('Failed mapping publisher source slug {slug}'.format(slug=source_slug))
+                continue
+
             # store blacklisted publishers and push to other sources
             blacklist_list.append(
                 models.PublisherBlacklist(
                     name=domain,
                     ad_group=ad_group,
-                    source=source_cache[source_id]
+                    source=source_cache[source_slug]
                 )
             )
 
         if blacklist_list:
             if state == constants.PublisherStatus.BLACKLISTED:
-                models.Source.objects.bulk_create(blacklist_list)
+                models.PublisherBlacklist.objects.bulk_create(blacklist_list)
             elif state == constants.PublisherStatus.ENABLED:
                 query_set = models.PublisherBlacklist.objects.none()
                 for pub_blacklist in blacklist_list:

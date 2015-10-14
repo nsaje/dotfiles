@@ -64,6 +64,25 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
         return results[0]
 
 
+def query_publisher_list(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}):
+    constraints = copy.copy(constraints)
+    constraints['date__gte'] = start_date
+    constraints['date__lte'] = end_date
+    cursor = redshift.get_cursor()
+    no_returned_fields = []
+    results = rs_pub.execute_select_query(
+        cursor,
+        no_returned_fields,
+        breakdown_fields,
+        order_fields,
+        offset,
+        limit,
+        constraints)
+
+    cursor.close()
+    return results
+
+
 def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts, total_cost):
     # TODO: Execute this inside a transaction
     fields_sql = ['date', 'adgroup_id', 'exchange', 'domain', 'name', 'clicks', 'cost_micro', 'ob_section_id']

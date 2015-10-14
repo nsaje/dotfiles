@@ -36,8 +36,13 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
     }];
 
+    $scope.calculatePublisherHash = function(row) {
+        // very simplistic hash to allow blacklist selection
+        return row['exchange'] + ' ' + row['domain'];
+    };
+
     $scope.selectedPublisherChanged = function(row, checked) {
-        $scope.selectedPublisherStatus[row.id] = {
+        $scope.selectedPublisherStatus[$scope.calculatePublisherHash(row)] = {
             "checked": checked,
             "source_id": row['exchange'],
             "domain": row['domain']
@@ -79,8 +84,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.updatePublisherSelection = function() {
         $scope.rows.forEach(function(row) {
-            if ($scope.selectedPublisherStatus[row.id]["checked"] !== undefined) {
-                row.publisher_selected = $scope.selectedPublisherStatus[row.id]["checked"];
+            var row_id = $scope.calculatePublisherHash(row);
+            if ($scope.selectedPublisherStatus[row_id] !== undefined) {
+                row.publisher_selected = $scope.selectedPublisherStatus[row_id]["checked"];
             } else if ($scope.selectedAll) {
                 row.publisher_selected = true;
             } else {
@@ -112,11 +118,14 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         var publishersSelected = [],
             publishersNotSelected = [];
 
-        Object.keys($scope.selectedContentAdsStatus).forEach(function (publisherId) {
-            if ($scope.selectedPublisherStatus[publisherId]["checked"]) {
-                publishersSelected.push($scope.selectedPublisherStatus[publisherId]);
-            } else {
-                publishersNotSelected.push($scope.selectedPublisherStatus[publisherId]);
+        console.log("a");
+        Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
+            if ($scope.selectedPublisherStatus[publisherId] !== undefined) {
+                if ($scope.selectedPublisherStatus[publisherId]["checked"]) {
+                    publishersSelected.push($scope.selectedPublisherStatus[publisherId]);
+                } else {
+                    publishersNotSelected.push($scope.selectedPublisherStatus[publisherId]);
+                }
             }
         });
 
@@ -125,14 +134,14 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 bulkUpdatePublishers(
                     publishersSelected,
                     publishersNotSelected,
-                    constants.publisherState.BLACKLISTED
+                    constants.publisherStatus.BLACKLISTED
                 );
                 break;
             case 'enable':
                 bulkUpdatePublishers(
                     publishersSelected,
                     publishersNotSelected,
-                    constants.AdSourceState.ACTIVE
+                    constants.publisherStatus.ENABLED
                 );
                 break;
         }
@@ -301,13 +310,15 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
 
     var bulkUpdatePublishers = function (publishersSelected, publishersNotSelected, state) {
-        updatePublisherStates(state);
-
+        console.log("bulkUpdatePublishers")
+        console.log($state.params.id);
         api.adGroupPublishersState.save(
             $state.params.id,
             state,
-            publisherIdsSelected,
-            publisherIdsNotSelected,
+            $scope.dateRange.startDate, 
+            $scope.dateRange.endDate, 
+            publishersSelected,
+            publishersNotSelected,
             $scope.selectedAll
         ).then(function () {
             $scope.pollTableUpdates();
