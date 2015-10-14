@@ -1594,6 +1594,9 @@ class ConversionGoal(models.Model):
 
         return prefix + '__' + self.goal_id
 
+    def get_view_key(self):
+        return 'conversion_goal_' + str(self.id)
+
 
 class DemoAdGroupRealAdGroup(models.Model):
     demo_ad_group = models.OneToOneField(AdGroup, on_delete=models.PROTECT, related_name='+')
