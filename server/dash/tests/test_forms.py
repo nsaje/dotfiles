@@ -140,7 +140,7 @@ class ConversionGoalFormTestCase(TestCase):
         data = {
             'name': 'name',
             'goal_id': '1',
-            'conversion_window': 7,
+            'conversion_window': 168,
         }
 
         form = forms.ConversionGoalForm(data, campaign_id=1)
@@ -176,7 +176,7 @@ class ConversionGoalFormTestCase(TestCase):
         self.assertEqual(
             {'conversion_window': ['Select a valid choice. 98765 is not one of the available choices.']}, form.errors)
 
-        data['conversion_window'] = 1
+        data['conversion_window'] = 24
 
         form = forms.ConversionGoalForm(data, campaign_id=1)
         self.assertTrue(form.is_valid())
@@ -185,7 +185,7 @@ class ConversionGoalFormTestCase(TestCase):
         data = {
             'name': 'name',
             'type': '1',
-            'conversion_window': '7',
+            'conversion_window': '168',
         }
 
         form = forms.ConversionGoalForm(data, campaign_id=1)
