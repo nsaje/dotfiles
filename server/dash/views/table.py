@@ -1031,7 +1031,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         content_ads = models.ContentAd.objects.filter(
             ad_group=ad_group).filter_by_sources(filtered_sources).select_related('batch')
 
-        stats = stats_helper.get_stats_with_conversions(
+        stats = stats_helper.get_content_ad_stats_with_conversions(
             request.user,
             start_date,
             end_date,
@@ -1061,7 +1061,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
 
         rows = self._add_status_to_rows(user, page_rows, filtered_sources, ad_group)
 
-        total_stats = stats_helper.get_stats_with_conversions(
+        total_stats = stats_helper.get_content_ad_stats_with_conversions(
             request.user,
             start_date,
             end_date,

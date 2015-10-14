@@ -8,8 +8,8 @@ import reports.api_contentads
 import reports.api_touchpointconversions
 
 
-def get_reports_api_module(user):
-    if user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
+def get_reports_api_module(can_see_redshift_stats):
+    if can_see_redshift_stats:
         return reports.api_contentads
     else:
         return reports.api
@@ -26,6 +26,59 @@ def get_stats_with_conversions(
         constraints=None):
     can_see_redshift_stats = user.has_perm('zemauth.can_see_redshift_postclick_statistics')
     can_see_conversions = can_see_redshift_stats and user.has_perm('zemauth.conversion_reports')
+
+    return _get_stats_with_conversions(
+        user,
+        can_see_redshift_stats,
+        can_see_conversions,
+        start_date,
+        end_date,
+        breakdown=breakdown,
+        order=order,
+        ignore_diff_rows=ignore_diff_rows,
+        conversion_goals=conversion_goals,
+        constraints=constraints
+    )
+
+
+def get_content_ad_stats_with_conversions(
+        user,
+        start_date,
+        end_date,
+        breakdown=None,
+        order=None,
+        ignore_diff_rows=False,
+        conversion_goals=None,
+        constraints=None):
+    # a workaround for content ads tab where all users can see redshift stats
+    can_see_redshift_stats = True
+    can_see_conversions = can_see_redshift_stats and user.has_perm('zemauth.conversion_reports')
+
+    return _get_stats_with_conversions(
+        user,
+        can_see_redshift_stats,
+        can_see_conversions,
+        start_date,
+        end_date,
+        breakdown=breakdown,
+        order=order,
+        ignore_diff_rows=ignore_diff_rows,
+        conversion_goals=conversion_goals,
+        constraints=constraints
+    )
+
+
+def _get_stats_with_conversions(
+        user,
+        can_see_redshift_stats,
+        can_see_conversions,
+        start_date,
+        end_date,
+        breakdown=None,
+        order=None,
+        ignore_diff_rows=False,
+        conversion_goals=None,
+        constraints=None):
 
     if conversion_goals is None:
         conversion_goals = []
@@ -45,7 +98,7 @@ def get_stats_with_conversions(
         report_conversion_goals = [cg for cg in conversion_goals if cg.type != constants.ConversionGoalType.PIXEL]
         touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == constants.ConversionGoalType.PIXEL]
 
-    reports_api = get_reports_api_module(user)
+    reports_api = get_reports_api_module(can_see_redshift_stats)
     content_ad_stats = reports.api_helpers.filter_by_permissions(reports_api.query(
         start_date,
         end_date,

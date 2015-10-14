@@ -72,7 +72,7 @@ def _get_content_ads(constraints):
 def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows, conversion_goals, **constraints):
     content_ads = _get_content_ads(constraints)
 
-    stats = stats_helper.get_stats_with_conversions(
+    stats = stats_helper.get_content_ad_stats_with_conversions(
         user,
         start_date,
         end_date,

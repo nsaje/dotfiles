@@ -360,7 +360,7 @@ class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        stats = stats_helper.get_stats_with_conversions(
+        stats = stats_helper.get_content_ad_stats_with_conversions(
             request.user,
             start_date,
             end_date,
