@@ -272,6 +272,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             ]
         },
         {
+            'name': 'Conversions',
+            'fields': []
+        },
+        {
             'name': 'Data Sync',
             'fields': ['last_sync']
         }
@@ -346,21 +350,19 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var getDailyStatsMetrics = function () {
-        var metrics = [$scope.chartMetric1, $scope.chartMetric2];
-
-        var values = $scope.chartMetrics.map(function (option) {
+        var values = $scope.chartMetricOptions.map(function (option) {
             return option.value;
         });
 
         if (values.indexOf($scope.chartMetric1) === -1) {
-            metrics.push(constants.chartMetric.CLICKS);
+            $scope.chartMetric1 = constants.chartMetric.CLICKS;
         }
 
-        if (values.indexOf($scope.chartMetric2) === -1) {
-            metrics.push(constants.chartMetric.IMPRESSIONS);
+        if ($scope.chartMetric2 !== 'none' && values.indexOf($scope.chartMetric2) === -1) {
+            $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
         }
 
-        return metrics;
+        return [$scope.chartMetric1, $scope.chartMetric2];
     };
 
     $scope.orderTableData = function(order) {
@@ -374,6 +376,15 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         api.sourcesTable.get($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
+                zemPostclickMetricsService.insertConversionGoalColumns(
+                    $scope.columns,
+                    $scope.columns.length - 2,
+                    data.conversionGoals,
+                    $scope.columnCategories[2],
+                    $scope.hasPermission('zemauth.conversion_reports'),
+                    $scope.isPermissionInternal('zemauth.conversion_reports')
+                );
+
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.totals.checked = $scope.selectedTotals;
@@ -396,8 +407,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     var getDailyStats = function () {
         api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true).then(
             function (data) {
-                setChartOptions();
-            
+                setChartOptions(data.conversionGoals);
+
                 // Select default metrics if selected metrics are not defined
                 var values = $scope.chartMetricOptions.map(function (option) {
                     return option.value;
@@ -419,7 +430,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         );
     };
 
-    var setChartOptions = function () {
+    var setChartOptions = function (conversionGoals) {
         $scope.chartMetricOptions = $scope.chartMetrics;
 
         if ($scope.hasPermission('zemauth.aggregate_postclick_acquisition')) {
@@ -434,6 +445,16 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 $scope.chartMetricOptions,
                 $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
             );
+        }
+
+        if (conversionGoals) {
+            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(conversionGoals.map(function (goal) {
+                return {
+                    name: goal['name'],
+                    value: 'conversion_goal_' + goal['id'],
+                    internal: $scope.isPermissionInternal('zemauth.conversion_reports')
+                };
+            }));
         }
     };
 
@@ -462,7 +483,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         userSettings.register('order');
         userSettings.registerGlobal('chartHidden');
 
-        setChartOptions();
+        setChartOptions(null);
 
         if (sourceIds) {
             $scope.selectedSourceIds = sourceIds.split(',');

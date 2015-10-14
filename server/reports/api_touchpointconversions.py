@@ -1,6 +1,4 @@
-import logging
-import datetime
-
+from reports import db_raw_helpers
 from reports import redshift
 from reports import rs_helpers
 
@@ -34,18 +32,30 @@ class RSTouchpointConversionsModel(redshift.RSModel):
 RSTouchpointConversions = RSTouchpointConversionsModel()
 
 
-def query(start_date, end_date, breakdown=None, constraints=None, constraints_list=None):
+def query(start_date, end_date, order=None, breakdown=None, conversion_goals=None, constraints=None):
     if not breakdown:
         breakdown = []
 
     if not constraints:
         constraints = {}
 
-    if not constraints_list:
-        constraints_list = []
+    if not order:
+        order = []
 
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
+
+    constraints = db_raw_helpers.extract_obj_ids(constraints)
+
+    constraints_list = []
+    if conversion_goals:
+        # create a base object, then OR onto it
+        rsq = redshift.RSQ(account=conversion_goals[0].pixel.account_id, slug=conversion_goals[0].pixel.slug,
+                           conversion_lag__lte=conversion_goals[0].conversion_window)
+        for conversion_goal in conversion_goals[1:]:
+            rsq |= redshift.RSQ(account=conversion_goal.pixel.account_id, slug=conversion_goal.pixel.slug,
+                                conversion_lag__lte=conversion_goal.conversion_window)
+        constraints_list = [rsq]
 
     cursor = redshift.get_cursor()
 
@@ -53,7 +63,7 @@ def query(start_date, end_date, breakdown=None, constraints=None, constraints_li
         cursor,
         RSTouchpointConversions.DEFAULT_RETURNED_FIELDS_APP,
         breakdown_fields=breakdown,
-        order_fields=[],
+        order_fields=order,
         offset=None,
         limit=None,
         constraints=constraints,

@@ -176,6 +176,8 @@ class ExportTestCase(test.TestCase):
             start_date,
             end_date,
             breakdown=dimensions,
+            order=[],
+            conversion_goals=[],
             ignore_diff_rows=True,
             **{
                 'source': sources_matcher,
