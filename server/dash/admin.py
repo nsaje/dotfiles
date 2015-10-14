@@ -3,6 +3,7 @@ import logging
 import urllib
 
 from django.contrib import admin
+from django.contrib import messages
 from django import forms
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
@@ -846,6 +847,27 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
         'modified_dt',
     )
 
+def reject_content_ad_sources(modeladmin, request, queryset):
+    logger.info(
+        'BULK REJECT CONTENT AD SOURCES: Bulk reject content ad sources started. Content ad sources: {}'.format(
+            [el.id for el in queryset]
+        )
+    )
+
+    source = models.Source.objects.get(source_type__type=constants.SourceType.OUTBRAIN)
+    ignored = []
+
+    for content_ad_source in queryset:
+        if content_ad_source.source == source:
+            content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
+            content_ad_source.save()
+        else:
+            ignored.append(content_ad_source.content_ad_id)
+
+    if len(ignored) > 0:
+        messages.warning(request, 'Marking content ad sources as rejected is only supported for the Outbrain source,\
+                                   content ad sources with content ad ids {0} were ignored'.format(ignored))
+reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
 
 class ContentAdSourceAdmin(admin.ModelAdmin):
     list_display = (
@@ -860,6 +882,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
     )
 
     list_filter = ('source', 'submission_status')
+    actions = [reject_content_ad_sources]
 
     display_submission_status_colors = {
         constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',

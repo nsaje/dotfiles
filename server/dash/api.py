@@ -378,8 +378,8 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
                     (content_ad_source, {'state': content_ad_source.content_ad.state})
                 )
 
-            _update_content_ad_source_submission_status(content_ad_source, data['submission_status'])
-            changed = True
+            if _update_content_ad_source_submission_status(content_ad_source, data['submission_status']):
+                changed = True
 
         if 'submission_errors' in data and data['submission_errors'] != content_ad_source.submission_errors:
             content_ad_source.submission_errors = data['submission_errors']
@@ -661,11 +661,18 @@ def get_state_by_account():
 
 def _update_content_ad_source_submission_status(content_ad_source, submission_status):
     if content_ad_source.source.source_type.type == constants.SourceType.OUTBRAIN and\
+       content_ad_source.submission_status == constants.ContentAdSubmissionStatus.REJECTED and\
+       submission_status == constants.ContentAdSubmissionStatus.PENDING:
+        return False
+
+    if content_ad_source.source.source_type.type == constants.SourceType.OUTBRAIN and\
        submission_status == constants.ContentAdSubmissionStatus.PENDING and\
        content_ad_source.content_ad.ad_group.campaign.account.outbrain_marketer_id == AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT:
         content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
     else:
         content_ad_source.submission_status = submission_status
+
+    return True
 
 
 @newrelic.agent.function_trace()

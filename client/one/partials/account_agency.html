@@ -45,8 +45,8 @@
         </div>
         <div class="form-group" ng-class="{'has-error': !!errors.serviceFee}">
             <label for="service-fee-select" class="col-xs-2 control-label">
-                Service Fee
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Fee for management of the account; calculated based on media spend." placement="top"></zem-help-popover>
+                License Fee
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Software licence fee; calculated based on media spend." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
                 <ui-select theme="select2" id="service-fee-select" class="form-control" ng-model="settings.serviceFee">
