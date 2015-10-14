@@ -100,14 +100,19 @@ class AdGroupSettings(api_common.BaseApiView):
            current_settings.pk is None and\
            not models.AdGroupSource.objects.filter(ad_group=ad_group).exists():
 
+            user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS_WITH_AUTO_ADD_MEDIA_SOURCES
+
             self._add_media_sources(ad_group, new_settings, request)
             # no need to create updates as campaigns are not created yet
         else:
+            user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS
+
             self._send_update_actions(ad_group, current_settings, new_settings, request)
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
-            email_helper.send_ad_group_settings_change_mail_if_necessary(ad_group, request.user, request)
+            email_helper.send_ad_group_notification_email(ad_group, request)
+            helpers.log_useraction_if_necessary(request, user_action_type, ad_group=ad_group)
 
         response = {
             'settings': self.get_dict(new_settings, ad_group),
@@ -173,6 +178,9 @@ class AdGroupSettings(api_common.BaseApiView):
             ad_group.save(request)
             new_settings.save(request)
 
+            actionlogs_to_send.extend(
+                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False))
+
             if current_settings.state == constants.AdGroupSettingsState.INACTIVE and\
                new_settings.state == constants.AdGroupSettingsState.ACTIVE:
 
@@ -186,9 +194,6 @@ class AdGroupSettings(api_common.BaseApiView):
                 actionlogs_to_send.extend(
                     actionlog_api.init_pause_ad_group(
                         ad_group, request, order=order, send=False))
-
-            actionlogs_to_send.extend(
-                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False))
 
         zwei_actions.send(actionlogs_to_send)
 
@@ -228,13 +233,13 @@ class AdGroupSettings(api_common.BaseApiView):
 
             new_settings.save(request)
 
-        zwei_actions.send(actionlogs_to_send)
-
         # set defaults for created ad group sources
         for ad_group_source, default_settings in ad_group_sources_w_defaults:
 
             # the update campaign actions should be created on create campaign callback
             helpers.set_ad_group_source_defaults(default_settings, new_settings, ad_group_source, request)
+
+        zwei_actions.send(actionlogs_to_send)
 
 
 class CampaignAgency(api_common.BaseApiView):
@@ -270,10 +275,17 @@ class CampaignAgency(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        settings = campaign.get_current_settings().copy_settings()
+        prev_settings = campaign.get_current_settings()
+        settings = prev_settings.copy_settings()
         self.set_settings(settings, campaign, form.cleaned_data)
 
         self.propagate_and_save(campaign, settings, request)
+
+        changes = prev_settings.get_setting_changes(settings)
+        if changes:
+            helpers.log_useraction_if_necessary(request,
+                                                constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS,
+                                                campaign=campaign)
 
         response = {
             'settings': self.get_dict(settings, campaign),
@@ -308,6 +320,7 @@ class CampaignAgency(api_common.BaseApiView):
                     )
                 )
 
+        email_helper.send_campaign_notification_email(campaign, request)
         zwei_actions.send(actions)
 
     def get_history(self, campaign):
@@ -343,9 +356,6 @@ class CampaignAgency(api_common.BaseApiView):
 
         return history
 
-    def format_decimal_to_percent(self, num):
-        return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
-
     def convert_settings_to_dict(self, old_settings, new_settings):
         settings_dict = OrderedDict([
             ('name', {
@@ -374,7 +384,7 @@ class CampaignAgency(api_common.BaseApiView):
             }),
             ('service_fee', {
                 'name': 'Service Fee',
-                'value': self.format_decimal_to_percent(new_settings.service_fee) + '%'
+                'value': helpers.format_decimal_to_percent(new_settings.service_fee) + '%'
             }),
             ('promotion_goal', {
                 'name': 'Promotion Goal',
@@ -551,6 +561,8 @@ class CampaignConversionGoals(api_common.BaseApiView):
             )
             new_settings.save(request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CONVERSION_GOAL, campaign=campaign)
+
         return self.create_api_response()
 
 
@@ -575,6 +587,9 @@ class ConversionGoal(api_common.BaseApiView):
                 constants.ConversionGoalType.get_text(conversion_goal.type)
             )
             new_settings.save(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.DELETE_CONVERSION_GOAL, campaign=campaign)
+
         return self.create_api_response()
 
 
@@ -610,6 +625,8 @@ class CampaignSettings(api_common.BaseApiView):
         self.set_campaign(campaign, form.cleaned_data)
 
         CampaignAgency.propagate_and_save(campaign, settings, request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_SETTINGS, campaign=campaign)
 
         response = {
             'settings': self.get_dict(settings, campaign)
@@ -670,11 +687,13 @@ class CampaignBudget(api_common.BaseApiView):
             allocate_amount=form.get_allocate_amount(),
             revoke_amount=form.get_revoke_amount(),
             request=request,
-            comment='',
         )
 
-        response = self.get_response(campaign)
+        email_helper.send_campaign_notification_email(campaign, request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_BUDGET, campaign=campaign)
+
+        response = self.get_response(campaign)
         return self.create_api_response(response)
 
     def get_response(self, campaign):
@@ -773,6 +792,8 @@ class AccountConversionPixels(api_common.BaseApiView):
             new_settings.changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
             new_settings.save(request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CONVERSION_PIXEL, account=account)
+
         return self.create_api_response({
             'id': conversion_pixel.id,
             'slug': conversion_pixel.slug,
@@ -819,6 +840,9 @@ class ConversionPixel(api_common.BaseApiView):
                     conversion_pixel.slug
                 )
                 new_settings.save(request)
+
+            helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
+                                                account=account)
 
         return self.create_api_response({
             'id': conversion_pixel.id,
@@ -868,6 +892,9 @@ class AccountAgency(api_common.BaseApiView):
             account.save(request)
             settings.save(request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
+                                            account=account)
+
         response = {
             'settings': self.get_dict(settings, account),
             'history': self.get_history(account),
@@ -885,6 +912,7 @@ class AccountAgency(api_common.BaseApiView):
         settings.name = resource['name']
         settings.default_account_manager = resource['default_account_manager']
         settings.default_sales_representative = resource['default_sales_representative']
+        settings.service_fee = helpers.format_percent_to_decimal(resource['service_fee'])
 
     def get_dict(self, settings, account):
         result = {}
@@ -900,6 +928,7 @@ class AccountAgency(api_common.BaseApiView):
                 'default_sales_representative':
                     str(settings.default_sales_representative.id)
                     if settings.default_sales_representative is not None else None,
+                'service_fee': helpers.format_decimal_to_percent(settings.service_fee),
             }
 
         return result
@@ -968,6 +997,10 @@ class AccountAgency(api_common.BaseApiView):
                 'name': 'Default Sales Representative',
                 'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
             }),
+            ('service_fee', {
+                'name': 'Service Fee',
+                'value': helpers.format_decimal_to_percent(new_settings.service_fee) + '%'
+            }),
         ])
 
         if old_settings is not None:
@@ -981,6 +1014,9 @@ class AccountAgency(api_common.BaseApiView):
             if old_settings.default_sales_representative is not None:
                 settings_dict['default_sales_representative']['old_value'] = \
                     helpers.get_user_full_name_or_email(old_settings.default_sales_representative)
+
+            settings_dict['service_fee']['old_value'] = \
+                helpers.format_decimal_to_percent(old_settings.service_fee) + '%'
 
         return settings_dict
 

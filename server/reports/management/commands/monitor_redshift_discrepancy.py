@@ -10,15 +10,50 @@ from utils.statsd_helper import statsd_gauge
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        n_impressions = reports.models.ContentAdStats.objects\
-            .aggregate(impressions=Sum('impressions')).get('impressions') or 0
-        n_visits = reports.models.ContentAdPostclickStats.objects\
-            .aggregate(visits=Sum('visits')).get('visits') or 0
 
-        redshift_sums = redshift.sum_contentadstats()
+        cad_stats = reports.models.ContentAdStats.objects.aggregate(
+            impressions=Sum('impressions'),
+            clicks=Sum('clicks'),
+            cost_cc=Sum('cost_cc'),
+            data_cost_cc=Sum('data_cost_cc')
+        )
 
-        statsd_gauge('reports.contentadstats.impressions_total', n_impressions)
-        statsd_gauge('reports.contentadstats.impressions_total_aggr', redshift_sums['impressions'])
+        cad_post_stats = reports.models.ContentAdPostclickStats.objects.aggregate(
+            visits=Sum('visits'),
+            new_visits=Sum('new_visits'),
+            bounced_visits=Sum('bounced_visits'),
+            pageviews=Sum('pageviews'),
+            total_time_on_site=Sum('total_time_on_site'),
+        )
 
-        statsd_gauge('reports.contentadstats.visits_total', n_visits)
-        statsd_gauge('reports.contentadstats.visits_total_aggr', redshift_sums['visits'])
+        redshift_sums = redshift.sum_of_stats()
+
+        stats_field_keys = cad_stats.keys()
+        for stats_field_key in stats_field_keys:
+            prefix = 'reports.contentadstats'
+            cads_total_name = '{prefix}.{stat_name}_total'.format(
+                prefix=prefix,
+                stat_name=stats_field_key
+            )
+            statsd_gauge(cads_total_name, cad_stats.get(stats_field_key, 0))
+
+            cads_redshift_name = '{prefix}.{stat_name}_total_aggr'.format(
+                prefix=prefix,
+                stat_name=stats_field_key
+            )
+            statsd_gauge(cads_redshift_name, redshift_sums[stats_field_key])
+
+        post_stats_field_keys = cad_post_stats.keys()
+        for post_stats_field_key in post_stats_field_keys:
+            prefix = 'reports.contentadstats'
+            cads_total_name = '{prefix}.{stat_name}_total'.format(
+                prefix=prefix,
+                stat_name=post_stats_field_key
+            )
+            statsd_gauge(cads_total_name, cad_post_stats.get(post_stats_field_key, 0))
+
+            cads_redshift_name = '{prefix}.{stat_name}_total_aggr'.format(
+                prefix=prefix,
+                stat_name=post_stats_field_key
+            )
+            statsd_gauge(cads_redshift_name, redshift_sums[post_stats_field_key])

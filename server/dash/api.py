@@ -11,6 +11,7 @@ import actionlog.api
 import actionlog.api_contentads
 import actionlog.models
 import actionlog.constants
+import utils.exc
 from utils import redirector_helper
 from utils import email_helper
 
@@ -103,7 +104,6 @@ def create_campaign_callback(ad_group_source, source_campaign_key, request):
 
 
 def order_additional_updates_after_campaign_creation(ad_group_source, request):
-
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
     source = ad_group_source.source
 
@@ -128,7 +128,7 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
     cons = consistency.SettingsStateConsistence(ad_group_source)
     settings_changes = cons.get_needed_state_updates()
     if settings_changes:
-        actionlog.api.set_ad_group_source_settings(settings_changes, ad_group_source, request)
+        actionlog.api.set_ad_group_source_settings(settings_changes, ad_group_source, request=request, send=True)
 
 
 def insert_content_ad_callback(
@@ -378,8 +378,8 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
                     (content_ad_source, {'state': content_ad_source.content_ad.state})
                 )
 
-            _update_content_ad_source_submission_status(content_ad_source, data['submission_status'])
-            changed = True
+            if _update_content_ad_source_submission_status(content_ad_source, data['submission_status']):
+                changed = True
 
         if 'submission_errors' in data and data['submission_errors'] != content_ad_source.submission_errors:
             content_ad_source.submission_errors = data['submission_errors']
@@ -661,11 +661,18 @@ def get_state_by_account():
 
 def _update_content_ad_source_submission_status(content_ad_source, submission_status):
     if content_ad_source.source.source_type.type == constants.SourceType.OUTBRAIN and\
+       content_ad_source.submission_status == constants.ContentAdSubmissionStatus.REJECTED and\
+       submission_status == constants.ContentAdSubmissionStatus.PENDING:
+        return False
+
+    if content_ad_source.source.source_type.type == constants.SourceType.OUTBRAIN and\
        submission_status == constants.ContentAdSubmissionStatus.PENDING and\
        content_ad_source.content_ad.ad_group.campaign.account.outbrain_marketer_id == AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT:
         content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
     else:
         content_ad_source.submission_status = submission_status
+
+    return True
 
 
 @newrelic.agent.function_trace()
@@ -756,6 +763,9 @@ class AdGroupSourceSettingsWriter(object):
             if state is not None:
                 new_settings.state = state
             if autopilot_state is not None:
+                if new_settings.state == constants.AdGroupSettingsState.INACTIVE and\
+                        autopilot_state == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
+                    raise utils.exc.ValidationError('Auto-pilot can not be enabled when source is disabled.')
                 old_settings_obj['autopilot_state'] = latest_settings.autopilot_state
                 new_settings.autopilot_state = autopilot_state
             if cpc_cc is not None:
@@ -767,8 +777,9 @@ class AdGroupSourceSettingsWriter(object):
             new_settings.save(request)
 
             self.add_to_history(settings_obj, old_settings_obj, request)
+
             if request:
-                email_helper.send_ad_group_settings_change_mail_if_necessary(self.ad_group_source.ad_group, request.user, request)
+                email_helper.send_ad_group_notification_email(self.ad_group_source.ad_group, request)
 
             if send_action:
                 filtered_settings_obj = {k:v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}

@@ -116,6 +116,15 @@ a:visited {
 }
 
 .form-group {
+    &.indented {
+        margin-left: 16px;
+        
+        label.control-label:not(.error) {
+            font-size: 14px;
+            font-weight: 400;
+        }
+    }
+
     &.has-error {
         .form-control,
         .form-control:focus {

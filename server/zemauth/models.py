@@ -147,6 +147,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('manage_conversion_goals', 'Can manage conversion goals on campaign level'),
             ('can_see_redshift_postclick_statistics', 'Can see Redshift postclick statistics'),
             ('group_campaign_stop_on_budget_depleted', 'Automatic campaign stop on depleted budget applies to campaigns in this group'),
+            ('can_see_publisher_blacklist_status', 'Can see publishers blacklist status'),
+            ('can_modify_publisher_blacklist_status', 'Can modify publishers blacklist status'),
             ('conversion_reports', 'Can see conversions and goals in reports'),
         )
 
@@ -199,6 +201,9 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             setattr(self, perm_cache_name, permissions)
 
         return getattr(self, perm_cache_name)
+
+    def is_self_managed(self):
+        return self.email and '@zemanta' not in self.email.lower()
 
 
 class InternalGroup(models.Model):

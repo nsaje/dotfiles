@@ -170,7 +170,7 @@ def _process_zwei_response(action, data, request):
 
         elif action.action == actionlog.constants.Action.FETCH_REPORTS_BY_PUBLISHER:
             _fetch_reports_by_publisher_callback(action, data)
-    
+
         elif action.action == actionlog.constants.Action.FETCH_CAMPAIGN_STATUS:
             dash.api.update_ad_group_source_state(action.ad_group_source, data['data'])
 
@@ -188,10 +188,13 @@ def _process_zwei_response(action, data, request):
                 request
             )
 
+            logger.info('Submitting content ads after campaign creation. Action %s', action)
             content_ad_sources = dash.api.add_content_ad_sources(action.ad_group_source)
             actions.extend(dash.api.submit_content_ads(content_ad_sources, request=None))
 
-            dash.api.order_additional_updates_after_campaign_creation(action.ad_group_source, request=None)
+            logger.info('Ordering additional updates after campaign creation. Action %s', action)
+            dash.api.order_additional_updates_after_campaign_creation(action.ad_group_source,
+                                                                      request=None)
 
         elif action.action == actionlog.constants.Action.INSERT_CONTENT_AD:
             if 'source_content_ad_id' in data['data']:
@@ -228,9 +231,7 @@ def _process_zwei_response(action, data, request):
                 )
             )
 
-
         logger.info('Process action successful. Action: %s', action)
-        
 
     actionlog.zwei_actions.send(actions)
 
@@ -315,6 +316,10 @@ def _fetch_reports_callback(action, data):
     ad_group = action.ad_group_source.ad_group
     source = action.ad_group_source.source
 
+    logger.info('_fetch_reports_callback: Processing reports callback for adgroup {adgroup_id}  source {source_id}'.format(
+        adgroup_id=ad_group.id, source_id=source.id if source is not None else 0)
+    )
+
     traffic_metrics_exist = reports.api.traffic_metrics_exist(ad_group, source, date)
     rows_raw = data['data']
 
@@ -328,6 +333,11 @@ def _fetch_reports_callback(action, data):
 
     # centralize in order to reduce possibility of mistake
     change_unique_key = "reports_by_link"
+
+    if not _has_changed(data, ad_group, source, date, change_unique_key):
+        logger.info('_fetch_reports_callback: no changes adgroup {adgroup_id}  source {source_id}'.format(
+            adgroup_id=ad_group.id, source_id=source.id if source is not None else 0)
+        )
 
     if valid_response and _has_changed(data, ad_group, source, date, change_unique_key):
         can_manage_content_ads = action.ad_group_source.can_manage_content_ads
@@ -378,24 +388,24 @@ def _fetch_reports_by_publisher_callback(action, data):
 
     valid_response = True
     empty_response = False
-    
+
     # centralize in order to reduce possibility of mistakes, if you want everything to run again, just increase the number
     change_unique_key = "reports_by_publisher_2"
-    
+
     if valid_response: # and _has_changed(data, ad_group, source, date, change_unique_key):
         ret = get_day_cost(date, ad_group=ad_group, source=source)
         cost = ret['cost']
         if cost is None:
             cost = 0
-        
-        reports.api_publishers.ob_insert_adgroup_date(	date, 
-                                                        ad_group.id, 
+
+        reports.api_publishers.ob_insert_adgroup_date(	date,
+                                                        ad_group.id,
                                                         "Outbrain",	# Hardcoding this at the time, the problem is that source.name can change
-                                                        rows_raw, 
+                                                        rows_raw,
                                                         cost)
         _set_reports_cache(data, ad_group, source, date, change_unique_key)
-                                                        
-                                                        
+
+
     if not valid_response:
         msg = 'Update of publishers for adgroup %d, source %d, datetime '\
               '%s skipped due to report not being valid (empty response).'

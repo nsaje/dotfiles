@@ -397,6 +397,8 @@ class ProcessCallbackTest(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         user = User.objects.create_user('user@test.com')
         request.user = user
 
@@ -404,7 +406,7 @@ class ProcessCallbackTest(TestCase):
 
         results = [(row, cleaned_data, errors)]
         upload._process_callback(batch, models.AdGroup.objects.get(pk=ad_group_id), [ad_group_source], filename, request, results)
-        
+
         # check for errors first, before proceeding to the rest
         self.assertEqual(batch.status, constants.UploadBatchStatus.DONE)
         self.assertIn(batch.num_errors, [0, None])
@@ -433,7 +435,6 @@ class ProcessCallbackTest(TestCase):
             constants.ContentAdSubmissionStatus.NOT_SUBMITTED
         )
         self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.ACTIVE)
-
 
         mock_redirect_insert.assert_called_with(content_ad.url, content_ad.id, content_ad.ad_group_id)
 

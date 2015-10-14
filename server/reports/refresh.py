@@ -8,6 +8,7 @@ from django.conf import settings
 import reports.models
 from reports.db_raw_helpers import dictfetchall
 from reports import redshift
+from utils.statsd_helper import statsd_incr
 
 import dash.models
 
@@ -206,6 +207,16 @@ def refresh_contentadstats_diff(date, ad_group, source=None):
         )
         row_dict = dict(zip(keys, data))
         logger.info('refresh_contentadstats_diff: {}'.format(json.dumps(row_dict)))
+
+        statsd_keys = (
+            'impressions', 'clicks',  'cost_cc', 'data_cost_cc',
+            'visits', 'new_visits', 'bounced_visits', 'pageviews',
+            'total_time_on_site'
+        )
+        for statsd_key in statsd_keys:
+            if row_dict[statsd_key] > 0:
+                statsd_incr('reports.refresh.contentadstats_diff_{}'.format(row_dict[statsd_key]), row_dict[statsd_key])
+
         diff_rows.append(row_dict)
 
     if diff_rows != []:
@@ -235,6 +246,8 @@ def refresh_adgroup_stats(**constraints):
 
     ad_group_lookup = {}
     source_lookup = {}
+    diff_data = set([])
+
     with transaction.atomic():
         reports.models.AdGroupStats.objects.filter(**constraints).delete()
 
@@ -250,7 +263,16 @@ def refresh_adgroup_stats(**constraints):
             row['ad_group'] = ad_group_lookup[ad_group_id]
             row['source'] = source_lookup[source_id]
 
+            date = row['datetime'].date()
+
+            diff_data.add( (date, ad_group_id, source_id,) )
+
             reports.models.AdGroupStats.objects.create(**row)
+
+    # TODO: Remove this after deprecation of adgroupstats and articlestats
+    for (date, ad_group_id, source_id) in diff_data:
+        redshift.delete_contentadstats_diff(date, ad_group_id, source_id)
+        refresh_contentadstats_diff(date, ad_group_lookup[ad_group_id], source=source_lookup[source_id])
 
 
 def refresh_adgroup_conversion_stats(**constraints):

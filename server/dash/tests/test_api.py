@@ -110,6 +110,63 @@ class UpdateContentAdSourceState(TestCase):
         self.assertEqual(content_ad_source.source_state, data['source_state'])
         self.assertEqual(content_ad_source.submission_status, data['submission_status'])
 
+class IgnorePendingContentAdSourceSubmissionWhenLocalStatusIsRejected(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        # create reference to an Outbrain AdGroupSource
+        source = models.Source.objects.get(source_type__type=constants.SourceType.OUTBRAIN)
+        self.ad_group_source = models.AdGroupSource.objects.filter(source=source).first()
+
+        # create ContentAd
+        batch = models.UploadBatch.objects.create(name='test', status=constants.UploadBatchStatus.DONE)
+
+        content_ad = models.ContentAd.objects.create(
+            url='test.com',
+            title='test',
+            ad_group=self.ad_group_source.ad_group,
+            batch=batch
+        )
+
+        # create ContentAdSource
+        self.content_ad_source = models.ContentAdSource.objects.create(
+            content_ad=content_ad,
+            source=self.ad_group_source.source,
+            submission_status=constants.ContentAdSubmissionStatus.REJECTED,
+            source_content_ad_id=None,
+            state=constants.ContentAdSourceState.ACTIVE,
+        )
+
+    def test_update_content_ad_source_state(self):
+        # create an incoming data object containing the submission_status PENDING
+        content_ad_data = {'submission_status': constants.ContentAdSubmissionStatus.PENDING}
+
+        # pass the objects to update_content_ad_source_state
+        api.update_content_ad_source_state(self.content_ad_source, content_ad_data)
+
+        # refresh the ContentAdSource and assert the status is still REJECTED
+        self.content_ad_source.refresh_from_db()
+        self.assertEqual(self.content_ad_source.submission_status, constants.ContentAdSubmissionStatus.REJECTED)
+
+    def test_update_multiple_content_ad_source_states(self):
+        # create an incoming data object containing the submission_status PENDING
+        content_ad_data = [{'id': self.content_ad_source.get_source_id(),
+                            'state': self.content_ad_source.source_state,
+                            'submission_status': constants.ContentAdSubmissionStatus.PENDING}]
+
+        # ensure our ContentAdSource is found by the filter, otherwise the test will PASS without testing anything
+        self.assertTrue(self.content_ad_source in models.ContentAdSource.objects.filter(
+                content_ad__ad_group=self.ad_group_source.ad_group,
+                source=self.ad_group_source.source))
+
+        # pass the AdGroupSource and incoming data to update_multiple_content_ad_source_states
+        api.update_multiple_content_ad_source_states(self.ad_group_source, content_ad_data)
+
+        # refresh the ContentAdSource and assert the status is still REJECTED
+        self.content_ad_source.refresh_from_db()
+        self.assertEqual(self.content_ad_source.submission_status, constants.ContentAdSubmissionStatus.REJECTED)
+
 
 class AutomaticallyApproveContentAdSourceSubmissionStatus(TestCase):
 
@@ -843,9 +900,9 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.ad_group_settings.save(request)
         self.assertTrue(self.writer.can_trigger_action())
 
-    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_settings_change_mail_if_necessary')
+    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
-    def test_should_write_if_no_settings_yet(self, set_ad_group_source_settings, mock_send_change_mail):
+    def test_should_write_if_no_settings_yet(self, set_ad_group_source_settings, mock_send_mail):
         self.assertTrue(
             models.AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).count() > 0
         )
@@ -870,11 +927,11 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertTrue(latest_settings.daily_budget_cc is None)
         self.assertFalse(set_ad_group_source_settings.called)
 
-        mock_send_change_mail.assert_called_with(self.ad_group_source.ad_group, request.user, request)
+        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request)
 
-    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_settings_change_mail_if_necessary')
+    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
-    def test_should_write_if_changed(self, set_ad_group_source_settings, mock_send_change_mail):
+    def test_should_write_if_changed(self, set_ad_group_source_settings, mock_send_mail):
         latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
@@ -895,10 +952,11 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
         self.assertTrue(set_ad_group_source_settings.called)
 
-        mock_send_change_mail.assert_called_with(self.ad_group_source.ad_group, request.user, request)
+        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request)
 
+    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
-    def test_should_write_if_request_none(self, set_ad_group_source_settings):
+    def test_should_write_if_request_none(self, set_ad_group_source_settings, mock_send_mail):
         latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
@@ -918,9 +976,11 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
         self.assertTrue(set_ad_group_source_settings.called)
 
-    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_settings_change_mail_if_necessary')
+        self.assertFalse(mock_send_mail.called)
+
+    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
-    def test_should_write_if_changed_no_action(self, set_ad_group_source_settings, mock_send_change_mail):
+    def test_should_write_if_changed_no_action(self, set_ad_group_source_settings, mock_send_mail):
         latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
@@ -941,11 +1001,11 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
         self.assertFalse(set_ad_group_source_settings.called)
 
-        mock_send_change_mail.assert_called_with(self.ad_group_source.ad_group, request.user, request)
+        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request)
 
-    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_settings_change_mail_if_necessary')
+    @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
-    def test_should_not_write_if_unchanged(self, set_ad_group_source_settings, mock_send_change_mail):
+    def test_should_not_write_if_unchanged(self, set_ad_group_source_settings, mock_send_mail):
         latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
@@ -964,7 +1024,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(latest_settings.daily_budget_cc, new_latest_settings.daily_budget_cc)
         self.assertFalse(set_ad_group_source_settings.called)
 
-        self.assertFalse(mock_send_change_mail.called)
+        self.assertFalse(mock_send_mail.called)
 
 
 class AdGroupSettingsOrderTest(TestCase):
@@ -1754,7 +1814,7 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
         self.request.user = user
         self.client.login(username=user.email, password=password)
 
-    def _fire_campaign_creation_callback(self, ad_group_source, target_regions=None, available_actions=None):
+    def _setup_ad_group(self, ad_group_source, target_regions=None, available_actions=None):
         if available_actions:
             ad_group_source.source.source_type.available_actions.extend(available_actions)
             ad_group_source.source.source_type.save()
@@ -1762,8 +1822,6 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
         ad_group_settings = ad_group_source.ad_group.get_current_settings()
         ad_group_settings.target_regions = target_regions
         ad_group_settings.save(self.request)
-
-        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
     def _get_created_manual_actions(self, ad_group_source):
         return actionlog.models.ActionLog.objects.filter(
@@ -1781,13 +1839,12 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
     def test_manual_update_after_campaign_creation_manual_dma_targeting(self):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
-        self._fire_campaign_creation_callback(
-            ad_group_source,
-            ['GB', '693'],
-            [
-                constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL,
-                constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
-            ])
+        self._setup_ad_group(ad_group_source, ['GB', '693'], [
+            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL,
+            constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
+        ])
+
+        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
         manual_actions = self._get_created_manual_actions(ad_group_source)
 
@@ -1798,13 +1855,15 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
     def test_no_manual_update_after_campaign_creation_auto_targeting(self):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
-        self._fire_campaign_creation_callback(
+        self._setup_ad_group(
             ad_group_source,
             ['GB', '693'],
             [
                 constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
                 constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             ])
+
+        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
         manual_actions = self._get_created_manual_actions(ad_group_source)
 
@@ -1814,12 +1873,13 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
     def test_no_manual_update_after_campaign_creation_dma_targeting_not_supported(self):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
-        self._fire_campaign_creation_callback(
+        self._setup_ad_group(
             ad_group_source,
             ['GB', '693'],
-            [
-                constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
-            ])
+            [constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING]
+        )
+
+        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
         manual_actions = self._get_created_manual_actions(ad_group_source)
 
@@ -1829,13 +1889,15 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
     def test_no_manual_update_after_campaign_creation_no_dma_targeting(self):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
-        self._fire_campaign_creation_callback(
+        self._setup_ad_group(
             ad_group_source,
             ['GB'],
             [
                 constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
                 constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             ])
+
+        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
         manual_actions = self._get_created_manual_actions(ad_group_source)
 
@@ -1845,14 +1907,14 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
     def test_source_settings_update_after_campaign_creation_no_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=5)
 
-        self._fire_campaign_creation_callback(ad_group_source)
+        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
         self.assertFalse(self._get_set_campaign_state_actions(ad_group_source).exists())
 
     def test_source_settings_update_after_campaign_creation_create_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
-        self._fire_campaign_creation_callback(ad_group_source)
+        api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
 
         actions = self._get_set_campaign_state_actions(ad_group_source)
         self.assertEqual(actions.count(), 1)

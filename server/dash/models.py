@@ -376,7 +376,8 @@ class AccountSettings(SettingsBase):
         'name',
         'archived',
         'default_account_manager',
-        'default_sales_representative'
+        'default_sales_representative',
+        'service_fee'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -398,6 +399,11 @@ class AccountSettings(SettingsBase):
         null=True,
         related_name="+",
         on_delete=models.PROTECT
+    )
+    service_fee = models.DecimalField(
+        decimal_places=4,
+        max_digits=5,
+        default=Decimal('0.2000'),
     )
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
@@ -614,7 +620,6 @@ class SourceType(models.Model):
     def can_fetch_report_by_publisher(self):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_FETCH_REPORT_BY_PUBLISHER in self.available_actions
-
 
     def __str__(self):
         return self.type
@@ -1594,3 +1599,23 @@ class DemoAdGroupRealAdGroup(models.Model):
     demo_ad_group = models.OneToOneField(AdGroup, on_delete=models.PROTECT, related_name='+')
     real_ad_group = models.OneToOneField(AdGroup, on_delete=models.PROTECT, related_name='+')
     multiplication_factor = models.IntegerField(null=False, blank=False, default=1)
+
+
+class UserActionLog(models.Model):
+
+    id = models.AutoField(primary_key=True)
+
+    action_type = models.PositiveSmallIntegerField(
+        choices=constants.UserActionType.get_choices()
+    )
+
+    ad_group = models.ForeignKey(AdGroup, null=True, blank=True, on_delete=models.PROTECT)
+    ad_group_settings = models.ForeignKey(AdGroupSettings, null=True, blank=True, on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, null=True, blank=True, on_delete=models.PROTECT)
+    campaign_settings = models.ForeignKey(CampaignSettings, null=True, blank=True, on_delete=models.PROTECT)
+    account = models.ForeignKey(Account, null=True, blank=True, on_delete=models.PROTECT)
+    account_settings = models.ForeignKey(AccountSettings, null=True, blank=True, on_delete=models.PROTECT)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True,
+                                   blank=True)
