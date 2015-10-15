@@ -167,7 +167,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
                 if($scope.hasPermission('zemauth.content_ads_postclick_engagement')) {
-                    zemPostclickMetricsService.insertGoalColumns(
+                    zemPostclickMetricsService.insertConversionGoalColumns(
                         $scope.columns,
                         $scope.columns.length - 1,
                         data.rows, 

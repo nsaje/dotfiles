@@ -1,6 +1,7 @@
 from collections import defaultdict
 import datetime
 import logging
+import math
 
 from django.db.models import Min
 
@@ -133,7 +134,7 @@ def process_touchpoint_conversions(redirects_impressions):
                 'touchpoint_id': redirect_id,
                 'source_id': source.id,
                 'touchpoint_timestamp': redirect_ts,
-                'conversion_lag': (impression_ts - redirect_ts).days + 1
+                'conversion_lag': int(math.ceil((impression_ts - redirect_ts).total_seconds() / (60 * 60)))
             }
 
             touchpoint_conversion_dict[redirect_id][conversion_key] = potential_touchpoint_conversion

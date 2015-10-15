@@ -38,7 +38,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
             initialOrder: 'desc'
         });
     }
-        
+
     function insertEngagementColumns(columns, position, isShown, isInternal) {
         columns.splice(position, 0, {
             name: '% New Users',
@@ -111,55 +111,28 @@ oneApp.factory('zemPostclickMetricsService', function() {
         }));
     }
 
-    function insertGoalColumns(columns, position, rows, postclickCategory, isInternal) {
-        for(var i = 0; i < rows.length; i++) {
-            for(var field in rows[i]) {
-                if(columnsContainField(columns, field)) {
-                    continue;
-                }
-
-                if(field.indexOf(': Conversions') != -1) {
-                    var columnDescription = {
-                        name: field.substr('goal__'.length),
-                        field: field,
-                        checked: false,
-                        type: 'number',
-                        help: 'Number of completions of the conversion goal',
-                        internal: isInternal,
-                        totalRow: true,
-                        order: true,
-                        initialOrder: 'desc',
-                        shown: true
-                    };
-                    columns.splice(position, 0, columnDescription);
-                    postclickCategory.fields.push(columnDescription.field);
-                } else if(field.indexOf(': Conversion Rate') != -1) {
-                    var columnDescription = {
-                        name: field.substr('goal__'.length),
-                        field: field,
-                        checked: false,
-                        type: 'percent',
-                        help: 'Percentage of visits which resulted in a goal completion',
-                        internal: isInternal,
-                        totalRow: true,
-                        order: true,
-                        initialOrder: 'desc',
-                        shown: true
-                    };
-                    columns.splice(position, 0, columnDescription);
-                    postclickCategory.fields.push(columnDescription.field);
-                }
-            }
+    function insertConversionGoalColumns(columns, position, conversionGoals, goalCategory, isShown, isInternal) {
+        if (!conversionGoals) {
+            return;
         }
-    };
 
-    function columnsContainField(columns, field) {
-        for(var i = 0; i < columns.length; i++) {
-            if(field == columns[i]['field']){
-                return true;
-            }
+        for(var i = 0; i < conversionGoals.length; i++) {
+            var columnDescription = {
+                name: conversionGoals[i]['name'],
+                field: 'conversion_goal_' + conversionGoals[i]['id'],
+                checked: false,
+                type: 'number',
+                help: 'Number of completions of the conversion goal',
+                shown: isShown,
+                internal: isInternal,
+                totalRow: true,
+                order: true,
+                initialOrder: 'desc'
+            };
+
+            columns.splice(position, 0, columnDescription);
+            goalCategory.fields.push(columnDescription.field);
         }
-        return false;
     };
 
     return {
@@ -167,6 +140,6 @@ oneApp.factory('zemPostclickMetricsService', function() {
         insertEngagementColumns: insertEngagementColumns,
         concatAcquisitionChartOptions: concatAcquisitionChartOptions,
         concatEngagementChartOptions: concatEngagementChartOptions,
-        insertGoalColumns: insertGoalColumns
-    }
+        insertConversionGoalColumns: insertConversionGoalColumns
+    };
 });

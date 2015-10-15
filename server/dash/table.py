@@ -548,7 +548,6 @@ class SourcesTable(api_common.BaseApiView):
                    yesterday_cost):
         result = {}
         helpers.copy_stats_to_row(totals_data, result)
-        result['yesterday_cost'] = yesterday_cost
         if ad_group_level and user.has_perm('zemauth.set_ad_group_source_settings'):
             result['daily_budget'] = get_daily_budget_total(ad_group_sources, sources_states, sources_settings)
             result['current_daily_budget'] = get_current_daily_budget_total(sources_states)

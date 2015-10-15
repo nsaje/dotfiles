@@ -261,7 +261,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': 1,
+                'conversion_lag': 22,
             }
         ]
 
@@ -352,7 +352,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': 1,
+                'conversion_lag': 22,
             }
         ]
 
@@ -443,7 +443,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': 1,
+                'conversion_lag': 22,
             }
         ]
 
@@ -505,6 +505,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
 
         conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
 
+        self.maxDiff = None
         expected = [
             {
                 'zuid': '1234-12345-123456',
@@ -534,7 +535,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': 1,
+                'conversion_lag': 22,
             },
             {
                 'zuid': '1234-12345-123456',
@@ -549,7 +550,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 1,
                 'source_id': 3,
-                'conversion_lag': 1,
+                'conversion_lag': 3,
             },
             {
                 'zuid': '1234-12345-123456',
@@ -564,7 +565,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': 2,
+                'conversion_lag': 24,
             }
         ]
 
@@ -640,7 +641,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'source_id': 5,
                 'content_ad_id': 2,
-                'conversion_lag': 1,
+                'conversion_lag': 22,
             },
             {
                 'zuid': '1234-12345-123456',
@@ -670,7 +671,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': 2,
+                'conversion_lag': 24,
             }
         ]
 
