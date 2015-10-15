@@ -120,8 +120,14 @@ class AccountDailyStats(BaseDailyStatsView):
 
             selected_kwargs = {
                 'account': int(account.id),
-                'source_id' if sources else 'ad_group__campaign__id': ids
             }
+            if request.user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
+                if sources:
+                    selected_ids['source'] = sources
+                else:
+                    selected_ids['campaign']= ids
+            else:
+                selected_kwargs['source_id' if sources else 'ad_group__campaign__id'] = ids
 
             if sources:
                 sources = models.Source.objects.filter(pk__in=ids)
@@ -167,7 +173,11 @@ class CampaignDailyStats(BaseDailyStatsView):
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'campaign': int(campaign.id), '{}_id'.format(group_key): ids}
+
+            if request.user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
+                selected_kwargs = {'campaign': int(campaign.id), '{}'.format(group_key): ids}
+            else:
+                selected_kwargs = {'campaign': int(campaign.id), '{}_id'.format(group_key): ids}
 
             if sources:
                 sources = models.Source.objects.filter(pk__in=ids)
