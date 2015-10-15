@@ -139,6 +139,23 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_logs_user_action(self, mock_log_useraction):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        settings = ad_group.get_current_settings()
+        settings.end_date = datetime.date.today()
+        settings.save(None)
+
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '0.15'})
+        )
+        self.assertEqual(response.status_code, 200)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
+            ad_group=ad_group)
+
 
 class AdGroupContentAdCSVTest(TestCase):
     fixtures = ['test_api', 'test_views']
@@ -263,7 +280,8 @@ class AdGroupContentAdStateTest(TestCase):
             follow=True
         )
 
-    def test_post(self):
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_post(self, mock_log_useraction):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
@@ -289,6 +307,11 @@ class AdGroupContentAdStateTest(TestCase):
         self.assertJSONEqual(response.content, {
             'success': True
         })
+
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.SET_CONTENT_AD_STATE,
+            ad_group=models.AdGroup.objects.get(pk=1))
 
     def test_state_set_all(self):
         username = User.objects.get(pk=1).email
@@ -435,8 +458,9 @@ class AdGroupContentAdArchive(TestCase):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
-    @patch('dash.views.views.email_helper.send_ad_group_settings_change_mail_if_necessary')
-    def test_post(self, mock_send_change_mail):
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_post(self, mock_send_mail, mock_log_useraction):
         ad_group = models.AdGroup.objects.get(pk=1)
         content_ad_id = 2
 
@@ -458,10 +482,15 @@ class AdGroupContentAdArchive(TestCase):
                 'status_setting': 2
             }})
 
-        mock_send_change_mail.assert_called_with(ad_group, response.wsgi_request.user, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
+            ad_group=ad_group
+        )
 
-    @patch('dash.views.views.email_helper.send_ad_group_settings_change_mail_if_necessary')
-    def test_archive_set_all(self, mock_send_change_mail):
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_archive_set_all(self, mock_send_mail):
         ad_group = models.AdGroup.objects.get(pk=2)
         content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group.id)
 
@@ -483,10 +512,10 @@ class AdGroupContentAdArchive(TestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-        mock_send_change_mail.assert_called_with(ad_group, response.wsgi_request.user, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
 
-    @patch('dash.views.views.email_helper.send_ad_group_settings_change_mail_if_necessary')
-    def test_archive_set_batch(self, mock_send_change_mail):
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_archive_set_batch(self, mock_send_mail):
         ad_group = models.AdGroup.objects.get(pk=2)
         batch_id = 2
         content_ads = models.ContentAd.objects.filter(batch__id=batch_id, archived=False)
@@ -512,10 +541,10 @@ class AdGroupContentAdArchive(TestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-        mock_send_change_mail.assert_called_with(ad_group, response.wsgi_request.user, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
 
-    @patch('dash.views.views.email_helper.send_ad_group_settings_change_mail_if_necessary')
-    def test_archive_pause_active_before_archiving(self, mock_send_change_mail):
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_archive_pause_active_before_archiving(self, mock_send_mail):
         ad_group = models.AdGroup.objects.get(pk=1)
         content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group.id, archived=False)
         self.assertGreater(len(content_ads), 0)
@@ -539,16 +568,16 @@ class AdGroupContentAdArchive(TestCase):
         self.assertEqual(response_dict['data']['active_count'], active_count)
         self.assertEqual(response_dict['data']['archived_count'], archived_count)
 
-        mock_send_change_mail.assert_called_with(ad_group, response.wsgi_request.user, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
 
-    @patch('dash.views.views.email_helper.send_ad_group_settings_change_mail_if_necessary')
-    def test_content_ad_ids_validation_error(self, mock_send_change_mail):
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_content_ad_ids_validation_error(self, mock_send_mail):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         response = self._post_content_ad_archive(ad_group.id, {'content_ad_ids_selected': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
-        self.assertFalse(mock_send_change_mail.called)
+        self.assertFalse(mock_send_mail.called)
 
     def test_add_to_history(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -603,8 +632,9 @@ class AdGroupContentAdRestore(TestCase):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
-    @patch('dash.views.views.email_helper.send_ad_group_settings_change_mail_if_necessary')
-    def test_post(self, mock_send_change_mail):
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_post(self, mock_send_mail, mock_log_useraction):
         ad_group = models.AdGroup.objects.get(pk=1)
         content_ad_id = 2
 
@@ -626,10 +656,15 @@ class AdGroupContentAdRestore(TestCase):
         self.assertTrue(response_dict['success'])
         self.assertEqual(response_dict['data']['rows'], {'2': {'archived': False, 'status_setting': content_ad.state}})
 
-        mock_send_change_mail.assert_called_with(ad_group, response.wsgi_request.user, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
+            ad_group=ad_group
+        )
 
-    @patch('dash.views.views.email_helper.send_ad_group_settings_change_mail_if_necessary')
-    def test_restore_set_all(self, mock_send_change_mail):
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_restore_set_all(self, mock_send_mail):
         ad_group = models.AdGroup.objects.get(pk=2)
         content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group.id)
         for ad in content_ads:
@@ -654,10 +689,10 @@ class AdGroupContentAdRestore(TestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-        mock_send_change_mail.assert_called_with(ad_group, response.wsgi_request.user, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
 
-    @patch('dash.views.views.email_helper.send_ad_group_settings_change_mail_if_necessary')
-    def test_archive_set_batch(self, mock_send_change_mail):
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_archive_set_batch(self, mock_send_mail):
         ad_group = models.AdGroup.objects.get(pk=2)
         batch_id = 2
         content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
@@ -684,10 +719,10 @@ class AdGroupContentAdRestore(TestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-        mock_send_change_mail.assert_called_with(ad_group, response.wsgi_request.user, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
 
-    @patch('dash.views.views.email_helper.send_ad_group_settings_change_mail_if_necessary')
-    def test_restore_success_when_all_restored(self, mock_send_change_mail):
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_restore_success_when_all_restored(self, mock_send_mail):
         ad_group = models.AdGroup.objects.get(pk=2)
         content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group.id)
 
@@ -706,16 +741,16 @@ class AdGroupContentAdRestore(TestCase):
         response_dict = json.loads(response.content)
         self.assertTrue(response_dict['success'])
 
-        mock_send_change_mail.assert_called_with(ad_group, response.wsgi_request.user, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
 
-    @patch('dash.views.views.email_helper.send_ad_group_settings_change_mail_if_necessary')
-    def test_content_ad_ids_validation_error(self, mock_send_change_mail):
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_content_ad_ids_validation_error(self, mock_send_mail):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         response = self._post_content_ad_restore(ad_group.id, {'content_ad_ids_selected': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
-        self.assertFalse(mock_send_change_mail.called)
+        self.assertFalse(mock_send_mail.called)
 
     def test_add_to_history(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -766,8 +801,9 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
         return client
 
+    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.views.upload.process_async')
-    def test_post(self, mock_process_async):
+    def test_post(self, mock_process_async, mock_log_useraction):
         request = HttpRequest()
         request.user = User(id=1)
 
@@ -793,6 +829,10 @@ class AdGroupAdsPlusUploadTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(mock_process_async.called)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.UPLOAD_CONTENT_ADS,
+            ad_group=models.AdGroup.objects.get(pk=1))
 
     @patch('dash.views.views.upload.process_async')
     def test_post_empty_fields_not_in_csv(self, mock_process_async):

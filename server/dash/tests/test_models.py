@@ -25,7 +25,8 @@ class AdGroupSettingsTest(TestCase):
             'created_dt',
             'created_by',
             'created_by_id',
-            'changes_text'
+            'changes_text',
+            'useractionlog'
         ]
 
         all_fields = set(models.AdGroupSettings._settings_fields + meta_fields)

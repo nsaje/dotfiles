@@ -3,6 +3,8 @@ import dateutil.parser
 import pytz
 import newrelic.agent
 
+from decimal import Decimal
+
 from django.conf import settings
 from django.db.models import Q, Max
 from django.core.exceptions import ObjectDoesNotExist
@@ -16,7 +18,6 @@ from dash import api
 from utils import exc
 from utils import statsd_helper
 import automation.autopilot
-from dash import api
 
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
@@ -738,6 +739,9 @@ def copy_stats_to_row(stat, row):
                 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
         row[key] = stat.get(key)
 
+    for key in [k for k in stat.keys() if k.startswith('conversion_goal_')]:
+        row[key] = stat.get(key)
+
 
 def _is_end_date_past(ad_group_settings):
     end_utc_datetime = ad_group_settings.get_utc_end_datetime()
@@ -756,7 +760,7 @@ def get_editable_fields(ad_group_source, ad_group_settings, ad_group_source_sett
         return editable_fields
 
     editable_fields['status_setting'] = _get_editable_fields_status_setting(ad_group_source, ad_group_settings,
-                                                                                 ad_group_source_settings)
+                                                                            ad_group_source_settings)
     editable_fields['bid_cpc'] = _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
     editable_fields['daily_budget'] = _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
 
@@ -894,3 +898,27 @@ def set_ad_group_source_defaults(default_source_settings, ad_group_settings, ad_
     if resource:
         settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
         settings_writer.set(resource, request, send_action=send_action)
+
+
+def format_decimal_to_percent(num):
+    return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
+
+
+def format_percent_to_decimal(num):
+    return Decimal(num) / 100
+
+
+def log_useraction_if_necessary(request, user_action_type, account=None, campaign=None, ad_group=None):
+    if request.user.is_self_managed():
+
+        user_action_log = models.UserActionLog(
+            action_type=user_action_type,
+            created_by=request.user,
+            account=account,
+            campaign=campaign,
+            ad_group=ad_group,
+            account_settings_id=account.get_current_settings().id if account else None,
+            campaign_settings_id=campaign.get_current_settings().id if campaign else None,
+            ad_group_settings_id=ad_group.get_current_settings().id if ad_group else None
+        )
+        user_action_log.save()

@@ -31,9 +31,7 @@ var constants = {
         BOUNCE_RATE: 'bounce_rate',
         PV_PER_VISIT: 'pv_per_visit',
         AVG_TOS: 'avg_tos',
-        CLICK_DISCREPANCY: 'click_discrepancy',
-        CONVERSION_RATE: 'conversion_rate',
-        CONVERSIONS: 'conversions'
+        CLICK_DISCREPANCY: 'click_discrepancy'
     },
     iabCategory: {
         IAB1: "IAB1",
@@ -452,9 +450,9 @@ var constants = {
         3: 'Omniture Event'
     },
     conversionWindowText: {
-        1: '1 day',
-        7: '7 days',
-        30: '30 days'
+        24: '1 day',
+        168: '7 days',
+        720: '30 days'
     },
     entityType: {
         AD_GROUP: 'adGroup',
@@ -941,9 +939,9 @@ var options = {
         {name: 'Omniture', value: constants.conversionGoalType.OMNITURE}
     ],
     conversionWindows: [
-        {name: '1 day', value: 1},
-        {name: '7 days', value: 7},
-        {name: '30 days', value: 30}
+        {name: '1 day', value: 24},
+        {name: '7 days', value: 168},
+        {name: '30 days', value: 720}
     ]
 };
 

@@ -116,6 +116,15 @@ a:visited {
 }
 
 .form-group {
+    &.indented {
+        margin-left: 16px;
+        
+        label.control-label:not(.error) {
+            font-size: 14px;
+            font-weight: 400;
+        }
+    }
+
     &.has-error {
         .form-control,
         .form-control:focus {
@@ -754,11 +763,6 @@ div[datepicker] {
         margin-right: 2px;
         .border-radius(2px);
     }
-}
-
-/* chart metric select */
-.select2-drop.metric2 {
-    border: 1px solid @default-color;
 }
 
 .select2-container {
@@ -2799,11 +2803,13 @@ zem-submission-status {
 .ui-select-container {
     cursor: pointer;
 
-    .ui-select-dropdown {
+    &.form-control .ui-select-dropdown {
         /* parent element has border (1px) so dropdown needs positioning) */
         left: -1px;
         width: calc(~"100% + 2px");
+    }
 
+    .ui-select-dropdown {
         .ui-select-highlight {
             font-weight: normal;
             text-decoration: underline;

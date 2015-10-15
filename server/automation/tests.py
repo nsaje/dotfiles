@@ -147,13 +147,16 @@ class BudgetDepletionTestCase(test.TestCase):
     )
     @patch('automation.settings.AUTOPILOT_MIN_CPC', decimal.Decimal('0.1'))
     @patch('automation.settings.AUTOPILOT_MAX_CPC', decimal.Decimal('3'))
-    @patch('automation.settings.AUTOPILOT_MIN_LOWERING_CPC_CHANGE', decimal.Decimal('0.2'))
-    @patch('automation.settings.AUTOPILOT_MAX_LOWERING_CPC_CHANGE', decimal.Decimal('0.3'))
+    @patch('automation.settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE', decimal.Decimal('0.2'))
+    @patch('automation.settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE', decimal.Decimal('0.3'))
+    @patch('automation.settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE', decimal.Decimal('0.05'))
+    @patch('automation.settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE', decimal.Decimal('0.25'))
     def test_calculate_new_autopilot_cpc(self):
         test_cases = (
             #  cpc, daily_budget, yesterday_spend, new_cpc, comments
             ('0', '10', '5', '0', [automation.constants.CpcChangeComment.CPC_NOT_SET, automation.constants.CpcChangeComment.CURRENT_CPC_TOO_LOW]),
             ('0.5', '10', '8', '0.75', []),
+            ('2.5', '10', '8', '2.75', []),
             ('0.5', '10', '10', '0.25', []),
             ('0.5', '10', '2', '0.55', []),
             ('0.5', '10', '0', '0.5', [automation.constants.CpcChangeComment.NO_YESTERDAY_SPEND]),
