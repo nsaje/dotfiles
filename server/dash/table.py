@@ -11,7 +11,6 @@ from dash import api
 from dash import stats_helper
 
 import utils.pagination
-from utils import statsd_helper
 from utils import exc
 from utils.sort_helper import sort_results
 
@@ -973,7 +972,6 @@ class AdGroupAdsPlusTableUpdates(object):
 
 
 class AdGroupAdsPlusTable(object):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_get')
     def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size, show_archived):
 
         ad_group = helpers.get_ad_group(user, ad_group_id)
