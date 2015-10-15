@@ -845,7 +845,7 @@ class CampaignConversionGoalsTestCase(TestCase):
                     'id': 1,
                     'type': 1,
                     'name': 'test conversion goal',
-                    'conversion_window': 7,
+                    'conversion_window': 168,
                     'goal_id': '1',
                     'pixel': {
                         'id': 1,
@@ -923,7 +923,7 @@ class CampaignConversionGoalsTestCase(TestCase):
                     'id': 1,
                     'type': 1,
                     'name': 'test conversion goal',
-                    'conversion_window': 7,
+                    'conversion_window': 168,
                     'goal_id': '1',
                     'pixel': {
                         'id': 1,
@@ -1164,7 +1164,7 @@ class CampaignConversionGoalsTestCase(TestCase):
                 'name': 'conversion pixel',
                 'type': 1,
                 'goal_id': '98765',
-                'conversion_window': 7,
+                'conversion_window': 168,
             }),
             content_type='application/json',
             follow=True,
@@ -1179,7 +1179,7 @@ class CampaignConversionGoalsTestCase(TestCase):
             'name': 'conversion pixel',
             'type': 1,
             'goal_id': '1',
-            'conversion_window': 7,
+            'conversion_window': 168,
         }
 
         response = self.client.post(
@@ -1210,7 +1210,7 @@ class CampaignConversionGoalsTestCase(TestCase):
             json.dumps({
                 'name': 'conversion goal',
                 'type': 1,
-                'conversion_window': 7,
+                'conversion_window': 168,
                 'goal_id': '1'
             }),
             content_type='application/json',
@@ -1223,7 +1223,7 @@ class CampaignConversionGoalsTestCase(TestCase):
             json.dumps({
                 'name': 'conversion goal 2',
                 'type': 1,
-                'conversion_window': 7,
+                'conversion_window': 168,
                 'goal_id': '1'
             }),
             content_type='application/json',
@@ -1242,7 +1242,7 @@ class CampaignConversionGoalsTestCase(TestCase):
                 'name': 'conversion pixel',
                 'type': 1,
                 'goal_id': '1',
-                'conversion_window': 7,
+                'conversion_window': 168,
             }),
             content_type='application/json',
             follow=True,
@@ -1255,7 +1255,7 @@ class CampaignConversionGoalsTestCase(TestCase):
                 'name': 'conversion pixel',
                 'type': 1,
                 'goal_id': '1',
-                'conversion_window': 7,
+                'conversion_window': 168,
             }),
             content_type='application/json',
             follow=True,

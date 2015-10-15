@@ -114,7 +114,7 @@ def get_csv_content(fieldnames, data, title_text=None, start_date=None, end_date
         # Format
         row = {}
         for key in fieldnames:
-            value = item[key]
+            value = item.get(key)
 
             if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr', 'visits', 'pageviews']:
                 value = 0
