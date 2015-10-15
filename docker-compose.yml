@@ -37,7 +37,7 @@ eins_static:
     volumes:
       - "./client/:/data/"
     entrypoint: /bin/bash
-    command: -c "bower --config.interactive=false install ; grunt connect:dev:keepalive"
+    command: -c "npm prune && npm install; bower --config.interactive=false install ; grunt ; grunt connect:dev:keepalive"
     tty: true
 
 eins:
