@@ -56,6 +56,7 @@ class AdGroupSettingsTest(TestCase):
         mock_manager.attach_mock(mock_order_ad_group_settings_update, 'mock_order_ad_group_settings_update')
 
         old_settings = ad_group.get_current_settings()
+        self.assertIsNotNone(old_settings.pk)
 
         response = self.client.put(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -100,7 +101,7 @@ class AdGroupSettingsTest(TestCase):
         # end date is in the past.
         mock_manager.assert_has_calls([
             call.mock_order_ad_group_settings_update(
-                ad_group, old_settings, new_settings, ANY, send=False),
+                ad_group, old_settings, new_settings, ANY, send=False, redirects_update=False),
             ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
             call.mock_actionlog_api.init_enable_ad_group(ad_group, ANY, order=ANY, send=False)
         ])
@@ -111,6 +112,8 @@ class AdGroupSettingsTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=1)
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
         old_settings = ad_group.get_current_settings()
+
+        self.assertIsNotNone(old_settings.pk)
 
         self.settings_dict['settings']['cpc_cc'] = None
         self.settings_dict['settings']['daily_budget_cc'] = None
@@ -138,7 +141,74 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(new_settings.daily_budget_cc, None)
 
         mock_order_ad_group_settings_update.assert_called_with(
-            ad_group, old_settings, new_settings, ANY, send=False)
+            ad_group, old_settings, new_settings, ANY, send=False, redirects_update=False)
+
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
+                                           mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=10)
+
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        # this ad group does not have settings
+        current_settings = ad_group.get_current_settings()
+        self.assertIsNone(current_settings.pk)
+
+        self.settings_dict['settings']['id'] = 10
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        self.assertEqual(json.loads(response.content), {
+            'data': {
+                'action_is_waiting': True,
+                'settings': {
+                    'cpc_cc': '0.30',
+                    'daily_budget_cc': '200.00',
+                    'end_date': '2015-06-30',
+                    'id': '10',
+                    'name': 'Test ad group name',
+                    'start_date': '2015-05-01',
+                    'state': 1,
+                    'target_devices': ['desktop'],
+                    'target_regions': ['693', 'GB'],
+                    'tracking_code': '',
+                    'enable_ga_tracking': True,
+                    'adobe_tracking_param': '',
+                    'enable_adobe_tracking': False
+
+                }
+            },
+            'success': True
+        })
+
+        new_settings = ad_group.get_current_settings()
+        self.assertIsNotNone(new_settings.pk)
+
+        self.assertTrue(mock_actionlog_api.init_enable_ad_group.called)
+
+        # uses 'ANY' instead of 'current_settings' because before settings are created, the
+        # 'get_current_settings' returns a new AdGroupSettings instance each time
+        mock_order_ad_group_settings_update.assert_called_with(
+            ad_group, ANY, new_settings, response.wsgi_request, send=False, redirects_update=True)
+
+        # when saving settings, previous ad_group.name gets added to previous settings
+        # - and the only time it makes a real difference is the first time the settings are
+        # saved
+        current_settings.ad_group_name = 'test adgroup 10'
+
+        self.assertDictEqual(
+            mock_order_ad_group_settings_update.call_args[0][1].get_settings_dict(),
+            current_settings.get_settings_dict()
+        )
+
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.SET_AD_GROUP_SETTINGS,
+            ad_group=ad_group)
 
     def test_put_tracking_codes_with_permission(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
