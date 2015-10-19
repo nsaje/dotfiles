@@ -51,7 +51,6 @@ STAGING_SERVERS = {
 PRODUCTION_SERVERS = {
     'knot01': 'knot01.zemanta.com',
     'knot02': 'knot02.zemanta.com',
-    'knot03': 'knot03.zemanta.com',
 }
 
 GIT_REPOSITORY = 'git@github.com:Zemanta/zemanta-eins.git'
