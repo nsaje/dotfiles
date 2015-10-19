@@ -22,7 +22,10 @@ oneApp.constant('regions',{
         return location.type === 'C';
     },
     isSubdivision: function(location) {
-    	return location.type === 'S';
+        return location.type === 'S';
+    },
+    isUSState: function(location) {
+        return location.type === 'S' && location.code.indexOf('US') === 0;
     },
     regions: [{"code": "BD","type": "C","name": "Bangladesh"},
               {"code": "BE","type": "C","name": "Belgium"},

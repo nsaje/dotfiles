@@ -9,23 +9,12 @@
     </div>
 </div>
 
-<div ng-if="showUndo() && selectedLocationCodes.indexOf('US')>=0">
-    <b>{{ selectedDMAs.join(", ") }}</b> 
-    <ng-pluralize count="selectedDMAs.length" when="{'1': 'was', 'other': 'were'}"></ng-pluralize> 
+<div ng-if="showUndo()">
+    <b>{{someReplacedNames.join(", ")}}</b> 
+    <ng-pluralize count="someReplacedNames.length" when="{'1': 'was', 'other': 'were'}"></ng-pluralize> 
     replaced by 
-    <b>United States</b> 
-    since 
-    <ng-pluralize count="selectedDMAs.length" when="{'1': 'it is', 'other': 'they are'}"></ng-pluralize> 
-    a broader location targeting. 
-    <a href="" ng-click="undo()">Undo?</a>
-</div>
-<div ng-if="showUndo() && selectedLocationCodes.indexOf('US')<0">
-    <b>{{ selectedDMAs.join(", ") }}</b> 
-    replaced 
-    <b>United States</b> 
-    because 
-    <ng-pluralize count="selectedDMAs.length" when="{'1': 'it is', 'other': 'they are'}"></ng-pluralize> 
-    a subset location targeting. 
+    <b>{{name}}</b> 
+    since it is a {{reason}} location targeting.
     <a href="" ng-click="undo()">Undo?</a>
 </div>
 <select ui-select2="selectorConfig" ng-model="selectedLocationCode" ng-change="addLocation()" data-placeholder="Add Location">
@@ -34,9 +23,9 @@
         <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isCountry" value="{{location.code}}">{{location.name}}</option>
     </optgroup>
     <optgroup label="DMAs (United States)">
-        <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isDMA" value="{{location.code}}" ng-disabled="dmaNotSupportedText !== undefined">US: {{location.name}}</option>
+        <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isDMA" value="{{location.code}}">US: {{location.name}}</option>
     </optgroup>
-    <optgroup label="Subdivision (United States)">
-        <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isSubdivision" value="{{location.code}}" ng-disabled="dmaNotSupportedText !== undefined">US: {{location.name}}</option>
+    <optgroup label="U.S. States">
+        <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isUSState" value="{{location.code}}">{{location.name}}</option>
     </optgroup>
 </select>
