@@ -19,7 +19,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         date = parse_date(options, 'date')
-        account_ids = parse_id_list(options, 'account_id')
+        account_ids = parse_id_list(options, 'account_ids')
 
         if account_ids is not None:
             accounts = models.Account.objects.filter(id__in=account_ids)
