@@ -777,6 +777,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'ctr': 100.0,
             u'domain': None,
             u'domain_link': u'',
+            u'blacklisted': u'Active',
             u'exchange': 'someexchange',
             u'impressions': 10560,
             u'domain': 'example.com',
@@ -858,7 +859,7 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
-        self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
+        self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
 
     def test_get_reverse_order(self, mock_query):
         date = datetime.date(2015, 2, 22)
@@ -922,7 +923,7 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
-        self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
+        self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
 
 
 @patch('reports.redshift.get_cursor')
