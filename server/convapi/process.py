@@ -36,26 +36,27 @@ def _get_dates_to_sync():
 
 
 def _get_accounts_to_sync():
-    return [acc for acc in dash.models.Account.objects.all() if not acc.is_archived()]
+    conversion_pixels = dash.models.ConversionPixel.objects.all()
+    return set(cp.account_id for cp in conversion_pixels)
 
 
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions_full')
 def update_touchpoint_conversions_full():
     dates = _get_dates_to_sync()
-    accounts = _get_accounts_to_sync()
-    update_touchpoint_conversions(dates, accounts)
+    account_ids = _get_accounts_to_sync()
+    update_touchpoint_conversions(dates, account_ids)
 
     # all missing dates are guaranteed to be synced so last sync dt can be updated
-    dash.models.ConversionPixel.objects.filter(account__in=accounts).update(last_sync_dt=datetime.datetime.utcnow())
+    dash.models.ConversionPixel.objects.filter(account_id__in=account_ids).update(last_sync_dt=datetime.datetime.utcnow())
 
 
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')
-def update_touchpoint_conversions(dates, accounts):
-    for account in accounts:
+def update_touchpoint_conversions(dates, account_ids):
+    for account_id in account_ids:
         for date in dates:
-            redirects_impressions = redirector_helper.fetch_redirects_impressions(date, account.id)
+            redirects_impressions = redirector_helper.fetch_redirects_impressions(date, account_id)
             touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
-            reports.update.update_touchpoint_conversions(date, touchpoint_conversion_pairs)
+            reports.update.update_touchpoint_conversions(date, account_id, touchpoint_conversion_pairs)
 
 
 @statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
