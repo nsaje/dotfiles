@@ -13,8 +13,8 @@ from utils import statsd_helper
 
 logger = logging.getLogger(__name__)
 
-
-ADDITIONAL_SYNC_HOURS = 2
+# take ET into consideration - server time is in UTC while we query for ET dates
+ADDITIONAL_SYNC_HOURS = 10
 
 
 def _get_dates_to_sync():
@@ -35,19 +35,27 @@ def _get_dates_to_sync():
     return dates
 
 
+def _get_accounts_to_sync():
+    return [acc for acc in dash.models.Account.objects.all() if not acc.is_archived()]
+
+
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions_full')
 def update_touchpoint_conversions_full():
     dates = _get_dates_to_sync()
-    update_touchpoint_conversions(dates)
-    dash.models.ConversionPixel.objects.all().update(last_sync_dt=datetime.datetime.utcnow())
+    accounts = _get_accounts_to_sync()
+    update_touchpoint_conversions(dates, accounts)
+
+    # all missing dates are guaranteed to be synced so last sync dt can be updated
+    dash.models.ConversionPixel.objects.filter(account__in=accounts).update(last_sync_dt=datetime.datetime.utcnow())
 
 
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')
-def update_touchpoint_conversions(dates):
-    for date in dates:
-        redirects_impressions = redirector_helper.fetch_redirects_impressions(date)
-        touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
-        reports.update.update_touchpoint_conversions(date, touchpoint_conversion_pairs)
+def update_touchpoint_conversions(dates, accounts):
+    for account in accounts:
+        for date in dates:
+            redirects_impressions = redirector_helper.fetch_redirects_impressions(date, account.id)
+            touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
+            reports.update.update_touchpoint_conversions(date, touchpoint_conversion_pairs)
 
 
 @statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
