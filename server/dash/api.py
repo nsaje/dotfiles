@@ -532,7 +532,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or
                field_name == 'ad_group_name' and source.can_modify_ad_group_name() or
                field_name == 'target_regions' and can_modify_selected_target_regions_automatically(
-                   source, did_countries_change, did_dmas_change) and not force_manual_change):
+                   source, did_countries_change, did_dmas_change)) and not force_manual_change:
                 new_field_name = field_name
                 if field_name == 'ad_group_name':
                     new_field_name = 'name'
