@@ -107,7 +107,7 @@ def process_touchpoint_conversions(redirects_impressions):
             try:
                 pixel = dash.models.ConversionPixel.objects.get(slug=slug, account_id=account_id)
             except dash.models.ConversionPixel.DoesNotExist:
-                logger.warning('Unknown conversion pixel. slug=%s account_id=%s', slug, account_id)
+                logger.info('Unknown conversion pixel. slug=%s account_id=%s', slug, account_id)
                 continue
 
             if pixel.archived:
