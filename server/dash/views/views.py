@@ -39,6 +39,8 @@ import actionlog.api
 import actionlog.api_contentads
 import actionlog.sync
 import actionlog.zwei_actions
+import actionlog.models
+import actionlog.constants
 
 from dash import models
 from dash import constants
@@ -1047,7 +1049,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
         publishers_to_add = set([])
 
-        blacklist_list = []
         source_cache = {}
         failed_publisher_mappings = set([])
         count_failed_publisher = 0
@@ -1074,14 +1075,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 continue
 
             publishers_to_add.add((domain, ad_group.id, source_cache[source_slug].tracking_slug,))
-            # store blacklisted publishers and push to other sources
-            blacklist_list.append(
-                models.PublisherBlacklist(
-                    name=domain,
-                    ad_group=ad_group,
-                    source=source_cache[source_slug]
-                )
-            )
 
         if len(failed_publisher_mappings) > 0:
             logger.warning('Failed mapping {count} publisher source slugs {slug}'.format(
@@ -1089,22 +1082,33 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 slug=','.join(failed_publisher_mappings))
             )
 
-        if blacklist_list:
-            if state == constants.PublisherStatus.BLACKLISTED:
-                models.PublisherBlacklist.objects.bulk_create(blacklist_list)
-            elif state == constants.PublisherStatus.ENABLED:
-                query_set = models.PublisherBlacklist.objects.none()
-                for pub_blacklist in blacklist_list:
-                    query_set = query_set | models.PublisherBlacklist.objects.filter(
-                        name=pub_blacklist.name,
-                        ad_group=pub_blacklist.ad_group,
-                        source=pub_blacklist.source
-                    )
-                query_set.delete()
-            else:
-                raise Exception("Not implemented")
+        publisher_blacklist = [
+            {
+                'domain': dom,
+                'ad_group_id': adgroup_id,
+                'tracking_slug': tracking_slug,
+            }\
+            for (dom, adgroup_id, tracking_slug,) in publishers_to_add
+        ]
+        if len(publisher_blacklist):
+            actionlogs_to_send = []
+            current_settings = ad_group.get_current_settings()
+            new_settings = current_settings.copy_settings()
 
-        self._add_to_history(request, ad_group, state, blacklist_list)
+            with transaction.atomic():
+                new_settings.save(request)
+                actionlogs_to_send.extend(
+                    api.create_ad_group_publisher_blacklist_actions(
+                        ad_group,
+                        request,
+                        state,
+                        publisher_blacklist,
+                        send=False
+                    )
+                )
+            actionlog.zwei_actions.send(actionlogs_to_send)
+
+        self._add_to_history(request, ad_group, state, publisher_blacklist)
         response = {
             "success": True,
         }

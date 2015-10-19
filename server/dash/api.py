@@ -65,6 +65,7 @@ def update_ad_group_source_state(ad_group_source, conf):
                     key == 'state' and ad_group_source_state.state != val,
                     key == 'cpc_cc' and ad_group_source_state.cpc_cc != val,
                     key == 'daily_budget_cc' and ad_group_source_state.daily_budget_cc != val,
+                    key == 'publisher_blacklist',
                 ]):
                     need_update = True
                     break
@@ -86,6 +87,44 @@ def update_ad_group_source_state(ad_group_source, conf):
                 new_state.cpc_cc = val
             if key == 'daily_budget_cc':
                 new_state.daily_budget_cc = val
+            if key == 'publisher_blacklist':
+                ad_group_cache = {}
+                source_cache = {}
+                blacklist_list = []
+                for pub_blacklist in val['blacklist']:
+                    ad_group_id = pub_blacklist['ad_group_id']
+                    if ad_group_id not in ad_group_cache:
+                        ad_group_cache[ad_group_id] =\
+                            models.AdGroup.objects.get(pk=ad_group_id)
+
+                    source_slug = pub_blacklist['tracking_slug']
+                    if source_slug not in source_cache:
+                        ad_group_cache[source_slug] =\
+                            models.AdGroup.objects.get(pk=source_slug)
+
+
+                    # store blacklisted publishers and push to other sources
+                    blacklist_list.append(
+                        models.PublisherBlacklist(
+                            name=pub_blacklist['domain'],
+                            ad_group=ad_group_cache[ad_group_id],
+                            source=source_cache[source_slug]
+                        )
+                    )
+                state = val['state']
+                if state == constants.PublisherStatus.BLACKLISTED:
+                    models.PublisherBlacklist.objects.bulk_create(blacklist_list)
+                elif state == constants.PublisherStatus.ENABLED:
+                    query_set = models.PublisherBlacklist.objects.none()
+                    for pub_blacklist in blacklist_list:
+                        query_set = query_set | models.PublisherBlacklist.objects.filter(
+                            name=pub_blacklist.name,
+                            ad_group=pub_blacklist.ad_group,
+                            source=pub_blacklist.source
+                        )
+                    query_set.delete()
+                else:
+                    raise Exception("Not implemented")
         new_state.save()
 
 
@@ -488,7 +527,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or
                field_name == 'ad_group_name' and source.can_modify_ad_group_name() or
                field_name == 'target_regions' and can_modify_selected_target_regions_automatically(
-                   source, did_countries_change, did_dmas_change)) and not force_manual_change:
+                   source, did_countries_change, did_dmas_change) and not force_manual_change):
                 new_field_name = field_name
                 if field_name == 'ad_group_name':
                     new_field_name = 'name'
@@ -553,6 +592,40 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     new_field_value
                 )
 
+    return actions
+
+
+def create_ad_group_publisher_blacklist_actions(ad_group, request, state, publisher_blacklist_list, send=True):
+    # TODO: Rethink whether a direct API call is better than doing this via
+    # adgroup settings
+    order = actionlog.models.ActionLogOrder.objects.create(
+        order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+    )
+
+    actions = []
+
+    ad_group_sources = ad_group.adgroupsource_set.all()
+    for ad_group_source in ad_group_sources:
+        if not ad_group_source.source.can_modify_publisher_blacklist_automatically():
+            continue
+        publisher_source = [publisher for publisher in publisher_blacklist_list
+            if publisher.source.id == ad_group_source.source.id
+        ]
+
+        actions.append(
+            actionlog.api.set_ad_group_source_settings(
+                {
+                    'publisher_blacklist': {
+                        'state': state,
+                        'blacklist': [pub.name for pub in publisher_source],
+                    }
+                },
+                ad_group_source,
+                request,
+                order,
+                send=send
+            )
+        )
     return actions
 
 

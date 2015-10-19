@@ -621,6 +621,10 @@ class SourceType(models.Model):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_FETCH_REPORT_BY_PUBLISHER in self.available_actions
 
+    def can_modify_publisher_blacklist_automatically(self):
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC in self.available_actions
+
     def __str__(self):
         return self.type
 
@@ -718,6 +722,9 @@ class Source(models.Model):
 
     def can_fetch_report_by_publisher(self):
         return self.source_type.can_fetch_report_by_publisher()
+
+    def can_modify_publisher_blacklist_automatically(self):
+        return self.source_type.can_modify_publisher_blacklist_automatically() and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
