@@ -152,7 +152,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             'fields': [
                'publisher_selected',
                'domain',
-               'blacklisted_status',
+               'blacklisted',
                'domain_link',
                'exchange',
                'cost', 
@@ -193,17 +193,16 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             initialOrder: 'asc'
         },
         {
+
             name: 'Blacklisted',
-            field: 'blacklisted_status',
-            unselectable: true,
+            field: 'blacklisted',
             checked: true,
-            type: 'notification',
-            extraTdCss: 'notification',
+            extraTdCss: 'no-wrap',
+            type: 'text',
             shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
+            help: 'Blacklisted status of a publisher.',
             totalRow: false,
-            help: 'Blacklist status of a particular publisher (blacklisted or enabled).',
             order: true,
-            orderField: 'blacklisted_status',
             initialOrder: 'asc'
         },
         {

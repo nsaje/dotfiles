@@ -1593,6 +1593,24 @@ class PublishersTable(api_common.BaseApiView):
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
         publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(publishers_data, page, size)
+
+        # fetch blacklisted status from db
+        pub_blacklist_qs = models.PublisherBlacklist.objects.none()
+        for publisher_data in publishers_data:
+            publisher_data['blacklisted'] = 'Active'
+            domain, source_slug = publisher_data['domain'], publisher_data['exchange']
+            pub_blacklist_qs |= models.PublisherBlacklist.objects.filter(
+                ad_group=adgroup,
+                name=domain,
+                source__tracking_slug__endswith=source_slug
+            )
+        blacklisted_publishers = pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
+        blacklisted_pub_values = [pub.values()  for pub in blacklisted_publishers]
+        for publisher_data in publishers_data:
+            domain, source_slug = publisher_data['domain'], publisher_data['exchange']
+            if [source_slug.replace('b1_', ''), adgroup.id, domain] in blacklisted_pub_values:
+                publisher_data['blacklisted'] = 'Blacklisted'
+
         response = {
             'rows': self.get_rows(
                 map_exchange_to_source_name,
@@ -1646,6 +1664,7 @@ class PublishersTable(api_common.BaseApiView):
             row = {
                 'domain': domain,
                 'domain_link': domain_link,
+                'blacklisted': publisher_data['blacklisted'],
                 'exchange': source_name,
                 'cost': publisher_data.get('cost', 0),
                 'cpc': publisher_data.get('cpc', 0),
