@@ -57,7 +57,7 @@ def insert_adgroup(ad_group_id, tracking_codes, enable_ga_tracking, enable_adobe
 def fetch_redirects_impressions(date, account_id=None, timeout=300):
     data = None
     if account_id:
-        data = urllib.encode({'account': account_id})
+        data = urllib.urlencode({'account': account_id})
     job_id = _call_api_retry(settings.R1_CONVERSION_STATS_URL.format(date=date.strftime('%Y-%m-%d')),
                              data=data, method='GET')
 
