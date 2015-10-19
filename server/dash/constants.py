@@ -54,7 +54,7 @@ class AdTargetDevice(ConstantBase):
 
 
 class AdTargetLocation(ConstantBase):
-    _VALUES = dict(regions.COUNTRY_BY_CODE.items() + regions.DMA_BY_CODE.items())
+    _VALUES = dict(regions.COUNTRY_BY_CODE.items() + regions.DMA_BY_CODE.items() + regions.SUBDIVISION_BY_CODE.items())
 
     @classmethod
     def get_choices(cls):
