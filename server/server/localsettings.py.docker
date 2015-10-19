@@ -1,0 +1,160 @@
+import os
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
+
+STATS_DB_NAME = 'stats'
+STATS_E2E_DB_NAME = 'stats_e2e'
+
+# Database
+# https://docs.djangoproject.com/en/1.7/ref/settings/#databases
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one'),
+        'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'one'),
+        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'eins'),
+        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
+        'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
+    },
+    'e2e': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': ''
+    },
+    STATS_DB_NAME: {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': 5439
+    },
+    STATS_E2E_DB_NAME: {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': 5439
+    }
+}
+
+ALLOWED_HOSTS = []
+
+BASE_URL = 'https://one.zemanta.com'
+
+# Email settings
+EMAIL_USE_TLS = True
+EMAIL_HOST = ''
+EMAIL_PORT = 587
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+
+SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = False
+FROM_EMAIL = 'help-test@zemanta.com'
+
+MAILGUN_API_KEY = ''
+
+# Path to log file
+LOG_FILE = '/app/logs/eins-log.log'
+
+# Stats
+STATSD_HOST = os.environ.get('STATSD_PORT_8125_UDP_ADDR', 'statsd')
+STATSD_PORT = int(os.environ.get('STATSD_PORT_8125_UDP_PORT', '8125'))
+
+# Saucelabs
+SAUCELABS_USERNAME = ''
+SAUCELABS_ACCESS_KEY = ''
+
+# Auth
+GOOGLE_OAUTH_ENABLED = False
+GOOGLE_OAUTH_CLIENT_ID = ''
+GOOGLE_OAUTH_CLIENT_SECRET = ''
+
+# Client static files
+CLIENT_STATIC_URL = ''
+
+# Eins host
+EINS_HOST = ''
+
+# Zwei API
+ZWEI_API_TASKS_URL = 'http://127.0.0.1/purcel/tasks/'
+ZWEI_API_GET_DASH_URL_URL = 'http://127.0.0.1/purcel/dash_url/'
+ZWEI_API_SIGN_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+# Source credentials encryption key
+CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'  # has to be 32 bytes
+
+# Pagerduty settings
+PAGER_DUTY_ENABLED = False
+PAGER_DUTY_URL = ''
+PAGER_DUTY_ADOPS_SERVICE_KEY = ''
+PAGER_DUTY_SYSOPS_SERVICE_KEY = ''
+PAGER_DUTY_ENGINEERS_SERVICE_KEY = ''
+
+# Sentry config
+RAVEN_CONFIG = {
+    'dsn': '',
+}
+
+# Amazon AWS keys
+AWS_ACCESS_KEY_ID = ''
+AWS_SECRET_ACCESS_KEY = ''
+
+# S3 related settings
+S3_BUCKET = ''
+USE_S3 = False
+
+# adgroup-level reports aggregations
+QUERY_AGGREGATE_REPORTS=False
+
+# email of the demo user
+DEMO_USER_EMAIL = 'test.account@zemanta.si'
+DEMO_USER_PASSWORD = 'zemantadsp'
+
+# cache settings
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+    }
+}
+USE_HASH_CACHE = False
+HASH_CACHE_TTL = 24 * 60 * 60
+
+Z3_API_IMAGE_URL = ''
+Z3_API_THUMBNAIL_URL = ''
+
+# QUEUES
+BROKER_TRANSPORT = 'sqs'
+BROKER_USER = AWS_ACCESS_KEY_ID
+BROKER_PASSWORD = AWS_SECRET_ACCESS_KEY
+
+BROKER_URL = BROKER_TRANSPORT + '://' + BROKER_USER + ':' + BROKER_PASSWORD + '@'
+
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_ACCEPT_CONTENT = ['pickle']
+
+CELERY_QUEUE_PREFIX = 'test'
+CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_QUEUE_PREFIX + '-' +'convapi'
+CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_QUEUE_PREFIX + '-' + 'convapi_v2'
+
+BROKER_TRANSPORT_OPTIONS = {
+    'visibility_timeout': 10 * 60,
+    'region': 'us-east-1',
+    'polling_interval': 10,
+}
+
+R1_API_SIGN_KEY = ''
+R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
+R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
+R1_VALIDATE_API_URL = 'https://r1.zemanta.com/api/validate/'
+R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/'
+R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions/request/{date}/'
+R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions/result/{job_id}/'
+
+SHARETHROUGH_PARAM_SIGN_KEY = ''

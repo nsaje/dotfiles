@@ -49,7 +49,7 @@ def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays
         campaign.name,
         campaign_url,
         campaign.account.name,
-        [account_manager.email, sales_rep.email],
+        emails,
         available_budget,
         yesterdays_spend,
         total_daily_budget)
