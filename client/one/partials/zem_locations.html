@@ -1,7 +1,7 @@
 <div ng-show="selectedLocationCodes" class="selected-locations">
     <div class="location-tag" ng-if="!selectedLocationCodes.length"><span class="location-name">Worldwide</span></div>
     <div class="location-tag" ng-repeat="location in selectedLocations()" ng-click="removeSelectedLocation(location)">
-        <span ng-if="regions.isDMA(location)" class="location-dma">US</span>
+        <span ng-if="regions.isDMA(location) || regions.isUSState(location)" class="location-dma">US</span>
         <span class="location-name">
             {{location.name}}
             <img class="remove" ng-src="{{ config.static_url }}/one/img/x_gray.svg">

@@ -13,9 +13,6 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
             $scope.regions = regions;
             $scope.config = config;
 
-            $scope.previousSelection = undefined;
-            $scope.selectedDMAs = undefined;
-
             $scope.selectedLocationCode = undefined;
 
             $scope.selectedLocations = function() {
@@ -81,6 +78,8 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 }
             };
 
+            // return location codes from the currently selected location codes that
+            // should be replaced by the given location code and state the reason
             var getLocationCodesToBeReplacedByLocationCode = function(locationCode) {
                 var region = regions.getByCode(locationCode);
 
@@ -105,6 +104,7 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 }
             }
             
+            // return at most 3 names from the given list of location codes
             var getSomeNames = function(locationCodes) {
                 var names = [];
 
@@ -114,7 +114,7 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 }
 
                 // if more names are available, add "..."
-                if(locationCodes.length > 3) {
+                if (locationCodes.length > 3) {
                     names.push('...');
                 }
 
@@ -181,7 +181,6 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
 
             $scope.resetWarnings = function() {
                 $scope.previousSelection = undefined;
-                $scope.selectedDMAs = undefined;
             };
         }]
     };
