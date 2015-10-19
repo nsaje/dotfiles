@@ -21,9 +21,8 @@ class Command(BaseCommand):
         date = parse_date(options, 'date')
         account_ids = parse_id_list(options, 'account_ids')
 
-        if account_ids is not None:
-            accounts = models.Account.objects.filter(id__in=account_ids)
-        else:
-            accounts = [acc for acc in models.Account.objects.all() if not acc.is_archived()]
+        if account_ids is None:
+            conversion_pixels = models.ConversionPixel.objects.all()
+            account_ids = set(cp.account_id for cp in conversion_pixels)
 
-        process.update_touchpoint_conversions([date], accounts)
+        process.update_touchpoint_conversions([date], account_ids)
