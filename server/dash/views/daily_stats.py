@@ -123,9 +123,9 @@ class AccountDailyStats(BaseDailyStatsView):
             }
             if request.user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
                 if sources:
-                    selected_ids['source'] = sources
+                    selected_kwargs['source'] = ids
                 else:
-                    selected_ids['campaign']= ids
+                    selected_kwargs['campaign'] = ids
             else:
                 selected_kwargs['source_id' if sources else 'ad_group__campaign__id'] = ids
 

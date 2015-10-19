@@ -96,18 +96,9 @@ class AdGroupSettings(api_common.BaseApiView):
         current_settings.ad_group_name = previous_ad_group_name
         new_settings.ad_group_name = ad_group.name
 
-        if request.user.has_perm('zemauth.add_media_sources_automatically') and\
-           current_settings.pk is None and\
-           not models.AdGroupSource.objects.filter(ad_group=ad_group).exists():
+        user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS
 
-            user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS_WITH_AUTO_ADD_MEDIA_SOURCES
-
-            self._add_media_sources(ad_group, new_settings, request)
-            # no need to create updates as campaigns are not created yet
-        else:
-            user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS
-
-            self._send_update_actions(ad_group, current_settings, new_settings, request)
+        self._send_update_actions(ad_group, current_settings, new_settings, request)
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
@@ -179,7 +170,8 @@ class AdGroupSettings(api_common.BaseApiView):
             new_settings.save(request)
 
             actionlogs_to_send.extend(
-                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False))
+                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False,
+                                                   redirects_update=current_settings.pk is None))
 
             if current_settings.state == constants.AdGroupSettingsState.INACTIVE and\
                new_settings.state == constants.AdGroupSettingsState.ACTIVE:
