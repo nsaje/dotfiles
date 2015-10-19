@@ -58,7 +58,7 @@ def fetch_redirects_impressions(date, account_id=None, timeout=300):
     url = settings.R1_CONVERSION_STATS_URL
     if account_id:
         url = url + '?' + urllib.urlencode({'account': account_id})
-    job_id = _call_api_retry(settings.R1_CONVERSION_STATS_URL.format(date=date.strftime('%Y-%m-%d')), method='GET')
+    job_id = _call_api_retry(url.format(date=date.strftime('%Y-%m-%d')), method='GET')
 
     start_time = time.time()
     while (time.time() - start_time) < timeout:
