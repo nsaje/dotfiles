@@ -54,6 +54,7 @@ def update_touchpoint_conversions_full():
 def update_touchpoint_conversions(dates, account_ids):
     for account_id in account_ids:
         for date in dates:
+            logger.info('Fetching touchpoint conversions for date %s and account id %s.', date, account_id)
             redirects_impressions = redirector_helper.fetch_redirects_impressions(date, account_id)
             touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
             reports.update.update_touchpoint_conversions(date, account_id, touchpoint_conversion_pairs)
