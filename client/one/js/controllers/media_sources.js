@@ -16,6 +16,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
     $scope.sources = [];
+    $scope.exportBaseUrlLevel = '';
+    $scope.exportOptions = [];
 
     var userSettings = null;
 
@@ -85,6 +87,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             });
         }
     };
+
+    $scope.getExportBaseUrlLevel = function () {
+      return constants.level.ALL_ACCOUNTS
+    }
 
     $scope.columns = [
         {
@@ -259,7 +265,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         {
             'name': 'Traffic Acquisition',
             'fields': [
-               'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'cost', 
+               'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'cost',
                'cpc', 'clicks', 'impressions', 'ctr', 'yesterday_cost'
             ]
         },
@@ -267,7 +273,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             'name': 'Audience Metrics',
             'fields': [
                 'visits', 'pageviews', 'percent_new_users',
-                'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'click_discrepancy'
             ]
         },
@@ -462,15 +468,39 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
             $scope.localStoragePrefix = 'allAccountSources';
             $scope.chartMetrics = options.allAccountsChartMetrics;
-
             $scope.chartMetric1 = constants.chartMetric.COST;
             $scope.chartMetric2 = constants.chartMetric.CLICKS;
+            $scope.exportBaseUrlLevel = constants.level.ALL_ACCOUNTS;
+            $scope.exportOptions = [
+              {name: 'Current View (CSV)', value: 'view-csv'},
+              {name: 'Current View (Excel)', value: 'view-excel'}
+            ];
         } else if ($scope.level === constants.level.ACCOUNTS) {
             $scope.localStoragePrefix = 'accountSources';
             $scope.chartMetrics = options.accountChartMetrics;
+            $scope.exportBaseUrlLevel = constants.level.ACCOUNTS;
+            $scope.exportOptions = [
+              {name: 'Current View (CSV)', value: 'view-csv'},
+              {name: 'Current View (Excel)', value: 'view-excel'},
+              {name: 'By Campaign (CSV)', value: 'campaign-csv'},
+              {name: 'By Campaign (Excel)', value: 'campaign-excel'},
+              {name: 'By Ad Group (CSV)', value: 'adgroup-csv'},
+              {name: 'By Ad Group (Excel)', value: 'adgroup-excel'},
+              {name: 'By Content Ad (CSV)', value: 'contentad-csv'},
+              {name: 'By Contend Ad (Excel)', value: 'contentad-excel'}
+            ];
         } else if ($scope.level === constants.level.CAMPAIGNS) {
             $scope.localStoragePrefix = 'campaignSources';
             $scope.chartMetrics = options.campaignChartMetrics;
+            $scope.exportBaseUrlLevel = constants.level.CAMPAIGNS;
+            $scope.exportOptions = [
+              {name: 'Current View (CSV)', value: 'view-csv'},
+              {name: 'Current View (Excel)', value: 'view-excel'},
+              {name: 'By Ad Group (CSV)', value: 'adgroup-csv'},
+              {name: 'By Ad Group (Excel)', value: 'adgroup-excel'},
+              {name: 'By Content Ad (CSV)', value: 'contentad-csv'},
+              {name: 'By Contend Ad (Excel)', value: 'contentad-excel'}
+            ];
         }
 
         userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);

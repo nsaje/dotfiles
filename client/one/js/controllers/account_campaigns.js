@@ -24,8 +24,12 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     };
 
     $scope.exportOptions = [
-        {name: 'By Day (CSV)', value: 'csv'},
-        {name: 'By Day (Excel)', value: 'excel'}
+        {name: 'Current View (CSV)', value: 'view-csv'},
+        {name: 'Current View (Excel)', value: 'view-excel'},
+        {name: 'By Ad Group (CSV)', value: 'adgroup-csv'},
+        {name: 'By Ad Group (Excel)', value: 'adgroup-excel'},
+        {name: 'By Content Ad (CSV)', value: 'contentad-csv'},
+        {name: 'By Contend Ad (Excel)', value: 'contentad-excel'}
     ];
 
     $scope.updateSelectedCampaigns = function (campaignId) {
@@ -237,7 +241,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             'name': 'Audience Metrics',
             'fields': [
                 'visits', 'pageviews', 'percent_new_users',
-                'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'click_discrepancy'
             ]
         },
@@ -391,7 +395,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
                 if ($scope.user.showOnboardingGuidance) {
                     $scope.user.automaticallyCreateAdGroup = $scope.rows.length == 0;
                 }
-                
+
             },
             function (data) {
                 // error

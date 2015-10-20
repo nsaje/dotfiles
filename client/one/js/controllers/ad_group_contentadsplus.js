@@ -38,19 +38,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         currentPage: 1
     };
 
-    $scope.exportOptions = [{
-        name: 'By Content Ad (CSV)',
-        value: 'content-ad-csv'
-    }, {
-        name: 'By Content Ad (Excel)',
-        value: 'content-ad-excel'
-    }, {
-        name: 'By Day (CSV)',
-        value: 'day-csv'
-    }, {
-        name: 'By Day (Excel)',
-        value: 'day-excel'
-    }];
+    $scope.exportOptions = [
+      {name: 'Current View (CSV)', value: 'view-csv'},
+      {name: 'Current View (Excel)', value: 'view-excel'}
+    ];
 
     $scope.bulkActions = [{
         name: 'Pause',
@@ -752,7 +743,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         var userSettings = zemUserSettings.getInstance($scope, 'adGroupContentAdsPlus');
         var page = parseInt($location.search().page || '1');
-        var size = parseInt($location.search().size || '0'); 
+        var size = parseInt($location.search().size || '0');
 
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');

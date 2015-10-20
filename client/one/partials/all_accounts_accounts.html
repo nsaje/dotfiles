@@ -12,13 +12,14 @@
             </div>
 
             <div class="loader" ng-show="requestInProgress"></div>
-                
+
             <div class="button-bar-item export-container">
                 <zem-export
                     start-date="dateRange.startDate"
                     end-date="dateRange.endDate"
                     base-url="'api/accounts/'"
-                    options="exportOptions">
+                    options="exportOptions"
+                    columns="columns">
                 </zem-export>
             </div>
 
@@ -64,7 +65,7 @@
             <form ng-submit="loadPage()">
                 <input class="page-num form-control" type="number" min="1" max="{{ pagination.numPages }}" ng-model="pagination.currentPage">
             </form>
-            
+
             <span>Show rows</span>
             <zem-paging-dropdown class="show-rows" counts="sizeRange" selection="size"></zem-paging-dropdown>
             <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(1)"><img ng-src="{{ config.static_url }}/one/img/arrow-first.svg"></div>

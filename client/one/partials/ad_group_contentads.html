@@ -9,7 +9,8 @@
                 start-date="dateRange.startDate"
                 end-date="dateRange.endDate"
                 base-url="'api/ad_groups/' + $state.params.id + '/contentads/'"
-                options="exportOptions">
+                options="exportOptions"
+                columns="columns">
             </zem-export>
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories"></zem-custom-table-cols>
 
@@ -49,7 +50,7 @@
                 * Postclick metrics are incomplete for the selected date range. Please check the graph for more details.
             </div>
         </div>
-        
+
         <div class="pagination" ng-show="rows.length">
             <span>Go to page</span>
             <form ng-submit="loadPage()">

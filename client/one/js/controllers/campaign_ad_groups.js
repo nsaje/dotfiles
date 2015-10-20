@@ -61,9 +61,10 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.exportOptions = [
-        {name: 'By Day (CSV)', value: 'csv'},
-        {name: 'By Day (Excel)', value: 'excel'},
-        {name: 'Detailed report', value: 'excel_detailed', hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_detailed_report')}
+      {name: 'Current View (CSV)', value: 'view-csv'},
+      {name: 'Current View (Excel)', value: 'view-excel'},
+      {name: 'By Ad Group (CSV)', value: 'adgroup-csv'},
+      {name: 'By Ad Group (Excel)', value: 'adgroup-excel'}
     ];
 
     $scope.columns = [

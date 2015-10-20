@@ -22,8 +22,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     var userSettings = zemUserSettings.getInstance($scope, 'allAccountsAccounts');
 
     $scope.exportOptions = [
-        {name: 'By Day (CSV)', value: 'csv'},
-        {name: 'By Day (Excel)', value: 'excel'}
+      {name: 'Current View (CSV)', value: 'view-csv'},
+      {name: 'Current View (Excel)', value: 'view-excel'}
     ];
 
     $scope.columns = [
@@ -415,7 +415,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     $scope.init = function() {
         var page = parseInt($location.search().page || '1');
-        var size = parseInt($location.search().size || '0'); 
+        var size = parseInt($location.search().size || '0');
 
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');

@@ -8,7 +8,8 @@ oneApp.directive('zemExport', function() {
             baseUrl: '=',
             startDate: '=',
             endDate: '=',
-            options: '='
+            options: '=',
+            columns: '='
         },
         templateUrl: '/partials/zem_export.html',
         controller: ['$scope', '$window', '$compile', 'zemFilterService', function($scope, $window, $compile, zemFilterService) {
@@ -79,6 +80,15 @@ oneApp.directive('zemExport', function() {
                 if (zemFilterService.isSourceFilterOn()) {
                     url += '&filtered_sources=' + zemFilterService.getFilteredSources().join(',');
                 }
+
+                var export_columns = []
+                for (var i = 0; i < $scope.columns.length; i++) {
+                  var col = $scope.columns[i]
+                  if (col.shown && col.checked && !col.unselectable){
+                    export_columns.push(col.field)
+                  }
+                }
+                url += '&export_columns=' + export_columns.join(',');
 
                 $window.open(url, '_blank');
 
