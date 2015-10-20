@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+import urllib
 import urllib2
 
 from django.conf import settings
@@ -53,11 +54,17 @@ def insert_adgroup(ad_group_id, tracking_codes, enable_ga_tracking, enable_adobe
 
 
 @statsd_helper.statsd_timer('redirector_helper', 'fetch_redirects_impressions')
-def fetch_redirects_impressions(date, timeout=300):
-    job_id = _call_api_retry(settings.R1_CONVERSION_STATS_URL.format(date=date.strftime('%Y-%m-%d')), method='GET')
+def fetch_redirects_impressions(date, account_id=None, timeout=300):
+    url = settings.R1_CONVERSION_STATS_URL
+    if account_id:
+        url = url + '?' + urllib.urlencode({'account': account_id})
+
+    logger.info('Querying redirect impressions')
+    job_id = _call_api_retry(url.format(date=date.strftime('%Y-%m-%d')), method='GET')
 
     start_time = time.time()
     while (time.time() - start_time) < timeout:
+        logger.info('Polling redirect impressions results')
         result = _call_api_retry(settings.R1_CONVERSION_STATS_RESULT_URL.format(job_id=job_id), method='GET')
         if result is None:
             time.sleep(10)

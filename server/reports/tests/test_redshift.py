@@ -110,10 +110,11 @@ class RedshiftTest(TestCase):
         mock_get_cursor.return_value = mock_cursor
 
         date = datetime.date(2015, 1, 1)
-        redshift.delete_touchpoint_conversions(date)
+        account_id = 1
+        redshift.delete_touchpoint_conversions(date, account_id)
 
-        query = 'DELETE FROM touchpointconversions WHERE date = %s'
-        params = ['2015-01-01']
+        query = 'DELETE FROM touchpointconversions WHERE date = %s AND account_id = %s'
+        params = ['2015-01-01', account_id]
 
         mock_cursor.execute.assert_called_with(query, params)
 
