@@ -482,7 +482,8 @@ var constants = {
         INACTIVE: 2
     }
 };
-var options = {adGroupSettingsStates: [{name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
+var options = {
+    adGroupSettingsStates: [{name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
         {name: 'Enabled', value: constants.adGroupSettingsState.ACTIVE}
     ],
     adTargetDevices: [
