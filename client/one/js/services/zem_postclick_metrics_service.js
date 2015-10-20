@@ -88,6 +88,32 @@ oneApp.factory('zemPostclickMetricsService', function() {
         });
     }
 
+    function insertConversionGoalColumns(columns, position, isShown, isInternal) {
+        columns.splice(position, 0, {
+            name: 'Conversion Goal 1',
+            field: 'conversion_goal_0',
+            checked: false,
+            type: 'number',
+            help: 'Number of completions of the conversion goal',
+            shown: isShown,
+            internal: isInternal,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        }, {
+            name: 'Conversion Goal 2',
+            field: 'conversion_goal_1',
+            checked: false,
+            type: 'number',
+            help: 'Number of completions of the conversion goal',
+            shown: isShown,
+            internal: isInternal,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        });
+    }
+
     function concatAcquisitionChartOptions(chartOptions, isInternal) {
         return concatChartOptions(
             chartOptions,
@@ -104,42 +130,45 @@ oneApp.factory('zemPostclickMetricsService', function() {
         );
     }
 
-    function concatChartOptions(chartOptions, postclickOptions, isInternal) {
-        return chartOptions.concat(postclickOptions.map(function (option) {
+    function concatChartOptions(chartOptions, newOptions, isInternal) {
+        return chartOptions.concat(newOptions.map(function (option) {
             option.internal = isInternal;
             return option;
         }));
     }
 
-    function insertConversionGoalColumns(columns, position, conversionGoals, goalCategory, isShown, isInternal) {
-        if (!conversionGoals) {
-            return;
-        }
+    function setChartOptionsConversionGoalNames(chartOptions, conversionGoals) {
+        conversionGoals.forEach(function(el, ix) {
+            for (var i = 0; i < chartOptions.length; i++) {
+                if (chartOptions[i].value == el.id) {
+                    var copy = angular.copy(chartOptions[i]);
+                    copy.name = el.name;
+                    chartOptions.splice(i, 1, copy);
+                }
+            }
+        });
+    }
 
-        for(var i = 0; i < conversionGoals.length; i++) {
-            var columnDescription = {
-                name: conversionGoals[i]['name'],
-                field: 'conversion_goal_' + conversionGoals[i]['id'],
-                checked: false,
-                type: 'number',
-                help: 'Number of completions of the conversion goal',
-                shown: isShown,
-                internal: isInternal,
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            };
-
-            columns.splice(position, 0, columnDescription);
-            goalCategory.fields.push(columnDescription.field);
-        }
-    };
+    function setColumnConversionGoalNames(cols, conversionGoals) {
+        var newCols = angular.copy(cols);
+        conversionGoals.forEach(function(el, ix) {
+            for (var i = 0; i < newCols.length; i++) {
+                if (newCols[i].field == el.id) {
+                    newCols[i].name = el.name;
+                }
+            }
+        });
+        return newCols;
+    }
 
     return {
         insertAcquisitionColumns: insertAcquisitionColumns,
         insertEngagementColumns: insertEngagementColumns,
+        insertConversionGoalColumns: insertConversionGoalColumns,
         concatAcquisitionChartOptions: concatAcquisitionChartOptions,
         concatEngagementChartOptions: concatEngagementChartOptions,
-        insertConversionGoalColumns: insertConversionGoalColumns
+        concatChartOptions: concatChartOptions,
+        setChartOptionsConversionGoalNames: setChartOptionsConversionGoalNames,
+        setColumnConversionGoalNames: setColumnConversionGoalNames
     };
 });

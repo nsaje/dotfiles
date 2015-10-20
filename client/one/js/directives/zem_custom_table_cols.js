@@ -28,26 +28,36 @@ oneApp.directive('zemCustomTableCols', ['config', function(config) {
                 return !col.unselectable;
             };
 
+            var updateCategories = function() {
+                $scope.categoryColumns = [];
+                $scope.hasCategories = false;
+
+                for(var i = 0; i < $scope.categories.length; i++) {
+                    var cat = $scope.categories[i];
+
+                    var cols = $scope.columns.filter(function(col) {
+                        return cat.fields.indexOf(col.field) != -1 && col.shown;
+                    });
+
+                    if(cols.length > 0) {
+                        $scope.categoryColumns.push({
+                            'columns': cols, 
+                            'name': cat.name
+                        });
+                        $scope.hasCategories = true;
+                    }
+                }
+            };
+
             $scope.$watch('categories', function (newValue, oldValue) {
                 if(newValue) {
-                    $scope.categoryColumns = [];
-                    $scope.hasCategories = false;
+                    updateCategories();
+                }
+            }, true);
 
-                    for(var i = 0; i < $scope.categories.length; i++) {
-                        var cat = $scope.categories[i];
-
-                        var cols = $scope.columns.filter(function(col) {
-                            return cat.fields.indexOf(col.field) != -1 && col.shown;
-                        });
-
-                        if(cols.length > 0) {
-                            $scope.categoryColumns.push({
-                                'columns': cols, 
-                                'name': cat.name
-                            });
-                            $scope.hasCategories = true;
-                        }
-                    }
+            $scope.$watch('columns', function (newValue, oldValue) {
+                if(newValue) {
+                    updateCategories();
                 }
             }, true);
         }]

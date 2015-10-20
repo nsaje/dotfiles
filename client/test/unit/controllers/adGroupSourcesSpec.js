@@ -13,10 +13,14 @@ describe('AdGroupSourcesCtrl', function() {
             save: function() {return [];}
         });
         $provide.value('zemPostclickMetricsService', {
-            insertAcquisitionColumns: function(){},
-            insertEngagementColumns: function(){},
+            insertAcquisitionColumns: function(){return [];},
+            insertEngagementColumns: function(){return [];},
+            insertConversionGoalColumns: function(){return [];},
             concatAcquisitionChartOptions: function(){return [];},
-            concatEngagementChartOptions: function(){return [];}
+            concatEngagementChartOptions: function(){return [];},
+            concatChartOptions: function(){return [];},
+            setChartOptionsConversionGoalNames: function(){return [];},
+            setColumnConversionGoalNames: function(){return [];}
         });
     }));
     

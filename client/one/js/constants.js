@@ -31,7 +31,9 @@ var constants = {
         BOUNCE_RATE: 'bounce_rate',
         PV_PER_VISIT: 'pv_per_visit',
         AVG_TOS: 'avg_tos',
-        CLICK_DISCREPANCY: 'click_discrepancy'
+        CLICK_DISCREPANCY: 'click_discrepancy',
+        CONVERSION_GOAL1: 'conversion_goal_0',
+        CONVERSION_GOAL2: 'conversion_goal_1'
     },
     iabCategory: {
         IAB1: "IAB1",
@@ -480,10 +482,7 @@ var constants = {
         INACTIVE: 2
     }
 };
-
-var options = {
-    adGroupSettingsStates: [
-        {name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
+var options = {adGroupSettingsStates: [{name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
         {name: 'Enabled', value: constants.adGroupSettingsState.ACTIVE}
     ],
     adTargetDevices: [
@@ -508,12 +507,20 @@ var options = {
         {name: 'PV/Visit', value: constants.chartMetric.PV_PER_VISIT},
         {name: 'Avg. ToS', value: constants.chartMetric.AVG_TOS}
     ],
+    adGroupConversionGoalChartMetrics: [
+        {name: 'Conversion Goal', value: constants.chartMetric.CONVERSION_GOAL1},
+        {name: 'Conversion Goal', value: constants.chartMetric.CONVERSION_GOAL2},
+    ],
     campaignChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
         {name: 'Spend', value: constants.chartMetric.COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
+    ],
+    campaignConversionGoalChartMetrics: [
+        {name: 'Conversion Goal 1', value: constants.chartMetric.CONVERSION_GOAL1},
+        {name: 'Conversion Goal 2', value: constants.chartMetric.CONVERSION_GOAL2},
     ],
     accountChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},

@@ -1,7 +1,7 @@
 <div class="chart-container">
     <div class="chart-selector">
         <ui-select theme="select2" search-enabled="false" class="metric1" ng-model="metrics.metric1">
-            <ui-select-match>{{$select.selected.name}}</ui-select-match>
+            <ui-select-match>{{getSelectedName($select.selected)}}</ui-select-match>
             <ui-select-choices repeat="metric.value as metric in metricOptions">
                 <span>
                     <zem-internal-feature ng-if="metric.internal"></zem-internal-feature>
@@ -13,7 +13,7 @@
         <span class="middle-text">VS.</span>
 
         <ui-select theme="select2" search-enabled="false" class="metric2" ng-model="metrics.metric2">
-            <ui-select-match>{{$select.selected.name}}</ui-select-match>
+            <ui-select-match>{{getSelectedName($select.selected)}}</ui-select-match>
             <ui-select-choices repeat="metric.value as metric in metric2Options">
                 <span>
                     <zem-internal-feature ng-if="metric.internal"></zem-internal-feature>

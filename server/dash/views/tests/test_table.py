@@ -159,7 +159,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'description': 'Example description',
             'call_to_action': 'Call to action',
             'clicks': 1000,
-            'conversion_goal_2': None,
+            'conversion_goal_1': None,
             'cost': 100,
             'cpc': '0.0100',
             'ctr': '12.5000',
@@ -239,7 +239,7 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertEqual(result['data']['totals'], {
             'clicks': 1500,
-            'conversion_goal_2': None,
+            'conversion_goal_1': None,
             'cost': 200,
             'cpc': '0.0200',
             'ctr': '15.5000',

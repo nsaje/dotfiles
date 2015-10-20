@@ -200,7 +200,7 @@ class CampaignAdGroupsExport(ExportApiView):
             ]
 
             for conversion_goal in conversion_goals:
-                columns.append({'key': conversion_goal.get_view_key(), 'name': conversion_goal.name})
+                columns.append({'key': conversion_goal.get_view_key(conversion_goals), 'name': conversion_goal.name})
 
             detailed_columns = list(columns)  # make a copy
             detailed_columns.insert(1, {'key': 'ad_group', 'name': 'Ad Group', 'width': 30})
@@ -258,7 +258,7 @@ class CampaignAdGroupsExport(ExportApiView):
             ])
 
             for conversion_goal in conversion_goals:
-                fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
+                fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
 
             content = export.get_csv_content(fieldnames, data)
             return self.create_csv_response(filename_format.format(
@@ -678,11 +678,11 @@ class AdGroupAdsPlusExport(ExportApiView):
 
     def _add_excel_conversion_goal_columns(self, columns, conversion_goals):
         for conversion_goal in conversion_goals:
-            columns.append({'key': conversion_goal.get_view_key(), 'name': conversion_goal.name})
+            columns.append({'key': conversion_goal.get_view_key(conversion_goals), 'name': conversion_goal.name})
 
     def _add_csv_conversion_goal_columns(self, columns, conversion_goals):
         for conversion_goal in conversion_goals:
-            columns[conversion_goal.get_view_key()] = conversion_goal.name
+            columns[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
 
     def add_source_data(self, results):
         sources = {source.id: source for source in models.Source.objects.all()}
@@ -736,7 +736,7 @@ class AdGroupSourcesExport(ExportApiView):
 
             for conversion_goal in conversion_goals:
                 date_source_columns.append(
-                    {'key': conversion_goal.get_view_key(), 'name': conversion_goal.name}
+                    {'key': conversion_goal.get_view_key(conversion_goals), 'name': conversion_goal.name}
                 )
 
             sheets_data = [('Per Source Report', date_source_columns, date_source_results)]
@@ -770,7 +770,7 @@ class AdGroupSourcesExport(ExportApiView):
             ])
 
             for conversion_goal in conversion_goals:
-                fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
+                fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
 
             content = export.get_csv_content(fieldnames, date_source_results)
             return self.create_csv_response(filename, content=content)

@@ -6,8 +6,8 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
         restrict: 'E',
         scope: {
             data: '=zemData',
-            metric1: '=zemMetric1',
             metricOptions: '=zemMetricOptions',
+            metric1: '=zemMetric1',
             metric2: '=zemMetric2',
             minDate: '=zemMinDate',
             maxDate: '=zemMaxDate',
@@ -42,7 +42,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             };
 
             $scope.$watch('metrics.metric1', function(newValue) {
-                // we use $scope.metrcis because ui-select doesn't work well with
+                // we use $scope.metrics because ui-select doesn't work well with
                 // simple variables on scope as ng-model, it is recommended to use a
                 // property on an object on scope
                 // (https://github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
@@ -50,7 +50,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             }, true);
 
             $scope.$watch('metrics.metric2', function(newValue) {
-                // we use $scope.metrcis because ui-select doesn't work well with
+                // we use $scope.metrics because ui-select doesn't work well with
                 // simple variables on scope as ng-model, it is recommended to use a
                 // property on an object on scope
                 // (https://github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
@@ -59,7 +59,22 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
 
             $scope.$watch('metricOptions', function(newValue) {
                 $scope.metric2Options = getMetric2Options($scope.metricOptions);
-            });
+            }, true);
+
+            $scope.getSelectedName = function(selected) {
+                // Returns the name of the selected item. ui-select doesn't update the name correctly when choices change
+                // so the right name is returned here.
+                if (!selected) {
+                    return '';
+                }
+
+                for (var i = 0; i < $scope.metricOptions.length; i++) {
+                    if ($scope.metricOptions[i].value === selected.value) {
+                        return $scope.metricOptions[i].name;
+                    }
+                }
+                return 'None';
+            };
 
             $scope.config = {
                 options: {

@@ -202,7 +202,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         },
         {
             'name': 'Conversions',
-            'fields': []
+            'fields': ['conversion_goal_0', 'conversion_goal_1']
         },
         {
             'name': 'Data Sync',
@@ -225,7 +225,15 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+
         );
+        zemPostclickMetricsService.insertConversionGoalColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.conversion_reports'),
+            $scope.isPermissionInternal('zemauth.conversion_reports')
+        );
+
 
         cols = zemCustomTableColsService.load('campaignAdGroups', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
@@ -312,14 +320,19 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             );
         }
 
-        if (conversionGoals) {
-            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(conversionGoals.map(function (goal) {
-                return {
-                    name: goal['name'],
-                    value: 'conversion_goal_' + goal['id'],
-                    internal: $scope.isPermissionInternal('zemauth.conversion_reports')
-                };
-            }));
+        if ($scope.hasPermission('zemauth.conversion_reports')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.campaignConversionGoalChartMetrics,
+                $scope.isPermissionInternal('zemauth.conversion_reports')
+            );
+
+            if (conversionGoals) {
+                zemPostclickMetricsService.setChartOptionsConversionGoalNames(
+                    $scope.chartMetricOptions,
+                    conversionGoals
+                );
+            }
         }
     };
 
@@ -452,12 +465,12 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         var adGroupIds = $location.search().ad_group_ids;
         var adGroupTotals = $location.search().ad_group_totals;
 
+        setChartOptions(null);
+
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');
         userSettings.register('order');
         userSettings.registerGlobal('chartHidden');
-
-        setChartOptions(null);
 
         if (adGroupIds) {
             adGroupIds.split(',').forEach(function (id) {

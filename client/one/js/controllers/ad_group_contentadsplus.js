@@ -405,7 +405,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         'fields': ['percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'visits', 'pageviews', 'click_discrepancy']
     }, {
         name: 'Conversions',
-        fields: []
+        fields: ['conversion_goal_0', 'conversion_goal_1']
     }];
 
     $scope.addContentAds = function() {
@@ -644,15 +644,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         api.adGroupAdsPlusTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function(data) {
-                zemPostclickMetricsService.insertConversionGoalColumns(
-                    $scope.columns,
-                    $scope.columns.length - 2,
-                    data.conversionGoals,
-                    $scope.columnCategories[3],
-                    $scope.hasPermission('zemauth.conversion_reports'),
-                    $scope.isPermissionInternal('zemauth.conversion_reports')
-                );
-
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.order = data.order;
@@ -724,6 +715,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
         );
 
+        zemPostclickMetricsService.insertConversionGoalColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.conversion_reports'),
+            $scope.isPermissionInternal('zemauth.conversion_reports')
+        );
+
         cols = zemCustomTableColsService.load('adGroupAdsPlus', $scope.columns);
         $scope.selectedColumnsCount = cols.length;
 
@@ -754,6 +752,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         var page = parseInt($location.search().page || '1');
         var size = parseInt($location.search().size || '0'); 
 
+        setChartOptions(null);
+
         userSettings.register('chartMetric1');
         userSettings.register('chartMetric2');
         userSettings.register('order');
@@ -778,8 +778,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         pollSyncStatus();
         setDisabledExportOptions();
-
-        setChartOptions(null);
     };
 
     $scope.pollTableUpdates = function () {
@@ -884,14 +882,19 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             );
         }
 
-        if (conversionGoals) {
-            $scope.chartMetricOptions = $scope.chartMetricOptions.concat(conversionGoals.map(function (goal) {
-                return {
-                    name: goal['name'],
-                    value: 'conversion_goal_' + goal['id'],
-                    internal: $scope.isPermissionInternal('zemauth.conversion_reports')
-                };
-            }));
+        if ($scope.hasPermission('zemauth.conversion_reports')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.adGroupConversionGoalChartMetrics,
+                $scope.isPermissionInternal('zemauth.conversion_reports')
+            );
+
+            if (conversionGoals) {
+                zemPostclickMetricsService.setChartOptionsConversionGoalNames(
+                    $scope.chartMetricOptions,
+                    conversionGoals
+                );
+            }
         }
     };
 
