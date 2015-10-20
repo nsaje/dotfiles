@@ -22,8 +22,9 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     var userSettings = zemUserSettings.getInstance($scope, 'allAccountsAccounts');
 
     $scope.exportOptions = [
-      {name: 'Current View (CSV)', value: 'view-csv'},
-      {name: 'Current View (Excel)', value: 'view-excel'}
+      {name: 'Current View', value: 'view-csv'},
+      {name: 'By Campaign', value: 'campaign-csv'},
+      {name: 'By Ad Group', value: 'adgroup-csv'}
     ];
 
     $scope.columns = [

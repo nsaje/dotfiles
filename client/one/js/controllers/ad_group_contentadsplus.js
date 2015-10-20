@@ -39,8 +39,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     $scope.exportOptions = [
-      {name: 'Current View (CSV)', value: 'view-csv'},
-      {name: 'Current View (Excel)', value: 'view-excel'}
+      {name: 'Current View', value: 'view-csv'}
     ];
 
     $scope.bulkActions = [{
