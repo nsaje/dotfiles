@@ -622,7 +622,11 @@ def create_ad_group_publisher_blacklist_actions(ad_group, request, state, publis
                 {
                     'publisher_blacklist': {
                         'state': state,
-                        'blacklist': [pub.name for pub in publisher_source],
+                        'blacklist': map(lambda pub:
+                            {
+                                'domain': pub.name,
+                                'exchange': pub.source.tracking_slug
+                            }, publisher_source),
                     }
                 },
                 ad_group_source,
