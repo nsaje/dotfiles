@@ -138,18 +138,26 @@ oneApp.factory('zemPostclickMetricsService', function() {
     }
 
     function setChartOptionsConversionGoalNames(chartOptions, conversionGoals) {
+        if (!conversionGoals) {
+            return chartOptions;
+        }
+
+        var newOptions = angular.copy(chartOptions);
         conversionGoals.forEach(function(el, ix) {
-            for (var i = 0; i < chartOptions.length; i++) {
-                if (chartOptions[i].value == el.id) {
-                    var copy = angular.copy(chartOptions[i]);
-                    copy.name = el.name;
-                    chartOptions.splice(i, 1, copy);
+            for (var i = 0; i < newOptions.length; i++) {
+                if (newOptions[i].value == el.id) {
+                    newOptions[i].name = el.name;
                 }
             }
         });
+        return newOptions;
     }
 
     function setColumnConversionGoalNames(cols, conversionGoals) {
+        if (!conversionGoals) {
+            return cols;
+        }
+
         var newCols = angular.copy(cols);
         conversionGoals.forEach(function(el, ix) {
             for (var i = 0; i < newCols.length; i++) {

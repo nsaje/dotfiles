@@ -168,7 +168,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
             'bounce_rate': 0,
             'pv_per_visit': 5,
             'avg_tos': 0,
-            'conversion_goal_0': 1
+            'conversion_goal_1': 1
         }], stats)
 
     def test_touchpoint_conversion_goals(self, mock_as_query, mock_ca_query, mock_tp_query):
@@ -197,7 +197,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
             'bounce_rate': 0,
             'pv_per_visit': 5,
             'avg_tos': 0,
-            'conversion_goal_0': 5,
+            'conversion_goal_1': 5,
         }], stats)
 
     def test_both_conversion_goals(self, mock_as_query, mock_ca_query, mock_tp_query):
@@ -226,8 +226,8 @@ class GetStatsWithConversionsTestCase(test.TestCase):
             'bounce_rate': 0,
             'pv_per_visit': 5,
             'avg_tos': 0,
-            'conversion_goal_0': 5,
-            'conversion_goal_1': 1,
+            'conversion_goal_1': 5,
+            'conversion_goal_2': 1,
         }], stats)
 
     def test_both_conversion_goals_different_ad_group(self, mock_as_query, mock_ca_query, mock_tp_query):
@@ -257,8 +257,8 @@ class GetStatsWithConversionsTestCase(test.TestCase):
             'bounce_rate': 0,
             'pv_per_visit': 5,
             'avg_tos': 0,
-            'conversion_goal_1': 1,
+            'conversion_goal_2': 1,
         }, {
             'ad_group': 9999,
-            'conversion_goal_0': 5
+            'conversion_goal_1': 5
         }], stats)

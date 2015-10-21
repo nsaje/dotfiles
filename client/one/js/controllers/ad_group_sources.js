@@ -103,7 +103,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         },
         {
             'name': 'Conversions',
-            'fields': ['conversion_goal_0', 'conversion_goal_1']
+            'fields': ['conversion_goal_1', 'conversion_goal_2']
         },
         {
             'name': 'Data Sync',
@@ -487,12 +487,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.isPermissionInternal('zemauth.conversion_reports')
             );
 
-            if (conversionGoals) {
-                zemPostclickMetricsService.setChartOptionsConversionGoalNames(
-                    $scope.chartMetricOptions,
-                    conversionGoals
-                );
-            }
+            $scope.chartMetricOptions = zemPostclickMetricsService.setChartOptionsConversionGoalNames(
+                $scope.chartMetricOptions,
+                conversionGoals
+            );
         }
     };
 

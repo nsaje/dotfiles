@@ -273,7 +273,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         },
         {
             'name': 'Conversions',
-            'fields': ['conversion_goal_0', 'conversion_goal_1']
+            'fields': ['conversion_goal_1', 'conversion_goal_2']
         },
         {
             'name': 'Data Sync',
@@ -394,6 +394,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 $scope.isSyncInProgress = data.is_sync_in_progress;
 
                 $scope.selectRows();
+                $scope.columns = zemPostclickMetricsService.setColumnConversionGoalNames($scope.columns, data.conversionGoals);
             },
             function (data) {
                 // error
@@ -452,6 +453,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 $scope.chartMetricOptions,
                 options.campaignConversionGoalChartMetrics,
                 $scope.isPermissionInternal('zemauth.conversion_reports')
+            );
+
+            $scope.chartMetricOptions = zemPostclickMetricsService.setChartOptionsConversionGoalNames(
+                $scope.chartMetricOptions,
+                conversionGoals
             );
         }
     };

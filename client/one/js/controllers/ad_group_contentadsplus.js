@@ -405,7 +405,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         'fields': ['percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'visits', 'pageviews', 'click_discrepancy']
     }, {
         name: 'Conversions',
-        fields: ['conversion_goal_0', 'conversion_goal_1']
+        fields: ['conversion_goal_1', 'conversion_goal_2']
     }];
 
     $scope.addContentAds = function() {
@@ -660,6 +660,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.updateContentAdSelection();
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
+                $scope.columns = zemPostclickMetricsService.setColumnConversionGoalNames($scope.columns, data.conversionGoals);
 
                 initUploadBatches(data.batches);
                 contentAdsNotLoaded.resolve($scope.rows.length === 0);
@@ -889,12 +890,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.isPermissionInternal('zemauth.conversion_reports')
             );
 
-            if (conversionGoals) {
-                zemPostclickMetricsService.setChartOptionsConversionGoalNames(
-                    $scope.chartMetricOptions,
-                    conversionGoals
-                );
-            }
+            $scope.chartMetricOptions = zemPostclickMetricsService.setChartOptionsConversionGoalNames(
+                $scope.chartMetricOptions,
+                conversionGoals
+            );
         }
     };
 

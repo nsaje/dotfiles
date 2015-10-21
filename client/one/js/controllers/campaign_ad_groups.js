@@ -202,7 +202,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         },
         {
             'name': 'Conversions',
-            'fields': ['conversion_goal_0', 'conversion_goal_1']
+            'fields': ['conversion_goal_1', 'conversion_goal_2']
         },
         {
             'name': 'Data Sync',
@@ -327,12 +327,10 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.isPermissionInternal('zemauth.conversion_reports')
             );
 
-            if (conversionGoals) {
-                zemPostclickMetricsService.setChartOptionsConversionGoalNames(
-                    $scope.chartMetricOptions,
-                    conversionGoals
-                );
-            }
+            $scope.chartMetricOptions = zemPostclickMetricsService.setChartOptionsConversionGoalNames(
+                $scope.chartMetricOptions,
+                conversionGoals
+            );
         }
     };
 
@@ -385,6 +383,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.order = data.order;
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
+                $scope.columns = zemPostclickMetricsService.setColumnConversionGoalNames($scope.columns, data.conversionGoals);
 
                 $scope.rows = $scope.rows.map(function (x) {
                     x.id = x.ad_group;
