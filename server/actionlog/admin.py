@@ -13,6 +13,9 @@ from actionlog import zwei_actions
 
 import dash.constants
 
+from utils.admin_common import SaveWithRequestMixin
+
+
 def resend_action(modeladmin, request, queryset):
     try:
         zwei_actions.resend([
@@ -22,6 +25,7 @@ def resend_action(modeladmin, request, queryset):
     except AssertionError, ex:
         modeladmin.message_user(request, str(ex), level=messages.ERROR)
 resend_action.short_description = "Resend failed actions"
+
 
 class CountFilterQuerySet(db_models.QuerySet):
     def count(self):
@@ -41,7 +45,7 @@ class CountFilterQuerySet(db_models.QuerySet):
         return super(CountFilterQuerySet, self).count()
 
 
-class ActionLogAdminAdmin(admin.ModelAdmin):
+class ActionLogAdminAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     class AgeFilter(admin.SimpleListFilter):
         title = 'Age'
         parameter_name = 'age__exact'
@@ -160,7 +164,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return True
-  
+
     def action_(self, obj):
         if obj.action == constants.Action.FETCH_REPORTS:
             description = 'for {}'.format(

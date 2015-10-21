@@ -27,6 +27,8 @@ import actionlog.zwei_actions
 
 logger = logging.getLogger(__name__)
 
+from utils.admin_common import SaveWithRequestMixin
+
 
 # Forms for inline user functionality.
 
@@ -264,7 +266,7 @@ class CampaignInline(admin.TabularInline):
     readonly_fields = ('admin_link',)
 
 
-class AccountAdmin(admin.ModelAdmin):
+class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
@@ -317,7 +319,7 @@ class AdGroupInline(admin.TabularInline):
     readonly_fields = ('admin_link',)
 
 
-class CampaignAdmin(admin.ModelAdmin):
+class CampaignAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
@@ -411,7 +413,7 @@ class SourceCredentialsAdmin(admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt')
 
 
-class CampaignSettingsAdmin(admin.ModelAdmin):
+class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         return list(set(
             [field.name for field in self.opts.local_fields] +
@@ -504,7 +506,7 @@ class IsArchivedFilter(admin.SimpleListFilter):
         return queryset
 
 
-class AdGroupAdmin(admin.ModelAdmin):
+class AdGroupAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
@@ -624,7 +626,7 @@ def reject_ad_group_sources(modeladmin, request, queryset):
 reject_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as REJECTED'
 
 
-class AdGroupSourceAdmin(admin.ModelAdmin):
+class AdGroupSourceAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'ad_group_',
         'source_content_ad_id',
@@ -667,7 +669,7 @@ class AdGroupSourceAdmin(admin.ModelAdmin):
     submission_status_.admin_order_field = 'submission_status'
 
 
-class AdGroupSettingsAdmin(admin.ModelAdmin):
+class AdGroupSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
     actions = None
 
