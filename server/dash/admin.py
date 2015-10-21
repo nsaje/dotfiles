@@ -11,6 +11,9 @@ from django.conf import settings
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
 
+from import_export import fields, resources
+from import_export.admin import ExportMixin
+
 from zemauth.models import User as ZemUser
 
 from dash import api
@@ -711,7 +714,46 @@ class AdGroupSourceStateAdmin(admin.ModelAdmin):
     )
 
 
-class UserActionLogAdmin(admin.ModelAdmin):
+class UserActionLogResource(resources.ModelResource):
+    class Meta:
+        model = models.UserActionLog
+
+    def _changes_text(self, settings=None):
+        changes_text = '/'
+
+        if settings:
+            changes_text = settings.changes_text if settings.changes_text else '- no description -'
+        return changes_text
+
+    def _get_name(self, obj):
+        return obj.name if obj else '/'
+
+    def dehydrate_action_type(self, obj):
+        return constants.UserActionType.get_text(obj.action_type)
+
+    def dehydrate_ad_group(self, obj):
+        return self._get_name(obj.ad_group)
+
+    def dehydrate_ad_group_settings(self, obj):
+        return self._changes_text(obj.ad_group_settings)
+
+    def dehydrate_campaign(self, obj):
+        return self._get_name(obj.campaign)
+
+    def dehydrate_campaign_settings(self, obj):
+        return self._changes_text(obj.campaign_settings)
+
+    def dehydrate_account(self, obj):
+        return self._get_name(obj.account)
+
+    def dehydrate_account_settings(self, obj):
+        return self._changes_text(obj.account_settings)
+
+    def dehydrate_created_by(self, obj):
+        return obj.created_by.email if obj.created_by else '/'
+
+
+class UserActionLogAdmin(ExportMixin, admin.ModelAdmin):
     search_fields = ['action_type', 'created_by__email']
     list_display = (
         'created_by',
@@ -726,8 +768,9 @@ class UserActionLogAdmin(admin.ModelAdmin):
                    ('created_dt', admin.DateFieldListFilter),
                    ('created_by', admin.RelatedOnlyFieldListFilter))
 
-    def changelist_view(self, request, extra_context=None):
+    resource_class = UserActionLogResource
 
+    def changelist_view(self, request, extra_context=None):
         response = super(UserActionLogAdmin, self).changelist_view(request, extra_context=extra_context)
         qs = response.context_data['cl'].queryset
         extra_context = {
