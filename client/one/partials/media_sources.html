@@ -12,10 +12,11 @@
                     end-date="dateRange.endDate"
                     base-url="'api/' + exportBaseUrlLevel + '/' + $state.params.id + '/sources/'"
                     options="exportOptions"
-                    columns="columns">
+                    columns="columns"
+                    order="order">
                 </zem-export>
             </div>
-          
+
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories"></zem-custom-table-cols>
 
             <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>

@@ -9,7 +9,8 @@ oneApp.directive('zemExport', function() {
             startDate: '=',
             endDate: '=',
             options: '=',
-            columns: '='
+            columns: '=',
+            order: '='
         },
         templateUrl: '/partials/zem_export.html',
         controller: ['$scope', '$window', '$compile', 'zemFilterService', function($scope, $window, $compile, zemFilterService) {
@@ -75,7 +76,7 @@ oneApp.directive('zemExport', function() {
             };
 
             $scope.downloadReport = function() {
-                var url = $scope.baseUrl + 'export/?type=' + $scope.exportType + '&start_date=' + $scope.startDate.format() + '&end_date=' + $scope.endDate.format();
+                var url = $scope.baseUrl + 'export/?type=' + $scope.exportType + '&start_date=' + $scope.startDate.format() + '&end_date=' + $scope.endDate.format() + '&order=' + $scope.order;
 
                 if (zemFilterService.isSourceFilterOn()) {
                     url += '&filtered_sources=' + zemFilterService.getFilteredSources().join(',');
@@ -88,7 +89,7 @@ oneApp.directive('zemExport', function() {
                     export_columns.push(col.field)
                   }
                 }
-                url += '&export_columns=' + export_columns.join(',');
+                url += '&additional_fields=' + export_columns.join(',');
 
                 $window.open(url, '_blank');
 
