@@ -761,9 +761,31 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist():
             raise exc.MissingDataException()
 
-        processed_count = ((batch.processed_content_ads or 0) + (batch.inserted_content_ads or 0)) / 2
+        batch_size = batch.batch_size
+        step_size = batch_size
 
-        response_data = {'status': batch.status, 'count': int(processed_count), 'all': batch.batch_size}
+        if batch.inserted_content_ads is not None and batch.inserted_content_ads >= batch_size:
+            # step past inserting
+            step = 'Sending to external sources'
+            count = 0
+            step_size = 0
+        elif batch.processed_content_ads is not None and batch.processed_content_ads >= batch_size:
+            # step past processing
+            step = 'Inserting content ads'
+            count = batch.inserted_content_ads
+        else:
+            # first step
+            step = 'Processing imported file'
+            count = batch.processed_content_ads
+
+        print step, count, step_size, constants.UploadBatchStatus.get_text(batch.status)
+
+        response_data = {
+            'status': batch.status,
+            'step': step,
+            'count': count or 0,
+            'all': step_size
+        }
 
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:
