@@ -769,16 +769,12 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
             step = 'Sending to external sources'
             count = 0
             step_size = 0
-        elif batch.processed_content_ads is not None and batch.processed_content_ads >= batch_size:
-            # step past processing
+        elif batch.inserted_content_ads is not None:
             step = 'Inserting content ads'
             count = batch.inserted_content_ads
         else:
-            # first step
             step = 'Processing imported file'
             count = batch.processed_content_ads
-
-        print step, count, step_size, constants.UploadBatchStatus.get_text(batch.status)
 
         response_data = {
             'status': batch.status,
