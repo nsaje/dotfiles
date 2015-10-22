@@ -7,6 +7,7 @@ oneApp.directive('zemCustomTableCols', ['config', function(config) {
         scope: {
             columns: '=',
             categories: '=',
+            localStoragePrefix: '='
         },
         templateUrl: '/partials/zem_custom_table_cols.html',
         compile: function compile(tElement, tAttrs, transclude) {
@@ -20,9 +21,11 @@ oneApp.directive('zemCustomTableCols', ['config', function(config) {
               post: function postLink(scope, iElement, iAttrs, controller) {return;}
             };
         },
-        controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
+        controller: ['$scope', '$element', '$attrs', 'zemCustomTableColsService', function ($scope, $element, $attrs, zemCustomTableColsService) {
             $scope.categoryColumns = [];
             $scope.hasCategories = false;
+
+            zemCustomTableColsService.load($scope.localStoragePrefix, $scope.columns);
 
             $scope.filterColumns = function(col) {
                 return !col.unselectable;
@@ -47,6 +50,10 @@ oneApp.directive('zemCustomTableCols', ['config', function(config) {
                         $scope.hasCategories = true;
                     }
                 }
+            };
+
+            $scope.columnUpdated = function (column) {
+                zemCustomTableColsService.setColumn($scope.localStoragePrefix, column);
             };
 
             $scope.$watch('categories', function (newValue, oldValue) {

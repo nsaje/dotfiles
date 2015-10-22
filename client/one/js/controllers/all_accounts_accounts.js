@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemCustomTableColsService', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', function ($scope, $state, $location, $timeout, api, zemCustomTableColsService, zemFilterService, zemPostclickMetricsService, zemUserSettings) {
+oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', function ($scope, $state, $location, $timeout, api, zemFilterService, zemPostclickMetricsService, zemUserSettings) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.requestInProgress = false;
@@ -18,6 +18,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.pagination = {
         currentPage: 1,
     };
+    $scope.localStoragePrefix = 'allAccountsAccounts';
 
     var userSettings = zemUserSettings.getInstance($scope, 'allAccountsAccounts');
 
@@ -174,8 +175,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.setAdGroup(null);
 
     var initColumns = function () {
-        var cols;
-
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
             $scope.columns.length - 2,
@@ -189,14 +188,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
         );
-
-        cols = zemCustomTableColsService.load('allAccountsAccounts', $scope.columns);
-        $scope.selectedColumnsCount = cols.length;
-
-        $scope.$watch('columns', function (newValue, oldValue) {
-            cols = zemCustomTableColsService.save('allAccountsAccounts', newValue);
-            $scope.selectedColumnsCount = cols.length;
-        }, true);
     };
 
     $scope.addAccount = function () {
@@ -417,8 +408,9 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         var page = parseInt($location.search().page || '1');
         var size = parseInt($location.search().size || '0'); 
 
-        userSettings.register('chartMetric1');
-        userSettings.register('chartMetric2');
+        $scope.chartMetric1 = zemUserSettings.getValue('chartMetric1', $scope.localStoragePrefix);
+        $scope.chartMetric2 = zemUserSettings.getValue('chartMetric2', $scope.localStoragePrefix);
+
         userSettings.register('order');
         userSettings.register('size');
         userSettings.registerGlobal('chartHidden');

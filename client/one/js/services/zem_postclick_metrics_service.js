@@ -91,22 +91,22 @@ oneApp.factory('zemPostclickMetricsService', function() {
     function insertConversionGoalColumns(columns, position, isShown, isInternal) {
         columns.splice(position, 0, {
             name: 'Conversion Goal 1',
-            field: 'conversion_goal_0',
+            field: 'conversion_goal_1',
             checked: false,
             type: 'number',
             help: 'Number of completions of the conversion goal',
-            shown: isShown,
+            shown: false,
             internal: isInternal,
             totalRow: true,
             order: true,
             initialOrder: 'desc'
         }, {
             name: 'Conversion Goal 2',
-            field: 'conversion_goal_1',
+            field: 'conversion_goal_2',
             checked: false,
             type: 'number',
             help: 'Number of completions of the conversion goal',
-            shown: isShown,
+            shown: false,
             internal: isInternal,
             totalRow: true,
             order: true,
@@ -118,7 +118,8 @@ oneApp.factory('zemPostclickMetricsService', function() {
         return concatChartOptions(
             chartOptions,
             options.adGroupAcquisitionChartPostClickMetrics,
-            isInternal
+            isInternal,
+            false
         );
     }
 
@@ -126,26 +127,28 @@ oneApp.factory('zemPostclickMetricsService', function() {
         return concatChartOptions(
             chartOptions,
             options.adGroupEngagementChartPostClickMetrics,
-            isInternal
+            isInternal,
+            false
         );
     }
 
-    function concatChartOptions(chartOptions, newOptions, isInternal) {
+    function concatChartOptions(chartOptions, newOptions, isInternal, isHidden) {
         return chartOptions.concat(newOptions.map(function (option) {
             option.internal = isInternal;
+            options.hidden = isHidden;
             return option;
         }));
     }
 
-    function setChartOptionsConversionGoalNames(chartOptions, conversionGoals) {
-        if (!conversionGoals) {
+    function setConversionGoalChartOptions(chartOptions, conversionGoals) {
+        if (!conversionGoals || !conversionGoals.length) {
             return chartOptions;
         }
 
         var newOptions = angular.copy(chartOptions);
         conversionGoals.forEach(function(el, ix) {
             for (var i = 0; i < newOptions.length; i++) {
-                if (newOptions[i].value == el.id) {
+                if (newOptions[i].value === el.id) {
                     newOptions[i].name = el.name;
                 }
             }
@@ -153,16 +156,17 @@ oneApp.factory('zemPostclickMetricsService', function() {
         return newOptions;
     }
 
-    function setColumnConversionGoalNames(cols, conversionGoals) {
-        if (!conversionGoals) {
+    function setConversionGoalColumnsDefaults(cols, conversionGoals, isShown) {
+        if (!conversionGoals || !conversionGoals.length) {
             return cols;
         }
 
         var newCols = angular.copy(cols);
         conversionGoals.forEach(function(el, ix) {
             for (var i = 0; i < newCols.length; i++) {
-                if (newCols[i].field == el.id) {
+                if (newCols[i].field === el.id) {
                     newCols[i].name = el.name;
+                    newCols[i].shown = isShown;
                 }
             }
         });
@@ -176,7 +180,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
         concatAcquisitionChartOptions: concatAcquisitionChartOptions,
         concatEngagementChartOptions: concatEngagementChartOptions,
         concatChartOptions: concatChartOptions,
-        setChartOptionsConversionGoalNames: setChartOptionsConversionGoalNames,
-        setColumnConversionGoalNames: setColumnConversionGoalNames
+        setConversionGoalChartOptions: setConversionGoalChartOptions,
+        setConversionGoalColumnsDefaults: setConversionGoalColumnsDefaults
     };
 });

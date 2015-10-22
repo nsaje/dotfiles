@@ -11,10 +11,11 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             metric2: '=zemMetric2',
             minDate: '=zemMinDate',
             maxDate: '=zemMaxDate',
-            onRemove: '&zemOnRemove'
+            onRemove: '&zemOnRemove',
+            localStoragePrefix: '=localStoragePrefix'
         },
         templateUrl: '/partials/zem_chart.html',
-        controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
+        controller: ['$scope', '$element', '$attrs', '$http', 'zemUserSettings', function ($scope, $element, $attrs, $http, zemUserSettings) {
             var totalsColor = ['#009db2', '#c9eaef'];
             var colors = [
                 ['#d35400', '#eebe9e'],
@@ -57,6 +58,14 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 $scope.metric2 = newValue;
             }, true);
 
+            $scope.$watch('metric1', function(newValue) {
+                $scope.metrics.metric1 = newValue;
+            }, true);
+
+            $scope.$watch('metric2', function(newValue) {
+                $scope.metrics.metric2 = newValue;
+            }, true);
+
             $scope.$watch('metricOptions', function(newValue) {
                 $scope.metric2Options = getMetric2Options($scope.metricOptions);
             }, true);
@@ -73,7 +82,15 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                         return $scope.metricOptions[i].name;
                     }
                 }
-                return 'None';
+                return '';
+            };
+
+            $scope.chartMetric1Update = function () {
+                zemUserSettings.setValue('chartMetric1', $scope.metrics.metric1, $scope.localStoragePrefix);
+            };
+
+            $scope.chartMetric2Update = function () {
+                zemUserSettings.setValue('chartMetric2', $scope.metrics.metric2, $scope.localStoragePrefix);
             };
 
             $scope.config = {

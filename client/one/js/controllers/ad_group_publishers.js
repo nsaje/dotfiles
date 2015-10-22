@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, $window, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
+oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
     $scope.selectedTotals = true;
     $scope.constants = constants;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
@@ -11,6 +11,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.chartGoalMetrics = null;
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-cost';
+    $scope.localStoragePrefix = 'adGroupPublishers';
 
     $scope.sizeRange = [5, 10, 20, 50];
     $scope.size = $scope.sizeRange[0];
@@ -133,17 +134,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             initialOrder: 'desc'
         }
     ];
-
-    $scope.initColumns = function () {
-
-        var cols = zemCustomTableColsService.load('adGroupPublishers', $scope.columns);
-        $scope.selectedColumnsCount = cols.length;
-
-        $scope.$watch('columns', function (newValue, oldValue) {
-            cols = zemCustomTableColsService.save('adGroupPublishers', newValue);
-            $scope.selectedColumnsCount = cols.length;
-        }, true);
-    };
 
     $scope.loadRequestInProgress = false;
 
@@ -279,15 +269,15 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         var data = $scope.adGroupData[$state.params.id];
 
 
-        var page = parseInt($location.search().page)
+        var page = parseInt($location.search().page);
         if (isNaN(page)) {
             page = data && data.page;
         }
         var size = parseInt($location.search().size || '0'); 
 
+        $scope.chartMetric1 = zemUserSettings.getValue('chartMetric1', $scope.localStoragePrefix);
+        $scope.chartMetric2 = zemUserSettings.getValue('chartMetric2', $scope.localStoragePrefix);
 
-        userSettings.register('chartMetric1');
-        userSettings.register('chartMetric2');
         userSettings.register('order');
         userSettings.register('size');
         userSettings.registerGlobal('chartHidden');
@@ -312,7 +302,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.loadPage();
 
         $scope.getAdGroupState();	// To display message if the adgroup is paused
-        $scope.initColumns();
 
         getTableData();
         getDailyStats();

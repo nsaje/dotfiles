@@ -6,18 +6,17 @@ oneApp.factory("zemCustomTableColsService", ['zemLocalStorageService', function(
 
     function load(namespace, columns) {
         var cols = zemLocalStorageService.get(key, namespace);
-        if (cols) {
+        if (cols && cols.length) {
             columns.forEach(function (x) {
                 x.checked = x.unselectable || cols.indexOf(x.field) > -1;
             });
         } else {
-            cols = [];
+            // the initial value hasn't been saved yet
+            setDefaults(namespace, columns);
         }
-        
-        return cols;
     }
 
-    function save(namespace, columns) {
+    function setDefaults(namespace, columns) {
         var cols = [];
         columns.forEach(function (x) {
             if (x.checked) {
@@ -28,8 +27,21 @@ oneApp.factory("zemCustomTableColsService", ['zemLocalStorageService', function(
         return cols;
     }
 
+    function setColumn(namespace, column) {
+        var cols = zemLocalStorageService.get(key, namespace) || [];
+        var ix = cols.indexOf(column.field);
+
+        if (column.checked && ix === -1) {
+            cols.push(column.field);
+        } else if (!column.checked && ix > -1) {
+            cols.splice(ix, 1);
+        }
+
+        zemLocalStorageService.set(key, cols, namespace);
+    }
+
     return {
         load: load,
-        save: save
+        setColumn: setColumn
     };
 }]);

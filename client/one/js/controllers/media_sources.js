@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemCustomTableColsService', 'zemFilterService', '$timeout', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemCustomTableColsService, zemFilterService, $timeout) {
+oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', '$timeout', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, $timeout) {
     $scope.localStoragePrefix = null;
     $scope.selectedTotals = true;
     $scope.selectedSourceIds = [];
@@ -282,8 +282,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     ];
 
     $scope.initColumns = function () {
-        var cols;
-
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
             $scope.columns.length - 2,
@@ -306,14 +304,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 $scope.isPermissionInternal('zemauth.conversion_reports')
             );
         }
-
-        cols = zemCustomTableColsService.load($scope.localStoragePrefix, $scope.columns);
-        $scope.selectedColumnsCount = cols.length;
-
-        $scope.$watch('columns', function (newValue, oldValue) {
-            cols = zemCustomTableColsService.save($scope.localStoragePrefix, newValue);
-            $scope.selectedColumnsCount = cols.length;
-        }, true);
     };
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
@@ -374,6 +364,48 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         return [$scope.chartMetric1, $scope.chartMetric2];
     };
 
+    var setConversionGoalChartOptions = function (conversionGoals) {
+        conversionGoals = conversionGoals || [];
+        var cg1Exists = conversionGoals.some(function (conversionGoal) {
+            return conversionGoal.id === constants.chartMetric.CONVERSION_GOAL1;
+        });
+
+        var cg2Exists = conversionGoals.some(function (conversionGoal) {
+            return conversionGoal.id === constants.chartMetric.CONVERSION_GOAL2;
+        });
+
+        if (cg1Exists) {
+            $scope.chartMetricOptions.forEach(function (option) {
+                if (option.value === constants.chartMetric.CONVERSION_GOAL1) {
+                    option.shown = true;
+                }
+            });
+        }
+
+        if (cg2Exists) {
+            $scope.chartMetricOptions.forEach(function (option) {
+                if (option.value === constants.chartMetric.CONVERSION_GOAL2) {
+                    option.shown = true;
+                }
+            });
+        }
+
+        if (($scope.chartMetric1 === constants.chartMetric.CONVERSION_GOAL1 && !cg1Exists) ||
+            ($scope.chartMetric1 === constants.chartMetric.CONVERSION_GOAL2 && !cg2Exists)) {
+            $scope.chartMetric1 = constants.chartMetric.CLICKS;
+        }
+
+        if (($scope.chartMetric2 === constants.chartMetric.CONVERSION_GOAL1 && !cg1Exists) ||
+            ($scope.chartMetric2 === constants.chartMetric.CONVERSION_GOAL2 && !cg2Exists)) {
+            $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+        }
+
+        $scope.chartMetricOptions = zemPostclickMetricsService.setConversionGoalChartOptions(
+            $scope.chartMetricOptions,
+            conversionGoals
+        );
+    };
+
     $scope.orderTableData = function(order) {
         $scope.order = order;
         getTableData();
@@ -394,7 +426,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 $scope.isSyncInProgress = data.is_sync_in_progress;
 
                 $scope.selectRows();
-                $scope.columns = zemPostclickMetricsService.setColumnConversionGoalNames($scope.columns, data.conversionGoals);
+                $scope.columns = zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
             },
             function (data) {
                 // error
@@ -408,20 +440,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     var getDailyStats = function () {
         api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), true).then(
             function (data) {
-                setChartOptions(data.conversionGoals);
-
-                // Select default metrics if selected metrics are not defined
-                var values = $scope.chartMetricOptions.map(function (option) {
-                    return option.value;
-                });
-
-                if (values.indexOf($scope.chartMetric1) === -1) {
-                    $scope.chartMetric1 = constants.chartMetric.CLICKS;
-                }
-                if (values.indexOf($scope.chartMetric2) === -1 && $scope.chartMetric2 !== 'none') {
-                    $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
-                }
-
+                setConversionGoalChartOptions(data.conversionGoals);
                 $scope.chartData = data.chartData;
             },
             function (data) {
@@ -431,7 +450,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         );
     };
 
-    var setChartOptions = function (conversionGoals) {
+    var setChartOptions = function () {
         $scope.chartMetricOptions = $scope.chartMetrics;
 
         if ($scope.hasPermission('zemauth.aggregate_postclick_acquisition')) {
@@ -453,11 +472,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 $scope.chartMetricOptions,
                 options.campaignConversionGoalChartMetrics,
                 $scope.isPermissionInternal('zemauth.conversion_reports')
-            );
-
-            $scope.chartMetricOptions = zemPostclickMetricsService.setChartOptionsConversionGoalNames(
-                $scope.chartMetricOptions,
-                conversionGoals
             );
         }
     };
@@ -482,10 +496,11 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         var sourceIds = $location.search().source_ids;
         var sourceTotals = $location.search().source_totals;
 
-        setChartOptions(null);
+        setChartOptions();
 
-        userSettings.register('chartMetric1');
-        userSettings.register('chartMetric2');
+        $scope.chartMetric1 = zemUserSettings.getValue('chartMetric1', $scope.localStoragePrefix);
+        $scope.chartMetric2 = zemUserSettings.getValue('chartMetric2', $scope.localStoragePrefix);
+
         userSettings.register('order');
         userSettings.registerGlobal('chartHidden');
 
