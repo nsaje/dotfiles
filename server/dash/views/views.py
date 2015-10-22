@@ -1056,15 +1056,19 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             domain = publisher['domain']
             # exchange in redshift but source from client selected publishers
             source_slug = publisher.get('exchange') or publisher.get('source')
-            if source_slug not in source_cache:
-                source_cache[source_slug] = models.Source.objects.filter(tracking_slug=source_slug).first()
+            norm_source_slug = source_slug.lower()
+            if norm_source_slug not in source_cache:
+                if publisher.get('exchange'):
+                    source_cache[norm_source_slug] = models.Source.objects.filter(tracking_code__endswith=source_slug).first()
+                if publisher.get('source'):
+                    source_cache[norm_source_slug] = models.Source.objects.filter(name__startswith=source_slug).first()
 
-            if not source_cache[source_slug]:
+            if not source_cache[norm_source_slug]:
                 failed_publisher_mappings.add(source_slug)
                 count_failed_publisher += 1
                 continue
 
-            publisher_tuple = (domain, ad_group.id, source_cache[source_slug].tracking_slug,)
+            publisher_tuple = (domain, ad_group.id, source_cache[norm_source_slug].tracking_slug,)
             if publisher_tuple in publishers_to_add:
                 continue
 
@@ -1074,7 +1078,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             if publisher_tuple in ignored_publishers:
                 continue
 
-            publishers_to_add.add((domain, ad_group.id, source_cache[source_slug].tracking_slug,))
+            publishers_to_add.add((domain, ad_group.id, source_cache[norm_source_slug].tracking_slug, source_cache[norm_source_slug].name))
 
         if len(failed_publisher_mappings) > 0:
             logger.warning('Failed mapping {count} publisher source slugs {slug}'.format(
@@ -1087,9 +1091,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 'domain': dom,
                 'ad_group_id': adgroup_id,
                 'tracking_slug': tracking_slug,
+                'source_name': source_name,
             }\
-            for (dom, adgroup_id, tracking_slug,) in publishers_to_add
+            for (dom, adgroup_id, tracking_slug, source_name,) in publishers_to_add
         ]
+
         if len(publisher_blacklist):
             actionlogs_to_send = []
             current_settings = ad_group.get_current_settings()
@@ -1117,7 +1123,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
     def _add_to_history(self, request, ad_group, state, blacklist):
         changes_text = '{action} the following publishers {pubs}.'.format(
             action="Blacklisted" if state == constants.PublisherStatus.BLACKLISTED else "Enabled",
-            pubs=",".join( ("{pub} on {slug}".format(pub=pub_bl.name, slug=pub_bl.source.name)
+            pubs=", ".join( ("{pub} on {slug}".format(pub=pub_bl['domain'], slug=pub_bl['source_name'])
                  for pub_bl in blacklist)
             )
         )
