@@ -5,6 +5,9 @@ import urllib2
 from django.conf import settings
 
 
+NUM_RETRIES = 3
+
+
 class ImageProcessingException(Exception):
 
     def __init__(self, message="", status=None):
@@ -25,21 +28,31 @@ def process_image(url, crop_areas):
     if crops_dict is not None:
         payload['crops'] = crops_dict
 
-    data = json.dumps(payload)
+    payload_json = json.dumps(payload)
+
+    for _ in xrange(NUM_RETRIES):
+        try:
+            return _attempt_process_image(payload_json)
+        except Exception as error:
+            pass
+
+    raise error
+
+
+def _attempt_process_image(payload_json):
     response_code = httplib.INTERNAL_SERVER_ERROR
+
     try:
-        response = urllib2.urlopen(settings.Z3_API_IMAGE_URL, data)
+        response = urllib2.urlopen(settings.Z3_API_IMAGE_URL, payload_json)
         response_code = response.code
     except urllib2.HTTPError, error:
         try:
-            response_raw = error.read()
-            result = json.loads(response_raw)
+            error_dict = json.loads(error.read())
         except:
             raise ImageProcessingException()
-        response_code = error.code
+
         if error.code == httplib.INTERNAL_SERVER_ERROR:
-            status = result.get('status')
-            raise ImageProcessingException(status=status)
+            raise ImageProcessingException(status=error_dict.get('status'))
         else:
             raise ImageProcessingException(error)
 
