@@ -14,6 +14,12 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         }
     }
 
+    function addShowBlacklistedPublisher(params) {
+        if (zemFilterService.getShowBlacklistedPublishers()) {
+            params.show_blacklisted_publishers = zemFilterService.getShowBlacklistedPublishers();
+        }
+    }
+
     function NavData() {
         this.list = function () {
             var deferred = $q.defer();
@@ -309,6 +315,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }
 
             addFilteredSources(config.params);
+            addShowBlacklistedPublisher(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {

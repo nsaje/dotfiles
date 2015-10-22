@@ -446,6 +446,16 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         getDailyStats();
     }, true);
 
+    $scope.$watch(zemFilterService.getShowBlacklistedPublishers, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+
+    }, true);
+
     $scope.init = function() {
         var data = $scope.adGroupData[$state.params.id];
         $scope.setPublisherFilterVisible(true);

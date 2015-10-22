@@ -1552,7 +1552,6 @@ class PublishersTable(object):
                 'endIndex': end_index,
                 'size': size
             },
-
             'totals': self.get_totals(
                 user,
                 totals_data,

@@ -19,6 +19,7 @@ oneApp.directive('zemFilter', ['config', function(config) {
         controller: ['$scope', 'zemFilterService', 'zemUserSettings', 'api', function ($scope, zemFilterService, zemUserSettings, api) {
             $scope.availableSources = [];
             $scope.config = config;
+            $scope.enablePublisherFilter = false;
             $scope.showPublisherSelected = "all";
 
             $scope.refreshAvailableSources = function () {
@@ -74,12 +75,27 @@ oneApp.directive('zemFilter', ['config', function(config) {
                 }
             });
 
+            $scope.$watch('showPublisherSelected', function (newValue, oldValue) {
+                if (newValue !== oldValue) {
+                    zemFilterService.setShowBlacklistedPublishers(newValue);
+                }
+            });
+
             $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
                 if (newValue === oldValue) {
                     return;
                 }
 
                 $scope.refreshAvailableSources();
+            });
+
+
+            $scope.$watch(zemFilterService.getShowBlacklistedPublishers, function (newValue, oldValue) {
+                if (newValue === oldValue) {
+                    return;
+                }
+
+                $scope.showPublisherSelected = zemFilterService.getShowBlacklistedPublishers();
             });
 
             $scope.$on('$locationChangeStart', function() {
@@ -100,6 +116,9 @@ oneApp.directive('zemFilter', ['config', function(config) {
 
             $scope.init = function () {
                 $scope.showArchivedSelected = zemFilterService.getShowArchived();
+
+                $scope.enablePublisherFilter = false;
+                $scope.showPublisherSelected = zemFilterService.getShowBlacklistedPublishers();
                 $scope.refreshAvailableSources();
             };
 
