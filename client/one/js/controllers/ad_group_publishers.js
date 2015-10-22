@@ -27,11 +27,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.selectedPublisherStatus = {};
 
     $scope.bulkActions = [{
-        name: 'Blacklist',
+        name: 'Blacklist in this adgroup',
         value: 'blacklist',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
     }, {
-        name: 'Re-enable',
+        name: 'Re-enable in this adgroup',
         value: 'enable',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
     }];
@@ -151,8 +151,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             'name': 'Traffic Acquisition',
             'fields': [
                'publisher_selected',
-               'domain',
                'blacklisted',
+               'domain',
                'domain_link',
                'exchange',
                'cost', 
@@ -178,7 +178,20 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             selectCallback: $scope.selectedPublisherChanged,
             disabled: false,
             selectionMenuConfig: $scope.selectionMenuConfig
-        },    
+        },
+        {
+
+            name: 'Status',
+            field: 'blacklisted',
+            checked: true,
+            extraTdCss: 'no-wrap',
+            type: 'text',
+            shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
+            help: 'Blacklisted status of a publisher.',
+            totalRow: false,
+            order: true,
+            initialOrder: 'asc'
+        },
         {
             name: 'Domain',
             field: 'domain',
@@ -189,19 +202,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             hasTotalsLabel: true,
             totalRow: false,
             help: 'A publisher where your content is being promoted.',
-            order: true,
-            initialOrder: 'asc'
-        },
-        {
-
-            name: 'Blacklisted',
-            field: 'blacklisted',
-            checked: true,
-            extraTdCss: 'no-wrap',
-            type: 'text',
-            shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
-            help: 'Blacklisted status of a publisher.',
-            totalRow: false,
             order: true,
             initialOrder: 'asc'
         },
@@ -317,8 +317,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             publishersNotSelected,
             $scope.selectedAll
         ).then(function () {
-            // TODO
-            // $scope.pollTableUpdates();
+            getTableData();
         });
     };
 
