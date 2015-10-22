@@ -1591,6 +1591,7 @@ class PublishersTable(object):
             row = {
                 'domain': domain,
                 'domain_link': domain_link,
+                'blacklisted': publisher_data['blacklisted'],
                 'exchange': source_name,
                 'cost': publisher_data.get('cost', 0),
                 'cpc': publisher_data.get('cpc', 0),
