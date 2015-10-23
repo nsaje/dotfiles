@@ -73,6 +73,12 @@ def get_filtered_sources(user, sources_filter):
     return filtered_sources
 
 
+def get_additional_columns(additional_columns):
+    if additional_columns:
+        return additional_columns.split(',')
+    return []
+
+
 def get_account(user, account_id, select_related=False):
     try:
         account = models.Account.objects.all().filter_by_user(user)
