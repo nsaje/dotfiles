@@ -79,7 +79,7 @@ class AccountCampaignsExport(api_common.BaseApiView):
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         export_type = request.GET.get('type')
-        include_archived = request.GET.get('archived')
+        include_archived = helpers.get_show_archived(request.GET.get('archived'))
 
         user = request.user
 
@@ -174,7 +174,7 @@ class CampaignAdGroupsExport(ExportApiView):
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         export_type = request.GET.get('type')
-        include_archived = request.GET.get('archived')
+        include_archived = helpers.get_show_archived(request.GET.get('archived'))
 
         user = request.user
 
@@ -544,7 +544,7 @@ class AdGroupAdsPlusExport(ExportApiView):
         user = request.user
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
-        include_archived = request.GET.get('archived')
+        include_archived = helpers.get_show_archived(request.GET.get('archived'))
 
         if export_type == 'view-csv':
             filename = '{0}_{1}_{2}_report_{3}_{4}'.format(
@@ -747,7 +747,7 @@ class AllAccountsSourcesExport(ExportApiView):
         order = request.GET.get('order') or 'name'
         export_type = request.GET.get('type')
         level_ = 'all_accounts'
-        include_archived = request.GET.get('archived')
+        include_archived = helpers.get_show_archived(request.GET.get('archived'))
 
         if export_type == 'view-csv':
             filename = 'ZemantaOne_media_source_report_{0}_{1}'.format(
@@ -770,7 +770,7 @@ class AccountSourcesExport(ExportApiView):
         order = request.GET.get('order') or 'name'
         export_type = request.GET.get('type')
         level_ = 'accounts'
-        include_archived = request.GET.get('archived')
+        include_archived = helpers.get_show_archived(request.GET.get('archived'))
 
         if export_type == 'view-csv':
             filename = '{0}_media_source_report_{1}_{2}'.format(
@@ -816,7 +816,7 @@ class CampaignSourcesExport(ExportApiView):
         export_type = request.GET.get('type')
 
         level_ = 'campaigns'
-        include_archived = request.GET.get('archived')
+        include_archived = helpers.get_show_archived(request.GET.get('archived'))
 
         if export_type == 'view-csv':
             filename = '{0}_{1}_media_source_report_{2}_{3}'.format(
@@ -857,7 +857,7 @@ class AdGroupSourcesExport(ExportApiView):
         export_type = request.GET.get('type')
 
         level_ = 'ad_groups'
-        include_archived = request.GET.get('archived')
+        include_archived = helpers.get_show_archived(request.GET.get('archived'))
 
         if export_type == 'view-csv':
             filename = '{0}_{1}_{2}_media_source_report_{3}_{4}'.format(
@@ -895,7 +895,7 @@ class AllAccountsExport(ExportApiView):
         order = request.GET.get('order') or 'name'
 
         export_type = request.GET.get('type')
-        include_archived = request.GET.get('archived')
+        include_archived = helpers.get_show_archived(request.GET.get('archived'))
 
         if export_type == 'view-csv':
             filename = 'ZemantaOne_report_{0}_{1}'.format(start_date, end_date)
