@@ -153,8 +153,10 @@ describe('AdGroupSourcesCtrlSpec', function() {
 
             expect($scope.chartMetric1).toBe('ctr');
             expect($scope.chartMetric2).toBe('cpc');
-        });
 
+            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: 'Loading...', shown: false, internal: true});
+            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'Loading...', shown: false, internal: true});
+        });
 
         it('should select default metrics when conversion goals don\'t exist', function() {
             $scope.chartMetric1 = 'conversion_goal_1';
@@ -180,14 +182,8 @@ describe('AdGroupSourcesCtrlSpec', function() {
             expect($scope.chartMetric1).toBe('clicks');
             expect($scope.chartMetric2).toBe('impressions');
 
-            $scope.chartMetricOptions.forEach(function(el) {
-                if (el.value === 'conversion_goal_1' || el.value === 'conversion_goal_2') {
-                    expect(el.shown).toBe(false);
-                    expect(el.name).toBe('Loading...');
-                } else {
-                    expect(el.shown).toBeUndefined();
-                }
-            });
+            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: 'Loading...', shown: false, internal: true});
+            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'Loading...', shown: false, internal: true});
         });
 
         it('should select conversion goal when one exists', function() {
@@ -214,17 +210,8 @@ describe('AdGroupSourcesCtrlSpec', function() {
             expect($scope.chartMetric1).toBe('clicks');
             expect($scope.chartMetric2).toBe('conversion_goal_2');
 
-            $scope.chartMetricOptions.forEach(function(el) {
-                if (el.value === 'conversion_goal_1') {
-                    expect(el.shown).toBe(false);
-                    expect(el.name).toBe('Loading...');
-                } else if (el.value === 'conversion_goal_2') {
-                    expect(el.shown).toBe(true);
-                    expect(el.name).toBe('my conversion goal');
-                } else {
-                    expect(el.shown).toBeUndefined();
-                }
-            });
+            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: 'Loading...', shown: false, internal: true});
+            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'my conversion goal', shown: true, internal: true});
         });
     });
 });
