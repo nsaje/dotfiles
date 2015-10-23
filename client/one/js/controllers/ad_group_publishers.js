@@ -46,13 +46,13 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             "checked": checked,
             "source": row['exchange'],
             "domain": row['domain']
-        }
+        };
 
         var numSelected = 0,
             numNotSelected = 0;
 
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
-            if ($scope.selectedPublisherStatus[publisherId]["checked"]) {
+            if ($scope.selectedPublisherStatus[publisherId].checked) {
                 numSelected += 1;
             } else {
                 numNotSelected += 1;
@@ -86,7 +86,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.rows.forEach(function(row) {
             var row_id = $scope.calculatePublisherHash(row);
             if ($scope.selectedPublisherStatus[row_id] !== undefined) {
-                row.publisher_selected = $scope.selectedPublisherStatus[row_id]["checked"];
+                row.publisher_selected = $scope.selectedPublisherStatus[row_id].checked;
             } else if ($scope.selectedAll) {
                 row.publisher_selected = true;
             } else {
@@ -102,7 +102,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         for (var publisherId in $scope.selectedPublisherStatus) {
             if ($scope.selectedPublisherStatus.hasOwnProperty(publisherId)
-                    && $scope.selectedPublisherStatus[publisherId]["checked"]) {
+                    && $scope.selectedPublisherStatus[publisherId].checked) {
                 return true;
             }
         }
@@ -120,7 +120,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
             if ($scope.selectedPublisherStatus[publisherId] !== undefined) {
-                if ($scope.selectedPublisherStatus[publisherId]["checked"]) {
+                if ($scope.selectedPublisherStatus[publisherId].checked) {
                     publishersSelected.push($scope.selectedPublisherStatus[publisherId]);
                 } else {
                     publishersNotSelected.push($scope.selectedPublisherStatus[publisherId]);
