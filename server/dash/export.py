@@ -268,7 +268,7 @@ def _get_fieldnames(required_fields, additional_fields, name_text):
 
 
 class AllAccountsExport(object):
-    def get_data_current_view(self, user, filtered_sources, start_date, end_date, order, additional_fields, include_header=True):
+    def get_data_current_view(self, user, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=False):
         results = table.AccountsAccountsTable().get(
             user,
             filtered_sources,
@@ -277,7 +277,7 @@ class AllAccountsExport(object):
             order,
             1,
             4294967295,
-            False
+            include_archived
         ).get('rows')
 
         required_fields = ['start_date', 'end_date', 'name']
@@ -288,7 +288,7 @@ class AllAccountsExport(object):
             row['end_date'] = end_date
         return get_csv_content(fieldnames, results, include_header=include_header)
 
-    def get_data_by_campaign(self, user, filtered_sources, start_date, end_date, order, additional_fields, include_header=True):
+    def get_data_by_campaign(self, user, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=False):
         final_results = ''
         for account in models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources):
             final_results = final_results + AccountCampaignsExport().get_data_current_view(
@@ -299,13 +299,14 @@ class AllAccountsExport(object):
                 end_date,
                 order,
                 additional_fields,
-                include_header=include_header)
+                include_header=include_header,
+                include_archived=include_archived)
             include_header = False
         return final_results
 
 
 class AccountCampaignsExport(object):
-    def get_data_current_view(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True):
+    def get_data_current_view(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=False):
         account = helpers.get_account(user, account_id)
 
         results = table.AccountCampaignsTable().get(
@@ -315,7 +316,7 @@ class AccountCampaignsExport(object):
             start_date,
             end_date,
             order,
-            False
+            include_archived
         ).get('rows')
 
         required_fields = ['start_date', 'end_date', 'account', 'name']
@@ -343,7 +344,8 @@ class AccountCampaignsExport(object):
                 end_date,
                 order,
                 additional_fields,
-                include_header=include_header)
+                include_header=include_header,
+                include_archived=include_archived)
             include_header = False
         return final_results
 
@@ -363,13 +365,14 @@ class AccountCampaignsExport(object):
                 end_date,
                 order,
                 additional_fields,
-                include_header=include_header)
+                include_header=include_header,
+                include_archived=include_archived)
             include_header = False
         return final_results
 
 
 class CampaignAdGroupsExport(object):
-    def get_data_current_view(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True):
+    def get_data_current_view(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=False):
         campaign = helpers.get_campaign(user, campaign_id)
 
         results = table.CampaignAdGroupsTable().get(
@@ -379,7 +382,7 @@ class CampaignAdGroupsExport(object):
             start_date,
             end_date,
             order,
-            False
+            include_archived=include_archived
         ).get('rows')
 
         required_fields = ['start_date', 'end_date', 'account', 'campaign', 'name']
@@ -414,7 +417,8 @@ class CampaignAdGroupsExport(object):
                 end_date,
                 order,
                 additional_fields,
-                include_header=include_header)
+                include_header=include_header,
+                include_archived=include_archived)
             include_header = False
         return final_results
 
@@ -509,7 +513,8 @@ class SourcesExport(object):
                 end_date,
                 order,
                 additional_fields,
-                include_header=include_header)
+                include_header=include_header,
+                include_archived=include_archived)
             include_header = False
         return final_results
 
@@ -566,7 +571,7 @@ class SourcesExport(object):
 
 
 class AdGroupAdsPlusExport(object):
-    def get_data_current_view(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True):
+    def get_data_current_view(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=False):
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
         results = table.AdGroupAdsPlusTable().get(
@@ -578,7 +583,7 @@ class AdGroupAdsPlusExport(object):
             order,
             1,
             4294967295,
-            False
+            include_archived
         ).get('rows')
 
         required_fields = ['start_date', 'end_date', 'account', 'campaign', 'ad_group', 'name']
