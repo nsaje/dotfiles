@@ -66,7 +66,7 @@
                     <strong>{{row.title}}</strong>
                 </div>
                 <div class="col-xs-9">
-                    {{row.value}} <a href="#" ng-if="row.link" ng-click="row.link.click()">{{row.link.text}}</a>
+                    {{row.value}} <a href="#" class="row-link" ng-if="row.link" ng-click="row.link.click()">{{row.link.text}}</a>
                 </div>
             </div>
             <button type="button" class="btn btn-default remove-btn" ng-class="{'disabled': !!removeConversionGoalInProgress || !!goalsError}" ng-click="removeConversionGoal(goal.id)">Remove</button>
