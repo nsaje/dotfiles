@@ -76,7 +76,11 @@ oneApp.directive('zemExport', function() {
             };
 
             $scope.downloadReport = function() {
-                var url = $scope.baseUrl + 'export/?type=' + $scope.exportType + '&start_date=' + $scope.startDate.format() + '&end_date=' + $scope.endDate.format() + '&order=' + $scope.order;
+                var url = $scope.baseUrl + 'export/?type=' + $scope.exportType +
+                          '&start_date=' + $scope.startDate.format() +
+                          '&end_date=' + $scope.endDate.format() +
+                          '&order=' + $scope.order +
+                          '&archived=' + zemFilterService.getShowArchived();
 
                 if (zemFilterService.isSourceFilterOn()) {
                     url += '&filtered_sources=' + zemFilterService.getFilteredSources().join(',');
