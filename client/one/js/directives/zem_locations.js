@@ -5,8 +5,7 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
     return {
         restrict: 'E',
         scope: {
-            selectedLocationCodes: '=zemSelectedLocationCodes',
-            sourcesWithoutDMASupport: '=zemSourcesWithoutDmaSupport' // TODO remove?
+            selectedLocationCodes: '=zemSelectedLocationCodes'
         },
         templateUrl: '/partials/zem_locations.html',
         controller: ['$scope', '$compile', '$element', '$attrs', '$http', 'api', function ($scope, $compile, $element, $attrs, $http, api) {
