@@ -99,8 +99,8 @@ def update_ad_group_source_state(ad_group_source, conf):
 
                     source_slug = pub_blacklist['tracking_slug']
                     if source_slug not in source_cache:
-                        ad_group_cache[source_slug] =\
-                            models.AdGroup.objects.get(pk=source_slug)
+                        source_cache[source_slug] =\
+                            models.Source.objects.get(tracking_slug=source_slug)
 
 
                     # store blacklisted publishers and push to other sources
