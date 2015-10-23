@@ -10,7 +10,7 @@ describe('AdGroupSourcesCtrl', function() {
         $provide.value('zemLocalStorageService', {get: function(){}});
         $provide.value('zemCustomTableColsService', {
             load: function() {return [];},
-            save: function() {return [];}
+            setColumn: function() {return [];}
         });
         $provide.value('zemPostclickMetricsService', {
             insertAcquisitionColumns: function(){return [];},
@@ -19,11 +19,11 @@ describe('AdGroupSourcesCtrl', function() {
             concatAcquisitionChartOptions: function(){return [];},
             concatEngagementChartOptions: function(){return [];},
             concatChartOptions: function(){return [];},
-            setChartOptionsConversionGoalNames: function(){return [];},
-            setColumnConversionGoalNames: function(){return [];}
+            setConversionGoalChartOptions: function(){return [];},
+            setConversionGoalColumnsDefaults: function(){return [];}
         });
     }));
-    
+
     beforeEach(inject(function($rootScope, $controller, _$timeout_, $state) {
         $scope = $rootScope.$new();
         $scope.isPermissionInternal = function() {return true;};
@@ -44,19 +44,19 @@ describe('AdGroupSourcesCtrl', function() {
             adGroupSourcesTable: {get: function() {
                 return {
                     then: function() {
-                        return {finally: function() {}}
+                        return {finally: function() {}};
                     }
-                }
+                };
             }},
             dailyStats: {list: function() {
                 return {
                     then: function() {}
-                }
+                };
             }},
             adGroupSources: {get: function() {
                 return {
                     then: function() {}
-                }
+                };
             }}
         };
 
