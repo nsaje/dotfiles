@@ -67,7 +67,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
     $scope.updateSelectedRowsData = function () {
         $scope.updateSelectedRowsLocation();
-        getDailyStats();
+        $scope.getDailyStats();
     };
 
     $scope.selectRows = function () {
@@ -532,7 +532,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         }
     };
 
-    var getDailyStats = function () {
+    $scope.getDailyStats = function () {
         api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), null).then(
             function (data) {
                 setConversionGoalChartOptions(data.conversionGoals);
@@ -581,7 +581,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             if (!hasMetricData($scope.chartMetric1)) {
-                getDailyStats();
+                $scope.getDailyStats();
             } else {
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
@@ -592,7 +592,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             if (!hasMetricData($scope.chartMetric2)) {
-                getDailyStats();
+                $scope.getDailyStats();
             } else {
                 // create a copy to trigger watch
                 $scope.chartData = angular.copy($scope.chartData);
@@ -612,7 +612,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             return;
         }
 
-        getDailyStats();
+        $scope.getDailyStats();
         getTableData();
     });
 
@@ -625,7 +625,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.updateSelectedRowsLocation();
 
         getTableData();
-        getDailyStats();
+        $scope.getDailyStats();
     }, true);
 
     $scope.init = function() {
@@ -660,7 +660,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.initColumns();
 
         getTableData();
-        getDailyStats();
+        $scope.getDailyStats();
 
         getSources();
     };
@@ -723,7 +723,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             getTableData();
-                            getDailyStats();
+                            $scope.getDailyStats();
                         }
                     },
                     function(data) {
@@ -794,4 +794,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     $scope.init();
+
+    return {$scope: $scope}; // to get the reference to $scope in tests
 }]);

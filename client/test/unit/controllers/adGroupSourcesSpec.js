@@ -1,6 +1,6 @@
 'use strict';
 
-describe('AdGroupSourcesCtrl', function() {
+describe('AdGroupSourcesCtrlSpec', function() {
     var $scope, api, $timeout;
 
     beforeEach(module('one'));
@@ -11,16 +11,6 @@ describe('AdGroupSourcesCtrl', function() {
         $provide.value('zemCustomTableColsService', {
             load: function() {return [];},
             setColumn: function() {return [];}
-        });
-        $provide.value('zemPostclickMetricsService', {
-            insertAcquisitionColumns: function(){return [];},
-            insertEngagementColumns: function(){return [];},
-            insertConversionGoalColumns: function(){return [];},
-            concatAcquisitionChartOptions: function(){return [];},
-            concatEngagementChartOptions: function(){return [];},
-            concatChartOptions: function(){return [];},
-            setConversionGoalChartOptions: function(){return [];},
-            setConversionGoalColumnsDefaults: function(){return [];}
         });
     }));
 
@@ -61,7 +51,7 @@ describe('AdGroupSourcesCtrl', function() {
         };
 
         $state.params = {id: 123};
-        $controller('AdGroupSourcesCtrl', {$scope: $scope, api: api, $state: $state});
+        $scope = $controller('AdGroupSourcesCtrl', {$scope: $scope, api: api, $state: $state}).$scope;
     }));
 
     describe('pollSourcesTableUpdates', function() {
@@ -101,7 +91,7 @@ describe('AdGroupSourcesCtrl', function() {
                         then: function(handler) {
                             handler(data);
                         }
-                    }
+                    };
                 }
             };
 
@@ -127,7 +117,7 @@ describe('AdGroupSourcesCtrl', function() {
                         then: function(handler) {
                             handler(data);
                         }
-                    }
+                    };
                 }
             };
 
@@ -138,6 +128,103 @@ describe('AdGroupSourcesCtrl', function() {
 
             expect($scope.lastChangeTimeout).toBe(null);
             expect($scope.pollSourcesTableUpdates).toHaveBeenCalled();
+        });
+
+        it('should leave selected metrics when they are not conversion goals', function() {
+            $scope.chartMetric1 = 'ctr';
+            $scope.chartMetric2 = 'cpc';
+
+            var data = {
+                chartData: [],
+                conversionGoals: []
+            };
+
+            api.dailyStats = {
+                list: function() {
+                    return {
+                        then: function (handler) {
+                            handler(data);
+                        }
+                    };
+                }
+            };
+
+            $scope.getDailyStats();
+
+            expect($scope.chartMetric1).toBe('ctr');
+            expect($scope.chartMetric2).toBe('cpc');
+        });
+
+
+        it('should select default metrics when conversion goals don\'t exist', function() {
+            $scope.chartMetric1 = 'conversion_goal_1';
+            $scope.chartMetric2 = 'conversion_goal_2';
+
+            var data = {
+                chartData: [],
+                conversionGoals: []
+            };
+
+            api.dailyStats = {
+                list: function() {
+                    return {
+                        then: function (handler) {
+                            handler(data);
+                        }
+                    };
+                }
+            };
+
+            $scope.getDailyStats();
+
+            expect($scope.chartMetric1).toBe('clicks');
+            expect($scope.chartMetric2).toBe('impressions');
+
+            $scope.chartMetricOptions.forEach(function(el) {
+                if (el.value === 'conversion_goal_1' || el.value === 'conversion_goal_2') {
+                    expect(el.shown).toBe(false);
+                    expect(el.name).toBe('Loading...');
+                } else {
+                    expect(el.shown).toBeUndefined();
+                }
+            });
+        });
+
+        it('should select conversion goal when one exists', function() {
+            var data = {
+                chartData: [],
+                conversionGoals: [{id: 'conversion_goal_2', name: 'my conversion goal'}]
+            };
+
+            api.dailyStats = {
+                list: function() {
+                    return {
+                        then: function (handler) {
+                            handler(data);
+                        }
+                    };
+                }
+            };
+
+            $scope.chartMetric1 = 'conversion_goal_1';
+            $scope.chartMetric2 = 'conversion_goal_2';
+
+            $scope.getDailyStats();
+
+            expect($scope.chartMetric1).toBe('clicks');
+            expect($scope.chartMetric2).toBe('conversion_goal_2');
+
+            $scope.chartMetricOptions.forEach(function(el) {
+                if (el.value === 'conversion_goal_1') {
+                    expect(el.shown).toBe(false);
+                    expect(el.name).toBe('Loading...');
+                } else if (el.value === 'conversion_goal_2') {
+                    expect(el.shown).toBe(true);
+                    expect(el.name).toBe('my conversion goal');
+                } else {
+                    expect(el.shown).toBeUndefined();
+                }
+            });
         });
     });
 });
