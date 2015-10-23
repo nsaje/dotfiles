@@ -137,6 +137,18 @@ urlpatterns += patterns(
         login_required(dash.views.export.AdGroupSourcesExport.as_view())
     ),
     url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/sources/export/',
+        login_required(dash.views.export.CampaignSourcesExport.as_view())
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/sources/export/',
+        login_required(dash.views.export.AccountSourcesExport.as_view())
+    ),
+    url(
+        r'^api/all_accounts//sources/export/',
+        login_required(dash.views.export.AllAccountsSourcesExport.as_view())
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/table/',
         login_required(dash.views.table.AdGroupAdsTable.as_view()),
     ),
