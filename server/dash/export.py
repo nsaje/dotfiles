@@ -1,15 +1,59 @@
 import unicodecsv
 from xlsxwriter import Workbook
 import StringIO
+from collections import OrderedDict
 
 from dash import models
 from dash import stats_helper
+from dash import table
+from dash.views import helpers
 
 import reports.api
 import reports.api_contentads
 import reports.api_helpers
 
 from utils.sort_helper import sort_results
+
+FIELDNAMES = {
+    'start_date': 'Start Date',
+    'end_date': 'End Date',
+    'account': 'Account',
+    'campaign': 'Campaign',
+    'ad_group': 'Ad Group',
+    'cost': 'Spend',
+    'cpc': 'Average CPC',
+    'clicks': 'Clicks',
+    'impressions': 'Impressions',
+    'ctr': 'CTR',
+    'bid_cpc': 'Bid CPC',
+    'min_bid_cpc': 'Min Bid',
+    'max_bid_cpc': 'Max Bid',
+    'current_bid_cpc': 'Current Bid CPC',
+    'daily_budget': 'Daily Budget',
+    'current_daily_budget': 'Current Daily Budget',
+    'yesterday_cost': 'Yesterday Spend',
+    'ctr': 'CTR',
+    'visits': 'Visits',
+    'click_discrepancy': 'Click Discrepancy',
+    'pageviews': 'Pageviews',
+    'percent_new_users': 'Percent New Users',
+    'bounce_rate': 'Bounce Rate',
+    'pv_per_visit': 'PV/Visit',
+    'avg_tos': 'Avg. ToS',
+    'budget': 'Total Budget',
+    'available_budget': 'Available Budget',
+    'unspent_budget': 'Unspent Budget',
+    'urlLink': 'URL',
+    'image_urls': 'Image URL',
+    'upload_time': 'Uploaded',
+    'batch_name': 'Batch Name',
+    'display_url': 'Display URL',
+    'brand_name': 'Brand Name',
+    'description': 'Description',
+    'call_to_action': 'Call to action'
+}
+
+UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state', 'submission_status', 'titleLink']
 
 
 def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False, conversion_goals=None, **kwargs):
@@ -92,37 +136,32 @@ def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, 
     return sort_results(stats, ordering)
 
 
-def get_csv_content(fieldnames, data, title_text=None, start_date=None, end_date=None):
+def get_csv_content(fieldnames, data, title_text=None, include_header=True):
     output = StringIO.StringIO()
-    need_nl = False
     if title_text is not None:
-        output.write('# {0}\n'.format(title_text))
-        need_nl = True
-    if start_date is not None and end_date is not None:
-        output.write('# Start date {0}\n'.format(start_date.strftime('%m/%d/%Y')))
-        output.write('# End date {0}\n'.format(end_date.strftime('%m/%d/%Y')))
-        need_nl = True
-    if need_nl:
-        output.write('\n')
+        output.write('# {0}\n\n'.format(title_text))
 
     writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel')
 
     # header
-    writer.writerow(fieldnames)
+    if include_header:
+        writer.writerow(fieldnames)
 
     for item in data:
         # Format
         row = {}
-        for key in fieldnames:
+        for key in fieldnames.keys():
             value = item.get(key)
 
-            if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr', 'visits', 'pageviews']:
+            if not value:
                 value = 0
 
             if value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
                 value = '{:.2f}'.format(value)
 
             row[key] = value
+            if repr(value).find(';') != -1:
+                row[key] = '"' + value + '"'
 
         writer.writerow(row)
 
@@ -219,3 +258,340 @@ def _create_excel_worksheet(workbook, name, columns, data, start_date=None, end_
 
     for index, item in enumerate(data):
         _write_excel_row(worksheet, index + row_ix + 1, item)
+
+
+def _get_fieldnames(required_fields, additional_fields, name_text):
+    fields = [field for field in (required_fields + additional_fields) if field not in UNEXPORTABLE_FIELDS]
+    fieldnames = OrderedDict([(k, FIELDNAMES.get(k) or k) for k in fields])
+    fieldnames['name'] = name_text
+    return fieldnames
+
+
+class AllAccountsExport(object):
+    def get_data_current_view(self, user, filtered_sources, start_date, end_date, order, additional_fields, include_header=True):
+        results = table.AccountsAccountsTable().get(
+            user,
+            filtered_sources,
+            start_date,
+            end_date,
+            order,
+            1,
+            4294967295,
+            False
+        ).get('rows')
+
+        required_fields = ['start_date', 'end_date', 'name']
+        fieldnames = _get_fieldnames(required_fields, additional_fields, 'Account')
+
+        for row in results:
+            row['start_date'] = start_date
+            row['end_date'] = end_date
+        return get_csv_content(fieldnames, results, include_header=include_header)
+
+    def get_data_by_campaign(self, user, filtered_sources, start_date, end_date, order, additional_fields, include_header=True):
+        final_results = ''
+        for account in models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources):
+            final_results = final_results + AccountCampaignsExport().get_data_current_view(
+                user,
+                account.id,
+                filtered_sources,
+                start_date,
+                end_date,
+                order,
+                additional_fields,
+                include_header=include_header)
+            include_header = False
+        return final_results
+
+
+class AccountCampaignsExport(object):
+    def get_data_current_view(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True):
+        account = helpers.get_account(user, account_id)
+
+        results = table.AccountCampaignsTable().get(
+            user,
+            account_id,
+            filtered_sources,
+            start_date,
+            end_date,
+            order,
+            False
+        ).get('rows')
+
+        required_fields = ['start_date', 'end_date', 'account', 'name']
+        fieldnames = _get_fieldnames(required_fields, additional_fields, 'Campaign')
+        for row in results:
+            row['start_date'] = start_date
+            row['end_date'] = end_date
+            row['account'] = account.name
+
+        return get_csv_content(fieldnames, results, include_header=include_header)
+
+    def get_data_by_ad_group(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=False):
+        final_results = ''
+        account = helpers.get_account(user, account_id)
+        campaigns = models.Campaign.objects.filter(account=account).filter_by_user(user).filter_by_sources(filtered_sources)
+        if not include_archived or not user.has_perm('zemauth.view_archived_entities'):
+            campaigns = campaigns.exclude_archived()
+        for campaign in campaigns:
+            print campaign.name  # DAVORIN
+            final_results = final_results + CampaignAdGroupsExport().get_data_current_view(
+                user,
+                campaign.id,
+                filtered_sources,
+                start_date,
+                end_date,
+                order,
+                additional_fields,
+                include_header=include_header)
+            include_header = False
+        return final_results
+
+    def get_data_by_content_ad(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=False):
+        final_results = ''
+        account = helpers.get_account(user, account_id)
+        campaigns = models.Campaign.objects.filter(account=account).filter_by_user(user).filter_by_sources(filtered_sources)
+        if not include_archived or not user.has_perm('zemauth.view_archived_entities'):
+            campaigns = campaigns.exclude_archived()
+        for campaign in campaigns:
+            print campaign.name  # DAVORIN
+            final_results = final_results + CampaignAdGroupsExport().get_data_by_content_ads(
+                user,
+                campaign.id,
+                filtered_sources,
+                start_date,
+                end_date,
+                order,
+                additional_fields,
+                include_header=include_header)
+            include_header = False
+        return final_results
+
+
+class CampaignAdGroupsExport(object):
+    def get_data_current_view(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True):
+        campaign = helpers.get_campaign(user, campaign_id)
+
+        results = table.CampaignAdGroupsTable().get(
+            user,
+            campaign_id,
+            filtered_sources,
+            start_date,
+            end_date,
+            order,
+            False
+        ).get('rows')
+
+        required_fields = ['start_date', 'end_date', 'account', 'campaign', 'name']
+        fieldnames = _get_fieldnames(required_fields, additional_fields, 'Ad Group')
+
+        for row in results:
+            row['start_date'] = start_date
+            row['end_date'] = end_date
+            row['account'] = campaign.account.name
+            row['campaign'] = campaign.name
+
+        if user.has_perm('zemauth.conversion_reports'):
+            conversion_goals = campaign.conversiongoal_set.all()
+            for conversion_goal in conversion_goals:
+                fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
+
+        return get_csv_content(fieldnames, results, include_header=include_header)
+
+    def get_data_by_content_ads(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=False):
+        final_results = ''
+        campaign = helpers.get_campaign(user, campaign_id)
+        adgroups = models.AdGroup.objects.filter(campaign=campaign).filter_by_user(user).filter_by_sources(filtered_sources)
+        if not include_archived or not user.has_perm('zemauth.view_archived_entities'):
+            adgroups = adgroups.exclude_archived()
+        for adgroup in adgroups:
+            print 'adg: ', adgroup.name  # DAVORIN
+            final_results = final_results + AdGroupAdsPlusExport().get_data_current_view(
+                user,
+                adgroup.id,
+                filtered_sources,
+                start_date,
+                end_date,
+                order,
+                additional_fields,
+                include_header=include_header)
+            include_header = False
+        return final_results
+
+
+class SourcesExport(object):
+    def get_data_current_view(self, user, level_, id_, filtered_sources, start_date, end_date, order, additional_fields, include_header=True):
+
+        date_source_results = table.SourcesTable().get(
+            user,
+            level_,
+            filtered_sources,
+            start_date,
+            end_date,
+            order,
+            id_
+        ).get('rows')
+
+        required_fields = ['start_date', 'end_date']
+        conversion_goals = []
+        if level_ == 'accounts':
+            required_fields.extend(['account'])
+            account_name = helpers.get_account(user, id_).name
+        elif level_ == 'campaigns':
+            required_fields.extend(['account', 'campaign'])
+            campaign = helpers.get_campaign(user, id_)
+            campaign_name = campaign.name
+            account_name = campaign.account.name
+            if user.has_perm('zemauth.conversion_reports'):
+                conversion_goals = campaign.conversiongoal_set.all()
+        elif level_ == 'ad_groups':
+            required_fields.extend(['account', 'campaign', 'ad_group'])
+            ad_group = helpers.get_ad_group(user, id_)
+            ad_group_name = ad_group.name
+            campaign_name = ad_group.campaign.name
+            account_name = ad_group.campaign.account.name
+            if user.has_perm('zemauth.conversion_reports'):
+                conversion_goals = ad_group.campaign.conversiongoal_set.all()
+
+        required_fields.extend(['name'])
+        fieldnames = _get_fieldnames(required_fields, additional_fields, 'Source')
+
+        for row in date_source_results:
+            row['start_date'] = start_date
+            row['end_date'] = end_date
+            if 'account' in required_fields:
+                row['account'] = account_name
+            if 'campaign' in required_fields:
+                row['campaign'] = campaign_name
+            if 'ad_group' in required_fields:
+                row['ad_group'] = ad_group_name
+
+        for conversion_goal in conversion_goals:
+            if conversion_goal.get_view_key() in fieldnames:
+                fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
+
+        return get_csv_content(fieldnames, date_source_results, include_header=include_header)
+
+    def get_data_account_by_campaigns(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=False):
+        final_results = ''
+        account = helpers.get_account(user, account_id)
+        campaigns = models.Campaign.objects.filter(account=account).filter_by_user(user).filter_by_sources(filtered_sources)
+        if not include_archived or not user.has_perm('zemauth.view_archived_entities'):
+            campaigns = campaigns.exclude_archived()
+        for campaign in campaigns:
+            print campaign.name  # DAVORIN
+            final_results = final_results + SourcesExport().get_data_current_view(
+                user,
+                'campaigns',
+                campaign.id,
+                filtered_sources,
+                start_date,
+                end_date,
+                order,
+                additional_fields,
+                include_header=include_header)
+            include_header = False
+        return final_results
+
+    def get_data_account_by_ad_groups(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=False):
+        final_results = ''
+        account = helpers.get_account(user, account_id)
+        campaigns = models.Campaign.objects.filter(account=account).filter_by_user(user).filter_by_sources(filtered_sources)
+        if not include_archived or not user.has_perm('zemauth.view_archived_entities'):
+            campaigns = campaigns.exclude_archived()
+        for campaign in campaigns:
+            print 'camp: ', campaign.name  # DAVORIN
+            final_results = final_results + self.get_data_campaign_by_ad_groups(
+                user,
+                campaign.id,
+                filtered_sources,
+                start_date,
+                end_date,
+                order,
+                additional_fields,
+                include_header=include_header)
+            include_header = False
+        return final_results
+
+    def get_data_campaign_by_ad_groups(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=False):
+        final_results = ''
+        campaign = helpers.get_campaign(user, campaign_id)
+        adgroups = models.AdGroup.objects.filter(campaign=campaign).filter_by_user(user).filter_by_sources(filtered_sources)
+        if not include_archived or not user.has_perm('zemauth.view_archived_entities'):
+            adgroups = adgroups.exclude_archived()
+        for adgroup in adgroups:
+            print 'adg: ', adgroup.name  # DAVORIN
+            final_results = final_results + SourcesExport().get_data_current_view(
+                user,
+                'ad_groups',
+                adgroup.id,
+                filtered_sources,
+                start_date,
+                end_date,
+                order,
+                additional_fields,
+                include_header=include_header)
+            include_header = False
+        return final_results
+
+    def get_data_by_content_ad(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True):
+        #DAVORIN TODO: Mogoce poglej za zgled v export-excel pri stari export kodi
+        ad_group = helpers.get_ad_group(user, ad_group_id)
+
+        date_source_results = table.SourcesTable().get(
+            user,
+            'ad_groups',
+            filtered_sources,
+            start_date,
+            end_date,
+            order,
+            ad_group_id
+        ).get('rows')
+
+        required_fields = ['start_date', 'end_date', 'account', 'campaign', 'name']
+        fieldnames = _get_fieldnames(required_fields, additional_fields)
+
+        for row in date_source_results:
+            row['start_date'] = start_date
+            row['end_date'] = end_date
+            row['account'] = ad_group.campaign.account.name
+            row['campaign'] = ad_group.campaign.name
+
+        if user.has_perm('zemauth.conversion_reports'):
+            conversion_goals = ad_group.campaign.conversiongoal_set.all()
+            for conversion_goal in conversion_goals:
+                fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
+
+        return get_csv_content(fieldnames, date_source_results, include_header=include_header)
+
+
+class AdGroupAdsPlusExport(object):
+    def get_data_current_view(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True):
+        ad_group = helpers.get_ad_group(user, ad_group_id)
+
+        results = table.AdGroupAdsPlusTable().get(
+            user,
+            ad_group_id,
+            filtered_sources,
+            start_date,
+            end_date,
+            order,
+            1,
+            4294967295,
+            False
+        ).get('rows')
+
+        required_fields = ['start_date', 'end_date', 'account', 'campaign', 'ad_group', 'name']
+        fieldnames = _get_fieldnames(required_fields, additional_fields, 'Title')
+        for row in results:
+            row['start_date'] = start_date
+            row['end_date'] = end_date
+            row['account'] = ad_group.campaign.account.name
+            row['campaign'] = ad_group.campaign.name
+            row['ad_group'] = ad_group.name
+            content_ad = models.ContentAd.objects.get(id=row['id'])
+            row['name'] = content_ad.title
+            row['urlLink'] = content_ad.url
+            row['image_urls'] = content_ad.get_image_url()
+
+        return get_csv_content(fieldnames, results, include_header=include_header)
