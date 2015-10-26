@@ -304,6 +304,7 @@ def count_failed_stats_actions():
         Q(action=constants.Action.SET_CAMPAIGN_STATE) |
         Q(action=constants.Action.INSERT_CONTENT_AD) |
         Q(action=constants.Action.INSERT_CONTENT_AD_BATCH) |
+        Q(action=constants.Action.SUBMIT_AD_GROUP) |
         Q(action=constants.Action.UPDATE_CONTENT_AD),
         state=constants.ActionState.FAILED
     ).count()
