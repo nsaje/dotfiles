@@ -778,7 +778,7 @@ class AccountSourcesExport(ExportApiView):
                 start_date,
                 end_date
             )
-            content = export.SourcesExport().get_data_current_view(user, level_, account_id, filtered_sources, start_date, end_date, order, additional_fields, include_archived=include_archived)
+            content = export.SourcesExport().get_data_current_view(user, level_, account_id, filtered_sources, start_date, end_date, order, additional_fields)
         elif export_type == 'campaign-csv':
             filename = '{0}_-_by_campaign_media_source_report_{1}_{2}'.format(
                 slugify.slugify(account.name),
@@ -793,6 +793,13 @@ class AccountSourcesExport(ExportApiView):
                 end_date
             )
             content = export.SourcesExport().get_data_account_by_ad_groups(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, include_archived=include_archived)
+        elif export_type == 'contentad-csv':
+            filename = '{0}_-_by_content_ad_media_source_report_{1}_{2}'.format(
+                slugify.slugify(account.name),
+                start_date,
+                end_date
+            )
+            content = export.SourcesExport().get_data_account_by_content_ads(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, include_archived=include_archived)
 
         return self.create_csv_response(filename, content=content)
 
@@ -825,7 +832,7 @@ class CampaignSourcesExport(ExportApiView):
                 start_date,
                 end_date
             )
-            content = export.SourcesExport().get_data_current_view(user, level_, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, include_archived=include_archived)
+            content = export.SourcesExport().get_data_current_view(user, level_, campaign_id, filtered_sources, start_date, end_date, order, additional_fields)
         elif export_type == 'adgroup-csv':
             filename = '{0}_{1}_-_by_ad_group_media_source_report_{2}_{3}'.format(
                 slugify.slugify(campaign.account.name),
@@ -834,6 +841,14 @@ class CampaignSourcesExport(ExportApiView):
                 end_date
             )
             content = export.SourcesExport().get_data_campaign_by_ad_groups(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, include_archived=include_archived)
+        elif export_type == 'contentad-csv':
+            filename = '{0}_{1}_-_by_content_ad_media_source_report_{2}_{3}'.format(
+                slugify.slugify(campaign.account.name),
+                slugify.slugify(campaign.name),
+                start_date,
+                end_date
+            )
+            content = export.SourcesExport().get_data_campaign_by_content_ads(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, include_archived=include_archived)
 
         return self.create_csv_response(filename, content=content)
 
@@ -867,7 +882,7 @@ class AdGroupSourcesExport(ExportApiView):
                 start_date,
                 end_date
             )
-            content = export.SourcesExport().get_data_current_view(user, level_, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, include_archived=include_archived)
+            content = export.SourcesExport().get_data_current_view(user, level_, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields)
         elif export_type == 'contentad-csv':
             filename = '{0}_{1}_{2}_-_by_content_ad_media_source_report_{3}_{4}'.format(
                 slugify.slugify(ad_group.campaign.account.name),
@@ -876,8 +891,7 @@ class AdGroupSourcesExport(ExportApiView):
                 start_date,
                 end_date
             )
-            #  DAVORIN TODO
-            content = export.AdGroupSourcesExport().get_data_by_content_ad(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, include_archived=include_archived)
+            content = export.SourcesExport().get_data_ad_group_by_content_ads(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True)
         return self.create_csv_response(filename, content=content)
 
 

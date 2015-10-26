@@ -972,7 +972,7 @@ class AdGroupAdsPlusTableUpdates(object):
 
 
 class AdGroupAdsPlusTable(object):
-    def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size, show_archived):
+    def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size, show_archived, return_rows_only=False):
 
         ad_group = helpers.get_ad_group(user, ad_group_id)
         if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
@@ -998,21 +998,13 @@ class AdGroupAdsPlusTable(object):
             user.has_perm('zemauth.view_archived_entities')
 
         rows = self._get_rows(content_ads, stats, ad_group, has_view_archived_permission, show_archived)
-
-        batches = []
-        if user.has_perm('zemauth.content_ads_bulk_actions'):
-            batch_ids = set([row['batch_id'] for row in rows])
-            batches = models.UploadBatch.objects.filter(
-                id__in=tuple(batch_ids),
-                status=constants.UploadBatchStatus.DONE,
-            ).order_by('-created_dt')
-
         rows = sort_results(rows, [order])
         page_rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
             rows, page, size)
 
         rows = self._add_status_to_rows(user, page_rows, filtered_sources, ad_group)
-
+        if return_rows_only:
+            return rows
         total_stats = stats_helper.get_content_ad_stats_with_conversions(
             user,
             start_date,
@@ -1021,6 +1013,14 @@ class AdGroupAdsPlusTable(object):
             ignore_diff_rows=True,
             constraints={'ad_group': ad_group, 'source': filtered_sources}
         )
+
+        batches = []
+        if user.has_perm('zemauth.content_ads_bulk_actions'):
+            batch_ids = set([row['batch_id'] for row in rows])
+            batches = models.UploadBatch.objects.filter(
+                id__in=tuple(batch_ids),
+                status=constants.UploadBatchStatus.DONE,
+            ).order_by('-created_dt')
 
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
         last_success_actions = ad_group_sync.get_latest_success_by_child()
@@ -1180,7 +1180,7 @@ class AdGroupAdsPlusTable(object):
 
 
 class CampaignAdGroupsTable(object):
-    def get(self, user, campaign_id, filtered_sources, start_date, end_date, order, show_archived):
+    def get(self, user, campaign_id, filtered_sources, start_date, end_date, order, show_archived, return_rows_only=False):
         campaign = helpers.get_campaign(user, campaign_id)
 
         has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
@@ -1204,6 +1204,22 @@ class CampaignAdGroupsTable(object):
             filter(ad_group__campaign=campaign).\
             order_by('ad_group_id', '-created_dt')
 
+        campaign_sync = actionlog.sync.CampaignSync(campaign, sources=filtered_sources)
+        last_success_actions = campaign_sync.get_latest_success_by_child()
+
+        rows = self.get_rows(
+            user,
+            ad_groups,
+            ad_groups_settings,
+            stats,
+            last_success_actions,
+            order,
+            has_view_archived_permission,
+            show_archived
+        )
+        if return_rows_only:
+            return rows
+
         totals_stats = stats_helper.get_stats_with_conversions(
             user,
             start_date=start_date,
@@ -1211,9 +1227,6 @@ class CampaignAdGroupsTable(object):
             conversion_goals=campaign.conversiongoal_set.all(),
             constraints={'ad_group': ad_groups, 'source': filtered_sources}
         )
-
-        campaign_sync = actionlog.sync.CampaignSync(campaign, sources=filtered_sources)
-        last_success_actions = campaign_sync.get_latest_success_by_child()
 
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
@@ -1226,16 +1239,7 @@ class CampaignAdGroupsTable(object):
             ) if has_aggregate_postclick_permission(user) else False
 
         response = {
-            'rows': self.get_rows(
-                user,
-                ad_groups,
-                ad_groups_settings,
-                stats,
-                last_success_actions,
-                order,
-                has_view_archived_permission,
-                show_archived
-            ),
+            'rows': rows,
             'totals': totals_stats,
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
@@ -1319,7 +1323,7 @@ class CampaignAdGroupsTable(object):
 
 
 class AccountCampaignsTable(object):
-    def get(self, user, account_id, filtered_sources, start_date, end_date, order, show_archived):
+    def get(self, user, account_id, filtered_sources, start_date, end_date, order, show_archived, return_rows_only=False):
         account = helpers.get_account(user, account_id)
 
         has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
@@ -1343,6 +1347,28 @@ class AccountCampaignsTable(object):
             source=filtered_sources,
         ), user)
 
+        ad_groups_settings = models.AdGroupSettings.objects.\
+            distinct('ad_group_id').\
+            filter(ad_group__campaign__in=campaigns).\
+            order_by('ad_group_id', '-created_dt')
+
+        account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
+        last_success_actions = account_sync.get_latest_success_by_child()
+
+        rows = self.get_rows(
+            user,
+            campaigns,
+            campaigns_settings,
+            ad_groups_settings,
+            stats,
+            last_success_actions,
+            order,
+            has_view_archived_permission,
+            show_archived
+        )
+        if return_rows_only:
+            return rows
+
         totals_stats = reports.api_helpers.filter_by_permissions(
             reports_api.query(
                 start_date,
@@ -1358,14 +1384,6 @@ class AccountCampaignsTable(object):
         totals_stats['available_budget'] = totals_stats['budget'] - total_spend
         totals_stats['unspent_budget'] = totals_stats['budget'] - (totals_stats.get('cost') or 0)
 
-        ad_groups_settings = models.AdGroupSettings.objects.\
-            distinct('ad_group_id').\
-            filter(ad_group__campaign__in=campaigns).\
-            order_by('ad_group_id', '-created_dt')
-
-        account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
-        last_success_actions = account_sync.get_latest_success_by_child()
-
         last_sync = helpers.get_last_sync(last_success_actions.values())
 
         incomplete_postclick_metrics = \
@@ -1377,17 +1395,7 @@ class AccountCampaignsTable(object):
             ) if has_aggregate_postclick_permission(user) else False
 
         response = {
-            'rows': self.get_rows(
-                user,
-                campaigns,
-                campaigns_settings,
-                ad_groups_settings,
-                stats,
-                last_success_actions,
-                order,
-                has_view_archived_permission,
-                show_archived
-            ),
+            'rows': rows,
             'totals': totals_stats,
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
