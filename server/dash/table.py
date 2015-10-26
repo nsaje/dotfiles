@@ -1519,6 +1519,11 @@ class PublishersTable(object):
             # fetch blacklisted status from db
             adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(ad_group=adgroup)
             adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
+            adg_blacklisted_publishers = map(lambda entry: {
+                'domain': entry['name'],
+                'adgroup_id': entry['ad_group__id'],
+                'exchange': entry['source__tracking_slug'].replace('b1_', ''),
+            }, adg_blacklisted_publishers)
 
             publishers_data = reports.api_publishers.query_active_publishers(
                 start_date, end_date,
@@ -1533,15 +1538,26 @@ class PublishersTable(object):
                 blacklist=adg_blacklisted_publishers
             )
         elif show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
-            publishers_data = reports.api_publishers.query_blacklist_publishers(
+            # fetch blacklisted status from db
+            adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(ad_group=adgroup)
+            adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
+            adg_blacklisted_publishers = map(lambda entry: {
+                'domain': entry['name'],
+                'adgroup_id': entry['ad_group__id'],
+                'exchange': entry['source__tracking_slug'].replace('b1_', ''),
+            }, adg_blacklisted_publishers)
+
+            publishers_data = reports.api_publishers.query_blacklisted_publishers(
                 start_date, end_date,
                 breakdown_fields=['domain', 'exchange'],
                 order_fields=[order],
                 constraints=constraints,
+                blacklist=adg_blacklisted_publishers
             )
             totals_data = reports.api_publishers.query_blacklisted_publishers(
                 start_date, end_date,
                 constraints=constraints,
+                blacklist=adg_blacklisted_publishers
             )
         else:
             raise Exception("Unknown filter value")
