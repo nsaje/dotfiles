@@ -77,7 +77,7 @@ oneApp.directive('zemFilter', ['config', function(config) {
 
             $scope.$watch('showPublisherSelected', function (newValue, oldValue) {
                 if (newValue !== oldValue) {
-                    zemFilterService.setShowBlacklistedPublishers(newValue);
+                    zemFilterService.setBlacklistedPublishers(newValue);
                 }
             });
 
@@ -90,12 +90,12 @@ oneApp.directive('zemFilter', ['config', function(config) {
             });
 
 
-            $scope.$watch(zemFilterService.getShowBlacklistedPublishers, function (newValue, oldValue) {
+            $scope.$watch(zemFilterService.getBlacklistedPublishers, function (newValue, oldValue) {
                 if (newValue === oldValue) {
                     return;
                 }
 
-                $scope.showPublisherSelected = zemFilterService.getShowBlacklistedPublishers();
+                $scope.showPublisherSelected = zemFilterService.getBlacklistedPublishers();
             });
 
             $scope.$on('$locationChangeStart', function() {
@@ -115,10 +115,12 @@ oneApp.directive('zemFilter', ['config', function(config) {
             });
 
             $scope.init = function () {
+                console.log("Init publisher filter");
                 $scope.showArchivedSelected = zemFilterService.getShowArchived();
 
-                $scope.enablePublisherFilter = false;
-                $scope.showPublisherSelected = zemFilterService.getShowBlacklistedPublishers();
+                $scope.enablePublisherFilter = zemFilterService.getShowBlacklistedPublishers();
+                console.log("Init publisher filter");
+                $scope.showPublisherSelected = zemFilterService.getBlacklistedPublishers();
                 $scope.refreshAvailableSources();
             };
 

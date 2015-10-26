@@ -15,8 +15,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function addShowBlacklistedPublisher(params) {
-        if (zemFilterService.getShowBlacklistedPublishers()) {
-            params.show_blacklisted_publishers = zemFilterService.getShowBlacklistedPublishers();
+        if (zemFilterService.getBlacklistedPublishers()) {
+            params.show_blacklisted_publishers = zemFilterService.getBlacklistedPublishers();
         }
     }
 

@@ -446,7 +446,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         getDailyStats();
     }, true);
 
-    $scope.$watch(zemFilterService.getShowBlacklistedPublishers, function (newValue, oldValue) {
+    $scope.$watch(zemFilterService.getBlacklistedPublishers, function (newValue, oldValue) {
         if (angular.equals(newValue, oldValue)) {
             return;
         }
@@ -458,7 +458,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.init = function() {
         var data = $scope.adGroupData[$state.params.id];
-        $scope.setPublisherFilterVisible(true);
 
         var page = parseInt($location.search().page)
         if (isNaN(page)) {
@@ -497,6 +496,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         getTableData();
         getDailyStats();
+
+        zemFilterService.setShowBlacklistedPublishers(true);
     };
 
 
@@ -521,7 +522,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
 
     $scope.$on('$destroy', function () {
-        $scope.setPublisherFilterVisible(false);
+        zemFilterService.setShowBlacklistedPublishers(false);
         $timeout.cancel($scope.lastChangeTimeout);
     });
 

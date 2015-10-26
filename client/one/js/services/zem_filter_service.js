@@ -8,7 +8,8 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
     // always modified in place.
     var filteredSources = [];
     var showArchived = false;
-    var showBlacklistedPublishers = null;
+    var showBlacklistedPublisher = false;
+    var blacklistedPublisherFilter = null;
 
     function init(user) {
         if ('zemauth.filter_sources' in user.permissions) {
@@ -24,7 +25,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
 
         if ('zemauth.can_see_publishers' in user.permissions) {
-            showBlacklistedPublishers = $location.search().show_blacklisted_publishers || null;
+            blacklistedPublisherFilter = $location.search().show_blacklisted_publishers || null;
         }
     }
 
@@ -44,9 +45,9 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
     }
 
-    function setShowBlacklistedPublishersLocation() {
-        if (showBlacklistedPublishers) {
-            $location.search('show_blacklisted_publishers', showBlacklistedPublishers);
+    function setBlacklistedPublishersLocation() {
+        if (blacklistedPublisherFilter) {
+            $location.search('show_blacklisted_publishers', blacklistedPublisherFilter);
         } else {
             $location.search('show_blacklisted_publishers', null);
         }
@@ -109,14 +110,22 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         showArchived = newValue;
         setShowArchivedLocation();
     }
+    
+    function getBlacklistedPublishers() {
+        return blacklistedPublisherFilter;
+    }
+
+    function setBlacklistedPublishers(newValue) {
+        blacklistedPublisherFilter = newValue;
+        setBlacklistedPublishersLocation();
+    }
 
     function getShowBlacklistedPublishers() {
-        return showBlacklistedPublishers;
+        return showBlacklistedPublisher;
     }
 
     function setShowBlacklistedPublishers(newValue) {
-        showBlacklistedPublishers = newValue;
-        setShowBlacklistedPublishersLocation();
+        showBlacklistedPublisher = newValue;
     }
 
     return {
@@ -130,6 +139,8 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         exclusivelyFilterSource: exclusivelyFilterSource,
         removeFilteredSource: removeFilteredSource,
         removeFiltering: removeFiltering,
+        getBlacklistedPublishers: getBlacklistedPublishers,
+        setBlacklistedPublishers: setBlacklistedPublishers,
         getShowBlacklistedPublishers: getShowBlacklistedPublishers,
         setShowBlacklistedPublishers: setShowBlacklistedPublishers
     };

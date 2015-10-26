@@ -355,6 +355,13 @@ oneApp.controller('MainCtrl',
         });
     }, true);
 
+    $scope.$watch(zemFilterService.getShowBlacklistedPublishers, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
+            return;
+        }
+        $scope.setPublisherFilterVisible(newValue);
+    }, true);
+
     zemFullStoryService.identify($scope.user);
     zemIntercomService.boot($scope.user);
 
