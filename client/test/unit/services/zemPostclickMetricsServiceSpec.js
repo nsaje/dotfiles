@@ -20,7 +20,7 @@ describe('zemPostclickMetricsServiceSpec', function() {
                 shown: false
             }];
 
-            var newOptions = postclickMetricsService.setConversionGoalChartOptions(options, []);
+            var newOptions = postclickMetricsService.setConversionGoalChartOptions(options, [], false);
 
             expect(newOptions).toEqual([{
                 value: 'conversion_goal_1',
@@ -47,7 +47,7 @@ describe('zemPostclickMetricsServiceSpec', function() {
             }];
             var conversionGoals = [{id: 'conversion_goal_1', 'name': 'Goal name 1'}];
 
-            var newOptions = postclickMetricsService.setConversionGoalChartOptions(options, conversionGoals);
+            var newOptions = postclickMetricsService.setConversionGoalChartOptions(options, conversionGoals, false);
 
             expect(newOptions).toEqual([{
                 value: 'conversion_goal_1',
@@ -58,8 +58,31 @@ describe('zemPostclickMetricsServiceSpec', function() {
                 name: 'Default name 2',
                 shown: false
             }]); // check it hasn't been changed
+        });
 
-            expect(newOptions).toEqual(options);
+        it('should change shown property correctly', function () {
+            var options = [{
+                value: 'conversion_goal_1',
+                name: 'Default name 1',
+                shown: false
+            }, {
+                value: 'conversion_goal_2',
+                name: 'Default name 2',
+                shown: false
+            }];
+            var conversionGoals = [{id: 'conversion_goal_1', 'name': 'Goal name 1'}];
+
+            var newOptions = postclickMetricsService.setConversionGoalChartOptions(options, conversionGoals, true);
+
+            expect(newOptions).toEqual([{
+                value: 'conversion_goal_1',
+                name: 'Goal name 1',
+                shown: true
+            }, {
+                value: 'conversion_goal_2',
+                name: 'Default name 2',
+                shown: false
+            }]); // check it hasn't been changed
         });
     });
 

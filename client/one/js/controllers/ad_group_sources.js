@@ -520,13 +520,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.getDailyStats = function () {
         api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), null).then(
             function (data) {
-                console.log($scope.chartMetric1);
-                console.log($scope.chartMetric2);
                 setConversionGoalChartOptions(data.conversionGoals);
                 $scope.conversionGoals = data.conversionGoals;
                 $scope.chartData = data.chartData;
-                console.log($scope.chartMetric1);
-                console.log($scope.chartMetric2);
             },
             function (data) {
                 // error
