@@ -115,11 +115,9 @@ oneApp.directive('zemFilter', ['config', function(config) {
             });
 
             $scope.init = function () {
-                console.log("Init publisher filter");
                 $scope.showArchivedSelected = zemFilterService.getShowArchived();
 
                 $scope.enablePublisherFilter = zemFilterService.getShowBlacklistedPublishers();
-                console.log("Init publisher filter");
                 $scope.showPublisherSelected = zemFilterService.getBlacklistedPublishers();
                 $scope.refreshAvailableSources();
             };
