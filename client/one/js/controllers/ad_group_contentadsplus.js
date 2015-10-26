@@ -917,8 +917,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         );
     };
 
-
-
     var setDisabledExportOptions = function() {
         api.adGroupAdsPlusExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function(data) {

@@ -77,9 +77,9 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                     return '';
                 }
 
-                for (var i = 0; i < $scope.metricOptions.length; i++) {
-                    if ($scope.metricOptions[i].value === selected.value) {
-                        return $scope.metricOptions[i].name;
+                for (var i = 0; i < $scope.metric2Options.length; i++) {
+                    if ($scope.metric2Options[i].value === selected.value) {
+                        return $scope.metric2Options[i].name;
                     }
                 }
                 return '';
