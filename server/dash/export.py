@@ -54,43 +54,6 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
                        'daily_budget', 'current_daily_budget', 'yesterday_cost']
 
 
-def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False, conversion_goals=None, **kwargs):
-    ordering = ['date'] if 'date' in dimensions else []
-
-    if 'content_ad' in dimensions:
-        return _generate_content_ad_rows(
-            dimensions,
-            start_date,
-            end_date,
-            user,
-            ordering,
-            ignore_diff_rows,
-            conversion_goals,
-            **kwargs
-        )
-
-    if user.has_perm('zemauth.can_see_redshift_postclick_statistics') and 'article' not in dimensions:
-        return stats_helper.get_stats_with_conversions(
-            user,
-            start_date,
-            end_date,
-            breakdown=dimensions,
-            order=ordering,
-            ignore_diff_rows=ignore_diff_rows,
-            conversion_goals=conversion_goals,
-            constraints=kwargs
-        )
-
-    return reports.api_helpers.filter_by_permissions(reports.api.query(
-        start_date,
-        end_date,
-        dimensions,
-        ordering,
-        ignore_diff_rows=ignore_diff_rows,
-        **kwargs
-    ), user)
-
-
 def _get_content_ads(constraints):
     sources = None
     fields = {}
@@ -168,98 +131,6 @@ def get_csv_content(fieldnames, data, title_text=None, include_header=True):
         writer.writerow(row)
 
     return output.getvalue()
-
-
-def get_excel_content(sheets_data, start_date=None, end_date=None):
-    output = StringIO.StringIO()
-    workbook = Workbook(output, {'strings_to_urls': False})
-
-    format_date = workbook.add_format({'num_format': u'm/d/yy'})
-    format_percent = workbook.add_format({'num_format': u'0.00%'})
-    format_decimal = workbook.add_format({'num_format': u'0.00'})
-    format_usd = workbook.add_format({'num_format': u'[$$-409]#,##0.00;-[$$-409]#,##0.00'})
-
-    for name, columns, data in sheets_data:
-        # set format
-        for column in columns:
-            if 'format' in column:
-                format_id = column['format']
-
-                if format_id == 'date':
-                    column['format'] = format_date
-                elif format_id == 'currency':
-                    column['format'] = format_usd
-                elif format_id == 'percent':
-                    column['format'] = format_percent
-                elif format_id == 'decimal':
-                    column['format'] = format_decimal
-
-        _create_excel_worksheet(
-            workbook,
-            name,
-            columns,
-            data=[_get_excel_values_list(item, columns) for item in data],
-            start_date=start_date,
-            end_date=end_date
-        )
-
-    workbook.close()
-    output.seek(0)
-
-    return output.read()
-
-
-def _get_excel_value(item, key):
-    value = item.get(key)
-
-    if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr', 'visits', 'pageviews']:
-        value = 0
-
-    if value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate']:
-        value /= 100
-
-    return value
-
-
-def _get_excel_values_list(item, columns):
-    return [_get_excel_value(item, column['key']) for column in columns]
-
-
-def _write_excel_row(worksheet, row_index, column_data):
-    for column_index, column_value in enumerate(column_data):
-        worksheet.write(
-            row_index,
-            column_index,
-            column_value
-        )
-
-
-def _create_excel_worksheet(workbook, name, columns, data, start_date=None, end_date=None):
-    worksheet = workbook.add_worksheet(name)
-
-    row_ix = 0
-    if start_date is not None and end_date is not None:
-        worksheet.write(row_ix, 0, name)
-        row_ix += 1
-        worksheet.write(row_ix, 0, 'Start date {0}'.format(start_date.strftime('%m/%d/%Y')))
-        row_ix += 1
-        worksheet.write(row_ix, 0, 'End date {0}'.format(end_date.strftime('%m/%d/%Y')))
-        row_ix += 2
-
-    for index, col in enumerate(columns):
-        worksheet.set_column(
-            index,
-            index,
-            col['width'] if 'width' in col else None,
-            col['format'] if 'format' in col else None
-        )
-
-        worksheet.write(row_ix, index, col['name'])
-
-    worksheet.freeze_panes(row_ix + 1, 0)  # freeze the first row
-
-    for index, item in enumerate(data):
-        _write_excel_row(worksheet, index + row_ix + 1, item)
 
 
 def _get_fieldnames(required_fields, additional_fields, name_text):
@@ -412,17 +283,6 @@ class CampaignAdGroupsExport(object):
             return_rows_only=True
         )
 
-        '''
-        results = stats_helper.get_stats_with_conversions(
-            user,
-            start_date,
-            end_date,
-            breakdown=['ad_group'],
-            ignore_diff_rows=True,
-            conversion_goals=[],
-            constraints={'campaign': campaign, 'source': filtered_sources}
-        )
-        '''
         required_fields = ['start_date', 'end_date', 'account', 'campaign', 'name']
         fieldnames = _get_fieldnames(required_fields, additional_fields, 'Ad Group')
 
@@ -464,7 +324,7 @@ class CampaignAdGroupsExport(object):
 class SourcesExport(object):
     def get_data_current_view(self, user, level_, id_, filtered_sources, start_date, end_date, order, additional_fields, include_header=True):
 
-        date_source_results = table.SourcesTable().get(
+        results = table.SourcesTable().get(
             user,
             level_,
             filtered_sources,
@@ -498,7 +358,7 @@ class SourcesExport(object):
         required_fields.extend(['name'])
         fieldnames = _get_fieldnames(required_fields, additional_fields, 'Source')
 
-        for row in date_source_results:
+        for row in results:
             row['start_date'] = start_date
             row['end_date'] = end_date
             if 'account' in required_fields:
@@ -512,7 +372,7 @@ class SourcesExport(object):
             if conversion_goal.get_view_key() in fieldnames:
                 fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
 
-        return get_csv_content(fieldnames, date_source_results, include_header=include_header)
+        return get_csv_content(fieldnames, results, include_header=include_header)
 
     def get_data_all_accounts_by_accounts(self, user, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=False):
         final_results = ''
@@ -714,6 +574,40 @@ class SourcesExport(object):
 
 class AdGroupAdsPlusExport(object):
     def get_data_current_view(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=False):
+
+        ad_group = helpers.get_ad_group(user, ad_group_id)
+
+        required_fields = ['start_date', 'end_date', 'account', 'campaign', 'ad_group', 'title', 'image_url']
+        fieldnames = _get_fieldnames(required_fields, additional_fields, '')
+
+        conversion_goals = []
+        if user.has_perm('zemauth.conversion_reports'):
+            conversion_goals = ad_group.campaign.conversiongoal_set.all()
+            for conversion_goal in conversion_goals:
+                if conversion_goal.get_view_key() in additional_fields:
+                    fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
+
+        results = _generate_content_ad_rows(
+            ['content_ad'],
+            start_date,
+            end_date,
+            user,
+            order,
+            True,
+            conversion_goals,
+            ad_group=ad_group,
+            source=filtered_sources)
+        
+        for row in results:
+            row['start_date'] = start_date
+            row['end_date'] = end_date
+            row['account'] = ad_group.campaign.account.name
+            row['campaign'] = ad_group.campaign.name
+            row['ad_group'] = ad_group.name
+
+        return get_csv_content(fieldnames, results, include_header=include_header)
+
+        '''
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
         results = table.AdGroupAdsPlusTable().get(
@@ -748,3 +642,4 @@ class AdGroupAdsPlusExport(object):
                     fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
 
         return get_csv_content(fieldnames, results, include_header=include_header)
+        '''

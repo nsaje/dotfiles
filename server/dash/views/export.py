@@ -536,6 +536,8 @@ class AdGroupAdsPlusExport(ExportApiView):
 
     @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_get')
     def get(self, request, ad_group_id):
+        import timeit
+        start_time = timeit.default_timer()
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
@@ -555,7 +557,7 @@ class AdGroupAdsPlusExport(ExportApiView):
                 end_date
             )
             content = export.AdGroupAdsPlusExport().get_data_current_view(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, include_archived=include_archived)
-
+        print 'TIMEEEE: ', timeit.default_timer() - start_time
         return self.create_csv_response(filename, content=content)
 
 
