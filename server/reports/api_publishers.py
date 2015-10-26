@@ -64,6 +64,46 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
         return results[0]
 
 
+def query_active_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, blacklist=[]):
+    constraints_list = []
+    if blacklist:
+        # create a base object, then OR onto it
+        rsq = not redshift.RSQ(*blacklist[0])
+        for blacklist_entry in blacklist[1:]:
+            rsq &= not redshift.RSQ(blacklist_entry)
+        constraints_list = [rsq]
+
+    constraints = copy.copy(constraints)
+    constraints['date__gte'] = start_date
+    constraints['date__lte'] = end_date
+    cursor = redshift.get_cursor()
+    results = rs_pub.execute_select_query(
+        cursor,
+        rs_pub.DEFAULT_RETURNED_FIELDS_APP,
+        breakdown_fields,
+        order_fields,
+        offset,
+        limit,
+        constraints,
+        constraints_list=constraints_list
+    )
+    cursor.close()
+    if breakdown_fields:
+        return results
+    else:
+        return results[0]
+
+
+def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, blacklist=[]):
+    constraints_list = []
+    if blacklist:
+        # create a base object, then OR onto it
+        rsq = redshift.RSQ()
+        for blacklist_entry in blacklist[1:]:
+            rsq |= redshift.RSQ()
+        constraints_list = [rsq]
+
+
 def query_publisher_list(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}):
     constraints = copy.copy(constraints)
     constraints['date__gte'] = start_date

@@ -97,6 +97,18 @@ class PublisherStatus(ConstantBase):
     }
 
 
+class PublisherBlacklistFilter(ConstantBase):
+    SHOW_ALL = 'all'
+    SHOW_ACTIVE = 'active'
+    SHOW_BLACKLISTED = 'blacklisted'
+
+    _VALUES = {
+        SHOW_ALL: 'All',
+        SHOW_ACTIVE: 'Active',
+        SHOW_BLACKLISTED: 'Blacklisted'
+    }
+
+
 class IABCategory(ConstantBase):
     IAB1 = "IAB1"
     IAB1_1 = "IAB1-1"

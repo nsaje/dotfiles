@@ -219,11 +219,13 @@ class PublishersTable(api_common.BaseApiView):
         size = request.GET.get('size')
 
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        show_blacklisted_publishers = request.GET.get('show_blacklisted_publishers')
 
         response = dt.PublishersTable().get(
             user,
             level_,
             filtered_sources,
+            show_blacklisted_publishers,
             start_date,
             end_date,
             order,
