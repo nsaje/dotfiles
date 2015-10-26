@@ -1016,7 +1016,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         body = json.loads(request.body)
 
-        print body
         start_date = helpers.parse_datetime(body.get('start_date'))
         end_date = helpers.parse_datetime(body.get('end_date'))
         state = int(body.get('state'))
