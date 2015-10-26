@@ -6,9 +6,9 @@
             ng-model="selectedAll"
             ng-click="selectAll($event)">
         </input>
-        <div class="drop-arrow"></div>
+        <div class="drop-arrow" ng-if="len(option.items) > 0"></div>
     </div>
-    <ul class="dropdown-menu" role="menu">
+    <ul class="dropdown-menu" role="menu" ng-if="len(option.items) > 0">
         <li role="presentation" ng-repeat="option in config.selectionOptions" ng-class="{ 'divider': {{option.type=='separator'}} }">
         <div ng-if="option.type == 'link'" class="link">
             <div role="menuitem" tabindex="-1" ng-click="handleOptionClick(option)">{{ option.name }}</div>
