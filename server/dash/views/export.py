@@ -754,7 +754,25 @@ class AllAccountsSourcesExport(ExportApiView):
                 start_date,
                 end_date
             )
-            content = export.SourcesExport().get_data_current_view(user, level_, 0, filtered_sources, start_date, end_date, order, additional_fields, include_archived=include_archived)
+            content = export.SourcesExport().get_data_current_view(user, level_, 0, filtered_sources, start_date, end_date, order, additional_fields)
+        elif export_type == 'account-csv':
+            filename = 'ZemantaOne_-_by_account_media_source_report_{0}_{1}'.format(
+                start_date,
+                end_date
+            )
+            content = export.SourcesExport().get_data_all_accounts_by_accounts(user, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=include_archived)
+        elif export_type == 'campaign-csv':
+            filename = 'ZemantaOne_-_by_campaign_media_source_report_{0}_{1}'.format(
+                start_date,
+                end_date
+            )
+            content = export.SourcesExport().get_data_all_accounts_by_campaigns(user, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=include_archived)
+        elif export_type == 'adgroup-csv':
+            filename = 'ZemantaOne_-_by_ad_group_media_source_report_{0}_{1}'.format(
+                start_date,
+                end_date
+            )
+            content = export.SourcesExport().get_data_all_accounts_by_ad_groups(user, filtered_sources, start_date, end_date, order, additional_fields, include_header=True, include_archived=include_archived)
         return self.create_csv_response(filename, content=content)
 
 
@@ -917,6 +935,9 @@ class AllAccountsExport(ExportApiView):
         elif export_type == 'campaign-csv':
             filename = 'ZemantaOne_-_by_campaign_report_{0}_{1}'.format(start_date, end_date)
             content = export.AllAccountsExport().get_data_by_campaign(user, filtered_sources, start_date, end_date, order, additional_fields, include_archived=include_archived)
+        elif export_type == 'adgroup-csv':
+            filename = 'ZemantaOne_-_by_ad_group_report_{0}_{1}'.format(start_date, end_date)
+            content = export.AllAccountsExport().get_data_by_ad_group(user, filtered_sources, start_date, end_date, order, additional_fields, include_archived=include_archived)
         '''
         results = export.generate_rows(
             ['date', 'account'],
