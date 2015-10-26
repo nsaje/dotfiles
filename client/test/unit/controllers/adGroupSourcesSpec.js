@@ -158,60 +158,61 @@ describe('AdGroupSourcesCtrlSpec', function() {
             expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'Loading...', shown: false, internal: true});
         });
 
-        it('should select default metrics when conversion goals don\'t exist', function() {
-            $scope.chartMetric1 = 'conversion_goal_1';
-            $scope.chartMetric2 = 'conversion_goal_2';
+    });
 
-            var data = {
-                chartData: [],
-                conversionGoals: []
-            };
+    it('should select default metrics when conversion goals don\'t exist', function() {
+        $scope.chartMetric1 = 'conversion_goal_1';
+        $scope.chartMetric2 = 'conversion_goal_2';
 
-            api.dailyStats = {
-                list: function() {
-                    return {
-                        then: function (handler) {
-                            handler(data);
-                        }
-                    };
-                }
-            };
+        var data = {
+            chartData: [],
+            conversionGoals: []
+        };
 
-            $scope.getDailyStats();
+        api.dailyStats = {
+            list: function() {
+                return {
+                    then: function (handler) {
+                        handler(data);
+                    }
+                };
+            }
+        };
 
-            expect($scope.chartMetric1).toBe('clicks');
-            expect($scope.chartMetric2).toBe('impressions');
+        $scope.getDailyStats();
 
-            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: 'Loading...', shown: false, internal: true});
-            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'Loading...', shown: false, internal: true});
-        });
+        expect($scope.chartMetric1).toBe('clicks');
+        expect($scope.chartMetric2).toBe('impressions');
 
-        it('should select conversion goal when one exists', function() {
-            var data = {
-                chartData: [],
-                conversionGoals: [{id: 'conversion_goal_2', name: 'my conversion goal'}]
-            };
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: 'Loading...', shown: false, internal: true});
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'Loading...', shown: false, internal: true});
+    });
 
-            api.dailyStats = {
-                list: function() {
-                    return {
-                        then: function (handler) {
-                            handler(data);
-                        }
-                    };
-                }
-            };
+    it('should select conversion goal when one exists', function() {
+        var data = {
+            chartData: [],
+            conversionGoals: [{id: 'conversion_goal_2', name: 'test conversion goal'}]
+        };
 
-            $scope.chartMetric1 = 'conversion_goal_1';
-            $scope.chartMetric2 = 'conversion_goal_2';
+        api.dailyStats = {
+            list: function() {
+                return {
+                    then: function (handler) {
+                        handler(data);
+                    }
+                };
+            }
+        };
 
-            $scope.getDailyStats();
+        $scope.chartMetric1 = 'conversion_goal_1';
+        $scope.chartMetric2 = 'conversion_goal_2';
 
-            expect($scope.chartMetric1).toBe('clicks');
-            expect($scope.chartMetric2).toBe('conversion_goal_2');
+        $scope.getDailyStats();
 
-            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: 'Loading...', shown: false, internal: true});
-            expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'my conversion goal', shown: true, internal: true});
-        });
+        expect($scope.chartMetric1).toBe('clicks');
+        expect($scope.chartMetric2).toBe('conversion_goal_2');
+
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_1', name: 'Loading...', shown: false, internal: true});
+        expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: 'test conversion goal', shown: true, internal: true});
     });
 });

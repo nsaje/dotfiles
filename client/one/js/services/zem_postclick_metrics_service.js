@@ -140,7 +140,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
         }));
     }
 
-    function setConversionGoalChartOptions(chartOptions, conversionGoals) {
+    function setConversionGoalChartOptions(chartOptions, conversionGoals, isShown) {
         if (!conversionGoals || !conversionGoals.length) {
             return chartOptions;
         }
@@ -150,6 +150,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
             for (var i = 0; i < newOptions.length; i++) {
                 if (newOptions[i].value === el.id) {
                     newOptions[i].name = el.name;
+                    newOptions[i].shown = isShown;
                 }
             }
         });

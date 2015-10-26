@@ -479,22 +479,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             return conversionGoal.id === constants.chartMetric.CONVERSION_GOAL2;
         });
 
-        if (cg1Exists) {
-            $scope.chartMetricOptions.forEach(function (option) {
-                if (option.value === constants.chartMetric.CONVERSION_GOAL1) {
-                    option.shown = true;
-                }
-            });
-        }
-
-        if (cg2Exists) {
-            $scope.chartMetricOptions.forEach(function (option) {
-                if (option.value === constants.chartMetric.CONVERSION_GOAL2) {
-                    option.shown = true;
-                }
-            });
-        }
-
         if (($scope.chartMetric1 === constants.chartMetric.CONVERSION_GOAL1 && !cg1Exists) ||
             ($scope.chartMetric1 === constants.chartMetric.CONVERSION_GOAL2 && !cg2Exists)) {
             $scope.chartMetric1 = constants.chartMetric.CLICKS;
@@ -507,7 +491,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
         $scope.chartMetricOptions = zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
-            conversionGoals
+            conversionGoals,
+            $scope.hasPermission('zemauth.conversion_reports')
         );
     };
 
@@ -535,9 +520,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.getDailyStats = function () {
         api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedSourceIds, $scope.selectedTotals, getDailyStatsMetrics(), null).then(
             function (data) {
+                console.log($scope.chartMetric1);
+                console.log($scope.chartMetric2);
                 setConversionGoalChartOptions(data.conversionGoals);
                 $scope.conversionGoals = data.conversionGoals;
                 $scope.chartData = data.chartData;
+                console.log($scope.chartMetric1);
+                console.log($scope.chartMetric2);
             },
             function (data) {
                 // error

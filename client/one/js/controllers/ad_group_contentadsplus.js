@@ -900,22 +900,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             return conversionGoal.id === constants.chartMetric.CONVERSION_GOAL2;
         });
 
-        if (cg1Exists) {
-            $scope.chartMetricOptions.forEach(function (option) {
-                if (option.value === constants.chartMetric.CONVERSION_GOAL1) {
-                    option.shown = true;
-                }
-            });
-        }
-
-        if (cg2Exists) {
-            $scope.chartMetricOptions.forEach(function (option) {
-                if (option.value === constants.chartMetric.CONVERSION_GOAL2) {
-                    option.shown = true;
-                }
-            });
-        }
-
         if (($scope.chartMetric1 === constants.chartMetric.CONVERSION_GOAL1 && !cg1Exists) ||
             ($scope.chartMetric1 === constants.chartMetric.CONVERSION_GOAL2 && !cg2Exists)) {
             $scope.chartMetric1 = constants.chartMetric.CLICKS;
@@ -928,7 +912,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         $scope.chartMetricOptions = zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
-            conversionGoals
+            conversionGoals,
+            $scope.hasPermission('zemauth.conversion_reports')
         );
     };
 
