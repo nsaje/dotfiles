@@ -33,7 +33,7 @@ LANDING_PAGE_MSID_RE = re.compile('^[_a-zA-Z0-9]+')
 HARRYS_FIELD_KEYWORDS = ["transactions"]
 GOAL_FIELD_KEYWORDS = ["completions"] + HARRYS_FIELD_KEYWORDS
 
-DEFAULT_GOAL_NAME = '**DEFAULT GOAL**'
+DEFAULT_GOAL_NAME = ''
 
 
 def _report_atoi(raw_str):
