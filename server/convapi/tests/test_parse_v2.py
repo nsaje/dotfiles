@@ -280,6 +280,28 @@ Landing Page,Device Category,Sessions
         resp = parser._parse_goals(row_dict.keys(), row_dict)
         self.assertEqual(5, resp[parse_v2.DEFAULT_GOAL_NAME])
 
+    def test_parse_goals_unnamed(self, cusrsor):
+        parser = parse_v2.GAReport("")
+
+        row_dict = {
+            "Goal Conversion Rate": "2%",
+            "Goal Completions": "5",
+            "Goal Value": "$123"
+        }
+        resp = parser._parse_goals(row_dict.keys(), row_dict)
+        self.assertEqual(5, resp[parse_v2.DEFAULT_GOAL_NAME])
+
+        row_dict = {
+            "Goal Conversion Rate": "2%",
+            "Goal Completions": "5",
+            "Goal Value": "$123",
+            "Goal Conversion Rate 1": "2%",
+            "Goal Completions 1": "5",
+            "Goal Value 1": "$123"
+        }
+        with self.assertRaises(exc.CsvParseException):
+            parser._parse_goals(row_dict.keys(), row_dict)
+
     def test_parse_unnamed_goals(self, cursor):
         parser = parse_v2.GAReport("")
 
@@ -287,25 +309,25 @@ Landing Page,Device Category,Sessions
         self.assertEqual([], parser._get_goal_fields(fields_raw.split(',')))
 
         fields_raw = "Landing Page,Device Category,Sessions,% New Sessions,New Users,Bounce Rate,Pages / Session,Avg. Session Duration,Ecommerce Conversion Rate,Transactions,Revenue"
-        self.assertEqual(["Ecommerce Conversion Rate", "Transactions", "Revenue"], parser._get_goal_fields(fields_raw.split(',')))
+        self.assertEqual(["Transactions"], parser._get_goal_fields(fields_raw.split(',')))
 
         fields_raw = "Landing Page,Device Category,Sessions,% New Sessions,New Users,Bounce Rate,Pages / Session,Avg. Session Duration,Goal Conversion Rate,Goal Completions,Goal Value"
-        self.assertEqual(["Goal Conversion Rate", "Goal Completions", "Goal Value"], parser._get_goal_fields(fields_raw.split(',')))
+        self.assertEqual(["Goal Completions"], parser._get_goal_fields(fields_raw.split(',')))
 
         fields_raw = "Landing Page,Device Category,Sessions,% New Sessions,New Users,Bounce Rate,Pages / Session,Avg. Session Duration,Pageviews,ToS"
         self.assertEqual([], parser._get_goal_fields(fields_raw.split(',')))
 
         fields_raw = "Landing Page,Device Category,Sessions,% New Sessions,New Users,Bounce Rate,Pages / Session,Avg. Session Duration,Transactions,Revenue,Ecommerce Conversion Rate"
-        self.assertEqual(set(["Ecommerce Conversion Rate", "Transactions", "Revenue"]), set(parser._get_goal_fields(fields_raw.split(','))))
+        self.assertEqual(set(["Transactions"]), set(parser._get_goal_fields(fields_raw.split(','))))
 
         fields_raw = "Landing Page,Device Category,Sessions,% New Sessions,New Users,Bounce Rate,Pages/Session,Avg. Session Duration,Goal Conversion Rate,Goal Completions,Goal Value"
-        self.assertEqual(set(["Goal Conversion Rate", "Goal Completions", "Goal Value"]), set(parser._get_goal_fields(fields_raw.split(','))))
+        self.assertEqual(set(["Goal Completions"]), set(parser._get_goal_fields(fields_raw.split(','))))
 
         fields_raw = "Landing Page,Sessions,% New Sessions,New Users,Bounce Rate,Pages / Session,Avg. Session Duration,Goal Conversion Rate,Goal Completions,Goal Value"
-        self.assertEqual(set(["Goal Conversion Rate", "Goal Completions", "Goal Value"]), set(parser._get_goal_fields(fields_raw.split(','))))
+        self.assertEqual(set(["Goal Completions"]), set(parser._get_goal_fields(fields_raw.split(','))))
 
         fields_raw = "Landing Page,Sessions,% New Sessions,New Users,Bounce Rate,Pages / Session,Avg. Session Duration,Revenue"
-        self.assertEqual(set(["Revenue"]), set(parser._get_goal_fields(fields_raw.split(','))))
+        self.assertEqual(set([]), set(parser._get_goal_fields(fields_raw.split(','))))
 
     def test_missing_columns(self, cursor):
         # GA report can potentially contain multiple entries for a single

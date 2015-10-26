@@ -30,12 +30,8 @@ Z11Z_RE = re.compile('.*z1([0-9]+)([a-zA-Z].+?)1z.*')
 LANDING_PAGE_CAID_RE = re.compile('^[0-9]+')
 LANDING_PAGE_MSID_RE = re.compile('^[_a-zA-Z0-9]+')
 
-HARRYS_FIELD_KEYWORDS = ["conversion rate", "transactions", "revenue"]
-GOAL_FIELD_KEYWORDS = ["conversions", "completions", "value"] + HARRYS_FIELD_KEYWORDS
-
-GOAL_CONVERSION_KEYWORDS = ['completions', 'transactions']
-GOAL_VALUE_KEWORDS = ['value', 'revenue']
-GOAL_RATE_KEYWORDS = ['conversion rate']
+HARRYS_FIELD_KEYWORDS = ["transactions"]
+GOAL_FIELD_KEYWORDS = ["completions"] + HARRYS_FIELD_KEYWORDS
 
 DEFAULT_GOAL_NAME = '**DEFAULT GOAL**'
 
@@ -465,12 +461,11 @@ class GAReport(Report):
         # filter out fields which do not contain any relevant goal field
         ret = []
         for field in fields:
-            found = False
             for goal_keyword in GOAL_FIELD_KEYWORDS:
+                # currently only conversion numbers are of interest
                 if goal_keyword in field.lower():
-                    found = True
-            if found:
-                ret.append(field)
+                    ret.append(field)
+                    break
         return ret
 
     def _parse_goals(self, fieldnames, row_dict):
@@ -478,13 +473,8 @@ class GAReport(Report):
         result = {}
         for goal_field in goal_fields:
             goal_name = self._get_goal_name(goal_field)
-            goal_value_type = self._get_goal_value_type(goal_field).lower()
 
             if row_dict[goal_field] == '':
-                continue
-
-            if not self._subset_match(goal_value_type, GOAL_CONVERSION_KEYWORDS):
-                # currently only conversion numbers are of interest
                 continue
 
             if goal_name in result:
