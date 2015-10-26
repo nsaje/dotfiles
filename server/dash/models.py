@@ -169,6 +169,13 @@ class Account(models.Model):
             new_settings.archived = False
             new_settings.save(request)
 
+    def get_account_url(self, request):
+        account_settings_url = request.build_absolute_uri(
+            reverse('admin:dash_account_change', args=(self.pk,))
+        )
+        campaign_settings_url = account_settings_url.replace('http://', 'https://')
+        return campaign_settings_url
+
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
         super(Account, self).save(*args, **kwargs)

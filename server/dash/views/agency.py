@@ -784,6 +784,8 @@ class AccountConversionPixels(api_common.BaseApiView):
             new_settings.changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
             new_settings.save(request)
 
+        email_helper.send_account_pixel_notification(account, request)
+
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CONVERSION_PIXEL, account=account)
 
         return self.create_api_response({
