@@ -7,6 +7,9 @@ import reports.api_helpers
 import reports.api_contentads
 import reports.api_touchpointconversions
 
+REPORT_GOAL_TYPES = [dash.constants.ConversionGoalType.GA, dash.constants.ConversionGoalType.OMNITURE]
+PIXEL_GOAL_TYPE = dash.constants.ConversionGoalType.PIXEL
+
 
 def get_reports_api_module(can_see_redshift_stats):
     if can_see_redshift_stats:
@@ -95,8 +98,8 @@ def _get_stats_with_conversions(
     report_conversion_goals = []
     touchpoint_conversion_goals = []
     if can_see_conversions:
-        report_conversion_goals = [cg for cg in conversion_goals if cg.type != dash.constants.ConversionGoalType.PIXEL]
-        touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == dash.constants.ConversionGoalType.PIXEL]
+        report_conversion_goals = [cg for cg in conversion_goals if cg.type in REPORT_GOAL_TYPES]
+        touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == PIXEL_GOAL_TYPE]
 
     reports_api = get_reports_api_module(can_see_redshift_stats)
     content_ad_stats = reports.api_helpers.filter_by_permissions(reports_api.query(
