@@ -102,15 +102,15 @@ Zemanta
 
 
 def send_account_pixel_notification(account, request):
-    if not settings.SEND_NOTIFICATION_MAIL:
-        return False
+    if not should_send_account_notification_mail(account, request.user, request):
+        return
 
-    subject = u'Settings change - account {}'.format(account.name)
+    subject = u'Conversion pixel added - account {}'.format(account.name)
 
     link_url = request.build_absolute_uri('/accounts/{}/agency'.format(account.pk))
     link_url = link_url.replace('http://', 'https://')
 
-    body = u'''Hi default account manager of {account.name}
+    body = u'''Hi default account manager of {account.name},
 
 We'd like to notify you that {user.email} has added a conversion pixel on account {account.name}. Please check {link_url} for details.
 
