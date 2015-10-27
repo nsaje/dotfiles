@@ -42,7 +42,7 @@ def today():
     return datetime.date.today()
 
 def utc_today():
-    return datetime.date.utcnow().date()
+    return datetime.datetime.utcnow().date()
             
 
 class PermissionMixin(object):
