@@ -140,6 +140,32 @@ oneApp.factory('zemPostclickMetricsService', function() {
         }));
     }
 
+    function getValidChartMetrics(chartMetric1, chartMetric2, conversionGoals) {
+        conversionGoals = conversionGoals || [];
+        var cg1Exists = conversionGoals.some(function (conversionGoal) {
+            return conversionGoal.id === constants.chartMetric.CONVERSION_GOAL1;
+        });
+
+        var cg2Exists = conversionGoals.some(function (conversionGoal) {
+            return conversionGoal.id === constants.chartMetric.CONVERSION_GOAL2;
+        });
+
+        if ((chartMetric1 === constants.chartMetric.CONVERSION_GOAL1 && !cg1Exists) ||
+            (chartMetric1 === constants.chartMetric.CONVERSION_GOAL2 && !cg2Exists)) {
+            chartMetric1 = constants.chartMetric.CLICKS;
+        }
+
+        if ((chartMetric2 === constants.chartMetric.CONVERSION_GOAL1 && !cg1Exists) ||
+            (chartMetric2 === constants.chartMetric.CONVERSION_GOAL2 && !cg2Exists)) {
+            chartMetric2 = constants.chartMetric.IMPRESSIONS;
+        }
+
+        return {
+            chartMetric1: chartMetric1,
+            chartMetric2: chartMetric2
+        };
+    }
+
     function setConversionGoalChartOptions(chartOptions, conversionGoals, isShown) {
         if (!conversionGoals || !conversionGoals.length) {
             return chartOptions;
@@ -181,6 +207,7 @@ oneApp.factory('zemPostclickMetricsService', function() {
         concatAcquisitionChartOptions: concatAcquisitionChartOptions,
         concatEngagementChartOptions: concatEngagementChartOptions,
         concatChartOptions: concatChartOptions,
+        getValidChartMetrics: getValidChartMetrics,
         setConversionGoalChartOptions: setConversionGoalChartOptions,
         setConversionGoalColumnsDefaults: setConversionGoalColumnsDefaults
     };

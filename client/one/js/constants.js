@@ -509,8 +509,8 @@ var options = {
         {name: 'Avg. ToS', value: constants.chartMetric.AVG_TOS}
     ],
     adGroupConversionGoalChartMetrics: [
-        {name: 'Loading...', value: constants.chartMetric.CONVERSION_GOAL1, shown: false},
-        {name: 'Loading...', value: constants.chartMetric.CONVERSION_GOAL2, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL1, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL2, shown: false},
     ],
     campaignChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
@@ -520,8 +520,8 @@ var options = {
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
     ],
     campaignConversionGoalChartMetrics: [
-        {name: 'Loading...', value: constants.chartMetric.CONVERSION_GOAL1, shown: false},
-        {name: 'Loading...', value: constants.chartMetric.CONVERSION_GOAL2, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL1, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL2, shown: false},
     ],
     accountChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},

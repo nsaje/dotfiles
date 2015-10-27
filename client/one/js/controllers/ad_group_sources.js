@@ -470,25 +470,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     var setConversionGoalChartOptions = function (conversionGoals) {
-        conversionGoals = conversionGoals || [];
-        var cg1Exists = conversionGoals.some(function (conversionGoal) {
-            return conversionGoal.id === constants.chartMetric.CONVERSION_GOAL1;
-        });
-
-        var cg2Exists = conversionGoals.some(function (conversionGoal) {
-            return conversionGoal.id === constants.chartMetric.CONVERSION_GOAL2;
-        });
-
-        if (($scope.chartMetric1 === constants.chartMetric.CONVERSION_GOAL1 && !cg1Exists) ||
-            ($scope.chartMetric1 === constants.chartMetric.CONVERSION_GOAL2 && !cg2Exists)) {
-            $scope.chartMetric1 = constants.chartMetric.CLICKS;
-        }
-
-        if (($scope.chartMetric2 === constants.chartMetric.CONVERSION_GOAL1 && !cg1Exists) ||
-            ($scope.chartMetric2 === constants.chartMetric.CONVERSION_GOAL2 && !cg2Exists)) {
-            $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
-        }
-
+        var validChartMetrics = zemPostclickMetricsService.getValidChartMetrics($scope.chartMetric1, $scope.chartMetric2, conversionGoals);
+        $scope.chartMetric1 = validChartMetrics.chartMetric1;
+        $scope.chartMetric2 = validChartMetrics.chartMetric2;
         $scope.chartMetricOptions = zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
             conversionGoals,
