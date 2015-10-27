@@ -15,6 +15,8 @@ from dash import models
 from dash import constants
 from dash import api
 
+from reports import redshift
+
 
 class UserTest(TestCase):
     fixtures = ['test_views.yaml']
@@ -1105,3 +1107,54 @@ class SharethroughApprovalTest(TestCase):
         self.assertEqual(None, cas.submission_errors)
         self.assertTrue(mock_update.called)
         mock_update.assert_called_with(cas, {'state': cas.state}, request=None, send=True)
+
+
+class PublishersBlacklistStatusTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def setUp(self):
+        redshift.STATS_DB_NAME = 'default'
+
+    def _post_publisher_blacklist(self, ad_group_id, data):
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+        reversed_url = reverse(
+                'ad_group_publishers_blacklist',
+                kwargs={'ad_group_id': ad_group_id})
+        return json.loads(self.client.post(
+            reversed_url,
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        ).content)
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_blacklist(self, cursor):
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": []
+        }
+        res = self._post_publisher_blacklist(1, payload)
+        self.assertTrue(res['success'])
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_enable(self, cursor):
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected":[],
+            "publishers_not_selected":[]
+        }
+        res = self._post_publisher_blacklist(1, payload)
+        self.assertTrue(res['success'])
