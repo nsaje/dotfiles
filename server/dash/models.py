@@ -1826,11 +1826,12 @@ class BudgetLineItem(FootprintModel):
             budget=self,
         )
 
-    def state(self, date=None, use_db=False):
+    def db_state(self, date=None):
+        return BudgetLineItem.objects.get(pk=self.pk).state(date=date)
+
+    def state(self, date=None):
         if date is None:
             date = datetime.datetime.utcnow().date()
-        if use_db:
-            return BudgetLineItem.objects.get(pk=self.pk).state()
         if self.end_date and self.end_date < date:
             return constants.BudgetLineItemState.INACTIVE
         if self.start_date and self.start_date <= date:
@@ -1843,7 +1844,7 @@ class BudgetLineItem(FootprintModel):
 
 
     def clean(self):
-        if self.pk and self.state(use_db=True) != constants.BudgetLineItemState.PENDING:
+        if self.pk and self.db_state() != constants.BudgetLineItemState.PENDING:
             raise ValidationError('Only pending budgets can change.')
 
         validate(
