@@ -521,8 +521,8 @@ class AdGroupSources(api_common.BaseApiView):
         settings.save(request)
 
     def _can_target_existing_regions(self, source, ad_group_settings):
-        return (source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma()) or\
-            not ad_group_settings.targets_dma()
+        return not ad_group_settings.targets_region_type(constants.RegionType.DMA) or\
+               ad_group_settings.targets_region_type(constants.RegionType.DMA) and source.source_type.supports_targeting_region_type(constants.RegionType.DMA)
 
 
 class Account(api_common.BaseApiView):
