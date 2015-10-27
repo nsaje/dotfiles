@@ -447,29 +447,18 @@ class GAReport(Report):
         else:
             return DEFAULT_GOAL_NAME
 
-    def _get_goal_value_type(self, goal_field):
-        try:
-            ix_goal = goal_field.index('(Goal')
-        except:
-            ix_goal = -1
-        if ix_goal != -1:
-            return goal_field[ix_goal:].strip()
-        else:
-            return goal_field
-
-    def _get_goal_fields(self, fields):
+    def _get_conversion_goal_fields(self, fields):
         # filter out fields which do not contain any relevant goal field
         ret = []
         for field in fields:
             for goal_keyword in GOAL_FIELD_KEYWORDS:
-                # currently only conversion numbers are of interest
                 if goal_keyword in field.lower():
                     ret.append(field)
                     break
         return ret
 
     def _parse_goals(self, fieldnames, row_dict):
-        goal_fields = self._get_goal_fields(fieldnames)
+        goal_fields = self._get_conversion_goal_fields(fieldnames)
         result = {}
         for goal_field in goal_fields:
             goal_name = self._get_goal_name(goal_field)
