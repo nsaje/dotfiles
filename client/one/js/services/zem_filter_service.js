@@ -49,7 +49,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         if (blacklistedPublisherFilter) {
             $location.search('show_blacklisted_publishers', blacklistedPublisherFilter);
         } else {
-            $location.search('show_blacklisted_publishers', null);
+            $location.search('show_blacklisted_publishers', false);
         }
     }
 
