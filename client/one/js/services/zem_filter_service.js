@@ -25,7 +25,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
 
         if ('zemauth.can_see_publishers' in user.permissions) {
-            blacklistedPublisherFilter = $location.search().show_blacklisted_publishers || null;
+            blacklistedPublisherFilter = $location.search().show_blacklisted_publishers || false;
         }
     }
 
