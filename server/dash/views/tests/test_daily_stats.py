@@ -455,7 +455,6 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                         ]
                     }
                 }],
-                'conversion_goals': [],
             },
             'success': True
         })
