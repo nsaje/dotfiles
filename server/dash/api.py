@@ -107,14 +107,14 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
     source = ad_group_source.source
 
-    if can_modify_selected_target_regions_manually(
-            source, ad_group_settings.targets_countries(), ad_group_settings.targets_dma()):
-
+    # if we could not select target regions automatically, see if we can select them manually
+    if not can_modify_selected_target_regions_automatically(source, ad_group_settings) and\
+       can_modify_selected_target_regions_manually(source, ad_group_settings):
         new_field_value = _get_manual_action_target_regions_value(
             ad_group_source,
             ad_group_settings.target_regions,
-            ad_group_settings.targets_countries(),
-            ad_group_settings.targets_dma()
+            ad_group_settings.targets_region_type(constants.RegionType.COUNTRY),
+            ad_group_settings.targets_region_type(constants.RegionType.DMA)
         )
 
         actionlog.api.init_set_ad_group_manual_property(
@@ -479,12 +479,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             if field_name == 'ad_group_name':
                 new_field_value = ad_group_source.get_external_name(new_adgroup_name=field_value)
 
-            did_dmas_change = False
-            did_countries_change = False
-            if field_name == 'target_regions':
-                did_dmas_change = new_settings.targets_dma() or current_settings.targets_dma()
-                did_countries_change = new_settings.targets_countries() or current_settings.targets_countries()
-
             if (field_name == 'start_date' and source.can_modify_start_date() or
                field_name == 'end_date' and source.can_modify_end_date() or
                field_name == 'target_devices' and source.can_modify_device_targeting() or
@@ -493,7 +487,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or
                field_name == 'ad_group_name' and source.can_modify_ad_group_name() or
                field_name == 'target_regions' and can_modify_selected_target_regions_automatically(
-                   source, did_countries_change, did_dmas_change)) and not force_manual_change:
+                   source, current_settings, new_settings)) and not force_manual_change:
                 new_field_name = field_name
                 if field_name == 'ad_group_name':
                     new_field_name = 'name'
@@ -541,14 +535,14 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     new_field_value = _substitute_tracking_macros(new_field_value, tracking_slug)
 
                 if field_name == 'target_regions':
-                    if not can_modify_selected_target_regions_manually(source, did_countries_change, did_dmas_change):
+                    if not can_modify_selected_target_regions_manually(source, current_settings, new_settings):
                         continue
 
                     new_field_value = _get_manual_action_target_regions_value(
                         ad_group_source,
                         new_field_value,
-                        did_countries_change,
-                        did_dmas_change,
+                        current_settings.targets_region_type(constants.RegionType.COUNTRY) or new_settings.targets_region_type(constants.RegionType.COUNTRY),
+                        current_settings.targets_region_type(constants.RegionType.DMA) or new_settings.targets_region_type(constants.RegionType.DMA),
                     )
 
                 actionlog.api.init_set_ad_group_manual_property(
@@ -861,16 +855,39 @@ def get_content_ad(content_ad_id):
         return None
 
 
-def can_modify_selected_target_regions_automatically(source, did_countries_change, did_dmas_change):
-    modify_country_auto = source.can_modify_country_targeting()
-    modify_dma_auto = source.can_modify_dma_targeting_automatic()
-    return any([
-        (modify_dma_auto and modify_country_auto),
-        (modify_dma_auto and not did_countries_change),
-        (modify_country_auto and not did_dmas_change)
-    ])
+def can_modify_selected_target_regions_automatically(source, *settings):
+    region_types = _get_region_types(settings)
+
+    # check for each region_type found if the source supports automatic modification
+    for region_type in region_types:
+        if not source.can_modify_targeting_for_region_type_automatically(region_type):
+            return False
+
+    return True
 
 
-def can_modify_selected_target_regions_manually(source, did_countries_change, did_dmas_change):
-    return ((did_dmas_change and source.can_modify_dma_targeting_manual()) or
-            (did_countries_change and not source.can_modify_country_targeting()))
+def can_modify_selected_target_regions_manually(source, *settings):
+    region_types = _get_region_types(settings)
+
+    return ((constants.RegionType.DMA in region_types and source.can_modify_targeting_for_region_type_manually(constants.RegionType.DMA)) or
+            (constants.RegionType.COUNTRY in region_types and not source.can_modify_targeting_for_region_type_automatically(constants.RegionType.COUNTRY)))
+
+''' # check for each region_type found if the source supports manual modification
+    for region_type in region_types:
+        if not source.can_modify_targeting_for_region_type_manually(region_type):
+            return False
+
+    return True
+'''
+
+def _get_region_types(settings):
+    region_types = []
+
+    # build a list of region types present in the given settings
+    for region_type in constants.RegionType.get_all():
+        for settings_ in settings:
+            if settings_.targets_region_type(region_type):
+                region_types.append(region_type)
+                break
+
+    return region_types

@@ -1068,3 +1068,9 @@ class UserActionType(ConstantBase):
         CREATE_MEDIA_SOURCE_CAMPAIGN: 'Create Media Source Campaign',
         SET_MEDIA_SOURCE_SETTINGS: 'Set Media Source Settings',
     }
+
+
+class RegionType(ConstantBase):
+    COUNTRY = 1
+    SUBDIVISION = 2
+    DMA = 3
