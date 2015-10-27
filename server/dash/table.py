@@ -11,8 +11,6 @@ from dash import api
 from dash import stats_helper
 
 import utils.pagination
-from utils import api_common
-from utils import statsd_helper
 from utils import exc
 from utils.sort_helper import sort_results
 
@@ -93,7 +91,7 @@ class AllAccountsSourcesTable(object):
     def get_sources(self):
         return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
-    def get_stats(self, request, start_date, end_date):
+    def get_stats(self, user, start_date, end_date):
         sources_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
@@ -152,7 +150,7 @@ class AccountSourcesTable(object):
     def get_sources(self):
         return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
-    def get_stats(self, request, start_date, end_date):
+    def get_stats(self, user, start_date, end_date):
         sources_stats = reports.api_helpers.filter_by_permissions(self.reports_api.query(
             start_date,
             end_date,
@@ -213,9 +211,9 @@ class CampaignSourcesTable(object):
     def get_sources(self):
         return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
-    def get_stats(self, request, start_date, end_date):
+    def get_stats(self, user, start_date, end_date):
         sources_stats = stats_helper.get_stats_with_conversions(
-            request.user,
+            user,
             start_date,
             end_date,
             breakdown=['source'],
@@ -224,7 +222,7 @@ class CampaignSourcesTable(object):
         )
 
         totals_stats = stats_helper.get_stats_with_conversions(
-            request.user,
+            user,
             start_date,
             end_date,
             conversion_goals=self.campaign.conversiongoal_set.all(),
@@ -278,9 +276,9 @@ class AdGroupSourcesTable(object):
     def get_sources(self):
         return self.filtered_sources.filter(adgroupsource__in=self.active_ad_group_sources).distinct('id')
 
-    def get_stats(self, request, start_date, end_date):
+    def get_stats(self, user, start_date, end_date):
         sources_stats = stats_helper.get_stats_with_conversions(
-            request.user,
+            user,
             start_date,
             end_date,
             breakdown=['source'],
@@ -289,7 +287,7 @@ class AdGroupSourcesTable(object):
         )
 
         totals_stats = stats_helper.get_stats_with_conversions(
-            request.user,
+            user,
             start_date,
             end_date,
             conversion_goals=self.ad_group.campaign.conversiongoal_set.all(),
@@ -334,16 +332,12 @@ class AdGroupSourcesTable(object):
         )
 
 
-class AdGroupSourcesTableUpdates(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_notifications_get')
-    def get(self, request, ad_group_id_=None):
-        if not request.user.has_perm('zemauth.set_ad_group_source_settings'):
+class AdGroupSourcesTableUpdates(object):
+    def get(self, user, last_change_dt, filtered_sources, ad_group_id_=None):
+        if not user.has_perm('zemauth.set_ad_group_source_settings'):
             return exc.ForbiddenError('Not allowed')
 
-        last_change_dt = helpers.parse_datetime(request.GET.get('last_change_dt'))
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        ad_group_sources_table = AdGroupSourcesTable(request.user, ad_group_id_, filtered_sources)
+        ad_group_sources_table = AdGroupSourcesTable(user, ad_group_id_, filtered_sources)
         ad_group_sources = ad_group_sources_table.active_ad_group_sources
         sources = ad_group_sources_table.get_sources()
         last_success_actions = ad_group_sources_table.get_last_success_actions()
@@ -418,7 +412,7 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
 
             response['notifications'] = notifications
 
-            if request.user.has_perm('zemauth.data_status_column'):
+            if user.has_perm('zemauth.data_status_column'):
                 response['data_status'] = helpers.get_data_status(
                     sources,
                     helpers.get_last_sync_messages(sources, last_success_actions),
@@ -428,18 +422,11 @@ class AdGroupSourcesTableUpdates(api_common.BaseApiView):
                                                                 ad_group_sources_table.ad_group_sources_states)
                 )
 
-        return self.create_api_response(response)
+        return response
 
 
-class SourcesTable(api_common.BaseApiView):
-
-    @statsd_helper.statsd_timer('dash.api', 'zemauth.sources_table_get')
-    @newrelic.agent.function_trace()
-    def get(self, request, level_, id_=None):
-        newrelic.agent.set_transaction_name('dash.views.table:SourcesTable#%s' % (level_))
-
-        user = request.user
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+class SourcesTable(object):
+    def get(self, user, level_, filtered_sources, start_date, end_date, order, id_=None):
 
         ad_group_level = False
         if level_ == 'all_accounts':
@@ -452,13 +439,10 @@ class SourcesTable(api_common.BaseApiView):
             ad_group_level = True
             level_sources_table = AdGroupSourcesTable(user, id_, filtered_sources)
 
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
         sources = level_sources_table.get_sources()
         sources_states = level_sources_table.ad_group_sources_states
         last_success_actions = level_sources_table.get_last_success_actions()
-        sources_data, totals_data = level_sources_table.get_stats(request, start_date, end_date)
+        sources_data, totals_data = level_sources_table.get_stats(user, start_date, end_date)
         is_sync_in_progress = level_sources_table.is_sync_in_progress()
 
         ad_group_sources_settings = None
@@ -491,7 +475,7 @@ class SourcesTable(api_common.BaseApiView):
                 ad_group_sources_settings,
                 last_success_actions,
                 yesterday_cost,
-                order=request.GET.get('order', None),
+                order=order,
                 ad_group_level=ad_group_level,
             ),
             'totals': self.get_totals(
@@ -535,7 +519,7 @@ class SourcesTable(api_common.BaseApiView):
                     sources_states
                 )
 
-        return self.create_api_response(response)
+        return response
 
     @newrelic.agent.function_trace()
     def get_totals(self,
@@ -548,6 +532,7 @@ class SourcesTable(api_common.BaseApiView):
                    yesterday_cost):
         result = {}
         helpers.copy_stats_to_row(totals_data, result)
+        result['yesterday_cost'] = yesterday_cost
         if ad_group_level and user.has_perm('zemauth.set_ad_group_source_settings'):
             result['daily_budget'] = get_daily_budget_total(ad_group_sources, sources_states, sources_settings)
             result['current_daily_budget'] = get_current_daily_budget_total(sources_states)
@@ -564,7 +549,7 @@ class SourcesTable(api_common.BaseApiView):
 
     def _get_supply_dash_url(self, ad_group_source):
         if not ad_group_source.source.has_3rd_party_dashboard() or\
-               ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
+                ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
             return None
 
         return '{}?ad_group_id={}&source_id={}'.format(
@@ -655,7 +640,7 @@ class SourcesTable(api_common.BaseApiView):
                 ad_group_settings = level_sources_table.ad_group_settings
 
                 row['editable_fields'] = helpers.get_editable_fields(ad_group_source, ad_group_settings,
-                                                                   source_settings, user)
+                                                                     source_settings, user)
 
                 if user.has_perm('zemauth.set_ad_group_source_settings')\
                    and source_settings is not None \
@@ -704,27 +689,15 @@ class SourcesTable(api_common.BaseApiView):
         return rows
 
 
-class AccountsAccountsTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'accounts_accounts_table_get')
-    def get(self, request):
+class AccountsAccountsTable(object):
+    def get(self, user, filtered_sources, start_date, end_date, order, page, size, show_archived):
         # Permission check
-        if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
+        if not user.has_perm('zemauth.all_accounts_accounts_view'):
             raise exc.MissingDataError()
 
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        page = request.GET.get('page')
-        size = request.GET.get('size')
-        order = request.GET.get('order')
-
-        has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
-        show_archived = request.GET.get('show_archived') == 'true' and\
-            request.user.has_perm('zemauth.view_archived_entities')
-
-        user = request.user
+        has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
+        show_archived = show_archived == 'true' and\
+            user.has_perm('zemauth.view_archived_entities')
 
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
         account_ids = set(acc.id for acc in accounts)
@@ -745,14 +718,14 @@ class AccountsAccountsTable(api_common.BaseApiView):
             breakdown=['account'],
             account=accounts,
             source=filtered_sources
-        ), request.user)
+        ), user)
 
         totals_data = reports.api_helpers.filter_by_permissions(reports_api.query(
             start_date,
             end_date,
             account=accounts,
             source=filtered_sources
-        ), request.user)
+        ), user)
 
         all_accounts_budget = budget.GlobalBudget().get_total_by_account()
         account_budget = {aid: all_accounts_budget.get(aid, 0) for aid in account_ids}
@@ -789,7 +762,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 end_date,
                 accounts,
                 filtered_sources
-            ) if has_aggregate_postclick_permission(request.user) else False
+            ) if has_aggregate_postclick_permission(user) else False
 
         response = {
             'rows': rows,
@@ -815,7 +788,7 @@ class AccountsAccountsTable(api_common.BaseApiView):
                 last_success_actions,
             )
 
-        return self.create_api_response(response)
+        return response
 
     def get_data_status(self, accounts, last_success_actions):
         return helpers.get_data_status(
@@ -881,18 +854,10 @@ class AccountsAccountsTable(api_common.BaseApiView):
         return rows
 
 
-class AdGroupAdsTable(api_common.BaseApiView):
+class AdGroupAdsTable(object):
+    def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size):
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_table_get')
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        page = request.GET.get('page')
-        size = request.GET.get('size')
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        order = request.GET.get('order') or '-clicks'
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        ad_group = helpers.get_ad_group(user, ad_group_id)
 
         size = max(min(int(size or 5), 4294967295), 1)
 
@@ -903,7 +868,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
             order=[order],
             ad_group=ad_group.id,
             source=filtered_sources,
-        ), request.user)
+        ), user)
 
         result_pg, current_page, num_pages, count, start_index, end_index = \
             utils.pagination.paginate(result, page, size)
@@ -920,7 +885,7 @@ class AdGroupAdsTable(api_common.BaseApiView):
                 end_date,
                 ad_group=int(ad_group.id),
                 source=filtered_sources,
-            ), request.user)
+            ), user)
 
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
         last_success_actions = ad_group_sync.get_latest_success_by_child()
@@ -933,10 +898,10 @@ class AdGroupAdsTable(api_common.BaseApiView):
                 end_date,
                 [ad_group],
                 filtered_sources,
-            ) if (request.user.has_perm('zemauth.content_ads_postclick_acquisition') or
-                  request.user.has_perm('zemauth.content_ads_postclick_engagement')) else False
+            ) if (user.has_perm('zemauth.content_ads_postclick_acquisition') or
+                  user.has_perm('zemauth.content_ads_postclick_engagement')) else False
 
-        return self.create_api_response({
+        return {
             'rows': rows,
             'totals': totals_data,
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
@@ -952,20 +917,15 @@ class AdGroupAdsTable(api_common.BaseApiView):
                 'size': size
             },
             'incomplete_postclick_metrics': incomplete_postclick_metrics
-        })
+        }
 
 
-class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_updates_get')
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        user = request.user
+class AdGroupAdsPlusTableUpdates(object):
+    def get(self, user, ad_group_id, filtered_sources, last_change_dt):
+        ad_group = helpers.get_ad_group(user, ad_group_id)
 
-        if not ad_group.content_ads_tab_with_cms and not request.user.has_perm('zemauth.new_content_ads_tab'):
+        if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-        last_change_dt = helpers.parse_datetime(request.GET.get('last_change'))
 
         new_last_change_dt = helpers.get_content_ad_last_change_dt(ad_group, filtered_sources, last_change_dt)
         changed_content_ads = helpers.get_changed_content_ads(ad_group, filtered_sources, last_change_dt)
@@ -1008,31 +968,23 @@ class AdGroupAdsPlusTableUpdates(api_common.BaseApiView):
                 changed_content_ads,
             )
 
-        return self.create_api_response(response_dict)
+        return response_dict
 
 
-class AdGroupAdsPlusTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_table_get')
-    def get(self, request, ad_group_id):
-        user = request.user
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        if not ad_group.content_ads_tab_with_cms and not request.user.has_perm('zemauth.new_content_ads_tab'):
+class AdGroupAdsPlusTable(object):
+    def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size, show_archived):
+
+        ad_group = helpers.get_ad_group(user, ad_group_id)
+        if not ad_group.content_ads_tab_with_cms and not user.has_perm('zemauth.new_content_ads_tab'):
             raise exc.ForbiddenError(message='Not allowed')
 
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        page = request.GET.get('page')
-        order = request.GET.get('order') or 'cost'
-        size = request.GET.get('size')
         size = max(min(int(size or 5), 4294967295), 1)
 
         content_ads = models.ContentAd.objects.filter(
             ad_group=ad_group).filter_by_sources(filtered_sources).select_related('batch')
 
         stats = stats_helper.get_content_ad_stats_with_conversions(
-            request.user,
+            user,
             start_date,
             end_date,
             breakdown=['content_ad'],
@@ -1041,14 +993,14 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
             constraints={'ad_group': ad_group, 'source': filtered_sources}
         )
 
-        has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
-        show_archived = request.GET.get('show_archived') == 'true' and\
-            request.user.has_perm('zemauth.view_archived_entities')
+        has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
+        show_archived = show_archived == 'true' and\
+            user.has_perm('zemauth.view_archived_entities')
 
         rows = self._get_rows(content_ads, stats, ad_group, has_view_archived_permission, show_archived)
 
         batches = []
-        if request.user.has_perm('zemauth.content_ads_bulk_actions'):
+        if user.has_perm('zemauth.content_ads_bulk_actions'):
             batch_ids = set([row['batch_id'] for row in rows])
             batches = models.UploadBatch.objects.filter(
                 id__in=tuple(batch_ids),
@@ -1062,7 +1014,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         rows = self._add_status_to_rows(user, page_rows, filtered_sources, ad_group)
 
         total_stats = stats_helper.get_content_ad_stats_with_conversions(
-            request.user,
+            user,
             start_date,
             end_date,
             conversion_goals=ad_group.campaign.conversiongoal_set.all(),
@@ -1080,8 +1032,8 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 end_date,
                 [ad_group],
                 filtered_sources,
-            ) if (request.user.has_perm('zemauth.content_ads_postclick_acquisition') or
-                  request.user.has_perm('zemauth.content_ads_postclick_engagement')) else False
+            ) if (user.has_perm('zemauth.content_ads_postclick_acquisition') or
+                  user.has_perm('zemauth.content_ads_postclick_engagement')) else False
 
         response_dict = {
             'rows': rows,
@@ -1115,7 +1067,7 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
                 shown_content_ads,
             )
 
-        return self.create_api_response(response_dict)
+        return response_dict
 
     @newrelic.agent.function_trace()
     def _get_total_row(self, stats):
@@ -1227,24 +1179,18 @@ class AdGroupAdsPlusTable(api_common.BaseApiView):
         return rows
 
 
-class CampaignAdGroupsTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'campaign_ad_groups_table_get')
-    def get(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
+class CampaignAdGroupsTable(object):
+    def get(self, user, campaign_id, filtered_sources, start_date, end_date, order, show_archived):
+        campaign = helpers.get_campaign(user, campaign_id)
 
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        order = request.GET.get('order') or '-cost'
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
+        show_archived = show_archived == 'true' and\
+            user.has_perm('zemauth.view_archived_entities')
 
-        has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
-        show_archived = request.GET.get('show_archived') == 'true' and\
-            request.user.has_perm('zemauth.view_archived_entities')
-
-        reports_api = get_reports_api_module(request.user)
+        reports_api = get_reports_api_module(user)
 
         stats = stats_helper.get_stats_with_conversions(
-            request.user,
+            user,
             start_date=start_date,
             end_date=end_date,
             breakdown=['ad_group'],
@@ -1259,7 +1205,7 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             order_by('ad_group_id', '-created_dt')
 
         totals_stats = stats_helper.get_stats_with_conversions(
-            request.user,
+            user,
             start_date=start_date,
             end_date=end_date,
             conversion_goals=campaign.conversiongoal_set.all(),
@@ -1277,11 +1223,11 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
                 end_date,
                 [campaign],
                 filtered_sources
-            ) if has_aggregate_postclick_permission(request.user) else False
+            ) if has_aggregate_postclick_permission(user) else False
 
         response = {
             'rows': self.get_rows(
-                request.user,
+                user,
                 ad_groups,
                 ad_groups_settings,
                 stats,
@@ -1301,17 +1247,17 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
             'incomplete_postclick_metrics': incomplete_postclick_metrics
         }
 
-        if request.user.has_perm('zemauth.conversion_reports'):
+        if user.has_perm('zemauth.conversion_reports'):
             conversion_goals = campaign.conversiongoal_set.all()
             response['conversion_goals'] = [{'id': cg.id, 'name': cg.name} for cg in conversion_goals]
 
-        if request.user.has_perm('zemauth.data_status_column'):
+        if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
                 ad_groups,
                 last_success_actions,
             )
 
-        return self.create_api_response(response)
+        return response
 
     def get_data_status(self, ad_groups, last_success_actions):
         return helpers.get_data_status(
@@ -1372,21 +1318,13 @@ class CampaignAdGroupsTable(api_common.BaseApiView):
         return rows
 
 
-class AccountCampaignsTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'account_campaigns_table_get')
-    def get(self, request, account_id):
-        user = request.user
+class AccountCampaignsTable(object):
+    def get(self, user, account_id, filtered_sources, start_date, end_date, order, show_archived):
         account = helpers.get_account(user, account_id)
 
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        order = request.GET.get('order') or '-clicks'
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        has_view_archived_permission = request.user.has_perm('zemauth.view_archived_entities')
-        show_archived = request.GET.get('show_archived') == 'true' and\
-            request.user.has_perm('zemauth.view_archived_entities')
+        has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
+        show_archived = show_archived == 'true' and\
+            user.has_perm('zemauth.view_archived_entities')
 
         campaigns = models.Campaign.objects.all().filter_by_user(user).\
             filter(account=account_id).filter_by_sources(filtered_sources)
@@ -1403,7 +1341,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
             breakdown=['campaign'],
             campaign=campaigns,
             source=filtered_sources,
-        ), request.user)
+        ), user)
 
         totals_stats = reports.api_helpers.filter_by_permissions(
             reports_api.query(
@@ -1411,7 +1349,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 end_date,
                 campaign=campaigns,
                 source=filtered_sources,
-            ), request.user)
+            ), user)
 
         totals_stats['budget'] = sum(budget.CampaignBudget(campaign).get_total()
                                      for campaign in campaigns)
@@ -1436,7 +1374,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 end_date,
                 campaigns,
                 filtered_sources,
-            ) if has_aggregate_postclick_permission(request.user) else False
+            ) if has_aggregate_postclick_permission(user) else False
 
         response = {
             'rows': self.get_rows(
@@ -1467,7 +1405,7 @@ class AccountCampaignsTable(api_common.BaseApiView):
                 last_success_actions,
             )
 
-        return self.create_api_response(response)
+        return response
 
     def get_data_status(self, campaigns, last_success_actions):
         return helpers.get_data_status(
@@ -1538,26 +1476,16 @@ class AccountCampaignsTable(api_common.BaseApiView):
         return rows
 
 
-class PublishersTable(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'zemauth.publishers_table_get')
-    def get(self, request, level_, id_=None):
-        newrelic.agent.set_transaction_name('dash.views.table:PublishersTable#%s' % (level_))
-        if not request.user.has_perm('zemauth.can_see_publishers'):
+class PublishersTable(object):
+    def get(self, user, level_, filtered_sources, start_date, end_date, order, page, size, id_=None):
+        if not user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
 
-        user = request.user
         adgroup = helpers.get_ad_group(user, id_)
 
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
         constraints = {'ad_group': adgroup.id}
 
-        page = request.GET.get('page')
-        order = request.GET.get('order') or 'cost'
-        size = request.GET.get('size')
         size = max(min(int(size or 5), 4294967295), 1)
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         # Translation table for "exchange" in b1 to name of the source in One
         # At the same time keys of this array are what we're filtering exchanges to
@@ -1613,7 +1541,7 @@ class PublishersTable(api_common.BaseApiView):
             'order': order,
         }
 
-        return self.create_api_response(response)
+        return response
 
     def get_totals(self,
                    user,

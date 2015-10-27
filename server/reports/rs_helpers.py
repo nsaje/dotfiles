@@ -32,6 +32,8 @@ def decimal_to_int_exact(num):
     Converts a decimal.Decimal number to integer.
     Raises decimal.Inexact if non-zero digits were discarded during rounding.
     '''
+    if num is None:
+        return num
     return int(num.to_integral_exact(context=decimal.Context(traps=[decimal.Inexact])))
 
 

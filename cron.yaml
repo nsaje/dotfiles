@@ -38,7 +38,7 @@ cron:
   job: '0 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py update_touchpoint_conversions_full > /dev/null 2>&1'
 
 - hosts: [knot01.zemanta.com]
-  job: '10 5 * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py autopilot_adjust_media_source_bid_cpcs > /dev/null 2>&1'
+  job: '10 9 * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py autopilot_adjust_media_source_bid_cpcs > /dev/null 2>&1'
 
 - hosts: [knot01.zemanta.com]
   job: '0 5,7,9 * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py fetch_reports_by_publisher > /dev/null 2>&1'

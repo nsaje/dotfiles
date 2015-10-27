@@ -14,17 +14,18 @@ from utils.test_helper import QuerySetMatcher
 from zemauth.models import User
 from dash import models
 from dash import constants
-from dash.views import table
+from dash import table
 from actionlog.models import ActionLog
 import actionlog.constants
 
 import reports.redshift as redshift
 
+
 @override_settings(
     R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/1/{content_ad_id}/'
 )
-@patch('dash.views.table.reports.api_touchpointconversions.query')
-@patch('dash.views.table.reports.api_contentads.query')
+@patch('dash.table.reports.api_touchpointconversions.query')
+@patch('dash.table.reports.api_contentads.query')
 class AdGroupAdsPlusTableTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
@@ -680,7 +681,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
 @override_settings(
     R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/1/{content_ad_id}/'
 )
-@patch('dash.views.table.reports.api_publishers.query')
+@patch('dash.table.reports.api_publishers.query')
 class AdGroupPublishersTableTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 

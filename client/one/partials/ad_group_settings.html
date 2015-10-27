@@ -138,6 +138,7 @@
 
                 <div class="checkbox col-xs-10" ng-if="hasPermission('zemauth.can_toggle_ga_performance_tracking')">
                     <label>
+                        <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_toggle_ga_performance_tracking')" popover-placement="right"></zem-internal-feature>
                         <input type="checkbox" id="enable-ga-tracking" ng-model="settings.enableGaTracking"> Enable Google Analytics performance tracking
                         <zem-help-popover content="This adds performance tracking codes (_z1_msid, _z1_adgid, _z1_caid) to all URLs." placement="top"></zem-help-popover>
                         <br />
@@ -158,9 +159,9 @@
         </div>
 
         <div class="form-group indented" ng-class="{'has-error': !!errors.adobeTrackingParam}" ng-if="hasPermission('zemauth.can_toggle_adobe_performance_tracking') && settings.enableAdobeTracking">
-            <label for="adobe-tracking-param-input" class="col-xs-2 control-label">
+            <label for="adobe-tracking-param-input" class="col-xs-3 control-label">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_toggle_adobe_performance_tracking')" popover-placement="right"></zem-internal-feature>
-                Adobe tracking param
+                Adobe tracking parameter
                 <zem-help-popover content="Name of the tracking parameter used for Adobe Analytics." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">

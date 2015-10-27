@@ -48,11 +48,11 @@ def delete_contentadstats_diff(date, ad_group_id, source_id):
 
 
 @statsd_timer('reports.redshift', 'delete_contentadstats')
-def delete_touchpoint_conversions(date):
+def delete_touchpoint_conversions(date, account_id):
     cursor = get_cursor()
 
-    query = 'DELETE FROM touchpointconversions WHERE date = %s'
-    params = [date.isoformat()]
+    query = 'DELETE FROM touchpointconversions WHERE date = %s AND account_id = %s'
+    params = [date.isoformat(), account_id]
 
     cursor.execute(query, params)
     cursor.close()

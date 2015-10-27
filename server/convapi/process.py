@@ -13,8 +13,8 @@ from utils import statsd_helper
 
 logger = logging.getLogger(__name__)
 
-
-ADDITIONAL_SYNC_HOURS = 2
+# take ET into consideration - server time is in UTC while we query for ET dates
+ADDITIONAL_SYNC_HOURS = 10
 
 
 def _get_dates_to_sync():
@@ -35,19 +35,29 @@ def _get_dates_to_sync():
     return dates
 
 
+def _get_accounts_to_sync():
+    conversion_pixels = dash.models.ConversionPixel.objects.all()
+    return set(cp.account_id for cp in conversion_pixels)
+
+
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions_full')
 def update_touchpoint_conversions_full():
     dates = _get_dates_to_sync()
-    update_touchpoint_conversions(dates)
-    dash.models.ConversionPixel.objects.all().update(last_sync_dt=datetime.datetime.utcnow())
+    account_ids = _get_accounts_to_sync()
+    update_touchpoint_conversions(dates, account_ids)
+
+    # all missing dates are guaranteed to be synced so last sync dt can be updated
+    dash.models.ConversionPixel.objects.filter(account_id__in=account_ids).update(last_sync_dt=datetime.datetime.utcnow())
 
 
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')
-def update_touchpoint_conversions(dates):
-    for date in dates:
-        redirects_impressions = redirector_helper.fetch_redirects_impressions(date)
-        touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
-        reports.update.update_touchpoint_conversions(date, touchpoint_conversion_pairs)
+def update_touchpoint_conversions(dates, account_ids):
+    for account_id in account_ids:
+        for date in dates:
+            logger.info('Fetching touchpoint conversions for date %s and account id %s.', date, account_id)
+            redirects_impressions = redirector_helper.fetch_redirects_impressions(date, account_id)
+            touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
+            reports.update.update_touchpoint_conversions(date, account_id, touchpoint_conversion_pairs)
 
 
 @statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
@@ -98,7 +108,7 @@ def process_touchpoint_conversions(redirects_impressions):
             try:
                 pixel = dash.models.ConversionPixel.objects.get(slug=slug, account_id=account_id)
             except dash.models.ConversionPixel.DoesNotExist:
-                logger.warning('Unknown conversion pixel. slug=%s account_id=%s', slug, account_id)
+                logger.info('Unknown conversion pixel. slug=%s account_id=%s', slug, account_id)
                 continue
 
             if pixel.archived:
