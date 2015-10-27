@@ -10,7 +10,7 @@ describe('AdGroupSourcesCtrlSpec', function() {
         $provide.value('zemLocalStorageService', {get: function(){}});
         $provide.value('zemCustomTableColsService', {
             load: function() {return [];},
-            setColumn: function() {return [];}
+            save: function() {return [];}
         });
     }));
 
@@ -51,7 +51,7 @@ describe('AdGroupSourcesCtrlSpec', function() {
         };
 
         $state.params = {id: 123};
-        $scope = $controller('AdGroupSourcesCtrl', {$scope: $scope, api: api, $state: $state}).$scope;
+        $controller('AdGroupSourcesCtrl', {$scope: $scope, api: api, $state: $state});
     }));
 
     describe('pollSourcesTableUpdates', function() {

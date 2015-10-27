@@ -779,6 +779,4 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     $scope.init();
-
-    return {$scope: $scope}; // to get the reference to $scope in tests
 }]);

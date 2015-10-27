@@ -53,7 +53,7 @@ oneApp.directive('zemCustomTableCols', ['config', function(config) {
             };
 
             $scope.columnUpdated = function (column) {
-                zemCustomTableColsService.setColumn($scope.localStoragePrefix, column);
+                zemCustomTableColsService.save($scope.localStoragePrefix, $scope.columns);
             };
 
             $scope.$watch('categories', function (newValue, oldValue) {

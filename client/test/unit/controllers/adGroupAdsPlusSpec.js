@@ -17,7 +17,7 @@ describe('AdGroupAdsPlusCtrl', function() {
         $provide.value('zemFilterService', zemFilterServiceMock);
         $provide.value('zemCustomTableColsService', {
             load: function() {return [];},
-            setColumn: function() {return [];}
+            save: function() {return [];}
         });
     }));
 
