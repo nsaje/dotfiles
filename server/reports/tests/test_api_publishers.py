@@ -243,9 +243,6 @@ class ApiPublishersTest(TestCase):
 
         self.assertIn(' OR '.join(['(domain=%s AND adgroup_id=%s AND exchange=%s)'] * 2), self._get_query())
 
-    def test_query_publisher_list(self):
-        pass
-
 
 @mock.patch('reports.redshift.get_cursor')
 class ApiPublishersInsertTest(TestCase):
