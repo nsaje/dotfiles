@@ -64,9 +64,6 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
     def get_response_dict(self, user, stats, totals, groups_dict,
                           metrics, group_key=None, conversion_goals=None):
-        if conversion_goals is None:
-            conversion_goals = []
-
         series_groups = self._get_series_groups_dict(totals, groups_dict)
 
         for stat in stats:
