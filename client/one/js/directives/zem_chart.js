@@ -6,15 +6,16 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
         restrict: 'E',
         scope: {
             data: '=zemData',
-            metric1: '=zemMetric1',
             metricOptions: '=zemMetricOptions',
+            metric1: '=zemMetric1',
             metric2: '=zemMetric2',
             minDate: '=zemMinDate',
             maxDate: '=zemMaxDate',
-            onRemove: '&zemOnRemove'
+            onRemove: '&zemOnRemove',
+            localStoragePrefix: '=localStoragePrefix'
         },
         templateUrl: '/partials/zem_chart.html',
-        controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
+        controller: ['$scope', '$element', '$attrs', '$http', 'zemUserSettings', function ($scope, $element, $attrs, $http, zemUserSettings) {
             var totalsColor = ['#009db2', '#c9eaef'];
             var colors = [
                 ['#d35400', '#eebe9e'],
@@ -42,7 +43,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             };
 
             $scope.$watch('metrics.metric1', function(newValue) {
-                // we use $scope.metrcis because ui-select doesn't work well with
+                // we use $scope.metrics because ui-select doesn't work well with
                 // simple variables on scope as ng-model, it is recommended to use a
                 // property on an object on scope
                 // (https://github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
@@ -50,16 +51,47 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             }, true);
 
             $scope.$watch('metrics.metric2', function(newValue) {
-                // we use $scope.metrcis because ui-select doesn't work well with
+                // we use $scope.metrics because ui-select doesn't work well with
                 // simple variables on scope as ng-model, it is recommended to use a
                 // property on an object on scope
                 // (https://github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
                 $scope.metric2 = newValue;
             }, true);
 
+            $scope.$watch('metric1', function(newValue) {
+                $scope.metrics.metric1 = newValue;
+            }, true);
+
+            $scope.$watch('metric2', function(newValue) {
+                $scope.metrics.metric2 = newValue;
+            }, true);
+
             $scope.$watch('metricOptions', function(newValue) {
                 $scope.metric2Options = getMetric2Options($scope.metricOptions);
-            });
+            }, true);
+
+            $scope.getSelectedName = function(selected) {
+                // Returns the name of the selected item. ui-select doesn't update the name correctly when choices change
+                // so the right name is returned here.
+                if (!selected) {
+                    return '';
+                }
+
+                for (var i = 0; i < $scope.metric2Options.length; i++) {
+                    if ($scope.metric2Options[i].value === selected.value) {
+                        return $scope.metric2Options[i].name;
+                    }
+                }
+                return '';
+            };
+
+            $scope.chartMetric1Update = function () {
+                zemUserSettings.setValue('chartMetric1', $scope.metrics.metric1, $scope.localStoragePrefix);
+            };
+
+            $scope.chartMetric2Update = function () {
+                zemUserSettings.setValue('chartMetric2', $scope.metrics.metric2, $scope.localStoragePrefix);
+            };
 
             $scope.config = {
                 options: {
