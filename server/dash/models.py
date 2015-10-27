@@ -1896,9 +1896,7 @@ class BudgetLineItem(FootprintModel):
         if self.state() == constants.BudgetLineItemState.PENDING:
             return
         if self.has_changed('amount'):
-            raise ValidationError('Budget amount cannot change.')
-        
-        
+            raise ValidationError('Budget amount cannot change.')        
 
 
 class CreditHistory(HistoryModel):
