@@ -73,6 +73,13 @@ def get_reports_api_module(user):
 
     return reports.api
 
+def get_conversion_pixels_last_sync(conversion_pixels):
+    conversion_pixels = conversion_pixels.extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
+                                                order_by=['-last_sync_null', 'last_sync_dt'])
+    if len(conversion_pixels):
+        return conversion_pixels[0].last_sync_dt
+
+    return datetime.datetime.utcnow()
 
 class AllAccountsSourcesTable(object):
     def __init__(self, user, id_, filtered_sources):
@@ -124,8 +131,7 @@ class AllAccountsSourcesTable(object):
         return self._last_success_actions
 
     def get_last_pixel_sync(self):
-        return models.ConversionPixel.objects.extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
-                                                    order_by=['-last_sync_null', 'last_sync_dt'])[0].last_sync_dt
+        return get_conversion_pixels_last_sync(models.ConversionPixel.objects.all())
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=self.accounts, sources=self.filtered_sources)
@@ -193,9 +199,7 @@ class AccountSourcesTable(object):
         return self._last_success_actions
 
     def get_last_pixel_sync(self):
-        return models.ConversionPixel.objects.filter(account_id=self.account.id).\
-            extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
-                  order_by=['-last_sync_null', 'last_sync_dt'])[0].last_sync_dt
+        return get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(account_id=self.account.id))
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=[self.account], sources=self.filtered_sources)
@@ -266,9 +270,7 @@ class CampaignSourcesTable(object):
         return self._last_success_actions
 
     def get_last_pixel_sync(self):
-        return models.ConversionPixel.objects.filter(account_id=self.campaign.account_id).\
-            extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
-                  order_by=['-last_sync_null', 'last_sync_dt'])[0].last_sync_dt
+        return get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(account_id=self.campaign.account_id))
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(campaigns=[self.campaign], sources=self.filtered_sources)
@@ -341,9 +343,7 @@ class AdGroupSourcesTable(object):
         return self._last_success_actions
 
     def get_last_pixel_sync(self):
-        return models.ConversionPixel.objects.filter(account_id=self.ad_group.campaign.account_id).\
-            extra(select={'last_sync_null': 'last_sync_dt IS NULL'}, order_by=['-last_sync_null', 'last_sync_dt'])[0].\
-            last_sync_dt
+        return get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(account_id=self.ad_group.campaign.account_id))
 
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group], sources=self.filtered_sources)
@@ -767,9 +767,7 @@ class AccountsAccountsTable(object):
         last_success_actions = actionlog.sync.GlobalSync(sources=filtered_sources).get_latest_success_by_child()
         last_success_actions = {aid: val for aid, val in last_success_actions.items() if aid in account_ids}
 
-        last_pixel_sync = models.ConversionPixel.objects.\
-            extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
-                  order_by=['-last_sync_null', 'last_sync_dt'])[0].last_sync_dt
+        last_pixel_sync = get_conversion_pixels_last_sync(models.ConversionPixel.objects.all())
         last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
 
         last_sync_joined = helpers.get_last_sync(last_success_actions_joined.values())
@@ -1065,9 +1063,8 @@ class AdGroupAdsPlusTable(object):
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
         last_success_actions = ad_group_sync.get_latest_success_by_child()
 
-        last_pixel_sync = models.ConversionPixel.objects.filter(account_id=ad_group.campaign.account_id).\
-            extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
-                  order_by=['-last_sync_null', 'last_sync_dt'])[0].last_sync_dt
+        last_pixel_sync = get_content_ad_stats_with_conversions(
+            models.ConversionPixel.objects.filter(account_id=ad_group.campaign.account_id))
         last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
 
         last_sync = helpers.get_last_sync(last_success_actions_joined.values())
@@ -1258,9 +1255,7 @@ class CampaignAdGroupsTable(object):
         campaign_sync = actionlog.sync.CampaignSync(campaign, sources=filtered_sources)
         last_success_actions = campaign_sync.get_latest_success_by_child()
 
-        last_pixel_sync = models.ConversionPixel.objects.filter(account_id=campaign.account_id).\
-            extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
-                  order_by=['-last_sync_null', 'last_sync_dt'])[0].last_sync_dt
+        last_pixel_sync = get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(account_id=campaign.account_id))
         last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
 
         last_sync = helpers.get_last_sync(last_success_actions_joined.values())
@@ -1422,9 +1417,7 @@ class AccountCampaignsTable(object):
         account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
         last_success_actions = account_sync.get_latest_success_by_child()
 
-        last_pixel_sync = models.ConversionPixel.objects.filter(account_id=account.id).\
-            extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
-                  order_by=['-last_sync_null', 'last_sync_dt'])[0].last_sync_dt
+        last_pixel_sync = get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(account_id=account.id))
         last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
 
         last_sync = helpers.get_last_sync(last_success_actions_joined.values())
