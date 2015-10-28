@@ -24,6 +24,7 @@ import reports.constants
 from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
+from utils import dates_helper
 
 
 SHORT_NAME_MAX_LENGTH = 22
@@ -37,13 +38,7 @@ def validate(*validators):
             errors[v.__name__.replace('validate_', '')] = e.error_list
     if errors:
         raise ValidationError(errors)
-
-def today():
-    return datetime.date.today()
-
-def utc_today():
-    return datetime.datetime.utcnow().date()
-            
+        
 
 class PermissionMixin(object):
     USERS_FIELD = ''
@@ -1160,7 +1155,7 @@ class AdGroupSettings(SettingsBase):
     def get_running_status(self):
         if self.state != constants.AdGroupSettingsState.ACTIVE:
             return constants.AdGroupRunningStatus.INACTIVE
-        now = utc_today()
+        now = dates_helper.utc_today()
         if self.start_date <= now and (self.end_date is None or now <= self.end_date):
             return constants.AdGroupRunningStatus.ACTIVE
         return constants.AdGroupRunningStatus.INACTIVE
@@ -1201,7 +1196,7 @@ class AdGroupSettings(SettingsBase):
     def get_defaults_dict(cls):
         return {
             'state': constants.AdGroupSettingsState.INACTIVE,
-            'start_date': utc_today(),
+            'start_date': dates_helper.utc_today(),
             'cpc_cc': 0.4000,
             'daily_budget_cc': 10.0000,
             'target_devices': constants.AdTargetDevice.get_all(),
@@ -1719,7 +1714,7 @@ class CreditLineItem(FootprintModel):
 
     def is_active(self, date=None):
         if date is None:
-            date = today()
+            date = dates_helper.est_today()
         return self.status == constants.CreditLineItem.SIGNED and \
             (self.start_date <= date <= self.end_date)
 
@@ -1797,7 +1792,7 @@ class CreditLineItem(FootprintModel):
     class QuerySet(models.QuerySet):
         def filter_active(self, date=None):
             if date is None:
-                date = today()
+                date = dates_helper.est_today()
             return self.filter(
                 start_date__lte=date,
                 end_date__gte=date,
@@ -1839,7 +1834,7 @@ class BudgetLineItem(FootprintModel):
 
     def state(self, date=None):
         if date is None:
-            date = today()
+            date = dates_helper.est_today()
         if self.end_date and self.end_date < date:
             return constants.BudgetLineItemState.INACTIVE
         if self.start_date and self.start_date <= date:
@@ -1849,7 +1844,6 @@ class BudgetLineItem(FootprintModel):
 
     def state_text(self, date=None):
         return constants.BudgetLineItemState.get_text(self.state(date=date))
-
 
     def clean(self):
         if self.pk and self.db_state() != constants.BudgetLineItemState.PENDING:
