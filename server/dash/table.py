@@ -1,7 +1,6 @@
 import pytz
 from slugify import slugify
 from django.conf import settings
-import newrelic.agent
 
 from dash.views import helpers
 from dash import models
@@ -551,7 +550,6 @@ class SourcesTable(object):
 
         return response
 
-    @newrelic.agent.function_trace()
     def get_totals(self,
                    ad_group_level,
                    user,
@@ -598,7 +596,6 @@ class SourcesTable(object):
 
         return None
 
-    @newrelic.agent.function_trace()
     def get_rows(
             self,
             id_,
@@ -1118,7 +1115,6 @@ class AdGroupAdsPlusTable(object):
 
         return response_dict
 
-    @newrelic.agent.function_trace()
     def _get_total_row(self, stats):
         totals = {}
         helpers.copy_stats_to_row(stats, totals)
@@ -1139,7 +1135,6 @@ class AdGroupAdsPlusTable(object):
             content_ad_id=content_ad.id
         )
 
-    @newrelic.agent.function_trace()
     def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived):
         stats = {s['content_ad']: s for s in stats}
         rows = []
@@ -1184,7 +1179,6 @@ class AdGroupAdsPlusTable(object):
 
         return rows
 
-    @newrelic.agent.function_trace()
     def _add_status_to_rows(self, user, rows, filtered_sources, ad_group):
         all_content_ad_sources = models.ContentAdSource.objects.filter(
             source=filtered_sources,
