@@ -9,14 +9,21 @@ from actionlog import constants as ac
 import actionlog.api
 import actionlog.zwei_actions
 
-failed = am.ActionLog.objects.filter(state=ac.ActionState.FAILED, action=ac.Action.SET_CAMPAIGN_STATE)
+VALID_KEYS = set(['state', 'cpc_cc', 'daily_budget_cc'])
 
 # 1. for each failed actionlog check source state and compare it with needed state
 # 2. if source state differs from our state --> create a new action based on our needs
 # 3. abort all actionlogs
 
+failed = am.ActionLog.objects.filter(state=ac.ActionState.FAILED, action=ac.Action.SET_CAMPAIGN_STATE)
+
 actions = []
 for fail in failed:
+    conf_keys = set(fail.payload['args']['conf'].keys())
+
+    if not conf_keys.issubset(VALID_KEYS):
+        print 'Skipping action {} because it contains invalid conf keys'.format(fail.id)
+
     ad_group_source = fail.ad_group_source
 
     adgs_settings = dm.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source).latest()
