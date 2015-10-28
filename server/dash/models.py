@@ -1672,7 +1672,7 @@ class DemoAdGroupRealAdGroup(models.Model):
     multiplication_factor = models.IntegerField(null=False, blank=False, default=1)
 
 
-class UserActionLog(FootprintModel):
+class UserActionLog(models.Model):
 
     id = models.AutoField(primary_key=True)
 
@@ -1727,11 +1727,12 @@ class CreditLineItem(FootprintModel):
         return sum(b.amount for b in self.budgets.all())
 
     def cancel(self):
-        self.status = constants.CreditLineItemStatus.CANCELLED
+        self.status = constants.CreditLineItemStatus.CANCELED
         self.save()
 
     def delete(self):
-        assert self.status == constants.CreditLineItemStatus.PENDING
+        if self.status != constants.CreditLineItemStatus.PENDING:
+            raise AssertionError('Credit item is not pending')
         super(CreditLineItem, self).delete()
 
     def save(self, request=None, *args, **kwargs):
@@ -1804,7 +1805,8 @@ class CreditLineItem(FootprintModel):
             )
 
         def delete(self):
-            assert self.exclude(status=constants.CreditLineItemStatus.PENDING).count() == 0
+            if self.exclude(status=constants.CreditLineItemStatus.PENDING).count() != 0:
+                raise AssertionError('Some credit items are not pending')
             super(CreditLineItem.QuerySet, self).delete()
 
 class BudgetLineItem(FootprintModel):
