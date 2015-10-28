@@ -2,8 +2,10 @@ from collections import defaultdict
 import datetime
 import logging
 import math
+import pytz
 
 from django.db.models import Min
+from django.conf import settings
 
 import dash.models
 import reports.update
@@ -15,6 +17,11 @@ logger = logging.getLogger(__name__)
 
 # take ET into consideration - server time is in UTC while we query for ET dates
 ADDITIONAL_SYNC_HOURS = 10
+
+
+def _utc_datetime_to_est_date(dt):
+    dt = dt.replace(tzinfo=pytz.utc)
+    return dt.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).date()
 
 
 def _get_dates_to_sync():
@@ -134,7 +141,7 @@ def process_touchpoint_conversions(redirects_impressions):
             potential_touchpoint_conversion = {
                 'zuid': zuid,
                 'slug': slug,
-                'date': impression_ts.date(),
+                'date': _utc_datetime_to_est_date(impression_ts),
                 'conversion_id': impression_id,
                 'conversion_timestamp': impression_ts,
                 'account_id': account_id,
