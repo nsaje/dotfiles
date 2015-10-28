@@ -1064,7 +1064,7 @@ class AdGroupAdsPlusTable(object):
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
         last_success_actions = ad_group_sync.get_latest_success_by_child()
 
-        last_pixel_sync = get_content_ad_stats_with_conversions(
+        last_pixel_sync = get_conversion_pixels_last_sync(
             models.ConversionPixel.objects.filter(account_id=ad_group.campaign.account_id))
         last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
 
