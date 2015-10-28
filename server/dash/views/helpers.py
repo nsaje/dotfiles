@@ -1,7 +1,6 @@
 import datetime
 import dateutil.parser
 import pytz
-import newrelic.agent
 
 from decimal import Decimal
 
@@ -137,7 +136,6 @@ def _get_adgroups_for(modelcls, modelobjects):
     return modelobjects
 
 
-@newrelic.agent.function_trace()
 def get_active_ad_group_sources(modelcls, modelobjects):
     all_demo_qs = modelcls.demo_objects.all()
     demo_objects = filter(lambda x: x in all_demo_qs, modelobjects)
@@ -171,7 +169,16 @@ def get_active_ad_group_sources(modelcls, modelobjects):
     return active_ad_group_sources
 
 
-@newrelic.agent.function_trace()
+def join_last_success_with_pixel_sync(last_success_actions, last_pixel_sync):
+    new_last_success = {}
+    for id_, last_sync_time in last_success_actions.items():
+        if last_sync_time is None or last_pixel_sync is None:
+            new_last_success[id_] = None
+            continue
+        new_last_success[id_] = min(last_sync_time, last_pixel_sync)
+    return new_last_success
+
+
 def get_ad_group_sources_last_change_dt(ad_group_sources, ad_group_sources_settings,
                                         ad_group_sources_states, last_change_dt=None):
     def get_last_change(ad_group_source):
@@ -227,7 +234,6 @@ def _get_keys_in_progress(ad_group_source, waiting_delayed_actions):
     return keys_in_progress
 
 
-@newrelic.agent.function_trace()
 def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
                                        ad_group_sources_settings, ad_group_sources_states):
     notifications = {}
@@ -309,7 +315,6 @@ def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
     return notifications
 
 
-@newrelic.agent.function_trace()
 def get_content_ad_notifications(ad_group):
     actions = actionlog.models.ActionLog.objects.filter(
         state=actionlog.constants.ActionState.WAITING,
@@ -365,13 +370,11 @@ def get_changed_content_ads(ad_group, sources, last_change_dt=None):
     return set(s.content_ad for s in content_ad_sources)
 
 
-@newrelic.agent.function_trace()
 def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
     content_ad_sources = _get_changed_content_ad_sources(ad_group, sources, last_change_dt)
     return content_ad_sources.aggregate(Max('modified_dt'))['modified_dt__max']
 
 
-@newrelic.agent.function_trace()
 def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_sources):
     submission_status = []
     for content_ad_source in content_ad_sources:
@@ -482,8 +485,7 @@ def _get_budget_update_notification(ags, settings, state):
     return None
 
 
-@newrelic.agent.function_trace()
-def get_data_status(objects, last_sync_messages, state_messages=None):
+def get_data_status(objects, last_sync_messages, state_messages=None, last_pixel_sync_message=None):
     data_status = {}
     for obj in objects:
         messages, state_ok = [], True
@@ -491,6 +493,11 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
             messages, state_ok = state_messages[obj.id]
 
         last_sync_message_parts, last_sync_ok = last_sync_messages[obj.id]
+        if last_pixel_sync_message is not None:
+            pixel_sync_message, pixel_sync_ok = last_pixel_sync_message
+            last_sync_ok = last_sync_ok and pixel_sync_ok
+            last_sync_message_parts.append(pixel_sync_message)
+
         if last_sync_ok and state_ok:
             last_sync_message_parts.insert(0, 'All data is OK.')
 
@@ -515,7 +522,6 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
     return data_status
 
 
-@newrelic.agent.function_trace()
 def get_content_ad_data_status(ad_group, content_ads):
     ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
     ad_group_sources_states = get_ad_group_sources_states(ad_group_sources)
@@ -565,7 +571,6 @@ def get_content_ad_data_status(ad_group, content_ads):
     return data_status
 
 
-@newrelic.agent.function_trace()
 def get_last_sync_messages(objects, last_sync_times):
     last_sync_messages = {}
     for obj in objects:
@@ -576,7 +581,7 @@ def get_last_sync_messages(objects, last_sync_times):
             ok = is_sync_recent([last_sync])
 
             last_sync = pytz.utc.localize(last_sync).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE))
-            message_parts.append('Last OK sync was on: <b>{}</b>'.format(last_sync.strftime('%m/%d/%Y %-I:%M %p')))
+            message_parts.append('Last OK sync was on: <b>{}</b>.'.format(last_sync.strftime('%m/%d/%Y %-I:%M %p')))
 
         if hasattr(obj, 'is_archived') and obj.is_archived():
             ok = True
@@ -584,6 +589,19 @@ def get_last_sync_messages(objects, last_sync_times):
         last_sync_messages[obj.id] = message_parts, ok
 
     return last_sync_messages
+
+
+def get_last_pixel_sync_message(last_pixel_sync):
+    ok = False
+    message = 'Last OK conversion pixel sync was on: <b>{}</b>.'
+    if last_pixel_sync is not None:
+        ok = is_sync_recent([last_pixel_sync])
+        last_pixel_sync = pytz.utc.localize(last_pixel_sync).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE))
+        message = message.format(last_pixel_sync.strftime('%m/%d/%Y %-I:%M %p'))
+    else:
+        message = message.format('N/A')
+
+    return message, ok
 
 
 def get_selected_content_ads(
@@ -605,7 +623,6 @@ def get_selected_content_ads(
     return content_ads.order_by('created_dt')
 
 
-@newrelic.agent.function_trace()
 def get_ad_group_sources_state_messages(ad_group_sources, ad_group_settings,
                                         ad_group_sources_settings, ad_group_sources_states):
     sources_messages = {}
