@@ -268,12 +268,12 @@ class ConversionGoalForm(forms.Form):
     )
     conversion_window = forms.TypedChoiceField(
         required=False,
-        choices=[(1, '1 day'), (7, '7 days'), (30, '30 days')],
+        choices=[(24, '1 day'), (168, '7 days'), (720, '30 days')],
         coerce=int,
         empty_value=None,
     )
     goal_id = forms.CharField(
-        required=True,
+        required=False,
         max_length=100,
         error_messages={
             'max_length': 'Conversion goal id is too long (%(show_value)d/%(limit_value)d).',
@@ -290,6 +290,10 @@ class ConversionGoalForm(forms.Form):
         if cleaned_data.get('type') == constants.ConversionGoalType.PIXEL:
             if not cleaned_data.get('conversion_window') and not self.errors.get('conversion_window'):
                 self.add_error('conversion_window', 'This field is required.')
+
+        if cleaned_data.get('type') != constants.ConversionGoalType.GA:
+            if not cleaned_data.get('goal_id') and not self.errors.get('goal_id'):
+                self.add_error('goal_id', 'This field is required.')
 
         try:
             models.ConversionGoal.objects.get(campaign_id=self.campaign_id, name=cleaned_data.get('name'))

@@ -17,6 +17,7 @@ import utils.string_helper
 
 from dash import constants
 from dash import regions
+import reports.constants
 from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
@@ -167,6 +168,13 @@ class Account(models.Model):
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
             new_settings.save(request)
+
+    def get_account_url(self, request):
+        account_settings_url = request.build_absolute_uri(
+            reverse('admin:dash_account_change', args=(self.pk,))
+        )
+        campaign_settings_url = account_settings_url.replace('http://', 'https://')
+        return campaign_settings_url
 
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
@@ -1582,6 +1590,25 @@ class ConversionGoal(models.Model):
 
     class Meta:
         unique_together = (('campaign', 'name'), ('campaign', 'pixel'), ('campaign', 'type', 'goal_id'))
+
+    def get_stats_key(self):
+        # map conversion goal to the key under which they are stored in stats database
+        if self.type == constants.ConversionGoalType.GA:
+            prefix = reports.constants.ReportType.GOOGLE_ANALYTICS
+        elif self.type == constants.ConversionGoalType.OMNITURE:
+            prefix = reports.constants.ReportType.OMNITURE
+        else:
+            raise Exception('Invalid conversion goal type')
+
+        return prefix + '__' + self.goal_id
+
+    def get_view_key(self, conversion_goals):
+        # the key in view is based on the index of the conversion goal compared to others for the same campaign
+        for i, cg in enumerate(sorted(conversion_goals, key=lambda x: x.id)):
+            if cg.id == self.id:
+                return 'conversion_goal_' + str(i + 1)
+
+        raise Exception('Conversion goal not found')
 
 
 class DemoAdGroupRealAdGroup(models.Model):

@@ -111,7 +111,7 @@
         type: 1
         pixel: 1
         name: 'test conversion goal'
-        conversion_window: 7
+        conversion_window: 168
         goal_id: '1'
         created_dt: '2015-09-23T09:58:21'
     model: dash.conversiongoal

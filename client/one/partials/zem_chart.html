@@ -1,15 +1,26 @@
 <div class="chart-container">
     <div class="chart-selector">
-        <select ui-select2="select2Metric1Config" ng-model="metric1" class="metric1">
-            <option ng-repeat="metric in metricOptions" ng-class="{internal: metric.internal}" value="{{ metric.value }}">{{metric.name}}</option>
-        </select>
+        <ui-select theme="select2" search-enabled="false" class="metric1" ng-model="metrics.metric1" ng-change="chartMetric1Update()">
+            <ui-select-match>{{getSelectedName($select.selected)}}</ui-select-match>
+            <ui-select-choices repeat="metric.value as metric in metricOptions | filter:{shown: '!false'}">
+                <span>
+                    <zem-internal-feature ng-if="metric.internal"></zem-internal-feature>
+                    {{metric.name}}
+                </span>
+            </ui-select-choices>
+        </ui-select>
 
         <span class="middle-text">VS.</span>
 
-        <select ui-select2="select2Metric2Config" ng-model="metric2" class="metric2">
-            <option value="none">None</option>
-            <option ng-repeat="metric in metricOptions" ng-class="{internal: metric.internal}" value="{{ metric.value }}">{{metric.name}}</option>
-        </select>
+        <ui-select theme="select2" search-enabled="false" class="metric2" ng-model="metrics.metric2" ng-change="chartMetric2Update()">
+            <ui-select-match>{{getSelectedName($select.selected)}}</ui-select-match>
+            <ui-select-choices repeat="metric.value as metric in metric2Options | filter:{shown: '!false'}">
+                <span>
+                    <zem-internal-feature ng-if="metric.internal"></zem-internal-feature>
+                    {{metric.name}}
+                </span>
+            </ui-select-choices>
+        </ui-select>
     </div>
     <ul class="chart-legend">
         <li ng-repeat="item in legendItems">
@@ -23,3 +34,4 @@
     </ul>
     <div class="no-data" ng-show="!hasData"><span>No data</span></div>
     <div highchart config="config" class="chart"></div>
+</div>

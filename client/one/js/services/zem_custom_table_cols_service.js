@@ -13,8 +13,6 @@ oneApp.factory("zemCustomTableColsService", ['zemLocalStorageService', function(
         } else {
             cols = [];
         }
-        
-        return cols;
     }
 
     function save(namespace, columns) {

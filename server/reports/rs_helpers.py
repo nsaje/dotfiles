@@ -27,6 +27,16 @@ def to_percent(num):
         return num * 100
 
 
+def decimal_to_int_exact(num):
+    '''
+    Converts a decimal.Decimal number to integer.
+    Raises decimal.Inexact if non-zero digits were discarded during rounding.
+    '''
+    if num is None:
+        return num
+    return int(num.to_integral_exact(context=decimal.Context(traps=[decimal.Inexact])))
+
+
 def sum_div(expr, divisor):
     return ('CASE WHEN SUM("{divisor}") <> 0 THEN SUM(CAST("{expr}" AS FLOAT)) / SUM("{divisor}") '
             'ELSE NULL END').format(
@@ -43,9 +53,28 @@ def click_discrepancy(clicks_col, visits_col):
                 visits=visits_col)
 
 
-def sum_agr(expr):
-    return 'SUM("{expr}")'.format(expr=expr)
+def count_agr(field_name):
+    return 'COUNT("{field_name}")'.format(field_name=field_name)
+
+
+def count_distinct_agr(field_name):
+    return 'COUNT(DISTINCT "{field_name}")'.format(field_name=field_name)
+
+
+def sum_agr(field_name):
+    return 'SUM("{field_name}")'.format(field_name=field_name)
+
+
+def sum_expr(expr):
+    return 'SUM({expr})'.format(expr=expr)
 
 
 def is_all_null(field_names):
     return 'CASE WHEN ' + ' AND '.join('MAX("{}") IS NULL'.format(f) for f in field_names) + ' THEN 0 ELSE 1 END'
+
+
+def extract_json_or_null(field_name):
+    return "CASE JSON_EXTRACT_PATH_TEXT({field_name}, %s) WHEN '' "\
+        "THEN '0' ELSE JSON_EXTRACT_PATH_TEXT({field_name}, %s) END".format(
+            field_name=field_name
+        )

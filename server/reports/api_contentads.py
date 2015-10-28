@@ -11,6 +11,7 @@ from reports.db_raw_helpers import extract_obj_ids
 import reports.rs_helpers as rsh
 
 import dash.models
+import dash.constants
 
 logger = logging.getLogger(__name__)
 
@@ -50,13 +51,17 @@ class RSContentAdStatsModel(redshift.RSModel):
         dict(sql='avg_tos',            app='avg_tos',           out=rsh.unchanged,   calc=rsh.sum_div('total_time_on_site', 'visits')),
     ]
 
+    _CONVERSION_GOAL_FIELDS = [
+        dict(sql='conversions', app='conversions', out=rsh.decimal_to_int_exact, calc=rsh.sum_expr(rsh.extract_json_or_null('conversions')), num_json_params=2)
+    ]
+
     _OTHER_AGGREGATIONS = [
         dict(sql='total_time_on_site', app='duration', out=rsh.unchanged),
         dict(sql='has_postclick_metrics', app='has_postclick_metrics', out=rsh.unchanged,
              calc=rsh.is_all_null(['visits', 'pageviews', 'new_visits', 'bounced_visits', 'total_time_on_site']))
     ]
 
-    FIELDS = _BREAKDOWN_FIELDS + _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _OTHER_AGGREGATIONS
+    FIELDS = _BREAKDOWN_FIELDS + _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _CONVERSION_GOAL_FIELDS + _OTHER_AGGREGATIONS
 
     DEFAULT_RETURNED_FIELDS_APP = [f['app'] for f in _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS]
     ALLOWED_BREAKDOWN_FIELDS_APP = set(f['app'] for f in _BREAKDOWN_FIELDS)
@@ -65,15 +70,13 @@ class RSContentAdStatsModel(redshift.RSModel):
 RSContentAdStats = RSContentAdStatsModel()
 
 
-def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, **constraints):
-    # order is ignored here however is necessary in order for this func
-    # signature to be interchangeable with api.py - this can be removed once we
-    # remove old processing pipeline(parser, tables, UI, etc.)
-
+def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, conversion_goals=[], **constraints):
     # TODO: it would be nicer if 'constraints' would be a dict, but we use kwargs to maintain
     # compatibility with reports.api
-
-    constraints = copy.copy(constraints)
+    breakdown = copy.copy(breakdown)
+    conversion_goals = copy.copy(conversion_goals)
+    order = copy.copy(order)
+    conversion_goals = copy.copy(conversion_goals)
 
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
@@ -90,9 +93,13 @@ def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, 
 
     cursor = redshift.get_cursor()
 
+    returned_fields = RSContentAdStats.DEFAULT_RETURNED_FIELDS_APP[:]
+    for label in conversion_goals:
+        returned_fields.append('conversions' + redshift.JSON_KEY_DELIMITER + label)
+
     results = RSContentAdStats.execute_select_query(
         cursor,
-        returned_fields=RSContentAdStats.DEFAULT_RETURNED_FIELDS_APP,
+        returned_fields,
         breakdown_fields=breakdown,
         order_fields=order,
         offset=None,
@@ -102,10 +109,26 @@ def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, 
 
     cursor.close()
 
+    results = _transform_conversions(results)
     if breakdown:
         return results
 
-    return results[0]
+    return results[0] if len(results) else {}
+
+
+def _transform_conversions(rows):
+    results = []
+    for row in rows:
+        new_row = {}
+        for key, val in row.iteritems():
+            if key.startswith('conversions'):
+                _, json_key = redshift.extract_json_key_parts(key)
+                new_row.setdefault('conversions', {})
+                new_row['conversions'][json_key] = val
+                continue
+            new_row[key] = val
+        results.append(new_row)
+    return results
 
 
 def has_complete_postclick_metrics_accounts(start_date, end_date, accounts, sources):

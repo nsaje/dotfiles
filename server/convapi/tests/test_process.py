@@ -33,18 +33,19 @@ class UpdateTouchpointConversionsTestCase(TestCase):
         mock_redirector_helper.fetch_redirects_impressions.return_value = {'abc': [{}, {}]}
 
         dates = [datetime.datetime(2015, 9, 7), datetime.datetime(2015, 9, 8), datetime.datetime(2015, 9, 9)]
-        process.update_touchpoint_conversions(dates)
+        process.update_touchpoint_conversions(dates, [1])
 
-        mock_redirector_helper.fetch_redirects_impressions.assert_has_calls([mock.call(datetime.datetime(2015, 9, 7)),
-                                                                             mock.call(datetime.datetime(2015, 9, 8)),
-                                                                             mock.call(datetime.datetime(2015, 9, 9))])
+        mock_redirector_helper.fetch_redirects_impressions.assert_has_calls(
+            [mock.call(datetime.datetime(2015, 9, 7), 1),
+             mock.call(datetime.datetime(2015, 9, 8), 1),
+             mock.call(datetime.datetime(2015, 9, 9), 1)])
         mock_process_touchpoints_conversions.assert_has_calls([mock.call({'abc': [{}, {}]}),
                                                                mock.call({'abc': [{}, {}]}),
                                                                mock.call({'abc': [{}, {}]})])
         mock_reports_update.update_touchpoint_conversions.assert_has_calls(
-            [mock.call(datetime.datetime(2015, 9, 7), [{}, {}]),
-             mock.call(datetime.datetime(2015, 9, 8), [{}, {}]),
-             mock.call(datetime.datetime(2015, 9, 9), [{}, {}])]
+            [mock.call(datetime.datetime(2015, 9, 7), 1, [{}, {}]),
+             mock.call(datetime.datetime(2015, 9, 8), 1, [{}, {}]),
+             mock.call(datetime.datetime(2015, 9, 9), 1, [{}, {}])]
         )
 
     @mock.patch('convapi.process.update_touchpoint_conversions')
@@ -57,9 +58,12 @@ class UpdateTouchpointConversionsTestCase(TestCase):
 
         process.update_touchpoint_conversions_full()
 
+        conversion_pixels = dash.models.ConversionPixel.objects.all()
+        account_ids = set(cp.account_id for cp in conversion_pixels)
         update_touchpoint_conversions_mock.assert_called_once_with([datetime.date(2015, 9, 8),
                                                                     datetime.date(2015, 9, 9),
-                                                                    datetime.date(2015, 9, 10)])
+                                                                    datetime.date(2015, 9, 10)],
+                                                                   account_ids)
 
     @mock.patch('convapi.process.update_touchpoint_conversions')
     @mock.patch('convapi.process.datetime')
@@ -73,10 +77,13 @@ class UpdateTouchpointConversionsTestCase(TestCase):
 
         process.update_touchpoint_conversions_full()
 
+        conversion_pixels = dash.models.ConversionPixel.objects.all()
+        account_ids = set(cp.account_id for cp in conversion_pixels)
         update_touchpoint_conversions_mock.assert_called_once_with([datetime.date(2015, 9, 7),
                                                                     datetime.date(2015, 9, 8),
                                                                     datetime.date(2015, 9, 9),
-                                                                    datetime.date(2015, 9, 10)])
+                                                                    datetime.date(2015, 9, 10)],
+                                                                   account_ids)
 
 
 class ProcessTouchpointsImpressionsTestCase(TestCase):
@@ -261,7 +268,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': 1,
+                'conversion_lag': 22,
             }
         ]
 
@@ -352,7 +359,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': 1,
+                'conversion_lag': 22,
             }
         ]
 
@@ -443,7 +450,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': 1,
+                'conversion_lag': 22,
             }
         ]
 
@@ -505,6 +512,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
 
         conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
 
+        self.maxDiff = None
         expected = [
             {
                 'zuid': '1234-12345-123456',
@@ -534,7 +542,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': 1,
+                'conversion_lag': 22,
             },
             {
                 'zuid': '1234-12345-123456',
@@ -549,7 +557,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 1,
                 'source_id': 3,
-                'conversion_lag': 1,
+                'conversion_lag': 3,
             },
             {
                 'zuid': '1234-12345-123456',
@@ -564,7 +572,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': 2,
+                'conversion_lag': 24,
             }
         ]
 
@@ -640,7 +648,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'source_id': 5,
                 'content_ad_id': 2,
-                'conversion_lag': 1,
+                'conversion_lag': 22,
             },
             {
                 'zuid': '1234-12345-123456',
@@ -670,7 +678,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'ad_group_id': 1,
                 'content_ad_id': 2,
                 'source_id': 5,
-                'conversion_lag': 2,
+                'conversion_lag': 24,
             }
         ]
 

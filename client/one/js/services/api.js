@@ -163,6 +163,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }
             data.totals = convertRow(data.totals);
             data.dataStatus = data.data_status;
+            data.conversionGoals = data.conversion_goals;
 
             return data;
         }
@@ -240,6 +241,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             data.totals = convertRow(data.totals);
             data.lastChange = data.last_change;
             data.dataStatus = data.data_status;
+            data.conversionGoals = data.conversion_goals;
 
             data.notifications = convertNotifications(data.notifications);
 
@@ -441,6 +443,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                         data.data.notifications = convertNotifications(data.data.notifications);
                         data.data.lastChange = data.data.last_change;
                         data.data.dataStatus = data.data.data_status;
+                        data.data.conversionGoals = data.data.conversion_goals;
                         deferred.resolve(data.data);
                     }
                 }).
@@ -699,7 +702,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             if (metrics) {
                 config.params.metrics = metrics;
             }
-            
+
             if (groupSources) {
                 config.params.sources = groupSources;
             }
@@ -708,18 +711,18 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
             $http.get(url, config).
                 success(function (response, status) {
-                    var chartData, goals;
+                    var chartData, conversionGoals;
                     if (response && response.data && response.data.chart_data) {
                         chartData = response.data.chart_data.map(function (group) {
                             return convertFromApi(group);
                         });
                     }
-                    if (response && response.data && response.data.goals) {
-                        goals = response.data.goals;
+                    if (response && response.data && response.data.conversion_goals) {
+                        conversionGoals = response.data.conversion_goals;
                     }
                     deferred.resolve({
                         chartData: chartData,
-                        goals: goals
+                        conversionGoals: conversionGoals
                     });
                 }).
                 error(function(data, status, headers, config) {
@@ -1734,6 +1737,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 success(function (data, status) {
                     if (data && data.data) {
                         data.data.dataStatus = data.data.data_status;
+                        data.data.conversionGoals = data.data.conversion_goals;
                         deferred.resolve(data.data);
                     }
                 }).
@@ -2316,7 +2320,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 }).
                 error(function (data, status) {
                     var errors = null;
-                    if(data.data.hasOwnProperty('errors') && data.data.errors != null) {
+                    if(data.data && data.data.errors) {
                         errors = convertValidationErrorsFromApi(data.data.errors);
                     }
                     return deferred.reject(errors);

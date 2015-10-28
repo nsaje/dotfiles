@@ -2,16 +2,17 @@ import unicodecsv
 from xlsxwriter import Workbook
 import StringIO
 
+from dash import models
+from dash import stats_helper
+
 import reports.api
 import reports.api_contentads
 import reports.api_helpers
 
 from utils.sort_helper import sort_results
 
-from dash import models
 
-
-def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False, **kwargs):
+def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False, conversion_goals=None, **kwargs):
     ordering = ['date'] if 'date' in dimensions else []
 
     if 'content_ad' in dimensions:
@@ -22,18 +23,21 @@ def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False
             user,
             ordering,
             ignore_diff_rows,
+            conversion_goals,
             **kwargs
         )
 
     if user.has_perm('zemauth.can_see_redshift_postclick_statistics') and 'article' not in dimensions:
-        return reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
+        return stats_helper.get_stats_with_conversions(
+            user,
             start_date,
             end_date,
-            dimensions,
-            ordering,
+            breakdown=dimensions,
+            order=ordering,
             ignore_diff_rows=ignore_diff_rows,
-            **kwargs
-        ), user)
+            conversion_goals=conversion_goals,
+            constraints=kwargs
+        )
 
     return reports.api_helpers.filter_by_permissions(reports.api.query(
         start_date,
@@ -65,16 +69,18 @@ def _get_content_ads(constraints):
     return {c.id: c for c in content_ads}
 
 
-def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows, **constraints):
+def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows, conversion_goals, **constraints):
     content_ads = _get_content_ads(constraints)
 
-    stats = reports.api_helpers.filter_by_permissions(reports.api_contentads.query(
+    stats = stats_helper.get_content_ad_stats_with_conversions(
+        user,
         start_date,
         end_date,
         breakdown=dimensions,
         ignore_diff_rows=ignore_diff_rows,
-        **constraints
-    ), user)
+        conversion_goals=conversion_goals,
+        constraints=constraints
+    )
 
     for stat in stats:
         content_ad = content_ads[stat['content_ad']]
@@ -108,7 +114,7 @@ def get_csv_content(fieldnames, data, title_text=None, start_date=None, end_date
         # Format
         row = {}
         for key in fieldnames:
-            value = item[key]
+            value = item.get(key)
 
             if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr', 'visits', 'pageviews']:
                 value = 0

@@ -32,8 +32,8 @@ var constants = {
         PV_PER_VISIT: 'pv_per_visit',
         AVG_TOS: 'avg_tos',
         CLICK_DISCREPANCY: 'click_discrepancy',
-        CONVERSION_RATE: 'conversion_rate',
-        CONVERSIONS: 'conversions'
+        CONVERSION_GOAL1: 'conversion_goal_1',
+        CONVERSION_GOAL2: 'conversion_goal_2'
     },
     iabCategory: {
         IAB1: "IAB1",
@@ -452,9 +452,9 @@ var constants = {
         3: 'Omniture Event'
     },
     conversionWindowText: {
-        1: '1 day',
-        7: '7 days',
-        30: '30 days'
+        24: '1 day',
+        168: '7 days',
+        720: '30 days'
     },
     entityType: {
         AD_GROUP: 'adGroup',
@@ -482,10 +482,8 @@ var constants = {
         INACTIVE: 2
     }
 };
-
 var options = {
-    adGroupSettingsStates: [
-        {name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
+    adGroupSettingsStates: [{name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
         {name: 'Enabled', value: constants.adGroupSettingsState.ACTIVE}
     ],
     adTargetDevices: [
@@ -510,12 +508,20 @@ var options = {
         {name: 'PV/Visit', value: constants.chartMetric.PV_PER_VISIT},
         {name: 'Avg. ToS', value: constants.chartMetric.AVG_TOS}
     ],
+    adGroupConversionGoalChartMetrics: [
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL1, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL2, shown: false},
+    ],
     campaignChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
         {name: 'Spend', value: constants.chartMetric.COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
+    ],
+    campaignConversionGoalChartMetrics: [
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL1, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL2, shown: false},
     ],
     accountChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
@@ -941,9 +947,9 @@ var options = {
         {name: 'Omniture', value: constants.conversionGoalType.OMNITURE}
     ],
     conversionWindows: [
-        {name: '1 day', value: 1},
-        {name: '7 days', value: 7},
-        {name: '30 days', value: 30}
+        {name: '1 day', value: 24},
+        {name: '7 days', value: 168},
+        {name: '30 days', value: 720}
     ]
 };
 

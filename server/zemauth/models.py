@@ -149,6 +149,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('group_campaign_stop_on_budget_depleted', 'Automatic campaign stop on depleted budget applies to campaigns in this group'),
             ('can_see_publisher_blacklist_status', 'Can see publishers blacklist status'),
             ('can_modify_publisher_blacklist_status', 'Can modify publishers blacklist status'),
+            ('conversion_reports', 'Can see conversions and goals in reports'),
         )
 
     def get_full_name(self):

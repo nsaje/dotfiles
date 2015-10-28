@@ -757,6 +757,22 @@ class UpdateAdGroupSourceSettings(TestCase):
             }
         )
 
+    @mock.patch('dash.api.redirector_helper.insert_adgroup')
+    def test_force_propagate_redirects(self, insert_adgroup_mock):
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+
+        api.order_ad_group_settings_update(models.AdGroup.objects.get(pk=1), adgs1, adgs2, None, redirects_update=True)
+        insert_adgroup_mock.assert_called_with(1, '', True, False, '')
+
+    @mock.patch('dash.api.redirector_helper.insert_adgroup')
+    def test_no_propagation_if_no_force_propagate_redirects(self, insert_adgroup_mock):
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+
+        api.order_ad_group_settings_update(models.AdGroup.objects.get(pk=1), adgs1, adgs2, None, redirects_update=False)
+        self.assertFalse(insert_adgroup_mock.called)
+
 
 class UpdateAdGroupSourceState(TestCase):
     fixtures = ['test_api.yaml']

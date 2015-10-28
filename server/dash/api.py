@@ -413,7 +413,8 @@ def update_content_ad_source_state(content_ad_source, data):
     content_ad_source.save()
 
 
-def order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=True, iab_update=False):
+def order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=True,
+                                   iab_update=False, redirects_update=False):
     changes = current_settings.get_setting_changes(new_settings)
 
     campaign_settings = ad_group.campaign.get_current_settings()
@@ -421,6 +422,10 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     # update is called - this should be moved to adgroup settings
     if iab_update:
         changes['iab_category'] = campaign_settings.iab_category
+
+    if redirects_update:
+        # TODO: temporary hack to force ad group insertion into redirector
+        changes['tracking_code'] = new_settings.get_tracking_codes()
 
     if not changes:
         return []

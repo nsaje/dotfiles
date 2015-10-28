@@ -110,10 +110,11 @@ class RedshiftTest(TestCase):
         mock_get_cursor.return_value = mock_cursor
 
         date = datetime.date(2015, 1, 1)
-        redshift.delete_touchpoint_conversions(date)
+        account_id = 1
+        redshift.delete_touchpoint_conversions(date, account_id)
 
-        query = 'DELETE FROM touchpointconversions WHERE date = %s'
-        params = ['2015-01-01']
+        query = 'DELETE FROM touchpointconversions WHERE date = %s AND account_id = %s'
+        params = ['2015-01-01', account_id]
 
         mock_cursor.execute.assert_called_with(query, params)
 
@@ -145,7 +146,7 @@ class RedshiftTestRSModel(TestCase):
         source_id = 2
         TestModel().execute_delete(mock_cursor, {'date__eq': date, 'ad_group__eq': 4, 'exchange__eq': 'abc'})
 
-        query = 'DELETE FROM "test_table" WHERE adgroup_id=%s AND date=%s AND exchange=%s'
+        query = 'DELETE FROM "test_table" WHERE (adgroup_id=%s AND date=%s AND exchange=%s)'
         params =  [4, datetime.date(2015, 1, 2), 'abc']
 
         mock_cursor.execute.assert_called_with(query, params)
@@ -180,7 +181,35 @@ class RedshiftTestRSModel(TestCase):
                                             ])
 
     def test_constraints_to_tuples_str(self):
-        constraint_str, params = TestModel().constraints_to_str({"exchange": ["ab", "cd"], "date": datetime.date(2015, 1,2)})
-        self.assertEqual(constraint_str, "date=%s AND exchange IN (%s,%s)")
+        constraint_str, params = redshift.RSQ(**{"exchange": ["ab", "cd"], "date": datetime.date(2015, 1,2)}).expand(TestModel())
+        self.assertEqual(constraint_str, "(date=%s AND exchange IN (%s,%s))")
         self.assertEqual(params, [datetime.date(2015, 1, 2), 'ab', 'cd'])
 
+
+class RedshiftRSQTestCase(TestCase):
+
+    def test_dict_only(self):
+        constraints = {'date__lte': datetime.date(2015, 9, 30), 'ad_group': 1}
+        constraint_str, params = redshift.RSQ(**constraints).expand(TestModel())
+        self.assertEqual(constraint_str, '(adgroup_id=%s AND "date"<=%s)')
+        self.assertEqual(params, [1, datetime.date(2015, 9, 30)])
+
+    def test_and(self):
+        constraint_str, params = (redshift.RSQ(ad_group=1) & redshift.RSQ(date__lte=datetime.date(2015, 9, 30))).expand(TestModel())
+        self.assertEqual(constraint_str, '((adgroup_id=%s) AND ("date"<=%s))')
+        self.assertEqual(params, [1, datetime.date(2015, 9, 30)])
+
+    def test_or(self):
+        constraint_str, params = (redshift.RSQ(ad_group=1) | redshift.RSQ(date__lte=datetime.date(2015, 9, 30))).expand(TestModel())
+        self.assertEqual(constraint_str, '((adgroup_id=%s) OR ("date"<=%s))')
+        self.assertEqual(params, [1, datetime.date(2015, 9, 30)])
+
+    def test_negation(self):
+        constraint_str, params = (~redshift.RSQ(ad_group=1)).expand(TestModel())
+        self.assertEqual(constraint_str, 'NOT (adgroup_id=%s)')
+        self.assertEqual(params, [1])
+
+    def test_dict_with_rsq(self):
+        constraint_str, params = redshift.RSQ(redshift.RSQ(date=datetime.date(2015, 9, 30)) | redshift.RSQ(ad_group=1), exchange='adiant').expand(TestModel())
+        self.assertEqual(constraint_str, '(((date=%s) OR (adgroup_id=%s)) AND exchange=%s)')
+        self.assertEqual(params, [datetime.date(2015, 9, 30), 1, 'adiant'])

@@ -10,7 +10,7 @@
           <li ng-repeat="col in cat.columns | filter:filterColumns">
             <div class="checkbox">
               <label>
-                <input type="checkbox" ng-model="col.checked">
+                <input type="checkbox" ng-model="col.checked" ng-change="columnUpdated(col)">
                 <zem-internal-feature ng-if="col.internal">
                 </zem-internal-feature>
                 {{ col.name }}
@@ -23,7 +23,7 @@
         <li ng-repeat="col in columns | filter:filterColumns">
           <div class="checkbox">
             <label>
-              <input type="checkbox" ng-model="col.checked">
+              <input type="checkbox" ng-model="col.checked" ng-change="columnUpdated(col)">
               <zem-internal-feature ng-if="col.internal">
               </zem-internal-feature>
               {{ col.name }}

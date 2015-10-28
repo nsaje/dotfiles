@@ -148,6 +148,9 @@ class CampaignAdGroupsExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export', 'campaigns_ad_groups_export_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
+        conversion_goals = []
+        if request.user.has_perm('zemauth.conversion_reports'):
+            conversion_goals = campaign.conversiongoal_set.all()
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
@@ -167,6 +170,7 @@ class CampaignAdGroupsExport(ExportApiView):
             start_date,
             end_date,
             request.user,
+            conversion_goals=conversion_goals,
             campaign=campaign,
             source=filtered_sources,
         )
@@ -177,6 +181,7 @@ class CampaignAdGroupsExport(ExportApiView):
                 start_date,
                 end_date,
                 request.user,
+                conversion_goals=conversion_goals,
                 campaign=campaign,
                 source=filtered_sources,
             )
@@ -193,6 +198,9 @@ class CampaignAdGroupsExport(ExportApiView):
                 {'key': 'impressions', 'name': 'Impressions', 'width': 15},
                 {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
             ]
+
+            for conversion_goal in conversion_goals:
+                columns.append({'key': conversion_goal.get_view_key(conversion_goals), 'name': conversion_goal.name})
 
             detailed_columns = list(columns)  # make a copy
             detailed_columns.insert(1, {'key': 'ad_group', 'name': 'Ad Group', 'width': 30})
@@ -218,6 +226,7 @@ class CampaignAdGroupsExport(ExportApiView):
                     start_date,
                     end_date,
                     request.user,
+                    conversion_goals=conversion_goals,
                     campaign=campaign
                 )
 
@@ -247,6 +256,9 @@ class CampaignAdGroupsExport(ExportApiView):
                 ('impressions', 'Impressions'),
                 ('ctr', 'CTR')
             ])
+
+            for conversion_goal in conversion_goals:
+                fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
 
             content = export.get_csv_content(fieldnames, data)
             return self.create_csv_response(filename_format.format(
@@ -487,6 +499,9 @@ class AdGroupAdsPlusExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        conversion_goals = []
+        if request.user.has_perm('zemauth.conversion_reports'):
+            conversion_goals = ad_group.campaign.conversiongoal_set.all()
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
@@ -504,48 +519,56 @@ class AdGroupAdsPlusExport(ExportApiView):
         if report_type == 'day-excel':
             return self.create_by_day_excel(
                 filename, start_date, end_date,
-                request.user, ad_group, filtered_sources
+                request.user, ad_group, filtered_sources,
+                conversion_goals
             )
         elif report_type == 'day-csv':
             return self.create_by_day_csv(
                 filename, start_date, end_date,
-                request.user, ad_group, filtered_sources
+                request.user, ad_group, filtered_sources,
+                conversion_goals
             )
         elif report_type == 'content-ad-excel':
             return self.create_by_content_ad_excel(
                 filename, start_date, end_date,
-                request.user, ad_group, filtered_sources
+                request.user, ad_group, filtered_sources,
+                conversion_goals
             )
         elif report_type == 'content-ad-csv':
             return self.create_by_content_ad_csv(
                 filename, start_date, end_date,
-                request.user, ad_group, filtered_sources
+                request.user, ad_group, filtered_sources,
+                conversion_goals
             )
 
         raise Exception("Invalid report type")
 
-    def create_by_day_csv(self, filename, start_date, end_date, user, ad_group, sources):
+    def create_by_day_csv(self, filename, start_date, end_date, user, ad_group, sources, conversion_goals):
         ads_results = export.generate_rows(
             ['date', 'content_ad'],
             start_date,
             end_date,
             user,
             ignore_diff_rows=True,
+            conversion_goals=conversion_goals,
             ad_group=ad_group,
             source=sources
         )
 
         fieldnames = self._copy_csv_columns(self.common_csv_columns_w_date, user)
+        self._add_csv_conversion_goal_columns(fieldnames, conversion_goals)
+
         content = export.get_csv_content(fieldnames, ads_results)
         return self.create_csv_response(filename, content=content)
 
-    def create_by_day_excel(self, filename, start_date, end_date, user, ad_group, sources):
+    def create_by_day_excel(self, filename, start_date, end_date, user, ad_group, sources, conversion_goals):
         ads_results = export.generate_rows(
             ['date', 'content_ad'],
             start_date,
             end_date,
             user,
             ignore_diff_rows=True,
+            conversion_goals=conversion_goals,
             ad_group=ad_group,
             source=sources
         )
@@ -555,6 +578,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             end_date,
             user,
             ignore_diff_rows=True,
+            conversion_goals=conversion_goals,
             ad_group=ad_group,
             source=sources
         )
@@ -562,6 +586,8 @@ class AdGroupAdsPlusExport(ExportApiView):
         self.add_source_data(sources_results)
 
         ads_columns = self._copy_excel_columns(self.common_excel_columns_w_date, user)
+        self._add_excel_conversion_goal_columns(ads_columns, conversion_goals)
+
         sources_columns = list(ads_columns)  # make a shallow copy
         sources_columns.insert(5, {'key': 'source', 'name': 'Source', 'width': 20})
 
@@ -572,13 +598,14 @@ class AdGroupAdsPlusExport(ExportApiView):
 
         return self.create_excel_response(filename, content=content)
 
-    def create_by_content_ad_excel(self, filename, start_date, end_date, user, ad_group, sources):
+    def create_by_content_ad_excel(self, filename, start_date, end_date, user, ad_group, sources, conversion_goals):
         ads_results = export.generate_rows(
             ['content_ad'],
             start_date,
             end_date,
             user,
             ignore_diff_rows=True,
+            conversion_goals=conversion_goals,
             ad_group=ad_group,
             source=sources
         )
@@ -588,6 +615,7 @@ class AdGroupAdsPlusExport(ExportApiView):
             end_date,
             user,
             ignore_diff_rows=True,
+            conversion_goals=conversion_goals,
             ad_group=ad_group,
             source=sources
         )
@@ -595,6 +623,8 @@ class AdGroupAdsPlusExport(ExportApiView):
         self.add_source_data(sources_results)
 
         ads_columns = self._copy_excel_columns(self.common_excel_columns, user)
+        self._add_excel_conversion_goal_columns(ads_columns, conversion_goals)
+
         sources_columns = list(ads_columns)  # make a shallow copy
         sources_columns.insert(4, {'key': 'source', 'name': 'Source', 'width': 20})
 
@@ -604,17 +634,19 @@ class AdGroupAdsPlusExport(ExportApiView):
         ])
         return self.create_excel_response(filename, content=content)
 
-    def create_by_content_ad_csv(self, filename, start_date, end_date, user, ad_group, sources):
+    def create_by_content_ad_csv(self, filename, start_date, end_date, user, ad_group, sources, conversion_goals):
         ads_results = export.generate_rows(
             ['content_ad'],
             start_date,
             end_date,
             user,
             ignore_diff_rows=True,
+            conversion_goals=conversion_goals,
             ad_group=ad_group,
             source=sources
         )
         fieldnames = self._copy_csv_columns(self.common_csv_columns, user)
+        self._add_csv_conversion_goal_columns(fieldnames, conversion_goals)
         content = export.get_csv_content(fieldnames, ads_results)
         return self.create_csv_response(filename, content=content)
 
@@ -644,6 +676,14 @@ class AdGroupAdsPlusExport(ExportApiView):
             columns_copy[key] = col[1]
         return columns_copy
 
+    def _add_excel_conversion_goal_columns(self, columns, conversion_goals):
+        for conversion_goal in conversion_goals:
+            columns.append({'key': conversion_goal.get_view_key(conversion_goals), 'name': conversion_goal.name})
+
+    def _add_csv_conversion_goal_columns(self, columns, conversion_goals):
+        for conversion_goal in conversion_goals:
+            columns[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
+
     def add_source_data(self, results):
         sources = {source.id: source for source in models.Source.objects.all()}
 
@@ -655,6 +695,9 @@ class AdGroupSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export', 'ad_group_sources_export_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        conversion_goals = []
+        if request.user.has_perm('zemauth.conversion_reports'):
+            conversion_goals = ad_group.campaign.conversiongoal_set.all()
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
@@ -673,6 +716,7 @@ class AdGroupSourcesExport(ExportApiView):
             start_date,
             end_date,
             request.user,
+            conversion_goals=conversion_goals,
             ad_group=ad_group,
             source=filtered_sources,
         )
@@ -690,6 +734,11 @@ class AdGroupSourcesExport(ExportApiView):
                 {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
             ]
 
+            for conversion_goal in conversion_goals:
+                date_source_columns.append(
+                    {'key': conversion_goal.get_view_key(conversion_goals), 'name': conversion_goal.name}
+                )
+
             sheets_data = [('Per Source Report', date_source_columns, date_source_results)]
 
             date_results = export.generate_rows(
@@ -697,6 +746,7 @@ class AdGroupSourcesExport(ExportApiView):
                 start_date,
                 end_date,
                 request.user,
+                conversion_goals=conversion_goals,
                 ad_group=ad_group,
                 source=filtered_sources,
             )
@@ -718,6 +768,9 @@ class AdGroupSourcesExport(ExportApiView):
                 ('impressions', 'Impressions'),
                 ('ctr', 'CTR')
             ])
+
+            for conversion_goal in conversion_goals:
+                fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
 
             content = export.get_csv_content(fieldnames, date_source_results)
             return self.create_csv_response(filename, content=content)

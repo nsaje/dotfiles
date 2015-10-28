@@ -58,6 +58,7 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
             all_content_ad_sources = []
             num_errors = 0
 
+            logger.info('Inserting uploaded content ads for batch %s %s', batch.pk, batch.name)
             for row, cleaned_data, errors in results:
                 if not errors:
                     content_ad, content_ad_sources = _create_objects(
@@ -83,6 +84,7 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
                 # raise exception to rollback transaction
                 raise UploadFailedException()
 
+            logger.info('Submitting uploaded content ads for batch %s %s', batch.pk, batch.name)
             actions = api.submit_content_ads(all_content_ad_sources, request)
 
             batch.status = constants.UploadBatchStatus.DONE
@@ -102,6 +104,7 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
         batch.save()
         return
 
+    logger.info('Sending uploaded content ads for batch %s %s', batch.pk, batch.name)
     actionlog.zwei_actions.send(actions)
 
 

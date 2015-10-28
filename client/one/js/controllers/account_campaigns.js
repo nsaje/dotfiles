@@ -1,5 +1,5 @@
 /*globals oneApp,constants,moment*/
-oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($window, $location, $scope, $state, $timeout, $q, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
+oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($window, $location, $scope, $state, $timeout, $q, api, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -15,8 +15,9 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     $scope.totalRow = null;
     $scope.order = '-cost';
     $scope.isIncompletePostclickMetrics = false;
+    $scope.localStoragePrefix = 'accountCampaigns';
 
-    var userSettings = zemUserSettings.getInstance($scope, 'accountCampaigns'),
+    var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix),
         canShowAddCampaignTutorial = $q.defer();
 
     $scope.showAddCampaignTutorial = function () {
@@ -266,8 +267,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
                         } else {
                             $state.go('main.campaigns.settings', {id: campaignData.id});
                         }
-                        
-
                     }
                 });
             },
@@ -297,15 +296,21 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             return option.value;
         });
 
+        // always query for default metrics
+        var metrics = [constants.chartMetric.CLICKS, constants.chartMetric.IMPRESSIONS];
         if (values.indexOf($scope.chartMetric1) === -1) {
             $scope.chartMetric1 = constants.chartMetric.CLICKS;
+        } else {
+            metrics.push($scope.chartMetric1);
         }
 
         if ($scope.chartMetric2 !== 'none' && values.indexOf($scope.chartMetric2) === -1) {
             $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+        } else {
+            metrics.push($scope.chartMetric2);
         }
 
-        return [$scope.chartMetric1, $scope.chartMetric2];
+        return metrics;
     };
 
     var setChartOptions = function () {
@@ -450,8 +455,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     };
 
     var initColumns = function () {
-        var cols;
-
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
             $scope.columns.length - 2,
@@ -465,22 +468,15 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
         );
-
-        cols = zemCustomTableColsService.load('accountCampaigns', $scope.columns);
-        $scope.selectedColumnsCount = cols.length;
-
-        $scope.$watch('columns', function (newValue, oldValue) {
-            cols = zemCustomTableColsService.save('accountCampaigns', newValue);
-            $scope.selectedColumnsCount = cols.length;
-        }, true);
     };
 
     $scope.init = function() {
         var campaignIds = $location.search().campaign_ids;
         var campaignTotals = $location.search().campaign_totals;
 
-        userSettings.register('chartMetric1');
-        userSettings.register('chartMetric2');
+        $scope.chartMetric1 = zemUserSettings.resetUrlAndGetValue('chartMetric1', $scope.localStoragePrefix);
+        $scope.chartMetric2 = zemUserSettings.resetUrlAndGetValue('chartMetric2', $scope.localStoragePrefix);
+
         userSettings.register('order');
         userSettings.registerGlobal('chartHidden');
 

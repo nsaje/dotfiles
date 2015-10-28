@@ -44,7 +44,7 @@ class AdGroupSettingsTest(TestCase):
         self.client.login(username=user.email, password='secret')
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put_update_settings(self, mock_log_useraction, mock_actionlog_api,
+    def test_put(self, mock_log_useraction, mock_actionlog_api,
                                  mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
 
@@ -56,6 +56,7 @@ class AdGroupSettingsTest(TestCase):
         mock_manager.attach_mock(mock_order_ad_group_settings_update, 'mock_order_ad_group_settings_update')
 
         old_settings = ad_group.get_current_settings()
+        self.assertIsNotNone(old_settings.pk)
 
         response = self.client.put(
             reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
@@ -100,16 +101,51 @@ class AdGroupSettingsTest(TestCase):
         # end date is in the past.
         mock_manager.assert_has_calls([
             call.mock_order_ad_group_settings_update(
-                ad_group, old_settings, new_settings, ANY, send=False),
+                ad_group, old_settings, new_settings, ANY, send=False, redirects_update=False),
             ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
             call.mock_actionlog_api.init_enable_ad_group(ad_group, ANY, order=ANY, send=False)
         ])
         mock_log_useraction.assert_called_with(
             response.wsgi_request, constants.UserActionType.SET_AD_GROUP_SETTINGS, ad_group=ad_group)
 
+    def test_put_without_non_propagated_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+        old_settings = ad_group.get_current_settings()
+
+        self.assertIsNotNone(old_settings.pk)
+
+        self.settings_dict['settings']['cpc_cc'] = None
+        self.settings_dict['settings']['daily_budget_cc'] = None
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_settings_dict = json.loads(response.content)['data']['settings']
+
+        self.assertEqual(response_settings_dict['cpc_cc'], '')
+        self.assertEqual(response_settings_dict['daily_budget_cc'], '')
+
+        new_settings = ad_group.get_current_settings()
+
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        # can it actually be saved to the db
+        new_settings.save(request)
+
+        self.assertEqual(new_settings.cpc_cc, None)
+        self.assertEqual(new_settings.daily_budget_cc, None)
+
+        mock_order_ad_group_settings_update.assert_called_with(
+            ad_group, old_settings, new_settings, ANY, send=False, redirects_update=False)
+
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put_create_settings(self, mock_log_useraction, mock_actionlog_api,
-                                 mock_order_ad_group_settings_update):
+    def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
+                                           mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=10)
 
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
@@ -152,68 +188,27 @@ class AdGroupSettingsTest(TestCase):
         new_settings = ad_group.get_current_settings()
         self.assertIsNotNone(new_settings.pk)
 
-        self.assertFalse(mock_actionlog_api.init_enable_ad_group.called)
-        self.assertFalse(mock_order_ad_group_settings_update.called)
+        self.assertTrue(mock_actionlog_api.init_enable_ad_group.called)
 
-        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
-        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
-        self.assertEqual(default_sources_settings.count(), 2)
-        self.assertEqual(ad_group_sources.count(), 1)
+        # uses 'ANY' instead of 'current_settings' because before settings are created, the
+        # 'get_current_settings' returns a new AdGroupSettings instance each time
+        mock_order_ad_group_settings_update.assert_called_with(
+            ad_group, ANY, new_settings, response.wsgi_request, send=False, redirects_update=True)
 
-        for ad_group_source in ad_group_sources:
-            default_settings = models.DefaultSourceSettings.objects.get(source=ad_group_source.source)
-            # only one settings per ad group source should exist
-            ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
+        # when saving settings, previous ad_group.name gets added to previous settings
+        # - and the only time it makes a real difference is the first time the settings are
+        # saved
+        current_settings.ad_group_name = 'test adgroup 10'
 
-            # one settings created ad group source save, the second should be our defaults
-            self.assertEqual(ad_group_source_settings.count(), 2)
-
-            ad_group_source_settings = ad_group_source_settings.latest()
-
-            self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
-            # the settings are desktop only
-            self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.default_cpc_cc)
-
-            # auto_add enabled source was added
-            self.assertTrue(default_settings)
+        self.assertDictEqual(
+            mock_order_ad_group_settings_update.call_args[0][1].get_settings_dict(),
+            current_settings.get_settings_dict()
+        )
 
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
-            constants.UserActionType.SET_AD_GROUP_SETTINGS_WITH_AUTO_ADD_MEDIA_SOURCES,
+            constants.UserActionType.SET_AD_GROUP_SETTINGS,
             ad_group=ad_group)
-
-    def test_put_without_non_propagated_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
-        old_settings = ad_group.get_current_settings()
-
-        self.settings_dict['settings']['cpc_cc'] = None
-        self.settings_dict['settings']['daily_budget_cc'] = None
-
-        response = self.client.put(
-            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True
-        )
-
-        response_settings_dict = json.loads(response.content)['data']['settings']
-
-        self.assertEqual(response_settings_dict['cpc_cc'], '')
-        self.assertEqual(response_settings_dict['daily_budget_cc'], '')
-
-        new_settings = ad_group.get_current_settings()
-
-        request = HttpRequest()
-        request.user = User(id=1)
-
-        # can it actually be saved to the db
-        new_settings.save(request)
-
-        self.assertEqual(new_settings.cpc_cc, None)
-        self.assertEqual(new_settings.daily_budget_cc, None)
-
-        mock_order_ad_group_settings_update.assert_called_with(
-            ad_group, old_settings, new_settings, ANY, send=False)
 
     def test_put_tracking_codes_with_permission(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -845,7 +840,7 @@ class CampaignConversionGoalsTestCase(TestCase):
                     'id': 1,
                     'type': 1,
                     'name': 'test conversion goal',
-                    'conversion_window': 7,
+                    'conversion_window': 168,
                     'goal_id': '1',
                     'pixel': {
                         'id': 1,
@@ -923,7 +918,7 @@ class CampaignConversionGoalsTestCase(TestCase):
                     'id': 1,
                     'type': 1,
                     'name': 'test conversion goal',
-                    'conversion_window': 7,
+                    'conversion_window': 168,
                     'goal_id': '1',
                     'pixel': {
                         'id': 1,
@@ -1164,7 +1159,7 @@ class CampaignConversionGoalsTestCase(TestCase):
                 'name': 'conversion pixel',
                 'type': 1,
                 'goal_id': '98765',
-                'conversion_window': 7,
+                'conversion_window': 168,
             }),
             content_type='application/json',
             follow=True,
@@ -1179,7 +1174,7 @@ class CampaignConversionGoalsTestCase(TestCase):
             'name': 'conversion pixel',
             'type': 1,
             'goal_id': '1',
-            'conversion_window': 7,
+            'conversion_window': 168,
         }
 
         response = self.client.post(
@@ -1210,7 +1205,7 @@ class CampaignConversionGoalsTestCase(TestCase):
             json.dumps({
                 'name': 'conversion goal',
                 'type': 1,
-                'conversion_window': 7,
+                'conversion_window': 168,
                 'goal_id': '1'
             }),
             content_type='application/json',
@@ -1223,7 +1218,7 @@ class CampaignConversionGoalsTestCase(TestCase):
             json.dumps({
                 'name': 'conversion goal 2',
                 'type': 1,
-                'conversion_window': 7,
+                'conversion_window': 168,
                 'goal_id': '1'
             }),
             content_type='application/json',
@@ -1242,7 +1237,7 @@ class CampaignConversionGoalsTestCase(TestCase):
                 'name': 'conversion pixel',
                 'type': 1,
                 'goal_id': '1',
-                'conversion_window': 7,
+                'conversion_window': 168,
             }),
             content_type='application/json',
             follow=True,
@@ -1255,7 +1250,7 @@ class CampaignConversionGoalsTestCase(TestCase):
                 'name': 'conversion pixel',
                 'type': 1,
                 'goal_id': '1',
-                'conversion_window': 7,
+                'conversion_window': 168,
             }),
             content_type='application/json',
             follow=True,

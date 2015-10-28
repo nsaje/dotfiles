@@ -6,16 +6,16 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
         restrict: 'E',
         scope: {
             data: '=zemData',
-            metric1: '=zemMetric1',
             metricOptions: '=zemMetricOptions',
-            goalMetrics: '=zemGoalMetrics',
+            metric1: '=zemMetric1',
             metric2: '=zemMetric2',
             minDate: '=zemMinDate',
             maxDate: '=zemMaxDate',
-            onRemove: '&zemOnRemove'
+            onRemove: '&zemOnRemove',
+            localStoragePrefix: '=localStoragePrefix'
         },
         templateUrl: '/partials/zem_chart.html',
-        controller: ['$scope', '$element', '$attrs', '$http', function ($scope, $element, $attrs, $http) {
+        controller: ['$scope', '$element', '$attrs', '$http', 'zemUserSettings', function ($scope, $element, $attrs, $http, zemUserSettings) {
             var totalsColor = ['#009db2', '#c9eaef'];
             var colors = [
                 ['#d35400', '#eebe9e'],
@@ -26,30 +26,71 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             var commonYAxisMetricIds = ['clicks', 'visits', 'pageviews'];
 
             var usedColors = {};
-            var format = function (object) {
-                var span = angular.element(document.createElement('span')).text(object.text);
-                if (!angular.element(object.element).hasClass('internal')) {
-                    return span;
-                }
 
-                var internal = $compile(angular.element(document.createElement('zem-internal-feature')))($scope);
-                return internal.add(span);
-            };
+            function getMetric2Options (metricOptions) {
+                // add (default) option to disable second metric
+                return $.merge([{'value': 'none', 'name': 'None'}], metricOptions);
+            }
 
             $scope.hasData = true;
             $scope.legendItems = [];
             $scope.appConfig = config;
 
-            $scope.select2Metric1Config = {
-                minimumResultsForSearch: -1,
-                dropdownCssClass: 'metric1',
-                formatResult: format
+            $scope.metric2Options = getMetric2Options($scope.metricOptions);
+            $scope.metrics = {
+                metric1: $scope.metric1,
+                metric2: $scope.metric2
             };
 
-            $scope.select2Metric2Config = {
-                minimumResultsForSearch: -1,
-                dropdownCssClass: 'metric2',
-                formatResult: format
+            $scope.$watch('metrics.metric1', function(newValue) {
+                // we use $scope.metrics because ui-select doesn't work well with
+                // simple variables on scope as ng-model, it is recommended to use a
+                // property on an object on scope
+                // (https://github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
+                $scope.metric1 = newValue;
+            }, true);
+
+            $scope.$watch('metrics.metric2', function(newValue) {
+                // we use $scope.metrics because ui-select doesn't work well with
+                // simple variables on scope as ng-model, it is recommended to use a
+                // property on an object on scope
+                // (https://github.com/angular-ui/ui-select/wiki/FAQs#ng-model-not-working-with-a-simple-variable-on-scope)
+                $scope.metric2 = newValue;
+            }, true);
+
+            $scope.$watch('metric1', function(newValue) {
+                $scope.metrics.metric1 = newValue;
+            }, true);
+
+            $scope.$watch('metric2', function(newValue) {
+                $scope.metrics.metric2 = newValue;
+            }, true);
+
+            $scope.$watch('metricOptions', function(newValue) {
+                $scope.metric2Options = getMetric2Options($scope.metricOptions);
+            }, true);
+
+            $scope.getSelectedName = function(selected) {
+                // Returns the name of the selected item. ui-select doesn't update the name correctly when choices change
+                // so the right name is returned here.
+                if (!selected) {
+                    return '';
+                }
+
+                for (var i = 0; i < $scope.metric2Options.length; i++) {
+                    if ($scope.metric2Options[i].value === selected.value) {
+                        return $scope.metric2Options[i].name;
+                    }
+                }
+                return '';
+            };
+
+            $scope.chartMetric1Update = function () {
+                zemUserSettings.setValue('chartMetric1', $scope.metrics.metric1, $scope.localStoragePrefix);
+            };
+
+            $scope.chartMetric2Update = function () {
+                zemUserSettings.setValue('chartMetric2', $scope.metrics.metric2, $scope.localStoragePrefix);
             };
 
             $scope.config = {
@@ -189,7 +230,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                         });
                     });
                 });
-            
+
                 // HACK: we need this in order to force the chart to display
                 // x axis with value 0 on the bottom of the graph if there is
                 // no data to be displayed (or is always 0).
@@ -213,7 +254,6 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             metricFormats[constants.chartMetric.CPC] = {'type': 'currency', 'fractionSize': 3};
             metricFormats[constants.chartMetric.COST] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.CTR] = {'type': 'percent', 'fractionSize': 2};
-            metricFormats[constants.chartMetric.CONVERSION_RATE] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.NEW_USERS] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.BOUNCE_RATE] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.PV_PER_VISIT] = {'fractionSize': 2};
@@ -232,13 +272,12 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             };
 
             var getPointFormat = function (metricId) {
-                var format = null;    
+                var format = null;
                 var valueSuffix = '';
                 var valuePrefix = '';
                 var fractionSize = 0;
-                
-                metricId = getGoalMetricType(metricId);
-                format = metricFormats[metricId];    
+
+                format = metricFormats[metricId];
 
                 if (format !== undefined) {
                     fractionSize = format.fractionSize;
@@ -255,29 +294,12 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 return valuePrefix + '{point.y:,.' + fractionSize + 'f}' + valueSuffix;
             };
 
-            var getGoalMetricType = function (metricId) {
-                // check if metric is custom goal metric,
-                // if it is, return its type
-                var goal = null;
-
-                if ($scope.goalMetrics) {
-                    goal = $scope.goalMetrics[metricId]; 
-                    if (goal !== undefined) {
-                        return goal.type;
-                    }
-                }
-
-                return metricId;
-            };
-
             var setAxisFormats = function (metricIds) {
                 var format = null;
                 var axisFormat = null;
 
                 metricIds.forEach(function (metricId, index) {
-                    metricId = getGoalMetricType(metricId);
-
-                    format = metricFormats[metricId];    
+                    format = metricFormats[metricId];
                     axisFormat = null;
 
                     if (format !== undefined) {
@@ -289,7 +311,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                             axisFormat = '{value}s';
                         }
                     }
-                    
+
                     $scope.config.options.yAxis[index].labels = {
                         format: axisFormat
                     };
@@ -366,7 +388,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 } else {
                     $scope.legendItems.push(legendItem);
                 }
-            }
+            };
         }]
     };
 }]);

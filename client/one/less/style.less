@@ -215,7 +215,7 @@ a:visited {
     color: #2fa8c7;
     .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
 
-    &:not(.disabled) {
+    &:not(.disabled):not([disabled]) {
         &:hover {
             border-color: #2488a1;
             color: #2488a1;
@@ -273,6 +273,13 @@ a:visited {
 .btn[disabled] {
     opacity: 0.3;
     cursor: default;
+    color: #d9d9d9;
+    pointer-events: auto;
+}
+
+.btn[disabled]:hover {
+    color: #d9d9d9;
+    border-color: #d9d9d9;
 }
 
 .dropdown-menu {
@@ -763,11 +770,6 @@ div[datepicker] {
         margin-right: 2px;
         .border-radius(2px);
     }
-}
-
-/* chart metric select */
-.select2-drop.metric2 {
-    border: 1px solid @default-color;
 }
 
 .select2-container {
@@ -2429,6 +2431,12 @@ div[datepicker] {
             padding-left: 15px;
             padding-bottom: 12px;
 
+            .row {
+                .row-link {
+                    margin-left: 15px;
+                }
+            }
+
             .small {
                 font-size: 12px;
                 font-weight: 400;
@@ -2808,11 +2816,13 @@ zem-submission-status {
 .ui-select-container {
     cursor: pointer;
 
-    .ui-select-dropdown {
+    &.form-control .ui-select-dropdown {
         /* parent element has border (1px) so dropdown needs positioning) */
         left: -1px;
         width: calc(~"100% + 2px");
+    }
 
+    .ui-select-dropdown {
         .ui-select-highlight {
             font-weight: normal;
             text-decoration: underline;

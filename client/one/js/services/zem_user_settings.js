@@ -38,6 +38,11 @@ oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', functi
         return value;
     }
 
+    function resetUrlAndGetValue(name, namespace, isArray) {
+        removeFromUrl(name);
+        return getValue(name, namespace, isArray);
+    }
+
     function addToUrl(key, value, isArray) {
         if (isArray && value && value.length > 0) {
             value = value.join(',');
@@ -96,6 +101,7 @@ oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', functi
             return new UserSettings($scope, namespace);
         },
         getValue: getValue,
+        resetUrlAndGetValue: resetUrlAndGetValue,
         setValue: setValue
     };
 }]);
