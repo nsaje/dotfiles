@@ -1168,6 +1168,16 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             action=actionlog.constants.Action.SET_CAMPAIGN_STATE
         )
         self.assertEqual(1, publisher_blacklist_action.count())
+        self.assertDictEqual(
+            {
+                u"publisher_blacklist": {
+                    u"state": 2,
+                    u"blacklist": [{
+                        u"exchange": u"b1_adiant",
+                        u"domain": u"zemanta.com"
+                        }]
+                }
+            }, publisher_blacklist_action.first().payload['args']['conf'])
         self.assertTrue(res['success'])
 
     @patch('reports.redshift.get_cursor')
@@ -1187,7 +1197,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         start_date = datetime.datetime.utcnow()
         end_date = start_date + datetime.timedelta(days=31)
         payload = {
-            "state": constants.PublisherStatus.BLACKLISTED,
+            "state": constants.PublisherStatus.ENABLED,
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "select_all": True,
@@ -1199,4 +1209,15 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             action=actionlog.constants.Action.SET_CAMPAIGN_STATE
         )
         self.assertEqual(1, publisher_blacklist_action.count())
+        self.assertDictEqual(
+            {
+                u"publisher_blacklist": {
+                    u"state": 1,
+                    u"blacklist": [{
+                        u"exchange": u"b1_adiant",
+                        u"domain": u"zemanta.com"
+                        }]
+                }
+            }, publisher_blacklist_action.first().payload['args']['conf'])
+
         self.assertTrue(res['success'])
