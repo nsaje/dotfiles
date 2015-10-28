@@ -482,7 +482,7 @@ class SourcesTable(object):
         yesterday_cost, yesterday_total_cost = level_sources_table.get_yesterday_cost()
 
         operational_sources = [source.id for source in sources.filter(maintenance=False, deprecated=False)]
-        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(last_success_actions, last_pixel_sync)
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
         last_success_actions_operational = [v for k, v in last_success_actions_joined.iteritems() if k in operational_sources]
         last_sync = helpers.get_last_sync(last_success_actions_operational)
 
@@ -770,7 +770,7 @@ class AccountsAccountsTable(object):
         last_pixel_sync = models.ConversionPixel.objects.\
             extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
                   order_by=['-last_sync_null', 'last_sync_dt'])[0].last_sync_dt
-        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(last_success_actions, last_pixel_sync)
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
 
         last_sync_joined = helpers.get_last_sync(last_success_actions_joined.values())
 
@@ -1068,7 +1068,7 @@ class AdGroupAdsPlusTable(object):
         last_pixel_sync = models.ConversionPixel.objects.filter(account_id=ad_group.campaign.account_id).\
             extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
                   order_by=['-last_sync_null', 'last_sync_dt'])[0].last_sync_dt
-        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(last_success_actions, last_pixel_sync)
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
 
         last_sync = helpers.get_last_sync(last_success_actions_joined.values())
 
@@ -1261,7 +1261,7 @@ class CampaignAdGroupsTable(object):
         last_pixel_sync = models.ConversionPixel.objects.filter(account_id=campaign.account_id).\
             extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
                   order_by=['-last_sync_null', 'last_sync_dt'])[0].last_sync_dt
-        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(last_success_actions, last_pixel_sync)
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
 
         last_sync = helpers.get_last_sync(last_success_actions_joined.values())
 
@@ -1425,7 +1425,7 @@ class AccountCampaignsTable(object):
         last_pixel_sync = models.ConversionPixel.objects.filter(account_id=account.id).\
             extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
                   order_by=['-last_sync_null', 'last_sync_dt'])[0].last_sync_dt
-        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(last_success_actions, last_pixel_sync)
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
 
         last_sync = helpers.get_last_sync(last_success_actions_joined.values())
 

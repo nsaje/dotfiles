@@ -169,14 +169,17 @@ def get_active_ad_group_sources(modelcls, modelobjects):
     return active_ad_group_sources
 
 
-def join_last_success_with_pixel_sync(last_success_actions, last_pixel_sync):
-    new_last_success = {}
+def join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync):
+    if not user.has_perm('zemauth.conversion_reports'):
+        return last_success_actions
+
+    last_success_actions_joined = {}
     for id_, last_sync_time in last_success_actions.items():
         if last_sync_time is None or last_pixel_sync is None:
-            new_last_success[id_] = None
+            last_success_actions_joined[id_] = None
             continue
-        new_last_success[id_] = min(last_sync_time, last_pixel_sync)
-    return new_last_success
+        last_success_actions_joined[id_] = min(last_sync_time, last_pixel_sync)
+    return last_success_actions_joined
 
 
 def get_ad_group_sources_last_change_dt(ad_group_sources, ad_group_sources_settings,
