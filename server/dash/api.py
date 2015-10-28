@@ -606,26 +606,26 @@ def create_ad_group_publisher_blacklist_actions(ad_group, request, state, publis
     order = actionlog.models.ActionLogOrder.objects.create(
         order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
     )
-
     actions = []
-
     ad_group_sources = ad_group.adgroupsource_set.all()
+
     for ad_group_source in ad_group_sources:
         if not ad_group_source.source.can_modify_publisher_blacklist_automatically():
             continue
         publisher_source = [publisher for publisher in publisher_blacklist_list
-            if publisher.source.id == ad_group_source.source.id
+            if publisher['tracking_slug'] == ad_group_source.source.tracking_slug
         ]
-
-        actions.append(
+        if publisher_source == []:
+            continue
+        actions.extend(
             actionlog.api.set_ad_group_source_settings(
                 {
                     'publisher_blacklist': {
                         'state': state,
                         'blacklist': map(lambda pub:
                             {
-                                'domain': pub.name,
-                                'exchange': pub.source.tracking_slug
+                                'domain': pub['domain'],
+                                'exchange': pub['tracking_slug'],
                             }, publisher_source),
                     }
                 },

@@ -1085,7 +1085,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 count=count_failed_publisher,
                 slug=','.join(failed_publisher_mappings))
             )
-
         publisher_blacklist = [
             {
                 'domain': dom,

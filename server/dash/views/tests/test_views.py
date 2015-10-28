@@ -4,7 +4,7 @@ import json
 from mock import patch
 import datetime
 
-from django.test import TestCase, Client
+from django.test import TestCase, Client, TransactionTestCase
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -16,6 +16,8 @@ from dash import constants
 from dash import api
 
 from reports import redshift
+
+import actionlog.models
 
 
 class UserTest(TestCase):
@@ -1109,28 +1111,46 @@ class SharethroughApprovalTest(TestCase):
         mock_update.assert_called_with(cas, {'state': cas.state}, request=None, send=True)
 
 
-class PublishersBlacklistStatusTest(TestCase):
-    fixtures = ['test_views.yaml']
+class PublishersBlacklistStatusTest(TransactionTestCase):
+    fixtures = ['test_api.yaml', 'test_models.yaml']
 
     def setUp(self):
         redshift.STATS_DB_NAME = 'default'
+        for s in models.SourceType.objects.all():
+            if s.available_actions == None:
+                s.available_actions = []
+            s.available_actions.append(constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC )
+            s.save()
+
 
     def _post_publisher_blacklist(self, ad_group_id, data):
-        username = User.objects.get(pk=1).email
+        username = User.objects.get(pk=3).email
         self.client.login(username=username, password='secret')
         reversed_url = reverse(
                 'ad_group_publishers_blacklist',
                 kwargs={'ad_group_id': ad_group_id})
-        return json.loads(self.client.post(
+        response = self.client.post(
             reversed_url,
             data=json.dumps(data),
             content_type='application/json',
             HTTP_X_REQUESTED_WITH='XMLHttpRequest',
             follow=True
-        ).content)
+        )
+        return json.loads(response.content)
 
     @patch('reports.redshift.get_cursor')
     def test_post_blacklist(self, cursor):
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'ctr': 0.0,
+            'exchange': 'adiant',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
         start_date = datetime.datetime.utcnow()
         end_date = start_date + datetime.timedelta(days=31)
         payload = {
@@ -1142,10 +1162,28 @@ class PublishersBlacklistStatusTest(TestCase):
             "publishers_not_selected": []
         }
         res = self._post_publisher_blacklist(1, payload)
+
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+        )
+        self.assertEqual(1, publisher_blacklist_action.count())
         self.assertTrue(res['success'])
 
     @patch('reports.redshift.get_cursor')
     def test_post_enable(self, cursor):
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'ctr': 0.0,
+            'exchange': 'adiant',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+
         start_date = datetime.datetime.utcnow()
         end_date = start_date + datetime.timedelta(days=31)
         payload = {
@@ -1156,5 +1194,9 @@ class PublishersBlacklistStatusTest(TestCase):
             "publishers_selected":[],
             "publishers_not_selected":[]
         }
-        res = self._post_publisher_blacklist(1, payload)
+        res = self._post_publisher_blacklist('1', payload)
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+        )
+        self.assertEqual(1, publisher_blacklist_action.count())
         self.assertTrue(res['success'])
