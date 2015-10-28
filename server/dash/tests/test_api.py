@@ -350,7 +350,7 @@ class UpdateAdGroupSourceSettings(TestCase):
     def test_target_regions_automatic_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC,
         )
         ad_group_source.source.source_type.available_actions.append(
             constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
@@ -379,7 +379,7 @@ class UpdateAdGroupSourceSettings(TestCase):
             constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
         )
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         )
         ad_group_source.source.source_type.save()
 
@@ -422,7 +422,7 @@ class UpdateAdGroupSourceSettings(TestCase):
     def test_target_regions_manual_country_and_automatic_dma_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC
         )
         ad_group_source.source.source_type.save()
 
@@ -447,7 +447,7 @@ class UpdateAdGroupSourceSettings(TestCase):
     def test_target_regions_manual_country_and_manual_dma_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         )
         ad_group_source.source.source_type.save()
 
@@ -474,7 +474,7 @@ class UpdateAdGroupSourceSettings(TestCase):
     def test_target_regions_manual_dma_targeting_cleared(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         )
         ad_group_source.source.source_type.save()
 
@@ -501,7 +501,7 @@ class UpdateAdGroupSourceSettings(TestCase):
     def test_target_regions_manual_dma_manual_country_target_worldwide(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         )
         ad_group_source.source.source_type.save()
 
@@ -529,7 +529,7 @@ class UpdateAdGroupSourceSettings(TestCase):
     def test_target_regions_automatic_dma_manual_country_target_worldwide(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC
         )
         ad_group_source.source.source_type.save()
 
@@ -1856,7 +1856,7 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
         self._setup_ad_group(ad_group_source, ['GB', '693'], [
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL,
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL,
             constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
         ])
 
@@ -1875,7 +1875,7 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
             ad_group_source,
             ['GB', '693'],
             [
-                constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+                constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC,
                 constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             ])
 
@@ -1909,7 +1909,7 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
             ad_group_source,
             ['GB'],
             [
-                constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+                constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC,
                 constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             ])
 

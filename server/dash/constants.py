@@ -920,9 +920,9 @@ class SourceAction(ConstantBase):
     UPDATE_TRACKING_CODES_ON_CONTENT_ADS = 12
     CAN_UPDATE_DAILY_BUDGET_MANUAL = 13
     CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL = 14
-    CAN_MODIFY_DMA_TARGETING_AUTOMATIC = 15
+    CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC = 15
     CAN_MODIFY_COUNTRY_TARGETING = 16
-    CAN_MODIFY_DMA_TARGETING_MANUAL = 17
+    CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL = 17
     CAN_FETCH_REPORT_BY_PUBLISHER = 18
 
     _VALUES = {
@@ -934,8 +934,8 @@ class SourceAction(ConstantBase):
         CAN_MODIFY_START_DATE: 'Can modify start date',
         CAN_MODIFY_END_DATE: 'Can modify end date',
         CAN_MODIFY_DEVICE_TARGETING: 'Can modify device targeting',
-        CAN_MODIFY_DMA_TARGETING_AUTOMATIC: 'Can modify DMA targeting automatically',
-        CAN_MODIFY_DMA_TARGETING_MANUAL: 'Can modify DMA targeting manually',
+        CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC: 'Can modify DMA and subdivision targeting automatically',
+        CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL: 'Can modify DMA and subdivision targeting manually',
         CAN_MODIFY_COUNTRY_TARGETING: 'Can modify targeting by country',
         CAN_MODIFY_TRACKING_CODES: 'Can modify tracking codes',
         CAN_MODIFY_AD_GROUP_NAME: 'Can modify adgroup name',
@@ -1074,3 +1074,9 @@ class RegionType(ConstantBase):
     COUNTRY = 1
     SUBDIVISION = 2
     DMA = 3
+
+    _VALUES = {
+        COUNTRY: 'Country',
+        SUBDIVISION: 'Subdivision',
+        DMA: 'DMA'
+    }

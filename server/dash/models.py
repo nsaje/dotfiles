@@ -595,9 +595,9 @@ class SourceType(models.Model):
         elif region_type == constants.RegionType.COUNTRY:
             return constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING in self.available_actions
         elif region_type == constants.RegionType.SUBDIVISION:
-            return constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC in self.available_actions
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC in self.available_actions
         elif region_type == constants.RegionType.DMA:
-            return constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC in self.available_actions
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC in self.available_actions
 
     def can_modify_targeting_for_region_type_manually(self, region_type):
         # Assume automatic targeting support implies manual targeting support
@@ -608,9 +608,9 @@ class SourceType(models.Model):
         elif self.available_actions is None:
             return False
         elif region_type == constants.RegionType.SUBDIVISION:
-            return constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL in self.available_actions
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL in self.available_actions
         elif region_type == constants.RegionType.DMA:
-            return constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL in self.available_actions
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL in self.available_actions
 
     def can_modify_tracking_codes(self):
         return self.available_actions is not None and\

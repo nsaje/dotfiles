@@ -318,7 +318,7 @@ class CreateCampaignManualActionsTest(TestCase):
             ad_group_source,
             ['GB', '693'],
             [
-                dash.constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL,
+                dash.constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL,
                 dash.constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             ])
 

@@ -266,13 +266,13 @@ class AdGroupSettingsTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=1)
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC
         )
         ad_group_source.source.source_type.save()
 
         ad_group_source = models.AdGroupSource.objects.get(id=2)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         )
         ad_group_source.source.source_type.save()
 
