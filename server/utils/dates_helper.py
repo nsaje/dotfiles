@@ -1,10 +1,12 @@
 import pytz
 import datetime
 
+from django.conf import settings
+
 def utc_today():
     now = datetime.datetime.utcnow()
-    return now.date() 
+    return now.date()
 
-def est_today():
+def local_today():
     now = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
-    return now.astimezone(pytz.timezone('EST')).date()
+    return now.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).date()

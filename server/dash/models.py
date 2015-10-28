@@ -1714,7 +1714,7 @@ class CreditLineItem(FootprintModel):
 
     def is_active(self, date=None):
         if date is None:
-            date = dates_helper.est_today()
+            date = dates_helper.local_today()
         return self.status == constants.CreditLineItem.SIGNED and \
             (self.start_date <= date <= self.end_date)
 
@@ -1792,7 +1792,7 @@ class CreditLineItem(FootprintModel):
     class QuerySet(models.QuerySet):
         def filter_active(self, date=None):
             if date is None:
-                date = dates_helper.est_today()
+                date = dates_helper.local_today()
             return self.filter(
                 start_date__lte=date,
                 end_date__gte=date,
@@ -1834,7 +1834,7 @@ class BudgetLineItem(FootprintModel):
 
     def state(self, date=None):
         if date is None:
-            date = dates_helper.est_today()
+            date = dates_helper.local_today()
         if self.end_date and self.end_date < date:
             return constants.BudgetLineItemState.INACTIVE
         if self.start_date and self.start_date <= date:
