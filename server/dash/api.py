@@ -112,9 +112,8 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
        can_modify_selected_target_regions_manually(source, ad_group_settings):
         new_field_value = _get_manual_action_target_regions_value(
             ad_group_source,
-            ad_group_settings.target_regions,
-            ad_group_settings.targets_region_type(constants.RegionType.COUNTRY),
-            ad_group_settings.targets_region_type(constants.RegionType.DMA)
+            None,
+            ad_group_settings
         )
 
         actionlog.api.init_set_ad_group_manual_property(
@@ -540,9 +539,8 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
 
                     new_field_value = _get_manual_action_target_regions_value(
                         ad_group_source,
-                        new_field_value,
-                        current_settings.targets_region_type(constants.RegionType.COUNTRY) or new_settings.targets_region_type(constants.RegionType.COUNTRY),
-                        current_settings.targets_region_type(constants.RegionType.DMA) or new_settings.targets_region_type(constants.RegionType.DMA),
+                        current_settings,
+                        new_settings
                     )
 
                 actionlog.api.init_set_ad_group_manual_property(
@@ -555,20 +553,28 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     return actions
 
 
-def _get_manual_action_target_regions_value(ad_group_source, new_target_regions,
-                                            did_countries_change, did_dmas_change):
+def _get_manual_action_target_regions_value(ad_group_source, current_settings, new_settings):
+    new_country_targeting = new_settings.get_targets_for_region_type(constants.RegionType.COUNTRY)
+    new_subdivision_targeting = new_settings.get_target_names_for_region_type(constants.RegionType.SUBDIVISION)
+    new_dma_targeting = new_settings.get_target_names_for_region_type(constants.RegionType.DMA)
 
-    new_country_targeting = [tr for tr in new_target_regions if tr in regions.COUNTRY_BY_CODE]
-    new_dma_targeting = [regions.DMA_BY_CODE[tr] for tr in new_target_regions if tr in regions.DMA_BY_CODE]
-
-    if not new_country_targeting and not new_dma_targeting:
-        new_country_targeting = 'cleared' if new_dma_targeting else 'Worldwide'
+    # default to worldwide
+    if not new_country_targeting and not new_subdivision_targeting and not new_dma_targeting:
+        new_country_targeting = 'Worldwide'
 
     new_field_value = {
         'countries': new_country_targeting
     }
 
-    if did_dmas_change:
+    if new_subdivision_targeting or\
+       (current_settings is not None and current_settings.targets_region_type(constants.RegionType.SUBDIVISION)):
+        if not new_subdivision_targeting:
+            new_subdivision_targeting = 'cleared (no subdivision targeting)'
+
+        new_field_value['subdivision'] = new_subdivision_targeting
+
+    if new_dma_targeting or\
+       (current_settings is not None and current_settings.targets_region_type(constants.RegionType.DMA)):
         if not new_dma_targeting:
             new_dma_targeting = 'cleared (no DMA targeting)'
 

@@ -1134,13 +1134,28 @@ class AdGroupSettings(SettingsBase):
         dt += datetime.timedelta(days=1)
         return dt
 
-    def targets_region_type(self, region_type):
+    def _get_list_for_region_type(self, region_type):
         if region_type == constants.RegionType.COUNTRY:
-            return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions) if self.target_regions else False
+            return regions.COUNTRY_BY_CODE
         elif region_type == constants.RegionType.SUBDIVISION:
-            return any(tr in regions.SUBDIVISION_BY_CODE for tr in self.target_regions) if self.target_regions else False
+            return regions.SUBDIVISION_BY_CODE
         elif region_type == constants.RegionType.DMA:
-            return any(tr in regions.DMA_BY_CODE for tr in self.target_regions) if self.target_regions else False
+            return regions.DMA_BY_CODE
+
+    def targets_region_type(self, region_type):
+        regions = self._get_list_for_region_type(region_type)
+
+        return any(target_region in regions for target_region in self.target_regions) if self.target_regions else False
+
+    def get_targets_for_region_type(self, region_type):
+        regions = self._get_list_for_region_type(region_type)
+
+        return [target_region for target_region in self.target_regions if target_region in regions] if self.target_regions else []
+
+    def get_target_names_for_region_type(self, region_type):
+        regions = self._get_list_for_region_type(region_type)
+
+        return [regions[target_region] for target_region in self.target_regions if target_region in regions] if self.target_regions else []
 
     def is_mobile_only(self):
         return self.target_devices and len(self.target_devices) == 1 and constants.AdTargetDevice.MOBILE in self.target_devices
