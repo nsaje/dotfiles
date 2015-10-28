@@ -18,7 +18,6 @@ from utils import email_helper
 from dash import exc
 from dash import models
 from dash import constants
-from dash import regions
 from dash import consistency
 
 import utils.url_helper
