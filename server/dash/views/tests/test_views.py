@@ -951,7 +951,7 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
         response = self._get_status()
         self.assertEqual(response, {
             'status': constants.UploadBatchStatus.IN_PROGRESS,
-            'step': 'Processing imported file',
+            'step': 'Processing imported file (step 1/3)',
             'count': 55,
             'all': 100
         })
@@ -963,7 +963,7 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
         response = self._get_status()
         self.assertEqual(response, {
             'status': constants.UploadBatchStatus.IN_PROGRESS,
-            'step': 'Inserting content ads',
+            'step': 'Inserting content ads (step 2/3)',
             'count': 55,
             'all': 100
         })
@@ -975,7 +975,7 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
         response = self._get_status()
         self.assertEqual(response, {
             'status': constants.UploadBatchStatus.IN_PROGRESS,
-            'step': 'Sending to external sources',
+            'step': 'Sending to external sources (step 3/3)',
             'count': 0,
             'all': 0
         })
