@@ -570,7 +570,7 @@ def _get_manual_action_target_regions_value(ad_group_source, current_settings, n
         if not new_subdivision_targeting:
             new_subdivision_targeting = 'cleared (no subdivision targeting)'
 
-        new_field_value['subdivision'] = new_subdivision_targeting
+        new_field_value['subdivisions'] = new_subdivision_targeting
 
     if new_dma_targeting or\
        (current_settings is not None and current_settings.targets_region_type(constants.RegionType.DMA)):
@@ -874,16 +874,13 @@ def can_modify_selected_target_regions_automatically(source, *settings):
 def can_modify_selected_target_regions_manually(source, *settings):
     region_types = _get_region_types(settings)
 
-    return ((constants.RegionType.DMA in region_types and source.can_modify_targeting_for_region_type_manually(constants.RegionType.DMA)) or
-            (constants.RegionType.COUNTRY in region_types and not source.can_modify_targeting_for_region_type_automatically(constants.RegionType.COUNTRY)))
-
-''' # check for each region_type found if the source supports manual modification
+    # check for each region_type found if the source supports manual modification
     for region_type in region_types:
         if not source.can_modify_targeting_for_region_type_manually(region_type):
             return False
 
     return True
-'''
+
 
 def _get_region_types(settings):
     region_types = []

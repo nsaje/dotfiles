@@ -600,6 +600,9 @@ class SourceType(models.Model):
             return constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC in self.available_actions
 
     def can_modify_targeting_for_region_type_manually(self, region_type):
+        # Assume automatic targeting support implies manual targeting support
+        if self.can_modify_targeting_for_region_type_automatically(region_type):
+            return True
         if region_type == constants.RegionType.COUNTRY:
             return True
         elif self.available_actions is None:
