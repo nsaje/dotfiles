@@ -3,7 +3,7 @@ import datetime
 import mock
 
 from django.conf import settings
-from django.test import TestCase, override_settings
+from django.test import TestCase, TransactionTestCase, override_settings
 from django.http.request import HttpRequest
 
 import actionlog.constants
