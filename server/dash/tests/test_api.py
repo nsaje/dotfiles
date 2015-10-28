@@ -8,7 +8,6 @@ from django.http.request import HttpRequest
 
 import actionlog.constants
 import actionlog.models
-import actionlog.api
 
 from dash import models
 from dash import api
@@ -109,6 +108,7 @@ class UpdateContentAdSourceState(TestCase):
         content_ad_source = models.ContentAdSource.objects.get(pk=1)
         self.assertEqual(content_ad_source.source_state, data['source_state'])
         self.assertEqual(content_ad_source.submission_status, data['submission_status'])
+
 
 class IgnorePendingContentAdSourceSubmissionWhenLocalStatusIsRejected(TestCase):
 
