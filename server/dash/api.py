@@ -11,6 +11,7 @@ import actionlog.api
 import actionlog.api_contentads
 import actionlog.models
 import actionlog.constants
+import dash.models
 import utils.exc
 from utils import redirector_helper
 from utils import email_helper
@@ -88,26 +89,23 @@ def update_ad_group_source_state(ad_group_source, conf):
             if key == 'daily_budget_cc':
                 new_state.daily_budget_cc = val
             if key == 'publisher_blacklist':
-                ad_group_cache = {}
                 source_cache = {}
                 blacklist_list = []
                 for pub_blacklist in val['blacklist']:
-                    ad_group_id = pub_blacklist['ad_group_id']
-                    if ad_group_id not in ad_group_cache:
-                        ad_group_cache[ad_group_id] =\
-                            models.AdGroup.objects.get(pk=ad_group_id)
-
-                    source_slug = pub_blacklist['tracking_slug']
+                    ad_group = ad_group_source.ad_group
+                    source_slug = pub_blacklist['exchange']
                     if source_slug not in source_cache:
                         source_cache[source_slug] =\
-                            models.Source.objects.get(tracking_slug=source_slug)
+                            models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
 
+                    if not source_cache[source_slug]:
+                        raise Exception('Invalid tracking slug {}'.format(source_slug or ''))
 
                     # store blacklisted publishers and push to other sources
                     blacklist_list.append(
                         models.PublisherBlacklist(
                             name=pub_blacklist['domain'],
-                            ad_group=ad_group_cache[ad_group_id],
+                            ad_group=ad_group,
                             source=source_cache[source_slug]
                         )
                     )

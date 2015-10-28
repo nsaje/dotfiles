@@ -10,6 +10,8 @@ import actionlog.constants
 import actionlog.models
 import actionlog.api
 
+import dash.models
+
 from dash import models
 from dash import api
 from dash import constants
@@ -890,6 +892,23 @@ class UpdateAdGroupSourceState(TestCase):
         self.assertEqual(new_latest_state.state, conf['state'])
         self.assertEqual(new_latest_state.cpc_cc, latest_state.cpc_cc)
         self.assertEqual(new_latest_state.daily_budget_cc, latest_state.daily_budget_cc)
+
+    def test_update_publisher_blaklist(self):
+        conf = {
+            'publisher_blacklist': {
+                'state': 2,
+                'blacklist': [{
+                    'domain': 'zemanta.com',
+                    'exchange': 'adiant'
+                },
+                {
+                    'domain': 'test1.com',
+                    'exchange': 'sharethrough',
+                }]
+            }
+        }
+        api.update_ad_group_source_state(self.ad_group_source, conf)
+        self.assertEqual(2, dash.models.PublisherBlacklist.objects.all().count())
 
 
 class AdGroupSourceSettingsWriterTest(TestCase):
