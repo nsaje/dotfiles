@@ -908,7 +908,17 @@ class UpdateAdGroupSourceState(TestCase):
             }
         }
         api.update_ad_group_source_state(self.ad_group_source, conf)
-        self.assertEqual(2, dash.models.PublisherBlacklist.objects.all().count())
+        allblacklist = dash.models.PublisherBlacklist.objects.all()
+        self.assertEqual(2, allblacklist.count())
+
+        first_blacklist = allblacklist[0]
+        self.assertEqual(self.ad_group_source.ad_group.id, first_blacklist.ad_group.id)
+        self.assertEqual('zemanta.com', first_blacklist.name)
+        self.assertEqual('b1_adiant', first_blacklist.source.tracking_slug)
+
+        second_blacklist = allblacklist[1]
+        self.assertEqual(self.ad_group_source.ad_group.id, second_blacklist.ad_group.id)
+        self.assertEqual('b1_sharethrough', second_blacklist.source.tracking_slug)
 
 
 class AdGroupSourceSettingsWriterTest(TestCase):
