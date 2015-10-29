@@ -64,8 +64,6 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
             if ordering in ['name', '-name']:
                 ordering = ('-' if ordering[0] == '-' else '') + 'source'
 
-        print stat, 'lalala'
-        print 'lol'
         if 'content_ad' in dimensions:
             content_ad = models.ContentAd.objects.get(id=stat['content_ad'])
             stat['ad_group'] = content_ad.ad_group.name

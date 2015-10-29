@@ -105,10 +105,6 @@ urlpatterns += patterns(
         name='ad_group_publishers_table'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
-        login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
-    ),
-    url(
         r'^api/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))/(?P<id_>\d+)/export/allowed/',
         login_required(dash.views.export.ExportAllowed.as_view())
     ),
@@ -117,20 +113,12 @@ urlpatterns += patterns(
         login_required(dash.views.export.SourcesExportAllowed.as_view())
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/allowed/',
-        login_required(dash.views.export.CampaignAdGroupsExportAllowed.as_view())
-    ),
-    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/',
         login_required(dash.views.export.CampaignAdGroupsExport.as_view())
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/campaigns/export/',
         login_required(dash.views.export.AccountCampaignsExport.as_view())
-    ),
-    url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/',
-        login_required(dash.views.export.AdGroupAdsExport.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/export/',
