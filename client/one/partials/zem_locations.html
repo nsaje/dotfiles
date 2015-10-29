@@ -25,7 +25,7 @@
     <optgroup label="DMAs (United States)">
         <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isDMA" value="{{location.code}}">US: {{location.name}}</option>
     </optgroup>
-    <optgroup label="U.S. States">
+    <optgroup label="U.S. States" ng-if="hasPermission('zemauth.can_set_subdivision_targeting')">
         <option ng-repeat="location in regions.regions | orderBy:'name' | filter: regions.isUSState" value="{{location.code}}">{{location.name}}</option>
     </optgroup>
 </select>

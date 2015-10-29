@@ -5,7 +5,8 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
     return {
         restrict: 'E',
         scope: {
-            selectedLocationCodes: '=zemSelectedLocationCodes'
+            selectedLocationCodes: '=zemSelectedLocationCodes',
+            hasPermission: '=zemHasPermission'
         },
         templateUrl: '/partials/zem_locations.html',
         controller: ['$scope', '$compile', '$element', '$attrs', '$http', 'api', function ($scope, $compile, $element, $attrs, $http, api) {
@@ -60,7 +61,10 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
             $scope.selectorConfig = {
                 allowClear: true,
                 placeholder: 'Search',
-                formatInputTooShort: 'Search for Countries, DMA Codes or U.S. States<br />Ex.: "United States", "501 New York, NY", "Alabama"...',
+                formatInputTooShort:
+                    $scope.hasPermission('zemauth.can_set_subdivision_targeting') ?
+                        'Search for Countries, DMA Codes or U.S. States<br />Ex.: "United States", "501 New York, NY", "Alabama"...' :
+                        'Search for Countries or DMA Codes<br />Ex.: "United States", "501 New York, NY"...',
                 minimumInputLength: 2,
                 formatNoMatches: 'no matches found',
                 dropdownAutoWidth: 'true',
