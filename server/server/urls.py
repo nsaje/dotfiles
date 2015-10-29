@@ -105,6 +105,11 @@ urlpatterns += patterns(
         name='ad_group_publishers_table'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/blacklist/',
+        login_required(dash.views.views.PublishersBlacklistStatus.as_view()),
+        name='ad_group_publishers_blacklist'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
         login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
     ),

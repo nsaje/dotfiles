@@ -684,6 +684,10 @@ class SourceType(models.Model):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_FETCH_REPORT_BY_PUBLISHER in self.available_actions
 
+    def can_modify_publisher_blacklist_automatically(self):
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC in self.available_actions
+
     def __str__(self):
         return self.type
 
@@ -781,6 +785,9 @@ class Source(models.Model):
 
     def can_fetch_report_by_publisher(self):
         return self.source_type.can_fetch_report_by_publisher()
+
+    def can_modify_publisher_blacklist_automatically(self):
+        return self.source_type.can_modify_publisher_blacklist_automatically() and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
@@ -1657,8 +1664,13 @@ class ConversionGoal(models.Model):
 
         return prefix + '__' + self.goal_id
 
-    def get_view_key(self):
-        return 'conversion_goal_' + str(self.id)
+    def get_view_key(self, conversion_goals):
+        # the key in view is based on the index of the conversion goal compared to others for the same campaign
+        for i, cg in enumerate(sorted(conversion_goals, key=lambda x: x.id)):
+            if cg.id == self.id:
+                return 'conversion_goal_' + str(i + 1)
+
+        raise Exception('Conversion goal not found')
 
 
 class DemoAdGroupRealAdGroup(models.Model):
@@ -1686,6 +1698,17 @@ class UserActionLog(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True,
                                    blank=True)
 
+
+class PublisherBlacklist(models.Model):
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=127, blank=False, null=False)
+    ad_group = models.ForeignKey(AdGroup, null=False, related_name='ad_group', on_delete=models.PROTECT)
+    source = models.ForeignKey(Source, null=False, on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = (('name', 'ad_group', 'source'), )
+    
 
 class CreditLineItem(FootprintModel):
     account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT)
@@ -1900,3 +1923,4 @@ class CreditHistory(HistoryModel):
 
 class BudgetHistory(HistoryModel):
     budget = models.ForeignKey(BudgetLineItem, related_name='history')
+

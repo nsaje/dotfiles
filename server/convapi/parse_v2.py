@@ -30,12 +30,10 @@ Z11Z_RE = re.compile('.*z1([0-9]+)([a-zA-Z].+?)1z.*')
 LANDING_PAGE_CAID_RE = re.compile('^[0-9]+')
 LANDING_PAGE_MSID_RE = re.compile('^[_a-zA-Z0-9]+')
 
-HARRYS_FIELD_KEYWORDS = ["conversion rate", "transactions", "revenue"]
-GOAL_FIELD_KEYWORDS = ["conversions", "completions", "value"] + HARRYS_FIELD_KEYWORDS
+HARRYS_FIELD_KEYWORDS = ["transactions"]
+GOAL_FIELD_KEYWORDS = ["completions"] + HARRYS_FIELD_KEYWORDS
 
-GOAL_CONVERSION_KEYWORDS = ['completions', 'transactions']
-GOAL_VALUE_KEWORDS = ['value', 'revenue']
-GOAL_RATE_KEYWORDS = ['conversion rate']
+DEFAULT_GOAL_NAME = ''
 
 
 def _report_atoi(raw_str):
@@ -113,14 +111,9 @@ class GaReportRow(ReportRow):
         self.bounced_visits += ga_report_row.bounced_visits
         self.total_time_on_site += ga_report_row.total_time_on_site
 
-        # merge goal conversions only for now
-        for ga_report_row_goal in ga_report_row.goals:
-            if ga_report_row_goal in self.goals:
-                self.goals[ga_report_row_goal]['conversions'] = self.goals[ga_report_row_goal].get('conversions', 0)
-                self.goals[ga_report_row_goal]['conversions'] +=\
-                    ga_report_row.goals.get(ga_report_row_goal, {'conversions': 0}).get('conversions', 0)
-            else:
-                self.goals[ga_report_row_goal] = ga_report_row.goals[ga_report_row_goal]
+        for goal in ga_report_row.goals:
+            self.goals.setdefault(goal, 0)
+            self.goals[goal] += ga_report_row.goals[goal]
 
     def is_row_valid(self):
         if not self.is_valid():
@@ -186,7 +179,18 @@ class OmnitureReportRow(ReportRow):
         self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id
         self.source_param = source_param
-        self.goals = {}
+        self.goals = self._parse_goals(omniture_row_dict)
+
+    def _parse_goals(self, row_dict):
+        goals = {}
+        for key, val in row_dict.items():
+            if re.search(r' \(Event \d+\)$', key):
+                goal_name = re.sub(r' \(Event \d+\)$', '', key)
+                goal_val = _report_atoi(val)
+                if goal_name in goals:
+                    raise exc.CsvParseException('Two or more goals with same name in report.')
+                goals[goal_name] = goal_val
+        return goals
 
     def key(self):
         return (self.report_date, self.content_ad_id, self.source_param)
@@ -200,14 +204,9 @@ class OmnitureReportRow(ReportRow):
         self.bounced_visits += omniture_report_row.bounced_visits
         self.total_time_on_site += omniture_report_row.total_time_on_site
 
-        # merge goal conversions only for now
-        for omniture_report_row_goal in omniture_report_row.goals:
-            if omniture_report_row_goal in self.goals:
-                self.goals[omniture_report_row_goal]['conversions'] = self.goals[omniture_report_row_goal].get('conversions', 0)
-                self.goals[omniture_report_row_goal]['conversions'] +=\
-                    omniture_report_row.goals.get(omniture_report_row_goal, {'conversions': 0}).get('conversions', 0)
-            else:
-                self.goals[omniture_report_row_goal] = omniture_report_row.goals[omniture_report_row_goal]
+        for goal in omniture_report_row.goals:
+            self.goals.setdefault(goal, 0)
+            self.goals[goal] += omniture_report_row.goals[goal]
 
     def is_row_valid(self):
         if not self.is_valid():
@@ -446,48 +445,32 @@ class GAReport(Report):
         if ix_goal != -1:
             return goal_field[:ix_goal].strip()
         else:
-            return 'Goal 1'
+            return DEFAULT_GOAL_NAME
 
-    def _get_goal_value_type(self, goal_field):
-        try:
-            ix_goal = goal_field.index('(Goal')
-        except:
-            ix_goal = -1
-        if ix_goal != -1:
-            return goal_field[ix_goal:].strip()
-        else:
-            return goal_field
-
-    def _get_goal_fields(self, fields):
+    def _get_conversion_goal_fields(self, fields):
         # filter out fields which do not contain any relevant goal field
         ret = []
         for field in fields:
-            found = False
             for goal_keyword in GOAL_FIELD_KEYWORDS:
                 if goal_keyword in field.lower():
-                    found = True
-            if found:
-                ret.append(field)
+                    ret.append(field)
+                    break
         return ret
 
     def _parse_goals(self, fieldnames, row_dict):
-        goal_fields = self._get_goal_fields(fieldnames)
+        goal_fields = self._get_conversion_goal_fields(fieldnames)
         result = {}
         for goal_field in goal_fields:
             goal_name = self._get_goal_name(goal_field)
-            goal_value_type = self._get_goal_value_type(goal_field).lower()
 
             if row_dict[goal_field] == '':
                 continue
 
-            metric_fields = result.get(goal_name, {})
-            if self._subset_match(goal_value_type, GOAL_CONVERSION_KEYWORDS):
-                metric_fields['conversions'] = int(row_dict[goal_field])
-            elif self._subset_match(goal_value_type, GOAL_VALUE_KEWORDS):
-                metric_fields['value'] = row_dict[goal_field]
-            elif self._subset_match(goal_value_type, GOAL_RATE_KEYWORDS):
-                metric_fields['conversion_rate'] = row_dict[goal_field]
-            result[goal_name] = metric_fields
+            if goal_name in result:
+                raise exc.CsvParseException('Two or more goals with same name (or unnamed) in report.')
+
+            result[goal_name] = int(row_dict[goal_field])
+
         return result
 
     def _subset_match(self, value, lst):

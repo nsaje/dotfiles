@@ -64,9 +64,6 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
     def get_response_dict(self, user, stats, totals, groups_dict,
                           metrics, group_key=None, conversion_goals=None):
-        if conversion_goals is None:
-            conversion_goals = []
-
         series_groups = self._get_series_groups_dict(totals, groups_dict)
 
         for stat in stats:
@@ -87,7 +84,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
         }
 
         if user.has_perm('zemauth.conversion_reports') and conversion_goals is not None:
-            result['conversion_goals'] = [{'id': cg.id, 'name': cg.name} for cg in conversion_goals]
+            result['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name} for cg in conversion_goals]
 
         return result
 

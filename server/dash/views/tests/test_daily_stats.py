@@ -384,8 +384,8 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
                     }
                 }],
                 'conversion_goals': [
-                    {'id': 2, 'name': 'test conversion goal 2'},
-                    {'id': 1, 'name': 'test conversion goal'},
+                    {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
+                    {'id': 'conversion_goal_1', 'name': 'test conversion goal'},
                 ],
             },
             'success': True
@@ -455,7 +455,6 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                         ]
                     }
                 }],
-                'conversion_goals': [],
             },
             'success': True
         })

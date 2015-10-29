@@ -36,6 +36,8 @@ oneApp.controller('MainCtrl',
     $scope.inputDateFormat = 'M/D/YYYY';
     $scope.maxDate = zemMoment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
+    $scope.enablePublisherFilter = false;
+    $scope.showSelectedPublisher = null;
 
     $scope.remindToAddBudget = $q.defer(); 
 
@@ -256,6 +258,10 @@ oneApp.controller('MainCtrl',
         $scope.adGroup = adGroup;
     };
 
+    $scope.setPublisherFilterVisible = function (visible) {
+        $scope.enablePublisherFilter = visible;
+    };
+
     $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
@@ -347,6 +353,13 @@ oneApp.controller('MainCtrl',
         .finally(function () {
             $scope.loadSidebarInProgress = false;
         });
+    }, true);
+
+    $scope.$watch(zemFilterService.getShowBlacklistedPublishers, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
+            return;
+        }
+        $scope.setPublisherFilterVisible(newValue);
     }, true);
 
     zemFullStoryService.identify($scope.user);
