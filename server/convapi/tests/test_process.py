@@ -23,30 +23,30 @@ class UpdateTouchpointConversionsTestCase(TestCase):
             last_sync_dt=None
         )
 
-    @mock.patch('convapi.process.redirector_helper')
-    @mock.patch('convapi.process.process_touchpoint_conversions')
-    @mock.patch('convapi.process.reports.update')
-    def test_update(self, mock_reports_update, mock_process_touchpoints_conversions, mock_redirector_helper):
-        mock_reports_update.update_touchpoints_conversions = mock.Mock()
-        mock_process_touchpoints_conversions.return_value = [{}, {}]
-        mock_redirector_helper.fetch_redirects_impressions = mock.Mock()
-        mock_redirector_helper.fetch_redirects_impressions.return_value = {'abc': [{}, {}]}
+    # @mock.patch('convapi.process.redirector_helper')
+    # @mock.patch('convapi.process.process_touchpoint_conversions')
+    # @mock.patch('convapi.process.reports.update')
+    # def test_update(self, mock_reports_update, mock_process_touchpoints_conversions, mock_redirector_helper):
+    #     mock_reports_update.update_touchpoints_conversions = mock.Mock()
+    #     mock_process_touchpoints_conversions.return_value = [{}, {}]
+    #     mock_redirector_helper.fetch_redirects_impressions = mock.Mock()
+    #     mock_redirector_helper.fetch_redirects_impressions.return_value = {'abc': [{}, {}]}
 
-        dates = [datetime.datetime(2015, 9, 7), datetime.datetime(2015, 9, 8), datetime.datetime(2015, 9, 9)]
-        process.update_touchpoint_conversions(dates, [1])
+    #     dates = [datetime.datetime(2015, 9, 7), datetime.datetime(2015, 9, 8), datetime.datetime(2015, 9, 9)]
+    #     process.update_touchpoint_conversions(dates, [1])
 
-        mock_redirector_helper.fetch_redirects_impressions.assert_has_calls(
-            [mock.call(datetime.datetime(2015, 9, 7), 1),
-             mock.call(datetime.datetime(2015, 9, 8), 1),
-             mock.call(datetime.datetime(2015, 9, 9), 1)])
-        mock_process_touchpoints_conversions.assert_has_calls([mock.call({'abc': [{}, {}]}),
-                                                               mock.call({'abc': [{}, {}]}),
-                                                               mock.call({'abc': [{}, {}]})])
-        mock_reports_update.update_touchpoint_conversions.assert_has_calls(
-            [mock.call(datetime.datetime(2015, 9, 7), 1, [{}, {}]),
-             mock.call(datetime.datetime(2015, 9, 8), 1, [{}, {}]),
-             mock.call(datetime.datetime(2015, 9, 9), 1, [{}, {}])]
-        )
+    #     mock_redirector_helper.fetch_redirects_impressions.assert_has_calls(
+    #         [mock.call(datetime.datetime(2015, 9, 7), 1),
+    #          mock.call(datetime.datetime(2015, 9, 8), 1),
+    #          mock.call(datetime.datetime(2015, 9, 9), 1)])
+    #     mock_process_touchpoints_conversions.assert_has_calls([mock.call({'abc': [{}, {}]}),
+    #                                                            mock.call({'abc': [{}, {}]}),
+    #                                                            mock.call({'abc': [{}, {}]})])
+    #     mock_reports_update.update_touchpoint_conversions.assert_has_calls(
+    #         [mock.call(datetime.datetime(2015, 9, 7), 1, [{}, {}]),
+    #          mock.call(datetime.datetime(2015, 9, 8), 1, [{}, {}]),
+    #          mock.call(datetime.datetime(2015, 9, 9), 1, [{}, {}])]
+    #     )
 
     @mock.patch('convapi.process.update_touchpoint_conversions')
     @mock.patch('convapi.process.datetime')
