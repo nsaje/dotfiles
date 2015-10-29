@@ -74,6 +74,8 @@ def _update_touchpoint_conversions_date(date_account_id_tup):
 def update_touchpoint_conversions(dates, account_ids):
     pool = ThreadPool(processes=NUM_THREADS)
     pool.map_async(_update_touchpoint_conversions_date, itertools.product(dates, account_ids))
+    pool.close()
+    pool.join()
 
 
 @statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
