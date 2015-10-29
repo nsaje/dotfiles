@@ -476,11 +476,7 @@ class GaContentAdReportTest(test.TransactionTestCase):
             1,
             "gravity",
             {
-                "Goal 1": {
-                    "conversion_rate": "0.00%",
-                    "conversions": "0",
-                    "value": "\u00a30.00"
-                }
+                "Goal 1": 0,
             }
         ),
         parse_v2.GaReportRow(
@@ -501,11 +497,7 @@ class GaContentAdReportTest(test.TransactionTestCase):
             3,
             "gravity",
             {
-                "Goal 1": {
-                    "conversion_rate": "0.00%",
-                    "conversions": "0",
-                    "value": "\u00a30.00"
-                }
+                "Goal 1": 0,
             }
         )
     ]
@@ -529,11 +521,7 @@ class GaContentAdReportTest(test.TransactionTestCase):
             12345,
             "gravity",
             {
-                "Goal 1": {
-                    "conversion_rate": "0.00%",
-                    "conversions": "0",
-                    "value": "\u00a30.00"
-                }
+                "Goal 1": 0,
             }
         )
     ]

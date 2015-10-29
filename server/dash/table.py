@@ -495,7 +495,10 @@ class SourcesTable(object):
 
         if user.has_perm('zemauth.conversion_reports') and hasattr(level_sources_table, 'conversion_goals'):
             # only on ad group and campaign level
-            response['conversion_goals'] = [{'id': cg.id, 'name': cg.name} for cg in level_sources_table.conversion_goals]
+            response['conversion_goals'] = [
+                {'id': cg.get_view_key(level_sources_table.conversion_goals), 'name': cg.name}
+                for cg in level_sources_table.conversion_goals
+            ]
 
         if user.has_perm('zemauth.data_status_column'):
             if ad_group_level:
@@ -980,6 +983,7 @@ class AdGroupAdsPlusTable(object):
 
         size = max(min(int(size or 5), 4294967295), 1)
 
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
         content_ads = models.ContentAd.objects.filter(
             ad_group=ad_group).filter_by_sources(filtered_sources).select_related('batch')
 
@@ -989,7 +993,7 @@ class AdGroupAdsPlusTable(object):
             end_date,
             breakdown=['content_ad'],
             ignore_diff_rows=True,
-            conversion_goals=ad_group.campaign.conversiongoal_set.all(),
+            conversion_goals=conversion_goals,
             constraints={'ad_group': ad_group, 'source': filtered_sources}
         )
 
@@ -1017,7 +1021,7 @@ class AdGroupAdsPlusTable(object):
             user,
             start_date,
             end_date,
-            conversion_goals=ad_group.campaign.conversiongoal_set.all(),
+            conversion_goals=conversion_goals,
             ignore_diff_rows=True,
             constraints={'ad_group': ad_group, 'source': filtered_sources}
         )
@@ -1057,8 +1061,8 @@ class AdGroupAdsPlusTable(object):
         }
 
         if user.has_perm('zemauth.conversion_reports'):
-            conversion_goals = ad_group.campaign.conversiongoal_set.all()
-            response_dict['conversion_goals'] = [{'id': cg.id, 'name': cg.name} for cg in conversion_goals]
+            response_dict['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+                                                 for cg in conversion_goals]
 
         if user.has_perm('zemauth.data_status_column'):
             shown_content_ads = models.ContentAd.objects.filter(id__in=[row['id'] for row in rows])
@@ -1249,7 +1253,8 @@ class CampaignAdGroupsTable(object):
 
         if user.has_perm('zemauth.conversion_reports'):
             conversion_goals = campaign.conversiongoal_set.all()
-            response['conversion_goals'] = [{'id': cg.id, 'name': cg.name} for cg in conversion_goals]
+            response['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+                                            for cg in conversion_goals]
 
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(

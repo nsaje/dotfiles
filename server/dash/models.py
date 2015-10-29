@@ -1608,8 +1608,13 @@ class ConversionGoal(models.Model):
 
         return prefix + '__' + self.goal_id
 
-    def get_view_key(self):
-        return 'conversion_goal_' + str(self.id)
+    def get_view_key(self, conversion_goals):
+        # the key in view is based on the index of the conversion goal compared to others for the same campaign
+        for i, cg in enumerate(sorted(conversion_goals, key=lambda x: x.id)):
+            if cg.id == self.id:
+                return 'conversion_goal_' + str(i + 1)
+
+        raise Exception('Conversion goal not found')
 
 
 class DemoAdGroupRealAdGroup(models.Model):
