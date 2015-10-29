@@ -4,7 +4,7 @@ describe('zemLocations', function() {
     var $scope, element, isolate;
     var data = [];
 
-    var template = '<zem-locations zem-selected-location-codes="selectedCodes" zem-sources-without-dma-support="noDMAsupport"></zem-locations>';
+    var template = '<zem-locations zem-selected-location-codes="selectedCodes" zem-has-permission="hasPermission"></zem-locations>';
 
     beforeEach(module('one'));
 
