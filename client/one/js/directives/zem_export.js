@@ -37,17 +37,7 @@ oneApp.directive('zemExport', function() {
                     var popoverEl = angular.element(document.createElement('div'));
                     var option = getOptionByValue(object.id);
 
-                    var popoverText = 'There is too much data to export.';
-                    if (option.maxDays) {
-                        popoverText += ' Please choose a smaller date range (' + option.maxDays;
-                        if (option.maxDays > 1) {
-                            popoverText += ' days or less).';
-                        } else {
-                            popoverText += ' day).';
-                        }
-                    } else {
-                        popoverText = 'This report is not available for download, due to the volume of content indexed in this campaign. Please contact your account manager for assistance.';
-                    }
+                    var popoverText = 'This report is not available for download due to the volume of content. Please contact your account manager for assistance.';
 
                     popoverEl.attr('popover', popoverText);
                     popoverEl.attr('popover-trigger', 'mouseenter');

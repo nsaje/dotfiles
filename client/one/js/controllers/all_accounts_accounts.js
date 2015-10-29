@@ -442,11 +442,31 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         getDailyStats();
         getTableData();
         initColumns();
+        setDisabledExportOptions();
     };
 
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);
     });
+
+    var setDisabledExportOptions = function() {
+        api.exportAllowed.get(0, 'all_accounts').then(
+            function(data) {
+                var option = null;
+                $scope.exportOptions.forEach(function(opt) {
+                  if (opt.value === 'view-csv') {
+                    opt.disabled = !data.view
+                  }else if (opt.value === 'contentad-csv') {
+                    opt.disabled = !data.content_ad
+                  }else if (opt.value === 'adgroup-csv') {
+                    opt.disabled = !data.ad_group
+                  }else if (opt.value === 'campaign-csv') {
+                    opt.disabled = !data.campaign
+                  }
+                });
+            }
+        );
+    };
 
     $scope.init();
 }]);

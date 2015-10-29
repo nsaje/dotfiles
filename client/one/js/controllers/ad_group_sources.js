@@ -622,6 +622,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         getDailyStats();
 
         getSources();
+        setDisabledExportOptions();
     };
 
     var getSources = function () {
@@ -750,6 +751,21 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id);
+    };
+
+    var setDisabledExportOptions = function() {
+        api.sourcesExportAllowed.get($state.params.id, 'ad_groups').then(
+            function(data) {
+                var option = null;
+                $scope.exportOptions.forEach(function(opt) {
+                  if (opt.value === 'view-csv') {
+                    opt.disabled = !data.view
+                  }else if (opt.value === 'contentad-csv') {
+                    opt.disabled = !data.content_ad
+                  }
+                });
+            }
+        );
     };
 
     $scope.init();

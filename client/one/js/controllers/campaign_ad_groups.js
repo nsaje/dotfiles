@@ -493,7 +493,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         getDailyStats();
         getTableData();
-        setDisabledExportOptions();
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
@@ -514,21 +513,16 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     });
 
     var setDisabledExportOptions = function() {
-        api.campaignAdGroupsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
-            function (data) {
+        api.exportAllowed.get($state.params.id, 'campaigns').then(
+            function(data) {
                 var option = null;
-                $scope.exportOptions.forEach(function (opt) {
-                    if (opt.value === 'excel_detailed') {
-                        option = opt;
-                    }
+                $scope.exportOptions.forEach(function(opt) {
+                  if (opt.value === 'view-csv') {
+                    opt.disabled = !data.view
+                  }else if (opt.value === 'contentad-csv') {
+                    opt.disabled = !data.content_ad
+                  }
                 });
-
-                if (data.allowed) {
-                    option.disabled = false;
-                } else {
-                    option.disabled = true;
-                    option.maxDays = data.maxDays;
-                }
             }
         );
     };

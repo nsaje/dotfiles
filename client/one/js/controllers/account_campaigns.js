@@ -503,6 +503,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         initColumns();
         pollSyncStatus();
         getDailyStats();
+        setDisabledExportOptions();
     };
 
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
@@ -541,6 +542,23 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
         getTableData();
     });
+
+    var setDisabledExportOptions = function() {
+        api.exportAllowed.get($state.params.id, 'accounts').then(
+            function(data) {
+                var option = null;
+                $scope.exportOptions.forEach(function(opt) {
+                  if (opt.value === 'view-csv') {
+                    opt.disabled = !data.view
+                  }else if (opt.value === 'contentad-csv') {
+                    opt.disabled = !data.content_ad
+                  }else if (opt.value === 'adgroup-csv') {
+                    opt.disabled = !data.ad_group
+                  }
+                });
+            }
+        );
+    };
 
     $scope.init();
 }]);

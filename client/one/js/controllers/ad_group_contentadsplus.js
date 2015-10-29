@@ -551,7 +551,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         getDailyStats();
         getTableData();
-        setDisabledExportOptions();
     });
 
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
@@ -886,20 +885,14 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var setDisabledExportOptions = function() {
-        api.adGroupAdsPlusExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+        api.exportAllowed.get($state.params.id, 'ad_groups').then(
             function(data) {
                 var option = null;
                 $scope.exportOptions.forEach(function(opt) {
-                    if (opt.value === 'day-excel') {
-                        option = opt;
-                    }
+                  if (opt.value === 'view-csv') {
+                    opt.disabled = !data.view
+                  }
                 });
-
-                option.disabled = false;
-                if (!data.allowed) {
-                    option.disabled = true;
-                    option.maxDays = data.maxDays;
-                }
             }
         );
     };

@@ -214,6 +214,96 @@ class AdGroupAdsPlusExportAllowed(api_common.BaseApiView):
         })
 
 
+class ExportAllowed(api_common.BaseApiView):
+    MAX_ROWS = 16134
+
+    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_allowed_get')
+    def get(self, request, id_, level_):
+        user = request.user
+
+        if level_ == 'ad_groups':
+            ad_group = helpers.get_ad_group(user, id_)
+            return self.create_api_response({
+                'view': models.ContentAd.objects.filter(ad_group=ad_group).count() <= self.MAX_ROWS
+            })
+        elif level_ == 'campaigns':
+            campaign = helpers.get_campaign(user, id_)
+            ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+            return self.create_api_response({
+                'view': ad_groups.count() <= self.MAX_ROWS,
+                'content_ad': models.ContentAd.objects.filter(ad_group=ad_groups).count() <= self.MAX_ROWS
+            })
+        elif level_ == 'accounts':
+            account = helpers.get_account(user, id_)
+            campaigns = models.Campaign.objects.filter(account=account)
+            ad_groups = models.AdGroup.objects.filter(campaign=campaigns)
+            return self.create_api_response({
+                'view': campaigns.count() <= self.MAX_ROWS,
+                'ad_group': ad_groups.count() <= self.MAX_ROWS,
+                'content_ad': models.ContentAd.objects.filter(ad_group=ad_groups).count() <= self.MAX_ROWS
+            })
+        elif level_ == 'all_accounts':
+            accounts_num = models.Account.objects.all().filter_by_user(user).count()
+            campaigns_num = models.Campaign.objects.all().filter_by_user(user).count()
+            ad_groups_num = models.AdGroup.objects.all().filter_by_user(user).count()
+            return self.create_api_response({
+                'view': accounts_num <= self.MAX_ROWS,
+                'campaign': campaigns_num <= self.MAX_ROWS,
+                'ad_group': ad_groups_num <= self.MAX_ROWS
+            })
+
+        return self.create_api_response({
+            'view': True
+        })
+
+
+class SourcesExportAllowed(api_common.BaseApiView):
+    MAX_ROWS = 16134
+
+    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_allowed_get')
+    def get(self, request, id_, level_):
+        user = request.user
+        filtered_sources_num = len(helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')))
+        if level_ == 'ad_groups':
+            ad_group = helpers.get_ad_group(user, id_)
+            return self.create_api_response({
+                'view': filtered_sources_num <= self.MAX_ROWS,
+                'content_ad': models.ContentAd.objects.filter(ad_group=ad_group).count() * filtered_sources_num <= self.MAX_ROWS
+            })
+        elif level_ == 'campaigns':
+            campaign = helpers.get_campaign(user, id_)
+            ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+            return self.create_api_response({
+                'view': filtered_sources_num <= self.MAX_ROWS,
+                'ad_group': ad_groups.count() * filtered_sources_num <= self.MAX_ROWS,
+                'content_ad': models.ContentAd.objects.filter(ad_group__in=ad_groups).count() * filtered_sources_num <= self.MAX_ROWS
+            })
+        elif level_ == 'accounts':
+            account = helpers.get_account(user, id_)
+            campaigns = models.Campaign.objects.filter(account=account)
+            ad_groups = models.AdGroup.objects.filter(campaign=campaigns)
+            return self.create_api_response({
+                'view': filtered_sources_num <= self.MAX_ROWS,
+                'campaign': campaigns.count() * filtered_sources_num <= self.MAX_ROWS,
+                'ad_group': ad_groups.count() * filtered_sources_num <= self.MAX_ROWS,
+                'content_ad': models.ContentAd.objects.filter(ad_group__in=ad_groups).count() * filtered_sources_num <= self.MAX_ROWS
+            })
+        elif level_ == 'all_accounts':
+            accounts_num = models.Account.objects.all().filter_by_user(user).count()
+            campaigns_num = models.Campaign.objects.all().filter_by_user(user).count()
+            ad_groups_num = models.AdGroup.objects.all().filter_by_user(user).count()
+            return self.create_api_response({
+                'view': filtered_sources_num <= self.MAX_ROWS,
+                'account': accounts_num * filtered_sources_num <= self.MAX_ROWS,
+                'campaign': campaigns_num * filtered_sources_num <= self.MAX_ROWS,
+                'ad_group': ad_groups_num * filtered_sources_num <= self.MAX_ROWS
+            })
+
+        return self.create_api_response({
+            'view': True
+        })
+
+
 class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 8072
 
