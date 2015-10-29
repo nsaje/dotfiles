@@ -15,6 +15,8 @@ from dash import constants
 from dash import models
 from dash import regions
 from dash import validation_helpers
+from utils import dates_helper
+
 from zemauth.models import User as ZemUser
 
 
@@ -601,14 +603,14 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 class CreditLineItemForm(forms.ModelForm):
     def clean_start_date(self):
         start_date = self.cleaned_data['start_date']
-        today = datetime.datetime.utcnow().date()
+        today = dates_helper.local_today()
         if start_date <= today:
             raise forms.ValidationError('Start date has to be greater than today.')
         return start_date
 
     def clean_end_date(self):
         end_date = self.cleaned_data['end_date']
-        today = datetime.datetime.utcnow().date()
+        today = dates_helper.local_today()
         if end_date < today:
             raise forms.ValidationError('End date has to be greater or equal to today.')
         return end_date
@@ -627,14 +629,14 @@ class CreditLineItemForm(forms.ModelForm):
 class BudgetLineItemForm(forms.ModelForm):
     def clean_start_date(self):
         start_date = self.cleaned_data['start_date']
-        today = datetime.datetime.utcnow().date()
+        today = dates_helper.local_today()
         if start_date <= today:
             raise forms.ValidationError('Start date has to be greater than today.')
         return start_date
 
     def clean_end_date(self):
         end_date = self.cleaned_data['end_date']
-        today = datetime.datetime.utcnow().date()
+        today = dates_helper.local_today()
         if end_date <= today:
             raise forms.ValidationError('End date has to be greater than today.')
         return end_date
