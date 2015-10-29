@@ -43,7 +43,7 @@ rs_pub = RSPublishersModel()
 rs_ob_pub = RSOutbrainPublishersModel()
 
 
-def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}):
+def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, constraints_list=[]):
     constraints = copy.copy(constraints)
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
@@ -55,13 +55,88 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
         order_fields,
         offset,
         limit,
-        constraints)
+        constraints,
+        constraints_list=constraints_list
+    )
 
     cursor.close()
     if breakdown_fields:
         return results
     else:
         return results[0]
+
+
+def query_active_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, blacklist=[]):
+    constraints_list = []
+    if blacklist:
+        # create a base object, then OR onto it
+        rsq = ~redshift.RSQ(
+            domain=blacklist[0]['domain'],
+            exchange=blacklist[0]['exchange'],
+            ad_group=blacklist[0]['adgroup_id']
+        )
+        for blacklist_entry in blacklist[1:]:
+            rsq &= ~redshift.RSQ(
+                domain=blacklist_entry['domain'],
+                exchange=blacklist_entry['exchange'],
+                ad_group=blacklist_entry['adgroup_id']
+            )
+        constraints_list = [rsq]
+
+    return query(start_date, end_date,
+        breakdown_fields=breakdown_fields,
+        order_fields=order_fields,
+        offset=offset,
+        limit=limit,
+        constraints=constraints,
+        constraints_list=constraints_list
+    )
+
+
+def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, blacklist=[]):
+    constraints_list = []
+    if blacklist:
+        # create a base object, then OR onto it
+        rsq = redshift.RSQ(
+            domain=blacklist[0]['domain'],
+            exchange=blacklist[0]['exchange'],
+            ad_group=blacklist[0]['adgroup_id']
+        )
+        for blacklist_entry in blacklist[1:]:
+            rsq |= redshift.RSQ(
+                domain=blacklist_entry ['domain'],
+                exchange=blacklist_entry ['exchange'],
+                ad_group=blacklist_entry ['adgroup_id']
+            )
+        constraints_list = [rsq]
+
+    return query(start_date, end_date,
+        breakdown_fields=breakdown_fields,
+        order_fields=order_fields,
+        offset=offset,
+        limit=limit,
+        constraints=constraints,
+        constraints_list=constraints_list
+    )
+
+
+def query_publisher_list(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}):
+    constraints = copy.copy(constraints)
+    constraints['date__gte'] = start_date
+    constraints['date__lte'] = end_date
+    cursor = redshift.get_cursor()
+    no_returned_fields = []
+    results = rs_pub.execute_select_query(
+        cursor,
+        no_returned_fields,
+        breakdown_fields,
+        order_fields,
+        offset,
+        limit,
+        constraints)
+
+    cursor.close()
+    return results
 
 
 def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts, total_cost):

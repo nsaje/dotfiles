@@ -4,6 +4,7 @@ import mock
 from django.test import TestCase
 
 from reports import api_publishers
+import dash.models
 
 
 class ApiPublishersTest(TestCase):
@@ -132,7 +133,7 @@ class ApiPublishersTest(TestCase):
         end_date=datetime.date(2015, 2, 2)
         api_publishers.query(start_date, end_date, constraints=constraints)
         constraints.update({'start_date': start_date, 'end_date': end_date})
-        
+
         self.check_constraints(constraints)
         self.check_aggregations()
 
@@ -152,16 +153,107 @@ class ApiPublishersTest(TestCase):
         query = self._get_query()
         self.assertIn("SUM(clicks) = 0, sum(cost_micro) IS NULL, cpc_micro DESC", query)
 
+    def test_query_active(self):
+        # this doesn't really test blacklisting but runs the functions to make
+        # sure blacklisting condition creation executes
+        # setup some test data
+        self.get_cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'ctr': 0.0,
+            'exchange': 'gumgum',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+
+        # setup some blacklisted publisher entries
+        blacklist = [
+            {
+                'domain': 'test.com',
+                'adgroup_id': 1,
+                'exchange': 'triplelift'
+            },
+            {
+                'domain': 'test1.com',
+                'adgroup_id': 1,
+                'exchange': 'gumgum',
+            },
+        ]
+
+        constraints = {'ad_group': 1}
+
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date = datetime.timedelta(days=31)
+
+        publishers_data = api_publishers.query_active_publishers(
+            start_date, end_date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['-cost'],
+            constraints=constraints,
+            blacklist=blacklist
+        )
+
+        self.assertIn(' AND '.join(['NOT (domain=%s AND adgroup_id=%s AND exchange=%s)'] * 2), self._get_query())
+
+    def test_query_blacklisted(self):
+        # this doesn't really test blacklisting but runs the functions to make
+        # sure blacklisting condition creation executes
+        # setup some test data
+        self.get_cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'ctr': 0.0,
+            'exchange': 'gumgum',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+
+        # setup some blacklisted publisher entries
+        blacklist = [
+            {
+                'domain': 'test.com',
+                'adgroup_id': 1,
+                'exchange': 'triplelift'
+            },
+            {
+                'domain': 'test1.com',
+                'adgroup_id': 1,
+                'exchange': 'gumgum',
+            },
+        ]
+
+        constraints = {'ad_group': 1}
+
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date = datetime.timedelta(days=31)
+
+        publishers_data = api_publishers.query_blacklisted_publishers(
+            start_date, end_date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['-cost'],
+            constraints=constraints,
+            blacklist=blacklist
+        )
+
+        self.assertIn(' OR '.join(['(domain=%s AND adgroup_id=%s AND exchange=%s)'] * 2), self._get_query())
+
+
 @mock.patch('reports.redshift.get_cursor')
 class ApiPublishersInsertTest(TestCase):
     def test_ob_insert_adgroup_date(self, mock_get_cursor):
         mock_cursor = mock.Mock()
         mock_get_cursor.return_value = mock_cursor
 
-        api_publishers.ob_insert_adgroup_date(datetime.date(2015,2,1), 
+        api_publishers.ob_insert_adgroup_date(datetime.date(2015,2,1),
                                               3,
                                               "outbrain",
-                                              [   
+                                              [
                                                   {
                                                       "ob_section_id": "AAAABBBBB",
                                                       "clicks": 20,
@@ -177,10 +269,10 @@ class ApiPublishersInsertTest(TestCase):
                                               ],
                                               200
                                               )
-                                       
+
         mock_cursor.execute.assert_has_calls([
             mock.call('DELETE FROM "ob_publishers_1" WHERE (adgroup_id=%s AND date=%s AND exchange=%s)', [3, datetime.date(2015, 2, 1), 'outbrain']),
-            mock.call('INSERT INTO ob_publishers_1 (date,adgroup_id,exchange,domain,name,clicks,cost_micro,ob_section_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s),(%s,%s,%s,%s,%s,%s,%s,%s)', 
+            mock.call('INSERT INTO ob_publishers_1 (date,adgroup_id,exchange,domain,name,clicks,cost_micro,ob_section_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s),(%s,%s,%s,%s,%s,%s,%s,%s)',
                       [datetime.date(2015, 2, 1), 3, 'outbrain', 'money.cnn.com', 'CNN money', 20, 40000000000.0, 'AAAABBBBB', datetime.date(2015, 2, 1), 3, 'outbrain', 'money.cnn.com', 'CNN money', 80, 160000000000.0, 'AAAABBBBB'])
         ])
 
@@ -193,7 +285,7 @@ class ApiPublishersMapperTest(TestCase):
                 'date': None,
                 'clicks_sum': None,
                 'cost_micro_sum': None,
-                'cpc_micro': None, 
+                'cpc_micro': None,
                 'ctr': None,
                 'adgroup_id': None,
                 'exchange': None}

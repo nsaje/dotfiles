@@ -3,11 +3,13 @@ import datetime
 import mock
 
 from django.conf import settings
-from django.test import TestCase, override_settings
+from django.test import TestCase, TransactionTestCase, override_settings
 from django.http.request import HttpRequest
 
 import actionlog.constants
 import actionlog.models
+
+import dash.models
 
 from dash import models
 from dash import api
@@ -1100,6 +1102,33 @@ class UpdateAdGroupSourceState(TestCase):
         self.assertEqual(new_latest_state.state, conf['state'])
         self.assertEqual(new_latest_state.cpc_cc, latest_state.cpc_cc)
         self.assertEqual(new_latest_state.daily_budget_cc, latest_state.daily_budget_cc)
+
+    def test_update_publisher_blaklist(self):
+        conf = {
+            'publisher_blacklist': {
+                'state': 2,
+                'blacklist': [{
+                    'domain': 'zemanta.com',
+                    'exchange': 'adiant'
+                },
+                {
+                    'domain': 'test1.com',
+                    'exchange': 'sharethrough',
+                }]
+            }
+        }
+        api.update_ad_group_source_state(self.ad_group_source, conf)
+        allblacklist = dash.models.PublisherBlacklist.objects.all()
+        self.assertEqual(2, allblacklist.count())
+
+        first_blacklist = allblacklist[0]
+        self.assertEqual(self.ad_group_source.ad_group.id, first_blacklist.ad_group.id)
+        self.assertEqual('zemanta.com', first_blacklist.name)
+        self.assertEqual('b1_adiant', first_blacklist.source.tracking_slug)
+
+        second_blacklist = allblacklist[1]
+        self.assertEqual(self.ad_group_source.ad_group.id, second_blacklist.ad_group.id)
+        self.assertEqual('b1_sharethrough', second_blacklist.source.tracking_slug)
 
 
 class AdGroupSourceSettingsWriterTest(TestCase):

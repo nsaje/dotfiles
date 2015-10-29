@@ -67,7 +67,7 @@ def fetch_redirects_impressions(date, account_id=None, timeout=300):
         logger.info('Polling redirect impressions results')
         result = _call_api_retry(settings.R1_CONVERSION_STATS_RESULT_URL.format(job_id=job_id), method='GET')
         if result is None:
-            time.sleep(10)
+            time.sleep(2)
             continue
 
         statsd_helper.statsd_gauge('redirector_helper.fetch_redirects_impressions_size', len(json.dumps(result)))

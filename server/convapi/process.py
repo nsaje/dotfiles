@@ -1,9 +1,13 @@
 from collections import defaultdict
 import datetime
+import itertools
 import logging
 import math
+import pytz
+from multiprocessing.pool import ThreadPool
 
 from django.db.models import Min
+from django.conf import settings
 
 import dash.models
 import reports.update
@@ -15,6 +19,13 @@ logger = logging.getLogger(__name__)
 
 # take ET into consideration - server time is in UTC while we query for ET dates
 ADDITIONAL_SYNC_HOURS = 10
+
+NUM_THREADS = 20
+
+
+def _utc_datetime_to_est_date(dt):
+    dt = dt.replace(tzinfo=pytz.utc)
+    return dt.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).date()
 
 
 def _get_dates_to_sync():
@@ -50,14 +61,21 @@ def update_touchpoint_conversions_full():
     dash.models.ConversionPixel.objects.filter(account_id__in=account_ids).update(last_sync_dt=datetime.datetime.utcnow())
 
 
+def _update_touchpoint_conversions_date(date_account_id_tup):
+    date, account_id = date_account_id_tup
+
+    logger.info('Fetching touchpoint conversions for date %s and account id %s.', date, account_id)
+    redirects_impressions = redirector_helper.fetch_redirects_impressions(date, account_id)
+    touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
+    reports.update.update_touchpoint_conversions(date, account_id, touchpoint_conversion_pairs)
+
+
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')
 def update_touchpoint_conversions(dates, account_ids):
-    for account_id in account_ids:
-        for date in dates:
-            logger.info('Fetching touchpoint conversions for date %s and account id %s.', date, account_id)
-            redirects_impressions = redirector_helper.fetch_redirects_impressions(date, account_id)
-            touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
-            reports.update.update_touchpoint_conversions(date, account_id, touchpoint_conversion_pairs)
+    pool = ThreadPool(processes=NUM_THREADS)
+    pool.map_async(_update_touchpoint_conversions_date, itertools.product(dates, account_ids))
+    pool.close()
+    pool.join()
 
 
 @statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
@@ -134,7 +152,7 @@ def process_touchpoint_conversions(redirects_impressions):
             potential_touchpoint_conversion = {
                 'zuid': zuid,
                 'slug': slug,
-                'date': impression_ts.date(),
+                'date': _utc_datetime_to_est_date(impression_ts),
                 'conversion_id': impression_id,
                 'conversion_timestamp': impression_ts,
                 'account_id': account_id,

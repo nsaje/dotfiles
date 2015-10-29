@@ -2,6 +2,7 @@
 
 oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
     $scope.selectedTotals = true;
+    $scope.selectedColumnsCount = 0;
     $scope.constants = constants;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
@@ -12,7 +13,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.chartBtnTitle = 'Hide chart';
     $scope.order = '-cost';
     $scope.localStoragePrefix = 'adGroupPublishers';
-
     $scope.sizeRange = [5, 10, 20, 50];
     $scope.size = $scope.sizeRange[0];
     $scope.pagination = {
@@ -22,11 +22,138 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     var userSettings = zemUserSettings.getInstance($scope, 'adGroupPublishers');
 
+    $scope.selectionMenuConfig = {};
+    // selection settings - all or specific publishers can be selected
+    $scope.selectedAll = false;
+    $scope.selectedPublisherStatus = {};
+
+    $scope.bulkActions = [{
+        name: 'Blacklist in this adgroup',
+        value: 'blacklist',
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+    }, {
+        name: 'Re-enable in this adgroup',
+        value: 'enable',
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+    }];
+
+    $scope.calculatePublisherHash = function(row) {
+        // very simplistic hash to allow blacklist selection
+        return row['exchange'] + ' ' + row['domain'];
+    };
+
+    $scope.selectedPublisherChanged = function(row, checked) {
+        $scope.selectedPublisherStatus[$scope.calculatePublisherHash(row)] = {
+            "checked": checked,
+            "source": row['exchange'],
+            "domain": row['domain']
+        };
+
+        var numSelected = 0,
+            numNotSelected = 0;
+
+        Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
+            if ($scope.selectedPublisherStatus[publisherId].checked) {
+                numSelected += 1;
+            } else {
+                numNotSelected += 1;
+            }
+        });
+
+        if ($scope.selectedAll) {
+            $scope.selectionMenuConfig.partialSelection = numNotSelected > 0;
+        }  
+    };
+
+    $scope.selectionMenuConfig.selectAllCallback = function (selected) {
+        $scope.selectionMenuConfig.partialSelection = false;
+        $scope.selectedAll = selected;
+        $scope.selectedPublisherStatus = {};
+
+        if (selected) {
+            $scope.updatePublisherSelection();
+        } else {
+            $scope.clearPublisherSelection();
+        }
+    };
+
+    $scope.clearPublisherSelection = function () {
+        $scope.rows.forEach(function (row) {
+            row.publisher_selected = false;
+        });
+    };
+
+    $scope.updatePublisherSelection = function() {
+        $scope.rows.forEach(function(row) {
+            var row_id = $scope.calculatePublisherHash(row);
+            if ($scope.selectedPublisherStatus[row_id] !== undefined) {
+                row.publisher_selected = $scope.selectedPublisherStatus[row_id].checked;
+            } else if ($scope.selectedAll) {
+                row.publisher_selected = true;
+            } else {
+                row.publisher_selected = false;
+            }
+        });
+    };
+
+    $scope.isAnythingSelected = function() {
+        if ($scope.selectedAll) {
+            return true;
+        }
+
+        for (var publisherId in $scope.selectedPublisherStatus) {
+            if ($scope.selectedPublisherStatus.hasOwnProperty(publisherId)
+                    && $scope.selectedPublisherStatus[publisherId].checked) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    $scope.executeBulkAction = function (action) {
+        if (!$scope.isAnythingSelected()) {
+            return;
+        }
+
+        var publishersSelected = [],
+            publishersNotSelected = [];
+
+        Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
+            if ($scope.selectedPublisherStatus[publisherId] !== undefined) {
+                if ($scope.selectedPublisherStatus[publisherId].checked) {
+                    publishersSelected.push($scope.selectedPublisherStatus[publisherId]);
+                } else {
+                    publishersNotSelected.push($scope.selectedPublisherStatus[publisherId]);
+                }
+            }
+        });
+
+        switch (action) {
+            case 'blacklist':
+                bulkUpdatePublishers(
+                    publishersSelected,
+                    publishersNotSelected,
+                    constants.publisherStatus.BLACKLISTED
+                );
+                break;
+            case 'enable':
+                bulkUpdatePublishers(
+                    publishersSelected,
+                    publishersNotSelected,
+                    constants.publisherStatus.ENABLED
+                );
+                break;
+        }
+    };
+
     $scope.columnCategories = [
         {
             'name': 'Traffic Acquisition',
             'fields': [
-               'domain', 
+               'publisher_selected',
+               'blacklisted',
+               'domain',
                'domain_link',
                'exchange',
                'cost', 
@@ -38,7 +165,34 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
     ];
 
-    $scope.columns = [
+    $scope.columns = [{
+            name: '',
+            field: 'publisher_selected',
+            type: 'checkbox',
+            showSelectionMenu: true,
+            shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
+            hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status'),
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            order: false,
+            selectCallback: $scope.selectedPublisherChanged,
+            disabled: false,
+            selectionMenuConfig: $scope.selectionMenuConfig
+        },
+        {
+
+            name: 'Status',
+            field: 'blacklisted',
+            checked: true,
+            extraTdCss: 'no-wrap',
+            type: 'text',
+            shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
+            help: 'Blacklisted status of a publisher.',
+            totalRow: false,
+            order: true,
+            initialOrder: 'asc'
+        },
         {
             name: 'Domain',
             field: 'domain',
@@ -142,6 +296,22 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         getTableData();
     };
 
+
+    var bulkUpdatePublishers = function (publishersSelected, publishersNotSelected, state) {
+        api.adGroupPublishersState.save(
+            $state.params.id,
+            state,
+            $scope.dateRange.startDate, 
+            $scope.dateRange.endDate, 
+            publishersSelected,
+            publishersNotSelected,
+            $scope.selectedAll
+        ).then(function () {
+            getTableData();
+        });
+    };
+
+
     var getTableData = function (showWaiting) {
         $scope.loadRequestInProgress = true;
 
@@ -154,6 +324,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.lastChange = data.lastChange;
                 $scope.pagination = data.pagination;
 
+                $scope.updatePublisherSelection();
             },
             function (data) {
                 // error
@@ -271,11 +442,20 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         getDailyStats();
     }, true);
 
+    $scope.$watch(zemFilterService.getBlacklistedPublishers, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
+            return;
+        }
+
+        getTableData();
+        getDailyStats();
+
+    }, true);
+
     $scope.init = function() {
         var data = $scope.adGroupData[$state.params.id];
 
-
-        var page = parseInt($location.search().page);
+        var page = parseInt($location.search().page)
         if (isNaN(page)) {
             page = data && data.page;
         }
@@ -311,6 +491,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         getTableData();
         getDailyStats();
+
+        zemFilterService.setShowBlacklistedPublishers(true);
     };
 
 
@@ -335,6 +517,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
 
     $scope.$on('$destroy', function () {
+        zemFilterService.setShowBlacklistedPublishers(false);
         $timeout.cancel($scope.lastChangeTimeout);
     });
 

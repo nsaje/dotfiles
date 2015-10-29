@@ -11,6 +11,7 @@ import actionlog.api
 import actionlog.api_contentads
 import actionlog.models
 import actionlog.constants
+import dash.models
 import utils.exc
 from utils import redirector_helper
 from utils import email_helper
@@ -64,6 +65,7 @@ def update_ad_group_source_state(ad_group_source, conf):
                     key == 'state' and ad_group_source_state.state != val,
                     key == 'cpc_cc' and ad_group_source_state.cpc_cc != val,
                     key == 'daily_budget_cc' and ad_group_source_state.daily_budget_cc != val,
+                    key == 'publisher_blacklist',
                 ]):
                     need_update = True
                     break
@@ -85,6 +87,41 @@ def update_ad_group_source_state(ad_group_source, conf):
                 new_state.cpc_cc = val
             if key == 'daily_budget_cc':
                 new_state.daily_budget_cc = val
+            if key == 'publisher_blacklist':
+                source_cache = {}
+                blacklist_list = []
+                for pub_blacklist in val['blacklist']:
+                    ad_group = ad_group_source.ad_group
+                    source_slug = pub_blacklist['exchange']
+                    if source_slug not in source_cache:
+                        source_cache[source_slug] =\
+                            models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
+
+                    if not source_cache[source_slug]:
+                        raise Exception('Invalid tracking slug {}'.format(source_slug or ''))
+
+                    # store blacklisted publishers and push to other sources
+                    blacklist_list.append(
+                        models.PublisherBlacklist(
+                            name=pub_blacklist['domain'],
+                            ad_group=ad_group,
+                            source=source_cache[source_slug]
+                        )
+                    )
+                state = val['state']
+                if state == constants.PublisherStatus.BLACKLISTED:
+                    models.PublisherBlacklist.objects.bulk_create(blacklist_list)
+                elif state == constants.PublisherStatus.ENABLED:
+                    query_set = models.PublisherBlacklist.objects.none()
+                    for pub_blacklist in blacklist_list:
+                        query_set = query_set | models.PublisherBlacklist.objects.filter(
+                            name=pub_blacklist.name,
+                            ad_group=pub_blacklist.ad_group,
+                            source=pub_blacklist.source
+                        )
+                    query_set.delete()
+                else:
+                    raise Exception("Not implemented")
         new_state.save()
 
 
@@ -549,6 +586,44 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     new_field_value
                 )
 
+    return actions
+
+
+def create_ad_group_publisher_blacklist_actions(ad_group, request, state, publisher_blacklist_list, send=True):
+    # TODO: Rethink whether a direct API call is better than doing this via
+    # adgroup settings
+    order = actionlog.models.ActionLogOrder.objects.create(
+        order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+    )
+    actions = []
+    ad_group_sources = ad_group.adgroupsource_set.all()
+
+    for ad_group_source in ad_group_sources:
+        if not ad_group_source.source.can_modify_publisher_blacklist_automatically():
+            continue
+        publisher_source = [publisher for publisher in publisher_blacklist_list
+            if publisher['tracking_slug'] == ad_group_source.source.tracking_slug
+        ]
+        if publisher_source == []:
+            continue
+        actions.extend(
+            actionlog.api.set_ad_group_source_settings(
+                {
+                    'publisher_blacklist': {
+                        'state': state,
+                        'blacklist': map(lambda pub:
+                            {
+                                'domain': pub['domain'],
+                                'exchange': pub['tracking_slug'],
+                            }, publisher_source),
+                    }
+                },
+                ad_group_source,
+                request,
+                order,
+                send=send
+            )
+        )
     return actions
 
 
