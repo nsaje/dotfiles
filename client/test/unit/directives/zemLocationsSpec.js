@@ -12,7 +12,7 @@ describe('zemLocations', function() {
         $scope = $rootScope.$new();
 
         $scope.selectedCodes = [];
-        $scope.noDMAsupport = undefined;
+        $scope.hasPermission = function() { return true; };
 
         element = $compile(template)($scope);
 
