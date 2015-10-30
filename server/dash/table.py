@@ -1472,7 +1472,7 @@ class AccountCampaignsTable(object):
         return helpers.get_data_status(
             campaigns,
             helpers.get_last_sync_messages(campaigns, last_success_actions),
-            last_pixel_sync_message
+            last_pixel_sync_message=last_pixel_sync_message
         )
 
     def get_rows(self, user, campaigns, campaigns_settings, ad_groups_settings, stats,
