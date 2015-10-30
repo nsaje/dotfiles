@@ -139,7 +139,7 @@ class AllAccountsSourcesTable(object):
 
     def get_data_status(self, user):
         last_pixel_sync_message = None
-        if user.has_perm('conversion_reports'):
+        if user.has_perm('zemauth.conversion_reports'):
             last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
 
         return helpers.get_data_status(
@@ -207,7 +207,7 @@ class AccountSourcesTable(object):
 
     def get_data_status(self, user):
         last_pixel_sync_message = None
-        if user.has_perm('conversion_reports'):
+        if user.has_perm('zemauth.conversion_reports'):
             last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
 
         return helpers.get_data_status(
@@ -278,7 +278,7 @@ class CampaignSourcesTable(object):
 
     def get_data_status(self, user):
         last_pixel_sync_message = None
-        if user.has_perm('conversion_reports'):
+        if user.has_perm('zemauth.conversion_reports'):
             last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
 
         return helpers.get_data_status(
@@ -825,7 +825,7 @@ class AccountsAccountsTable(object):
 
     def get_data_status(self, user, accounts, last_success_actions, last_pixel_sync):
         last_pixel_sync_message = None
-        if user.has_perm('conversion_reports'):
+        if user.has_perm('zemauth.conversion_reports'):
             last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
 
         return helpers.get_data_status(
@@ -1308,7 +1308,7 @@ class CampaignAdGroupsTable(object):
 
     def get_data_status(self, user, ad_groups, last_success_actions, last_pixel_sync):
         last_pixel_sync_message = None
-        if user.has_perm('conversion_reports'):
+        if user.has_perm('zemauth.conversion_reports'):
             last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
 
         return helpers.get_data_status(
