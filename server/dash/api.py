@@ -89,41 +89,46 @@ def update_ad_group_source_state(ad_group_source, conf):
             if key == 'daily_budget_cc':
                 new_state.daily_budget_cc = val
             if key == 'publisher_blacklist':
-                source_cache = {}
-                blacklist_list = []
-                for pub_blacklist in val['blacklist']:
-                    ad_group = ad_group_source.ad_group
-                    source_slug = pub_blacklist['exchange']
-                    if source_slug not in source_cache:
-                        source_cache[source_slug] =\
-                            models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
+                _update_publisher_blacklist_state(ad_group_source, val)
 
-                    if not source_cache[source_slug]:
-                        raise Exception('Invalid tracking slug {}'.format(source_slug or ''))
-
-                    # store blacklisted publishers and push to other sources
-                    blacklist_list.append(
-                        models.PublisherBlacklist(
-                            name=pub_blacklist['domain'],
-                            ad_group=ad_group,
-                            source=source_cache[source_slug]
-                        )
-                    )
-                state = val['state']
-                if state == constants.PublisherStatus.BLACKLISTED:
-                    models.PublisherBlacklist.objects.bulk_create(blacklist_list)
-                elif state == constants.PublisherStatus.ENABLED:
-                    query_set = models.PublisherBlacklist.objects.none()
-                    for pub_blacklist in blacklist_list:
-                        query_set = query_set | models.PublisherBlacklist.objects.filter(
-                            name=pub_blacklist.name,
-                            ad_group=pub_blacklist.ad_group,
-                            source=pub_blacklist.source
-                        )
-                    query_set.delete()
-                else:
-                    raise Exception("Not implemented")
         new_state.save()
+
+
+def _update_publisher_blacklist_state(ad_group_source, conf):
+    source_cache = {}
+    blacklist_list = []
+    for pub_blacklist in conf['blacklist']:
+        ad_group = ad_group_source.ad_group
+        source_slug = pub_blacklist['exchange']
+        if source_slug not in source_cache:
+            source_cache[source_slug] =\
+                models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
+
+        if not source_cache[source_slug]:
+            raise Exception('Invalid tracking slug {}'.format(source_slug or ''))
+
+        # store blacklisted publishers and push to other sources
+        blacklist_list.append(
+            models.PublisherBlacklist(
+                name=pub_blacklist['domain'],
+                ad_group=ad_group,
+                source=source_cache[source_slug]
+            )
+        )
+    state = conf['state']
+    if state == constants.PublisherStatus.BLACKLISTED:
+        models.PublisherBlacklist.objects.bulk_create(blacklist_list)
+    elif state == constants.PublisherStatus.ENABLED:
+        query_set = models.PublisherBlacklist.objects.none()
+        for pub_blacklist in blacklist_list:
+            query_set = query_set | models.PublisherBlacklist.objects.filter(
+                name=pub_blacklist.name,
+                ad_group=pub_blacklist.ad_group,
+                source=pub_blacklist.source
+            )
+        query_set.delete()
+    else:
+        raise Exception("Not implemented")
 
 
 def _get_latest_ad_group_source_state(ad_group_source):
@@ -608,6 +613,9 @@ def create_ad_group_publisher_blacklist_actions(ad_group, request, state, level,
     ad_group_sources = ad_group.adgroupsource_set.all()
 
     if publisher_blacklist != []:
+        blacklisted_publishers = {}
+        source_sample_per_type = {}
+
         for ad_group_source in ad_group_sources:
             if not ad_group_source.source.can_modify_publisher_blacklist_automatically():
                 continue
@@ -616,17 +624,55 @@ def create_ad_group_publisher_blacklist_actions(ad_group, request, state, level,
             ]
             if publisher_source == []:
                 continue
+
+            source_type_id = ad_group_source.source.source_type.id
+            blacklisted_publishers[source_type_id] =\
+                blacklisted_publishers.get(source_type_id, [])
+
+            source_sample_per_type[source_type_id] = ad_group_source
+            blacklisted_publishers[source_type_id].extend(
+                list(map(lambda pub: {
+                    'domain': pub['domain'],
+                    'exchange': pub['tracking_slug'].replace('b1_', ''),
+                }, publisher_source))
+            )
+
+        if blacklisted_publishers != {}:
+            for source_type_id, blacklist in blacklisted_publishers.iteritems():
+                # TODO: Figure out a sensible alternative
+                ad_group_source = source_sample_per_type[source_type_id]
+                actions.extend(
+                    actionlog.api.set_ad_group_source_settings(
+                        {
+                            'publisher_blacklist': {
+                                'state': state,
+                                'level': level,
+                                'blacklist': blacklisted_publishers,
+                            }
+                        },
+                        ad_group_source,
+                        request,
+                        order,
+                        send=send
+                    )
+                )
+
+    if global_blacklist != []:
+        source_sample_per_type = {}
+        for ad_group_source in ad_group_sources:
+            if not ad_group_source.source.can_modify_publisher_blacklist_automatically():
+                continue
+            source_type_id = ad_group_source.source.source_type.id
+            source_sample_per_type[source_type_id] = ad_group_source
+
+        for source_type_id, ad_group_source in source_sample_per_type.iteritems():
             actions.extend(
                 actionlog.api.set_ad_group_source_settings(
                     {
                         'publisher_blacklist': {
                             'state': state,
                             'level': level,
-                            'blacklist': map(
-                                lambda pub: {
-                                    'domain': pub['domain'],
-                                    'exchange': pub['tracking_slug'].replace('b1_', ''),
-                                }, publisher_source),
+                            'global': global_blacklist
                         }
                     },
                     ad_group_source,
@@ -635,23 +681,6 @@ def create_ad_group_publisher_blacklist_actions(ad_group, request, state, level,
                     send=send
                 )
             )
-
-    if global_blacklist != []:
-        actions.extend(
-            actionlog.api.set_ad_group_source_settings(
-                {
-                    'publisher_blacklist': {
-                        'state': state,
-                        'level': level,
-                        'global': global_blacklist
-                    }
-                },
-                ad_group_source,
-                request,
-                order,
-                send=send
-            )
-        )
 
     return actions
 
