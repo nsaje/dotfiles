@@ -1182,6 +1182,14 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
 
     @patch('reports.redshift.get_cursor')
     def test_post_enable(self, cursor):
+
+        # blacklist must first exist in order to be deleted
+        models.PublisherBlacklist.objects.create(
+            name="zemanta.com",
+            ad_group=models.AdGroup.objects.get(pk=1),
+            source=models.Source.objects.get(tracking_slug='b1_adiant')
+        )
+
         cursor().dictfetchall.return_value = [
         {
             'domain': u'zemanta.com',

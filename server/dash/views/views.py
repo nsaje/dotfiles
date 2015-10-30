@@ -1072,7 +1072,12 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             if publisher_tuple in publishers_to_add:
                 continue
 
-            if publisher_tuple in existing_blacklisted_publishers:
+            if publisher_tuple in existing_blacklisted_publishers and\
+                    state == constants.PublisherStatus.BLACKLISTED :
+                continue
+
+            if publisher_tuple not in existing_blacklisted_publishers and\
+                    state == constants.PublisherStatus.ENABLED:
                 continue
 
             if publisher_tuple in ignored_publishers:
