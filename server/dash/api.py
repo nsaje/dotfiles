@@ -598,7 +598,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     return actions
 
 
-def create_ad_group_publisher_blacklist_actions(ad_group, request, state, publisher_blacklist_list, send=True):
+def create_ad_group_publisher_blacklist_actions(ad_group, request, state, publisher_blacklist, global_blacklist, send=True):
     # TODO: Rethink whether a direct API call is better than doing this via
     # adgroup settings
     order = actionlog.models.ActionLogOrder.objects.create(
@@ -607,24 +607,41 @@ def create_ad_group_publisher_blacklist_actions(ad_group, request, state, publis
     actions = []
     ad_group_sources = ad_group.adgroupsource_set.all()
 
-    for ad_group_source in ad_group_sources:
-        if not ad_group_source.source.can_modify_publisher_blacklist_automatically():
-            continue
-        publisher_source = [publisher for publisher in publisher_blacklist_list
-            if publisher['tracking_slug'] == ad_group_source.source.tracking_slug
-        ]
-        if publisher_source == []:
-            continue
+    if publisher_blacklist != []:
+        for ad_group_source in ad_group_sources:
+            if not ad_group_source.source.can_modify_publisher_blacklist_automatically():
+                continue
+            publisher_source = [publisher for publisher in publisher_blacklist
+                if publisher['tracking_slug'] == ad_group_source.source.tracking_slug
+            ]
+            if publisher_source == []:
+                continue
+            actions.extend(
+                actionlog.api.set_ad_group_source_settings(
+                    {
+                        'publisher_blacklist': {
+                            'state': state,
+                            'blacklist': map(
+                                lambda pub: {
+                                    'domain': pub['domain'],
+                                    'exchange': pub['tracking_slug'].replace('b1_', ''),
+                                }, publisher_source),
+                        }
+                    },
+                    ad_group_source,
+                    request,
+                    order,
+                    send=send
+                )
+            )
+
+    if global_blacklist != []:
         actions.extend(
             actionlog.api.set_ad_group_source_settings(
                 {
                     'publisher_blacklist': {
                         'state': state,
-                        'blacklist': map(lambda pub:
-                            {
-                                'domain': pub['domain'],
-                                'exchange': pub['tracking_slug'].replace('b1_', ''),
-                            }, publisher_source),
+                        'global': global_blacklist
                     }
                 },
                 ad_group_source,
@@ -633,6 +650,7 @@ def create_ad_group_publisher_blacklist_actions(ad_group, request, state, publis
                 send=send
             )
         )
+
     return actions
 
 
@@ -862,7 +880,7 @@ class AdGroupSourceSettingsWriter(object):
                 email_helper.send_ad_group_notification_email(self.ad_group_source.ad_group, request)
 
             if send_action:
-                filtered_settings_obj = {k:v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}
+                filtered_settings_obj = {k: v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}
                 if 'state' not in settings_obj or self.can_trigger_action():
                     if filtered_settings_obj:
                         actionlog.api.set_ad_group_source_settings(filtered_settings_obj, new_settings.ad_group_source, request)

@@ -28,27 +28,27 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.bulkActions = [{
         name: 'Blacklist in this adgroup',
-        value: 'blacklist-per-adgroup',
+        value: 'blacklist-adgroup',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
     }, {
         name: 'Re-enable in this adgroup',
-        value: 'enable-per-adgroup',
+        value: 'enable-adgroup',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
     },{
         name: 'Blacklist in this campaign',
-        value: 'blacklist-per-campaign',
+        value: 'blacklist-campaign',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
     }, {
         name: 'Re-enable in this campaign',
-        value: 'enable-per-campaign',
+        value: 'enable-campaign',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
     }, {
         name: 'Blacklist in this account',
-        value: 'blacklist-per-account',
+        value: 'blacklist-account',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
     }, {
         name: 'Re-enable in this account',
-        value: 'enable-per-account',
+        value: 'enable-account',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
     },{
         name: 'Blacklist globally',
@@ -151,23 +151,10 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 }
             }
         });
-
-        switch (action) {
-            case 'blacklist':
-                bulkUpdatePublishers(
-                    publishersSelected,
-                    publishersNotSelected,
-                    constants.publisherStatus.BLACKLISTED
-                );
-                break;
-            case 'enable':
-                bulkUpdatePublishers(
-                    publishersSelected,
-                    publishersNotSelected,
-                    constants.publisherStatus.ENABLED
-                );
-                break;
-        }
+        splitAction = action.split('-')
+        action = splitAction[0]
+        level = splitAction[1]
+        bulkUpdatePublishers(publishersSelected, publishersNotSelected, action, level);
     };
 
     $scope.columnCategories = [
@@ -320,10 +307,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     };
 
 
-    var bulkUpdatePublishers = function (publishersSelected, publishersNotSelected, state) {
+    var bulkUpdatePublishers = function (publishersSelected, publishersNotSelected, state, level) {
         api.adGroupPublishersState.save(
             $state.params.id,
             state,
+            level,
             $scope.dateRange.startDate, 
             $scope.dateRange.endDate, 
             publishersSelected,

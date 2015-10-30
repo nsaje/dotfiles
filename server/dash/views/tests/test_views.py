@@ -1219,6 +1219,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         end_date = start_date + datetime.timedelta(days=31)
         payload = {
             "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.ADGROUP,
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "select_all": True,
@@ -1270,6 +1271,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         end_date = start_date + datetime.timedelta(days=31)
         payload = {
             "state": constants.PublisherStatus.ENABLED,
+            "level": constants.PublisherBlacklistLevel.ADGROUP,
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "select_all": True,

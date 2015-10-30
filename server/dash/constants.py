@@ -97,6 +97,21 @@ class PublisherStatus(ConstantBase):
     }
 
 
+class PublisherBlacklistLevel(ConstantBase):
+
+    ADGROUP = 'adgroup'
+    CAMPAIGN = 'campaign'
+    ACCOUNT = 'account'
+    GLOBAL = 'global'
+
+    _VALUES = {
+        ADGROUP: 'Adgroup',
+        CAMPAIGN: 'Campaign',
+        ACCOUNT: 'Account',
+        GLOBAL: 'Global'
+    }
+
+
 class PublisherBlacklistFilter(ConstantBase):
     SHOW_ALL = 'all'
     SHOW_ACTIVE = 'active'

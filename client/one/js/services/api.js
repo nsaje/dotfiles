@@ -332,12 +332,13 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function AdGroupPublishersState() {
-        this.save = function(id, state, startDate, endDate, publishersSelected, publishersNotSelected, selectedAll) {
+        this.save = function(id, state, level, startDate, endDate, publishersSelected, publishersNotSelected, selectedAll) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/publishers/blacklist/';
 
             $http.post(url, {
                     state: state,
+                    level: level,
                     start_date: startDate,
                     end_date: endDate,
                     select_all: selectedAll,
