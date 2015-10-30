@@ -4,6 +4,7 @@ import mock
 from django.test import TestCase
 
 from convapi import process
+from utils.test_helper import QuerySetMatcher
 import dash.models
 
 
@@ -23,31 +24,6 @@ class UpdateTouchpointConversionsTestCase(TestCase):
             last_sync_dt=None
         )
 
-    # @mock.patch('convapi.process.redirector_helper')
-    # @mock.patch('convapi.process.process_touchpoint_conversions')
-    # @mock.patch('convapi.process.reports.update')
-    # def test_update(self, mock_reports_update, mock_process_touchpoints_conversions, mock_redirector_helper):
-    #     mock_reports_update.update_touchpoints_conversions = mock.Mock()
-    #     mock_process_touchpoints_conversions.return_value = [{}, {}]
-    #     mock_redirector_helper.fetch_redirects_impressions = mock.Mock()
-    #     mock_redirector_helper.fetch_redirects_impressions.return_value = {'abc': [{}, {}]}
-
-    #     dates = [datetime.datetime(2015, 9, 7), datetime.datetime(2015, 9, 8), datetime.datetime(2015, 9, 9)]
-    #     process.update_touchpoint_conversions(dates, [1])
-
-    #     mock_redirector_helper.fetch_redirects_impressions.assert_has_calls(
-    #         [mock.call(datetime.datetime(2015, 9, 7), 1),
-    #          mock.call(datetime.datetime(2015, 9, 8), 1),
-    #          mock.call(datetime.datetime(2015, 9, 9), 1)])
-    #     mock_process_touchpoints_conversions.assert_has_calls([mock.call({'abc': [{}, {}]}),
-    #                                                            mock.call({'abc': [{}, {}]}),
-    #                                                            mock.call({'abc': [{}, {}]})])
-    #     mock_reports_update.update_touchpoint_conversions.assert_has_calls(
-    #         [mock.call(datetime.datetime(2015, 9, 7), 1, [{}, {}]),
-    #          mock.call(datetime.datetime(2015, 9, 8), 1, [{}, {}]),
-    #          mock.call(datetime.datetime(2015, 9, 9), 1, [{}, {}])]
-    #     )
-
     @mock.patch('convapi.process.update_touchpoint_conversions')
     @mock.patch('convapi.process.datetime')
     def test_update_full(self, datetime_mock, update_touchpoint_conversions_mock):
@@ -58,12 +34,11 @@ class UpdateTouchpointConversionsTestCase(TestCase):
 
         process.update_touchpoint_conversions_full()
 
-        conversion_pixels = dash.models.ConversionPixel.objects.all()
-        account_ids = set(cp.account_id for cp in conversion_pixels)
+        conversion_pixels = QuerySetMatcher(dash.models.ConversionPixel.objects.filter(archived=False))
         update_touchpoint_conversions_mock.assert_called_once_with([datetime.date(2015, 9, 8),
                                                                     datetime.date(2015, 9, 9),
                                                                     datetime.date(2015, 9, 10)],
-                                                                   account_ids)
+                                                                   conversion_pixels)
 
     @mock.patch('convapi.process.update_touchpoint_conversions')
     @mock.patch('convapi.process.datetime')
@@ -77,13 +52,12 @@ class UpdateTouchpointConversionsTestCase(TestCase):
 
         process.update_touchpoint_conversions_full()
 
-        conversion_pixels = dash.models.ConversionPixel.objects.all()
-        account_ids = set(cp.account_id for cp in conversion_pixels)
+        conversion_pixels = QuerySetMatcher(dash.models.ConversionPixel.objects.filter(archived=False))
         update_touchpoint_conversions_mock.assert_called_once_with([datetime.date(2015, 9, 7),
                                                                     datetime.date(2015, 9, 8),
                                                                     datetime.date(2015, 9, 9),
                                                                     datetime.date(2015, 9, 10)],
-                                                                   account_ids)
+                                                                   conversion_pixels)
 
 
 class ProcessTouchpointsImpressionsTestCase(TestCase):

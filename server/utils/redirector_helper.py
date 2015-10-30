@@ -54,10 +54,9 @@ def insert_adgroup(ad_group_id, tracking_codes, enable_ga_tracking, enable_adobe
 
 
 @statsd_helper.statsd_timer('redirector_helper', 'fetch_redirects_impressions')
-def fetch_redirects_impressions(date, account_id=None, timeout=300):
+def fetch_redirects_impressions(date, account_id, slug, timeout=300):
     url = settings.R1_CONVERSION_STATS_URL
-    if account_id:
-        url = url + '?' + urllib.urlencode({'account': account_id})
+    url = url + '?' + urllib.urlencode({'account': account_id, 'slug': slug})
 
     logger.info('Querying redirect impressions')
     job_id = _call_api_retry(url.format(date=date.strftime('%Y-%m-%d')), method='GET')
