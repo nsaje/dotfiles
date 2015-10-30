@@ -55,7 +55,6 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         conversion_goals=conversion_goals,
         constraints=constraints
     )
-
     for stat in stats:
         stat['start_date'] = start_date
         stat['end_date'] = end_date
