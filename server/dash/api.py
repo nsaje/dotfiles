@@ -957,13 +957,13 @@ def can_modify_selected_target_regions_manually(source, *settings):
     return True
 
 
-def _get_region_types(settings):
+def _get_region_types(settingsTuple):
     region_types = []
 
     # build a list of region types present in the given settings
     for region_type in constants.RegionType.get_all():
-        for settings_ in settings:
-            if settings_.targets_region_type(region_type):
+        for settings in settingsTuple:
+            if settings.targets_region_type(region_type):
                 region_types.append(region_type)
                 break
 

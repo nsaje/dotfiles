@@ -1155,17 +1155,17 @@ class AdGroupSettings(SettingsBase):
     def targets_region_type(self, region_type):
         regions = self._get_list_for_region_type(region_type)
 
-        return any(target_region in regions for target_region in self.target_regions) if self.target_regions else False
+        return any(target_region in regions for target_region in self.target_regions or [])
 
     def get_targets_for_region_type(self, region_type):
-        regions = self._get_list_for_region_type(region_type)
+        regions_of_type = self._get_list_for_region_type(region_type)
 
-        return [target_region for target_region in self.target_regions if target_region in regions] if self.target_regions else []
+        return [target_region for target_region in self.target_regions or [] if target_region in regions_of_type]
 
     def get_target_names_for_region_type(self, region_type):
-        regions = self._get_list_for_region_type(region_type)
+        regions_of_type = self._get_list_for_region_type(region_type)
 
-        return [regions[target_region] for target_region in self.target_regions if target_region in regions] if self.target_regions else []
+        return [regions[target_region] for target_region in self.target_regions or [] if target_region in regions_of_type]
 
     def is_mobile_only(self):
         return self.target_devices and len(self.target_devices) == 1 and constants.AdTargetDevice.MOBILE in self.target_devices
