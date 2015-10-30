@@ -314,6 +314,60 @@ class ViewHelpersTestCase(TestCase):
             'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
         )
 
+    def test_data_status_last_pixel_sync(self):
+        class TestObj(object):
+            def __init__(self, id):
+                self.id = id
+
+        objects = [
+            TestObj(1),
+            TestObj(2),
+            TestObj(3)
+        ]
+
+        last_sync_messages = {
+            1: (['Last sync OK.'], True),
+            2: (['Last sync not OK.'], False),
+            3: (['Last sync OK.'], True)
+        }
+
+        last_pixel_sync_message = ('Pixel sync OK.', True)
+        data_status = helpers.get_data_status(objects, last_sync_messages,
+                                              last_pixel_sync_message=last_pixel_sync_message)
+        self.assertEqual({
+            1: {
+                'message': 'All data is OK. Last sync OK. Pixel sync OK.',
+                'ok': True
+            },
+            2: {
+                'message': 'Reporting data is stale. Last sync not OK. Pixel sync OK.',
+                'ok': False
+            },
+            3: {
+                'message': 'All data is OK. Last sync OK. Pixel sync OK.',
+                'ok': True
+            },
+        }, data_status)
+
+        self.maxDiff = None
+        last_pixel_sync_message = ('Pixel sync not OK.', False)
+        data_status = helpers.get_data_status(objects, last_sync_messages,
+                                              last_pixel_sync_message=last_pixel_sync_message)
+        self.assertEqual({
+            1: {
+                'message': 'Reporting data is stale. Last sync OK. Pixel sync not OK.',
+                'ok': False
+            },
+            2: {
+                'message': 'Reporting data is stale. Last sync not OK. Pixel sync not OK.',
+                'ok': False
+            },
+            3: {
+                'message': 'Reporting data is stale. Last sync OK. Pixel sync not OK.',
+                'ok': False
+            },
+        }, data_status)
+
     def test_parse_get_request_array(self):
         self.assertEqual(helpers.parse_get_request_content_ad_ids({'ids': '1,2'}, 'ids'), [1, 2])
         with self.assertRaises(exc.ValidationError):
@@ -828,6 +882,70 @@ class SetAdGroupSourceTest(TestCase):
         ad_group_source_settings = ad_group_source_settings.latest()
         self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
         self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.mobile_cpc_cc)
+
+
+class PixelLastSyncTestCase(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def test_join_success_with_pixel_sync_no_permissions(self):
+        u = User.objects.get(id=2)
+        last_success_actions = {
+            1: datetime.datetime(2015, 10, 30, 10),
+            2: datetime.datetime(2015, 10, 29, 22),
+            3: datetime.datetime(2015, 10, 30, 9),
+        }
+
+        last_pixel_sync = datetime.datetime(2015, 10, 30, 8)
+        joined = helpers.join_last_success_with_pixel_sync(u, last_success_actions, last_pixel_sync)
+        self.assertEqual(last_success_actions, joined)
+
+    def test_join_success_with_pixel_sync(self):
+        u = User.objects.get(id=1)
+        last_success_actions = {
+            1: datetime.datetime(2015, 10, 30, 10),
+            2: datetime.datetime(2015, 10, 29, 22),
+            3: datetime.datetime(2015, 10, 30, 9),
+        }
+
+        last_pixel_sync = datetime.datetime(2015, 10, 30, 8)
+        joined = helpers.join_last_success_with_pixel_sync(u, last_success_actions, last_pixel_sync)
+        self.assertEqual({
+            1: last_pixel_sync,
+            2: last_success_actions[2],
+            3: last_pixel_sync
+        }, joined)
+
+    def test_join_success_with_pixel_sync_none_last_success(self):
+        u = User.objects.get(id=1)
+        last_success_actions = {
+            1: datetime.datetime(2015, 10, 30, 10),
+            2: None,
+            3: None,
+        }
+
+        last_pixel_sync = datetime.datetime(2015, 10, 30, 8)
+        joined = helpers.join_last_success_with_pixel_sync(u, last_success_actions, last_pixel_sync)
+        self.assertEqual({
+            1: last_pixel_sync,
+            2: None,
+            3: None
+        }, joined)
+
+    def test_join_success_with_pixel_sync_none_last_pixel_sync(self):
+        u = User.objects.get(id=1)
+        last_success_actions = {
+            1: datetime.datetime(2015, 10, 30, 10),
+            2: datetime.datetime(2015, 10, 29, 22),
+            3: datetime.datetime(2015, 10, 30, 9),
+        }
+
+        last_pixel_sync = None
+        joined = helpers.join_last_success_with_pixel_sync(u, last_success_actions, last_pixel_sync)
+        self.assertEqual({
+            1: None,
+            2: None,
+            3: None,
+        }, joined)
 
 
 class LogUserActionHelperTestCase(TestCase):

@@ -495,7 +495,8 @@ def get_data_status(objects, last_sync_messages, state_messages=None, last_pixel
         if state_messages:
             messages, state_ok = state_messages[obj.id]
 
-        last_sync_message_parts, last_sync_ok = last_sync_messages[obj.id]
+        last_sync_message_parts = last_sync_messages[obj.id][0][:]  # create a copy
+        last_sync_ok = last_sync_messages[obj.id][1]
         if last_pixel_sync_message is not None:
             pixel_sync_message, pixel_sync_ok = last_pixel_sync_message
             last_sync_ok = last_sync_ok and pixel_sync_ok
