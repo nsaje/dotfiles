@@ -10,30 +10,30 @@ import reports.api_contentads
 from utils.sort_helper import sort_results
 
 FIELDNAMES = {
-    'start_date': 'Start Date',
-    'end_date': 'End Date',
     'account': 'Account',
-    'campaign': 'Campaign',
     'ad_group': 'Ad Group',
+    'available_budget': 'Available Budget',
+    'avg_tos': 'Avg. ToS',
+    'bounce_rate': 'Bounce Rate',
+    'budget': 'Total Budget',
+    'campaign': 'Campaign',
+    'click_discrepancy': 'Click Discrepancy',
+    'clicks': 'Clicks',
     'cost': 'Spend',
     'cpc': 'Average CPC',
-    'clicks': 'Clicks',
+    'ctr': 'CTR',
+    'ctr': 'CTR',
+    'end_date': 'End Date',
+    'image_url': 'Image URL',
     'impressions': 'Impressions',
-    'ctr': 'CTR',
-    'ctr': 'CTR',
-    'visits': 'Visits',
-    'click_discrepancy': 'Click Discrepancy',
     'pageviews': 'Pageviews',
     'percent_new_users': 'Percent New Users',
-    'bounce_rate': 'Bounce Rate',
     'pv_per_visit': 'PV/Visit',
-    'avg_tos': 'Avg. ToS',
-    'image_url': 'Image URL',
-    'title': 'Title',
     'source': 'Source',
-    'budget': 'Total Budget',
-    'available_budget': 'Available Budget',
-    'unspent_budget': 'Unspent Budget'
+    'start_date': 'Start Date',
+    'title': 'Title',
+    'unspent_budget': 'Unspent Budget',
+    'visits': 'Visits'
 }
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
@@ -55,6 +55,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         conversion_goals=conversion_goals,
         constraints=constraints
     )
+
     for stat in stats:
         stat['start_date'] = start_date
         stat['end_date'] = end_date
@@ -114,10 +115,13 @@ def get_csv_content(fieldnames, data, title_text=None):
             value = item.get(key)
 
             if not value:
-                value = 0
-            # TODO: DAVORIN Add all
-            if value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
+                value = 'aaaa'
+            elif value and key in ['avg_tos']:
+                value = '{:.1f}'.format(value)
+            elif value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'cost']:
                 value = '{:.2f}'.format(value)
+            elif value and key in ['cpc']:
+                value = '{:.3f}'.format(value)
 
             row[key] = value
             if repr(value).find(';') != -1:

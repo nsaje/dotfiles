@@ -14,11 +14,9 @@ from utils import api_common
 from utils import statsd_helper
 
 # DAVORIN TODO:
-# Go through all todos,
 # Un-commit table.py
-# check if all works
-# fix Tests
-# write tests and e2e tests
+# fix librato
+# unspent budget v Account/Cmpaigns in pa allAccounts/Accounts in allAccounts/campaigns (zgleduj se po dash/table.py)
 
 
 class ExportApiView(api_common.BaseApiView):
@@ -50,19 +48,14 @@ class ExportApiView(api_common.BaseApiView):
 class AccountCampaignsExport(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.export', 'accounts_campaigns_export_get')
     def get(self, request, account_id):
-        account = helpers.get_account(request.user, account_id)
+        user = request.user
+        account = helpers.get_account(user, account_id)
 
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
+        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
         export_type = request.GET.get('type')
-
-        user = request.user
-
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
-
         order = request.GET.get('order') or 'name'
 
         if export_type == 'view-csv':
@@ -93,19 +86,14 @@ class AccountCampaignsExport(api_common.BaseApiView):
 class CampaignAdGroupsExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export', 'campaigns_ad_groups_export_get')
     def get(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
+        user = request.user
+        campaign = helpers.get_campaign(user, campaign_id)
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
+        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
         export_type = request.GET.get('type')
-
-        user = request.user
-
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
-
         order = request.GET.get('order') or 'name'
 
         if export_type == 'view-csv':
@@ -129,7 +117,7 @@ class CampaignAdGroupsExport(ExportApiView):
 
 
 class ExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 16134
+    MAX_ROWS = 16134000 # DAVORIN remove 0
 
     @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_allowed_get')
     def get(self, request, id_, level_):
@@ -172,7 +160,7 @@ class ExportAllowed(api_common.BaseApiView):
 
 
 class SourcesExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 16134
+    MAX_ROWS = 16134000 # DAVORIN remove 0
 
     @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_allowed_get')
     def get(self, request, id_, level_):
@@ -213,20 +201,19 @@ class SourcesExportAllowed(api_common.BaseApiView):
                 'ad_group': ad_groups_num * filtered_sources_num <= self.MAX_ROWS
             })
 
-        return self.create_api_response({
-            'view': True
-        })
+        return self.create_api_response({})
 
 
 class AdGroupAdsPlusExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_get')
     def get(self, request, ad_group_id):
+        user = request.user
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
         export_type = request.GET.get('type')
-        user = request.user
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
 
@@ -248,7 +235,7 @@ class AllAccountsSourcesExport(ExportApiView):
         user = request.user
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
         export_type = request.GET.get('type')
@@ -283,11 +270,12 @@ class AllAccountsSourcesExport(ExportApiView):
 class AccountSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export', 'account_sources_export_get')
     def get(self, request, account_id):
-        account = helpers.get_account(request.user, account_id)
         user = request.user
+        account = helpers.get_account(user, account_id)
+
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
         export_type = request.GET.get('type')
@@ -327,19 +315,14 @@ class AccountSourcesExport(ExportApiView):
 class CampaignSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export', 'campaign_sources_export_get')
     def get(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-
         user = request.user
+        campaign = helpers.get_campaign(user, campaign_id)
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
+        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
-
         order = request.GET.get('order') or 'name'
-
         export_type = request.GET.get('type')
 
         if export_type == 'view-csv':
@@ -373,11 +356,12 @@ class CampaignSourcesExport(ExportApiView):
 class AdGroupSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export', 'ad_group_sources_export_get')
     def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
         user = request.user
+        ad_group = helpers.get_ad_group(user, ad_group_id)
+
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
         export_type = request.GET.get('type')
@@ -405,17 +389,13 @@ class AdGroupSourcesExport(ExportApiView):
 
 class AllAccountsExport(ExportApiView):
     def get(self, request):
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
         user = request.user
 
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
-
         order = request.GET.get('order') or 'name'
-
         export_type = request.GET.get('type')
 
         if export_type == 'view-csv':
