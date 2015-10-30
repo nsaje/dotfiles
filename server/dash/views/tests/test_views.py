@@ -1237,6 +1237,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             {
                 u"publisher_blacklist": {
                     u"state": 2,
+                    u"level": u"adgroup",
                     u"blacklist": [{
                         u"exchange": u"adiant",
                         u"domain": u"zemanta.com"
@@ -1287,6 +1288,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             {
                 u"publisher_blacklist": {
                     u"state": 1,
+                    u"level": u"adgroup",
                     u"blacklist": [{
                         u"exchange": u"adiant",
                         u"domain": u"zemanta.com"

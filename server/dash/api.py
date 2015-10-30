@@ -598,7 +598,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     return actions
 
 
-def create_ad_group_publisher_blacklist_actions(ad_group, request, state, publisher_blacklist, global_blacklist, send=True):
+def create_ad_group_publisher_blacklist_actions(ad_group, request, state, level, publisher_blacklist, global_blacklist, send=True):
     # TODO: Rethink whether a direct API call is better than doing this via
     # adgroup settings
     order = actionlog.models.ActionLogOrder.objects.create(
@@ -621,6 +621,7 @@ def create_ad_group_publisher_blacklist_actions(ad_group, request, state, publis
                     {
                         'publisher_blacklist': {
                             'state': state,
+                            'level': level,
                             'blacklist': map(
                                 lambda pub: {
                                     'domain': pub['domain'],
@@ -641,6 +642,7 @@ def create_ad_group_publisher_blacklist_actions(ad_group, request, state, publis
                 {
                     'publisher_blacklist': {
                         'state': state,
+                        'level': level,
                         'global': global_blacklist
                     }
                 },

@@ -1132,6 +1132,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                         ad_group,
                         request,
                         state,
+                        level,
                         publisher_blacklist,
                         global_blacklist,
                         send=False
