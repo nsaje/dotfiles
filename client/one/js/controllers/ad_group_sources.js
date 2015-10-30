@@ -142,26 +142,21 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             totalRow: false,
             unselectable: true,
             help: 'A setting for enabling and pausing media sources.',
-            onChange: function (sourceId, value) {
-                api.adGroupSourceSettings.save($state.params.id, sourceId, {state: value}).then(
+            onChange: function (sourceId, value, autopilotValue) {
+                api.adGroupSourceSettings.save(
+                    $state.params.id,
+                    sourceId,
+                    {state: value, autopilot_state: autopilotValue}
+                ).then(
                     function (data) {
+                        $scope.rows.forEach(function (row) {
+                            if (row.id === sourceId) {
+                                row.editable_fields = data.editable_fields
+                            }
+                        });
                         $scope.pollSourcesTableUpdates();
                     }
                 );
-            },
-            onAutopilotChange: function (sourceId, value) {
-              api.adGroupSourceSettings.save($state.params.id, sourceId, {autopilot_state: value}).then(
-                  function (data) {
-
-                    $scope.rows.forEach(function (row) {
-                        if (row.id === sourceId) {
-                            row.editable_fields = data.editable_fields
-                        }
-                    });
-
-                      $scope.pollSourcesTableUpdates();
-                  }
-              );
             },
             getDisabledMessage: function (row) {
                 var editableFields = row.editable_fields;

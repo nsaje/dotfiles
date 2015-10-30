@@ -24,48 +24,23 @@ oneApp.directive('zemStateSelector', function () {
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
             $scope.active = false;
 
-            $scope.setState = function (state) {
+            $scope.setState = function (state, autopilotState) {
                 $scope.isOpen = false;
 
-                if (state === $scope.value && !$scope.autopilotActive) {
+                if (state === $scope.value && autopilotState === $scope.autopilotActive) {
                     return;
                 }
 
                 $scope.value = state;
+                $scope.autopilotValue = autopilotState;
 
-                if ($scope.autopilotActive) {
-                    $scope.autopilotValue = $scope.autopilotPausedValue
-                    $scope.onAutopilotChange($scope.id, $scope.autopilotPausedValue)
-                }
-
-                $scope.onChange($scope.id, state);
-            };
-            $scope.setAutopilotState = function (autopilotState) {
-              $scope.isOpen = false;
-
-              if (autopilotState === $scope.autopilotEnabledValue) {
-                  if ($scope.value !== $scope.enabledValue) {
-                    return;
-                  }
-                  if (autopilotState === $scope.autopilotValue){
-                    return;
-                  }
-              }
-
-              $scope.autopilotValue = autopilotState
-
-              $scope.onAutopilotChange($scope.id, autopilotState)
-
+                $scope.onChange($scope.id, state, autopilotState);
             };
             $scope.$watch('value', function(value) {
                 $scope.active = $scope.value === $scope.enabledValue;
             });
             $scope.$watch('autopilotValue', function(autopilotValue) {
-                $scope.autopilotActive = (
-                  $scope.autopilotValue === $scope.autopilotEnabledValue
-                  && $scope.autopilotValue !== undefined
-                  && $scope.autopilotEnabledValue !== undefined
-                );
+                $scope.autopilotActive = $scope.autopilotValue === $scope.autopilotEnabledValue;
             });
         }]
     };
