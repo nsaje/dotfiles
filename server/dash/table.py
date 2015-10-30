@@ -349,7 +349,7 @@ class AdGroupSourcesTable(object):
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group], sources=self.filtered_sources)
 
-    def get_data_status(self, user, include_state_messages=False):
+    def get_data_status(self, user):
         state_messages = None
         if user.has_perm('zemauth.set_ad_group_source_settings'):
             state_messages = helpers.get_ad_group_sources_state_messages(
