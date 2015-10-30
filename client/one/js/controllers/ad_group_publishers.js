@@ -19,7 +19,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         currentPage: 1
     };
 
-
     var userSettings = zemUserSettings.getInstance($scope, 'adGroupPublishers');
 
     $scope.selectionMenuConfig = {};
@@ -29,14 +28,38 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.bulkActions = [{
         name: 'Blacklist in this adgroup',
-        value: 'blacklist',
+        value: 'blacklist-per-adgroup',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
     }, {
         name: 'Re-enable in this adgroup',
-        value: 'enable',
+        value: 'enable-per-adgroup',
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+    },{
+        name: 'Blacklist in this campaign',
+        value: 'blacklist-per-campaign',
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+    }, {
+        name: 'Re-enable in this campaign',
+        value: 'enable-per-campaign',
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+    }, {
+        name: 'Blacklist in this account',
+        value: 'blacklist-per-account',
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+    }, {
+        name: 'Re-enable in this account',
+        value: 'enable-per-account',
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+    },{
+        name: 'Blacklist globally',
+        value: 'blacklist-global',
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+    }, {
+        name: 'Re-enable globally',
+        value: 'enable-global',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
     }];
-
+    
     $scope.calculatePublisherHash = function(row) {
         // very simplistic hash to allow blacklist selection
         return row['exchange'] + ' ' + row['domain'];
