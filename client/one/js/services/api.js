@@ -14,6 +14,12 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         }
     }
 
+    function addShowBlacklistedPublisher(params) {
+        if (zemFilterService.getBlacklistedPublishers()) {
+            params.show_blacklisted_publishers = zemFilterService.getBlacklistedPublishers();
+        }
+    }
+
     function NavData() {
         this.list = function () {
             var deferred = $q.defer();
@@ -309,6 +315,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }
 
             addFilteredSources(config.params);
+            addShowBlacklistedPublisher(config.params);
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -324,6 +331,28 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function AdGroupPublishersState() {
+        this.save = function(id, state, startDate, endDate, publishersSelected, publishersNotSelected, selectedAll) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/publishers/blacklist/';
+
+            $http.post(url, {
+                    state: state,
+                    start_date: startDate,
+                    end_date: endDate,
+                    select_all: selectedAll,
+                    publishers_selected: publishersSelected,
+                    publishers_not_selected: publishersNotSelected
+                }).
+                success(function(data) {
+                   deferred.resolve(data);
+                }).error(function(data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
 
     function AdGroupAdsTable() {
         function convertFromApi(row) {
@@ -2481,6 +2510,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         sourcesTable: new SourcesTable(),
         adGroupSourcesTable: new AdGroupSourcesTable(),
         adGroupPublishersTable: new AdGroupPublishersTable(),
+        adGroupPublishersState: new AdGroupPublishersState(),
         adGroupAdsTable: new AdGroupAdsTable(),
         adGroupAdsPlusTable: new AdGroupAdsPlusTable(),
         adGroupSync: new AdGroupSync(),

@@ -628,6 +628,10 @@ class SourceType(models.Model):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_FETCH_REPORT_BY_PUBLISHER in self.available_actions
 
+    def can_modify_publisher_blacklist_automatically(self):
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC in self.available_actions
+
     def __str__(self):
         return self.type
 
@@ -725,6 +729,9 @@ class Source(models.Model):
 
     def can_fetch_report_by_publisher(self):
         return self.source_type.can_fetch_report_by_publisher()
+
+    def can_modify_publisher_blacklist_automatically(self):
+        return self.source_type.can_modify_publisher_blacklist_automatically() and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
@@ -1568,7 +1575,7 @@ class ConversionPixel(models.Model):
     slug = models.CharField(blank=False, null=False, max_length=32)
     archived = models.BooleanField(default=False)
 
-    last_sync_dt = models.DateTimeField(blank=True, null=True)
+    last_sync_dt = models.DateTimeField(default=datetime.datetime.utcnow, blank=True, null=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
 
     class Meta:
@@ -1635,3 +1642,14 @@ class UserActionLog(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True,
                                    blank=True)
+
+
+class PublisherBlacklist(models.Model):
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=127, blank=False, null=False)
+    ad_group = models.ForeignKey(AdGroup, null=False, related_name='ad_group', on_delete=models.PROTECT)
+    source = models.ForeignKey(Source, null=False, on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = (('name', 'ad_group', 'source'), )

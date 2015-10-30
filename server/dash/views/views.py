@@ -39,12 +39,16 @@ import actionlog.api
 import actionlog.api_contentads
 import actionlog.sync
 import actionlog.zwei_actions
+import actionlog.models
+import actionlog.constants
 
 from dash import models
 from dash import constants
 from dash import api
 from dash import forms
 from dash import upload
+
+import reports.api_publishers
 
 logger = logging.getLogger(__name__)
 
@@ -1020,6 +1024,137 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
             writer.writerow(row)
 
         return string.getvalue()
+
+
+class PublishersBlacklistStatus(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_publisher_blacklist_state_post')
+    def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
+            raise exc.AuthorizationError()
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        body = json.loads(request.body)
+
+        start_date = helpers.parse_datetime(body.get('start_date'))
+        end_date = helpers.parse_datetime(body.get('end_date'))
+        state = int(body.get('state'))
+
+        publishers_selected = body["publishers_selected"]
+        publishers_not_selected = body["publishers_not_selected"]
+
+        select_all = body["select_all"]
+        publishers = []
+        if select_all:
+            # get all publishers from date range with statistics
+            # (they represent select-all)
+            constraints = {
+                'ad_group': ad_group.id,
+            }
+            breakdown = ['exchange', 'domain']
+            publishers = reports.api_publishers.query_publisher_list(
+                start_date,
+                end_date,
+                breakdown_fields=breakdown,
+                constraints=constraints
+            )
+
+        existing_blacklisted_publishers = set(models.PublisherBlacklist.objects.filter(
+            ad_group=ad_group
+        ).values_list('name', 'ad_group__id', 'source__tracking_slug'))
+
+        ignored_publishers = set( [(pub['domain'], ad_group.id, pub['source'],)
+            for pub in publishers_not_selected]
+        )
+
+        publishers_to_add = set([])
+
+        source_cache = {}
+        failed_publisher_mappings = set([])
+        count_failed_publisher = 0
+        for publisher in publishers + publishers_selected:
+            domain = publisher['domain']
+            # exchange in redshift but source from client selected publishers
+            source_slug = publisher.get('exchange') or publisher.get('source')
+            norm_source_slug = source_slug.lower()
+            if norm_source_slug not in source_cache:
+                if publisher.get('exchange'):
+                    source_cache[norm_source_slug] = models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
+                if publisher.get('source'):
+                    source_cache[norm_source_slug] = models.Source.objects.filter(name__startswith=source_slug).first()
+
+            if not source_cache[norm_source_slug]:
+                failed_publisher_mappings.add(source_slug)
+                count_failed_publisher += 1
+                continue
+
+            publisher_tuple = (domain, ad_group.id, source_cache[norm_source_slug].tracking_slug,)
+            if publisher_tuple in publishers_to_add:
+                continue
+
+            if publisher_tuple in existing_blacklisted_publishers and\
+                    state == constants.PublisherStatus.BLACKLISTED :
+                continue
+
+            if publisher_tuple not in existing_blacklisted_publishers and\
+                    state == constants.PublisherStatus.ENABLED:
+                continue
+
+            if publisher_tuple in ignored_publishers:
+                continue
+
+            publishers_to_add.add((domain, ad_group.id, source_cache[norm_source_slug].tracking_slug, source_cache[norm_source_slug].name))
+
+        if len(failed_publisher_mappings) > 0:
+            logger.warning('Failed mapping {count} publisher source slugs {slug}'.format(
+                count=count_failed_publisher,
+                slug=','.join(failed_publisher_mappings))
+            )
+        publisher_blacklist = [
+            {
+                'domain': dom,
+                'ad_group_id': adgroup_id,
+                'tracking_slug': tracking_slug,
+                'source_name': source_name,
+            }\
+            for (dom, adgroup_id, tracking_slug, source_name,) in publishers_to_add
+        ]
+
+        if len(publisher_blacklist):
+            actionlogs_to_send = []
+            current_settings = ad_group.get_current_settings()
+            new_settings = current_settings.copy_settings()
+
+            with transaction.atomic():
+                new_settings.save(request)
+                actionlogs_to_send.extend(
+                    api.create_ad_group_publisher_blacklist_actions(
+                        ad_group,
+                        request,
+                        state,
+                        publisher_blacklist,
+                        send=False
+                    )
+                )
+            actionlog.zwei_actions.send(actionlogs_to_send)
+
+        self._add_to_history(request, ad_group, state, publisher_blacklist)
+        response = {
+            "success": True,
+        }
+        return self.create_api_response(response)
+
+    def _add_to_history(self, request, ad_group, state, blacklist):
+        changes_text = '{action} the following publishers {pubs}.'.format(
+            action="Blacklisted" if state == constants.PublisherStatus.BLACKLISTED else "Enabled",
+            pubs=", ".join( ("{pub} on {slug}".format(pub=pub_bl['domain'], slug=pub_bl['source_name'])
+                 for pub_bl in blacklist)
+            )
+        )
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.changes_text = changes_text
+        settings.save(request)
+        email_helper.send_ad_group_notification_email(ad_group, request)
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')

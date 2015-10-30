@@ -4,7 +4,7 @@ import json
 from mock import patch
 import datetime
 
-from django.test import TestCase, Client
+from django.test import TestCase, Client, TransactionTestCase
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -14,6 +14,10 @@ from zemauth.models import User
 from dash import models
 from dash import constants
 from dash import api
+
+from reports import redshift
+
+import actionlog.models
 
 
 class UserTest(TestCase):
@@ -1169,3 +1173,123 @@ class SharethroughApprovalTest(TestCase):
         self.assertEqual(None, cas.submission_errors)
         self.assertTrue(mock_update.called)
         mock_update.assert_called_with(cas, {'state': cas.state}, request=None, send=True)
+
+
+class PublishersBlacklistStatusTest(TransactionTestCase):
+    fixtures = ['test_api.yaml', 'test_models.yaml']
+
+    def setUp(self):
+        redshift.STATS_DB_NAME = 'default'
+        for s in models.SourceType.objects.all():
+            if s.available_actions == None:
+                s.available_actions = []
+            s.available_actions.append(constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC )
+            s.save()
+
+
+    def _post_publisher_blacklist(self, ad_group_id, data):
+        username = User.objects.get(pk=3).email
+        self.client.login(username=username, password='secret')
+        reversed_url = reverse(
+                'ad_group_publishers_blacklist',
+                kwargs={'ad_group_id': ad_group_id})
+        response = self.client.post(
+            reversed_url,
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+        return json.loads(response.content)
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_blacklist(self, cursor):
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'ctr': 0.0,
+            'exchange': 'adiant',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": []
+        }
+        res = self._post_publisher_blacklist(1, payload)
+
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+        )
+        self.assertEqual(1, publisher_blacklist_action.count())
+        self.assertDictEqual(
+            {
+                u"publisher_blacklist": {
+                    u"state": 2,
+                    u"blacklist": [{
+                        u"exchange": u"adiant",
+                        u"domain": u"zemanta.com"
+                        }]
+                }
+            }, publisher_blacklist_action.first().payload['args']['conf'])
+        self.assertTrue(res['success'])
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_enable(self, cursor):
+
+        # blacklist must first exist in order to be deleted
+        models.PublisherBlacklist.objects.create(
+            name="zemanta.com",
+            ad_group=models.AdGroup.objects.get(pk=1),
+            source=models.Source.objects.get(tracking_slug='b1_adiant')
+        )
+
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'ctr': 0.0,
+            'exchange': 'adiant',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.ENABLED,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected":[],
+            "publishers_not_selected":[]
+        }
+        res = self._post_publisher_blacklist('1', payload)
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+        )
+        self.assertEqual(1, publisher_blacklist_action.count())
+        self.assertDictEqual(
+            {
+                u"publisher_blacklist": {
+                    u"state": 1,
+                    u"blacklist": [{
+                        u"exchange": u"adiant",
+                        u"domain": u"zemanta.com"
+                        }]
+                }
+            }, publisher_blacklist_action.first().payload['args']['conf'])
+
+        self.assertTrue(res['success'])
