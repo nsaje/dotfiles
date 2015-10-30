@@ -133,7 +133,7 @@ def process_touchpoint_conversions(redirects_impressions):
             try:
                 ca = dash.models.ContentAd.objects.select_related('ad_group__campaign').get(id=content_ad_id)
             except dash.models.ContentAd.DoesNotExist:
-                if content_ad_id != 0:
+                if content_ad_id != 0:  # unless legacy simple redirect
                     logger.warning('Unknown content ad. content_ad_id=%s ad_group_id=%s source=%s',
                                    content_ad_id, ad_group_id, source_slug)
                 continue
@@ -141,8 +141,7 @@ def process_touchpoint_conversions(redirects_impressions):
             try:
                 source = dash.models.Source.objects.get(tracking_slug=source_slug)
             except dash.models.Source.DoesNotExist:
-                if source_slug != 'z1':
-                    # source slug for visits from dashboard
+                if source_slug != 'z1':  # unless source slug from dashboard visits
                     logger.warning('Unknown source slug. source=%s', source_slug)
                 continue
 
