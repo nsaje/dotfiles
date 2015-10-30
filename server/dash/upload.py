@@ -21,6 +21,7 @@ from dash import models
 from dash import api
 from dash import constants
 from dash import image_helper
+from dash import threads
 from dash.forms import AdGroupAdsPlusUploadForm, MANDATORY_CSV_FIELDS, OPTIONAL_CSV_FIELDS  # to get fields & validators
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,7 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
     try:
         # ensure content ads are only commited to DB
         # if all of them are successfully processed
+        count_inserted = 0
         with transaction.atomic():
             rows = []
             all_content_ad_sources = []
@@ -72,6 +74,11 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
                     num_errors += len(errors)
 
                 rows.append(row)
+
+                # update progress in another thread to escape transaction
+                count_inserted += 1
+                t = threads.UpdateUploadBatchThread(batch.id, count_inserted)
+                t.start_and_join()
 
             if num_errors > 0:
                 # raise exception to rollback transaction

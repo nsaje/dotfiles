@@ -880,7 +880,6 @@ class AdGroupAdsPlusUploadTest(TestCase):
                     })
         self.assertFalse(mock_process_async.called)
 
-
     def test_validation_error(self):
         response = self._get_client().post(
             reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}), follow=True)
@@ -925,6 +924,71 @@ class AdGroupAdsPlusUploadTest(TestCase):
         )
 
         self.assertNotIn('Description is too long', response.content)
+
+
+class AdGroupAdsPlusUploadStatusTest(TestCase):
+
+    fixtures = ['test_views.yaml']
+
+    def _get_client(self, superuser=True):
+        password = 'secret'
+
+        user_id = 1 if superuser else 2
+        username = User.objects.get(pk=user_id).email
+
+        client = Client()
+        client.login(username=username, password=password)
+
+        return client
+
+    def _get_status(self):
+        response = self._get_client().get(
+            reverse('ad_group_ads_plus_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+
+        return json.loads(response.content)['data']
+
+    def test_get(self):
+        batch = models.UploadBatch.objects.get(pk=2)
+        batch.processed_content_ads = 55
+        batch.save()
+
+        response = self._get_status()
+        self.assertEqual(response, {
+            'status': constants.UploadBatchStatus.IN_PROGRESS,
+            'step': 'Processing imported file (step 1/3)',
+            'count': 55,
+            'all': 100
+        })
+
+        batch.inserted_content_ads = 55
+        batch.save()
+
+        # processing ended
+        response = self._get_status()
+        self.assertEqual(response, {
+            'status': constants.UploadBatchStatus.IN_PROGRESS,
+            'step': 'Inserting content ads (step 2/3)',
+            'count': 55,
+            'all': 100
+        })
+
+        # inserting ended
+        batch.inserted_content_ads = batch.batch_size
+        batch.save()
+
+        response = self._get_status()
+        self.assertEqual(response, {
+            'status': constants.UploadBatchStatus.IN_PROGRESS,
+            'step': 'Sending to external sources (step 3/3)',
+            'count': 0,
+            'all': 0
+        })
+
+    def test_permission(self):
+        response = self._get_client(superuser=False).get(
+            reverse('ad_group_ads_plus_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+
+        self.assertEqual(response.status_code, 403)
 
 
 class AdGroupSourcesTest(TestCase):

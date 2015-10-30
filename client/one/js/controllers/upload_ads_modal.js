@@ -6,7 +6,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
     $scope.callToActionSelect2Config = {
         dropdownCssClass: 'service-fee-select2',
         createSearchChoice: function (term, data) {
-            if ($(data).filter(function() { 
+            if ($(data).filter(function() {
                 return this.text.localeCompare(term)===0;
             }).length===0) {
                 return {id: term, text: term};
@@ -29,12 +29,13 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
                                     $scope.remindToAddBudget.resolve(data.available <= 0);
                                 });
                             }
-                            
+
                         } else if (data.status === constants.uploadBatchStatus.FAILED) {
                             $scope.isInProgress = false;
                             $scope.errors = data.errors;
                         }
                         $scope.countUploaded = data.count;
+                        $scope.uploadStep = data.step;
                         $scope.countAll = data.all;
                     },
                     function(data) {
@@ -72,8 +73,9 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
 
         $scope.isInProgress = true;
         $scope.countUploaded = 0;
+        $scope.uploadStep = 'Uploading';
         $scope.countAll = 0;
-        $scope.errors = null;        
+        $scope.errors = null;
 
         cleanDisplayUrl($scope.formData);
 
@@ -81,10 +83,11 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
             $state.params.id, $scope.formData
         ).then(function(batchId) {
             $scope.pollBatchStatus(batchId);
-            
+
         }, function(data) {
             $scope.isInProgress = false;
             $scope.countUploaded = 0;
+            $scope.uploadStep = '';
             $scope.countAll = 0;
             $scope.errors = data.errors;
         });

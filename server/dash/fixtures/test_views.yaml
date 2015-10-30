@@ -140,3 +140,13 @@
         created_dt: '2015-09-23T09:57:22'
     model: dash.campaignbudgetsettings
     pk: 1
+
+# test uploadbatch
+
+-   fields:
+        name: 'Ich bin eine UploadBatch'
+        status: 3  # in progress
+        batch_size: 100
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.uploadbatch
+    pk: 2
