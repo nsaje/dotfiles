@@ -5,6 +5,7 @@ from collections import OrderedDict
 from dash import models
 from dash import stats_helper
 from dash.views import helpers
+import reports.api_contentads
 
 from utils.sort_helper import sort_results
 
