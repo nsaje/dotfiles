@@ -106,11 +106,11 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', fu
             );
         } else if (row.type === constants.conversionGoalType.GA) {
             ret.rows.push(
-                {title: 'Goal number', value: row.goalId}
+                {title: 'Goal name', value: row.goalId}
             );
         } else if (row.type === constants.conversionGoalType.OMNITURE) {
             ret.rows.push(
-                {title: 'Event number', value: row.goalId}
+                {title: 'Event name', value: row.goalId}
             );
         }
 
