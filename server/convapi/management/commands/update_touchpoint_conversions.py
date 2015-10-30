@@ -24,12 +24,18 @@ class Command(BaseCommand):
         to_date = parse_date(options, 'to_date')
         account_ids = parse_id_list(options, 'account_ids')
 
+        if not from_date:
+            from_date = datetime.date.today()
+
+        if not to_date:
+            to_date = datetime.date.today()
+
         conversion_pixels = models.ConversionPixel.objects.filter(archived=False)
         if account_ids is not None:
             conversion_pixels = conversion_pixels.filter(account_id__in=account_ids)
 
         dates = []
-        while from_date < to_date:
+        while from_date <= to_date:
             dates.append(from_date)
             from_date = from_date + datetime.timedelta(days=1)
 
