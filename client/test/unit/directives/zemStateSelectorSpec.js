@@ -1,6 +1,6 @@
 'use strict';
 
-ddescribe('zemStateSelector', function() {
+describe('zemStateSelector', function() {
     var $scope, element, isolate;
     var data = [];
 
