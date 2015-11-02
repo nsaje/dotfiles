@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 from dash import models
 from dash import stats_helper
+from dash import budget
 from dash.views import helpers
 import reports.api_contentads
 
@@ -45,7 +46,7 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
                        'description', 'call_to_action']
 
 
-def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows, conversion_goals, **constraints):
+def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows, conversion_goals, include_budgets=False, **constraints):
     stats = stats_helper.get_stats_with_conversions(
         user,
         start_date,
@@ -55,6 +56,10 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         conversion_goals=conversion_goals,
         constraints=constraints
     )
+
+    if include_budgets and 'account' in dimensions:
+        all_accounts_budget = budget.GlobalBudget().get_total_by_account()
+        all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
 
     for stat in stats:
         stat['start_date'] = start_date
@@ -87,7 +92,15 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
             stat['account'] = campaign.account.name
             if ordering in ['name', '-name']:
                 ordering = ('-' if ordering[0] == '-' else '') + 'campaign'
+            if include_budgets:
+                stat['budget'] = budget.CampaignBudget(campaign).get_total()
+                stat['available_budget'] = stat['budget'] - budget.CampaignBudget(campaign).get_spend()
+                stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
         elif 'account' in dimensions:
+            if include_budgets:
+                stat['budget'] = all_accounts_budget.get(stat['account'], 0)
+                stat['available_budget'] = stat['budget'] - all_accounts_total_spend.get(stat['account'], 0)
+                stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
             stat['account'] = models.Account.objects.get(id=stat['account'])
             if ordering in ['name', '-name']:
                 ordering = ('-' if ordering[0] == '-' else '') + 'account'
@@ -115,10 +128,11 @@ def get_csv_content(fieldnames, data, title_text=None):
             value = item.get(key)
 
             if not value:
-                value = 'aaaa'
+                value = '0'
             elif value and key in ['avg_tos']:
                 value = '{:.1f}'.format(value)
-            elif value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'cost']:
+            elif value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate', 'pv_per_visit',
+                                   'avg_tos', 'cost', 'budget', 'available_budget', 'unspent_budget']:
                 value = '{:.2f}'.format(value)
             elif value and key in ['cpc']:
                 value = '{:.3f}'.format(value)
@@ -157,6 +171,7 @@ class AllAccountsExport(object):
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
+        include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
 
         results = _generate_rows(
             dimensions,
@@ -166,6 +181,7 @@ class AllAccountsExport(object):
             order,
             False,
             [],
+            include_budgets=include_budgets,
             account=accounts,
             source=filtered_sources)
 
@@ -190,6 +206,7 @@ class AccountCampaignsExport(object):
             dimensions.extend(['ad_group', 'content_ad'])
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
+        include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
 
         results = _generate_rows(
             dimensions,
@@ -199,6 +216,7 @@ class AccountCampaignsExport(object):
             order,
             breakdown == 'content_ad',
             [],
+            include_budgets=include_budgets,
             account=account,
             source=filtered_sources)
 
