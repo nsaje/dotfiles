@@ -17,6 +17,7 @@ import reports.views
 
 import dash.views.daily_stats
 import dash.views.export
+import dash.views.export_plus
 import dash.views.sync
 import dash.views.table
 import dash.views.agency
@@ -105,12 +106,16 @@ urlpatterns += patterns(
         name='ad_group_publishers_table'
     ),
     url(
-        r'^api/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))/(?P<id_>\d+)/export/allowed/',
-        login_required(dash.views.export.ExportAllowed.as_view())
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
+        login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
     ),
     url(
-        r'^api/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))/(?P<id_>\d+)/by_source/export/allowed/',
-        login_required(dash.views.export.SourcesExportAllowed.as_view())
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/export/allowed/',
+        login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/allowed/',
+        login_required(dash.views.export.CampaignAdGroupsExportAllowed.as_view())
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export/',
@@ -121,24 +126,16 @@ urlpatterns += patterns(
         login_required(dash.views.export.AccountCampaignsExport.as_view())
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/',
+        login_required(dash.views.export.AdGroupAdsExport.as_view())
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/export/',
         login_required(dash.views.export.AdGroupAdsPlusExport.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/export/',
         login_required(dash.views.export.AdGroupSourcesExport.as_view())
-    ),
-    url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/sources/export/',
-        login_required(dash.views.export.CampaignSourcesExport.as_view())
-    ),
-    url(
-        r'^api/accounts/(?P<account_id>\d+)/sources/export/',
-        login_required(dash.views.export.AccountSourcesExport.as_view())
-    ),
-    url(
-        r'^api/all_accounts//sources/export/',
-        login_required(dash.views.export.AllAccountsSourcesExport.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/table/',
@@ -353,6 +350,46 @@ urlpatterns += patterns(
         r'^api/users/(?P<user_id>(\d+|current))/$',
         login_required(dash.views.views.User.as_view()),
         name='user'
+    ),
+    url(
+        r'^api/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))/(?P<id_>\d+)/export_plus/allowed/',
+        login_required(dash.views.export_plus.ExportAllowed.as_view())
+    ),
+    url(
+        r'^api/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))/(?P<id_>\d+)/by_source/export_plus/allowed/',
+        login_required(dash.views.export_plus.SourcesExportAllowed.as_view())
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export_plus/',
+        login_required(dash.views.export_plus.CampaignAdGroupsExport.as_view())
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/campaigns/export_plus/',
+        login_required(dash.views.export_plus.AccountCampaignsExport.as_view())
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/export_plus/',
+        login_required(dash.views.export_plus.AdGroupAdsPlusExport.as_view())
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/export_plus/',
+        login_required(dash.views.export_plus.AdGroupSourcesExport.as_view())
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/sources/export_plus/',
+        login_required(dash.views.export_plus.CampaignSourcesExport.as_view())
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/sources/export_plus/',
+        login_required(dash.views.export_plus.AccountSourcesExport.as_view())
+    ),
+    url(
+        r'^api/all_accounts//sources/export_plus/',
+        login_required(dash.views.export_plus.AllAccountsSourcesExport.as_view())
+    ),
+    url(
+        r'^api/accounts/export_plus/',
+        login_required(dash.views.export_plus.AllAccountsExport.as_view())
     )
 )
 
