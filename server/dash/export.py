@@ -118,7 +118,6 @@ def get_csv_content(fieldnames, data, title_text=None):
 
     writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel')
 
-    # header
     writer.writerow(fieldnames)
 
     for item in data:

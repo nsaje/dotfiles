@@ -16,7 +16,6 @@ from utils import statsd_helper
 # DAVORIN TODO:
 # Un-commit table.py
 # Decide on a good number of rows alowed for export
-# unspent budget v Account/Cmpaigns in pa allAccounts/Accounts in allAccounts/campaigns (zgleduj se po dash/table.py)
 
 
 class ExportApiView(api_common.BaseApiView):
