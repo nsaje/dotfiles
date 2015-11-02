@@ -40,6 +40,10 @@ oneApp.directive('zemStateSelector', function () {
                 $scope.active = $scope.value === $scope.enabledValue;
             });
             $scope.$watch('autopilotValue', function(autopilotValue) {
+                if ($scope.autopilotEnabledValue === undefined) {
+                    // autopilot is optional, so if values are not set, do nothing
+                    return;
+                }
                 $scope.autopilotActive = $scope.autopilotValue === $scope.autopilotEnabledValue;
             });
         }]
