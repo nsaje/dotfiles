@@ -8,9 +8,7 @@ oneApp.directive('zemExport', function() {
             baseUrl: '=',
             startDate: '=',
             endDate: '=',
-            options: '=',
-            columns: '=',
-            order: '='
+            options: '='
         },
         templateUrl: '/partials/zem_export.html',
         controller: ['$scope', '$window', '$compile', 'zemFilterService', function($scope, $window, $compile, zemFilterService) {
@@ -37,7 +35,17 @@ oneApp.directive('zemExport', function() {
                     var popoverEl = angular.element(document.createElement('div'));
                     var option = getOptionByValue(object.id);
 
-                    var popoverText = 'This report is not available for download due to the volume of content. Please contact your account manager for assistance.';
+                    var popoverText = 'There is too much data to export.';
+                    if (option.maxDays) {
+                        popoverText += ' Please choose a smaller date range (' + option.maxDays;
+                        if (option.maxDays > 1) {
+                            popoverText += ' days or less).';
+                        } else {
+                            popoverText += ' day).';
+                        }
+                    } else {
+                        popoverText = 'This report is not available for download, due to the volume of content indexed in this campaign. Please contact your account manager for assistance.';
+                    }
 
                     popoverEl.attr('popover', popoverText);
                     popoverEl.attr('popover-trigger', 'mouseenter');
@@ -66,23 +74,11 @@ oneApp.directive('zemExport', function() {
             };
 
             $scope.downloadReport = function() {
-                var url = $scope.baseUrl + 'export/?type=' + $scope.exportType +
-                          '&start_date=' + $scope.startDate.format() +
-                          '&end_date=' + $scope.endDate.format() +
-                          '&order=' + $scope.order;
+                var url = $scope.baseUrl + 'export/?type=' + $scope.exportType + '&start_date=' + $scope.startDate.format() + '&end_date=' + $scope.endDate.format();
 
                 if (zemFilterService.isSourceFilterOn()) {
                     url += '&filtered_sources=' + zemFilterService.getFilteredSources().join(',');
                 }
-
-                var export_columns = []
-                for (var i = 0; i < $scope.columns.length; i++) {
-                  var col = $scope.columns[i]
-                  if (col.shown && col.checked && !col.unselectable){
-                    export_columns.push(col.field)
-                  }
-                }
-                url += '&additional_fields=' + export_columns.join(',');
 
                 $window.open(url, '_blank');
 
