@@ -16,7 +16,7 @@ from django.core.urlresolvers import reverse
 import utils.string_helper
 
 from dash import constants
-from dash import regions
+from dash import region_targeting_helper
 import reports.constants
 from utils import encryption_helpers
 from utils import statsd_helper
@@ -1144,26 +1144,18 @@ class AdGroupSettings(SettingsBase):
         dt += datetime.timedelta(days=1)
         return dt
 
-    def _get_list_for_region_type(self, region_type):
-        if region_type == constants.RegionType.COUNTRY:
-            return regions.COUNTRY_BY_CODE
-        elif region_type == constants.RegionType.SUBDIVISION:
-            return regions.SUBDIVISION_BY_CODE
-        elif region_type == constants.RegionType.DMA:
-            return regions.DMA_BY_CODE
-
     def targets_region_type(self, region_type):
-        regions = self._get_list_for_region_type(region_type)
+        regions = region_targeting_helper.get_list_for_region_type(region_type)
 
         return any(target_region in regions for target_region in self.target_regions or [])
 
     def get_targets_for_region_type(self, region_type):
-        regions_of_type = self._get_list_for_region_type(region_type)
+        regions_of_type = region_targeting_helper.get_list_for_region_type(region_type)
 
         return [target_region for target_region in self.target_regions or [] if target_region in regions_of_type]
 
     def get_target_names_for_region_type(self, region_type):
-        regions_of_type = self._get_list_for_region_type(region_type)
+        regions_of_type = region_targeting_helper.get_list_for_region_type(region_type)
 
         return [regions_of_type[target_region] for target_region in self.target_regions or [] if target_region in regions_of_type]
 

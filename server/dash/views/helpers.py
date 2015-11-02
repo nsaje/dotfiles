@@ -15,6 +15,7 @@ import actionlog.models
 from dash import models
 from dash import constants
 from dash import api
+from dash import region_targeting_helper
 from utils import exc
 from utils import statsd_helper
 import automation.autopilot
@@ -839,8 +840,8 @@ def _get_status_setting_disabled_message_for_target_regions(ad_group_source, ad_
 
         # disable when waiting for manual actions for target_regions after campaign creation
         # message this only when the source is about to be enabled for the first time
-        if not api.can_modify_selected_target_regions_automatically(source, ad_group_settings) and\
-           api.can_modify_selected_target_regions_manually(source, ad_group_settings) and\
+        if not region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) and\
+           region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings) and\
            actionlog.api.is_waiting_for_manual_set_target_regions_action(ad_group_source) and\
            not activation_settings.exists():
 

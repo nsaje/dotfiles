@@ -11,7 +11,6 @@ import actionlog.api
 import actionlog.api_contentads
 import actionlog.models
 import actionlog.constants
-import dash.models
 import utils.exc
 from utils import redirector_helper
 from utils import email_helper
@@ -20,6 +19,7 @@ from dash import exc
 from dash import models
 from dash import constants
 from dash import consistency
+from dash import region_targeting_helper
 
 import utils.url_helper
 
@@ -144,8 +144,8 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
     source = ad_group_source.source
 
     # if we could not select target regions automatically, see if we can select them manually
-    if not can_modify_selected_target_regions_automatically(source, ad_group_settings) and\
-       can_modify_selected_target_regions_manually(source, ad_group_settings):
+    if not region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) and\
+       region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings):
         new_field_value = _get_manual_action_target_regions_value(
             ad_group_source,
             None,
@@ -521,7 +521,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 source.update_tracking_codes_on_content_ads()) or
                field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or
                field_name == 'ad_group_name' and source.can_modify_ad_group_name() or
-               field_name == 'target_regions' and can_modify_selected_target_regions_automatically(
+               field_name == 'target_regions' and region_targeting_helper.can_modify_selected_target_regions_automatically(
                    source, current_settings, new_settings)) and not force_manual_change:
                 new_field_name = field_name
                 if field_name == 'ad_group_name':
@@ -570,7 +570,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     new_field_value = _substitute_tracking_macros(new_field_value, tracking_slug)
 
                 if field_name == 'target_regions':
-                    if not can_modify_selected_target_regions_manually(source, current_settings, new_settings):
+                    if not region_targeting_helper.can_modify_selected_target_regions_manually(source, current_settings, new_settings):
                         continue
 
                     new_field_value = _get_manual_action_target_regions_value(
@@ -933,38 +933,3 @@ def get_content_ad(content_ad_id):
         return models.ContentAd.objects.get(pk=content_ad_id)
     except models.ContentAd.DoesNotExist:
         return None
-
-
-def can_modify_selected_target_regions_automatically(source, *settings):
-    region_types = _get_region_types(settings)
-
-    # check for each region_type found if the source supports automatic modification
-    for region_type in region_types:
-        if not source.can_modify_targeting_for_region_type_automatically(region_type):
-            return False
-
-    return True
-
-
-def can_modify_selected_target_regions_manually(source, *settings):
-    region_types = _get_region_types(settings)
-
-    # check for each region_type found if the source supports manual modification
-    for region_type in region_types:
-        if not source.can_modify_targeting_for_region_type_manually(region_type):
-            return False
-
-    return True
-
-
-def _get_region_types(settingsTuple):
-    region_types = []
-
-    # build a list of region types present in the given settings
-    for region_type in constants.RegionType.get_all():
-        for settings in settingsTuple:
-            if settings.targets_region_type(region_type):
-                region_types.append(region_type)
-                break
-
-    return region_types
