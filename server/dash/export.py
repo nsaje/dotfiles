@@ -1,53 +1,78 @@
 import unicodecsv
+from xlsxwriter import Workbook
 import StringIO
-from collections import OrderedDict
 
 from dash import models
 from dash import stats_helper
-from dash import budget
-from dash.views import helpers
+
+import reports.api
 import reports.api_contentads
+import reports.api_helpers
 
 from utils.sort_helper import sort_results
 
-FIELDNAMES = {
-    'account': 'Account',
-    'ad_group': 'Ad Group',
-    'available_budget': 'Available Budget',
-    'avg_tos': 'Avg. ToS',
-    'bounce_rate': 'Bounce Rate',
-    'budget': 'Total Budget',
-    'campaign': 'Campaign',
-    'click_discrepancy': 'Click Discrepancy',
-    'clicks': 'Clicks',
-    'cost': 'Spend',
-    'cpc': 'Average CPC',
-    'ctr': 'CTR',
-    'ctr': 'CTR',
-    'end_date': 'End Date',
-    'image_url': 'Image URL',
-    'impressions': 'Impressions',
-    'pageviews': 'Pageviews',
-    'percent_new_users': 'Percent New Users',
-    'pv_per_visit': 'PV/Visit',
-    'source': 'Source',
-    'start_date': 'Start Date',
-    'title': 'Title',
-    'unspent_budget': 'Unspent Budget',
-    'visits': 'Visits'
-}
 
-UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
-                       'submission_status', 'titleLink', 'bid_cpc',
-                       'min_bid_cpc', 'max_bid_cpc', 'current_bid_cpc',
-                       'daily_budget', 'current_daily_budget', 'yesterday_cost',
-                       'image_urls', 'urlLink', 'upload_time',
-                       'batch_name', 'display_url', 'brand_name',
-                       'description', 'call_to_action']
+def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False, conversion_goals=None, **kwargs):
+    ordering = ['date'] if 'date' in dimensions else []
+
+    if 'content_ad' in dimensions:
+        return _generate_content_ad_rows(
+            dimensions,
+            start_date,
+            end_date,
+            user,
+            ordering,
+            ignore_diff_rows,
+            conversion_goals,
+            **kwargs
+        )
+
+    if user.has_perm('zemauth.can_see_redshift_postclick_statistics') and 'article' not in dimensions:
+        return stats_helper.get_stats_with_conversions(
+            user,
+            start_date,
+            end_date,
+            breakdown=dimensions,
+            order=ordering,
+            ignore_diff_rows=ignore_diff_rows,
+            conversion_goals=conversion_goals,
+            constraints=kwargs
+        )
+
+    return reports.api_helpers.filter_by_permissions(reports.api.query(
+        start_date,
+        end_date,
+        dimensions,
+        ordering,
+        ignore_diff_rows=ignore_diff_rows,
+        **kwargs
+    ), user)
 
 
-def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows, conversion_goals, include_budgets=False, **constraints):
-    stats = stats_helper.get_stats_with_conversions(
+def _get_content_ads(constraints):
+    sources = None
+    fields = {}
+
+    for key in constraints:
+        if key == 'source':
+            sources = constraints[key]
+        elif key == 'campaign':
+            fields['ad_group__campaign'] = constraints[key]
+        else:
+            fields[key] = constraints[key]
+
+    content_ads = models.ContentAd.objects.filter(**fields).select_related('batch')
+
+    if sources is not None:
+        content_ads = content_ads.filter_by_sources(sources)
+
+    return {c.id: c for c in content_ads}
+
+
+def _generate_content_ad_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows, conversion_goals, **constraints):
+    content_ads = _get_content_ads(constraints)
+
+    stats = stats_helper.get_content_ad_stats_with_conversions(
         user,
         start_date,
         end_date,
@@ -57,366 +82,140 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         constraints=constraints
     )
 
-    if include_budgets and 'account' in dimensions:
-        all_accounts_budget = budget.GlobalBudget().get_total_by_account()
-        all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
-
     for stat in stats:
-        stat['start_date'] = start_date
-        stat['end_date'] = end_date
+        content_ad = content_ads[stat['content_ad']]
+        stat['title'] = content_ad.title
+        stat['url'] = content_ad.url
+        stat['image_url'] = content_ad.get_image_url()
+        stat['uploaded'] = content_ad.created_dt.date()
 
-        if 'source' in stat:
-            stat['source'] = models.Source.objects.get(id=stat['source']).name
-            if ordering in ['name', '-name']:
-                ordering = ('-' if ordering[0] == '-' else '') + 'source'
-
-        if 'content_ad' in dimensions:
-            content_ad = models.ContentAd.objects.get(id=stat['content_ad'])
-            stat['ad_group'] = content_ad.ad_group.name
-            stat['campaign'] = content_ad.ad_group.campaign.name
-            stat['account'] = content_ad.ad_group.campaign.account.name
-            stat['title'] = content_ad.title
-            stat['url'] = content_ad.url
-            stat['image_url'] = content_ad.get_image_url()
-            stat['uploaded'] = content_ad.created_dt.date()
-        elif 'ad_group' in dimensions:
-            ad_group = models.AdGroup.objects.get(id=stat['ad_group'])
-            stat['ad_group'] = ad_group.name
-            stat['campaign'] = ad_group.campaign.name
-            stat['account'] = ad_group.campaign.account.name
-            if ordering in ['name', '-name']:
-                ordering = ('-' if ordering[0] == '-' else '') + 'ad_group'
-        elif 'campaign' in dimensions:
-            campaign = models.Campaign.objects.get(id=stat['campaign'])
-            stat['campaign'] = campaign
-            stat['account'] = campaign.account.name
-            if ordering in ['name', '-name']:
-                ordering = ('-' if ordering[0] == '-' else '') + 'campaign'
-            if include_budgets:
-                stat['budget'] = budget.CampaignBudget(campaign).get_total()
-                stat['available_budget'] = stat['budget'] - budget.CampaignBudget(campaign).get_spend()
-                stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
-        elif 'account' in dimensions:
-            if include_budgets:
-                stat['budget'] = all_accounts_budget.get(stat['account'], 0)
-                stat['available_budget'] = stat['budget'] - all_accounts_total_spend.get(stat['account'], 0)
-                stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
-            stat['account'] = models.Account.objects.get(id=stat['account'])
-            if ordering in ['name', '-name']:
-                ordering = ('-' if ordering[0] == '-' else '') + 'account'
-
-        for goal in conversion_goals:
-            stat[goal.name] = stat.pop(goal.get_view_key())
-
-    return sort_results(stats, [ordering])
+    return sort_results(stats, ordering)
 
 
-def get_csv_content(fieldnames, data, title_text=None):
+def get_csv_content(fieldnames, data, title_text=None, start_date=None, end_date=None):
     output = StringIO.StringIO()
+    need_nl = False
     if title_text is not None:
-        output.write('# {0}\n\n'.format(title_text))
+        output.write('# {0}\n'.format(title_text))
+        need_nl = True
+    if start_date is not None and end_date is not None:
+        output.write('# Start date {0}\n'.format(start_date.strftime('%m/%d/%Y')))
+        output.write('# End date {0}\n'.format(end_date.strftime('%m/%d/%Y')))
+        need_nl = True
+    if need_nl:
+        output.write('\n')
 
     writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel')
 
+    # header
     writer.writerow(fieldnames)
 
     for item in data:
         # Format
         row = {}
-        for key in fieldnames.keys():
+        for key in fieldnames:
             value = item.get(key)
 
-            if not value:
-                value = '0'
-            elif value and key in ['avg_tos']:
-                value = '{:.1f}'.format(value)
-            elif value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate', 'pv_per_visit',
-                                   'avg_tos', 'cost', 'budget', 'available_budget', 'unspent_budget']:
+            if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr', 'visits', 'pageviews']:
+                value = 0
+
+            if value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
                 value = '{:.2f}'.format(value)
-            elif value and key in ['cpc']:
-                value = '{:.3f}'.format(value)
 
             row[key] = value
-            if repr(value).find(';') != -1:
-                row[key] = '"' + value + '"'
 
         writer.writerow(row)
 
     return output.getvalue()
 
 
-def _get_fieldnames(required_fields, additional_fields, exclude=[]):
-    fields = [field for field in (required_fields + additional_fields) if field not in (UNEXPORTABLE_FIELDS + exclude)]
-    fieldnames = OrderedDict([(k, FIELDNAMES.get(k) or k) for k in fields])
-    return fieldnames
+def get_excel_content(sheets_data, start_date=None, end_date=None):
+    output = StringIO.StringIO()
+    workbook = Workbook(output, {'strings_to_urls': False})
+
+    format_date = workbook.add_format({'num_format': u'm/d/yy'})
+    format_percent = workbook.add_format({'num_format': u'0.00%'})
+    format_decimal = workbook.add_format({'num_format': u'0.00'})
+    format_usd = workbook.add_format({'num_format': u'[$$-409]#,##0.00;-[$$-409]#,##0.00'})
+
+    for name, columns, data in sheets_data:
+        # set format
+        for column in columns:
+            if 'format' in column:
+                format_id = column['format']
+
+                if format_id == 'date':
+                    column['format'] = format_date
+                elif format_id == 'currency':
+                    column['format'] = format_usd
+                elif format_id == 'percent':
+                    column['format'] = format_percent
+                elif format_id == 'decimal':
+                    column['format'] = format_decimal
+
+        _create_excel_worksheet(
+            workbook,
+            name,
+            columns,
+            data=[_get_excel_values_list(item, columns) for item in data],
+            start_date=start_date,
+            end_date=end_date
+        )
+
+    workbook.close()
+    output.seek(0)
+
+    return output.read()
 
 
-class AllAccountsExport(object):
-    def get_data(self, user, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
-        accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
-        if not user.has_perm('zemauth.view_archived_entities'):
-            accounts = accounts.exclude_archived()
+def _get_excel_value(item, key):
+    value = item.get(key)
 
-        required_fields = ['start_date', 'end_date', 'account']
-        dimensions = ['account']
-        exclude_fields = []
+    if not value and key in ['cost', 'cpc', 'clicks', 'impressions', 'ctr', 'visits', 'pageviews']:
+        value = 0
 
-        if breakdown == 'campaign':
-            required_fields.extend(['campaign'])
-            dimensions.extend(['campaign'])
-        elif breakdown == 'ad_group':
-            required_fields.extend(['campaign', 'ad_group'])
-            dimensions.extend(['campaign', 'ad_group'])
-            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
+    if value and key in ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate']:
+        value /= 100
 
-        fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
-        include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
-
-        results = _generate_rows(
-            dimensions,
-            start_date,
-            end_date,
-            user,
-            order,
-            False,
-            [],
-            include_budgets=include_budgets,
-            account=accounts,
-            source=filtered_sources)
-
-        return get_csv_content(fieldnames, results)
+    return value
 
 
-class AccountCampaignsExport(object):
-    def get_data(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
-        account = helpers.get_account(user, account_id)
-
-        dimensions = ['campaign']
-        required_fields = ['start_date', 'end_date', 'account', 'campaign']
-        exclude_fields = []
-
-        if breakdown == 'ad_group':
-            required_fields.extend(['ad_group'])
-            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
-            dimensions.extend(['ad_group'])
-        elif breakdown == 'content_ad':
-            required_fields.extend(['ad_group', 'title', 'image_url'])
-            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
-            dimensions.extend(['ad_group', 'content_ad'])
-
-        fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
-        include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
-
-        results = _generate_rows(
-            dimensions,
-            start_date,
-            end_date,
-            user,
-            order,
-            breakdown == 'content_ad',
-            [],
-            include_budgets=include_budgets,
-            account=account,
-            source=filtered_sources)
-
-        return get_csv_content(fieldnames, results)
+def _get_excel_values_list(item, columns):
+    return [_get_excel_value(item, column['key']) for column in columns]
 
 
-class CampaignAdGroupsExport(object):
-    def get_data(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
-        campaign = helpers.get_campaign(user, campaign_id)
-
-        dimensions = ['ad_group']
-        required_fields = ['start_date', 'end_date', 'account', 'campaign', 'ad_group']
-        if breakdown == 'content_ad':
-            required_fields.extend(['title', 'image_url'])
-            dimensions.extend(['content_ad'])
-        fieldnames = _get_fieldnames(required_fields, additional_fields)
-
-        conversion_goals = []
-        if user.has_perm('zemauth.conversion_reports'):
-            conversion_goals = campaign.conversiongoal_set.all()
-            for conversion_goal in conversion_goals:
-                if conversion_goal.get_view_key() in additional_fields:
-                    fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
-
-        results = _generate_rows(
-            dimensions,
-            start_date,
-            end_date,
-            user,
-            order,
-            breakdown == 'content_ad',
-            conversion_goals,
-            campaign=campaign,
-            source=filtered_sources)
-
-        return get_csv_content(fieldnames, results)
+def _write_excel_row(worksheet, row_index, column_data):
+    for column_index, column_value in enumerate(column_data):
+        worksheet.write(
+            row_index,
+            column_index,
+            column_value
+        )
 
 
-class SourcesExport(object):
-    def get_data_all_accounts(self, user, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
-        accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
-        if not user.has_perm('zemauth.view_archived_entities'):
-            accounts = accounts.exclude_archived()
+def _create_excel_worksheet(workbook, name, columns, data, start_date=None, end_date=None):
+    worksheet = workbook.add_worksheet(name)
 
-        required_fields = ['start_date', 'end_date']
-        dimensions = []
+    row_ix = 0
+    if start_date is not None and end_date is not None:
+        worksheet.write(row_ix, 0, name)
+        row_ix += 1
+        worksheet.write(row_ix, 0, 'Start date {0}'.format(start_date.strftime('%m/%d/%Y')))
+        row_ix += 1
+        worksheet.write(row_ix, 0, 'End date {0}'.format(end_date.strftime('%m/%d/%Y')))
+        row_ix += 2
 
-        if breakdown == 'account':
-            required_fields.extend(['account'])
-            dimensions.extend(['account'])
-        elif breakdown == 'campaign':
-            required_fields.extend(['account', 'campaign'])
-            dimensions.extend(['account', 'campaign'])
-        elif breakdown == 'ad_group':
-            required_fields.extend(['account', 'campaign', 'ad_group'])
-            dimensions.extend(['account', 'campaign', 'ad_group'])
+    for index, col in enumerate(columns):
+        worksheet.set_column(
+            index,
+            index,
+            col['width'] if 'width' in col else None,
+            col['format'] if 'format' in col else None
+        )
 
-        required_fields.extend(['source'])
-        fieldnames = _get_fieldnames(required_fields, additional_fields)
-        dimensions.extend(['source'])
+        worksheet.write(row_ix, index, col['name'])
 
-        results = _generate_rows(
-            dimensions,
-            start_date,
-            end_date,
-            user,
-            order,
-            False,
-            [],
-            account=accounts,
-            source=filtered_sources)
+    worksheet.freeze_panes(row_ix + 1, 0)  # freeze the first row
 
-        return get_csv_content(fieldnames, results)
-
-    def get_data_account(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
-        account = helpers.get_account(user, account_id)
-
-        required_fields = ['start_date', 'end_date', 'account']
-        dimensions = ['account']
-
-        if breakdown == 'campaign':
-            required_fields.extend(['campaign'])
-            dimensions.extend(['campaign'])
-        elif breakdown == 'ad_group':
-            required_fields.extend(['campaign', 'ad_group'])
-            dimensions.extend(['campaign', 'ad_group'])
-        elif breakdown == 'content_ad':
-            required_fields.extend(['campaign', 'ad_group', 'title', 'image_url'])
-            dimensions.extend(['campaign', 'ad_group', 'content_ad'])
-
-        required_fields.extend(['source'])
-        fieldnames = _get_fieldnames(required_fields, additional_fields)
-        dimensions.extend(['source'])
-
-        results = _generate_rows(
-            dimensions,
-            start_date,
-            end_date,
-            user,
-            order,
-            breakdown == 'content_ad',
-            [],
-            account=account,
-            source=filtered_sources)
-        return get_csv_content(fieldnames, results)
-
-    def get_data_campaign(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
-        campaign = helpers.get_campaign(user, campaign_id)
-
-        required_fields = ['start_date', 'end_date', 'account', 'campaign']
-        dimensions = ['campaign']
-
-        if breakdown == 'ad_group':
-            required_fields.extend(['ad_group'])
-            dimensions.extend(['ad_group'])
-        elif breakdown == 'content_ad':
-            required_fields.extend(['ad_group', 'title', 'image_url'])
-            dimensions.extend(['ad_group', 'content_ad'])
-
-        required_fields.extend(['source'])
-        fieldnames = _get_fieldnames(required_fields, additional_fields)
-        dimensions.extend(['source'])
-
-        conversion_goals = []
-        if user.has_perm('zemauth.conversion_reports'):
-            conversion_goals = campaign.conversiongoal_set.all()
-            for conversion_goal in conversion_goals:
-                if conversion_goal.get_view_key() in additional_fields:
-                    fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
-
-        results = _generate_rows(
-            dimensions,
-            start_date,
-            end_date,
-            user,
-            order,
-            breakdown == 'content_ad',
-            conversion_goals,
-            campaign=campaign,
-            source=filtered_sources)
-        return get_csv_content(fieldnames, results)
-
-    def get_data_ad_group(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
-        ad_group = helpers.get_ad_group(user, ad_group_id)
-
-        required_fields = ['start_date', 'end_date', 'account', 'campaign', 'ad_group']
-        dimensions = ['ad_group']
-
-        if breakdown == 'content_ad':
-            required_fields.extend(['title', 'image_url'])
-            dimensions.extend(['content_ad'])
-
-        required_fields.extend(['source'])
-        fieldnames = _get_fieldnames(required_fields, additional_fields)
-        dimensions.extend(['source'])
-
-        conversion_goals = []
-        if user.has_perm('zemauth.conversion_reports'):
-            conversion_goals = ad_group.campaign.conversiongoal_set.all()
-            for conversion_goal in conversion_goals:
-                if conversion_goal.get_view_key() in additional_fields:
-                    fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
-
-        results = _generate_rows(
-            dimensions,
-            start_date,
-            end_date,
-            user,
-            order,
-            breakdown == 'content_ad',
-            conversion_goals,
-            ad_group=ad_group,
-            source=filtered_sources)
-
-        return get_csv_content(fieldnames, results)
-
-
-class AdGroupAdsPlusExport(object):
-    def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields):
-
-        ad_group = helpers.get_ad_group(user, ad_group_id)
-
-        required_fields = ['start_date', 'end_date', 'account', 'campaign', 'ad_group', 'title', 'image_url']
-        fieldnames = _get_fieldnames(required_fields, additional_fields)
-
-        conversion_goals = []
-        if user.has_perm('zemauth.conversion_reports'):
-            conversion_goals = ad_group.campaign.conversiongoal_set.all()
-            for conversion_goal in conversion_goals:
-                if conversion_goal.get_view_key() in additional_fields:
-                    fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
-
-        results = _generate_rows(
-            ['content_ad'],
-            start_date,
-            end_date,
-            user,
-            order,
-            True,
-            conversion_goals,
-            ad_group=ad_group,
-            source=filtered_sources)
-
-        return get_csv_content(fieldnames, results)
+    for index, item in enumerate(data):
+        _write_excel_row(worksheet, index + row_ix + 1, item)

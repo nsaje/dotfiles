@@ -23,6 +23,166 @@ class AssertRowMixin(object):
             self.assertEqual(worksheet.cell_value(row_num, cell_num), cell_value)
 
 
+class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
+    fixtures = ['test_api']
+
+    def setUp(self):
+        self.query_patcher = patch('dash.export.reports.api_contentads.query')
+        self.mock_query = self.query_patcher.start()
+        self.mock_query.side_effect = [
+            [{
+                'account': 1,
+                'campaign': 1,
+                'content_ad': 1,
+                'date': datetime.date(2014, 7, 1),
+                'cost': 1000.12,
+                'cpc': 10.23,
+                'clicks': 103,
+                'impressions': 100000,
+                'ctr': 1.03,
+                'visits': 40,
+                'click_discrepancy': 0.2,
+                'pageviews': 123,
+                'percent_new_users': 33.0,
+                'bounce_rate': 12.0,
+                'pv_per_visit': 0.9,
+                'avg_tos': 1.0,
+                'some_random_metric': '12'
+            }],
+            [{
+                'account': 1,
+                'campaign': 1,
+                'content_ad': 1,
+                'source': 1,
+                'date': datetime.date(2014, 7, 1),
+                'cost': 1000.12,
+                'cpc': 10.23,
+                'clicks': 103,
+                'impressions': 100000,
+                'ctr': 1.03,
+                'visits': 30,
+                'click_discrepancy': 0.1,
+                'pageviews': 122,
+                'percent_new_users': 32.0,
+                'bounce_rate': 11.0,
+                'pv_per_visit': 0.8,
+                'avg_tos': 0.9,
+                'some_random_metric': '13'
+            }]
+        ]
+
+    def tearDown(self):
+        super(AllAccountsExportTestCase, self).tearDown()
+        self.query_patcher.stop()
+
+    def test_get_detailed_report_excel(self):
+        request = http.HttpRequest()
+        request.GET['type'] = 'excel'
+        request.GET['start_date'] = '2014-06-30'
+        request.GET['end_date'] = '2014-07-01'
+        request.user = Mock()
+        request.user.id = 1
+
+        response = export.AllAccountsExport().get(request)
+
+        filename = 'all_accounts_report_2014-06-30_2014-07-01.xlsx'
+
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        self.assertEqual(
+            response['Content-Disposition'],
+            'attachment; filename="%s"' % filename
+        )
+
+        workbook = xlrd.open_workbook(file_contents=response.content)
+        self.assertIsNotNone(workbook)
+
+        worksheet = workbook.sheet_by_name('Detailed Report')
+        self.assertIsNotNone(worksheet)
+
+        self._assert_row(
+            worksheet, 4,
+            ['Date', 'Account', 'Campaign', 'Account Manager', 'Sales Representative',
+             'Service Fee', 'IAB Category', 'Promotion Goal', 'Spend', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR',
+             'Fee Amount', 'Total Amount']
+        )
+
+        service_fee = 0.2
+        cost = 1000.12
+        fee_amount = round((cost / (1.0 - service_fee)) - cost, ndigits=2)
+        total_amount = fee_amount + cost
+
+        self._assert_row(
+            worksheet, 5,
+            [41821.0, u'test account 1 \u010c\u017e\u0161', u'test campaign 1 \u010c\u017e\u0161', 'N/A', 'N/A',
+             service_fee, 'N/A', 'N/A', cost, 10.23, 103.0, 100000.0, 0.0103,
+             fee_amount, total_amount]
+        )
+
+    def test_add_campaign_data(self):
+        request = http.HttpRequest()
+        request.user = models.User.objects.get(pk=2)
+
+        results = [{
+            'account': 1
+        }]
+        accounts = dash.models.Account.objects.filter(pk=1)
+
+        account = accounts[0]
+        account_settings = account.get_current_settings()
+        account_settings.service_fee = 0.13
+        account_settings.save(request)
+
+        export.AllAccountsExport().add_account_data(results, accounts)
+
+        self.assertItemsEqual(results, [{
+            'account': account.name,
+            'service_fee': 0.13
+        }])
+
+        results[0].update({
+            'campaign': 1,
+            'cost': 957.97
+        })
+
+        results_copy = copy.copy(results)
+        export.AllAccountsExport().add_campaign_data(results_copy, accounts)
+
+        self.assertItemsEqual(results_copy, [{
+            'account': u'test account 1 \u010c\u017e\u0161',
+            'iab_category': 'N/A',
+            'total_amount': 1101.1149425287356,
+            'campaign': u'test campaign 1 \u010c\u017e\u0161',
+            'fee_amount': 143.14494252873556,
+            'account_manager': 'N/A',
+            'promotion_goal': 'N/A',
+            'cost': 957.97,
+            'service_fee': 0.13,
+            'sales_representative': 'N/A'
+        }])
+
+        results[0].update({
+            'campaign': 1,
+            'cost': 957.97,
+            'service_fee': 'N/A'
+        })
+
+        results_copy = copy.copy(results)
+        export.AllAccountsExport().add_campaign_data(results_copy, accounts)
+
+        self.assertItemsEqual(results_copy, [{
+            'account': u'test account 1 \u010c\u017e\u0161',
+            'iab_category': 'N/A',
+            'total_amount': 'N/A',
+            'campaign': u'test campaign 1 \u010c\u017e\u0161',
+            'fee_amount': 'N/A',
+            'account_manager': 'N/A',
+            'promotion_goal': 'N/A',
+            'cost': 957.97,
+            'service_fee': 'N/A',
+            'sales_representative': 'N/A'
+        }])
+
+
 class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
     fixtures = ['test_api']
 
@@ -48,12 +208,14 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
                 'pv_per_visit': 0.9,
                 'avg_tos': 1.0,
                 'some_random_metric': '12'
-            }, {
-                'content_ad': 2,
+            }],
+            [{
+                'content_ad': 1,
+                'source': 1,
                 'date': datetime.date(2014, 7, 1),
                 'cost': 1000.12,
-                'cpc': 20.23,
-                'clicks': 203,
+                'cpc': 10.23,
+                'clicks': 103,
                 'impressions': 100000,
                 'ctr': 1.03,
                 'visits': 30,
@@ -68,31 +230,26 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         ]
 
         self.account_name = 'test account 1 Čžš'
-        self.campaign = 'test campaign 1 Čžš'
         self.ad_group_name = 'test adgroup 1 Čžš'
 
     def tearDown(self):
         super(AdGroupAdsPlusExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
-    def test_get_view(self):
+    def test_get_day(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'day-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,visits'
-        request.GET['order'] = '-visits'
         request.user = Mock()
         request.user.id = 1
 
         response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
 
-        expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,Average CPC,Clicks,Visits\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg,10.230,103,40\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789/200x300.jpg,20.230,203,30\r\n'''
-        filename = '{0}_{1}_{2}_report_2014-06-30_2014-07-01.csv'.format(
+        expected_content = '''Date,Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR,Visits,Click Discrepancy,Pageviews,% New Users,Bounce Rate,PV/Visit,Avg. ToS\r\n2014-07-01,/123456789/200x300.jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03,40,0.20,123,33.00,12.00,0.90,1.00\r\n'''
+
+        filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
-            slugify.slugify(self.campaign),
             slugify.slugify(self.ad_group_name)
         )
 
@@ -106,95 +263,74 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         )
         self.assertEqual(response.content, expected_content)
 
-
-class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
-    fixtures = ['test_api']
-
-    def setUp(self):
-        self.campaign_id = 1
-        self.query_patcher = patch('dash.export.reports.api.query')
-        self.mock_query = self.query_patcher.start()
-        self.mock_query.side_effect = [
-            [{
-                'content_ad': 1,
-                'ad_group': 1,
-                'campaign': 1,
-                'account': 1,
-                'date': datetime.date(2014, 7, 1),
-                'cost': 1000.12,
-                'cpc': 10.23,
-                'clicks': 103,
-                'impressions': 100000,
-                'ctr': 1.03
-            }, {
-                'content_ad': 2,
-                'ad_group': 2,
-                'campaign': 1,
-                'account': 1,
-                'date': datetime.date(2014, 7, 1),
-                'cost': 2000.12,
-                'cpc': 20.23,
-                'clicks': 203,
-                'impressions': 200000,
-                'ctr': 2.03
-            }]
-        ]
-
-        self.account_name = 'test account 1 Čžš'
-        self.campaign_name = 'test campaign 1 Čžš'
-
-    def tearDown(self):
-        super(CampaignAdGroupsExportTestCase, self).tearDown()
-        self.query_patcher.stop()
-
-    def test_get_view(self):
+    def test_get_day_excel(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'day-excel'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.GET['order'] = 'impressions'
-        request.user = models.User.objects.get(pk=2)
+        request.user = Mock()
+        request.user.id = 1
 
-        response = export.CampaignAdGroupsExport().get(request, self.campaign_id)
+        response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
 
-        expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,10.230,103,100000\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,test adgroup 2,20.230,203,200000\r\n'''
-
-        filename = '{0}_{1}_report_2014-06-30_2014-07-01.csv'.format(
+        filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.xlsx'.format(
             slugify.slugify(self.account_name),
-            slugify.slugify(self.campaign_name)
+            slugify.slugify(self.ad_group_name)
         )
 
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
+           response['Content-Disposition'],
+           'attachment; filename="%s"' % filename
         )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
 
-    def test_get_by_content_ad(self):
+        workbook = xlrd.open_workbook(file_contents=response.content)
+        self.assertIsNotNone(workbook)
+
+        worksheet = workbook.sheet_by_name('Detailed Report')
+        self.assertIsNotNone(worksheet)
+
+        self._assert_row(
+            worksheet, 0,
+            ['Date', 'Image URL', 'Title', 'URL',
+             'Uploaded', 'Spend', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR']
+        )
+
+        self._assert_row(
+            worksheet, 1,
+            [41821.0, '/123456789/200x300.jpg', u'Test Article unicode Čžš', 'http://testurl.com',
+             42056.0, 1000.12, 10.23, 103, 100000, 0.0103]
+        )
+
+        worksheet = workbook.sheet_by_name('Per Source Report')
+        self.assertIsNotNone(worksheet)
+
+        self._assert_row(worksheet, 0,
+            ['Date', 'Image URL', 'Title', 'URL', 'Uploaded', 'Source',
+             'Spend', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR']
+        )
+
+        self._assert_row(
+            worksheet, 1,
+            [41821.0, '/123456789/200x300.jpg', u'Test Article unicode Čžš', 'http://testurl.com',
+            42056.0, 'AdsNative', 1000.12, 10.23, 103, 100000, 0.0103]
+        )
+
+    def test_get_content_ad(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'contentad-csv'
+        request.GET['type'] = 'content-ad-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.GET['order'] = 'impressions'
-        request.user = models.User.objects.get(pk=2)
+        request.user = Mock()
+        request.user.id = 1
 
-        response = export.CampaignAdGroupsExport().get(request, self.campaign_id)
+        response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
 
-        expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg,10.230,103,100000\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789/200x300.jpg,20.230,203,200000\r\n'''
+        expected_content = '''Image URL,Title,URL,Uploaded,Spend,Avg. CPC,Clicks,Impressions,CTR,Visits,Click Discrepancy,Pageviews,% New Users,Bounce Rate,PV/Visit,Avg. ToS\r\n/123456789/200x300.jpg,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://testurl.com,2015-02-21,1000.12,10.23,103,100000,1.03,40,0.20,123,33.00,12.00,0.90,1.00\r\n'''
 
-        filename = '{0}_{1}_-_by_content_ad_report_2014-06-30_2014-07-01.csv'.format(
+        filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
-            slugify.slugify(self.campaign_name)
+            slugify.slugify(self.ad_group_name)
         )
 
         self.assertEqual(
@@ -207,63 +343,118 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
         )
         self.assertEqual(response.content, expected_content)
 
+    def test_get_content_ad_excel(self):
+        request = http.HttpRequest()
+        request.GET['type'] = 'content-ad-excel'
+        request.GET['start_date'] = '2014-06-30'
+        request.GET['end_date'] = '2014-07-01'
+        request.user = Mock()
+        request.user.id = 1
 
-class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
+        response = export.AdGroupAdsPlusExport().get(request, self.ad_group_id)
+
+        filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.xlsx'.format(
+            slugify.slugify(self.account_name),
+            slugify.slugify(self.ad_group_name)
+        )
+
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        self.assertEqual(
+           response['Content-Disposition'],
+           'attachment; filename="%s"' % filename
+        )
+
+        workbook = xlrd.open_workbook(file_contents=response.content)
+        self.assertIsNotNone(workbook)
+
+        worksheet = workbook.sheet_by_name('Detailed Report')
+        self.assertIsNotNone(worksheet)
+
+        self._assert_row(
+            worksheet, 0,
+            ['Image URL', 'Title', 'URL',
+             'Uploaded', 'Spend', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR']
+        )
+
+        self._assert_row(
+            worksheet, 1,
+            ['/123456789/200x300.jpg', u'Test Article unicode Čžš', 'http://testurl.com',
+             42056.0, 1000.12, 10.23, 103, 100000, 0.0103]
+        )
+
+        worksheet = workbook.sheet_by_name('Per Source Report')
+        self.assertIsNotNone(worksheet)
+
+        self._assert_row(worksheet, 0,
+            ['Image URL', 'Title', 'URL', 'Uploaded', 'Source',
+             'Spend', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR']
+        )
+
+        self._assert_row(
+            worksheet, 1,
+            ['/123456789/200x300.jpg', u'Test Article unicode Čžš', 'http://testurl.com',
+            42056.0, 'AdsNative', 1000.12, 10.23, 103, 100000, 0.0103]
+        )
+
+
+class AdGroupAdsRedshiftExportTestCase(AssertRowMixin, test.TestCase):
     fixtures = ['test_api']
 
     def setUp(self):
-        self.account_id = 1
+        self.ad_group_id = 1
+
         self.query_patcher = patch('dash.export.reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{
-                'content_ad': 1,
-                'ad_group': 1,
-                'campaign': 1,
-                'account': 1,
+                'article': 1,
                 'date': datetime.date(2014, 7, 1),
                 'cost': 1000.12,
                 'cpc': 10.23,
                 'clicks': 103,
                 'impressions': 100000,
-                'ctr': 1.03
-            }, {
-                'content_ad': 2,
-                'ad_group': 2,
-                'campaign': 2,
-                'account': 1,
+                'ctr': 1.03,
+                'title': u'Test Article with unicode Čžš',
+                'url': 'http://www.example.com',
+                'some_random_metric': '12'
+            }],
+            [{
+                'article': 1,
+                'source': 1,
                 'date': datetime.date(2014, 7, 1),
-                'cost': 2000.12,
-                'cpc': 20.23,
-                'clicks': 203,
-                'impressions': 200000,
-                'ctr': 2.03
+                'cost': 1000.12,
+                'cpc': 10.23,
+                'clicks': 103,
+                'impressions': 100000,
+                'ctr': 1.03,
+                'title': u'Test Article with unicode Čžš',
+                'url': 'http://www.example.com',
+                'some_random_metric': '13'
             }]
         ]
-
         self.account_name = 'test account 1 Čžš'
+        self.ad_group_name = 'test adgroup 1 Čžš'
 
     def tearDown(self):
-        super(AccountCampaignsExportTestCase, self).tearDown()
+        super(AdGroupAdsRedshiftExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
-    def test_get_view(self):
+    def test_get_csv(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.GET['order'] = 'impressions'
         request.user = models.User.objects.get(pk=2)
 
-        response = export.AccountCampaignsExport().get(request, self.account_id)
+        response = export.AdGroupAdsExport().get(request, self.ad_group_id)
 
-        expected_content = '''Start Date,End Date,Account,Campaign,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,10.230,103,100000\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,20.230,203,200000\r\n'''
+        expected_content = '''Date,Title,URL,Cost,CPC,Clicks,Impressions,CTR\r
+2014-07-01,Test Article with unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://www.example.com,1000.12,10.23,103,100000,1.03\r
+'''
 
-        filename = '{0}_report_2014-06-30_2014-07-01.csv'.format(
-            slugify.slugify(self.account_name)
+        filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.csv'.format(
+            slugify.slugify(self.account_name),
+            slugify.slugify(self.ad_group_name)
         )
 
         self.assertEqual(
@@ -276,115 +467,148 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
         )
         self.assertEqual(response.content, expected_content)
 
-    def test_get_by_ad_group(self):
+    def test_get_demo_csv(self):
+        demo_users = settings.DEMO_USERS
+
+        settings.DEMO_USERS = ('demo@example.com', )
+
         request = http.HttpRequest()
-        request.GET['type'] = 'adgroup-csv'
+        request.GET['type'] = 'csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
+        request.method = 'get'
         request.user = models.User.objects.get(pk=2)
-        request.GET['order'] = 'impressions'
 
-        response = export.AccountCampaignsExport().get(request, self.account_id)
+        with self.assertRaises(exc.MissingDataError):
+            response = export.AdGroupAdsExport().get(request, 100000)
 
-        expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,10.230,103,100000\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,test adgroup 2,20.230,203,200000\r\n'''
-
-        filename = '{0}_-_by_ad_group_report_2014-06-30_2014-07-01.csv'.format(
-            slugify.slugify(self.account_name)
-        )
-
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
+        request.user.email = 'demo@example.com'
+        response = export.AdGroupAdsExport().dispatch(request, 100000)
+        expected_content = '''Date,Cost,Avg. CPC,Clicks,Impressions,CTR\r\n'''
         self.assertEqual(response.content, expected_content)
 
-    def test_get_by_content_ad(self):
+        settings.DEMO_USERS = demo_users
+
+    def test_get_demo_excel(self):
+        demo_users = settings.DEMO_USERS
+
+        settings.DEMO_USERS = ('demo@example.com', )
+
         request = http.HttpRequest()
-        request.GET['type'] = 'contentad-csv'
+        request.GET['type'] = 'excel'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
+        request.method = 'get'
         request.user = models.User.objects.get(pk=2)
-        request.GET['order'] = 'impressions'
 
-        response = export.AccountCampaignsExport().get(request, self.account_id)
+        with self.assertRaises(exc.MissingDataError):
+            response = export.AdGroupAdsExport().get(request, 100000)
+        request.user.email = 'demo@example.com'
+        response = export.AdGroupAdsExport().dispatch(request, 100000)
+        self.assertEqual(response['Content-Type'],
+                         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
-        expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg,10.230,103,100000\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789/200x300.jpg,20.230,203,200000\r\n'''
+        settings.DEMO_USERS = demo_users
 
-        filename = '{0}_-_by_content_ad_report_2014-06-30_2014-07-01.csv'.format(
-            slugify.slugify(self.account_name)
+    def test_get_excel(self):
+        request = http.HttpRequest()
+        request.GET['type'] = 'excel'
+        request.GET['start_date'] = '2014-06-30'
+        request.GET['end_date'] = '2014-07-01'
+        request.user = models.User.objects.get(pk=2)
+
+        response = export.AdGroupAdsExport().get(request, self.ad_group_id)
+
+        filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.xlsx'.format(
+            slugify.slugify(self.account_name),
+            slugify.slugify(self.ad_group_name)
         )
 
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
+           response['Content-Disposition'],
+           'attachment; filename="%s"' % filename
         )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
+
+        workbook = xlrd.open_workbook(file_contents=response.content)
+        self.assertIsNotNone(workbook)
+
+        worksheet = workbook.sheet_by_name('Detailed Report')
+        self.assertIsNotNone(worksheet)
+
+        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
+
+        self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com',
+            1000.12, 10.23, 103, 100000, 0.0103])
+
+        worksheet = workbook.sheet_by_name('Per Source Report')
+        self.assertIsNotNone(worksheet)
+
+        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Source', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
+
+        self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 'AdsNative',
+            1000.12, 10.23, 103, 100000, 0.0103])
 
 
-class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
+class AdGroupAdsExportTestCase(AssertRowMixin, test.TestCase):
     fixtures = ['test_api']
 
     def setUp(self):
+        self.ad_group_id = 1
+
         self.query_patcher = patch('dash.export.reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{
-                'content_ad': 1,
-                'ad_group': 1,
-                'campaign': 1,
-                'account': 1,
+                'article': 1,
                 'date': datetime.date(2014, 7, 1),
                 'cost': 1000.12,
                 'cpc': 10.23,
                 'clicks': 103,
                 'impressions': 100000,
-                'ctr': 1.03
-            }, {
-                'content_ad': 2,
-                'ad_group': 2,
-                'campaign': 2,
-                'account': 1,
+                'ctr': 1.03,
+                'title': u'Test Article with unicode Čžš',
+                'url': 'http://www.example.com',
+                'some_random_metric': '12'
+            }],
+            [{
+                'article': 1,
+                'source': 1,
                 'date': datetime.date(2014, 7, 1),
-                'cost': 2000.12,
-                'cpc': 20.23,
-                'clicks': 203,
-                'impressions': 200000,
-                'ctr': 2.03
+                'cost': 1000.12,
+                'cpc': 10.23,
+                'clicks': 103,
+                'impressions': 100000,
+                'ctr': 1.03,
+                'title': u'Test Article with unicode Čžš',
+                'url': 'http://www.example.com',
+                'some_random_metric': '13'
             }]
         ]
+        self.account_name = 'test account 1 Čžš'
+        self.ad_group_name = 'test adgroup 1 Čžš'
 
     def tearDown(self):
-        super(AllAccountsExportTestCase, self).tearDown()
+        super(AdGroupAdsExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
-    def test_get_view(self):
+    def test_get_csv(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
+        request.user = models.User.objects.get(pk=1)
 
-        response = export.AllAccountsExport().get(request)
+        response = export.AdGroupAdsExport().get(request, self.ad_group_id)
 
-        expected_content = '''Start Date,End Date,Account,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,20.230,203,200000\r\n'''
+        expected_content = '''Date,Title,URL,Cost,CPC,Clicks,Impressions,CTR\r
+2014-07-01,Test Article with unicode \xc4\x8c\xc5\xbe\xc5\xa1,http://www.example.com,1000.12,10.23,103,100000,1.03\r
+'''
 
-        filename = 'ZemantaOne_report_2014-06-30_2014-07-01.csv'
+        filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.csv'.format(
+            slugify.slugify(self.account_name),
+            slugify.slugify(self.ad_group_name)
+        )
 
         self.assertEqual(
             response['Content-Type'],
@@ -396,59 +620,87 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         )
         self.assertEqual(response.content, expected_content)
 
-    def test_get_by_campaign(self):
+    def test_get_demo_csv(self):
+        demo_users = settings.DEMO_USERS
+
+        settings.DEMO_USERS = ('demo@example.com', )
+
         request = http.HttpRequest()
-        request.GET['type'] = 'campaign-csv'
+        request.GET['type'] = 'csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
-        request.GET['order'] = '-impressions'
+        request.method = 'get'
+        request.user = models.User.objects.get(pk=1)
 
-        response = export.AllAccountsExport().get(request)
+        with self.assertRaises(exc.MissingDataError):
+            response = export.AdGroupAdsExport().get(request, 100000)
 
-        expected_content = '''Start Date,End Date,Account,Campaign,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,20.230,203,200000\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,10.230,103,100000\r\n'''
-
-        filename = 'ZemantaOne_-_by_campaign_report_2014-06-30_2014-07-01.csv'
-
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
+        request.user.email = 'demo@example.com'
+        response = export.AdGroupAdsExport().dispatch(request, 100000)
+        expected_content = '''Date,Cost,Avg. CPC,Clicks,Impressions,CTR\r\n'''
         self.assertEqual(response.content, expected_content)
 
-    def test_get_by_ad_group(self):
+        settings.DEMO_USERS = demo_users
+
+    def test_get_demo_excel(self):
+        demo_users = settings.DEMO_USERS
+
+        settings.DEMO_USERS = ('demo@example.com', )
+
         request = http.HttpRequest()
-        request.GET['type'] = 'adgroup-csv'
+        request.GET['type'] = 'excel'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
-        request.GET['order'] = 'impressions'
+        request.method = 'get'
+        request.user = models.User.objects.get(pk=1)
 
-        response = export.AllAccountsExport().get(request)
+        with self.assertRaises(exc.MissingDataError):
+            response = export.AdGroupAdsExport().get(request, 100000)
+        request.user.email = 'demo@example.com'
+        response = export.AdGroupAdsExport().dispatch(request, 100000)
+        self.assertEqual(response['Content-Type'],
+                         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
-        expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,10.230,103,100000\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,test adgroup 2,20.230,203,200000\r\n'''
+        settings.DEMO_USERS = demo_users
 
-        filename = 'ZemantaOne_-_by_ad_group_report_2014-06-30_2014-07-01.csv'
+    def test_get_excel(self):
+        request = http.HttpRequest()
+        request.GET['type'] = 'excel'
+        request.GET['start_date'] = '2014-06-30'
+        request.GET['end_date'] = '2014-07-01'
+        request.user = models.User.objects.get(pk=1)
 
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
+        response = export.AdGroupAdsExport().get(request, self.ad_group_id)
+
+        filename = '{0}_{1}_detailed_report_2014-06-30_2014-07-01.xlsx'.format(
+            slugify.slugify(self.account_name),
+            slugify.slugify(self.ad_group_name)
         )
+
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
+           response['Content-Disposition'],
+           'attachment; filename="%s"' % filename
         )
-        self.assertEqual(response.content, expected_content)
+
+        workbook = xlrd.open_workbook(file_contents=response.content)
+        self.assertIsNotNone(workbook)
+
+        worksheet = workbook.sheet_by_name('Detailed Report')
+        self.assertIsNotNone(worksheet)
+
+        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
+
+        self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com',
+            1000.12, 10.23, 103, 100000, 0.0103])
+
+        worksheet = workbook.sheet_by_name('Per Source Report')
+        self.assertIsNotNone(worksheet)
+
+        self._assert_row(worksheet, 0, ['Date', 'Title', 'URL', 'Source', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
+
+        self._assert_row(worksheet, 1, [41821.0, u'Test Article with unicode Čžš', 'http://www.example.com', 'AdsNative',
+            1000.12, 10.23, 103, 100000, 0.0103])
 
 
 class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
@@ -461,8 +713,7 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{
-                'content_ad': 1,
-                'ad_group': 1,
+                'article': 1,
                 'date': datetime.date(2014, 7, 1),
                 'cost': 1000.12,
                 'cpc': 10.23,
@@ -470,46 +721,41 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
                 'impressions': 100000,
                 'ctr': 1.03,
                 'some_random_metric': 12,
-                'source': 4
-            }, {
-                'content_ad': 2,
-                'ad_group': 1,
+                'source': 2
+            }],
+            [{
+                'article': 1,
+                'source': 1,
                 'date': datetime.date(2014, 7, 1),
                 'cost': 1000.12,
-                'cpc': 20.23,
-                'clicks': 203,
-                'impressions': 200000,
+                'cpc': 10.23,
+                'clicks': 103,
+                'impressions': 100000,
                 'ctr': 1.03,
                 'some_random_metric': 13,
-                'source': 1
+                'source': 2
             }]
         ]
         self.account_name = 'test account 1 Čžš'
-        self.campaign_name = 'test campaign 1 Čžš'
         self.ad_group_name = 'test adgroup 1 Čžš'
 
     def tearDown(self):
         super(AdGroupSourcesExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
-    def test_get_view(self):
+    def test_get_csv(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.GET['order'] = '-impressions'
         request.user = models.User.objects.get(pk=2)
 
         response = export.AdGroupSourcesExport().get(request, self.ad_group_id)
 
-        expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Source,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,AdsNative,20.230,203,200000\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Taboola,10.230,103,100000\r\n'''
+        expected_content = '''Date,Source,Cost,CPC,Clicks,Impressions,CTR\r\n2014-07-01,Gravity,1000.12,10.23,103,100000,1.03\r\n'''
 
-        filename = '{0}_{1}_{2}_media_source_report_2014-06-30_2014-07-01.csv'.format(
+        filename = '{0}_{1}_per_sources_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
-            slugify.slugify(self.campaign_name),
             slugify.slugify(self.ad_group_name)
         )
 
@@ -523,403 +769,37 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
         )
         self.assertEqual(response.content, expected_content)
 
-
-class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
-    fixtures = ['test_api']
-
-    def setUp(self):
-        self.campaign_id = 1
-
-        self.query_patcher = patch('dash.export.reports.api.query')
-        self.mock_query = self.query_patcher.start()
-        self.mock_query.side_effect = [
-            [{
-                'content_ad': 1,
-                'ad_group': 1,
-                'campaign': 1,
-                'date': datetime.date(2014, 7, 1),
-                'cost': 1000.12,
-                'cpc': 10.23,
-                'clicks': 103,
-                'impressions': 100000,
-                'ctr': 1.03,
-                'some_random_metric': 12,
-                'source': 4
-            }]
-        ]
-        self.account_name = 'test account 1 Čžš'
-        self.campaign_name = 'test campaign 1 Čžš'
-
-    def tearDown(self):
-        super(CampaignSourcesExportTestCase, self).tearDown()
-        self.query_patcher.stop()
-
-    def test_get_view(self):
+    def test_get_excel(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'excel'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
         request.user = models.User.objects.get(pk=2)
 
-        response = export.CampaignSourcesExport().get(request, self.campaign_id)
+        response = export.AdGroupSourcesExport().get(request, self.ad_group_id)
 
-        expected_content = '''Start Date,End Date,Account,Campaign,Source,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Taboola,10.230,103,100000\r\n'''
-
-        filename = '{0}_{1}_media_source_report_2014-06-30_2014-07-01.csv'.format(
+        filename = '{0}_{1}_per_sources_report_2014-06-30_2014-07-01.xlsx'.format(
             slugify.slugify(self.account_name),
-            slugify.slugify(self.campaign_name)
+            slugify.slugify(self.ad_group_name)
         )
 
+        self.assertEqual(response['Content-Type'], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
-
-    def test_get_by_ad_group(self):
-        request = http.HttpRequest()
-        request.GET['type'] = 'adgroup-csv'
-        request.GET['start_date'] = '2014-06-30'
-        request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
-
-        response = export.CampaignSourcesExport().get(request, self.campaign_id)
-
-        expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Source,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Taboola,10.230,103,100000\r\n'''
-
-        filename = '{0}_{1}_-_by_ad_group_media_source_report_2014-06-30_2014-07-01.csv'.format(
-            slugify.slugify(self.account_name),
-            slugify.slugify(self.campaign_name)
+           response['Content-Disposition'],
+           'attachment; filename="%s"' % filename
         )
 
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
+        workbook = xlrd.open_workbook(file_contents=response.content)
+        self.assertIsNotNone(workbook)
 
-    def test_get_by_content_ad(self):
-        request = http.HttpRequest()
-        request.GET['type'] = 'contentad-csv'
-        request.GET['start_date'] = '2014-06-30'
-        request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
+        worksheet = workbook.sheet_by_name('Per Day Report')
+        self.assertIsNotNone(worksheet)
 
-        response = export.CampaignSourcesExport().get(request, self.campaign_id)
+        self._assert_row(worksheet, 0, ['Date', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
+        self._assert_row(worksheet, 1, [41821.0, 1000.12, 10.23, 103, 100000, 0.0103])
 
-        expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,Source,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg,Taboola,10.230,103,100000\r\n'''
+        worksheet = workbook.sheet_by_name('Per Source Report')
+        self.assertIsNotNone(worksheet)
 
-        filename = '{0}_{1}_-_by_content_ad_media_source_report_2014-06-30_2014-07-01.csv'.format(
-            slugify.slugify(self.account_name),
-            slugify.slugify(self.campaign_name)
-        )
-
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
-
-
-class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
-    fixtures = ['test_api']
-
-    def setUp(self):
-        self.account_id = 1
-
-        self.query_patcher = patch('dash.export.reports.api.query')
-        self.mock_query = self.query_patcher.start()
-        self.mock_query.side_effect = [
-            [{
-                'content_ad': 1,
-                'ad_group': 1,
-                'campaign': 1,
-                'account': 1,
-                'date': datetime.date(2014, 7, 1),
-                'cost': 1000.12,
-                'cpc': 10.23,
-                'clicks': 103,
-                'impressions': 100000,
-                'ctr': 1.03,
-                'some_random_metric': 12,
-                'source': 4
-            }]
-        ]
-        self.account_name = 'test account 1 Čžš'
-
-    def tearDown(self):
-        super(AccountSourcesExportTestCase, self).tearDown()
-        self.query_patcher.stop()
-
-    def test_get_view(self):
-        request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
-        request.GET['start_date'] = '2014-06-30'
-        request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
-
-        response = export.AccountSourcesExport().get(request, self.account_id)
-
-        expected_content = '''Start Date,End Date,Account,Source,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Taboola,10.230,103,100000\r\n'''
-
-        filename = '{0}_media_source_report_2014-06-30_2014-07-01.csv'.format(
-            slugify.slugify(self.account_name)
-        )
-
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
-
-    def test_get_by_campaign(self):
-        request = http.HttpRequest()
-        request.GET['type'] = 'campaign-csv'
-        request.GET['start_date'] = '2014-06-30'
-        request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
-
-        response = export.AccountSourcesExport().get(request, self.account_id)
-
-        expected_content = '''Start Date,End Date,Account,Campaign,Source,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Taboola,10.230,103,100000\r\n'''
-
-        filename = '{0}_-_by_campaign_media_source_report_2014-06-30_2014-07-01.csv'.format(
-            slugify.slugify(self.account_name)
-        )
-
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
-
-    def test_get_by_ad_group(self):
-        request = http.HttpRequest()
-        request.GET['type'] = 'adgroup-csv'
-        request.GET['start_date'] = '2014-06-30'
-        request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
-
-        response = export.AccountSourcesExport().get(request, self.account_id)
-
-        expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Source,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Taboola,10.230,103,100000\r\n'''
-
-        filename = '{0}_-_by_ad_group_media_source_report_2014-06-30_2014-07-01.csv'.format(
-            slugify.slugify(self.account_name)
-        )
-
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
-
-    def test_get_by_content_ad(self):
-        request = http.HttpRequest()
-        request.GET['type'] = 'contentad-csv'
-        request.GET['start_date'] = '2014-06-30'
-        request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
-
-        response = export.AccountSourcesExport().get(request, self.account_id)
-
-        expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,Source,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg,Taboola,10.230,103,100000\r\n'''
-
-        filename = '{0}_-_by_content_ad_media_source_report_2014-06-30_2014-07-01.csv'.format(
-            slugify.slugify(self.account_name)
-        )
-
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
-
-
-class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
-    fixtures = ['test_api']
-
-    def setUp(self):
-        self.query_patcher = patch('dash.export.reports.api.query')
-        self.mock_query = self.query_patcher.start()
-        self.mock_query.side_effect = [
-            [{
-                'ad_group': 1,
-                'campaign': 1,
-                'account': 1,
-                'date': datetime.date(2014, 7, 1),
-                'cost': 1000.12,
-                'cpc': 10.23,
-                'clicks': 103,
-                'impressions': 100000,
-                'ctr': 1.03,
-                'some_random_metric': 12,
-                'source': 4
-            }, {
-                'ad_group': 2,
-                'campaign': 2,
-                'account': 1,
-                'date': datetime.date(2014, 7, 1),
-                'cost': 2000.12,
-                'cpc': 20.23,
-                'clicks': 203,
-                'impressions': 200000,
-                'ctr': 2.03,
-                'some_random_metric': 13,
-                'source': 3
-            }]
-        ]
-
-    def tearDown(self):
-        super(AllAccountsSourcesExportTestCase, self).tearDown()
-        self.query_patcher.stop()
-
-    def test_get_view(self):
-        request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
-        request.GET['start_date'] = '2014-06-30'
-        request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.GET['order'] = '-impressions'
-        request.user = models.User.objects.get(pk=2)
-
-        response = export.AllAccountsSourcesExport().get(request)
-
-        expected_content = '''Start Date,End Date,Source,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,Outbrain,20.230,203,200000\r
-2014-06-30,2014-07-01,Taboola,10.230,103,100000\r\n'''
-
-        filename = 'ZemantaOne_media_source_report_2014-06-30_2014-07-01.csv'
-
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
-
-    def test_get_by_account(self):
-        request = http.HttpRequest()
-        request.GET['type'] = 'account-csv'
-        request.GET['start_date'] = '2014-06-30'
-        request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
-        request.GET['order'] = '-impressions'
-
-        response = export.AllAccountsSourcesExport().get(request)
-
-        expected_content = '''Start Date,End Date,Account,Source,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Outbrain,20.230,203,200000\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,Taboola,10.230,103,100000\r\n'''
-
-        filename = 'ZemantaOne_-_by_account_media_source_report_2014-06-30_2014-07-01.csv'
-
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
-
-    def test_get_by_campaign(self):
-        request = http.HttpRequest()
-        request.GET['type'] = 'campaign-csv'
-        request.GET['start_date'] = '2014-06-30'
-        request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.user = models.User.objects.get(pk=2)
-        request.GET['order'] = '-impressions'
-
-        response = export.AllAccountsSourcesExport().get(request)
-
-        expected_content = '''Start Date,End Date,Account,Campaign,Source,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,Outbrain,20.230,203,200000\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Taboola,10.230,103,100000\r\n'''
-
-        filename = 'ZemantaOne_-_by_campaign_media_source_report_2014-06-30_2014-07-01.csv'
-
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
-
-    def test_get_by_ad_group(self):
-        request = http.HttpRequest()
-        request.GET['type'] = 'adgroup-csv'
-        request.GET['start_date'] = '2014-06-30'
-        request.GET['end_date'] = '2014-07-01'
-        request.GET['additional_fields'] = 'cpc,clicks,impressions'
-        request.GET['order'] = '-impressions'
-        request.user = models.User.objects.get(pk=2)
-
-        response = export.AllAccountsSourcesExport().get(request)
-
-        expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Source,Average CPC,Clicks,Impressions\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,test adgroup 2,Outbrain,20.230,203,200000\r
-2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Taboola,10.230,103,100000\r\n'''
-
-        filename = 'ZemantaOne_-_by_ad_group_media_source_report_2014-06-30_2014-07-01.csv'
-
-        self.assertEqual(
-            response['Content-Type'],
-            'text/csv; name="%s"' % filename
-        )
-        self.assertEqual(
-            response['Content-Disposition'],
-            'attachment; filename="%s"' % filename
-        )
-        self.assertEqual(response.content, expected_content)
+        self._assert_row(worksheet, 0, ['Date', 'Source', 'Cost', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR'])
+        self._assert_row(worksheet, 1, [41821.0, 'Gravity', 1000.12, 10.23, 103, 100000, 0.0103])
