@@ -15,7 +15,7 @@ from utils import statsd_helper
 
 # DAVORIN TODO:
 # Un-commit table.py
-# fix librato
+# Decide on a good number of rows alowed for export
 # unspent budget v Account/Cmpaigns in pa allAccounts/Accounts in allAccounts/campaigns (zgleduj se po dash/table.py)
 
 
@@ -119,7 +119,7 @@ class CampaignAdGroupsExport(ExportApiView):
 class ExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 16134000 # DAVORIN remove 0
 
-    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_allowed_get')
+    @statsd_helper.statsd_timer('dash.export', 'export_allowed_get')
     def get(self, request, id_, level_):
         user = request.user
 
@@ -162,7 +162,7 @@ class ExportAllowed(api_common.BaseApiView):
 class SourcesExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 16134000 # DAVORIN remove 0
 
-    @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_allowed_get')
+    @statsd_helper.statsd_timer('dash.export', 'sources_export_allowed_get')
     def get(self, request, id_, level_):
         user = request.user
         filtered_sources_num = len(helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')))
@@ -230,7 +230,7 @@ class AdGroupAdsPlusExport(ExportApiView):
 
 
 class AllAccountsSourcesExport(ExportApiView):
-    @statsd_helper.statsd_timer('dash.export', 'account_sources_export_get')
+    @statsd_helper.statsd_timer('dash.export', 'all_accounts_sources_export_get')
     def get(self, request):
         user = request.user
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
@@ -388,6 +388,7 @@ class AdGroupSourcesExport(ExportApiView):
 
 
 class AllAccountsExport(ExportApiView):
+    @statsd_helper.statsd_timer('dash.export', 'all_accounts_export_get')
     def get(self, request):
         user = request.user
 
