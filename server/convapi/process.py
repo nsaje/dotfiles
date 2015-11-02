@@ -6,7 +6,6 @@ import math
 import pytz
 from multiprocessing.pool import ThreadPool
 
-from django.db.models import Min
 from django.conf import settings
 
 import dash.models
@@ -17,8 +16,7 @@ from utils import statsd_helper
 
 logger = logging.getLogger(__name__)
 
-# take ET into consideration - server time is in UTC while we query for ET dates
-ADDITIONAL_SYNC_HOURS = 10
+ADDITIONAL_SYNC_HOURS = 4
 
 NUM_THREADS = 20
 
@@ -29,28 +27,25 @@ def _utc_datetime_to_est_date(dt):
 
 
 def _get_dates_to_sync(conversion_pixels):
-    min_last_sync_dt = conversion_pixels.\
-        filter(last_sync_dt__isnull=False).\
-        aggregate(Min('last_sync_dt'))['last_sync_dt__min']
+    pairs = []
+    for conversion_pixel in conversion_pixels:
+        if conversion_pixel.last_sync_dt is None:
+            pairs.append((_utc_datetime_to_est_date(datetime.datetime.utcnow()), conversion_pixel))
+            continue
 
-    if min_last_sync_dt is None:
-        min_last_sync_dt = datetime.datetime.utcnow()
-
-    # add a buffer so we don't miss some data
-    min_last_sync_dt = min_last_sync_dt - datetime.timedelta(hours=ADDITIONAL_SYNC_HOURS)
-
-    dates = [min_last_sync_dt.date()]
-    while dates[-1] < datetime.datetime.utcnow().date():
-        dates.append(dates[-1] + datetime.timedelta(days=1))
-
-    return dates
+        last_sync_dt = conversion_pixel.last_sync_dt - datetime.timedelta(hours=ADDITIONAL_SYNC_HOURS)
+        dates = [_utc_datetime_to_est_date(last_sync_dt)]
+        while dates[-1] < _utc_datetime_to_est_date(datetime.datetime.utcnow()):
+            dates.append(dates[-1] + datetime.timedelta(days=1))
+        pairs.extend(itertools.product(dates, [conversion_pixel]))
+    return pairs
 
 
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions_full')
 def update_touchpoint_conversions_full():
     conversion_pixels = dash.models.ConversionPixel.objects.filter(archived=False)
-    dates = _get_dates_to_sync(conversion_pixels)
-    update_touchpoint_conversions(dates, conversion_pixels)
+    date_cp_pairs = _get_dates_to_sync(conversion_pixels)
+    update_touchpoint_conversions(date_cp_pairs)
 
     # all missing dates are guaranteed to be synced so last sync dt can be updated
     conversion_pixels.update(last_sync_dt=datetime.datetime.utcnow())
@@ -69,9 +64,9 @@ def _update_touchpoint_conversions_date(date_cp_tup):
 
 
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')
-def update_touchpoint_conversions(dates, conversion_pixels):
+def update_touchpoint_conversions(date_cp_pairs):
     pool = ThreadPool(processes=NUM_THREADS)
-    pool.map_async(_update_touchpoint_conversions_date, itertools.product(dates, conversion_pixels))
+    pool.map_async(_update_touchpoint_conversions_date, date_cp_pairs)
     pool.close()
     pool.join()
 
