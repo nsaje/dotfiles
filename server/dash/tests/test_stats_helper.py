@@ -257,6 +257,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
             'bounce_rate': 0,
             'pv_per_visit': 5,
             'avg_tos': 0,
+            'conversion_goal_1': 0,
             'conversion_goal_2': 1,
         }, {
             'ad_group': 9999,
