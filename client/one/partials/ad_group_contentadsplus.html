@@ -45,12 +45,13 @@
                     <a id="resync-loader" class="btn btn-default pull-right" popover="Synchronization of reporting data is currently in progress, and may take a few minutes. You can continue using the dashboard in the meantime." popover-append-to-body="true" popover-trigger="mouseenter" popover-placement="left"><div class="loader"></div></a>
                 </span>
             </span>
-            <div class="export-container pull-right">
+            <div ng-if="hasPermission('zemauth.exports_plus')" class="export-container button-bar-item pull-right">
+              <zem-internal-feature ng-if="isPermissionInternal('zemauth.upload_content_ads')" popover-placement="bottom"></zem-internal-feature>
                 <zem-export-plus
                     start-date="dateRange.startDate"
                     end-date="dateRange.endDate"
-                    base-url="'api/ad_groups/' + $state.params.id + '/contentadsplus/'"
-                    options="exportOptions"
+                    base-url="'api/ad_groups/' + $state.params.id + '/'"
+                    options="exportPlusOptions"
                     columns="columns"
                     order="order">
                 </zem-export-plus>

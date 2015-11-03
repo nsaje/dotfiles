@@ -20,6 +20,11 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     var userSettings = zemUserSettings.getInstance($scope, 'adGroupSources');
 
     $scope.exportOptions = [
+      {name: 'By Day (CSV)', value: 'csv'},
+      {name: 'By Day (Excel)', value: 'excel'}
+    ];
+
+    $scope.exportPlusOptions = [
       {name: 'Current View', value: 'view-csv'},
       {name: 'By Content Ad', value: 'contentad-csv'}
     ];
@@ -754,10 +759,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     var setDisabledExportOptions = function() {
-        api.sourcesExportAllowed.get($state.params.id, 'ad_groups').then(
+        api.sourcesExportPlusAllowed.get($state.params.id, 'ad_groups').then(
             function(data) {
                 var option = null;
-                $scope.exportOptions.forEach(function(opt) {
+                $scope.exportPlusOptions.forEach(function(opt) {
                   if (opt.value === 'view-csv') {
                     opt.disabled = !data.view
                   }else if (opt.value === 'contentad-csv') {

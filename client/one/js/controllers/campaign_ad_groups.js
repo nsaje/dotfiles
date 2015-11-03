@@ -61,6 +61,12 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.exportOptions = [
+        {name: 'By Day (CSV)', value: 'csv'},
+        {name: 'By Day (Excel)', value: 'excel'},
+        {name: 'Detailed report', value: 'excel_detailed', hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_detailed_report')}
+    ];
+
+    $scope.exportPlusOptions = [
       {name: 'Current View', value: 'view-csv'},
       {name: 'By content Ad', value: 'contentad-csv'}
     ];
@@ -513,10 +519,28 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     });
 
     var setDisabledExportOptions = function() {
-        api.exportAllowed.get($state.params.id, 'campaigns').then(
+        api.campaignAdGroupsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
+            function (data) {
+                var option = null;
+                $scope.exportOptions.forEach(function (opt) {
+                    if (opt.value === 'excel_detailed') {
+                        option = opt;
+                    }
+                });
+
+                if (data.allowed) {
+                    option.disabled = false;
+                } else {
+                    option.disabled = true;
+                    option.maxDays = data.maxDays;
+                }
+            }
+        );
+
+        api.exportPlusAllowed.get($state.params.id, 'campaigns').then(
             function(data) {
                 var option = null;
-                $scope.exportOptions.forEach(function(opt) {
+                $scope.exportPlusOptions.forEach(function(opt) {
                   if (opt.value === 'view-csv') {
                     opt.disabled = !data.view
                   }else if (opt.value === 'contentad-csv') {

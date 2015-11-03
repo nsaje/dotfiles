@@ -360,15 +360,15 @@ urlpatterns += patterns(
         login_required(dash.views.export_plus.SourcesExportAllowed.as_view())
     ),
     url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/export_plus/',
+        r'^api/campaigns/(?P<campaign_id>\d+)/export_plus/',
         login_required(dash.views.export_plus.CampaignAdGroupsExport.as_view())
     ),
     url(
-        r'^api/accounts/(?P<account_id>\d+)/campaigns/export_plus/',
+        r'^api/accounts/(?P<account_id>\d+)/export_plus/',
         login_required(dash.views.export_plus.AccountCampaignsExport.as_view())
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentadsplus/export_plus/',
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/export_plus/',
         login_required(dash.views.export_plus.AdGroupAdsPlusExport.as_view())
     ),
     url(

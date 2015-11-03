@@ -24,6 +24,11 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     };
 
     $scope.exportOptions = [
+        {name: 'By Day (CSV)', value: 'csv'},
+        {name: 'By Day (Excel)', value: 'excel'}
+    ];
+
+    $scope.exportPlusOptions = [
       {name: 'Current View', value: 'view-csv'},
       {name: 'By Ad Group', value: 'adgroup-csv'},
       {name: 'By Content Ad', value: 'contentad-csv'}
@@ -544,10 +549,10 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     });
 
     var setDisabledExportOptions = function() {
-        api.exportAllowed.get($state.params.id, 'accounts').then(
+        api.exportPlusAllowed.get($state.params.id, 'accounts').then(
             function(data) {
                 var option = null;
-                $scope.exportOptions.forEach(function(opt) {
+                $scope.exportPlusOptions.forEach(function(opt) {
                   if (opt.value === 'view-csv') {
                     opt.disabled = !data.view
                   }else if (opt.value === 'contentad-csv') {

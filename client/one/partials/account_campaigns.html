@@ -20,10 +20,8 @@
                 <zem-export
                     start-date="dateRange.startDate"
                     end-date="dateRange.endDate"
-                    base-url="'api/accounts/' + $state.params.id + '/campaigns/'"
-                    options="exportOptions"
-                    columns="columns"
-                    order="order">
+                    base-url="'api/accounts/' + $state.params.id + '/'"
+                    options="exportOptions">
                 </zem-export>
             </div>
 
@@ -39,6 +37,18 @@
                     <a id="resync-loader" class="btn btn-default pull-right" popover="Synchronization of reporting data is currently in progress, and may take a few minutes. You can continue using the dashboard in the meantime." popover-append-to-body="true" popover-trigger="mouseenter" popover-placement="left"><div class="loader"></div></a>
                 </span>
             </span>
+
+            <div ng-if="hasPermission('zemauth.exports_plus')" class="export-container button-bar-item pull-right">
+              <zem-internal-feature ng-if="isPermissionInternal('zemauth.upload_content_ads')" popover-placement="bottom"></zem-internal-feature>
+                <zem-export-plus
+                    start-date="dateRange.startDate"
+                    end-date="dateRange.endDate"
+                    base-url="'api/accounts/' + $state.params.id + '/campaigns/'"
+                    options="exportPlusOptions"
+                    columns="columns"
+                    order="order">
+                </zem-export-plus>
+            </div>
 
             <div class="clearfix"></div>
         </div>

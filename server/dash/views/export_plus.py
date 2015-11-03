@@ -116,7 +116,7 @@ class CampaignAdGroupsExport(ExportApiView):
 
 
 class ExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 16134000 # DAVORIN remove 0
+    MAX_ROWS = 2 # DAVORIN remove 0
 
     @statsd_helper.statsd_timer('dash.export_plus', 'export_plus_allowed_get')
     def get(self, request, id_, level_):
@@ -159,7 +159,7 @@ class ExportAllowed(api_common.BaseApiView):
 
 
 class SourcesExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 16134000 # DAVORIN remove 0
+    MAX_ROWS = 2 # DAVORIN remove 0
 
     @statsd_helper.statsd_timer('dash.export_plus', 'sources_export_plus_allowed_get')
     def get(self, request, id_, level_):

@@ -471,7 +471,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.chartMetric1 = constants.chartMetric.COST;
             $scope.chartMetric2 = constants.chartMetric.CLICKS;
             $scope.exportBaseUrlLevel = constants.level.ALL_ACCOUNTS;
-            $scope.exportOptions = [
+            $scope.exportPlusOptions = [
               {name: 'Current View', value: 'view-csv'},
               {name: 'By Account', value: 'account-csv'},
               {name: 'By Campaign', value: 'campaign-csv'},
@@ -481,7 +481,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.localStoragePrefix = 'accountSources';
             $scope.chartMetrics = options.accountChartMetrics;
             $scope.exportBaseUrlLevel = constants.level.ACCOUNTS;
-            $scope.exportOptions = [
+            $scope.exportPlusOptions = [
               {name: 'Current View', value: 'view-csv'},
               {name: 'By Campaign', value: 'campaign-csv'},
               {name: 'By Ad Group', value: 'adgroup-csv'},
@@ -491,7 +491,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.localStoragePrefix = 'campaignSources';
             $scope.chartMetrics = options.campaignChartMetrics;
             $scope.exportBaseUrlLevel = constants.level.CAMPAIGNS;
-            $scope.exportOptions = [
+            $scope.exportPlusOptions = [
               {name: 'Current View', value: 'view-csv'},
               {name: 'By Ad Group', value: 'adgroup-csv'},
               {name: 'By Content Ad', value: 'contentad-csv'}
@@ -608,9 +608,9 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var setDisabledExportOptions = function() {
-        api.sourcesExportAllowed.get($state.params.id, $scope.level).then(
+        api.sourcesExportPlusAllowed.get($state.params.id, $scope.level).then(
             function(data) {
-                $scope.exportOptions.forEach(function(opt) {
+                $scope.exportPlusOptions.forEach(function(opt) {
                   if (opt.value === 'view-csv') {
                     opt.disabled = !data.view
                   }else if (opt.value === 'account-csv') {

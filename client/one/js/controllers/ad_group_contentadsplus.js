@@ -38,7 +38,21 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         currentPage: 1
     };
 
-    $scope.exportOptions = [
+    $scope.exportOptions = [{
+        name: 'By Content Ad (CSV)',
+        value: 'content-ad-csv'
+    }, {
+        name: 'By Content Ad (Excel)',
+        value: 'content-ad-excel'
+    }, {
+        name: 'By Day (CSV)',
+        value: 'day-csv'
+    }, {
+        name: 'By Day (Excel)',
+        value: 'day-excel'
+    }];
+
+    $scope.exportPlusOptions = [
       {name: 'Current View', value: 'view-csv'}
     ];
 
@@ -885,10 +899,27 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var setDisabledExportOptions = function() {
-        api.exportAllowed.get($state.params.id, 'ad_groups').then(
+        api.adGroupAdsPlusExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function(data) {
                 var option = null;
                 $scope.exportOptions.forEach(function(opt) {
+                    if (opt.value === 'day-excel') {
+                        option = opt;
+                    }
+                });
+
+                option.disabled = false;
+                if (!data.allowed) {
+                    option.disabled = true;
+                    option.maxDays = data.maxDays;
+                }
+            }
+        );
+
+        api.exportPlusAllowed.get($state.params.id, 'ad_groups').then(
+            function(data) {
+                var option = null;
+                $scope.exportPlusOptions.forEach(function(opt) {
                   if (opt.value === 'view-csv') {
                     opt.disabled = !data.view
                   }
