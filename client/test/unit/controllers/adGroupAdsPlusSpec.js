@@ -68,6 +68,9 @@ describe('AdGroupAdsPlusCtrl', function() {
             },
             adGroupContentAdState: {
                 save: mockApiFunc
+            },
+            exportPlusAllowed: {
+                get: mockApiFunc
             }
         };
 

@@ -19,7 +19,7 @@ describe('AdGroupSourcesCtrl', function() {
             concatEngagementChartOptions: function(){return [];}
         });
     }));
-    
+
     beforeEach(inject(function($rootScope, $controller, _$timeout_, $state) {
         $scope = $rootScope.$new();
         $scope.isPermissionInternal = function() {return true;};
@@ -34,6 +34,16 @@ describe('AdGroupSourcesCtrl', function() {
         $scope.columns = [];
 
         $timeout = _$timeout_;
+
+        var mockApiFunc = function() {
+            return {
+                then: function() {
+                    return {
+                        finally: function() {}
+                    };
+                }
+            };
+        };
 
         api = {
             adGroupSourcesUpdates: {get: function() {}},
@@ -53,7 +63,10 @@ describe('AdGroupSourcesCtrl', function() {
                 return {
                     then: function() {}
                 }
-            }}
+            }},
+            sourcesExportPlusAllowed: {
+                get: mockApiFunc
+            }
         };
 
         $state.params = {id: 123};
