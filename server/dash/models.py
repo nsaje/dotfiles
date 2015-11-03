@@ -1411,6 +1411,7 @@ class UploadBatch(models.Model):
     num_errors = models.PositiveIntegerField(null=True)
 
     processed_content_ads = models.PositiveIntegerField(null=True)
+    inserted_content_ads = models.PositiveIntegerField(null=True)
     batch_size = models.PositiveIntegerField(null=True)
 
     class Meta:
@@ -1630,7 +1631,7 @@ class ConversionPixel(models.Model):
     slug = models.CharField(blank=False, null=False, max_length=32)
     archived = models.BooleanField(default=False)
 
-    last_sync_dt = models.DateTimeField(blank=True, null=True)
+    last_sync_dt = models.DateTimeField(default=datetime.datetime.utcnow, blank=True, null=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
 
     class Meta:

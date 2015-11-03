@@ -96,7 +96,11 @@
             <div class="col-xs-3">
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
             </div>
-            <div class="col-xs-2" style="padding-top:1px" ng-show="isInProgress"><div style="display:inline-block" ng-show="countAll > 0">{{ countUploaded }}/{{ countAll }}&nbsp;</div><div class="loader"></div></div>
+            <div class="col-xs-6" style="padding-top:1px;" ng-show="isInProgress">
+                <div style="display:inline-block" ng-show="countAll > 0">{{ countUploaded }}/{{ countAll }}&nbsp;</div>
+                <div style="display:inline-block" ng-show="uploadStep">{{ uploadStep }}</div>
+                <div class="loader"></div>
+            </div>
 
         </div>
     </form>

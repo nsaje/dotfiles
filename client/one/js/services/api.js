@@ -2172,6 +2172,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     if (data && data.data) {
                         result.status = data.data.status;
                         result.count = data.data.count;
+                        result.step = data.data.step;
                         result.all = data.data.all;
 
                         if (data.data.errors) {
@@ -2182,7 +2183,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 }).error(function(data) {
                     deferred.reject(data);
                 });
- 
+
             return deferred.promise;
         };
 

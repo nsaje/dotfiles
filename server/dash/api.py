@@ -623,7 +623,7 @@ def create_ad_group_publisher_blacklist_actions(ad_group, request, state, publis
                         'blacklist': map(lambda pub:
                             {
                                 'domain': pub['domain'],
-                                'exchange': pub['tracking_slug'],
+                                'exchange': pub['tracking_slug'].replace('b1_', ''),
                             }, publisher_source),
                     }
                 },
