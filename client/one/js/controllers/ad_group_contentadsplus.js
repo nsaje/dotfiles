@@ -915,17 +915,18 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 }
             }
         );
-
-        api.exportPlusAllowed.get($state.params.id, 'ad_groups').then(
-            function(data) {
-                var option = null;
-                $scope.exportPlusOptions.forEach(function(opt) {
-                  if (opt.value === 'view-csv') {
-                    opt.disabled = !data.view
-                  }
-                });
-            }
-        );
+        if($scope.hasPermission('zemauth.exports_plus')){
+          api.exportPlusAllowed.get($state.params.id, 'ad_groups').then(
+              function(data) {
+                  var option = null;
+                  $scope.exportPlusOptions.forEach(function(opt) {
+                    if (opt.value === 'view-csv') {
+                      opt.disabled = !data.view
+                    }
+                  });
+              }
+          );
+        }
     };
 
     init();

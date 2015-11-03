@@ -536,19 +536,20 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 }
             }
         );
-
-        api.exportPlusAllowed.get($state.params.id, 'campaigns').then(
-            function(data) {
-                var option = null;
-                $scope.exportPlusOptions.forEach(function(opt) {
-                  if (opt.value === 'view-csv') {
-                    opt.disabled = !data.view
-                  }else if (opt.value === 'contentad-csv') {
-                    opt.disabled = !data.content_ad
-                  }
-                });
-            }
-        );
+        if($scope.hasPermission('zemauth.exports_plus')){
+          api.exportPlusAllowed.get($state.params.id, 'campaigns').then(
+              function(data) {
+                  var option = null;
+                  $scope.exportPlusOptions.forEach(function(opt) {
+                    if (opt.value === 'view-csv') {
+                      opt.disabled = !data.view
+                    }else if (opt.value === 'contentad-csv') {
+                      opt.disabled = !data.content_ad
+                    }
+                  });
+              }
+          );
+        }
     };
 
     $scope.init();

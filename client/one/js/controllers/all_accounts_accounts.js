@@ -455,6 +455,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     });
 
     var setDisabledExportOptions = function() {
+      if($scope.hasPermission('zemauth.exports_plus')){
         api.exportPlusAllowed.get(0, 'all_accounts').then(
             function(data) {
                 var option = null;
@@ -471,6 +472,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                 });
             }
         );
+      }
     };
 
     $scope.init();

@@ -759,6 +759,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     var setDisabledExportOptions = function() {
+      if($scope.hasPermission('zemauth.exports_plus')){
         api.sourcesExportPlusAllowed.get($state.params.id, 'ad_groups').then(
             function(data) {
                 var option = null;
@@ -771,6 +772,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 });
             }
         );
+      }
     };
 
     $scope.init();

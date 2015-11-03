@@ -608,6 +608,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var setDisabledExportOptions = function() {
+      if($scope.hasPermission('zemauth.exports_plus')){
         api.sourcesExportPlusAllowed.get($state.params.id, $scope.level).then(
             function(data) {
                 $scope.exportPlusOptions.forEach(function(opt) {
@@ -625,6 +626,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 });
             }
         );
+      }
     };
 
     init();
