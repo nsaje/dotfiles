@@ -303,7 +303,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         var validChartMetrics = zemPostclickMetricsService.getValidChartMetrics($scope.chartMetric1, $scope.chartMetric2, conversionGoals);
         $scope.chartMetric1 = validChartMetrics.chartMetric1;
         $scope.chartMetric2 = validChartMetrics.chartMetric2;
-        $scope.chartMetricOptions = zemPostclickMetricsService.setConversionGoalChartOptions(
+        zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
             conversionGoals,
             $scope.hasPermission('zemauth.conversion_reports')
@@ -377,7 +377,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.order = data.order;
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
-                $scope.columns = zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
+                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
 
                 $scope.rows = $scope.rows.map(function (x) {
                     x.id = x.ad_group;

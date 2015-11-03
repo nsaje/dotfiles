@@ -765,7 +765,27 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist():
             raise exc.MissingDataException()
 
-        response_data = {'status': batch.status, 'count': batch.processed_content_ads, 'all': batch.batch_size}
+        batch_size = batch.batch_size
+        step_size = batch_size
+
+        if batch.inserted_content_ads is not None and batch.inserted_content_ads >= batch_size:
+            # step past inserting
+            step = 'Sending to external sources (step 3/3)'
+            count = 0
+            step_size = 0
+        elif batch.inserted_content_ads is not None:
+            step = 'Inserting content ads (step 2/3)'
+            count = batch.inserted_content_ads
+        else:
+            step = 'Processing imported file (step 1/3)'
+            count = batch.processed_content_ads
+
+        response_data = {
+            'status': batch.status,
+            'step': step,
+            'count': count or 0,
+            'all': step_size
+        }
 
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:
@@ -1072,7 +1092,12 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             if publisher_tuple in publishers_to_add:
                 continue
 
-            if publisher_tuple in existing_blacklisted_publishers:
+            if publisher_tuple in existing_blacklisted_publishers and\
+                    state == constants.PublisherStatus.BLACKLISTED :
+                continue
+
+            if publisher_tuple not in existing_blacklisted_publishers and\
+                    state == constants.PublisherStatus.ENABLED:
                 continue
 
             if publisher_tuple in ignored_publishers:

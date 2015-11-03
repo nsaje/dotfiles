@@ -104,7 +104,7 @@ describe('CampaignAgencyCtrl', function () {
 
             expect($scope.goalsRequestInProgress).toBe(false);
             expect(api.conversionGoal.list).toHaveBeenCalled();
-            expect($scope.conversionGoals).toEqual([{id: 1, rows :[{title: 'Name', value: 'conversion goal'}, {title: 'Type', value: 'Google Analytics'}, {title: 'Goal number', value: '1'}]}]);
+            expect($scope.conversionGoals).toEqual([{id: 1, rows :[{title: 'Name', value: 'conversion goal'}, {title: 'Type', value: 'Google Analytics'}, {title: 'Goal name', value: '1'}]}]);
             expect($scope.availablePixels).toEqual([{id: 1, slug: 'slug'}]);
             expect($scope.goalsError).toEqual(false);
         });
@@ -119,7 +119,7 @@ describe('CampaignAgencyCtrl', function () {
             });
             spyOn($scope, 'getSettings');
 
-            $scope.conversionGoals = [{id: 1, rows :[{title: 'Name', value: 'conversion goal'}, {title: 'Type', value: 'Google Analytics'}, {title: 'Goal number', value: '1'}]}];
+            $scope.conversionGoals = [{id: 1, rows :[{title: 'Name', value: 'conversion goal'}, {title: 'Type', value: 'Google Analytics'}, {title: 'Goal name', value: '1'}]}];
             $scope.removeConversionGoal(1, 1);
             $scope.$digest();
 
@@ -131,7 +131,7 @@ describe('CampaignAgencyCtrl', function () {
             expect(api.conversionGoal.delete).toHaveBeenCalled();
             expect($scope.getSettings).not.toHaveBeenCalled();
             expect($scope.goalsError).toBe(true);
-            expect($scope.conversionGoals).toEqual([{id: 1, rows :[{title: 'Name', value: 'conversion goal'}, {title: 'Type', value: 'Google Analytics'}, {title: 'Goal number', value: '1'}]}]);
+            expect($scope.conversionGoals).toEqual([{id: 1, rows :[{title: 'Name', value: 'conversion goal'}, {title: 'Type', value: 'Google Analytics'}, {title: 'Goal name', value: '1'}]}]);
         });
 
         it('updates history on success', function() {
@@ -142,7 +142,7 @@ describe('CampaignAgencyCtrl', function () {
             });
             spyOn($scope, 'getSettings');
 
-            $scope.conversionGoals = [{id: 1, rows :[{title: 'Name', value: 'conversion goal'}, {title: 'Type', value: 'Google Analytics'}, {title: 'Goal number', value: '1'}]}];
+            $scope.conversionGoals = [{id: 1, rows :[{title: 'Name', value: 'conversion goal'}, {title: 'Type', value: 'Google Analytics'}, {title: 'Goal name', value: '1'}]}];
             $scope.removeConversionGoal(1, 1);
             $scope.$digest();
 

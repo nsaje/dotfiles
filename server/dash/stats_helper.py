@@ -121,6 +121,10 @@ def _get_stats_with_conversions(
             key = conversion_goal.get_stats_key()
             ca_stat[conversion_goal.get_view_key(conversion_goals)] = ca_stat.get('conversions', {}).get(key)
 
+        for tp_conversion_goal in touchpoint_conversion_goals:
+            # set the default - if tp_conv_stats result doesn't contain value, assume it's 0
+            ca_stat[tp_conversion_goal.get_view_key(conversion_goals)] = 0
+
         if 'conversions' in ca_stat:
             # mapping done, this is not needed anymore
             del ca_stat['conversions']

@@ -28,9 +28,9 @@ class ViewHelpersTestCase(TestCase):
 
         last_sync_messages = helpers.get_last_sync_messages(ad_group_sources, last_successful_ags_sync_times)
         self.assertEqual(len(last_sync_messages), 3)
-        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         last_successful_source_sync_times = {}
         for ags in ad_group_sources:
@@ -41,9 +41,9 @@ class ViewHelpersTestCase(TestCase):
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
         self.assertEqual(len(last_source_sync_messages), 3)
-        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
     def test_get_ad_group_last_sync_messages(self):
         ad_groups = models.AdGroup.objects.filter(pk__in=[1, 2])
@@ -56,8 +56,8 @@ class ViewHelpersTestCase(TestCase):
 
         last_sync_messages = helpers.get_last_sync_messages(ad_groups, last_successful_ad_group_sync_times)
         self.assertEqual(len(last_sync_messages), 2)
-        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         last_successful_source_sync_times = {}
         for ag in ad_groups:
@@ -68,13 +68,13 @@ class ViewHelpersTestCase(TestCase):
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
         self.assertEqual(len(last_source_sync_messages), 7)
-        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
         self.assertEquals(last_source_sync_messages[6], ([], True))
-        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         archived_ad_groups = models.AdGroup.objects.filter(pk__in=[5])
         last_successful_archived_sync_times = {}
@@ -98,8 +98,8 @@ class ViewHelpersTestCase(TestCase):
 
         last_sync_messages = helpers.get_last_sync_messages(campaigns, last_successful_campaign_sync_times)
         self.assertEqual(len(last_sync_messages), 2)
-        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         last_successful_source_sync_times = {}
         for campaign in campaigns:
@@ -110,13 +110,13 @@ class ViewHelpersTestCase(TestCase):
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
         self.assertEqual(len(last_source_sync_messages), 7)
-        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
         self.assertEquals(last_source_sync_messages[6], ([], True))
-        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         archived_campaigns = models.Campaign.objects.filter(pk__in=[4])
         last_successful_archived_sync_times = {}
@@ -140,7 +140,7 @@ class ViewHelpersTestCase(TestCase):
 
         last_sync_messages = helpers.get_last_sync_messages(accounts, last_successful_account_sync_times)
         self.assertEqual(len(last_sync_messages), 1)
-        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         last_successful_source_sync_times = {}
         for account in accounts:
@@ -151,13 +151,13 @@ class ViewHelpersTestCase(TestCase):
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
         self.assertEqual(len(last_source_sync_messages), 7)
-        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
         self.assertEquals(last_source_sync_messages[6], ([], True))
-        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         archived_accounts = models.Account.objects.filter(pk__in=[3])
         last_successful_archived_sync_times = {}
@@ -199,17 +199,17 @@ class ViewHelpersTestCase(TestCase):
 
         self.assertEqual(
             data_status[ad_group_source1.source_id]['message'],
-            '<b>Status</b> for this Media Source differs from Status in the Media Source\'s 3rd party dashboard.<br />Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+            '<b>Status</b> for this Media Source differs from Status in the Media Source\'s 3rd party dashboard.<br />Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
         )
 
         self.assertEqual(
             data_status[ad_group_source2.source_id]['message'],
-            '<b>Bid CPC</b> for this Media Source differs from Bid CPC in the Media Source\'s 3rd party dashboard.<br /><b>Daily Budget</b> for this Media Source differs from Daily Budget in the Media Source\'s 3rd party dashboard.<br />Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+            '<b>Bid CPC</b> for this Media Source differs from Bid CPC in the Media Source\'s 3rd party dashboard.<br /><b>Daily Budget</b> for this Media Source differs from Daily Budget in the Media Source\'s 3rd party dashboard.<br />Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
         )
 
         self.assertEqual(
             data_status[ad_group_source3.source_id]['message'],
-            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
         )
 
     def test_get_ad_group_sources_data_status_cannot_edit_cpc_budget(self):
@@ -236,7 +236,7 @@ class ViewHelpersTestCase(TestCase):
 
         self.assertEqual(
             data_status[ad_group_source.source_id]['message'],
-            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
         )
 
     def test_get_ad_group_sources_data_status_not_stale(self):
@@ -262,7 +262,7 @@ class ViewHelpersTestCase(TestCase):
 
         self.assertEqual(
             data_status[ad_group_source.source_id]['message'],
-            'All data is OK. Last OK sync was on: <b>{}</b>'.format(
+            'All data is OK. Last OK sync was on: <b>{}</b>.'.format(
                 datetime_string.strftime('%m/%d/%Y %-I:%M %p'))
         )
 
@@ -287,7 +287,7 @@ class ViewHelpersTestCase(TestCase):
 
         self.assertEqual(
             data_status[ad_group_source.source_id]['message'],
-            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
         )
 
     def test_get_ad_group_sources_data_status_property_none(self):
@@ -311,8 +311,62 @@ class ViewHelpersTestCase(TestCase):
 
         self.assertEqual(
             data_status[ad_group_source.source_id]['message'],
-            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
         )
+
+    def test_data_status_last_pixel_sync(self):
+        class TestObj(object):
+            def __init__(self, id):
+                self.id = id
+
+        objects = [
+            TestObj(1),
+            TestObj(2),
+            TestObj(3)
+        ]
+
+        last_sync_messages = {
+            1: (['Last sync OK.'], True),
+            2: (['Last sync not OK.'], False),
+            3: (['Last sync OK.'], True)
+        }
+
+        last_pixel_sync_message = ('Pixel sync OK.', True)
+        data_status = helpers.get_data_status(objects, last_sync_messages,
+                                              last_pixel_sync_message=last_pixel_sync_message)
+        self.assertEqual({
+            1: {
+                'message': 'All data is OK. Last sync OK. Pixel sync OK.',
+                'ok': True
+            },
+            2: {
+                'message': 'Reporting data is stale. Last sync not OK. Pixel sync OK.',
+                'ok': False
+            },
+            3: {
+                'message': 'All data is OK. Last sync OK. Pixel sync OK.',
+                'ok': True
+            },
+        }, data_status)
+
+        self.maxDiff = None
+        last_pixel_sync_message = ('Pixel sync not OK.', False)
+        data_status = helpers.get_data_status(objects, last_sync_messages,
+                                              last_pixel_sync_message=last_pixel_sync_message)
+        self.assertEqual({
+            1: {
+                'message': 'Reporting data is stale. Last sync OK. Pixel sync not OK.',
+                'ok': False
+            },
+            2: {
+                'message': 'Reporting data is stale. Last sync not OK. Pixel sync not OK.',
+                'ok': False
+            },
+            3: {
+                'message': 'Reporting data is stale. Last sync OK. Pixel sync not OK.',
+                'ok': False
+            },
+        }, data_status)
 
     def test_parse_get_request_array(self):
         self.assertEqual(helpers.parse_get_request_content_ad_ids({'ids': '1,2'}, 'ids'), [1, 2])
@@ -828,6 +882,70 @@ class SetAdGroupSourceTest(TestCase):
         ad_group_source_settings = ad_group_source_settings.latest()
         self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
         self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.mobile_cpc_cc)
+
+
+class PixelLastSyncTestCase(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def test_join_success_with_pixel_sync_no_permissions(self):
+        u = User.objects.get(id=2)
+        last_success_actions = {
+            1: datetime.datetime(2015, 10, 30, 10),
+            2: datetime.datetime(2015, 10, 29, 22),
+            3: datetime.datetime(2015, 10, 30, 9),
+        }
+
+        last_pixel_sync = datetime.datetime(2015, 10, 30, 8)
+        joined = helpers.join_last_success_with_pixel_sync(u, last_success_actions, last_pixel_sync)
+        self.assertEqual(last_success_actions, joined)
+
+    def test_join_success_with_pixel_sync(self):
+        u = User.objects.get(id=1)
+        last_success_actions = {
+            1: datetime.datetime(2015, 10, 30, 10),
+            2: datetime.datetime(2015, 10, 29, 22),
+            3: datetime.datetime(2015, 10, 30, 9),
+        }
+
+        last_pixel_sync = datetime.datetime(2015, 10, 30, 8)
+        joined = helpers.join_last_success_with_pixel_sync(u, last_success_actions, last_pixel_sync)
+        self.assertEqual({
+            1: last_pixel_sync,
+            2: last_success_actions[2],
+            3: last_pixel_sync
+        }, joined)
+
+    def test_join_success_with_pixel_sync_none_last_success(self):
+        u = User.objects.get(id=1)
+        last_success_actions = {
+            1: datetime.datetime(2015, 10, 30, 10),
+            2: None,
+            3: None,
+        }
+
+        last_pixel_sync = datetime.datetime(2015, 10, 30, 8)
+        joined = helpers.join_last_success_with_pixel_sync(u, last_success_actions, last_pixel_sync)
+        self.assertEqual({
+            1: last_pixel_sync,
+            2: None,
+            3: None
+        }, joined)
+
+    def test_join_success_with_pixel_sync_none_last_pixel_sync(self):
+        u = User.objects.get(id=1)
+        last_success_actions = {
+            1: datetime.datetime(2015, 10, 30, 10),
+            2: datetime.datetime(2015, 10, 29, 22),
+            3: datetime.datetime(2015, 10, 30, 9),
+        }
+
+        last_pixel_sync = None
+        joined = helpers.join_last_success_with_pixel_sync(u, last_success_actions, last_pixel_sync)
+        self.assertEqual({
+            1: None,
+            2: None,
+            3: None,
+        }, joined)
 
 
 class LogUserActionHelperTestCase(TestCase):

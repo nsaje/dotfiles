@@ -142,26 +142,21 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             totalRow: false,
             unselectable: true,
             help: 'A setting for enabling and pausing media sources.',
-            onChange: function (sourceId, value) {
-                api.adGroupSourceSettings.save($state.params.id, sourceId, {state: value}).then(
+            onChange: function (sourceId, value, autopilotValue) {
+                api.adGroupSourceSettings.save(
+                    $state.params.id,
+                    sourceId,
+                    {state: value, autopilot_state: autopilotValue}
+                ).then(
                     function (data) {
+                        $scope.rows.forEach(function (row) {
+                            if (row.id === sourceId) {
+                                row.editable_fields = data.editable_fields
+                            }
+                        });
                         $scope.pollSourcesTableUpdates();
                     }
                 );
-            },
-            onAutopilotChange: function (sourceId, value) {
-              api.adGroupSourceSettings.save($state.params.id, sourceId, {autopilot_state: value}).then(
-                  function (data) {
-
-                    $scope.rows.forEach(function (row) {
-                        if (row.id === sourceId) {
-                            row.editable_fields = data.editable_fields
-                        }
-                    });
-
-                      $scope.pollSourcesTableUpdates();
-                  }
-              );
             },
             getDisabledMessage: function (row) {
                 var editableFields = row.editable_fields;
@@ -433,7 +428,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
                 $scope.selectRows();
                 $scope.pollSourcesTableUpdates();
-                $scope.columns = zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
+                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
             },
             function (data) {
                 // error
@@ -473,7 +468,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         var validChartMetrics = zemPostclickMetricsService.getValidChartMetrics($scope.chartMetric1, $scope.chartMetric2, conversionGoals);
         $scope.chartMetric1 = validChartMetrics.chartMetric1;
         $scope.chartMetric2 = validChartMetrics.chartMetric2;
-        $scope.chartMetricOptions = zemPostclickMetricsService.setConversionGoalChartOptions(
+        zemPostclickMetricsService.setConversionGoalChartOptions(
             $scope.chartMetricOptions,
             conversionGoals,
             $scope.hasPermission('zemauth.conversion_reports')
