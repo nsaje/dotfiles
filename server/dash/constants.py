@@ -1101,8 +1101,8 @@ class RegionType(ConstantBase):
 
     _VALUES = {
         COUNTRY: 'Country',
-        SUBDIVISION: 'Subdivision',
-        DMA: 'DMA'
+        SUBDIVISION: 'U.S. state', # NOTE update when subdivisions other than U.S. states are added
+        DMA: 'DMA',
     }
 
 

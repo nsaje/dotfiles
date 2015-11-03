@@ -646,6 +646,42 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             'message': 'This source can not be enabled because it does not support DMA targeting.'
         })
 
+    def test_get_editable_fields_status_setting_no_subdivision_support(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['US-IL']
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source can not be enabled because it does not support U.S. state targeting.'
+        })
+
+    def test_get_editable_fields_status_setting_no_dma_nor_subdivision_support(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['693', 'US-IL']
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source can not be enabled because it does not support DMA and U.S. state targeting.'
+        })
+
     def test_get_editable_fields_status_setting_waiting_manual_target_regions_action(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
@@ -677,7 +713,41 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         self.assertEqual(result, {
             'enabled': False,
-            'message': 'This source needs to set DMA targeting manually,please contact support to enable this source.'
+            'message': 'This source needs to set DMA targeting manually, please contact support to enable this source.'
+        })
+
+    def test_get_editable_fields_status_setting_waiting_manual_target_regions_multiple_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['693', 'US-IL']
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_STATE,
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
+        ]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        action_log = actionlog.models.ActionLog(
+            state=actionlog.constants.ActionState.WAITING,
+            action=actionlog.constants.Action.SET_PROPERTY,
+            action_type=actionlog.constants.ActionType.MANUAL,
+            ad_group_source=ad_group_source,
+            payload={'property': 'target_regions', 'value': ['693', 'US-IL']}
+        )
+        action_log.save(None)
+
+        for adgs_settings in models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source):
+            adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+            adgs_settings.save(None)
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, adgs_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source needs to set DMA and U.S. state targeting manually, please contact support to enable this source.'
         })
 
     def test_get_editable_fields_status_setting_no_manual_target_regions_action(self):
