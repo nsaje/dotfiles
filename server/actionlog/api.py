@@ -123,6 +123,106 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
     return send_delayed_actionlogs([ad_group_source], send=send)
 
 
+def set_global_publisher_blacklist(state, publishers, request, send=True):
+    return _set_publisher_blacklist(
+        None,
+        dash.constants.PublisherBlacklistLevel.GLOBAL,
+        state,
+        publishers,
+        request,
+        send=send
+    )
+
+
+def set_account_publisher_blacklist(state, publishers, account, request, send=True):
+
+    internal_id = account.id
+    external_id = None
+
+    return _set_publisher_blacklist(
+        [internal_id, external_id],
+        dash.constants.PublisherBlacklistLevel.ACCOUNT,
+        state,
+        publishers,
+        request,
+        send=send
+    )
+
+
+def set_campaign_publisher_blacklist(state, publishers, campaign, request, send=True):
+    internal_id = campaign.id
+    external_id = None
+
+    return _set_publisher_blacklist(
+        [internal_id, external_id],
+        dash.constants.PublisherBlacklistLevel.CAMPAIGN,
+        state,
+        publishers,
+        request,
+        send=send
+    )
+
+
+def set_adgroup_publisher_blacklist(state, publishers, adgroup, request, send=True):
+    internal_id = adgroup.id
+    external_id = None
+
+    return _set_publisher_blacklist(
+        [internal_id, external_id],
+        dash.constants.PublisherBlacklistLevel.ADGROUP,
+        state,
+        publishers,
+        request,
+        send=send
+    )
+
+
+def _set_publisher_blacklist(key, level, state, publishers, request, source, ad_group_source=None, send=True):
+    if not publishers:
+        return []
+
+    action = models.ActionLog(
+        action=constants.Action.SET_PUBLISHER_BLACKLIST,
+        action_type=constants.ActionType.AUTOMATIC,
+        expiration_dt=None,
+        state=constants.ActionState.DELAYED,
+        ad_group_source=ad_group_source,
+    )
+    action.save(request)
+
+    try:
+        with transaction.atomic():
+            callback = urlparse.urljoin(
+                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+            )
+
+            args = {
+                'key': key,
+                'level': level,
+                'state': state,
+                'publishers': publishers
+            }
+
+            payload = {
+                'action': action.action,
+                'source': source.source_type,
+                'expiration_dt': action.expiration_dt,
+                'args': args,
+                'callback_url': callback,
+            }
+
+            action.payload = payload
+            action.save(request)
+    except Exception as e:
+        logger.exception('An exception occurred while initializing set_publisher_blacklist action.')
+        _handle_error(action, e, request)
+
+        et, ei, tb = sys.exc_info()
+        raise exceptions.InsertActionException, ei, tb
+
+    return send_delayed_actionlogs([ad_group_source], send=send)
+
+
 def create_campaign(ad_group_source, name, request, send=True):
     action = None
     try:
@@ -560,12 +660,12 @@ def _init_fetch_reports(ad_group_source, date, order, request=None):
         et, ei, tb = sys.exc_info()
         raise exceptions.InsertActionException, ei, tb
 
+
 def _init_fetch_reports_by_publisher(ad_group_source, date, order, request=None):
     if not ad_group_source.source.can_fetch_report_by_publisher():
         logger.error('Trying to _init_fetch_reports_by_publisher() on source that does not support it: {}'.format(ad_group_source.id))
         raise exceptions.InsertActionException('Trying to _init_fetch_reports_by_publisher() on source that does not support it: {}'.format(ad_group_source.id))
 
-    
     msg = '_init_fetch_reports started: ad_group_source.id: {}, date: {}'.format(
         ad_group_source.id,
         repr(date)
@@ -577,7 +677,7 @@ def _init_fetch_reports_by_publisher(ad_group_source, date, order, request=None)
         action_type=constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
         order=order,
-        expiration_dt=datetime.utcnow() + timedelta(hours = 3)
+        expiration_dt=datetime.utcnow() + timedelta(hours=3)
     )
     action.save(request)
 
