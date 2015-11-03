@@ -112,7 +112,7 @@ class FootprintModel(models.Model):
         abstract = True
 
 class HistoryModel(models.Model):
-    state = jsonfield.JSONField(blank=False, null=False)
+    snapshot = jsonfield.JSONField(blank=False, null=False)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
                                    related_name='+', on_delete=models.PROTECT)
@@ -1758,7 +1758,7 @@ class CreditLineItem(FootprintModel):
         super(CreditLineItem, self).save(*args, **kwargs)
         CreditHistory.objects.create(
             created_by=request.user if request else None,
-            state=model_to_dict(self),
+            snapshot=model_to_dict(self),
             credit=self,
         )
 
@@ -1848,7 +1848,7 @@ class BudgetLineItem(FootprintModel):
         super(BudgetLineItem, self).save(*args, **kwargs)
         BudgetHistory.objects.create(
             created_by=request.user if request else None,
-            state=model_to_dict(self),
+            snapshot=model_to_dict(self),
             budget=self,
         )
 
