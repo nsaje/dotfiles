@@ -42,7 +42,7 @@ import actionlog.zwei_actions
 import actionlog.models
 import actionlog.constants
 
-from dash import models
+from dash import models, region_targeting_helper
 from dash import constants
 from dash import api
 from dash import forms
@@ -498,7 +498,7 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.ForbiddenError('{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
 
         if not self._can_target_existing_regions(source, ad_group.get_current_settings()):
-            raise exc.ValidationError('{} media source can not be added because it does not support DMA targeting.'\
+            raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'\
                                       .format(source.name))
 
         ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
@@ -525,8 +525,8 @@ class AdGroupSources(api_common.BaseApiView):
         settings.save(request)
 
     def _can_target_existing_regions(self, source, ad_group_settings):
-        return not ad_group_settings.targets_region_type(constants.RegionType.DMA) or\
-               ad_group_settings.targets_region_type(constants.RegionType.DMA) and source.source_type.supports_targeting_region_type(constants.RegionType.DMA)
+        return region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) or\
+               region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings)
 
 
 class Account(api_common.BaseApiView):
