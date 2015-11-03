@@ -20,7 +20,7 @@
                 <zem-export
                     start-date="dateRange.startDate"
                     end-date="dateRange.endDate"
-                    base-url="'api/accounts/' + $state.params.id + '/'"
+                    base-url="'api/accounts/' + $state.params.id + '/campaigns/'"
                     options="exportOptions">
                 </zem-export>
             </div>
@@ -43,7 +43,7 @@
                 <zem-export-plus
                     start-date="dateRange.startDate"
                     end-date="dateRange.endDate"
-                    base-url="'api/accounts/' + $state.params.id + '/campaigns/'"
+                    base-url="'api/accounts/' + $state.params.id + '/'"
                     options="exportPlusOptions"
                     columns="columns"
                     order="order">

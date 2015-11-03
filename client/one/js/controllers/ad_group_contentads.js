@@ -23,8 +23,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     var userSettings = zemUserSettings.getInstance($scope, 'adGroupContentAds');
 
     $scope.exportOptions = [
-      {name: 'Current View (CSV)', value: 'view-csv'},
-      {name: 'Current View (Excel)', value: 'view-excel'}
+        {name: 'By Day (CSV)', value: 'csv'},
+        {name: 'By Day (Excel)', value: 'excel'}
     ];
 
     $scope.columns = [
