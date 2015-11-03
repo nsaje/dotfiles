@@ -12,6 +12,9 @@ from django.contrib import auth
 from django.db import models, transaction
 from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ValidationError
+from django.forms.models import model_to_dict
+
 
 import utils.string_helper
 
@@ -21,10 +24,21 @@ import reports.constants
 from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
+from utils import dates_helper
 
 
 SHORT_NAME_MAX_LENGTH = 22
 
+def validate(*validators):
+    errors = {}
+    for v in validators:
+        try:
+            v()
+        except ValidationError, e:
+            errors[v.__name__.replace('validate_', '')] = e.error_list
+    if errors:
+        raise ValidationError(errors)
+        
 
 class PermissionMixin(object):
     USERS_FIELD = ''
@@ -40,11 +54,9 @@ class PermissionMixin(object):
 
         return False
 
-
 class QuerySetManager(models.Manager):
     def get_queryset(self):
         return self.model.QuerySet(self.model)
-
 
 class DemoManager(models.Manager):
     def get_queryset(self):
@@ -67,7 +79,51 @@ class DemoManager(models.Manager):
                 )
         return queryset
 
+class FootprintModel(models.Model):
+    def __init__(self, *args, **kwargs):
+        super(FootprintModel, self).__init__(*args, **kwargs)
+        if not self.pk:
+            return
+        self._footprint()
+    
+    def has_changed(self, field=None):
+        if not self.pk:
+            return False
+        if field:
+            return self._meta.orig[field] != getattr(self, field)
+        for f in self._meta.fields:
+            if self._meta.orig[f.name] != getattr(self, f.name):
+                return True
+        return False
 
+    def previous_value(self, field):
+        return self.pk and self._meta.orig[field]
+
+    def _footprint(self):
+        self._meta.orig = {}
+        for f in self._meta.fields:
+            self._meta.orig[f.name] = getattr(self, f.name)
+
+    def save(self, *args, **kwargs):
+        super(FootprintModel, self).save(*args, **kwargs)
+        self._footprint()
+    
+    class Meta:
+        abstract = True
+
+class HistoryModel(models.Model):
+    snapshot = jsonfield.JSONField(blank=False, null=False)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True,
+                                   related_name='+', on_delete=models.PROTECT)
+
+    def to_dict(self):
+        raise NotImplementedError()
+    
+    class Meta:
+        abstract = True
+
+    
 class OutbrainAccount(models.Model):
     marketer_id = models.CharField(blank=False, null=False, max_length=255)
     used = models.BooleanField(default=False)
@@ -168,6 +224,13 @@ class Account(models.Model):
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
             new_settings.save(request)
+
+    def get_account_url(self, request):
+        account_settings_url = request.build_absolute_uri(
+            reverse('admin:dash_account_change', args=(self.pk,))
+        )
+        campaign_settings_url = account_settings_url.replace('http://', 'https://')
+        return campaign_settings_url
 
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user
@@ -621,6 +684,10 @@ class SourceType(models.Model):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_FETCH_REPORT_BY_PUBLISHER in self.available_actions
 
+    def can_modify_publisher_blacklist_automatically(self):
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC in self.available_actions
+
     def __str__(self):
         return self.type
 
@@ -718,6 +785,9 @@ class Source(models.Model):
 
     def can_fetch_report_by_publisher(self):
         return self.source_type.can_fetch_report_by_publisher()
+
+    def can_modify_publisher_blacklist_automatically(self):
+        return self.source_type.can_modify_publisher_blacklist_automatically() and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
@@ -1092,7 +1162,7 @@ class AdGroupSettings(SettingsBase):
     def get_running_status(self):
         if self.state != constants.AdGroupSettingsState.ACTIVE:
             return constants.AdGroupRunningStatus.INACTIVE
-        now = datetime.datetime.utcnow().date()
+        now = dates_helper.utc_today()
         if self.start_date <= now and (self.end_date is None or now <= self.end_date):
             return constants.AdGroupRunningStatus.ACTIVE
         return constants.AdGroupRunningStatus.INACTIVE
@@ -1133,7 +1203,7 @@ class AdGroupSettings(SettingsBase):
     def get_defaults_dict(cls):
         return {
             'state': constants.AdGroupSettingsState.INACTIVE,
-            'start_date': datetime.datetime.utcnow().date(),
+            'start_date': dates_helper.utc_today(),
             'cpc_cc': 0.4000,
             'daily_budget_cc': 10.0000,
             'target_devices': constants.AdTargetDevice.get_all(),
@@ -1341,6 +1411,7 @@ class UploadBatch(models.Model):
     num_errors = models.PositiveIntegerField(null=True)
 
     processed_content_ads = models.PositiveIntegerField(null=True)
+    inserted_content_ads = models.PositiveIntegerField(null=True)
     batch_size = models.PositiveIntegerField(null=True)
 
     class Meta:
@@ -1560,7 +1631,7 @@ class ConversionPixel(models.Model):
     slug = models.CharField(blank=False, null=False, max_length=32)
     archived = models.BooleanField(default=False)
 
-    last_sync_dt = models.DateTimeField(blank=True, null=True)
+    last_sync_dt = models.DateTimeField(default=datetime.datetime.utcnow, blank=True, null=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
 
     class Meta:
@@ -1594,8 +1665,13 @@ class ConversionGoal(models.Model):
 
         return prefix + '__' + self.goal_id
 
-    def get_view_key(self):
-        return 'conversion_goal_' + str(self.id)
+    def get_view_key(self, conversion_goals):
+        # the key in view is based on the index of the conversion goal compared to others for the same campaign
+        for i, cg in enumerate(sorted(conversion_goals, key=lambda x: x.id)):
+            if cg.id == self.id:
+                return 'conversion_goal_' + str(i + 1)
+
+        raise Exception('Conversion goal not found')
 
 
 class DemoAdGroupRealAdGroup(models.Model):
@@ -1622,3 +1698,230 @@ class UserActionLog(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True,
                                    blank=True)
+
+
+class PublisherBlacklist(models.Model):
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=127, blank=False, null=False)
+    ad_group = models.ForeignKey(AdGroup, null=False, related_name='ad_group', on_delete=models.PROTECT)
+    source = models.ForeignKey(Source, null=False, on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = (('name', 'ad_group', 'source'), )
+    
+
+class CreditLineItem(FootprintModel):
+    account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    
+    amount = models.IntegerField()
+    license_fee = models.DecimalField(
+        decimal_places=4,
+        max_digits=5,
+        default=Decimal('0.2000'),
+    )
+    status = models.IntegerField(
+        default=constants.CreditLineItemStatus.PENDING,
+        choices=constants.CreditLineItemStatus.get_choices()
+    )
+    comment = models.CharField(max_length=256, blank=True, null=True)
+    
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
+                                   verbose_name='Created by',
+                                   on_delete=models.PROTECT, null=True, blank=True)
+
+    objects = QuerySetManager()
+
+    def is_active(self, date=None):
+        if date is None:
+            date = dates_helper.local_today()
+        return self.status == constants.CreditLineItem.SIGNED and \
+            (self.start_date <= date <= self.end_date)
+
+    def get_total_credit_amount(self):
+        return sum(b.amount for b in self.budgets.all())
+
+    def cancel(self):
+        self.status = constants.CreditLineItemStatus.CANCELED
+        self.save()
+
+    def delete(self):
+        if self.status != constants.CreditLineItemStatus.PENDING:
+            raise AssertionError('Credit item is not pending')
+        super(CreditLineItem, self).delete()
+
+    def save(self, request=None, *args, **kwargs):
+        self.full_clean()
+        super(CreditLineItem, self).save(*args, **kwargs)
+        CreditHistory.objects.create(
+            created_by=request.user if request else None,
+            snapshot=model_to_dict(self),
+            credit=self,
+        )
+
+    def __str__(self):
+        return '{} - ${} - from {} to {}'.format(str(self.account), self.amount,
+                                                 self.start_date, self.end_date)
+
+    def is_editable(self):
+        return self.status == constants.CreditLineItemStatus.PENDING
+
+    def clean(self):
+        has_changed = any((
+            self.has_changed('start_date'),
+            self.has_changed('amount'),
+            self.has_changed('license_fee'),
+        ))
+        if has_changed and not self.is_editable():
+            raise ValidationError('Nonpending credit line item cannot change.')
+
+        validate(
+            self.validate_start_date,
+            self.validate_end_date,
+            self.validate_license_fee,
+            self.validate_status,
+        )
+
+
+    def validate_status(self):
+        s = constants.CreditLineItemStatus
+        if not self.has_changed('status'):
+            return
+        if self.status == s.CANCELED and self.budgets.all():
+            raise ValidationError('Credit line item status cannot change when credit has budgets allocated.')
+        if self.status == s.PENDING:
+            raise ValidationError('Credit line item status cannot change to PENDING.')
+            
+        
+    def validate_start_date(self):
+        if not self.start_date:
+            return
+        if self.start_date > self.end_date:
+            raise ValidationError('Start date cannot be greater than the end date.')
+
+    def validate_end_date(self):
+        if self.has_changed('end_date') and self.previous_value('end_date') > self.end_date:
+            raise ValidationError('New end date cannot be less than the previous.')
+        
+    def validate_license_fee(self):
+        if not self.license_fee:
+            return
+        if not (0 <= self.license_fee <= 1):
+            raise ValidationError('License fee must be between 0 and 100%.')
+
+    class QuerySet(models.QuerySet):
+        def filter_active(self, date=None):
+            if date is None:
+                date = dates_helper.local_today()
+            return self.filter(
+                start_date__lte=date,
+                end_date__gte=date,
+                status=constants.CreditLineItem.SIGNED
+            )
+
+        def delete(self):
+            if self.exclude(status=constants.CreditLineItemStatus.PENDING).count() != 0:
+                raise AssertionError('Some credit items are not pending')
+            super(CreditLineItem.QuerySet, self).delete()
+
+class BudgetLineItem(FootprintModel):
+    campaign = models.ForeignKey(Campaign, related_name='budgets', on_delete=models.PROTECT)
+    credit = models.ForeignKey(CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    
+    amount = models.IntegerField()
+    
+    comment = models.CharField(max_length=256, blank=True, null=True)
+    
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
+                                   verbose_name='Created by',
+                                   on_delete=models.PROTECT, null=True, blank=True)
+
+    def save(self, request=None, *args, **kwargs):
+        self.full_clean()
+        super(BudgetLineItem, self).save(*args, **kwargs)
+        BudgetHistory.objects.create(
+            created_by=request.user if request else None,
+            snapshot=model_to_dict(self),
+            budget=self,
+        )
+
+    def db_state(self, date=None):
+        return BudgetLineItem.objects.get(pk=self.pk).state(date=date)
+
+    def state(self, date=None):
+        if date is None:
+            date = dates_helper.local_today()
+        if self.end_date and self.end_date < date:
+            return constants.BudgetLineItemState.INACTIVE
+        if self.start_date and self.start_date <= date:
+            return constants.BudgetLineItemState.ACTIVE
+        return constants.BudgetLineItemState.PENDING
+
+
+    def state_text(self, date=None):
+        return constants.BudgetLineItemState.get_text(self.state(date=date))
+
+    def clean(self):
+        if self.pk and self.db_state() != constants.BudgetLineItemState.PENDING:
+            raise ValidationError('Only pending budgets can change.')
+
+        validate(
+            self.validate_start_date,
+            self.validate_end_date,
+            self.validate_amount,
+            self.validate_credit,
+        )
+        
+
+    def license_fee(self):
+        return self.credit.license_fee
+
+    def validate_credit(self):
+        if self.has_changed('credit'):
+            raise ValidationError('Credit cannot change.')
+        if self.credit.status != constants.CreditLineItemStatus.SIGNED:
+            raise ValidationError('Cannot allocate budget from an unsigned or canceled credit.')
+
+    def validate_start_date(self):
+        if not self.start_date:
+            return
+        if self.start_date > self.end_date:
+            raise ValidationError('Start date cannot be bigger than the end date.')
+        if self.start_date < self.credit.start_date:
+            raise ValidationError('Start date cannot be smaller than the credit\'s start date.')
+
+    def validate_end_date(self):
+        if not self.end_date:
+            return
+        if self.end_date > self.credit.end_date:
+            raise ValidationError('End date cannot be bigger than the credit\'s end date.')
+        
+    def validate_amount(self):
+        if not self.amount:
+            return
+        budgets = self.credit.budgets.exclude(pk=self.pk)
+        delta = self.credit.amount - sum(b.amount for b in budgets) - self.amount
+        if delta < 0:
+            raise ValidationError(
+                'Budget exceeds the total credit amount by ${}.00.'.format(-delta)
+            )
+        if self.state() == constants.BudgetLineItemState.PENDING:
+            return
+        if self.has_changed('amount'):
+            raise ValidationError('Budget amount cannot change.')        
+
+
+class CreditHistory(HistoryModel):
+    credit = models.ForeignKey(CreditLineItem, related_name='history')
+
+class BudgetHistory(HistoryModel):
+    budget = models.ForeignKey(BudgetLineItem, related_name='history')
+

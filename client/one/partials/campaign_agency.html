@@ -66,12 +66,12 @@
                     <strong>{{row.title}}</strong>
                 </div>
                 <div class="col-xs-9">
-                    {{row.value}} <a href="#" ng-if="row.link" ng-click="row.link.click()">{{row.link.text}}</a>
+                    {{row.value}} <a href="#" class="row-link" ng-if="row.link" ng-click="row.link.click()">{{row.link.text}}</a>
                 </div>
             </div>
             <button type="button" class="btn btn-default remove-btn" ng-class="{'disabled': !!removeConversionGoalInProgress || !!goalsError}" ng-click="removeConversionGoal(goal.id)">Remove</button>
         </div>
-        <button type="button" class="btn btn-default" ng-show="!goalsRequestInProgress && conversionGoals.length < 2" ng-click="addConversionGoal()" ng-class="{'disabled': !!goalsError || !!removeConversionGoalInProgress }">Set up conversion or goal tracking</button>
+        <button type="button" class="btn btn-default" ng-click="addConversionGoal()" ng-disabled="!!goalsError || !!goalsRequestInProgress || !!removeConversionGoalInProgress || conversionGoals.length > 1" title="{{ (conversionGoals.length > 1 && 'At most two conversions or goals can be set up per campaign.') || '' }}"">Set up conversion or goal tracking</button>
         <div ng-if="!!goalsError" class="error">
             An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
         </div>

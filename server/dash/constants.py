@@ -87,6 +87,28 @@ class ContentAdSourceState(ConstantBase):
     }
 
 
+class PublisherStatus(ConstantBase):
+    ENABLED = 1
+    BLACKLISTED = 2
+
+    _VALUES = {
+        ENABLED: 'Enabled',
+        BLACKLISTED: 'Blacklisted'
+    }
+
+
+class PublisherBlacklistFilter(ConstantBase):
+    SHOW_ALL = 'all'
+    SHOW_ACTIVE = 'active'
+    SHOW_BLACKLISTED = 'blacklisted'
+
+    _VALUES = {
+        SHOW_ALL: 'All',
+        SHOW_ACTIVE: 'Active',
+        SHOW_BLACKLISTED: 'Blacklisted'
+    }
+
+
 class IABCategory(ConstantBase):
     IAB1 = "IAB1"
     IAB1_1 = "IAB1-1"
@@ -924,6 +946,7 @@ class SourceAction(ConstantBase):
     CAN_MODIFY_COUNTRY_TARGETING = 16
     CAN_MODIFY_DMA_TARGETING_MANUAL = 17
     CAN_FETCH_REPORT_BY_PUBLISHER = 18
+    CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC = 19
 
     _VALUES = {
         CAN_UPDATE_STATE: 'Can update state',
@@ -944,6 +967,7 @@ class SourceAction(ConstantBase):
         CAN_UPDATE_DAILY_BUDGET_MANUAL: 'Can update daily budget manually',
         CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL: 'Can modify ad group IAB category manually',
         CAN_FETCH_REPORT_BY_PUBLISHER: 'Can fetch report by publishers',
+        CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC: 'Can modify publisher blacklist',
     }
 
 
@@ -1068,3 +1092,27 @@ class UserActionType(ConstantBase):
         CREATE_MEDIA_SOURCE_CAMPAIGN: 'Create Media Source Campaign',
         SET_MEDIA_SOURCE_SETTINGS: 'Set Media Source Settings',
     }
+
+class CreditLineItemStatus(ConstantBase):
+    SIGNED = 1 # Only adding BudgetLineItems is permitted
+    PENDING = 2 # Internal "waiting" status, fields are editable
+    CANCELED = 3 # Adding BudgetLineItems is not permitted 
+
+    _VALUES = {
+        SIGNED: 'Signed',
+        PENDING: 'Pending',
+        CANCELED: 'Canceled',
+    }
+    
+class BudgetLineItemState(ConstantBase):
+    ACTIVE = 1
+    PENDING = 2
+    INACTIVE = 3
+
+    _VALUES = {
+        ACTIVE: 'Active',
+        PENDING: 'Pending',
+        INACTIVE: 'Inactive',
+    }
+
+

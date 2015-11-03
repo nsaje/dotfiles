@@ -15,6 +15,10 @@ var constants = {
       ACTIVE: 1,
       INACTIVE: 2
     },
+    publisherStatus: {
+      ENABLED: 1,
+      BLACKLISTED: 2
+    },
     adTargetDevice: {
         DESKTOP: 'desktop',
         MOBILE: 'mobile'
@@ -31,7 +35,9 @@ var constants = {
         BOUNCE_RATE: 'bounce_rate',
         PV_PER_VISIT: 'pv_per_visit',
         AVG_TOS: 'avg_tos',
-        CLICK_DISCREPANCY: 'click_discrepancy'
+        CLICK_DISCREPANCY: 'click_discrepancy',
+        CONVERSION_GOAL1: 'conversion_goal_1',
+        CONVERSION_GOAL2: 'conversion_goal_2'
     },
     iabCategory: {
         IAB1: "IAB1",
@@ -480,10 +486,8 @@ var constants = {
         INACTIVE: 2
     }
 };
-
 var options = {
-    adGroupSettingsStates: [
-        {name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
+    adGroupSettingsStates: [{name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
         {name: 'Enabled', value: constants.adGroupSettingsState.ACTIVE}
     ],
     adTargetDevices: [
@@ -508,12 +512,20 @@ var options = {
         {name: 'PV/Visit', value: constants.chartMetric.PV_PER_VISIT},
         {name: 'Avg. ToS', value: constants.chartMetric.AVG_TOS}
     ],
+    adGroupConversionGoalChartMetrics: [
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL1, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL2, shown: false},
+    ],
     campaignChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
         {name: 'Spend', value: constants.chartMetric.COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
+    ],
+    campaignConversionGoalChartMetrics: [
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL1, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL2, shown: false},
     ],
     accountChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},

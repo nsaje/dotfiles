@@ -21,6 +21,7 @@ from dash import models
 from dash import api
 from dash import constants
 from dash import image_helper
+from dash import threads
 from dash.forms import AdGroupAdsPlusUploadForm, MANDATORY_CSV_FIELDS, OPTIONAL_CSV_FIELDS  # to get fields & validators
 
 logger = logging.getLogger(__name__)
@@ -51,12 +52,12 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
     try:
         # ensure content ads are only commited to DB
         # if all of them are successfully processed
+        count_inserted = 0
         with transaction.atomic():
             rows = []
             all_content_ad_sources = []
             num_errors = 0
 
-            logger.info('Inserting uploaded content ads for batch %s %s', batch.pk, batch.name)
             for row, cleaned_data, errors in results:
                 if not errors:
                     content_ad, content_ad_sources = _create_objects(
@@ -73,11 +74,15 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
 
                 rows.append(row)
 
+                # update progress in another thread to escape transaction
+                count_inserted += 1
+                t = threads.UpdateUploadBatchThread(batch.id, count_inserted)
+                t.start_and_join()
+
             if num_errors > 0:
                 # raise exception to rollback transaction
                 raise UploadFailedException()
 
-            logger.info('Submitting uploaded content ads for batch %s %s', batch.pk, batch.name)
             actions = api.submit_content_ads(all_content_ad_sources, request)
 
             batch.status = constants.UploadBatchStatus.DONE
@@ -97,7 +102,6 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
         batch.save()
         return
 
-    logger.info('Sending uploaded content ads for batch %s %s', batch.pk, batch.name)
     actionlog.zwei_actions.send(actions)
 
 

@@ -1,9 +1,13 @@
 from collections import defaultdict
 import datetime
+import itertools
 import logging
 import math
+import pytz
+from multiprocessing.pool import ThreadPool
 
 from django.db.models import Min
+from django.conf import settings
 
 import dash.models
 import reports.update
@@ -16,9 +20,16 @@ logger = logging.getLogger(__name__)
 # take ET into consideration - server time is in UTC while we query for ET dates
 ADDITIONAL_SYNC_HOURS = 10
 
+NUM_THREADS = 20
 
-def _get_dates_to_sync():
-    min_last_sync_dt = dash.models.ConversionPixel.objects.\
+
+def _utc_datetime_to_est_date(dt):
+    dt = dt.replace(tzinfo=pytz.utc)
+    return dt.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).date()
+
+
+def _get_dates_to_sync(conversion_pixels):
+    min_last_sync_dt = conversion_pixels.\
         filter(last_sync_dt__isnull=False).\
         aggregate(Min('last_sync_dt'))['last_sync_dt__min']
 
@@ -35,29 +46,34 @@ def _get_dates_to_sync():
     return dates
 
 
-def _get_accounts_to_sync():
-    conversion_pixels = dash.models.ConversionPixel.objects.all()
-    return set(cp.account_id for cp in conversion_pixels)
-
-
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions_full')
 def update_touchpoint_conversions_full():
-    dates = _get_dates_to_sync()
-    account_ids = _get_accounts_to_sync()
-    update_touchpoint_conversions(dates, account_ids)
+    conversion_pixels = dash.models.ConversionPixel.objects.filter(archived=False)
+    dates = _get_dates_to_sync(conversion_pixels)
+    update_touchpoint_conversions(dates, conversion_pixels)
 
     # all missing dates are guaranteed to be synced so last sync dt can be updated
-    dash.models.ConversionPixel.objects.filter(account_id__in=account_ids).update(last_sync_dt=datetime.datetime.utcnow())
+    conversion_pixels.update(last_sync_dt=datetime.datetime.utcnow())
+
+
+def _update_touchpoint_conversions_date(date_cp_tup):
+    date, conversion_pixel = date_cp_tup
+
+    logger.info('Fetching touchpoint conversions for date %s, account id %s and conversion pixel slug %s.', date,
+                conversion_pixel.account_id, conversion_pixel.slug)
+    redirects_impressions = redirector_helper.fetch_redirects_impressions(date, conversion_pixel.account_id,
+                                                                          conversion_pixel.slug)
+    touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
+    reports.update.update_touchpoint_conversions(date, conversion_pixel.account_id, conversion_pixel.slug,
+                                                 touchpoint_conversion_pairs)
 
 
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')
-def update_touchpoint_conversions(dates, account_ids):
-    for account_id in account_ids:
-        for date in dates:
-            logger.info('Fetching touchpoint conversions for date %s and account id %s.', date, account_id)
-            redirects_impressions = redirector_helper.fetch_redirects_impressions(date, account_id)
-            touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
-            reports.update.update_touchpoint_conversions(date, account_id, touchpoint_conversion_pairs)
+def update_touchpoint_conversions(dates, conversion_pixels):
+    pool = ThreadPool(processes=NUM_THREADS)
+    pool.map_async(_update_touchpoint_conversions_date, itertools.product(dates, conversion_pixels))
+    pool.close()
+    pool.join()
 
 
 @statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
@@ -108,7 +124,6 @@ def process_touchpoint_conversions(redirects_impressions):
             try:
                 pixel = dash.models.ConversionPixel.objects.get(slug=slug, account_id=account_id)
             except dash.models.ConversionPixel.DoesNotExist:
-                logger.info('Unknown conversion pixel. slug=%s account_id=%s', slug, account_id)
                 continue
 
             if pixel.archived:
@@ -118,14 +133,16 @@ def process_touchpoint_conversions(redirects_impressions):
             try:
                 ca = dash.models.ContentAd.objects.select_related('ad_group__campaign').get(id=content_ad_id)
             except dash.models.ContentAd.DoesNotExist:
-                logger.warning('Unknown content ad. content_ad_id=%s ad_group_id=%s source=%s',
-                               content_ad_id, ad_group_id, source_slug)
+                if content_ad_id != 0:  # unless legacy simple redirect
+                    logger.warning('Unknown content ad. content_ad_id=%s ad_group_id=%s source=%s',
+                                   content_ad_id, ad_group_id, source_slug)
                 continue
 
             try:
                 source = dash.models.Source.objects.get(tracking_slug=source_slug)
             except dash.models.Source.DoesNotExist:
-                logger.warning('Unknown source slug. source=%s', source_slug)
+                if source_slug != 'z1':  # unless source slug from dashboard visits
+                    logger.warning('Unknown source slug. source=%s', source_slug)
                 continue
 
             if ca.ad_group.campaign.account_id != pixel.account_id:
@@ -134,7 +151,7 @@ def process_touchpoint_conversions(redirects_impressions):
             potential_touchpoint_conversion = {
                 'zuid': zuid,
                 'slug': slug,
-                'date': impression_ts.date(),
+                'date': _utc_datetime_to_est_date(impression_ts),
                 'conversion_id': impression_id,
                 'conversion_timestamp': impression_ts,
                 'account_id': account_id,

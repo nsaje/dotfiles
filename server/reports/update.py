@@ -277,8 +277,8 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
 
 
 @transaction.atomic(using=settings.STATS_DB_NAME)
-def update_touchpoint_conversions(date, account_id, conversion_touchpoint_pairs):
-    redshift.delete_touchpoint_conversions(date, account_id)
+def update_touchpoint_conversions(date, account_id, slug, conversion_touchpoint_pairs):
+    redshift.delete_touchpoint_conversions(date, account_id, slug)
     redshift.insert_touchpoint_conversions(conversion_touchpoint_pairs)
 
 
@@ -375,13 +375,13 @@ def _create_contentad_goal_conversion_stats(entry, goal_type, track_source_map):
     try:
         report_date = entry.report_date
         stats = []
-        for goal, values in entry.goals.iteritems():
+        for goal, conversions in entry.goals.iteritems():
             stat = reports.models.ContentAdGoalConversionStats(
                 date=report_date,
                 created_dt=created_dt,
                 goal_type=goal_type,
                 goal_name=goal,
-                conversions=values['conversions'],
+                conversions=conversions,
             )
             stat.source_id = track_source_map[entry.source_param]
             stat.content_ad_id = entry.content_ad_id

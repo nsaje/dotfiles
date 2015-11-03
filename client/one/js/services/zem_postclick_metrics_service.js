@@ -88,11 +88,38 @@ oneApp.factory('zemPostclickMetricsService', function() {
         });
     }
 
+    function insertConversionGoalColumns(columns, position, isShown, isInternal) {
+        columns.splice(position, 0, {
+            name: 'Conversion Goal 1',
+            field: 'conversion_goal_1',
+            checked: false,
+            type: 'number',
+            help: 'Number of completions of the conversion goal',
+            shown: false,
+            internal: isInternal,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        }, {
+            name: 'Conversion Goal 2',
+            field: 'conversion_goal_2',
+            checked: false,
+            type: 'number',
+            help: 'Number of completions of the conversion goal',
+            shown: false,
+            internal: isInternal,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        });
+    }
+
     function concatAcquisitionChartOptions(chartOptions, isInternal) {
         return concatChartOptions(
             chartOptions,
             options.adGroupAcquisitionChartPostClickMetrics,
-            isInternal
+            isInternal,
+            false
         );
     }
 
@@ -100,46 +127,84 @@ oneApp.factory('zemPostclickMetricsService', function() {
         return concatChartOptions(
             chartOptions,
             options.adGroupEngagementChartPostClickMetrics,
-            isInternal
+            isInternal,
+            false
         );
     }
 
-    function concatChartOptions(chartOptions, postclickOptions, isInternal) {
-        return chartOptions.concat(postclickOptions.map(function (option) {
+    function concatChartOptions(chartOptions, newOptions, isInternal, isHidden) {
+        return chartOptions.concat(newOptions.map(function (option) {
             option.internal = isInternal;
+            options.hidden = isHidden;
             return option;
         }));
     }
 
-    function insertConversionGoalColumns(columns, position, conversionGoals, goalCategory, isShown, isInternal) {
-        if (!conversionGoals) {
+    function getValidChartMetrics(chartMetric1, chartMetric2, conversionGoals) {
+        conversionGoals = conversionGoals || [];
+        var cg1Exists = conversionGoals.some(function (conversionGoal) {
+            return conversionGoal.id === constants.chartMetric.CONVERSION_GOAL1;
+        });
+
+        var cg2Exists = conversionGoals.some(function (conversionGoal) {
+            return conversionGoal.id === constants.chartMetric.CONVERSION_GOAL2;
+        });
+
+        if ((chartMetric1 === constants.chartMetric.CONVERSION_GOAL1 && !cg1Exists) ||
+            (chartMetric1 === constants.chartMetric.CONVERSION_GOAL2 && !cg2Exists)) {
+            chartMetric1 = constants.chartMetric.CLICKS;
+        }
+
+        if ((chartMetric2 === constants.chartMetric.CONVERSION_GOAL1 && !cg1Exists) ||
+            (chartMetric2 === constants.chartMetric.CONVERSION_GOAL2 && !cg2Exists)) {
+            chartMetric2 = constants.chartMetric.IMPRESSIONS;
+        }
+
+        return {
+            chartMetric1: chartMetric1,
+            chartMetric2: chartMetric2
+        };
+    }
+
+    function setConversionGoalChartOptions(chartOptions, conversionGoals, isShown) {
+        if (!conversionGoals || !conversionGoals.length) {
             return;
         }
 
-        for(var i = 0; i < conversionGoals.length; i++) {
-            var columnDescription = {
-                name: conversionGoals[i]['name'],
-                field: 'conversion_goal_' + conversionGoals[i]['id'],
-                checked: false,
-                type: 'number',
-                help: 'Number of completions of the conversion goal',
-                shown: isShown,
-                internal: isInternal,
-                totalRow: true,
-                order: true,
-                initialOrder: 'desc'
-            };
+        conversionGoals.forEach(function(el, ix) {
+            for (var i = 0; i < chartOptions.length; i++) {
+                if (chartOptions[i].value === el.id) {
+                    chartOptions[i].name = el.name;
+                    chartOptions[i].shown = isShown;
+                }
+            }
+        });
+    }
 
-            columns.splice(position, 0, columnDescription);
-            goalCategory.fields.push(columnDescription.field);
+    function setConversionGoalColumnsDefaults(cols, conversionGoals, isShown) {
+        if (!conversionGoals || !conversionGoals.length) {
+            return;
         }
-    };
+
+        conversionGoals.forEach(function(el, ix) {
+            for (var i = 0; i < cols.length; i++) {
+                if (cols[i].field === el.id) {
+                    cols[i].name = el.name;
+                    cols[i].shown = isShown;
+                }
+            }
+        });
+    }
 
     return {
         insertAcquisitionColumns: insertAcquisitionColumns,
         insertEngagementColumns: insertEngagementColumns,
+        insertConversionGoalColumns: insertConversionGoalColumns,
         concatAcquisitionChartOptions: concatAcquisitionChartOptions,
         concatEngagementChartOptions: concatEngagementChartOptions,
-        insertConversionGoalColumns: insertConversionGoalColumns
+        concatChartOptions: concatChartOptions,
+        getValidChartMetrics: getValidChartMetrics,
+        setConversionGoalChartOptions: setConversionGoalChartOptions,
+        setConversionGoalColumnsDefaults: setConversionGoalColumnsDefaults
     };
 });

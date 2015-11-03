@@ -159,6 +159,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'description': 'Example description',
             'call_to_action': 'Call to action',
             'clicks': 1000,
+            'conversion_goal_1': 0,
             'conversion_goal_2': None,
             'cost': 100,
             'cpc': '0.0100',
@@ -239,6 +240,7 @@ class AdGroupAdsPlusTableTest(TestCase):
 
         self.assertEqual(result['data']['totals'], {
             'clicks': 1500,
+            'conversion_goal_1': 0,
             'conversion_goal_2': None,
             'cost': 200,
             'cpc': '0.0200',
@@ -778,13 +780,14 @@ class AdGroupPublishersTableTest(TestCase):
             u'ctr': 100.0,
             u'domain': None,
             u'domain_link': u'',
+            u'blacklisted': u'Active',
             u'exchange': 'someexchange',
             u'impressions': 10560,
             u'domain': 'example.com',
             u'domain_link': 'http://example.com',
         }
 
-        self.assertItemsEqual(sorted(result['data']['rows']), [expected_row_1])
+        self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
 
         self.assertIn('totals', result['data'])
 
@@ -859,7 +862,7 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
-        self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
+        self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123})
 
     def test_get_reverse_order(self, mock_query):
         date = datetime.date(2015, 2, 22)
@@ -923,7 +926,7 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
-        self.assertEqual(result['data']['rows'], [{u'domain': u'example.com', u'domain_link': u'http://example.com', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123}])
+        self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'someexchange', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123})
 
 
 @patch('reports.redshift.get_cursor')

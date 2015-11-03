@@ -1,7 +1,7 @@
+import datetime
 import pytz
 from slugify import slugify
 from django.conf import settings
-import newrelic.agent
 
 from dash.views import helpers
 from dash import models
@@ -74,6 +74,13 @@ def get_reports_api_module(user):
 
     return reports.api
 
+def get_conversion_pixels_last_sync(conversion_pixels):
+    conversion_pixels = conversion_pixels.extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
+                                                order_by=['-last_sync_null', 'last_sync_dt'])
+    if len(conversion_pixels):
+        return conversion_pixels[0].last_sync_dt
+
+    return datetime.datetime.utcnow()
 
 class AllAccountsSourcesTable(object):
     def __init__(self, user, id_, filtered_sources):
@@ -124,13 +131,21 @@ class AllAccountsSourcesTable(object):
             ).get_latest_source_success()
         return self._last_success_actions
 
+    def get_last_pixel_sync(self):
+        return get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False))
+
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=self.accounts, sources=self.filtered_sources)
 
-    def get_data_status(self):
+    def get_data_status(self, user):
+        last_pixel_sync_message = None
+        if user.has_perm('zemauth.conversion_reports'):
+            last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
+
         return helpers.get_data_status(
             self.get_sources(),
             helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
+            last_pixel_sync_message=last_pixel_sync_message,
         )
 
 
@@ -184,13 +199,21 @@ class AccountSourcesTable(object):
             ).get_latest_source_success()
         return self._last_success_actions
 
+    def get_last_pixel_sync(self):
+        return get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False, account_id=self.account.id))
+
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(accounts=[self.account], sources=self.filtered_sources)
 
-    def get_data_status(self):
+    def get_data_status(self, user):
+        last_pixel_sync_message = None
+        if user.has_perm('zemauth.conversion_reports'):
+            last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
+
         return helpers.get_data_status(
             self.get_sources(),
             helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
+            last_pixel_sync_message=last_pixel_sync_message,
         )
 
 
@@ -247,13 +270,21 @@ class CampaignSourcesTable(object):
             ).get_latest_source_success()
         return self._last_success_actions
 
+    def get_last_pixel_sync(self):
+        return get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False, account_id=self.campaign.account_id))
+
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(campaigns=[self.campaign], sources=self.filtered_sources)
 
-    def get_data_status(self):
+    def get_data_status(self, user):
+        last_pixel_sync_message = None
+        if user.has_perm('zemauth.conversion_reports'):
+            last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
+
         return helpers.get_data_status(
             self.get_sources(),
             helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
+            last_pixel_sync_message=last_pixel_sync_message
         )
 
 
@@ -312,12 +343,15 @@ class AdGroupSourcesTable(object):
             ).get_latest_source_success()
         return self._last_success_actions
 
+    def get_last_pixel_sync(self):
+        return get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False, account_id=self.ad_group.campaign.account_id))
+
     def is_sync_in_progress(self):
         return actionlog.api.is_sync_in_progress(ad_groups=[self.ad_group], sources=self.filtered_sources)
 
-    def get_data_status(self, include_state_messages=False):
+    def get_data_status(self, user):
         state_messages = None
-        if include_state_messages:
+        if user.has_perm('zemauth.set_ad_group_source_settings'):
             state_messages = helpers.get_ad_group_sources_state_messages(
                 self.active_ad_group_sources,
                 self.ad_group_settings,
@@ -325,10 +359,15 @@ class AdGroupSourcesTable(object):
                 self.ad_group_sources_states,
             )
 
+        last_pixel_sync_message = None
+        if user.has_perm('zemauth.conversion_reports'):
+            last_pixel_sync_message = helpers.get_last_pixel_sync_message(self.get_last_pixel_sync())
+
         return helpers.get_data_status(
             self.get_sources(),
             helpers.get_last_sync_messages(self.get_sources(), self.get_last_success_actions()),
-            state_messages
+            state_messages=state_messages,
+            last_pixel_sync_message=last_pixel_sync_message
         )
 
 
@@ -339,8 +378,6 @@ class AdGroupSourcesTableUpdates(object):
 
         ad_group_sources_table = AdGroupSourcesTable(user, ad_group_id_, filtered_sources)
         ad_group_sources = ad_group_sources_table.active_ad_group_sources
-        sources = ad_group_sources_table.get_sources()
-        last_success_actions = ad_group_sources_table.get_last_success_actions()
 
         new_last_change_dt, changed_ad_group_sources = helpers.get_ad_group_sources_last_change_dt(
             ad_group_sources,
@@ -413,14 +450,7 @@ class AdGroupSourcesTableUpdates(object):
             response['notifications'] = notifications
 
             if user.has_perm('zemauth.data_status_column'):
-                response['data_status'] = helpers.get_data_status(
-                    sources,
-                    helpers.get_last_sync_messages(sources, last_success_actions),
-                    helpers.get_ad_group_sources_state_messages(ad_group_sources,
-                                                                ad_group_sources_table.ad_group_settings,
-                                                                ad_group_sources_table.ad_group_sources_settings,
-                                                                ad_group_sources_table.ad_group_sources_states)
-                )
+                response['data_status'] = ad_group_sources_table.get_data_status(user)
 
         return response
 
@@ -442,6 +472,7 @@ class SourcesTable(object):
         sources = level_sources_table.get_sources()
         sources_states = level_sources_table.ad_group_sources_states
         last_success_actions = level_sources_table.get_last_success_actions()
+        last_pixel_sync = level_sources_table.get_last_pixel_sync()
         sources_data, totals_data = level_sources_table.get_stats(user, start_date, end_date)
         is_sync_in_progress = level_sources_table.is_sync_in_progress()
 
@@ -452,7 +483,8 @@ class SourcesTable(object):
         yesterday_cost, yesterday_total_cost = level_sources_table.get_yesterday_cost()
 
         operational_sources = [source.id for source in sources.filter(maintenance=False, deprecated=False)]
-        last_success_actions_operational = [v for k, v in last_success_actions.iteritems() if k in operational_sources]
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
+        last_success_actions_operational = [v for k, v in last_success_actions_joined.iteritems() if k in operational_sources]
         last_sync = helpers.get_last_sync(last_success_actions_operational)
 
         incomplete_postclick_metrics = False
@@ -473,7 +505,7 @@ class SourcesTable(object):
                 sources_data,
                 sources_states,
                 ad_group_sources_settings,
-                last_success_actions,
+                last_success_actions_joined,
                 yesterday_cost,
                 order=order,
                 ad_group_level=ad_group_level,
@@ -495,15 +527,13 @@ class SourcesTable(object):
 
         if user.has_perm('zemauth.conversion_reports') and hasattr(level_sources_table, 'conversion_goals'):
             # only on ad group and campaign level
-            response['conversion_goals'] = [{'id': cg.id, 'name': cg.name} for cg in level_sources_table.conversion_goals]
+            response['conversion_goals'] = [
+                {'id': cg.get_view_key(level_sources_table.conversion_goals), 'name': cg.name}
+                for cg in level_sources_table.conversion_goals
+            ]
 
         if user.has_perm('zemauth.data_status_column'):
-            if ad_group_level:
-                response['data_status'] = level_sources_table.get_data_status(
-                    include_state_messages=user.has_perm('zemauth.set_ad_group_source_settings') and ad_group_level,
-                )
-            else:
-                response['data_status'] = level_sources_table.get_data_status()
+            response['data_status'] = level_sources_table.get_data_status(user)
 
         if ad_group_level:
             if user.has_perm('zemauth.set_ad_group_source_settings'):
@@ -521,7 +551,6 @@ class SourcesTable(object):
 
         return response
 
-    @newrelic.agent.function_trace()
     def get_totals(self,
                    ad_group_level,
                    user,
@@ -568,7 +597,6 @@ class SourcesTable(object):
 
         return None
 
-    @newrelic.agent.function_trace()
     def get_rows(
             self,
             id_,
@@ -740,13 +768,16 @@ class AccountsAccountsTable(object):
         last_success_actions = actionlog.sync.GlobalSync(sources=filtered_sources).get_latest_success_by_child()
         last_success_actions = {aid: val for aid, val in last_success_actions.items() if aid in account_ids}
 
-        last_sync = helpers.get_last_sync(last_success_actions.values())
+        last_pixel_sync = get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False))
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
+
+        last_sync_joined = helpers.get_last_sync(last_success_actions_joined.values())
 
         rows = self.get_rows(
             accounts,
             accounts_settings,
             accounts_data,
-            last_success_actions,
+            last_success_actions_joined,
             account_budget,
             account_total_spend,
             has_view_archived_permission,
@@ -767,8 +798,8 @@ class AccountsAccountsTable(object):
         response = {
             'rows': rows,
             'totals': totals_data,
-            'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
-            'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
+            'last_sync': pytz.utc.localize(last_sync_joined).isoformat() if last_sync_joined is not None else None,
+            'is_sync_recent': helpers.is_sync_recent(last_success_actions_joined.values()),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(accounts=accounts, sources=filtered_sources),
             'order': order,
             'pagination': {
@@ -784,16 +815,23 @@ class AccountsAccountsTable(object):
 
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
+                user,
                 accounts,
                 last_success_actions,
+                last_pixel_sync
             )
 
         return response
 
-    def get_data_status(self, accounts, last_success_actions):
+    def get_data_status(self, user, accounts, last_success_actions, last_pixel_sync):
+        last_pixel_sync_message = None
+        if user.has_perm('zemauth.conversion_reports'):
+            last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
+
         return helpers.get_data_status(
             accounts,
             helpers.get_last_sync_messages(accounts, last_success_actions),
+            last_pixel_sync_message=last_pixel_sync_message
         )
 
     def get_rows(self, accounts, accounts_settings, accounts_data, last_actions, account_budget,
@@ -980,6 +1018,7 @@ class AdGroupAdsPlusTable(object):
 
         size = max(min(int(size or 5), 4294967295), 1)
 
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
         content_ads = models.ContentAd.objects.filter(
             ad_group=ad_group).filter_by_sources(filtered_sources).select_related('batch')
 
@@ -989,7 +1028,7 @@ class AdGroupAdsPlusTable(object):
             end_date,
             breakdown=['content_ad'],
             ignore_diff_rows=True,
-            conversion_goals=ad_group.campaign.conversiongoal_set.all(),
+            conversion_goals=conversion_goals,
             constraints={'ad_group': ad_group, 'source': filtered_sources}
         )
 
@@ -1017,14 +1056,19 @@ class AdGroupAdsPlusTable(object):
             user,
             start_date,
             end_date,
-            conversion_goals=ad_group.campaign.conversiongoal_set.all(),
+            conversion_goals=conversion_goals,
             ignore_diff_rows=True,
             constraints={'ad_group': ad_group, 'source': filtered_sources}
         )
 
         ad_group_sync = actionlog.sync.AdGroupSync(ad_group, sources=filtered_sources)
         last_success_actions = ad_group_sync.get_latest_success_by_child()
-        last_sync = helpers.get_last_sync(last_success_actions.values())
+
+        last_pixel_sync = get_conversion_pixels_last_sync(
+            models.ConversionPixel.objects.filter(archived=False, account_id=ad_group.campaign.account_id))
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
+
+        last_sync = helpers.get_last_sync(last_success_actions_joined.values())
 
         incomplete_postclick_metrics = \
             not reports.api_contentads.has_complete_postclick_metrics_ad_groups(
@@ -1051,14 +1095,14 @@ class AdGroupAdsPlusTable(object):
             'notifications': helpers.get_content_ad_notifications(ad_group),
             'last_change': helpers.get_content_ad_last_change_dt(ad_group, filtered_sources),
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
-            'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
+            'is_sync_recent': helpers.is_sync_recent(last_success_actions_joined.values()),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress([ad_group], sources=filtered_sources),
             'incomplete_postclick_metrics': incomplete_postclick_metrics,
         }
 
         if user.has_perm('zemauth.conversion_reports'):
-            conversion_goals = ad_group.campaign.conversiongoal_set.all()
-            response_dict['conversion_goals'] = [{'id': cg.id, 'name': cg.name} for cg in conversion_goals]
+            response_dict['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+                                                 for cg in conversion_goals]
 
         if user.has_perm('zemauth.data_status_column'):
             shown_content_ads = models.ContentAd.objects.filter(id__in=[row['id'] for row in rows])
@@ -1069,7 +1113,6 @@ class AdGroupAdsPlusTable(object):
 
         return response_dict
 
-    @newrelic.agent.function_trace()
     def _get_total_row(self, stats):
         totals = {}
         helpers.copy_stats_to_row(stats, totals)
@@ -1090,7 +1133,6 @@ class AdGroupAdsPlusTable(object):
             content_ad_id=content_ad.id
         )
 
-    @newrelic.agent.function_trace()
     def _get_rows(self, content_ads, stats, ad_group, has_view_archived_permission, show_archived):
         stats = {s['content_ad']: s for s in stats}
         rows = []
@@ -1135,7 +1177,6 @@ class AdGroupAdsPlusTable(object):
 
         return rows
 
-    @newrelic.agent.function_trace()
     def _add_status_to_rows(self, user, rows, filtered_sources, ad_group):
         all_content_ad_sources = models.ContentAdSource.objects.filter(
             source=filtered_sources,
@@ -1215,7 +1256,10 @@ class CampaignAdGroupsTable(object):
         campaign_sync = actionlog.sync.CampaignSync(campaign, sources=filtered_sources)
         last_success_actions = campaign_sync.get_latest_success_by_child()
 
-        last_sync = helpers.get_last_sync(last_success_actions.values())
+        last_pixel_sync = get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False, account_id=campaign.account_id))
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
+
+        last_sync = helpers.get_last_sync(last_success_actions_joined.values())
 
         incomplete_postclick_metrics = \
             not reports_api.has_complete_postclick_metrics_campaigns(
@@ -1231,14 +1275,14 @@ class CampaignAdGroupsTable(object):
                 ad_groups,
                 ad_groups_settings,
                 stats,
-                last_success_actions,
+                last_success_actions_joined,
                 order,
                 has_view_archived_permission,
                 show_archived
             ),
             'totals': totals_stats,
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
-            'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
+            'is_sync_recent': helpers.is_sync_recent(last_success_actions_joined.values()),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
                 campaigns=[campaign],
                 sources=filtered_sources
@@ -1249,20 +1293,28 @@ class CampaignAdGroupsTable(object):
 
         if user.has_perm('zemauth.conversion_reports'):
             conversion_goals = campaign.conversiongoal_set.all()
-            response['conversion_goals'] = [{'id': cg.id, 'name': cg.name} for cg in conversion_goals]
+            response['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+                                            for cg in conversion_goals]
 
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
+                user,
                 ad_groups,
                 last_success_actions,
+                last_pixel_sync
             )
 
         return response
 
-    def get_data_status(self, ad_groups, last_success_actions):
+    def get_data_status(self, user, ad_groups, last_success_actions, last_pixel_sync):
+        last_pixel_sync_message = None
+        if user.has_perm('zemauth.conversion_reports'):
+            last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
+
         return helpers.get_data_status(
             ad_groups,
             helpers.get_last_sync_messages(ad_groups, last_success_actions),
+            last_pixel_sync_message=last_pixel_sync_message
         )
 
     def get_rows(self, user, ad_groups, ad_groups_settings, stats, last_actions,
@@ -1366,7 +1418,10 @@ class AccountCampaignsTable(object):
         account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
         last_success_actions = account_sync.get_latest_success_by_child()
 
-        last_sync = helpers.get_last_sync(last_success_actions.values())
+        last_pixel_sync = get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False, account_id=account.id))
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
+
+        last_sync = helpers.get_last_sync(last_success_actions_joined.values())
 
         incomplete_postclick_metrics = \
             not reports_api.has_complete_postclick_metrics_campaigns(
@@ -1383,14 +1438,14 @@ class AccountCampaignsTable(object):
                 campaigns_settings,
                 ad_groups_settings,
                 stats,
-                last_success_actions,
+                last_success_actions_joined,
                 order,
                 has_view_archived_permission,
                 show_archived
             ),
             'totals': totals_stats,
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
-            'is_sync_recent': helpers.is_sync_recent(last_success_actions.values()),
+            'is_sync_recent': helpers.is_sync_recent(last_success_actions_joined.values()),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
                 campaigns=campaigns,
                 sources=filtered_sources
@@ -1401,16 +1456,23 @@ class AccountCampaignsTable(object):
 
         if user.has_perm('zemauth.data_status_column'):
             response['data_status'] = self.get_data_status(
+                user,
                 campaigns,
                 last_success_actions,
+                last_pixel_sync
             )
 
         return response
 
-    def get_data_status(self, campaigns, last_success_actions):
+    def get_data_status(self, user, campaigns, last_success_actions, last_pixel_sync):
+        last_pixel_sync_message = None
+        if user.has_perm('zemauth.conversion_reports'):
+            last_pixel_sync_message = helpers.get_last_pixel_sync_message(last_pixel_sync)
+
         return helpers.get_data_status(
             campaigns,
             helpers.get_last_sync_messages(campaigns, last_success_actions),
+            last_pixel_sync_message=last_pixel_sync_message
         )
 
     def get_rows(self, user, campaigns, campaigns_settings, ad_groups_settings, stats,
@@ -1477,12 +1539,11 @@ class AccountCampaignsTable(object):
 
 
 class PublishersTable(object):
-    def get(self, user, level_, filtered_sources, start_date, end_date, order, page, size, id_=None):
+    def get(self, user, level_, filtered_sources, show_blacklisted_publishers, start_date, end_date, order, page, size, id_=None):
         if not user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
 
         adgroup = helpers.get_ad_group(user, id_)
-
         constraints = {'ad_group': adgroup.id}
 
         size = max(min(int(size or 5), 4294967295), 1)
@@ -1504,22 +1565,90 @@ class PublishersTable(object):
         if set(models.Source.objects.all()) != set(filtered_sources):
             constraints['exchange'] = map_exchange_to_source_name.keys()
 
-        publishers_data = reports.api_publishers.query(
-            start_date,
-            end_date,
-            breakdown_fields=['domain', 'exchange'],
-            order_fields=[order],
-            constraints=constraints,
-        )
+        if not show_blacklisted_publishers or\
+                show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
+            publishers_data = reports.api_publishers.query(
+                start_date, end_date,
+                breakdown_fields=['domain', 'exchange'],
+                order_fields=[order],
+                constraints=constraints,
+            )
+            totals_data = reports.api_publishers.query(
+                start_date, end_date,
+                constraints=constraints,
+            )
+        elif show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+            # fetch blacklisted status from db
+            adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(ad_group=adgroup)
+            adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
+            adg_blacklisted_publishers = map(lambda entry: {
+                'domain': entry['name'],
+                'adgroup_id': entry['ad_group__id'],
+                'exchange': entry['source__tracking_slug'].replace('b1_', ''),
+            }, adg_blacklisted_publishers)
 
-        totals_data = reports.api_publishers.query(
-            start_date,
-            end_date,
-            constraints=constraints,
-        )
+            publishers_data = reports.api_publishers.query_active_publishers(
+                start_date, end_date,
+                breakdown_fields=['domain', 'exchange'],
+                order_fields=[order],
+                constraints=constraints,
+                blacklist=adg_blacklisted_publishers
+            )
+            totals_data = reports.api_publishers.query_active_publishers(
+                start_date, end_date,
+                constraints=constraints,
+                blacklist=adg_blacklisted_publishers
+            )
+        elif show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
+            # fetch blacklisted status from db
+            adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(ad_group=adgroup)
+            adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
+            adg_blacklisted_publishers = map(lambda entry: {
+                'domain': entry['name'],
+                'adgroup_id': entry['ad_group__id'],
+                'exchange': entry['source__tracking_slug'].replace('b1_', ''),
+            }, adg_blacklisted_publishers)
+
+            publishers_data = reports.api_publishers.query_blacklisted_publishers(
+                start_date, end_date,
+                breakdown_fields=['domain', 'exchange'],
+                order_fields=[order],
+                constraints=constraints,
+                blacklist=adg_blacklisted_publishers
+            )
+            totals_data = reports.api_publishers.query_blacklisted_publishers(
+                start_date, end_date,
+                constraints=constraints,
+                blacklist=adg_blacklisted_publishers
+            )
+        else:
+            raise Exception("Unknown filter value")
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
         publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(publishers_data, page, size)
+
+        # fetch blacklisted status from db
+        pub_blacklist_qs = models.PublisherBlacklist.objects.none()
+        for publisher_data in publishers_data:
+            publisher_data['blacklisted'] = 'Active'
+            domain, source_slug = publisher_data['domain'], publisher_data['exchange']
+            pub_blacklist_qs |= models.PublisherBlacklist.objects.filter(
+                ad_group=adgroup,
+                name=domain,
+                source__tracking_slug__endswith=source_slug
+            )
+        blacklisted_publishers = pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
+        filtered_publishers = []
+        for blacklisted_pub in blacklisted_publishers:
+            name, ad_group_id, slug = blacklisted_pub.values()
+            name = name.replace('b1_', '')
+            filtered_publishers.append([name, ad_group_id, slug])
+
+        for publisher_data in publishers_data:
+            domain, source_slug = publisher_data['domain'], publisher_data['exchange']
+            if [source_slug, adgroup.id, domain] in filtered_publishers:
+                publisher_data['blacklisted'] = 'Blacklisted'
+
         response = {
             'rows': self.get_rows(
                 map_exchange_to_source_name,
@@ -1533,14 +1662,12 @@ class PublishersTable(object):
                 'endIndex': end_index,
                 'size': size
             },
-
             'totals': self.get_totals(
                 user,
                 totals_data,
             ),
             'order': order,
         }
-
         return response
 
     def get_totals(self,
@@ -1573,6 +1700,7 @@ class PublishersTable(object):
             row = {
                 'domain': domain,
                 'domain_link': domain_link,
+                'blacklisted': publisher_data['blacklisted'],
                 'exchange': source_name,
                 'cost': publisher_data.get('cost', 0),
                 'cpc': publisher_data.get('cpc', 0),
