@@ -315,15 +315,15 @@ class CreditsTestCase(TestCase):
         self.assertEqual(history.count(), 2)
         self.assertEqual(history[0].created_by, request.user)
 
-        self.assertEqual(history[0].state['license_fee'], '0.456')
-        self.assertEqual(history[1].state['license_fee'], '0.5')
+        self.assertEqual(history[0].snapshot['license_fee'], '0.456')
+        self.assertEqual(history[1].snapshot['license_fee'], '0.5')
         
         c.license_fee = Decimal('0.1')
         c.save(request=request)
 
-        self.assertEqual(history[0].state['license_fee'], '0.456')
-        self.assertEqual(history[1].state['license_fee'], '0.5')
-        self.assertEqual(history[2].state['license_fee'], '0.1')
+        self.assertEqual(history[0].snapshot['license_fee'], '0.456')
+        self.assertEqual(history[1].snapshot['license_fee'], '0.5')
+        self.assertEqual(history[2].snapshot['license_fee'], '0.1')
 
 
 class BudgetsTestCase(TestCase):
@@ -517,9 +517,9 @@ class BudgetsTestCase(TestCase):
         self.assertEqual(history.count(), 1)
         self.assertEqual(history[0].created_by, request.user)
 
-        self.assertEqual(b.amount, history[0].state['amount'])
-        self.assertEqual(str(b.start_date), history[0].state['start_date'])
-        self.assertEqual(str(b.end_date), history[0].state['end_date'])
+        self.assertEqual(b.amount, history[0].snapshot['amount'])
+        self.assertEqual(str(b.start_date), history[0].snapshot['start_date'])
+        self.assertEqual(str(b.end_date), history[0].snapshot['end_date'])
 
         prev_end_date = str(b.end_date)
         b.end_date = TODAY+datetime.timedelta(7)
@@ -528,8 +528,8 @@ class BudgetsTestCase(TestCase):
         history = models.BudgetHistory.objects.filter(budget=b).order_by('-created_dt')
         self.assertEqual(history.count(), 2)
         self.assertEqual(history[0].created_by, request.user)
-        self.assertEqual(str(b.end_date), history[0].state['end_date'])
-        self.assertEqual(prev_end_date, history[1].state['end_date'])
+        self.assertEqual(str(b.end_date), history[0].snapshot['end_date'])
+        self.assertEqual(prev_end_date, history[1].snapshot['end_date'])
 
     def test_unsigned_credit(self):
         request = HttpRequest()
