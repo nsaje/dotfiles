@@ -123,61 +123,7 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
     return send_delayed_actionlogs([ad_group_source], send=send)
 
 
-def set_global_publisher_blacklist(state, publishers, request, send=True):
-    return _set_publisher_blacklist(
-        None,
-        dash.constants.PublisherBlacklistLevel.GLOBAL,
-        state,
-        publishers,
-        request,
-        send=send
-    )
-
-
-def set_account_publisher_blacklist(state, publishers, account, request, send=True):
-
-    internal_id = account.id
-    external_id = None
-
-    return _set_publisher_blacklist(
-        [internal_id, external_id],
-        dash.constants.PublisherBlacklistLevel.ACCOUNT,
-        state,
-        publishers,
-        request,
-        send=send
-    )
-
-
-def set_campaign_publisher_blacklist(state, publishers, campaign, request, send=True):
-    internal_id = campaign.id
-    external_id = None
-
-    return _set_publisher_blacklist(
-        [internal_id, external_id],
-        dash.constants.PublisherBlacklistLevel.CAMPAIGN,
-        state,
-        publishers,
-        request,
-        send=send
-    )
-
-
-def set_adgroup_publisher_blacklist(state, publishers, adgroup, request, send=True):
-    internal_id = adgroup.id
-    external_id = None
-
-    return _set_publisher_blacklist(
-        [internal_id, external_id],
-        dash.constants.PublisherBlacklistLevel.ADGROUP,
-        state,
-        publishers,
-        request,
-        send=send
-    )
-
-
-def _set_publisher_blacklist(key, level, state, publishers, request, source, ad_group_source=None, send=True):
+def set_publisher_blacklist(key, level, state, publishers, request, source_type, send=True):
     if not publishers:
         return []
 
@@ -186,7 +132,6 @@ def _set_publisher_blacklist(key, level, state, publishers, request, source, ad_
         action_type=constants.ActionType.AUTOMATIC,
         expiration_dt=None,
         state=constants.ActionState.DELAYED,
-        ad_group_source=ad_group_source,
     )
     action.save(request)
 
@@ -205,7 +150,7 @@ def _set_publisher_blacklist(key, level, state, publishers, request, source, ad_
 
             payload = {
                 'action': action.action,
-                'source': source.source_type,
+                'source': source_type,
                 'expiration_dt': action.expiration_dt,
                 'args': args,
                 'callback_url': callback,

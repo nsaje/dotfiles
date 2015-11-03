@@ -603,85 +603,123 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     return actions
 
 
-def create_ad_group_publisher_blacklist_actions(ad_group, request, state, level, publisher_blacklist, global_blacklist, send=True):
-    # TODO: Rethink whether a direct API call is better than doing this via
-    # adgroup settings
-    order = actionlog.models.ActionLogOrder.objects.create(
-        order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
-    )
-    actions = []
-    ad_group_sources = ad_group.adgroupsource_set.all()
+def create_global_publisher_blacklist_actions(ad_group, request, state, publisher_blacklist, send=True):
+    if publisher_blacklist == []:
+        return []
 
-    if publisher_blacklist != []:
-        blacklisted_publishers = {}
-        source_sample_per_type = {}
+    blacklisted_publishers = {}
+    # separate publishers per source type
+    source_type_cache = {}
+    blacklist_per_source = {}
+    for publisher in publishers:
+        source = publisher['source']
+        source_type_id = source.source_type.id
+        source_type_cache[source_type_id] = source.source_type
+        blacklist_per_source[source_type_id] =\
+            blacklist_per_source.get(source_type_id, [])
+        blacklist_per_source[source_type_id].append(publisher)
 
-        for ad_group_source in ad_group_sources:
-            if not ad_group_source.source.can_modify_publisher_blacklist_automatically():
-                continue
-            publisher_source = [publisher for publisher in publisher_blacklist
-                if publisher['tracking_slug'] == ad_group_source.source.tracking_slug
-            ]
-            if publisher_source == []:
-                continue
+    # send actions
+    for source_type_id, blacklist in blacklist_per_source.iteritems():
+        filtered_blacklist = [publisher for publisher in blacklist\
+                              if publisher.can_modify_publisher_blacklist_automatically()]
+        # we only support per account outbrain blacklist
+        if source_type_id == constants.SourceType.OUTBRAIN:
+            continue
+        if filtered_blacklist == []:
+            continue
 
-            source_type_id = ad_group_source.source.source_type.id
-            blacklisted_publishers[source_type_id] =\
-                blacklisted_publishers.get(source_type_id, [])
+        key = None
+        level = constants.PublisherBlacklistLevel.GLOBAL
 
-            source_sample_per_type[source_type_id] = ad_group_source
-            blacklisted_publishers[source_type_id].extend(
-                list(map(lambda pub: {
-                    'domain': pub['domain'],
-                    'exchange': pub['tracking_slug'].replace('b1_', ''),
-                }, publisher_source))
+        blacklisted_publishers[source_type_id].extend(
+            list(map(lambda pub: {
+                'domain': pub['domain'],
+            }, filtered_blacklist))
+        )
+
+        actions.extend(
+            actionlog.api.set_publisher_blacklist(
+                key,
+                level,
+                state,
+                blacklisted_publishers,
+                request,
+                source_type_cache[source_type_id],
+                send=send
             )
+        )
 
-        if blacklisted_publishers != {}:
-            for source_type_id, blacklist in blacklisted_publishers.iteritems():
-                # TODO: Figure out a sensible alternative
-                ad_group_source = source_sample_per_type[source_type_id]
-                actions.extend(
-                    actionlog.api.set_ad_group_source_settings(
-                        {
-                            'publisher_blacklist': {
-                                'state': state,
-                                'level': level,
-                                'blacklist': blacklisted_publishers,
-                            }
-                        },
-                        ad_group_source,
-                        request,
-                        order,
-                        send=send
-                    )
-                )
+    return actions
 
-    if global_blacklist != []:
-        source_sample_per_type = {}
-        for ad_group_source in ad_group_sources:
-            if not ad_group_source.source.can_modify_publisher_blacklist_automatically():
-                continue
-            source_type_id = ad_group_source.source.source_type.id
-            source_sample_per_type[source_type_id] = ad_group_source
 
-        for source_type_id, ad_group_source in source_sample_per_type.iteritems():
+def create_publisher_blacklist_actions(ad_group, state, level, publishers, request, send=True):
+    if level == constants.PublisherBlacklistLevel.GLOBAL:
+        return []
+    if publishers == []:
+        return []
+
+    actions = []
+
+    blacklisted_publishers = {}
+    # separate publishers per source type
+    source_cache = {}
+    blacklist_per_source = {}
+    for publisher in publishers:
+        source = publisher['source']
+        source_cache[source.id] = source
+        blacklist_per_source[source.source_type.id] =\
+            blacklist_per_source.get(source.source_type.id, [])
+        blacklist_per_source[source.source_type.id].append(publisher)
+
+    # send actions
+    for source_type_id, blacklist in blacklist_per_source.iteritems():
+        filtered_blacklist = [publisher for publisher in blacklist\
+                              if publisher.can_modify_publisher_blacklist_automatically()]
+        # we only support per account outbrain blacklist
+        if source_type_id == constants.SourceType.OUTBRAIN and\
+                level != constants.PublisherBlacklistLevel.ACCOUNT:
+            continue
+        if filtered_blacklist == []:
+            continue
+
+        source_type_id = source_cache[source_id].source_type.id
+        blacklisted_publishers[source_type_id] =\
+            blacklisted_publishers.get(source_type_id, [])
+
+        blacklisted_publishers[source_type_id].extend(
+            list(map(lambda pub: {
+                'domain': pub['domain'],
+                'exchange': pub['source'].tracking_slug.replace('b1_', ''),
+            }, filtered_blacklist))
+        )
+
+    if blacklisted_publishers != {}:
+        for source_type_id, blacklist in blacklisted_publishers.iteritems():
+            key = None
+            if level == constants.PublisherBlacklistLevel.ACCOUNT:
+                key = [ad_group.campaign.account.id]
+                if source_type_id == constants.SourceType.OUTBRAIN:
+                    key.append(ad_group.campaign.account.outbrain_marketer_id)
+            elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
+                key = [ad_group.campaign.id]
+            elif level == constants.PublisherBlacklistLevel.ADGROUP:
+                key = [ad_group.id]
+            else:
+                # should never occur
+                raise Exception('Not implemented')
+
             actions.extend(
-                actionlog.api.set_ad_group_source_settings(
-                    {
-                        'publisher_blacklist': {
-                            'state': state,
-                            'level': level,
-                            'global': global_blacklist
-                        }
-                    },
-                    ad_group_source,
+                actionlog.api.set_publisher_blacklist(
+                    key,
+                    level,
+                    state,
+                    blacklist,
                     request,
-                    order,
+                    source,
                     send=send
                 )
             )
-
     return actions
 
 

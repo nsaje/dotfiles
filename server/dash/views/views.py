@@ -1090,10 +1090,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             {
                 'domain': dom,
                 'ad_group_id': adgroup_id,
-                'tracking_slug': tracking_slug,
-                'source_name': source_name,
+                'source': source,
             }\
-            for (dom, adgroup_id, tracking_slug, source_name,) in publishers_to_add
+            for (dom, adgroup_id, source,) in publishers_to_add
         ]
 
         global_publishers = []
@@ -1120,13 +1119,12 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             for dom in global_publishers
         ]
 
-        if len(publisher_blacklist) > 0 or len(global_blacklist) > 0:
-            actionlogs_to_send = []
-            current_settings = ad_group.get_current_settings()
-            new_settings = current_settings.copy_settings()
+        if len(global_blacklist) > 0:
+            pass
 
+        if len(publisher_blacklist) > 0:
+            actionlogs_to_send = []
             with transaction.atomic():
-                new_settings.save(request)
                 actionlogs_to_send.extend(
                     api.create_ad_group_publisher_blacklist_actions(
                         ad_group,
@@ -1183,7 +1181,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             if publisher_tuple in ignored_publishers:
                 continue
 
-            adgroup_blacklist.add((domain, ad_group.id, source_cache[norm_source_slug].tracking_slug, source_cache[norm_source_slug].name))
+            adgroup_blacklist.add(
+                (domain, ad_group.id, source_cache[norm_source_slug],)
+            )
         if len(failed_publisher_mappings) > 0:
             logger.warning('Failed mapping {count} publisher source slugs {slug}'.format(
                 count=count_failed_publisher,
