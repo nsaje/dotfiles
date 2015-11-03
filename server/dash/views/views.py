@@ -1120,26 +1120,34 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         ]
 
         if len(global_blacklist) > 0:
-            pass
-
-        if len(publisher_blacklist) > 0:
             actionlogs_to_send = []
             with transaction.atomic():
                 actionlogs_to_send.extend(
-                    api.create_ad_group_publisher_blacklist_actions(
-                        ad_group,
-                        request,
+                    api.create_global_publisher_blacklist_actions(
                         state,
-                        level,
-                        publisher_blacklist,
                         global_blacklist,
+                        request,
                         send=False
                     )
                 )
             actionlog.zwei_actions.send(actionlogs_to_send)
 
-
+        if len(publisher_blacklist) > 0:
+            actionlogs_to_send = []
+            with transaction.atomic():
+                actionlogs_to_send.extend(
+                    api.create_publisher_blacklist_actions(
+                        ad_group,
+                        state,
+                        level,
+                        publisher_blacklist,
+                        request,
+                        send=False
+                    )
+                )
+            actionlog.zwei_actions.send(actionlogs_to_send)
         self._add_to_history(request, ad_group, state, publisher_blacklist)
+        self._add_to_history(request, ad_group, state, global_blacklist)
         response = {
             "success": True,
         }
@@ -1215,7 +1223,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
     def _add_to_history(self, request, ad_group, state, blacklist):
         changes_text = '{action} the following publishers {pubs}.'.format(
             action="Blacklisted" if state == constants.PublisherStatus.BLACKLISTED else "Enabled",
-            pubs=", ".join( ("{pub} on {slug}".format(pub=pub_bl['domain'], slug=pub_bl['source_name'])
+            pubs=", ".join( ("{pub} on {slug}".format(pub=pub_bl['domain'], slug=pub_bl['source'].name)
                  for pub_bl in blacklist)
             )
         )

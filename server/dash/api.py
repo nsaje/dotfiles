@@ -622,7 +622,7 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
     # send actions
     for source_type_id, blacklist in blacklist_per_source.iteritems():
         filtered_blacklist = [publisher for publisher in blacklist\
-                              if publisher.can_modify_publisher_blacklist_automatically()]
+                              if publisher['source'].can_modify_publisher_blacklist_automatically()]
         # we only support per account outbrain blacklist
         if source_type_id == constants.SourceType.OUTBRAIN:
             continue
@@ -662,20 +662,21 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
     actions = []
 
     blacklisted_publishers = {}
-    # separate publishers per source type
-    source_cache = {}
+
+    source_type_cache = {}
     blacklist_per_source = {}
     for publisher in publishers:
         source = publisher['source']
-        source_cache[source.id] = source
-        blacklist_per_source[source.source_type.id] =\
-            blacklist_per_source.get(source.source_type.id, [])
-        blacklist_per_source[source.source_type.id].append(publisher)
+        source_type_id = source.source_type.id
+        source_type_cache[source_type_id] = source.source_type
+        blacklist_per_source[source_type_id] =\
+            blacklist_per_source.get(source_type_id, [])
+        blacklist_per_source[source_type_id].append(publisher)
 
     # send actions
     for source_type_id, blacklist in blacklist_per_source.iteritems():
         filtered_blacklist = [publisher for publisher in blacklist\
-                              if publisher.can_modify_publisher_blacklist_automatically()]
+                              if publisher['source'].can_modify_publisher_blacklist_automatically()]
         # we only support per account outbrain blacklist
         if source_type_id == constants.SourceType.OUTBRAIN and\
                 level != constants.PublisherBlacklistLevel.ACCOUNT:
@@ -683,7 +684,6 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
         if filtered_blacklist == []:
             continue
 
-        source_type_id = source_cache[source_id].source_type.id
         blacklisted_publishers[source_type_id] =\
             blacklisted_publishers.get(source_type_id, [])
 
@@ -716,7 +716,7 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
                     state,
                     blacklist,
                     request,
-                    source,
+                    source_type_cache[source_type_id],
                     send=send
                 )
             )

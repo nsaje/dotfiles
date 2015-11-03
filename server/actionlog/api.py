@@ -150,7 +150,7 @@ def set_publisher_blacklist(key, level, state, publishers, request, source_type,
 
             payload = {
                 'action': action.action,
-                'source': source_type,
+                'source': source_type.type,
                 'expiration_dt': action.expiration_dt,
                 'args': args,
                 'callback_url': callback,
@@ -165,7 +165,7 @@ def set_publisher_blacklist(key, level, state, publishers, request, source_type,
         et, ei, tb = sys.exc_info()
         raise exceptions.InsertActionException, ei, tb
 
-    return send_delayed_actionlogs([ad_group_source], send=send)
+    return send_delayed_actionlogs(send=send)
 
 
 def create_campaign(ad_group_source, name, request, send=True):

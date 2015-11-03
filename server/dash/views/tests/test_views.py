@@ -1230,20 +1230,19 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
 
         publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
             action_type=actionlog.constants.ActionType.AUTOMATIC,
-            action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
         )
         self.assertEqual(1, publisher_blacklist_action.count())
         self.assertDictEqual(
             {
-                u"publisher_blacklist": {
-                    u"state": 2,
-                    u"level": u"adgroup",
-                    u"blacklist": [{
-                        u"exchange": u"adiant",
-                        u"domain": u"zemanta.com"
-                        }]
-                }
-            }, publisher_blacklist_action.first().payload['args']['conf'])
+                u"key": [1],
+                u"state": 2,
+                u"level": u"adgroup",
+                u"publishers": [{
+                    u"exchange": u"adiant",
+                    u"domain": u"zemanta.com"
+                    }]
+            }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])
 
     @patch('reports.redshift.get_cursor')
@@ -1281,19 +1280,18 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         }
         res = self._post_publisher_blacklist('1', payload)
         publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
         )
         self.assertEqual(1, publisher_blacklist_action.count())
         self.assertDictEqual(
             {
-                u"publisher_blacklist": {
-                    u"state": 1,
-                    u"level": u"adgroup",
-                    u"blacklist": [{
-                        u"exchange": u"adiant",
-                        u"domain": u"zemanta.com"
-                        }]
-                }
-            }, publisher_blacklist_action.first().payload['args']['conf'])
+                u"key": [1],
+                u"state": 1,
+                u"level": u"adgroup",
+                u"publishers": [{
+                    u"exchange": u"adiant",
+                    u"domain": u"zemanta.com"
+                    }]
+            }, publisher_blacklist_action.first().payload['args'])
 
         self.assertTrue(res['success'])
