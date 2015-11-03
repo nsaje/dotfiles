@@ -1092,3 +1092,27 @@ class UserActionType(ConstantBase):
         CREATE_MEDIA_SOURCE_CAMPAIGN: 'Create Media Source Campaign',
         SET_MEDIA_SOURCE_SETTINGS: 'Set Media Source Settings',
     }
+
+class CreditLineItemStatus(ConstantBase):
+    SIGNED = 1 # Only adding BudgetLineItems is permitted
+    PENDING = 2 # Internal "waiting" status, fields are editable
+    CANCELED = 3 # Adding BudgetLineItems is not permitted 
+
+    _VALUES = {
+        SIGNED: 'Signed',
+        PENDING: 'Pending',
+        CANCELED: 'Canceled',
+    }
+    
+class BudgetLineItemState(ConstantBase):
+    ACTIVE = 1
+    PENDING = 2
+    INACTIVE = 3
+
+    _VALUES = {
+        ACTIVE: 'Active',
+        PENDING: 'Pending',
+        INACTIVE: 'Inactive',
+    }
+
+

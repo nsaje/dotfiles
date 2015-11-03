@@ -19,6 +19,7 @@ from zemauth.models import User as ZemUser
 from dash import api
 from dash import constants
 from dash import models
+from dash import forms as dash_forms
 from dash import threads
 from dash import validation_helpers
 
@@ -967,6 +968,34 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)
         self.list_display_links = (None, )
 
+class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+    list_display = (
+        'account',
+        'start_date',
+        'end_date',
+        'amount',
+        'status',
+        'license_fee',
+        'created_dt',
+    )
+
+    readonly_fields = ('created_dt', 'created_by',)
+    form = dash_forms.BudgetLineItemForm
+    
+
+class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+    list_display = (
+        'campaign',
+        'start_date',
+        'end_date',
+        'amount',
+        'license_fee',
+        'created_dt',
+    )
+
+    readonly_fields = ('created_dt', 'created_by',)
+    form = dash_forms.BudgetLineItemForm
+
 
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -984,3 +1013,5 @@ admin.site.register(models.DemoAdGroupRealAdGroup, DemoAdGroupRealAdGroupAdmin)
 admin.site.register(models.OutbrainAccount, OutbrainAccountAdmin)
 admin.site.register(models.ContentAdSource, ContentAdSourceAdmin)
 admin.site.register(models.UserActionLog, UserActionLogAdmin)
+admin.site.register(models.CreditLineItem, CreditLineItemAdmin)
+admin.site.register(models.BudgetLineItem, BudgetLineItemAdmin)

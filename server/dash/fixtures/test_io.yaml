@@ -1,0 +1,77 @@
+# test user
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: ziga.stopinsek@zemanta.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: true
+        is_superuser: true
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 1
+
+# test accounts
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 1'
+    model: dash.account
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 2'
+    model: dash.account
+    pk: 2
+
+# test campaigns
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 1 # test account 1
+        name: 'test campaign 1'
+    model: dash.campaign
+    pk: 1
+
+# test creditlineitems
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        account: 1 # test account 1
+        start_date: '2015-10-01'
+        end_date: '2015-11-30'
+        amount: 100000
+        license_fee: 0.2
+        status: 2
+        comment: 'Test case'
+    model: dash.creditlineitem
+    pk: 1
+
+# test budgetlineitems
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        credit: 1 # test credit 1
+        campaign_id: 1 # test campaign 1
+        start_date: '2015-10-01'
+        end_date: '2015-11-30'
+        amount: 100000
+        comment: 'Test case'
+    model: dash.budgetlineitem
+    pk: 1

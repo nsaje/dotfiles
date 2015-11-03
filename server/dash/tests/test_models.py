@@ -14,7 +14,6 @@ from utils import exc
 
 
 class AdGroupSettingsTest(TestCase):
-
     fixtures = ['test_models.yaml']
 
     def test_settings_fields(self):
