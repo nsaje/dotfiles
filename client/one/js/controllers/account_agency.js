@@ -22,6 +22,62 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
     $scope.addUserData = {};
     $scope.addUserErrors = null;
     $scope.conversionPixelTagPrefix = '';
+
+    $scope.mediaSourcesData = {
+        'adsnative': {name: 'Ads Native', allowed: true},
+        'outbrain': {name: 'Outbrain', allowed: false},
+        'taboola': {name: 'Taboola', allowed: false},
+        'adbristro': {name: 'Ad Bistro'},
+    };
+    $scope.mediaSourcesOrderByProp = 'value';
+    $scope.selectedAvailableMediaSources = [];
+    $scope.selectedAllowedMediaSources = [];
+
+    function clearMediaSourcesSelection () {
+        $scope.selectedAllowedMediaSources.length = 0;
+        $scope.selectedAvailableMediaSources.length = 0;
+    }
+
+    $scope.getAllowedMediaSources =  function () {
+        var list = [];
+        angular.forEach($scope.mediaSourcesData, function(value, key) {
+            if(value.allowed){
+                value.value = key;
+                this.push(value);
+            }
+        }, list);
+        return list;
+    };
+
+    $scope.getAvailableMediaSources = function () {
+        var list = [];
+        angular.forEach($scope.mediaSourcesData, function(value, key) {
+            if(!value.allowed){
+                value.value = key;
+                this.push(value);
+            }
+        }, list);
+        return list;
+    };
+
+    $scope.addToAllowedMediaSources =  function () {
+        console.log($scope.selectedAvailableMediaSources);
+        angular.forEach($scope.selectedAvailableMediaSources, function (value, _) {
+            $scope.mediaSourcesData[value].allowed = true;
+        });
+        clearMediaSourcesSelection();
+    };
+
+    $scope.removeFromAllowedMediaSources = function () {
+        console.log($scope.selectedAllowedMediaSources);
+        angular.forEach($scope.selectedAllowedMediaSources, function (value, _) {
+            $scope.mediaSourcesData[value].allowed = false;
+        });
+        clearMediaSourcesSelection();
+    };
+
+
+
     $scope.getServiceFees = function(search) {
         // use fresh instance because we modify the collection on the fly
         var fees = ['15', '20', '25'];
