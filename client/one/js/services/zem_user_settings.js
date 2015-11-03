@@ -69,8 +69,6 @@ oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', functi
         }
 
         function registerWithoutWatch(name, global) {
-            console.log(name);
-            console.log(global);
             var value = getValue(name, global ? null : namespace, isArray($scope[name]));
 
             if (value !== undefined && $scope[name] !== value) {
