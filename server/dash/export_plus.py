@@ -106,7 +106,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
                 ordering = ('-' if ordering[0] == '-' else '') + 'account'
 
         for goal in conversion_goals:
-            stat[goal.name] = stat.pop(goal.get_view_key())
+            stat[goal.name] = stat.pop(goal.get_view_key(conversion_goals))
 
     return sort_results(stats, [ordering])
 
@@ -237,8 +237,8 @@ class CampaignAdGroupsExport(object):
         if user.has_perm('zemauth.conversion_reports'):
             conversion_goals = campaign.conversiongoal_set.all()
             for conversion_goal in conversion_goals:
-                if conversion_goal.get_view_key() in additional_fields:
-                    fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
+                if conversion_goal.get_view_key(conversion_goals) in additional_fields:
+                    fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
 
         results = _generate_rows(
             dimensions,
@@ -343,8 +343,8 @@ class SourcesExport(object):
         if user.has_perm('zemauth.conversion_reports'):
             conversion_goals = campaign.conversiongoal_set.all()
             for conversion_goal in conversion_goals:
-                if conversion_goal.get_view_key() in additional_fields:
-                    fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
+                if conversion_goal.get_view_key(conversion_goals) in additional_fields:
+                    fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
 
         results = _generate_rows(
             dimensions,
@@ -376,8 +376,8 @@ class SourcesExport(object):
         if user.has_perm('zemauth.conversion_reports'):
             conversion_goals = ad_group.campaign.conversiongoal_set.all()
             for conversion_goal in conversion_goals:
-                if conversion_goal.get_view_key() in additional_fields:
-                    fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
+                if conversion_goal.get_view_key(conversion_goals) in additional_fields:
+                    fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
 
         results = _generate_rows(
             dimensions,
@@ -405,8 +405,8 @@ class AdGroupAdsPlusExport(object):
         if user.has_perm('zemauth.conversion_reports'):
             conversion_goals = ad_group.campaign.conversiongoal_set.all()
             for conversion_goal in conversion_goals:
-                if conversion_goal.get_view_key() in additional_fields:
-                    fieldnames[conversion_goal.get_view_key()] = conversion_goal.name
+                if conversion_goal.get_view_key(conversion_goals) in additional_fields:
+                    fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
 
         results = _generate_rows(
             ['content_ad'],
