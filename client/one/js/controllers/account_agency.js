@@ -30,13 +30,9 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
         'adbristro': {name: 'Ad Bistro'},
     };
     $scope.mediaSourcesOrderByProp = 'value';
-    $scope.selectedAvailableMediaSources = [];
-    $scope.selectedAllowedMediaSources = [];
+    $scope.selectedMediaSouces = {allowed:[], available:[]};
 
-    function clearMediaSourcesSelection () {
-        $scope.selectedAllowedMediaSources.length = 0;
-        $scope.selectedAvailableMediaSources.length = 0;
-    }
+  
 
     $scope.getAllowedMediaSources =  function () {
         var list = [];
@@ -61,19 +57,19 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
     };
 
     $scope.addToAllowedMediaSources =  function () {
-        console.log($scope.selectedAvailableMediaSources);
-        angular.forEach($scope.selectedAvailableMediaSources, function (value, _) {
+        console.log($scope.selectedMediaSouces);
+        angular.forEach($scope.selectedMediaSouces.available, function (value, _) {
             $scope.mediaSourcesData[value].allowed = true;
         });
-        clearMediaSourcesSelection();
+        $scope.selectedMediaSouces.allowed.length = 0;
     };
 
     $scope.removeFromAllowedMediaSources = function () {
-        console.log($scope.selectedAllowedMediaSources);
-        angular.forEach($scope.selectedAllowedMediaSources, function (value, _) {
+        console.log($scope.selectedMediaSouces);
+        angular.forEach($scope.selectedMediaSouces.allowed, function (value, _) {
             $scope.mediaSourcesData[value].allowed = false;
         });
-        clearMediaSourcesSelection();
+        $scope.selectedMediaSouces.available.length = 0;
     };
 
 
