@@ -12,6 +12,7 @@ from dash import models
 from dash import export_plus
 from utils import api_common
 from utils import statsd_helper
+from utils import exc
 
 
 class ExportApiView(api_common.BaseApiView):
@@ -43,6 +44,8 @@ class ExportApiView(api_common.BaseApiView):
 class AccountCampaignsExport(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'accounts_campaigns_export_plus_get')
     def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.exports_plus'):
+            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
         user = request.user
         account = helpers.get_account(user, account_id)
 
@@ -81,6 +84,8 @@ class AccountCampaignsExport(api_common.BaseApiView):
 class CampaignAdGroupsExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'campaigns_ad_groups_export_plus_get')
     def get(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.exports_plus'):
+            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
         user = request.user
         campaign = helpers.get_campaign(user, campaign_id)
 
@@ -116,6 +121,8 @@ class ExportAllowed(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.export_plus', 'export_plus_allowed_get')
     def get(self, request, id_, level_):
+        if not request.user.has_perm('zemauth.exports_plus'):
+            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
         user = request.user
 
         if level_ == 'ad_groups':
@@ -159,6 +166,8 @@ class SourcesExportAllowed(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.export_plus', 'sources_export_plus_allowed_get')
     def get(self, request, id_, level_):
+        if not request.user.has_perm('zemauth.exports_plus'):
+            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
         user = request.user
         filtered_sources_num = len(helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')))
         if level_ == 'ad_groups':
@@ -202,6 +211,8 @@ class SourcesExportAllowed(api_common.BaseApiView):
 class AdGroupAdsPlusExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_ads_plus_export_plus_get')
     def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.exports_plus'):
+            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
         user = request.user
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -227,6 +238,8 @@ class AdGroupAdsPlusExport(ExportApiView):
 class AllAccountsSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_sources_export_plus_get')
     def get(self, request):
+        if not request.user.has_perm('zemauth.exports_plus'):
+            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
         user = request.user
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
@@ -265,6 +278,8 @@ class AllAccountsSourcesExport(ExportApiView):
 class AccountSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'account_sources_export_plus_get')
     def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.exports_plus'):
+            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
         user = request.user
         account = helpers.get_account(user, account_id)
 
@@ -310,6 +325,8 @@ class AccountSourcesExport(ExportApiView):
 class CampaignSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'campaign_sources_export_plus_get')
     def get(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.exports_plus'):
+            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
         user = request.user
         campaign = helpers.get_campaign(user, campaign_id)
 
@@ -351,6 +368,8 @@ class CampaignSourcesExport(ExportApiView):
 class AdGroupSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_sources_export_plus_get')
     def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.exports_plus'):
+            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
         user = request.user
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
@@ -385,6 +404,8 @@ class AdGroupSourcesExport(ExportApiView):
 class AllAccountsExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_export_plus_get')
     def get(self, request):
+        if not request.user.has_perm('zemauth.exports_plus'):
+            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
         user = request.user
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
