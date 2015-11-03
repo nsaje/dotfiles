@@ -168,36 +168,32 @@ oneApp.factory('zemPostclickMetricsService', function() {
 
     function setConversionGoalChartOptions(chartOptions, conversionGoals, isShown) {
         if (!conversionGoals || !conversionGoals.length) {
-            return chartOptions;
+            return;
         }
 
-        var newOptions = angular.copy(chartOptions);
         conversionGoals.forEach(function(el, ix) {
-            for (var i = 0; i < newOptions.length; i++) {
-                if (newOptions[i].value === el.id) {
-                    newOptions[i].name = el.name;
-                    newOptions[i].shown = isShown;
+            for (var i = 0; i < chartOptions.length; i++) {
+                if (chartOptions[i].value === el.id) {
+                    chartOptions[i].name = el.name;
+                    chartOptions[i].shown = isShown;
                 }
             }
         });
-        return newOptions;
     }
 
     function setConversionGoalColumnsDefaults(cols, conversionGoals, isShown) {
         if (!conversionGoals || !conversionGoals.length) {
-            return cols;
+            return;
         }
 
-        var newCols = angular.copy(cols);
         conversionGoals.forEach(function(el, ix) {
-            for (var i = 0; i < newCols.length; i++) {
-                if (newCols[i].field === el.id) {
-                    newCols[i].name = el.name;
-                    newCols[i].shown = isShown;
+            for (var i = 0; i < cols.length; i++) {
+                if (cols[i].field === el.id) {
+                    cols[i].name = el.name;
+                    cols[i].shown = isShown;
                 }
             }
         });
-        return newCols;
     }
 
     return {

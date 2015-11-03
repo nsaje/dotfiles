@@ -74,3 +74,54 @@ class ImageTest(TestCase):
 
         with self.assertRaises(image_helper.ImageProcessingException):
             image_helper.process_image(url, None)
+
+    def test_retries_success(self, mock_urlopen):
+        url = 'http://example.com/image'
+        crop_areas = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
+        image_id = 'test_image_id'
+        width = 100
+        height = 200
+        ihash = "4321"
+
+        returns = [
+            ('{"key": "", "status": "error"}', 500),
+            ('{"key": "", "status": "error"}', 404),
+            ('{"key": "%s", "status": "success", "width": %s, "height": %s, "imagehash": "%s"}' % (image_id, width, height, ihash), 200)
+        ]
+
+        side_effects = []
+
+        for response, status_code in returns:
+            response_mock = Mock()
+            response_mock.read.return_value = response
+            response_mock.code = status_code
+            side_effects.append(response_mock)
+
+        mock_urlopen.side_effect = side_effects
+
+        # should not fail
+        self.assertEqual(image_helper.process_image(url, crop_areas), (image_id, width, height, ihash))
+        self.assertEqual(mock_urlopen.call_count, 3)
+
+    def test_retries_fail(self, mock_urlopen):
+        url = 'http://example.com/image'
+
+        returns = [
+            ('{"key": "", "status": "error"}', 500),
+            ('{"key": "", "status": "error"}', 404),
+            ('{"key": "132", "status": "error"}', 500)
+        ]
+
+        side_effects = []
+
+        for response, status_code in returns:
+            response_mock = Mock()
+            response_mock.read.return_value = response
+            response_mock.code = status_code
+            side_effects.append(response_mock)
+
+        mock_urlopen.side_effect = side_effects
+
+        with self.assertRaises(image_helper.ImageProcessingException):
+            image_helper.process_image(url, None)
+        self.assertEqual(mock_urlopen.call_count, 3)

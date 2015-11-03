@@ -20,9 +20,9 @@ describe('zemPostclickMetricsServiceSpec', function() {
                 shown: false
             }];
 
-            var newOptions = postclickMetricsService.setConversionGoalChartOptions(options, [], false);
+            postclickMetricsService.setConversionGoalChartOptions(options, [], false);
 
-            expect(newOptions).toEqual([{
+            expect(options).toEqual([{
                 value: 'conversion_goal_1',
                 name: 'Default name 1',
                 shown: false
@@ -30,9 +30,7 @@ describe('zemPostclickMetricsServiceSpec', function() {
                 value: 'conversion_goal_2',
                 name: 'Default name 2',
                 shown: false
-            }]); // check it hasn't been changed
-
-            expect(newOptions).toEqual(options);
+            }]);
         });
 
         it('should change names', function () {
@@ -47,9 +45,9 @@ describe('zemPostclickMetricsServiceSpec', function() {
             }];
             var conversionGoals = [{id: 'conversion_goal_1', 'name': 'Goal name 1'}];
 
-            var newOptions = postclickMetricsService.setConversionGoalChartOptions(options, conversionGoals, false);
+            postclickMetricsService.setConversionGoalChartOptions(options, conversionGoals, false);
 
-            expect(newOptions).toEqual([{
+            expect(options).toEqual([{
                 value: 'conversion_goal_1',
                 name: 'Goal name 1',
                 shown: false
@@ -57,7 +55,7 @@ describe('zemPostclickMetricsServiceSpec', function() {
                 value: 'conversion_goal_2',
                 name: 'Default name 2',
                 shown: false
-            }]); // check it hasn't been changed
+            }]);
         });
 
         it('should change shown property correctly', function () {
@@ -72,9 +70,9 @@ describe('zemPostclickMetricsServiceSpec', function() {
             }];
             var conversionGoals = [{id: 'conversion_goal_1', 'name': 'Goal name 1'}];
 
-            var newOptions = postclickMetricsService.setConversionGoalChartOptions(options, conversionGoals, true);
+            postclickMetricsService.setConversionGoalChartOptions(options, conversionGoals, true);
 
-            expect(newOptions).toEqual([{
+            expect(options).toEqual([{
                 value: 'conversion_goal_1',
                 name: 'Goal name 1',
                 shown: true
@@ -82,7 +80,7 @@ describe('zemPostclickMetricsServiceSpec', function() {
                 value: 'conversion_goal_2',
                 name: 'Default name 2',
                 shown: false
-            }]); // check it hasn't been changed
+            }]);
         });
     });
 
@@ -98,7 +96,7 @@ describe('zemPostclickMetricsServiceSpec', function() {
                 shown: false
             }];
 
-            var newCols = postclickMetricsService.setConversionGoalColumnsDefaults(cols, [], true);
+            postclickMetricsService.setConversionGoalColumnsDefaults(cols, [], true);
 
             expect(cols).toEqual([{
                 field: 'conversion_goal_1',
@@ -108,9 +106,7 @@ describe('zemPostclickMetricsServiceSpec', function() {
                 field: 'conversion_goal_2',
                 name: 'Default name 2',
                 shown: false
-            }]); // check it hasn't been changed
-
-            expect(newCols).toEqual(cols);
+            }]);
         });
 
         it('should change conversion goal names', function () {
@@ -126,19 +122,9 @@ describe('zemPostclickMetricsServiceSpec', function() {
 
             var conversionGoals = [{id: 'conversion_goal_1', 'name': 'Goal name 1'}];
 
-            var newCols = postclickMetricsService.setConversionGoalColumnsDefaults(cols, conversionGoals, true);
+            postclickMetricsService.setConversionGoalColumnsDefaults(cols, conversionGoals, true);
 
             expect(cols).toEqual([{
-                field: 'conversion_goal_1',
-                name: 'Default name 1',
-                shown: false
-            }, {
-                field: 'conversion_goal_2',
-                name: 'Default name 2',
-                shown: false
-            }]); // check it hasn't been changed
-
-            expect(newCols).toEqual([{
                 field: 'conversion_goal_1',
                 name: 'Goal name 1',
                 shown: true
@@ -162,19 +148,9 @@ describe('zemPostclickMetricsServiceSpec', function() {
 
             var conversionGoals = [{id: 'conversion_goal_1', 'name': 'Goal name 1'}, {id: 'conversion_goal_2', name: 'Goal name 2'}];
 
-            var newCols = postclickMetricsService.setConversionGoalColumnsDefaults(cols, conversionGoals, false);
+            postclickMetricsService.setConversionGoalColumnsDefaults(cols, conversionGoals, false);
 
             expect(cols).toEqual([{
-                field: 'conversion_goal_1',
-                name: 'Default name 1',
-                shown: false
-            }, {
-                field: 'conversion_goal_2',
-                name: 'Default name 2',
-                shown: false
-            }]); // check it hasn't been changed
-
-            expect(newCols).toEqual([{
                 field: 'conversion_goal_1',
                 name: 'Goal name 1',
                 shown: false
