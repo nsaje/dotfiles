@@ -44,7 +44,7 @@ oneApp.directive('zemCustomTableCols', ['config', function(config) {
 
                     if(cols.length > 0) {
                         $scope.categoryColumns.push({
-                            'columns': cols, 
+                            'columns': cols,
                             'name': cat.name
                         });
                         $scope.hasCategories = true;
