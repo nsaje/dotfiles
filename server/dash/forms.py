@@ -4,6 +4,8 @@ import re
 import unicodecsv
 import dateutil.parser
 import rfc3987
+import datetime
+
 from collections import Counter
 
 from django import forms
@@ -13,6 +15,8 @@ from dash import constants
 from dash import models
 from dash import regions
 from dash import validation_helpers
+from utils import dates_helper
+
 from zemauth.models import User as ZemUser
 
 
@@ -595,3 +599,55 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             if not self.cleaned_data.get(column_and_field_name): 	# if field is empty in the form
                 if column_and_field_name not in self.csv_column_names:	# and is not present as a CSV column
                     self.add_error(column_and_field_name, forms.ValidationError("{0} has to be present here or as a column in CSV.".format(self.fields[column_and_field_name].label)))
+
+class CreditLineItemForm(forms.ModelForm):
+    def clean_start_date(self):
+        start_date = self.cleaned_data['start_date']
+        today = dates_helper.local_today()
+        if start_date <= today:
+            raise forms.ValidationError('Start date has to be greater than today.')
+        return start_date
+
+    def clean_end_date(self):
+        end_date = self.cleaned_data['end_date']
+        today = dates_helper.local_today()
+        if end_date < today:
+            raise forms.ValidationError('End date has to be greater or equal to today.')
+        return end_date
+
+    def clean_amount(self):
+        if self.cleaned_data['amount'] < 0:
+            raise forms.ValidationError('Amount cannot be negative.')
+        return self.cleaned_data['amount']
+
+    class Meta:
+        model = models.CreditLineItem
+        fields = [
+            'account', 'start_date', 'end_date', 'amount', 'license_fee', 'status', 'comment'
+        ]
+    
+class BudgetLineItemForm(forms.ModelForm):
+    def clean_start_date(self):
+        start_date = self.cleaned_data['start_date']
+        today = dates_helper.local_today()
+        if start_date <= today:
+            raise forms.ValidationError('Start date has to be greater than today.')
+        return start_date
+
+    def clean_end_date(self):
+        end_date = self.cleaned_data['end_date']
+        today = dates_helper.local_today()
+        if end_date <= today:
+            raise forms.ValidationError('End date has to be greater than today.')
+        return end_date
+
+    def clean_amount(self):
+        if self.cleaned_data['amount'] <= 0:
+            raise forms.ValidationError('Budget amount cannot be less or equal to zero.')
+        return self.cleaned_data['amount']
+    
+    class Meta:
+        model = models.BudgetLineItem
+        fields = [
+            'campaign', 'credit', 'start_date', 'end_date', 'amount', 'comment'
+        ]
