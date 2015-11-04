@@ -1244,6 +1244,13 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             }, publisher_blacklist_action.first().payload['args']['conf'])
         self.assertTrue(res['success'])
 
+        self.assertEqual(1, models.PublisherBlacklist.objects.count())
+        publisher_blacklist = models.PublisherBlacklist.objects.first()
+        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(1, publisher_blacklist.ad_group.id)
+        self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
+        self.assertEqual('zemanta.com', publisher_blacklist.name)
+
     @patch('reports.redshift.get_cursor')
     def test_post_enable(self, cursor):
 
@@ -1251,7 +1258,8 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         models.PublisherBlacklist.objects.create(
             name="zemanta.com",
             ad_group=models.AdGroup.objects.get(pk=1),
-            source=models.Source.objects.get(tracking_slug='b1_adiant')
+            source=models.Source.objects.get(tracking_slug='b1_adiant'),
+            status=constants.PublisherStatus.BLACKLISTED
         )
 
         cursor().dictfetchall.return_value = [
@@ -1293,3 +1301,11 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             }, publisher_blacklist_action.first().payload['args']['conf'])
 
         self.assertTrue(res['success'])
+
+        self.assertEqual(1, models.PublisherBlacklist.objects.count())
+
+        publisher_blacklist = models.PublisherBlacklist.objects.first()
+        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(1, publisher_blacklist.ad_group.id)
+        self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
+        self.assertEqual('zemanta.com', publisher_blacklist.name)
