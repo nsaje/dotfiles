@@ -656,7 +656,19 @@ class SourceType(models.Model):
             return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC in self.available_actions
 
     def can_modify_targeting_for_region_type_manually(self, region_type):
-        # Assume automatic targeting support implies manual targeting support
+        ''' Assume automatic targeting support implies manual targeting support
+
+            This addresses the following situation: Imagine targeting
+            GB (country) and 693 (DMA) and a SourceType that supports automatic
+            DMA targeting and manual country targeting.
+
+            Automatically setting the targeting would be impossible because
+            the SourceType does not support modifying country targeting
+            automatically.
+
+            Manually setting the targeting would also be impossible because
+            the SourceType does not support modifying DMA targeting manually.
+            '''
         if self.can_modify_targeting_for_region_type_automatically(region_type):
             return True
         if region_type == constants.RegionType.COUNTRY:
