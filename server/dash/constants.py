@@ -90,10 +90,12 @@ class ContentAdSourceState(ConstantBase):
 class PublisherStatus(ConstantBase):
     ENABLED = 1
     BLACKLISTED = 2
+    PENDING = 3
 
     _VALUES = {
         ENABLED: 'Enabled',
-        BLACKLISTED: 'Blacklisted'
+        BLACKLISTED: 'Blcklisted',
+        PENDING: 'Pending'
     }
 
 
@@ -1096,14 +1098,14 @@ class UserActionType(ConstantBase):
 class CreditLineItemStatus(ConstantBase):
     SIGNED = 1 # Only adding BudgetLineItems is permitted
     PENDING = 2 # Internal "waiting" status, fields are editable
-    CANCELED = 3 # Adding BudgetLineItems is not permitted 
+    CANCELED = 3 # Adding BudgetLineItems is not permitted
 
     _VALUES = {
         SIGNED: 'Signed',
         PENDING: 'Pending',
         CANCELED: 'Canceled',
     }
-    
+
 class BudgetLineItemState(ConstantBase):
     ACTIVE = 1
     PENDING = 2

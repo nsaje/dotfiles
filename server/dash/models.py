@@ -38,7 +38,7 @@ def validate(*validators):
             errors[v.__name__.replace('validate_', '')] = e.error_list
     if errors:
         raise ValidationError(errors)
-        
+
 
 class PermissionMixin(object):
     USERS_FIELD = ''
@@ -85,7 +85,7 @@ class FootprintModel(models.Model):
         if not self.pk:
             return
         self._footprint()
-    
+
     def has_changed(self, field=None):
         if not self.pk:
             return False
@@ -107,7 +107,7 @@ class FootprintModel(models.Model):
     def save(self, *args, **kwargs):
         super(FootprintModel, self).save(*args, **kwargs)
         self._footprint()
-    
+
     class Meta:
         abstract = True
 
@@ -119,11 +119,11 @@ class HistoryModel(models.Model):
 
     def to_dict(self):
         raise NotImplementedError()
-    
+
     class Meta:
         abstract = True
 
-    
+
 class OutbrainAccount(models.Model):
     marketer_id = models.CharField(blank=False, null=False, max_length=255)
     used = models.BooleanField(default=False)
@@ -1707,15 +1707,20 @@ class PublisherBlacklist(models.Model):
     ad_group = models.ForeignKey(AdGroup, null=False, related_name='ad_group', on_delete=models.PROTECT)
     source = models.ForeignKey(Source, null=False, on_delete=models.PROTECT)
 
+    status = models.IntegerField(
+        default=constants.PublisherStatus.BLACKLISTED,
+        choices=constants.PublisherStatus.get_choices()
+    )
+
     class Meta:
         unique_together = (('name', 'ad_group', 'source'), )
-    
+
 
 class CreditLineItem(FootprintModel):
     account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT)
     start_date = models.DateField()
     end_date = models.DateField()
-    
+
     amount = models.IntegerField()
     license_fee = models.DecimalField(
         decimal_places=4,
@@ -1727,7 +1732,7 @@ class CreditLineItem(FootprintModel):
         choices=constants.CreditLineItemStatus.get_choices()
     )
     comment = models.CharField(max_length=256, blank=True, null=True)
-    
+
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
@@ -1795,8 +1800,8 @@ class CreditLineItem(FootprintModel):
             raise ValidationError('Credit line item status cannot change when credit has budgets allocated.')
         if self.status == s.PENDING:
             raise ValidationError('Credit line item status cannot change to PENDING.')
-            
-        
+
+
     def validate_start_date(self):
         if not self.start_date:
             return
@@ -1806,7 +1811,7 @@ class CreditLineItem(FootprintModel):
     def validate_end_date(self):
         if self.has_changed('end_date') and self.previous_value('end_date') > self.end_date:
             raise ValidationError('New end date cannot be less than the previous.')
-        
+
     def validate_license_fee(self):
         if not self.license_fee:
             return
@@ -1833,11 +1838,11 @@ class BudgetLineItem(FootprintModel):
     credit = models.ForeignKey(CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
     start_date = models.DateField()
     end_date = models.DateField()
-    
+
     amount = models.IntegerField()
-    
+
     comment = models.CharField(max_length=256, blank=True, null=True)
-    
+
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
@@ -1879,7 +1884,7 @@ class BudgetLineItem(FootprintModel):
             self.validate_amount,
             self.validate_credit,
         )
-        
+
 
     def license_fee(self):
         return self.credit.license_fee
@@ -1903,7 +1908,7 @@ class BudgetLineItem(FootprintModel):
             return
         if self.end_date > self.credit.end_date:
             raise ValidationError('End date cannot be bigger than the credit\'s end date.')
-        
+
     def validate_amount(self):
         if not self.amount:
             return
@@ -1916,7 +1921,7 @@ class BudgetLineItem(FootprintModel):
         if self.state() == constants.BudgetLineItemState.PENDING:
             return
         if self.has_changed('amount'):
-            raise ValidationError('Budget amount cannot change.')        
+            raise ValidationError('Budget amount cannot change.')
 
 
 class CreditHistory(HistoryModel):
