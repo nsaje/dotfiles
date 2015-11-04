@@ -27,6 +27,23 @@ def resend_action(modeladmin, request, queryset):
 resend_action.short_description = "Resend failed actions"
 
 
+def abort_action(modeladmin, request, queryset):
+    try:
+        if not all(action.state == constants.ActionState.FAILED for action in queryset):
+            raise AssertionError('Not all selected actions have failed!')
+
+        if len(set(action.action for action in queryset)) != 1:
+            raise AssertionError('Not all selected actions are of the same action type!')
+
+        for action in queryset:
+            action.state = constants.ActionState.ABORTED
+            action.save(request)
+
+    except AssertionError, ex:
+        modeladmin.message_user(request, str(ex), level=messages.ERROR)
+abort_action.short_description = "Abort failed actions"
+
+
 class CountFilterQuerySet(db_models.QuerySet):
     def count(self):
         """ Override count to return constant value
@@ -127,7 +144,7 @@ class ActionLogAdminAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         constants.ActionState.DELAYED: '#E6C440',
     }
 
-    actions = [resend_action]
+    actions = [resend_action, abort_action]
 
     def state_(self, obj):
         return '<span style="color:{color}">{state}</span>'.format(
