@@ -38,11 +38,6 @@ oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', functi
         return value;
     }
 
-    function resetUrlAndGetValue(name, namespace, isArray) {
-        removeFromUrl(name);
-        return getValue(name, namespace, isArray);
-    }
-
     function addToUrl(key, value, isArray) {
         if (isArray && value && value.length > 0) {
             value = value.join(',');
@@ -59,23 +54,26 @@ oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', functi
     function UserSettings($scope, namespace) {
         var registeredNames = [];
 
-        function register(name, global) {
-            var isArray = false;
-            if (Object.prototype.toString.call($scope[name]) === '[object Array]') {
-                isArray = true;
-            }
+        function isArray(value) {
+            return Object.prototype.toString.call(value) === '[object Array]';
+        }
 
-            var value = getValue(name, global ? null : namespace, isArray);
+        function register(name, global) {
+            registerWithoutWatch(name, global);
+
+            $scope.$watch(name, function(newValue, oldValue) {
+                if (oldValue !== newValue) {
+                    setValue(name, newValue, global ? null : namespace, isArray($scope[name]));
+                }
+            }, true);
+        }
+
+        function registerWithoutWatch(name, global) {
+            var value = getValue(name, global ? null : namespace, isArray($scope[name]));
 
             if (value !== undefined && $scope[name] !== value) {
                 $scope[name] = value;
             }
-
-            $scope.$watch(name, function(newValue, oldValue) {
-                if (oldValue !== newValue) {
-                    setValue(name, newValue, global ? null : namespace, isArray);
-                }
-            }, true);
 
             registeredNames.push(name);
         }
@@ -92,7 +90,8 @@ oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', functi
 
         return {
             register: register,
-            registerGlobal: registerGlobal
+            registerGlobal: registerGlobal,
+            registerWithoutWatch: registerWithoutWatch
         };
     }
 
@@ -101,7 +100,6 @@ oneApp.factory('zemUserSettings', ['zemLocalStorageService', '$location', functi
             return new UserSettings($scope, namespace);
         },
         getValue: getValue,
-        resetUrlAndGetValue: resetUrlAndGetValue,
         setValue: setValue
     };
 }]);
