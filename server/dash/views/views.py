@@ -945,11 +945,13 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
 
 CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
-                        ['url', 'url'],
-                        ['title', 'title'],
-                        ['image_url', 'image_url'],
-                        ['description', 'description (optional)'],
-                    ])
+    ['url', 'url'],
+    ['title', 'title'],
+    ['image_url', 'image_url'],
+    ['description', 'description (optional)'],
+    ['tracker_urls', 'tracker url (optional)']
+])
+
 
 class AdGroupContentAdCSV(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
@@ -962,7 +964,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
         except exc.MissingDataError, e:
             email = request.user.email
             if email == settings.DEMO_USER_EMAIL or email in settings.DEMO_USERS:
-                content_ad_dicts = [{ 'url': '', 'title': '', 'image_url': '', 'description': ''}]
+                content_ad_dicts = [{'url': '', 'title': '', 'image_url': '', 'description': ''}]
                 content = self._create_content_ad_csv(content_ad_dicts)
                 return self.create_csv_response('contentads', content=content)
             raise e
@@ -995,6 +997,9 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 'description': content_ad.description,
                 'call_to_action': content_ad.call_to_action,
             }
+
+            if content_ad.tracker_urls:
+                content_ad_dict['tracker_urls'] = ' '.join(content_ad.tracker_urls)
 
             # delete keys that are not to be exported
             for k in content_ad_dict.keys():
