@@ -1,0 +1,200 @@
+<div class="modal-body modal-page">
+	<h3 ng-if="isNew">Add a New Budget Item</h3>
+	<h3 ng-if="!isNew">Edit Budget Item</h3>
+	<form id="form-campaign-budget-item" class="form-horizontal" ng-class="{ 'new': isNew, 'edit': !isNew }">
+		<div class="form-group" ng-if="!isNew">
+			<label class="col-xs-8">Created by {{ budget.createdBy.name }} on {{ budget.createdDt }} }}</label>
+		</div>
+		<div class="form-group" ng-if="isNew">
+			<label class="col-xs-8">Created by {{ user.name }} on {{ today }}</label>
+		</div>
+		<div class="form-group" ng-class="{'has-error': !!errors.credit}">
+			<div class="col-xs-8">
+				<label for="credit-input" class="control-label">
+					Select Account Credit for Allocation
+				</label><br />
+				<select id="credit-input" ng-model="budget.credit" size="5" class="no-dropdown" ng-options="credit.name for credit in credits track by credit.id">
+				</select>
+			</div>
+		</div>
+		
+		<div class="form-group" ng-class="{'has-error': !!errors.startDate}">
+            <label for="start-date-input" class="col-xs-4 control-label">
+                Valid from
+            </label>
+            <div class="col-xs-4">
+                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budget.credit" min-date="minDate" max-date="maxDate" ng-model="budget.startDate" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')">
+            </div>
+            <label ng-repeat="error in errors.startDate" class="control-label error" for="start-date-input">{{ error }}</label>
+        </div>
+		<div class="form-group" ng-class="{'has-error': !!errors.endDate}">
+            <label for="end-date-input" class="col-xs-4 control-label">
+                Valid To
+            </label>
+            <div class="col-xs-4">
+                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budget.credit" min-date="minDate" max-date="maxDate" ng-model="budget.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
+            </div>
+            <label ng-repeat="error in errors.endDate" class="control-label error" for="end-date-input">{{ error }}</label>
+        </div>
+		<div class="form-group" ng-class="{'has-error': !!errors.amount}">
+			<label for="amount-input" class="col-xs-4 control-label">
+                Media Budget
+            </label>
+            <div class="col-xs-4">
+				<div class="input-group">
+					<span class="input-group-addon">$</span>
+					<input id="amount-input" ng-disabled="!budget.credit" type="text" class="form-control" ng-model="budget.amount" zem-currency-input>
+				</div>
+            </div>
+            <label ng-repeat="error in errors.amount" class="control-label error" for="amount">{{ error }}</label>
+		</div>
+		<div class="form-group" ng-class="{'has-error': !!errors.comment}">
+			<label for="comment-input" class="col-xs-4 control-label">
+                Custom Notes
+            </label>
+            <div class="col-xs-4">
+                <textarea id="comment-input" type="text" class="form-control" ng-model="budget.comment"></textarea>
+            </div>
+            <label ng-repeat="error in errors.comment" class="control-label error" for="comment">{{ error }}</label>
+		</div>
+		<div class="form-group">
+			<div class="col-xs-4">
+				<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+			</div>
+			<div class="col-xs-4">
+				<button type="button" class="btn btn-default" ng-click="discardSettings()">Discard</button>
+			</div>
+		</div>
+		
+		<div class="loader" ng-show="saveRequestInProgress"></div>
+		<span ng-show="saved" class="success">Your updates have been saved.</span>
+		<span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
+		<span ng-show="discarded" class="success">Your updates have been discarded.</span>
+	</form>
+	<h3>Allocated Budget Items</h3>
+	<div class="scrollable">
+		<table>
+			<thead>
+				<tr>
+					<th>Campaign</th>
+					<th>Budget amount</th>
+					<th>Total spend</th>
+					<th>Signed</th>
+					<th>Flight dates</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>test 1</td>
+					<td>$10,000</td>
+					<td>$5,000</td>
+					<td>3/3/2015 - 4/4/2015</td>
+					<td>
+						<ul class="row-actions">
+							<li>link</li>
+						</ul>
+					</td>
+				</tr>
+				<tr>
+					<td>test 1</td>
+					<td>$10,000</td>
+					<td>$5,000</td>
+					<td>3/3/2015 - 4/4/2015</td>
+					<td>
+						<ul class="row-actions">
+							<li>link</li>
+						</ul>
+					</td>
+				</tr>
+				<tr>
+					<td>test 1</td>
+					<td>$10,000</td>
+					<td>$5,000</td>
+					<td>3/3/2015 - 4/4/2015</td>
+					<td>
+						<ul class="row-actions">
+							<li>link</li>
+						</ul>
+					</td>
+				</tr>
+				<tr>
+					<td>test 1</td>
+					<td>$10,000</td>
+					<td>$5,000</td>
+					<td>3/3/2015 - 4/4/2015</td>
+					<td>
+						<ul class="row-actions">
+							<li>link</li>
+						</ul>
+					</td>
+				</tr>
+				<tr>
+					<td>test 1</td>
+					<td>$10,000</td>
+					<td>$5,000</td>
+					<td>3/3/2015 - 4/4/2015</td>
+					<td>
+						<ul class="row-actions">
+							<li>link</li>
+						</ul>
+					</td>
+				</tr>
+				<tr>
+					<td>test 1</td>
+					<td>$10,000</td>
+					<td>$5,000</td>
+					<td>3/3/2015 - 4/4/2015</td>
+					<td>
+						<ul class="row-actions">
+							<li>link</li>
+						</ul>
+					</td>
+				</tr>
+				<tr>
+					<td>test 1</td>
+					<td>$10,000</td>
+					<td>$5,000</td>
+					<td>3/3/2015 - 4/4/2015</td>
+					<td>
+						<ul class="row-actions">
+							<li>link</li>
+						</ul>
+					</td>
+				</tr>
+				<tr>
+					<td>test 1</td>
+					<td>$10,000</td>
+					<td>$5,000</td>
+					<td>3/3/2015 - 4/4/2015</td>
+					<td>
+						<ul class="row-actions">
+							<li>link</li>
+						</ul>
+					</td>
+				</tr>
+				<tr>
+					<td>test 1</td>
+					<td>$10,000</td>
+					<td>$5,000</td>
+					<td>3/3/2015 - 4/4/2015</td>
+					<td>
+						<ul class="row-actions">
+							<li>link</li>
+						</ul>
+					</td>
+				</tr>
+				<tr>
+					<td>test 1</td>
+					<td>$10,000</td>
+					<td>$5,000</td>
+					<td>3/3/2015 - 4/4/2015</td>
+					<td>
+						<ul class="row-actions">
+							<li>link</li>
+						</ul>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>

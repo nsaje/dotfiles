@@ -1,0 +1,105 @@
+<div class="page page-campaign-budget page-section" ng-if="!account.archived">
+	<div class="section budgets-overview">
+		<div class="title">Overview</div>
+		<!-- table>(thead>tr>td*5)+(tbody>tr>td*5) -->
+
+		<div class="section named-data">
+			<div class="name">Currently Available Active Total Budget</div>
+			<div class="value">$31,123</div>
+			<div class="name bottomborder">Unallocated Account Credit</div>
+			<div class="value bottomborder">$9,900</div>
+			<div class="name">Lifetime Campaign Spend</div>
+			<div class="value">$31,123</div>
+			<div class="name">Lifetime Media Spend</div>
+			<div class="value">$9,900</div>
+			<div class="name">Lifetime Data Spend</div>
+			<div class="value">$31,123</div>
+			<div class="name">Lifetime License Fee</div>
+			<div class="value">$9,900</div>
+		</div>
+	</div>
+	<div class="section budgets-active-pending">
+		<div class="title">Active Budget items</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Total Budget</th>
+                    <th>License Fee</th>
+					<th>Total Spend</th>
+                    <th>Available Budget</th>
+                    <th>Notes</th>
+					<th></th>
+                </tr>
+            </thead>
+            <tbody>
+				<tr>
+					<td>6/3/2015</td>
+					<td>6/30/2015</td>
+					<td>$50,000</td>
+					<td>20%</td>
+					<td>$12,000</td>
+					<td>38,000</td>
+					<td>Empty note</td>
+					<td>
+						<ul class="row-actions">
+							<li>edit</li>
+						</ul>
+					</td>
+				</tr>
+            </tbody>
+        </table>
+	</div>
+
+	<button type="button" class="btn btn-default" ng-click="addBudgetItem()">Add Budget Item</button>
+	
+	<div class="section budgets-active-pending">
+		<div class="title">Depleted Budget Items</div>
+
+		<table>
+            <thead>
+				<tr>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Total Budget</th>
+                    <th>License Fee</th>
+					<th>Total Spend</th>
+                    <th>Available Budget</th>
+                    <th>Notes</th>
+					<th></th>
+                </tr>
+            </thead>
+            <tbody>
+				<tr>
+					<td>6/3/2015</td>
+					<td>6/30/2015</td>
+					<td>$50,000</td>
+					<td>20%</td>
+					<td>$12,000</td>
+					<td>38,000</td>
+					<td>Empty note</td>
+					<td>
+						<ul class="row-actions">
+							<li>edit</li>
+						</ul>
+					</td>
+				</tr>
+				<tr>
+					<td>6/3/2015</td>
+					<td>6/30/2015</td>
+					<td>$50,000</td>
+					<td>20%</td>
+					<td>$12,000</td>
+					<td>38,000</td>
+					<td>Empty note</td>
+					<td>
+						<ul class="row-actions">
+							<li>edit</li>
+						</ul>
+					</td>
+				</tr>
+            </tbody>
+        </table>
+	</div>
+</div>

@@ -8,6 +8,7 @@
 @add-color-hover: #dd771b;
 @add-filter-color: #2fa8c7;
 @internal-color: #0ab00a;
+@border-color: #e3e3e3;
 
 // Mixins
 
@@ -1646,6 +1647,101 @@ div[datepicker] {
     }
 }
 
+.page.page-section,.modal-page { /* step to the new tabless design */
+    .description {
+        font-size: 15px;
+    }
+
+    .description p {
+        margin: 0;
+        padding: 2px 0 0 0;
+    }
+
+    .named-data {
+        font-size: 15px;
+        width: 400px;
+
+        .name {
+            float: left;
+            width: 80%;
+            font-weight: 600;
+            margin: 0;
+            padding: 2px 0;
+        }
+
+        .value {
+            float: left;
+            width: 20%;
+            margin: 0;
+            padding: 2px 0;
+        }
+        
+
+        .bottomborder {
+            border-bottom: 2px solid black;
+        }
+    }
+
+    .section {
+        margin: 5px 0 15px 0;
+
+        .title {
+            padding: 3px 0;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        &:after { 
+            content: " ";
+            display: block; 
+            height: 0; 
+            clear: both;
+        }
+    }
+    table {
+        width: 100%;
+        border-bottom: 1px solid @border-color;
+        margin-bottom: 10px;
+        thead, tfoot {
+            background-color: #f6f6f6;
+            td, th {
+                font-weight: 600;
+            }
+            th {
+                border-top: 2px solid @default-color;
+            }
+        }
+        th, td {
+            border-top: 1px solid @border-color;
+            text-align: center;
+            vertical-align: middle;
+            padding: 8px;
+            text-align: left;
+
+            ul.row-actions {
+                padding: 0;
+                margin: 0;
+                list-style-type: none;
+                li {
+                    padding: 0;
+                    margin: 0;
+                    color: #2fa8c7;
+                    cursor: pointer;
+                    text-decoration: underline;
+                }
+            }
+            &.outline {
+                font-weight: 900 !important;
+            }
+        }
+    }
+    .scrollable {
+        display: block;
+        max-height: 200px;
+        overflow: auto;
+    }
+}
+
 .page-ad-group-agency,
 .page-ad-group-settings {
     .alert-info {
@@ -2691,6 +2787,7 @@ zem-editable-currency-field {
                 }
             }
         }
+
     }
 }
 
@@ -2951,3 +3048,7 @@ zem-submission-status {
     }
 }
 
+.no-dropdown {
+    width: 100%;
+    overflow: auto;
+}

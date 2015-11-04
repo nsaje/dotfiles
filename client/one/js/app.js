@@ -104,7 +104,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         })
         .state('main.accounts.settings', {
             url: '/settings',
-            templateUrl: '/partials/account_settings.html',
+            templateUrl: '/partials/account_settings.html'
+        }).state('main.accounts.credit', {
+            url: '/credit',
+            templateUrl: '/partials/account_credit.html',
+            controller: 'AccountCreditCtrl'
         });
 
     $stateProvider
@@ -141,6 +145,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/settings',
             templateUrl: '/partials/campaign_settings.html',
             controller: 'CampaignSettingsCtrl'
+        })
+        .state('main.campaigns.budget_plus', {
+            url: '/budget-plus',
+            templateUrl: '/partials/campaign_budget_plus.html',
+            controller: 'CampaignBudgetPlusCtrl'
         });
 
 
