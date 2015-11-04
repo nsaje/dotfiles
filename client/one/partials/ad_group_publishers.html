@@ -9,9 +9,9 @@
                 <div ng-show="hasPermission('zemauth.can_modify_publisher_blacklist_status')" style="display:inline;">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_publisher_blacklist_status')" popover-placement="bottom"></zem-internal-feature>
                     <zem-dropdown
-                        zem-placeholder="Bulk Actions"
+                        zem-placeholder="Manage Blacklist"
                         zem-on-select="executeBulkAction(selected)"
-                        zem-disabled-title="At least one Publisher has to be selected before using Bulk Actions."
+                        zem-disabled-title="At least one Publisher has to be selected before using Manage Blacklist."
                         zem-check-disabled="!isAnythingSelected()"
                         zem-dropdown-options="bulkActions"
                         zem-css-class="show-rows"></zem-dropdown>
