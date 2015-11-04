@@ -3,16 +3,15 @@ import datetime
 import itertools
 import logging
 import math
-import pytz
 from multiprocessing.pool import ThreadPool
 
-from django.conf import settings
 
 import dash.models
 import reports.update
 
 from utils import redirector_helper
 from utils import statsd_helper
+from utils import dates_helper
 
 logger = logging.getLogger(__name__)
 
@@ -21,21 +20,16 @@ ADDITIONAL_SYNC_HOURS = 4
 NUM_THREADS = 20
 
 
-def _utc_datetime_to_est_date(dt):
-    dt = dt.replace(tzinfo=pytz.utc)
-    return dt.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).date()
-
-
 def _get_dates_to_sync(conversion_pixels):
     pairs = []
     for conversion_pixel in conversion_pixels:
         if conversion_pixel.last_sync_dt is None:
-            pairs.append((_utc_datetime_to_est_date(datetime.datetime.utcnow()), conversion_pixel))
+            pairs.append((dates_helper.local_today(), conversion_pixel))
             continue
 
         last_sync_dt = conversion_pixel.last_sync_dt - datetime.timedelta(hours=ADDITIONAL_SYNC_HOURS)
-        dates = [_utc_datetime_to_est_date(last_sync_dt)]
-        while dates[-1] < _utc_datetime_to_est_date(datetime.datetime.utcnow()):
+        dates = [dates_helper.utc_datetime_to_local_date(last_sync_dt)]
+        while dates[-1] < dates_helper.local_today():
             dates.append(dates[-1] + datetime.timedelta(days=1))
         pairs.extend(itertools.product(dates, [conversion_pixel]))
     return pairs
@@ -146,7 +140,7 @@ def process_touchpoint_conversions(redirects_impressions):
             potential_touchpoint_conversion = {
                 'zuid': zuid,
                 'slug': slug,
-                'date': _utc_datetime_to_est_date(impression_ts),
+                'date': dates_helper.utc_datetime_to_local_date(impression_ts),
                 'conversion_id': impression_id,
                 'conversion_timestamp': impression_ts,
                 'account_id': account_id,

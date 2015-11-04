@@ -1,18 +1,11 @@
 import datetime
 import mock
-import pytz
 
 from django.test import TestCase
 
 from convapi import process
-from utils.test_helper import QuerySetMatcher
 import dash.models
-
-
-def _est_to_utc_time(dt):
-    tz = pytz.timezone('America/New_York')
-    dt = tz.localize(dt)
-    return dt.astimezone(pytz.utc)
+from utils import dates_helper
 
 
 class UpdateTouchpointConversionsTestCase(TestCase):
@@ -23,7 +16,7 @@ class UpdateTouchpointConversionsTestCase(TestCase):
         self.cp1 = dash.models.ConversionPixel.objects.create(
             account_id=1,
             slug='test_slug',
-            last_sync_dt=_est_to_utc_time(datetime.datetime(2015, 9, 8, process.ADDITIONAL_SYNC_HOURS)),
+            last_sync_dt=dates_helper.local_to_utc_time(datetime.datetime(2015, 9, 8, process.ADDITIONAL_SYNC_HOURS)),
         )
         self.cp2 = dash.models.ConversionPixel.objects.create(
             account_id=1,
@@ -32,11 +25,12 @@ class UpdateTouchpointConversionsTestCase(TestCase):
         )
 
     @mock.patch('convapi.process.update_touchpoint_conversions')
-    @mock.patch('convapi.process.datetime')
+    @mock.patch('utils.dates_helper.datetime')
     def test_update_full(self, datetime_mock, update_touchpoint_conversions_mock):
         datetime_mock.datetime = mock.Mock()
         datetime_mock.datetime.utcnow = mock.Mock()
-        datetime_mock.datetime.utcnow.return_value = _est_to_utc_time(datetime.datetime(2015, 9, 10, process.ADDITIONAL_SYNC_HOURS + 1))
+        datetime_mock.datetime.utcnow.return_value = dates_helper.local_to_utc_time(
+            datetime.datetime(2015, 9, 10, process.ADDITIONAL_SYNC_HOURS + 1))
         datetime_mock.timedelta = datetime.timedelta
 
         process.update_touchpoint_conversions_full()
@@ -47,11 +41,12 @@ class UpdateTouchpointConversionsTestCase(TestCase):
                                                                     (datetime.date(2015, 9, 10), self.cp2)])
 
     @mock.patch('convapi.process.update_touchpoint_conversions')
-    @mock.patch('convapi.process.datetime')
+    @mock.patch('utils.dates_helper.datetime')
     def test_update_full_additional_sync(self, datetime_mock, update_touchpoint_conversions_mock):
         datetime_mock.datetime = mock.Mock()
         datetime_mock.datetime.utcnow = mock.Mock()
-        datetime_mock.datetime.utcnow.return_value = _est_to_utc_time(datetime.datetime(2015, 9, 10, process.ADDITIONAL_SYNC_HOURS + 1))
+        datetime_mock.datetime.utcnow.return_value = dates_helper.local_to_utc_time(
+            datetime.datetime(2015, 9, 10, process.ADDITIONAL_SYNC_HOURS + 1))
         datetime_mock.timedelta = datetime.timedelta
 
         dash.models.ConversionPixel.objects.filter(slug='test_slug2').update(last_sync_dt=datetime.datetime(2015, 9, 8))
