@@ -27,7 +27,7 @@ oneApp.factory('zemLocalStorageService', function() {
             getKey(key, namespace)
         );
 
-        if (!value || value === undefined) {
+        if (!value || value === 'undefined') {
             return;
         }
 
