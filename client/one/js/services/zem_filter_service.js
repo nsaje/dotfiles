@@ -25,7 +25,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
 
         if ('zemauth.can_see_publishers' in user.permissions) {
-            blacklistedPublisherFilter = $location.search().show_blacklisted_publishers || false;
+            blacklistedPublisherFilter = $location.search().show_blacklisted_publishers || null;
         }
     }
 
@@ -65,6 +65,10 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
 
         return false;
+    }
+
+    function isPublisherBlacklistFilterOn () {
+        return blacklistedPublisherFilter !== null && blacklistedPublisherFilter !== 'all';
     }
 
     function isSourceFilterOn () {
@@ -139,6 +143,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         exclusivelyFilterSource: exclusivelyFilterSource,
         removeFilteredSource: removeFilteredSource,
         removeFiltering: removeFiltering,
+        isPublisherBlacklistFilterOn: isPublisherBlacklistFilterOn,
         getBlacklistedPublishers: getBlacklistedPublishers,
         setBlacklistedPublishers: setBlacklistedPublishers,
         getShowBlacklistedPublishers: getShowBlacklistedPublishers,

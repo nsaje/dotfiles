@@ -58,7 +58,7 @@ oneApp.directive('zemFilter', ['config', function(config) {
             };
 
             $scope.isFilterOn = function () {
-                return zemFilterService.isSourceFilterOn();
+                return zemFilterService.isSourceFilterOn() || zemFilterService.isPublisherBlacklistFilterOn();
             };
 
             $scope.removeFiltering = function () {
