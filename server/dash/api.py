@@ -106,7 +106,8 @@ def update_ad_group_source_state(ad_group_source, conf):
                         models.PublisherBlacklist(
                             name=pub_blacklist['domain'],
                             ad_group=ad_group,
-                            source=source_cache[source_slug]
+                            source=source_cache[source_slug],
+                            status=dash.constants.PublisherStatus.BLACKLISTED
                         )
                     )
                 state = val['state']

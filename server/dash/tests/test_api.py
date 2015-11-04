@@ -893,7 +893,7 @@ class UpdateAdGroupSourceState(TestCase):
         self.assertEqual(new_latest_state.cpc_cc, latest_state.cpc_cc)
         self.assertEqual(new_latest_state.daily_budget_cc, latest_state.daily_budget_cc)
 
-    def test_update_publisher_blaklist(self):
+    def test_update_publisher_blacklist(self):
         conf = {
             'publisher_blacklist': {
                 'state': 2,
@@ -915,10 +915,12 @@ class UpdateAdGroupSourceState(TestCase):
         self.assertEqual(self.ad_group_source.ad_group.id, first_blacklist.ad_group.id)
         self.assertEqual('zemanta.com', first_blacklist.name)
         self.assertEqual('b1_adiant', first_blacklist.source.tracking_slug)
+        self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, first_blacklist.status)
 
         second_blacklist = allblacklist[1]
         self.assertEqual(self.ad_group_source.ad_group.id, second_blacklist.ad_group.id)
         self.assertEqual('b1_sharethrough', second_blacklist.source.tracking_slug)
+        self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, second_blacklist.status)
 
 
 class AdGroupSourceSettingsWriterTest(TestCase):
