@@ -414,9 +414,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         var page = parseInt($location.search().page || '1');
         var size = parseInt($location.search().size || '0'); 
 
-        $scope.chartMetric1 = zemUserSettings.resetUrlAndGetValue('chartMetric1', $scope.localStoragePrefix);
-        $scope.chartMetric2 = zemUserSettings.resetUrlAndGetValue('chartMetric2', $scope.localStoragePrefix);
-
+        userSettings.registerWithoutWatch('chartMetric1');
+        userSettings.registerWithoutWatch('chartMetric2');
         userSettings.register('order');
         userSettings.register('size');
         userSettings.registerGlobal('chartHidden');

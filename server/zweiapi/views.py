@@ -114,9 +114,6 @@ def _prepare_report_rows(ad_group, source, data_rows, filter_by_content_ad_sourc
         if data_row_id is not None:
             content_ad_source = content_ad_sources.get(data_row_id)
 
-        if content_ad_source and content_ad_source.content_ad.archived:
-            continue
-
         r = {
             'article': article,
             'impressions': data_row['impressions'],

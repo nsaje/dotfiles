@@ -460,9 +460,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         setChartOptions();
 
-        $scope.chartMetric1 = zemUserSettings.resetUrlAndGetValue('chartMetric1', $scope.localStoragePrefix);
-        $scope.chartMetric2 = zemUserSettings.resetUrlAndGetValue('chartMetric2', $scope.localStoragePrefix);
-
+        userSettings.registerWithoutWatch('chartMetric1');
+        userSettings.registerWithoutWatch('chartMetric2');
         userSettings.register('order');
         userSettings.registerGlobal('chartHidden');
 
