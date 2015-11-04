@@ -481,15 +481,14 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.init = function() {
         var data = $scope.adGroupData[$state.params.id];
 
-        var page = parseInt($location.search().page)
+        var page = parseInt($location.search().page);
         if (isNaN(page)) {
             page = data && data.page;
         }
-        var size = parseInt($location.search().size || '0'); 
+        var size = parseInt($location.search().size || '0');
 
-        $scope.chartMetric1 = zemUserSettings.resetUrlAndGetValue('chartMetric1', $scope.localStoragePrefix);
-        $scope.chartMetric2 = zemUserSettings.resetUrlAndGetValue('chartMetric2', $scope.localStoragePrefix);
-
+        userSettings.registerWithoutWatch('chartMetric1');
+        userSettings.registerWithoutWatch('chartMetric2');
         userSettings.register('order');
         userSettings.register('size');
         userSettings.registerGlobal('chartHidden');
