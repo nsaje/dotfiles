@@ -1637,16 +1637,18 @@ class PublishersTable(object):
                 name=domain,
                 source__tracking_slug__endswith=source_slug
             )
-        blacklisted_publishers = pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
+        blacklisted_publishers = pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug', 'status')
         filtered_publishers = []
         for blacklisted_pub in blacklisted_publishers:
-            name, ad_group_id, slug = blacklisted_pub.values()
+            name, ad_group_id, slug, status = blacklisted_pub.values()
             name = name.replace('b1_', '')
-            filtered_publishers.append([name, ad_group_id, slug])
+            filtered_publishers.append([name, ad_group_id, slug, status])
 
         for publisher_data in publishers_data:
             domain, source_slug = publisher_data['domain'], publisher_data['exchange']
-            if [source_slug, adgroup.id, domain] in filtered_publishers:
+            if [source_slug, adgroup.id, domain, constants.PublisherStatus.PENDING] in filtered_publishers:
+                publisher_data['blacklisted'] = 'Pending'
+            if [source_slug, adgroup.id, domain, constants.PublisherStatus.BLACKLISTED] in filtered_publishers:
                 publisher_data['blacklisted'] = 'Blacklisted'
 
         response = {
