@@ -1681,9 +1681,9 @@ class PublishersTable(object):
         result = {
             'cost': totals_data.get('cost', 0),
             'cpc': totals_data.get('cpc', 0),
-            'clicks': totals_data['clicks'],
-            'impressions': totals_data['impressions'],
-            'ctr': totals_data['ctr'],
+            'clicks': totals_data.get('clicks', 0),
+            'impressions': totals_data.get('impressions', 0),
+            'ctr': totals_data.get('ctr', 0),
         }
         return result
 
