@@ -1649,9 +1649,9 @@ class PublishersTable(object):
 
         for publisher_data in publishers_data:
             domain, source_slug = publisher_data['domain'], publisher_data['exchange']
-            if [source_slug, adgroup.id, domain, constants.PublisherStatus.PENDING] in filtered_publishers:
+            if [domain, adgroup.id, source_slug, constants.PublisherStatus.PENDING] in filtered_publishers:
                 publisher_data['blacklisted'] = 'Pending'
-            if [source_slug, adgroup.id, domain, constants.PublisherStatus.BLACKLISTED] in filtered_publishers:
+            if [domain, adgroup.id, source_slug, constants.PublisherStatus.BLACKLISTED] in filtered_publishers:
                 publisher_data['blacklisted'] = 'Blacklisted'
 
         response = {
