@@ -11,7 +11,6 @@ def get_list_for_region_type(region_type):
         return regions.DMA_BY_CODE
 
 
-
 def can_modify_selected_target_regions_automatically(source, *settings):
     region_types = _get_region_types(*settings)
 

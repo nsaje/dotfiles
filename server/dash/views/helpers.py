@@ -851,15 +851,15 @@ def _get_status_setting_disabled_message(ad_group_source):
 def _get_status_setting_disabled_message_for_target_regions(
                  ad_group_source, ad_group_settings, ad_group_source_settings):
     source = ad_group_source.source
-    unsupported_targets = ()
-    manual_targets = ()
+    unsupported_targets = []
+    manual_targets = []
 
     for region_type in constants.RegionType.get_all():
         if ad_group_settings.targets_region_type(region_type):
             if not source.source_type.supports_targeting_region_type(region_type):
-                unsupported_targets += (constants.RegionType.get_text(region_type),)
+                unsupported_targets.append(constants.RegionType.get_text(region_type))
             elif not source.source_type.can_modify_targeting_for_region_type_automatically(constants.RegionType.DMA):
-                manual_targets += (constants.RegionType.get_text(region_type),)
+                manual_targets.append(constants.RegionType.get_text(region_type))
 
     if unsupported_targets:
         return 'This source can not be enabled because it does not support {} targeting.'.format(" and ".join(unsupported_targets))
