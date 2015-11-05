@@ -1096,14 +1096,14 @@ class UserActionType(ConstantBase):
 class CreditLineItemStatus(ConstantBase):
     SIGNED = 1 # Only adding BudgetLineItems is permitted
     PENDING = 2 # Internal "waiting" status, fields are editable
-    CANCELED = 3 # Adding BudgetLineItems is not permitted 
+    CANCELED = 3 # Adding BudgetLineItems is not permitted
 
     _VALUES = {
         SIGNED: 'Signed',
         PENDING: 'Pending',
         CANCELED: 'Canceled',
     }
-    
+
 class BudgetLineItemState(ConstantBase):
     ACTIVE = 1
     PENDING = 2
@@ -1116,3 +1116,55 @@ class BudgetLineItemState(ConstantBase):
     }
 
 
+class ScheduledReportSendingFrequency(ConstantBase):
+    DAILY = 1
+    WEEKLY = 2
+    MONTHLY = 3
+
+    _VALUES = {
+        DAILY: 'Daily',
+        WEEKLY: 'Weekly',
+        MONTHLY: 'Monthly'
+    }
+
+
+class ScheduledReportState(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+
+    _VALUES = {
+        ACTIVE: 'Enabled',
+        INACTIVE: 'Paused'
+    }
+
+
+class ScheduledReportGranularity(ConstantBase):
+    VIEW = 1
+    ALL_ACCOUNTS = 2
+    ACCOUNT = 3
+    CAMPAIGN = 4
+    AD_GROUP = 5
+    CONTENT_AD = 6
+
+    _VALUES = {
+        VIEW: 'View',
+        ALL_ACCOUNTS: 'All Accounts',
+        ACCOUNT: 'Account',
+        CAMPAIGN: 'Campaign',
+        AD_GROUP: 'Ad Group',
+        CONTENT_AD: 'Content Ad',
+    }
+
+
+class ScheduledReportLevel(ConstantBase):
+    ALL_ACCOUNTS = 1
+    ACCOUNT = 2
+    CAMPAIGN = 3
+    AD_GROUP = 4
+
+    _VALUES = {
+        ALL_ACCOUNTS: 'All Accounts',
+        ACCOUNT: 'Account',
+        CAMPAIGN: 'Campaign',
+        AD_GROUP: 'Ad Group'
+    }
