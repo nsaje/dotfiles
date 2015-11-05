@@ -1434,6 +1434,7 @@ class ContentAd(models.Model):
     image_width = models.PositiveIntegerField(null=True)
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
+    crop_areas = models.CharField(max_length=64, null=True)
 
     redirect_id = models.CharField(max_length=128, null=True)
 

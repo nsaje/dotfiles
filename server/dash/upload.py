@@ -170,7 +170,8 @@ def _create_objects(data, batch, ad_group_id, ad_group_sources):
         description=data['description'],
         call_to_action=data['call_to_action'],
         ad_group_id=ad_group_id,
-        tracker_urls=data['tracker_urls']
+        tracker_urls=data['tracker_urls'],
+        crop_areas=data['image']['crop_areas']
     )
 
     content_ad_sources = []
@@ -193,13 +194,13 @@ def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
         data = {}
         for key in ['title', 'url', 'image', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']:
             try:
-                if key == 'title': 
+                if key == 'title':
                     data[key] = _clean_title(row.get('title'))
                 elif key == 'url':
                     data[key] = _clean_url(row.get('url'), ad_group)
-                elif key == 'image': 
+                elif key == 'image':
                     data[key] = _clean_image(row.get('image_url'), row.get('crop_areas'))
-                elif key == 'tracker_urls': 
+                elif key == 'tracker_urls':
                     data[key] = _clean_tracker_urls(row.get('tracker_urls'))
                 elif key in ['description', 'display_url', 'brand_name', 'call_to_action']:
                     data[key] = _clean_inherited_csv_field(key, row.get(key), upload_form_cleaned_fields[key])
@@ -216,6 +217,7 @@ def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
     except Exception as e:
         logger.exception('Exception in upload._clean_row')
         raise
+
 
 # This function cleans the fields that are, when column is not present or the value is empty, inherited from form submission
 def _clean_inherited_csv_field(field_name, value_from_csv, cleaned_value_from_form):
@@ -275,7 +277,7 @@ def _clean_image(image_url, crop_areas):
         errors.append('Invalid Image URL')
 
     try:
-        crop_areas = _clean_crop_areas(crop_areas)
+        cleaned_crop_areas = _clean_crop_areas(crop_areas)
     except ValidationError as e:
         errors.append(e.message)
 
@@ -283,7 +285,7 @@ def _clean_image(image_url, crop_areas):
         raise ValidationError(errors)
 
     try:
-        image_id, width, height, image_hash = image_helper.process_image(image_url, crop_areas)
+        image_id, width, height, image_hash = image_helper.process_image(image_url, cleaned_crop_areas)
     except image_helper.ImageProcessingException as e:
         error_status = e.status()
 
@@ -300,7 +302,8 @@ def _clean_image(image_url, crop_areas):
         'id': image_id,
         'width': width,
         'height': height,
-        'hash': image_hash
+        'hash': image_hash,
+        'crop_areas': crop_areas  # take the original
     }
 
 
