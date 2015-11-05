@@ -1640,7 +1640,10 @@ class PublishersTable(object):
         blacklisted_publishers = pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug', 'status')
         filtered_publishers = []
         for blacklisted_pub in blacklisted_publishers:
-            status, name, ad_group_id, slug = blacklisted_pub.values()
+            status = blacklisted_pub['status']
+            name = blacklisted_pub['name']
+            ad_group_id = blacklisted_pub['ad_group__id']
+            slug = blacklisted_pub['source__tracking_slug']
             name = name.replace('b1_', '')
             filtered_publishers.append([name, ad_group_id, slug, status])
 
