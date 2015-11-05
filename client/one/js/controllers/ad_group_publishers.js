@@ -66,11 +66,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             }
         });
 
-        $scope.rows.forEach(function (current_row) {
-            if (current_row.publisher_selected) {
-                if (current_row.blacklisted === 'Blacklisted') {
+        $scope.rows.forEach(function (currentRow) {
+            if (currentRow.publisher_selected) {
+                if (currentRow.blacklisted === 'Blacklisted') {
                     countBlacklistedSelected += 1
-                } else if (current_row.blacklisted === 'Active') {
+                } else if (currentRow.blacklisted === 'Active') {
                     countNonBlacklistedSelected += 1
                 }
             }

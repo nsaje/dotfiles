@@ -123,8 +123,6 @@ def update_ad_group_source_state(ad_group_source, conf):
 
                 if state == constants.PublisherStatus.BLACKLISTED:
                     models.PublisherBlacklist.objects.bulk_create(blacklist_list)
-                else:
-                    raise Exception("Not implemented")
         new_state.save()
 
 
