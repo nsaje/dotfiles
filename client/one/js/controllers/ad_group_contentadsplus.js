@@ -16,7 +16,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
     $scope.chartMetricOptions = options.adGroupChartMetrics;
-    $scope.localStoragePrefix = 'adGroupAdsPlus';
+    $scope.localStoragePrefix = 'adGroupContentAdsPlus';
 
     $scope.lastSyncDate = null;
     $scope.isSyncRecent = true;
@@ -739,7 +739,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             return;
         }
 
-        var userSettings = zemUserSettings.getInstance($scope, 'adGroupContentAdsPlus');
+        var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
         var page = parseInt($location.search().page || '1');
         var size = parseInt($location.search().size || '0');
 
