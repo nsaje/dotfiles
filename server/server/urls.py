@@ -361,7 +361,11 @@ urlpatterns += patterns(
         login_required(dash.views.export_plus.ExportAllowed.as_view())
     ),
     url(
-        r'^api/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))/(?P<id_>\d+)/by_source/export_plus/allowed/',
+        r'^api/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))/(?P<id_>\d+)/sources/export_plus/allowed/',
+        login_required(dash.views.export_plus.SourcesExportAllowed.as_view())
+    ),
+    url(
+        r'^api/(?P<level_>(all_accounts))/sources/export_plus/allowed/',
         login_required(dash.views.export_plus.SourcesExportAllowed.as_view())
     ),
     url(
@@ -389,7 +393,7 @@ urlpatterns += patterns(
         login_required(dash.views.export_plus.AccountSourcesExport.as_view())
     ),
     url(
-        r'^api/all_accounts//sources/export_plus/',
+        r'^api/all_accounts/sources/export_plus/',
         login_required(dash.views.export_plus.AllAccountsSourcesExport.as_view())
     ),
     url(

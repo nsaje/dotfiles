@@ -96,7 +96,7 @@ class ExportPlusTestCase(test.TestCase):
 
         mock_query.return_value = mock_stats
 
-        dimensions = ['ad_group', 'content_ad']
+        dimensions = ['ad_group', 'content_ad', 'source']
         start_date = datetime.date(2014, 6, 30)
         end_date = datetime.date(2014, 7, 2)
         user = User.objects.get(id=1)
