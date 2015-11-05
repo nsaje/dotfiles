@@ -1100,7 +1100,7 @@ class AdGroupSourcesTest(TestCase):
 
         ad_group_source = models.AdGroupSource.objects.get(id=3)
         ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC
         ]
         ad_group_source.source.source_type.save()
 

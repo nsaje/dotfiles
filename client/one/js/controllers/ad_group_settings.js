@@ -38,20 +38,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         }
     };
 
-    var setSourcesWithoutDMASupport = function(adGroupSources) {
-        $scope.sourcesWithoutDMASupport = [];
-        if(!adGroupSources) {
-            return;
-        }
-        
-        for (var source, i=0; i < adGroupSources.length; i++) {
-            source = adGroupSources[i];
-            if (source.sourceState === constants.adGroupSourceSettingsState.ACTIVE && !source.supportsDMATargeting) {
-                $scope.sourcesWithoutDMASupport.push(source.sourceName);
-            }
-        }
-    };
-
     var getAdGroupStatus = function (settings) {
         var now = new Date(),
             running0 = settings.state === constants.adGroupSettingsState.ACTIVE,
@@ -85,7 +71,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
             function (data) {
                 $scope.settings = data.settings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
-                setSourcesWithoutDMASupport(data.adGroupSources);
                 $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
                 freshSettings.resolve(data.settings.name == 'New ad group');
                 goToContentAds = data.settings.name == 'New ad group';
@@ -108,7 +93,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
             function (data) {
                 $scope.settings = data.settings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
-                setSourcesWithoutDMASupport(data.adGroupSources);
                 $scope.saveRequestInProgress = false;
                 $scope.discarded = true;
             },

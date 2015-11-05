@@ -55,8 +55,7 @@ class AdGroupSettings(api_common.BaseApiView):
             ad_group_sources.append({
                 'id': source_state.ad_group_source.id,
                 'source_state': source_state.state,
-                'source_name': source_state.ad_group_source.source.name,
-                'supports_dma_targeting': source_state.ad_group_source.source.source_type.supports_dma_targeting()
+                'source_name': source_state.ad_group_source.source.name
             })
 
         settings = ad_group.get_current_settings()
