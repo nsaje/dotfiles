@@ -1183,5 +1183,3 @@ class ScheduledReportLevel(ConstantBase):
         CAMPAIGN: 'Campaign',
         AD_GROUP: 'Ad Group'
     }
-=======
->>>>>>> master
