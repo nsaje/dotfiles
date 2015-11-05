@@ -33,7 +33,6 @@ dependencies:
 
 test:
     pre:
-        - 'sudo apt-get upgrade google-chrome-stable'
         - 'python manage.py collectstatic --noinput':
             pwd: server
             parallel: true
