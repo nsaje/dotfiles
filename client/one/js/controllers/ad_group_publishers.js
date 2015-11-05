@@ -334,6 +334,12 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.selectedAll
         ).then(function () {
             getTableData();
+
+            // clear publisher selection
+            $scope.selectionMenuConfig.partialSelection = false;
+            $scope.selectedAll = false;
+            $scope.selectedPublisherStatus = {};
+            $scope.clearPublisherSelection();
         });
     };
 
