@@ -14,6 +14,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.forms.models import model_to_dict
+from django.core.validators import validate_email
 
 
 import utils.string_helper
@@ -1975,16 +1976,30 @@ class ScheduledReport(models.Model):
             return constants.ScheduledReportLevel.AD_GROUP
         return constants.ScheduledReportLevel.ALL_ACCOUNTS
 
-    def get_email_list(self):
-        return [recipient.email for recipient in self.recipients.all()]
-
     def get_filtered_sources(self):
         import dash.views.helpers
         return dash.views.helpers.get_filtered_sources(self.created_by, self.filtered_sources)
 
-    #TODO Vsi validationi, add email, remove email funkcije, v emailih naredi da sta report|email unique
+    def get_email_list(self):
+        return [recipient.email for recipient in self.recipients.all()]
+
+    def add_recipient_email(self, email_address):
+        validate_email(email_address)
+        if self.recipients.filter(email=email_address).count() < 1:
+            self.recipients.create(email=email_address)
+
+    def remove_recipient_email(self, email_address):
+        self.recipients.filter(email__exact=email_address).delete()
+
+    def set_recipient_emails_list(self, email_list):
+        self.recipients.all().delete()
+        for email in email_list:
+            self.add_recipient_email(email)
 
 
 class ScheduledReportRecipient(models.Model):
     report = models.ForeignKey(ScheduledReport, related_name='recipients')
     email = models.EmailField()
+
+    class Meta:
+        unique_together = ('report', 'email')
