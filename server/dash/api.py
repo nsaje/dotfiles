@@ -11,6 +11,7 @@ import actionlog.api
 import actionlog.api_contentads
 import actionlog.models
 import actionlog.constants
+import dash.models
 import utils.exc
 from utils import redirector_helper
 from utils import email_helper
