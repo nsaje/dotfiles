@@ -945,11 +945,13 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
 
 CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
-                        ['url', 'url'],
-                        ['title', 'title'],
-                        ['image_url', 'image_url'],
-                        ['description', 'description (optional)'],
-                    ])
+    ['url', 'url'],
+    ['title', 'title'],
+    ['image_url', 'image_url'],
+    ['description', 'description (optional)'],
+    ['tracker_urls', 'tracker url (optional)']
+])
+
 
 class AdGroupContentAdCSV(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
@@ -962,7 +964,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
         except exc.MissingDataError, e:
             email = request.user.email
             if email == settings.DEMO_USER_EMAIL or email in settings.DEMO_USERS:
-                content_ad_dicts = [{ 'url': '', 'title': '', 'image_url': '', 'description': ''}]
+                content_ad_dicts = [{'url': '', 'title': '', 'image_url': '', 'description': ''}]
                 content = self._create_content_ad_csv(content_ad_dicts)
                 return self.create_csv_response('contentads', content=content)
             raise e
@@ -995,6 +997,9 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 'description': content_ad.description,
                 'call_to_action': content_ad.call_to_action,
             }
+
+            if content_ad.tracker_urls:
+                content_ad_dict['tracker_urls'] = ' '.join(content_ad.tracker_urls)
 
             # delete keys that are not to be exported
             for k in content_ad_dict.keys():
@@ -1127,6 +1132,31 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
             with transaction.atomic():
                 new_settings.save(request)
+
+                tracking_code_source_cache = {}
+                for publisher in publisher_blacklist:
+                    # store blacklisted publishers and push to other sources
+                    existing_entry = models.PublisherBlacklist.objects.filter(
+                        name=publisher['domain'],
+                        ad_group=ad_group,
+                        source__tracking_slug=publisher['tracking_slug']
+                    ).first()
+                    if existing_entry is not None:
+                        existing_entry.status = constants.PublisherStatus.PENDING
+                        existing_entry.save()
+                    else:
+                        tracking_slug = publisher['tracking_slug']
+                        if tracking_slug not in tracking_code_source_cache:
+                            tracking_code_source_cache[tracking_slug] =\
+                                models.Source.objects.get(tracking_slug=tracking_slug)
+
+                        models.PublisherBlacklist.objects.create(
+                            name=publisher['domain'],
+                            ad_group=ad_group,
+                            source=tracking_code_source_cache[tracking_slug],
+                            status=constants.PublisherStatus.PENDING
+                        )
+
                 actionlogs_to_send.extend(
                     api.create_ad_group_publisher_blacklist_actions(
                         ad_group,

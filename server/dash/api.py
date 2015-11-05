@@ -105,21 +105,23 @@ def update_ad_group_source_state(ad_group_source, conf):
                         models.PublisherBlacklist(
                             name=pub_blacklist['domain'],
                             ad_group=ad_group,
-                            source=source_cache[source_slug]
+                            source=source_cache[source_slug],
+                            status=dash.constants.PublisherStatus.BLACKLISTED
                         )
                     )
                 state = val['state']
+
+                query_set = models.PublisherBlacklist.objects.none()
+                for pub_blacklist in blacklist_list:
+                    query_set = query_set | models.PublisherBlacklist.objects.filter(
+                        name=pub_blacklist.name,
+                        ad_group=pub_blacklist.ad_group,
+                        source=pub_blacklist.source
+                    )
+                query_set.delete()
+
                 if state == constants.PublisherStatus.BLACKLISTED:
                     models.PublisherBlacklist.objects.bulk_create(blacklist_list)
-                elif state == constants.PublisherStatus.ENABLED:
-                    query_set = models.PublisherBlacklist.objects.none()
-                    for pub_blacklist in blacklist_list:
-                        query_set = query_set | models.PublisherBlacklist.objects.filter(
-                            name=pub_blacklist.name,
-                            ad_group=pub_blacklist.ad_group,
-                            source=pub_blacklist.source
-                        )
-                    query_set.delete()
                 else:
                     raise Exception("Not implemented")
         new_state.save()
