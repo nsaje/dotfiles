@@ -109,6 +109,11 @@ def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], orde
                 ad_group=blacklist_entry ['adgroup_id']
             )
         constraints_list = [rsq]
+    else:
+        if breakdown_fields:
+            return []
+        else:
+            return {}
 
     return query(start_date, end_date,
         breakdown_fields=breakdown_fields,

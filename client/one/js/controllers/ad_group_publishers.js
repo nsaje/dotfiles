@@ -18,9 +18,12 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.pagination = {
         currentPage: 1
     };
+    // this will be set to true whenever blacklisted and not blacklisted
+    // publishers have been manually selected
+    $scope.mixedBlacklistEnabledSelection = false;
 
 
-    var userSettings = zemUserSettings.getInstance($scope, 'adGroupPublishers');
+    var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
     $scope.selectionMenuConfig = {};
     // selection settings - all or specific publishers can be selected
@@ -50,15 +53,34 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         };
 
         var numSelected = 0,
-            numNotSelected = 0;
+            numNotSelected = 0,
+            countBlacklistedSelected = 0,
+            countNonBlacklistedSelected = 0;
 
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
             if ($scope.selectedPublisherStatus[publisherId].checked) {
                 numSelected += 1;
+
             } else {
                 numNotSelected += 1;
             }
         });
+
+        $scope.rows.forEach(function (currentRow) {
+            if (currentRow.publisher_selected) {
+                if (currentRow.blacklisted === 'Blacklisted') {
+                    countBlacklistedSelected += 1
+                } else if (currentRow.blacklisted === 'Active') {
+                    countNonBlacklistedSelected += 1
+                }
+            }
+        });
+
+        if (countBlacklistedSelected > 0 && countNonBlacklistedSelected > 0) {
+            $scope.mixedBlacklistEnabledSelection = true;
+        } else {
+            $scope.mixedBlacklistEnabledSelection = false;
+        }
 
         if ($scope.selectedAll) {
             $scope.selectionMenuConfig.partialSelection = numNotSelected > 0;
@@ -97,6 +119,10 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     };
 
     $scope.isAnythingSelected = function() {
+        if ($scope.mixedBlacklistEnabledSelection) {
+            return false;
+        }
+
         if ($scope.selectedAll) {
             return true;
         }
@@ -308,6 +334,12 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.selectedAll
         ).then(function () {
             getTableData();
+
+            // clear publisher selection
+            $scope.selectionMenuConfig.partialSelection = false;
+            $scope.selectedAll = false;
+            $scope.selectedPublisherStatus = {};
+            $scope.clearPublisherSelection();
         });
     };
 

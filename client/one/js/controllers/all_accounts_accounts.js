@@ -20,7 +20,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
     $scope.localStoragePrefix = 'allAccountsAccounts';
 
-    var userSettings = zemUserSettings.getInstance($scope, 'allAccountsAccounts');
+    var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
     $scope.exportOptions = [
         {name: 'By Day (CSV)', value: 'csv'},

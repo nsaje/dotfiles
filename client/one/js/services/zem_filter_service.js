@@ -25,7 +25,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
 
         if ('zemauth.can_see_publishers' in user.permissions) {
-            blacklistedPublisherFilter = $location.search().show_blacklisted_publishers || false;
+            blacklistedPublisherFilter = $location.search().show_blacklisted_publishers || null;
         }
     }
 
@@ -49,7 +49,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         if (blacklistedPublisherFilter) {
             $location.search('show_blacklisted_publishers', blacklistedPublisherFilter);
         } else {
-            $location.search('show_blacklisted_publishers', false);
+            $location.search('show_blacklisted_publishers', null);
         }
     }
 
@@ -65,6 +65,14 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
 
         return false;
+    }
+
+    function isArchivedFilterOn() {
+        return showArchived;
+    }
+
+    function isPublisherBlacklistFilterOn () {
+        return blacklistedPublisherFilter !== null && blacklistedPublisherFilter !== 'all';
     }
 
     function isSourceFilterOn () {
@@ -100,6 +108,9 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
 
         setFilteredSourcesLocation();
         setShowArchivedLocation();
+
+        blacklistedPublisherFilter = null;
+        setBlacklistedPublishers(null);
     }
 
     function getShowArchived() {
@@ -130,6 +141,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
 
     return {
         init: init,
+        isArchivedFilterOn: isArchivedFilterOn,
         getShowArchived: getShowArchived,
         setShowArchived: setShowArchived,
         getFilteredSources: getFilteredSources,
@@ -139,6 +151,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         exclusivelyFilterSource: exclusivelyFilterSource,
         removeFilteredSource: removeFilteredSource,
         removeFiltering: removeFiltering,
+        isPublisherBlacklistFilterOn: isPublisherBlacklistFilterOn,
         getBlacklistedPublishers: getBlacklistedPublishers,
         setBlacklistedPublishers: setBlacklistedPublishers,
         getShowBlacklistedPublishers: getShowBlacklistedPublishers,
