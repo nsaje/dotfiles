@@ -2,6 +2,9 @@
 "use strict";
 
 oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, zemFilterService) {
+    function processResponse(resp) {
+        return resp.data.success ? resp.data.data : null;
+    }
     function addFilteredSources(params) {
         if (zemFilterService.getFilteredSources().length > 0) {
             params.filtered_sources = zemFilterService.getFilteredSources().join(',');
@@ -2500,6 +2503,119 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         return notifications;
     }
 
+
+    function AccountCredit() {
+        function convertFromApi(obj) {
+            return {
+                createdBy: obj.created_by,
+                createdOn: obj.created_on && moment(obj.created_on).format('MM/DD/YYYY'),
+                startDate: obj.start_date && moment(obj.start_date).format('MM/DD/YYYY'),
+                endDate: obj.end_date && moment(obj.end_date).format('MM/DD/YYYY'),
+                isSigned: obj.is_signed,
+                licenseFee: obj.license_fee,
+                total: obj.total,
+                allocated: obj.allocated,
+                available: obj.available,
+                amount: obj.amount,
+                budgets: obj.budgets,
+                numOfBudgets: (obj.budgets || []).length,
+                id: obj.id
+            };
+        }
+        function convertToApi(obj) {
+            return {
+                start_date: obj.startDate && moment(obj.startDate).format('YYYY-MM-DD'),
+                end_date: obj.endDate && moment(obj.endDate).format('YYYY-MM-DD'),
+                amount: obj.amount,
+                license_fee: obj.licenseFee,
+                comment: obj.comment
+            };
+        }
+        
+        this.list = function (accountId) {
+            var url = '/api/accounts/' + accountId + '/credit/';
+            return $http.get(url).then(processResponse).then(function (data) {
+                if (data === null) { return null; }
+                return {
+                    active: data.active.map(convertFromApi),
+                    past: data.past.map(convertFromApi),
+                    totals: data.totals
+                };
+            });
+        };
+
+        this.create = function (accountId, item) {
+            var url = '/api/accounts/' + accountId + '/credit/';
+            return $http.put(url, convertToApi(item)).then(processResponse).then(function (data) {
+                if (data === null) { return null; }
+                return {
+                    active: data.active.map(convertFromApi),
+                    past: data.past.map(convertFromApi),
+                    totals: data.totals
+                };
+            });
+        };
+        
+        this.save = function (accountId, item) {
+            var url = '/api/accounts/' + accountId + '/credit/' + item.id + '/';
+            return $http.post(url, convertToApi(item)).then(processResponse);
+        };
+
+        this.get = function (accountId, itemId) {
+            var url = '/api/accounts/' + accountId + '/credit/' + itemId + '/';
+            return $http.get(url).then(processResponse).then(convertFromApi);
+        };
+
+        this.delete = function (accountId, itemId) {
+            var url = '/api/accounts/' + accountId + '/credit/' + itemId + '/';
+            return $http.delete(url).then(processResponse).then(convertFromApi);
+        };
+    }
+
+    function CampaignBudgetPlus() {
+        function convertFromApi(obj) { return obj; }
+        function convertToApi(obj) { return obj; }
+        
+        this.list = function (campignId) {
+            var url = '/api/campigns/' + campignId + '/budget-plus/';
+            return $http.get(url).then(processResponse).then(function (data) {
+                if (data === null) { return null; }
+                return {
+                    active: data.active.map(convertFromApi),
+                    past: data.past.map(convertFromApi),
+                    totals: {
+                        currentAvailable: data.totals.current.available,
+                        currentUnallocated: data.totals.current.unallocated,
+                        lifetimeCampaignSpend: data.lifetime.campaign_spend,
+                        lifetimeMediaSpend: data.lifetime.media_spend,
+                        lifetimeDataSpend: data.lifetime.data_spend,
+                        lifetimeLicenseFee: data.lifetime.license_fee
+                    }
+                };
+            });
+        };
+
+        this.create = function (campignId, budget) {
+            var url = '/api/campigns/' + campignId + '/budget-plus/';
+            return $http.put(url, convertToApi(budget)).then(processResponse);
+        };
+        
+        this.save = function (campignId, budget) {
+            var url = '/api/campigns/' + campignId + '/budget-plus/' + budget.id + '/';
+            return $http.post(url, convertToApi(budget)).then(processResponse);
+        };
+
+        this.get = function (campignId, budgetId) {
+            var url = '/api/campigns/' + campignId + '/budget-plus/' + budgetId + '/';
+            return $http.get(url).then(processResponse).then(convertFromApi);
+        };
+
+        this.delete = function (campignId, budgetId) {
+            var url = '/api/campigns/' + campignId + '/budget-plus/' + budgetId + '/';
+            return $http.delete(url).then(processResponse).then(convertFromApi);
+        };
+    }
+
     return {
         navData: new NavData(),
         user: new User(),
@@ -2547,7 +2663,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         conversionPixel: new ConversionPixel(),
         conversionGoal: new ConversionGoal(),
         adGroupContentAdState: new AdGroupContentAdState(),
-        adGroupContentAdArchive: new AdGroupContentAdArchive()
+        adGroupContentAdArchive: new AdGroupContentAdArchive(),
+        accountCredit: new AccountCredit(),
+        campaignBudgetPlus: new CampaignBudgetPlus()
         // Also, don't forget to add me to DEMO!
     };
 }]);

@@ -16,6 +16,7 @@ import convapi.views
 import reports.views
 
 import dash.views.daily_stats
+import dash.views.insertion_orders
 import dash.views.export
 import dash.views.sync
 import dash.views.table
@@ -348,6 +349,22 @@ urlpatterns += patterns(
     url(
         r'^api/accounts/$',
         login_required(dash.views.views.Account.as_view()),
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/credit/(?P<credit_id>\d+)/',
+        login_required(dash.views.insertion_orders.AccountCreditItemView.as_view())
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/credit/',
+        login_required(dash.views.insertion_orders.AccountCreditView.as_view())
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/(?P<budget_id>\d+)/',
+        login_required(dash.views.insertion_orders.CampaignBudgetItemView.as_view())
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/',
+        login_required(dash.views.insertion_orders.CampaignBudgetView.as_view())
     ),
     url(r'^api/nav_data$', login_required(dash.views.views.NavigationDataView.as_view())),
     url(

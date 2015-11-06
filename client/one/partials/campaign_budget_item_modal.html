@@ -15,6 +15,7 @@
 				</label><br />
 				<select id="credit-input" ng-model="budget.credit" size="5" class="no-dropdown" ng-options="credit.name for credit in credits track by credit.id">
 				</select>
+				<label ng-repeat="error in errors.credit" class="control-label error" for="credit-input">{{ error }}</label>
 			</div>
 		</div>
 		

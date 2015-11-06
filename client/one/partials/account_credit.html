@@ -2,20 +2,21 @@
 	<div class="section description">
 		<p>Account credit is the basis of allocating any budget to any campaign.</p>
 		<p>Valid credit items are used by campaign budget items in the order they are listed.</p>
-	</div>
-	
-	<div class="section named-data">
-		<div class="name">Total Account Value</div>
-		<div class="value">$40,000</div>
-		<div class="name bottomborder">Allocated To Budget Items</div>
-		<div class="value bottomborder">$30,100</div>
-		<div class="name">Available Account Credit</div>
-		<div class="value">$9,900</div>
-	</div>
-	
-	<div class="section active-credits">
-		<div class="title">Active Credit Items</div>
 
+		<div class="loader" ng-show="loadingInProgress"></div>
+	</div>
+
+	<div class="section named-data" ng-show="!loadingInProgress">
+		<div class="name">Total Account Value</div>
+		<div class="value">{{ creditTotals.total | decimalCurrency:"$":2 }}</div>
+		<div class="name bottomborder">Allocated To Budget Items</div>
+		<div class="value bottomborder">{{ creditTotals.allocated | decimalCurrency:"$":2  }}</div>
+		<div class="name">Available Account Credit</div>
+		<div class="value">{{ creditTotals.available | decimalCurrency:"$":2  }}</div>
+	</div>
+	
+	<div class="section active-credits" ng-show="!loadingInProgress">
+		<div class="title">Active Credit Items</div>
 		<table>
 			<thead>
 				<tr>
@@ -31,58 +32,33 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr>
-					<td>Boštjan<br />9/9/2015</td>
-					<td>10/1/2015</td>
-					<td>12/31/2015</td>
-					<td>yes</td>
-					<td>0%</td>
-					<td>$10,000</td>
-					<td>$10,000 (3 budget items)</td>
-					<td>$0</td>
+				<tr ng-repeat="item in activeCredit">
+					<td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
+					<td>{{ item.startDate }}</td>
+					<td>{{ item.endDate }}</td>
+					<td>{{ item.isSigned ? 'yes' : 'no' }}</td>
+					<td>{{ item.licenseFee  }}</td>
+					<td>{{ item.total | decimalCurrency:"$":2  }}</td>
+					<td>
+						{{ item.allocated | decimalCurrency:"$":2  }} ({{ item.numOfBudgets }} budget
+						<ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
+					</td>
+					<td>{{ item.available | decimalCurrency:"$":2  }}</td>
 					<td>
 						<ul class="row-actions">
-							<li>edit</li>
+							<li ng-click="editCreditItem(item.id)">edit</li>
 						</ul>
 					</td>
 				</tr>
-				<tr>
-					<td>Boštjan<br />9/9/2015</td>
-					<td>11/1/2015</td>
-					<td>12/31/2015</td>
-					<td>yes</td>
-					<td>0%</td>
-					<td>$15,000</td>
-					<td>$0 (0 budget items)</td>
-					<td>$15,000</td>
-					<td>
-						<ul class="row-actions">
-							<li>edit</li>
-						</ul>
-					</td>
-				</tr>
-				<tr>
-					<td>Boštjan<br />9/9/2015</td>
-					<td>1/1/2016</td>
-					<td>31/1/2016</td>
-					<td>no</td>
-					<td>0%</td>
-					<td>$15,000</td>
-					<td>$0 (0 budget items)</td>
-					<td>$15,000</td>
-					<td>
-						<ul class="row-actions">
-							<li>edit</li>
-						</ul>
-					</td>
+				<tr ng-show="!activeCredit.length" class="message">
+					<td colspan="9">No active credit items.</td>
 				</tr>
 			</tbody>
 		</table>
 		<button type="button" class="btn btn-default" ng-click="addCreditItem()">Add Credit Item</button>
 	</div>
-	<div class="section active-credits">
+	<div class="section active-credits" ng-show="!loadingInProgress">
 		<div class="title">Depleted Credit Items</div>
-
 		<table>
 			<thead>
 				<tr>
@@ -98,36 +74,27 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr>
-					<td>Boštjan<br />9/9/2015</td>
-					<td>11/1/2015</td>
-					<td>12/31/2015</td>
-					<td>yes</td>
-					<td>0%</td>
-					<td>$10,000</td>
-					<td>$10,000 (3 budget items)</td>
-					<td>$0</td>
+				<tr ng-repeat="item in pastCredit">
+					<td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
+					<td>{{ item.startDate }}</td>
+					<td>{{ item.endDate }}</td>
+					<td>{{ item.isSigned ? 'yes' : 'no' }}</td>
+					<td>{{ item.licenseFee }}</td>
+					<td>{{ item.total | decimalCurrency:"$":2  }}</td>
+					<td>
+						{{ item.allocated | decimalCurrency:"$":2  }} ({{ item.numOfBudgets }} budget
+						<ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
+					</td>
+					<td>{{ item.available | decimalCurrency:"$":2  }}</td>
 					<td>
 						<ul class="row-actions">
-							<li>edit</li>
+							<li ng-click="editCreditItem(item.id)">edit</li>
 						</ul>
 					</td>
-				</tr>
-				<tr>
-					<td>Boštjan<br />9/9/2015</td>
-					<td>1/1/2016</td>
-					<td>31/1/2016</td>
-					<td>no</td>
-					<td>0%</td>
-					<td>$15,000</td>
-					<td>$5,000 (1 budget item)</td>
-					<td>$0</td>
-					<td>
-						<ul class="row-actions">
-							<li>edit</li>
-						</ul>
-					</td>
-				</tr>				
+				</tr>	
+				<tr ng-show="!pastCredit.length" class="message">
+					<td colspan="9">No past credit items.</td>
+				</tr>			
 			</tbody>
 		</table>
 	</div>

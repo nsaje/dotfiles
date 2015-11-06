@@ -1,9 +1,10 @@
 <div class="modal-body modal-page">
 	<h3 ng-if="isNew">New Credit Item</h3>
 	<h3 ng-if="!isNew">Edit Credit Item</h3>
-	<form id="form-account-credit-item" class="form-horizontal" ng-class="{ 'new': isNew, 'edit': !isNew }">
+	<div class="loader" ng-show="isLoadingInProgress"></div>
+	<form id="form-account-credit-item" class="form-horizontal" ng-class="{ 'new': isNew, 'edit': !isNew }" ng-show="!isLoadingInProgress">
 		<div class="form-group" ng-if="!isNew">
-			<label class="col-xs-8">Created by {{ credit.createdBy.name }} on {{ credit.createdDt }} }}</label>
+			<label class="col-xs-8">Created by {{ creditItem.createdBy }} on {{ creditItem.createdOn }}</label>
 		</div>
 		<div class="form-group" ng-if="isNew">
 			<label class="col-xs-8">Created by {{ user.name }} on {{ today }}</label>
@@ -13,7 +14,7 @@
                 Valid from
             </label>
             <div class="col-xs-4">
-                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="credit.startDate" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')">
+                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.startDate" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')" ng-disabled="!isNew">
             </div>
             <label ng-repeat="error in errors.startDate" class="control-label error" for="start-date-input">{{ error }}</label>
         </div>
@@ -22,7 +23,7 @@
                 Valid To
             </label>
             <div class="col-xs-4">
-                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="settings.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
+                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
             </div>
             <label ng-repeat="error in errors.endDate" class="control-label error" for="end-date-input">{{ error }}</label>
         </div>
@@ -31,10 +32,10 @@
                 Variable License Fee
             </label>
             <div class="col-xs-4">
-                <ui-select theme="select2" id="license-fee-select" class="form-control" ng-model="credit.licenseFee">
-                    <ui-select-match>{{$select.selected}}%</ui-select-match>
+                <ui-select theme="select2" id="license-fee-select" class="form-control" ng-model="creditItem.licenseFee" ng-disabled="!isNew">
+                    <ui-select-match>{{$select.selected}}</ui-select-match>
                     <ui-select-choices repeat="fee in getLicenseFees($select.search) | filter: $select.search">
-                        <span ng-bind-html="fee"></span>%
+                        <span ng-bind-html="fee"></span>
                     </ui-select-choices>
                 </ui-select>
             </div>
@@ -48,7 +49,7 @@
             <div class="col-xs-4">
 				<div class="input-group">
 					<span class="input-group-addon">$</span>
-					<input id="amount-input" type="text" class="form-control" ng-model="credit.amount" zem-currency-input>
+					<input id="amount-input" type="text" class="form-control" ng-model="creditItem.amount" ng-disabled="!isNew">
 				</div>
             </div>
 
@@ -59,16 +60,19 @@
                 Custom Notes
             </label>
             <div class="col-xs-4">
-                <textarea id="comment-input" type="text" class="form-control" ng-model="credit.comment"></textarea>
+                <textarea id="comment-input" type="text" class="form-control" ng-model="creditItem.comment" ng-disabled="!isNew"></textarea>
             </div>
             <label ng-repeat="error in errors.comment" class="control-label error" for="comment">{{ error }}</label>
 		</div>
 		<div class="form-group">
 			<div class="col-xs-4">
-				<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+				<button type="button" class="btn btn-primary" ng-click="saveCreditItem()">Save</button>
 			</div>
 			<div class="col-xs-4">
-				<button type="button" class="btn btn-default" ng-click="discardSettings()">Discard</button>
+				<button type="button" class="btn btn-default" ng-click="discardCreditItem()">Discard</button>
+			</div>
+			<div class="col-xs-4" ng-if="canDelete">
+				<button type="button" class="btn btn-danger" ng-click="deleteCreditItem()">Delete</button>
 			</div>
 		</div>
 		

@@ -1648,6 +1648,10 @@ div[datepicker] {
 }
 
 .page.page-section,.modal-page { /* step to the new tabless design */
+	h3 {
+		margin: 0 0 10px 0;
+	}
+	
     .description {
         font-size: 15px;
     }
@@ -1667,6 +1671,7 @@ div[datepicker] {
             font-weight: 600;
             margin: 0;
             padding: 2px 0;
+			text-align: left;
         }
 
         .value {
@@ -1674,6 +1679,7 @@ div[datepicker] {
             width: 20%;
             margin: 0;
             padding: 2px 0;
+			text-align: right;
         }
         
 
@@ -1730,10 +1736,16 @@ div[datepicker] {
                     text-decoration: underline;
                 }
             }
+			
             &.outline {
                 font-weight: 900 !important;
             }
         }
+		
+		tr.message td {
+			text-align: center;
+			width: 100%;
+		}
     }
     .scrollable {
         display: block;

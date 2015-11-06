@@ -243,7 +243,7 @@ class CreditsTestCase(TestCase):
         c.save()
 
     def test_form(self):
-        credit_form = forms.CreditLineItemForm({
+        credit_form = forms.NewCreditLineItemForm({
             'account': 2,
             'start_date': str(TODAY - datetime.timedelta(10)),
             'end_date': str(TODAY + datetime.timedelta(10)),
@@ -255,7 +255,7 @@ class CreditsTestCase(TestCase):
         self.assertFalse(credit_form.is_valid())
         self.assertTrue(credit_form.errors)
 
-        credit_form = forms.CreditLineItemForm({
+        credit_form = forms.NewCreditLineItemForm({
             'account': 2,
             'start_date': str(TODAY + datetime.timedelta(1)),
             'end_date': str(TODAY + datetime.timedelta(10)),
@@ -267,7 +267,7 @@ class CreditsTestCase(TestCase):
         self.assertTrue(credit_form.is_valid())
         self.assertFalse(credit_form.errors)
 
-        credit_form = forms.CreditLineItemForm({
+        credit_form = forms.NewCreditLineItemForm({
             'account': 2,
             'start_date': str(TODAY + datetime.timedelta(1)),
             'end_date': str(TODAY + datetime.timedelta(10)),
@@ -280,7 +280,7 @@ class CreditsTestCase(TestCase):
         self.assertTrue(credit_form.errors)
 
         # Check if model validation is triggered
-        credit_form = forms.CreditLineItemForm({
+        credit_form = forms.NewCreditLineItemForm({
             'account': 2,
             'start_date': str(TODAY + datetime.timedelta(1)),
             'end_date': str(TODAY + datetime.timedelta(10)),
@@ -388,8 +388,8 @@ class BudgetsTestCase(TestCase):
                 campaign_id=1,
             )
         self.assertFalse('amount' in err.exception.error_dict)
-        self.assertTrue('start_date' in err.exception.error_dict)
-        self.assertFalse('end_date' in err.exception.error_dict)
+        self.assertFalse('start_date' in err.exception.error_dict)
+        self.assertTrue('end_date' in err.exception.error_dict)
         self.assertTrue('credit' in err.exception.error_dict)
 
         with self.assertRaises(ValidationError) as err:
@@ -458,7 +458,7 @@ class BudgetsTestCase(TestCase):
             campaign_id=1,
         )
 
-        self.assertEqual(c.get_total_credit_amount(), 900)
+        self.assertEqual(c.get_allocated_amount(), 900)
 
         with self.assertRaises(ValidationError) as err:
             create_budget(
@@ -478,7 +478,7 @@ class BudgetsTestCase(TestCase):
             end_date=TODAY+datetime.timedelta(8),
             campaign_id=1,
         )
-        self.assertEqual(c.get_total_credit_amount(), 1000)
+        self.assertEqual(c.get_allocated_amount(), 1000)
             
 
     def test_editing_inactive(self):

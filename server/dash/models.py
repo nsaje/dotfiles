@@ -1739,10 +1739,15 @@ class CreditLineItem(FootprintModel):
     def is_active(self, date=None):
         if date is None:
             date = dates_helper.local_today()
-        return self.status == constants.CreditLineItem.SIGNED and \
+        return self.status == constants.CreditLineItemStatus.SIGNED and \
             (self.start_date <= date <= self.end_date)
 
-    def get_total_credit_amount(self):
+    def is_past(self, date=None):
+        if date is None:
+            date = dates_helper.local_today()
+        return self.end_date <= date
+
+    def get_allocated_amount(self):
         return sum(b.amount for b in self.budgets.all())
 
     def cancel(self):
@@ -1780,7 +1785,6 @@ class CreditLineItem(FootprintModel):
             raise ValidationError('Nonpending credit line item cannot change.')
 
         validate(
-            self.validate_start_date,
             self.validate_end_date,
             self.validate_license_fee,
             self.validate_status,
@@ -1795,17 +1799,14 @@ class CreditLineItem(FootprintModel):
             raise ValidationError('Credit line item status cannot change when credit has budgets allocated.')
         if self.status == s.PENDING:
             raise ValidationError('Credit line item status cannot change to PENDING.')
-            
-        
-    def validate_start_date(self):
-        if not self.start_date:
-            return
-        if self.start_date > self.end_date:
-            raise ValidationError('Start date cannot be greater than the end date.')
 
     def validate_end_date(self):
+        if not self.end_date:
+            return
         if self.has_changed('end_date') and self.previous_value('end_date') > self.end_date:
             raise ValidationError('New end date cannot be less than the previous.')
+        if self.start_date and self.start_date > self.end_date:
+            raise ValidationError('Start date cannot be greater than the end date.')
         
     def validate_license_fee(self):
         if not self.license_fee:
@@ -1893,8 +1894,6 @@ class BudgetLineItem(FootprintModel):
     def validate_start_date(self):
         if not self.start_date:
             return
-        if self.start_date > self.end_date:
-            raise ValidationError('Start date cannot be bigger than the end date.')
         if self.start_date < self.credit.start_date:
             raise ValidationError('Start date cannot be smaller than the credit\'s start date.')
 
@@ -1903,6 +1902,8 @@ class BudgetLineItem(FootprintModel):
             return
         if self.end_date > self.credit.end_date:
             raise ValidationError('End date cannot be bigger than the credit\'s end date.')
+        if self.start_date and self.start_date > self.end_date:
+            raise ValidationError('Start date cannot be bigger than the end date.')
         
     def validate_amount(self):
         if not self.amount:

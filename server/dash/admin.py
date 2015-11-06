@@ -977,10 +977,11 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'status',
         'license_fee',
         'created_dt',
+        'created_by',
     )
 
     readonly_fields = ('created_dt', 'created_by',)
-    form = dash_forms.BudgetLineItemForm
+    form = dash_forms.CreditLineItemForm
     
 
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
