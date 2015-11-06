@@ -234,6 +234,77 @@ def create_campaign_callback(ad_group_source, source_campaign_key, request):
     ad_group_source.save(request)
 
 
+def refresh_publisher_blacklist(ad_group_source, request):
+    actions = []
+    # copy blacklisting information on account and campaign level
+    campaign = ad_group_source.ad_group.campaign
+    currentCampaignBlacklist = dash.models.PublisherBlacklist.objects.filter(
+        source=ad_group_source.source,
+        everywhere=False,
+        account=None,
+        campaign=campaign,
+        ad_group=None,
+        status=dash.constants.PublisherStatus.BLACKLISTED
+    )
+    campaignBlacklistedPublishers = []
+    for blacklistEntry in currentCampaignBlacklist:
+        # setup pending entries
+        # create and send blacklist actions
+        campaignBlacklistedPublishers.append({
+            'domain': blacklistEntry.name,
+            'exchange': ad_group_source.source.tracking_slug.replace('b1_', ''),
+        })
+
+    key = [campaign.id]
+    actions.extend(
+        actionlog.api.set_publisher_blacklist(
+            key,
+            dash.constants.PublisherBlacklistLevel.CAMPAIGN,
+            dash.constants.PublisherStatus.BLACKLISTED,
+            campaignBlacklistedPublishers,
+            request,
+            ad_group_source.source.source_type,
+            send=False
+        )
+    )
+
+    account = campaign.account
+    currentAccountBlacklist = dash.models.PublisherBlacklist.objects.filter(
+        source=ad_group_source.source,
+        everywhere=False,
+        account=account,
+        campaign=campaign,
+        ad_group=None,
+        status=dash.constants.PublisherStatus.BLACKLISTED
+    )
+
+    accountBlacklistedPublishers = []
+    for blacklistEntry in currentCampaignBlacklist:
+        # setup pending entries
+        # create and send blacklist actions
+        accountBlacklistedPublishers.append({
+            'domain': blacklistEntry.name,
+            'exchange': ad_group_source.source.tracking_slug.replace('b1_', ''),
+        })
+
+    key = [ad_group_source.ad_group.campaign.account.id]
+    if ad_group_source.source.source_type == constants.SourceType.OUTBRAIN:
+        key.append(campaign.account.outbrain_marketer_id)
+
+    actions.extend(
+        actionlog.api.set_publisher_blacklist(
+            key,
+            dash.constants.PublisherBlacklistLevel.ACCOUNT,
+            dash.constants.PublisherStatus.BLACKLISTED,
+            accountBlacklistedPublishers,
+            request,
+            ad_group_source.source.source_type,
+            send=False
+        )
+    )
+    return actions
+
+
 def order_additional_updates_after_campaign_creation(ad_group_source, request):
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
     source = ad_group_source.source
@@ -259,6 +330,11 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
     settings_changes = cons.get_needed_state_updates()
     if settings_changes:
         actionlog.api.set_ad_group_source_settings(settings_changes, ad_group_source, request=request, send=True)
+
+    # copy all currently blacklisted entries on campaign creation
+    actionlogs_to_send = refresh_publisher_blacklist(ad_group_source, request)
+    if actionlogs_to_send != []:
+        actionlog.zwei_actions.send(actionlogs_to_send)
 
 
 def insert_content_ad_callback(

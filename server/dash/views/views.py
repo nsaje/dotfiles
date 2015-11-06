@@ -1071,7 +1071,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             )
 
         # update with pending statuses
-
         publishers_to_add = set([])
         if level in (constants.PublisherBlacklistLevel.ADGROUP,
                      constants.PublisherBlacklistLevel.CAMPAIGN,

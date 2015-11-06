@@ -1247,7 +1247,6 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
         publisher_blacklist = models.PublisherBlacklist.objects.first()
-        print publisher_blacklist
         self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
         self.assertEqual(1, publisher_blacklist.ad_group.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
