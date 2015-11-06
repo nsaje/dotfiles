@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='contentad',
             name='crop_areas',
-            field=models.CharField(max_length=64, null=True),
+            field=models.CharField(max_length=128, null=True),
         ),
     ]
