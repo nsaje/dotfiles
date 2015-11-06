@@ -51,13 +51,12 @@ class CrossvalidationViewTest(TestCase):
         response = self.client.get(reverse('api.crossvalidation'), data={'start_date': '2015-11-05', 'end_date': '2015-11-05'})
 
         mock_verify_wsgi_request.assert_called_with(response.wsgi_request, 'test_api_key')
-        mock_contentads_query.assert_called_with(
-            date(2015,11,05),
-            date(2015,11,05),
-            breakdown=['content_ad', 'source', 'ad_group'],
-            source__eq=[2,1],
-            ad_group__neq=[3],
-        )
+
+        self.assertEqual(mock_contentads_query.call_args[0][0], date(2015,11,05))
+        self.assertEqual(mock_contentads_query.call_args[0][1], date(2015,11,05))
+        self.assertItemsEqual(mock_contentads_query.call_args[1]['breakdown'], ['content_ad', 'source', 'ad_group'])
+        self.assertItemsEqual(mock_contentads_query.call_args[1]['source__eq'], [1,2])
+        self.assertItemsEqual(mock_contentads_query.call_args[1]['ad_group__neq'], [3])
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content), {
