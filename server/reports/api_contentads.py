@@ -263,3 +263,13 @@ def get_day_cost(day, breakdown=None, **constraints):
         **constraints
     )
     return rs
+
+
+def remove_contentadstats(content_ad_ids):
+    """
+    Completely removes stats for selected content ads
+    """
+
+    cursor = redshift.get_cursor()
+    RSContentAdStats.execute_delete(cursor, {'content_ad': content_ad_ids})
+    cursor.close()
