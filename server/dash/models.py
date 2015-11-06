@@ -19,7 +19,7 @@ from django.forms.models import model_to_dict
 import utils.string_helper
 
 from dash import constants
-from dash import regions
+from dash import region_targeting_helper
 import reports.constants
 from utils import encryption_helpers
 from utils import statsd_helper
@@ -645,17 +645,40 @@ class SourceType(models.Model):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_MODIFY_DEVICE_TARGETING in self.available_actions
 
-    def can_modify_dma_targeting_automatic(self):
-        return self.available_actions is not None and\
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC in self.available_actions
+    def can_modify_targeting_for_region_type_automatically(self, region_type):
+        if self.available_actions is None:
+            return False
+        elif region_type == constants.RegionType.COUNTRY:
+            return constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING in self.available_actions
+        elif region_type == constants.RegionType.SUBDIVISION:
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC in self.available_actions
+        elif region_type == constants.RegionType.DMA:
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC in self.available_actions
 
-    def can_modify_dma_targeting_manual(self):
-        return self.available_actions is not None and\
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL in self.available_actions
+    def can_modify_targeting_for_region_type_manually(self, region_type):
+        ''' Assume automatic targeting support implies manual targeting support
 
-    def can_modify_country_targeting(self):
-        return self.available_actions is not None and\
-            constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING in self.available_actions
+            This addresses the following situation: Imagine targeting
+            GB (country) and 693 (DMA) and a SourceType that supports automatic
+            DMA targeting and manual country targeting.
+
+            Automatically setting the targeting would be impossible because
+            the SourceType does not support modifying country targeting
+            automatically.
+
+            Manually setting the targeting would also be impossible because
+            the SourceType does not support modifying DMA targeting manually.
+            '''
+        if self.can_modify_targeting_for_region_type_automatically(region_type):
+            return True
+        if region_type == constants.RegionType.COUNTRY:
+            return True
+        elif self.available_actions is None:
+            return False
+        elif region_type == constants.RegionType.SUBDIVISION:
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL in self.available_actions
+        elif region_type == constants.RegionType.DMA:
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL in self.available_actions
 
     def can_modify_tracking_codes(self):
         return self.available_actions is not None and\
@@ -677,8 +700,10 @@ class SourceType(models.Model):
         return self.available_actions is not None and\
             constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS in self.available_actions
 
-    def supports_dma_targeting(self):
-        return self.can_modify_dma_targeting_manual() or self.can_modify_dma_targeting_automatic()
+    def supports_targeting_region_type(self, region_type):
+        return\
+            self.can_modify_targeting_for_region_type_automatically(region_type) or\
+            self.can_modify_targeting_for_region_type_manually(region_type)
 
     def can_fetch_report_by_publisher(self):
         return self.available_actions is not None and\
@@ -759,14 +784,11 @@ class Source(models.Model):
     def can_modify_device_targeting(self):
         return self.source_type.can_modify_device_targeting() and not self.maintenance and not self.deprecated
 
-    def can_modify_dma_targeting_automatic(self):
-        return self.source_type.can_modify_dma_targeting_automatic() and not self.maintenance and not self.deprecated
+    def can_modify_targeting_for_region_type_automatically(self, region_type):
+        return self.source_type.can_modify_targeting_for_region_type_automatically(region_type)
 
-    def can_modify_dma_targeting_manual(self):
-        return self.source_type.can_modify_dma_targeting_manual() and not self.maintenance and not self.deprecated
-
-    def can_modify_country_targeting(self):
-        return self.source_type.can_modify_country_targeting() and not self.maintenance and not self.deprecated
+    def can_modify_targeting_for_region_type_manually(self, region_type):
+        return self.source_type.can_modify_targeting_for_region_type_manually(region_type)
 
     def can_modify_tracking_codes(self):
         return self.source_type.can_modify_tracking_codes() and not self.maintenance and not self.deprecated
@@ -1190,11 +1212,20 @@ class AdGroupSettings(SettingsBase):
         dt += datetime.timedelta(days=1)
         return dt
 
-    def targets_dma(self):
-        return any(tr in regions.DMA_BY_CODE for tr in self.target_regions) if self.target_regions else False
+    def targets_region_type(self, region_type):
+        regions = region_targeting_helper.get_list_for_region_type(region_type)
 
-    def targets_countries(self):
-        return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions) if self.target_regions else False
+        return any(target_region in regions for target_region in self.target_regions or [])
+
+    def get_targets_for_region_type(self, region_type):
+        regions_of_type = region_targeting_helper.get_list_for_region_type(region_type)
+
+        return [target_region for target_region in self.target_regions or [] if target_region in regions_of_type]
+
+    def get_target_names_for_region_type(self, region_type):
+        regions_of_type = region_targeting_helper.get_list_for_region_type(region_type)
+
+        return [regions_of_type[target_region] for target_region in self.target_regions or [] if target_region in regions_of_type]
 
     def is_mobile_only(self):
         return self.target_devices and len(self.target_devices) == 1 and constants.AdTargetDevice.MOBILE in self.target_devices

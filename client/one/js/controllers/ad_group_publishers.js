@@ -23,7 +23,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.mixedBlacklistEnabledSelection = false;
 
 
-    var userSettings = zemUserSettings.getInstance($scope, 'adGroupPublishers');
+    var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
     $scope.selectionMenuConfig = {};
     // selection settings - all or specific publishers can be selected
@@ -334,6 +334,12 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.selectedAll
         ).then(function () {
             getTableData();
+
+            // clear publisher selection
+            $scope.selectionMenuConfig.partialSelection = false;
+            $scope.selectedAll = false;
+            $scope.selectedPublisherStatus = {};
+            $scope.clearPublisherSelection();
         });
     };
 
