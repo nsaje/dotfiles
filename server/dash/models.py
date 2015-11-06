@@ -1738,7 +1738,7 @@ class PublisherBlacklist(models.Model):
     everywhere = models.BooleanField(default=False)
     account = models.ForeignKey(Account, null=True, related_name='account', on_delete=models.PROTECT)
     campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
-    ad_group = models.ForeignKey(AdGroup, null=False, related_name='ad_group', on_delete=models.PROTECT)
+    ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
     source = models.ForeignKey(Source, null=False, on_delete=models.PROTECT)
 
     status = models.IntegerField(

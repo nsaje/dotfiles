@@ -1070,6 +1070,8 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 constraints=constraints
             )
 
+        # update with pending statuses
+
         publishers_to_add = set([])
         if level in (constants.PublisherBlacklistLevel.ADGROUP,
                      constants.PublisherBlacklistLevel.CAMPAIGN,
@@ -1087,6 +1089,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 ad_group,
                 publishers + publishers_selected,
                 state,
+                level,
                 existing_blacklisted_publishers,
                 ignored_publishers,
             )
@@ -1136,6 +1139,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                     )
                 )
             actionlog.zwei_actions.send(actionlogs_to_send)
+            self._add_to_history(request, ad_group, state, global_blacklist)
 
         if len(publisher_blacklist) > 0:
             actionlogs_to_send = []
@@ -1151,14 +1155,14 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                     )
                 )
             actionlog.zwei_actions.send(actionlogs_to_send)
-        self._add_to_history(request, ad_group, state, publisher_blacklist)
-        self._add_to_history(request, ad_group, state, global_blacklist)
+            self._add_to_history(request, ad_group, state, publisher_blacklist)
+
         response = {
             "success": True,
         }
         return self.create_api_response(response)
 
-    def _create_adgroup_blacklist(self, ad_group, publishers, state, existing_blacklisted_publishers, ignored_publishers):
+    def _create_adgroup_blacklist(self, ad_group, publishers, state, level, existing_blacklisted_publishers, ignored_publishers):
         adgroup_blacklist = set([])
         source_cache = {}
         failed_publisher_mappings = set([])
@@ -1187,9 +1191,42 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                     state == constants.PublisherStatus.BLACKLISTED:
                 continue
 
-            if publisher_tuple not in existing_blacklisted_publishers and\
-                    state == constants.PublisherStatus.ENABLED:
-                continue
+            blacklist_global = False
+            blacklist_account = None
+            blacklist_campaign = None
+            blacklist_ad_group = None
+
+            if level == constants.PublisherBlacklistLevel.GLOBAL:
+                blacklist_global = True
+            if level == constants.PublisherBlacklistLevel.ACCOUNT:
+                blacklist_account = ad_group.campaign.account
+            if level == constants.PublisherBlacklistLevel.CAMPAIGN:
+                blacklist_campaign = ad_group.campaign
+            if level == constants.PublisherBlacklistLevel.ADGROUP:
+                blacklist_ad_group = ad_group
+
+            # store blacklisted publishers and push to other sources
+            existing_entry = models.PublisherBlacklist.objects.filter(
+                name=publisher['domain'],
+                source=source_cache[norm_source_slug],
+                everywhere=blacklist_global,
+                account=blacklist_account,
+                campaign=blacklist_campaign,
+                ad_group=blacklist_ad_group
+            ).first()
+            if existing_entry is not None:
+                existing_entry.status = constants.PublisherStatus.PENDING
+                existing_entry.save()
+            else:
+                models.PublisherBlacklist.objects.create(
+                    name=publisher['domain'],
+                    everywhere=blacklist_global,
+                    account=blacklist_account,
+                    campaign=blacklist_campaign,
+                    ad_group=blacklist_ad_group,
+                    source=source_cache[norm_source_slug],
+                    status=constants.PublisherStatus.PENDING
+                )
 
             if publisher_tuple in ignored_publishers:
                 continue
