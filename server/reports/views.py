@@ -2,15 +2,13 @@ import datetime
 import json
 import logging
 
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-
 from django.conf import settings
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 import newrelic.agent
 
 from utils import request_signer
-
 import reports.api_contentads
 import dash.models
 
