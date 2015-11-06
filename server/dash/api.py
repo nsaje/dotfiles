@@ -391,6 +391,11 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         changed = False
 
+        # TODO: should it only be updated when it is None?
+        if data.get('source_content_ad_id'):
+            content_ad_source.source_content_ad_id = str(data['source_content_ad_id'])
+            changed = True
+
         if data['state'] != content_ad_source.source_state:
             content_ad_source.source_state = data['state']
             changed = True
