@@ -317,7 +317,7 @@ def _clean_title(title):
 
 
 def _clean_crop_areas(crop_string):
-    if not crop_string:
+    if crop_string is None or crop_string.strip() == '':
         # crop areas are optional, so return None
         # if they are not provided
         return None
