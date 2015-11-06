@@ -245,7 +245,7 @@ def _clean_url(url, ad_group):
 
 
 def _clean_tracker_urls(tracker_urls_string):
-    if tracker_urls_string is None:
+    if tracker_urls_string is None or tracker_urls_string.strip() == '':
         return None
 
     tracker_urls = tracker_urls_string.strip().split(' ')
