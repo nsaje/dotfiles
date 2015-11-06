@@ -235,8 +235,15 @@ def create_campaign_callback(ad_group_source, source_campaign_key, request):
 
 
 def refresh_publisher_blacklist(ad_group_source, request):
-    actions = []
     # copy blacklisting information on account and campaign level
+    if not ad_group_source.source.can_modify_publisher_blacklist_automatically():
+        return []
+
+    actions = []
+
+    # Outbrain supports only account level blacklists which means
+    # they won't even be created at first and won't be attempted to be copied
+    # here
     campaign = ad_group_source.ad_group.campaign
     currentCampaignBlacklist = dash.models.PublisherBlacklist.objects.filter(
         source=ad_group_source.source,
