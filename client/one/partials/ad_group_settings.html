@@ -73,9 +73,9 @@
                     <zem-help-popover content="The devices on which your content ads should be shown." placement="top"></zem-help-popover>
                 </label>
                 <div class="col"
-			 zem-tutorial-popover-condition-promise="adGroupHasFreshSettings()"
-             zem-tutorial-popover="Set targeting and save"
-			 zem-tutorial-popover-placement="right">
+                    zem-tutorial-popover-condition-promise="adGroupHasFreshSettings()"
+                    zem-tutorial-popover="Set targeting and save"
+                    zem-tutorial-popover-placement="right">
                     <div class="checkbox" ng-repeat='device in settings.targetDevices'>
                         <label>
                             <input type="checkbox" ng-model="device.checked"> {{ device.name }}
@@ -119,7 +119,7 @@
                 </label>
 
                 <div class="col-xs-6 col-md-4">
-                    <zem-locations zem-selected-location-codes="settings.targetRegions" zem-sources-without-dma-support="sourcesWithoutDMASupport"></zem-locations>
+                    <zem-locations zem-selected-location-codes="settings.targetRegions" zem-has-permission="hasPermission"></zem-locations>
                 </div>
 
                 <label ng-repeat="error in errors.targetRegions" class="control-label error">{{ error }}</label>

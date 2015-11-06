@@ -826,8 +826,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 sources.push({
                     id: source.id,
                     sourceState: source.source_state,
-                    sourceName: source.source_name,
-                    supportsDMATargeting: source.supports_dma_targeting
+                    sourceName: source.source_name
                 });
             }
 
