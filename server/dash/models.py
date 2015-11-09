@@ -2000,7 +2000,7 @@ class ScheduledReport(models.Model):
 
     order_by = models.CharField(max_length=20, null=True, blank=True)
     additional_fields = models.CharField(max_length=500, null=True, blank=True)
-    filtered_sources = models.CharField(max_length=500, null=True, blank=True)
+    filtered_sources = models.ManyToManyField(Source)
 
     @property
     def level(self):
@@ -2011,10 +2011,6 @@ class ScheduledReport(models.Model):
         elif self.ad_group:
             return constants.ScheduledReportLevel.AD_GROUP
         return constants.ScheduledReportLevel.ALL_ACCOUNTS
-
-    def get_filtered_sources(self):
-        import dash.views.helpers
-        return dash.views.helpers.get_filtered_sources(self.created_by, self.filtered_sources)
 
     def add_recipient_email(self, email_address):
         validate_email(email_address)
