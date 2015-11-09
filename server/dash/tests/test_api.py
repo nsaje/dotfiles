@@ -1118,7 +1118,14 @@ class UpdateAdGroupSourceState(TestCase):
         self.assertEqual(new_latest_state.cpc_cc, latest_state.cpc_cc)
         self.assertEqual(new_latest_state.daily_budget_cc, latest_state.daily_budget_cc)
 
+
+class PublisherCallbackTest(TransactionTestCase):
+    fixtures = ['test_api.yaml']
+
     def test_update_publisher_blacklist(self):
+
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+
         args = {
             'key': [1],
             'level': dash.constants.PublisherBlacklistLevel.ADGROUP,
@@ -1138,13 +1145,13 @@ class UpdateAdGroupSourceState(TestCase):
         self.assertEqual(2, allblacklist.count())
 
         first_blacklist = allblacklist[0]
-        self.assertEqual(self.ad_group_source.ad_group.id, first_blacklist.ad_group.id)
+        self.assertEqual(ad_group_source.ad_group.id, first_blacklist.ad_group.id)
         self.assertEqual('zemanta.com', first_blacklist.name)
         self.assertEqual('b1_adiant', first_blacklist.source.tracking_slug)
         self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, first_blacklist.status)
 
         second_blacklist = allblacklist[1]
-        self.assertEqual(self.ad_group_source.ad_group.id, second_blacklist.ad_group.id)
+        self.assertEqual(ad_group_source.ad_group.id, second_blacklist.ad_group.id)
         self.assertEqual('b1_sharethrough', second_blacklist.source.tracking_slug)
         self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, second_blacklist.status)
 
@@ -1309,6 +1316,26 @@ class UpdateAdGroupSourceState(TestCase):
         self.assertIsNone(allblacklist[0].account)
         self.assertTrue(allblacklist[0].everywhere)
 
+    def test_refresh_publisher_blacklist_rtb(self):
+        # blacklisting on higher level overrides lower level blacklist
+        # adgroup < campaign < account < global
+        ad_group = models.AdGroup.objects.get(pk=1)
+        adiant = models.Source.objects.get(tracking_slug='b1_adiant')
+        models.PublisherBlacklist.objects.create(
+            name='zemanta.com',
+            campaign=ad_group.campaign,
+            source=adiant,
+            status=dash.constants.PublisherStatus.BLACKLISTED
+        )
+
+        adgs = dash.models.AdGroupSource.objects.filter(
+            ad_group=ad_group,
+            source=adiant
+        ).first()
+        api.refresh_publisher_blacklist(adgs, None)
+
+        actions = actionlog.models.ActionLog.objects.all()
+        self.assertEqual(1, actions.count())
 
 
 class AdGroupSourceSettingsWriterTest(TestCase):
