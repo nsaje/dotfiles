@@ -64,7 +64,11 @@ def update_touchpoint_conversions(date_cp_pairs):
     pool.close()
     pool.join()
 
-    result.get()  # raises an exception if one of the workers raised one
+    try:
+        result.get()  # raises an exception if one of the workers raised one
+    except:
+        logger.exception('exception updating touchpoint conversions')
+        raise
 
 
 @statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
