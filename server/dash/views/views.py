@@ -1184,16 +1184,15 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 continue
 
             blacklist_global = False
-            blacklist_account = None
-            blacklist_campaign = None
-            blacklist_ad_group = None
-
             if level == constants.PublisherBlacklistLevel.GLOBAL:
                 blacklist_global = True
+            blacklist_account = None
             if level == constants.PublisherBlacklistLevel.ACCOUNT:
                 blacklist_account = ad_group.campaign.account
+            blacklist_campaign = None
             if level == constants.PublisherBlacklistLevel.CAMPAIGN:
                 blacklist_campaign = ad_group.campaign
+            blacklist_ad_group = None
             if level == constants.PublisherBlacklistLevel.ADGROUP:
                 blacklist_ad_group = ad_group
 
