@@ -1079,10 +1079,21 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         if level in (constants.PublisherBlacklistLevel.ADGROUP,
                      constants.PublisherBlacklistLevel.CAMPAIGN,
                      constants.PublisherBlacklistLevel.ACCOUNT,):
+            ad_group_filter = None
+            if level == constants.PublisherBlacklistLevel.ADGROUP:
+                ad_group_filter = ad_group
+            campaign_filter = None
+            if level == constants.PublisherBlacklistLevel.CAMPAIGN:
+                campaign_filter = ad_group.campaign
+            account_filter = None
+            if level == constants.PublisherBlacklistLevel.ACCOUNT:
+                account_filter = ad_group.campaign.account
 
             existing_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
                 everywhere=False,
-                ad_group=ad_group
+                account=account_filter,
+                campaign=campaign_filter,
+                ad_group=ad_group_filter
             ).values('name', 'ad_group__id', 'source__tracking_slug')
 
             existing_blacklisted_publishers = map(
