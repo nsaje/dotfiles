@@ -453,24 +453,23 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     });
 
     var setDisabledExportOptions = function() {
-      if($scope.hasPermission('zemauth.exports_plus')){
-        api.exportPlusAllowed.get(0, 'all_accounts').then(
-            function(data) {
-                var option = null;
-                $scope.exportPlusOptions.forEach(function(opt) {
-                  if (opt.value === 'view-csv') {
-                    opt.disabled = !data.view
-                  }else if (opt.value === 'contentad-csv') {
-                    opt.disabled = !data.content_ad
-                  }else if (opt.value === 'adgroup-csv') {
-                    opt.disabled = !data.ad_group
-                  }else if (opt.value === 'campaign-csv') {
-                    opt.disabled = !data.campaign
-                  }
-                });
-            }
-        );
-      }
+        if ($scope.hasPermission('zemauth.exports_plus')) {
+            api.exportPlusAllowed.get(0, 'all_accounts').then(
+                function (data) {
+                    $scope.exportPlusOptions.forEach(function (opt) {
+                        if (opt.value === constants.exportType.VIEW) {
+                            opt.disabled = !data.view;
+                        } else if (opt.value === constants.exportType.CONTENT_AD) {
+                            opt.disabled = !data.content_ad;
+                        } else if (opt.value === constants.exportType.AD_GROUP) {
+                            opt.disabled = !data.ad_group;
+                        } else if (opt.value === constants.exportType.CAMPAIGN) {
+                            opt.disabled = !data.campaign;
+                        }
+                    });
+                }
+             );
+        }
     };
 
     $scope.init();

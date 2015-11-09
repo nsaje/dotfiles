@@ -16,7 +16,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
     $scope.sources = [];
-    $scope.exportBaseUrlLevel = '';
     $scope.exportOptions = [];
 
     var userSettings = null;
@@ -87,10 +86,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             });
         }
     };
-
-    $scope.getExportBaseUrlLevel = function () {
-      return constants.level.ALL_ACCOUNTS
-    }
 
     $scope.columns = [
         {
@@ -603,25 +598,25 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var setDisabledExportOptions = function() {
-      if($scope.hasPermission('zemauth.exports_plus')){
-        api.sourcesExportPlusAllowed.get($state.params.id, $scope.level).then(
+        if ($scope.hasPermission('zemauth.exports_plus')) {
+            api.sourcesExportPlusAllowed.get($state.params.id, $scope.level).then(
             function(data) {
-                $scope.exportPlusOptions.forEach(function(opt) {
-                  if (opt.value === 'view-csv') {
-                    opt.disabled = !data.view
-                  }else if (opt.value === 'account-csv') {
-                    opt.disabled = !data.account
-                  }else if (opt.value === 'adgroup-csv') {
-                    opt.disabled = !data.ad_group
-                  }else if (opt.value === 'campaign-csv') {
-                    opt.disabled = !data.campaign
-                  }else if(opt.value === 'contentad-csv') {
-                    opt.disabled = !data.content_ad
-                  }
+                $scope.exportPlusOptions.forEach(function (opt) {
+                    if (opt.value === constants.exportType.VIEW) {
+                        opt.disabled = !data.view;
+                    } else if (opt.value === constants.exportType.ACCOUNT) {
+                        opt.disabled = !data.account;
+                    } else if (opt.value === constants.exportType.AD_GROUP) {
+                        opt.disabled = !data.ad_group;
+                    } else if (opt.value === constants.exportType.CAMPAIGN) {
+                        opt.disabled = !data.campaign;
+                    } else if(opt.value === constants.exportType.CONTENT_AD) {
+                        opt.disabled = !data.content_ad;
+                    }
                 });
-            }
-        );
-      }
+              }
+          );
+        }
     };
 
     init();
