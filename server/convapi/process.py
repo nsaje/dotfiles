@@ -102,6 +102,12 @@ def process_touchpoint_conversions(redirects_impressions):
             impression_id = redirect_impression['impressionId']
             impression_ts = datetime.datetime.strptime(redirect_impression['impressionTimestamp'], '%Y-%m-%dT%H:%M:%SZ')
 
+            if content_ad_id == 0:  # legacy simple redirect
+                continue
+
+            if source_slug == 'z1':  # source slug from dashboard visits
+                continue
+
             if redirect_ts > impression_ts:
                 continue
 
@@ -122,16 +128,14 @@ def process_touchpoint_conversions(redirects_impressions):
             try:
                 ca = dash.models.ContentAd.objects.select_related('ad_group__campaign').get(id=content_ad_id)
             except dash.models.ContentAd.DoesNotExist:
-                if content_ad_id != 0:  # unless legacy simple redirect
-                    logger.warning('Unknown content ad. content_ad_id=%s ad_group_id=%s source=%s',
-                                   content_ad_id, ad_group_id, source_slug)
+                logger.warning('Unknown content ad. content_ad_id=%s ad_group_id=%s source=%s',
+                               content_ad_id, ad_group_id, source_slug)
                 continue
 
             try:
                 source = dash.models.Source.objects.get(tracking_slug=source_slug)
             except dash.models.Source.DoesNotExist:
-                if source_slug != 'z1':  # unless source slug from dashboard visits
-                    logger.warning('Unknown source slug. source=%s', source_slug)
+                logger.warning('Unknown source slug. source=%s', source_slug)
                 continue
 
             if ca.ad_group.campaign.account_id != pixel.account_id:

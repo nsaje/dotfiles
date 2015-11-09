@@ -948,6 +948,7 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
     ['title', 'title'],
     ['image_url', 'image_url'],
     ['description', 'description (optional)'],
+    ['crop_areas', 'crop areas (optional)'],
     ['tracker_urls', 'tracker url (optional)']
 ])
 
@@ -996,6 +997,9 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 'description': content_ad.description,
                 'call_to_action': content_ad.call_to_action,
             }
+
+            if content_ad.crop_areas:
+                content_ad_dict['crop_areas'] = content_ad.crop_areas
 
             if content_ad.tracker_urls:
                 content_ad_dict['tracker_urls'] = ' '.join(content_ad.tracker_urls)
