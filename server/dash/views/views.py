@@ -1079,53 +1079,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         if level in (constants.PublisherBlacklistLevel.ADGROUP,
                      constants.PublisherBlacklistLevel.CAMPAIGN,
                      constants.PublisherBlacklistLevel.ACCOUNT,):
-            ad_group_filter = None
-            if level == constants.PublisherBlacklistLevel.ADGROUP:
-                ad_group_filter = ad_group
-            campaign_filter = None
-            if level == constants.PublisherBlacklistLevel.CAMPAIGN:
-                campaign_filter = ad_group.campaign
-            account_filter = None
-            if level == constants.PublisherBlacklistLevel.ACCOUNT:
-                account_filter = ad_group.campaign.account
-
-            existing_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
-                everywhere=False,
-                account=account_filter,
-                campaign=campaign_filter,
-                ad_group=ad_group_filter
-            ).values('name', 'ad_group__id', 'source__tracking_slug')
-
-            existing_blacklisted_publishers = map(
-                lambda pub: {
-                    'name': pub['name'],
-                    'ad_group_id': pub['ad_group__id'],
-                    'tracking_slug': pub['source__tracking_slug']
-                },
-                existing_blacklisted_publishers
-            )
-
-            ignored_publishers = set( [(pub['domain'], ad_group.id, pub['source'], )
-                for pub in publishers_not_selected]
-            )
-
-            publishers_to_add = self._create_adgroup_blacklist(
-                ad_group,
-                publishers + publishers_selected,
-                state,
-                level,
-                existing_blacklisted_publishers,
-                ignored_publishers,
-            )
-
-        publisher_blacklist = [
-            {
-                'domain': dom,
-                'ad_group_id': adgroup_id,
-                'source': source,
-            }\
-            for (dom, adgroup_id, source,) in publishers_to_add
-        ]
+            self._handle_adgroup_blacklist(request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected)
 
         global_publishers = []
         if level == constants.PublisherBlacklistLevel.GLOBAL:
@@ -1175,6 +1129,61 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             actionlog.zwei_actions.send(actionlogs_to_send)
             self._add_to_history(request, ad_group, state, global_blacklist)
 
+        response = {
+            "success": True,
+        }
+        return self.create_api_response(response)
+
+    def _handle_adgroup_blacklist(self, request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected):
+
+        ad_group_filter = None
+        if level == constants.PublisherBlacklistLevel.ADGROUP:
+            ad_group_filter = ad_group
+        campaign_filter = None
+        if level == constants.PublisherBlacklistLevel.CAMPAIGN:
+            campaign_filter = ad_group.campaign
+        account_filter = None
+        if level == constants.PublisherBlacklistLevel.ACCOUNT:
+            account_filter = ad_group.campaign.account
+
+        existing_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
+            everywhere=False,
+            account=account_filter,
+            campaign=campaign_filter,
+            ad_group=ad_group_filter
+        ).values('name', 'ad_group__id', 'source__tracking_slug')
+
+        existing_blacklisted_publishers = map(
+            lambda pub: {
+                'name': pub['name'],
+                'ad_group_id': pub['ad_group__id'],
+                'tracking_slug': pub['source__tracking_slug']
+            },
+            existing_blacklisted_publishers
+        )
+
+        ignored_publishers = set( [(pub['domain'], ad_group.id, pub['source'], )
+            for pub in publishers_not_selected]
+        )
+
+        publishers_to_add = self._create_adgroup_blacklist(
+            ad_group,
+            publishers + publishers_selected,
+            state,
+            level,
+            existing_blacklisted_publishers,
+            ignored_publishers,
+        )
+
+        publisher_blacklist = [
+            {
+                'domain': dom,
+                'ad_group_id': adgroup_id,
+                'source': source,
+            }\
+            for (dom, adgroup_id, source,) in publishers_to_add
+        ]
+
         if len(publisher_blacklist) > 0:
             actionlogs_to_send = []
             with transaction.atomic():
@@ -1191,10 +1200,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             actionlog.zwei_actions.send(actionlogs_to_send)
             self._add_to_history(request, ad_group, state, publisher_blacklist)
 
-        response = {
-            "success": True,
-        }
-        return self.create_api_response(response)
 
     def _create_adgroup_blacklist(self, ad_group, publishers, state, level, existing_blacklisted_publishers, ignored_publishers):
         adgroup_blacklist = set([])
