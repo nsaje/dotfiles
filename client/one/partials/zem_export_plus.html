@@ -1,8 +1,20 @@
-<select ui-select2="config"
-        ng-model="exportType"
-        ng-change="downloadReport()"
-        data-placeholder="Download Report"
-        class="export">
-    <option value=""></option>
-    <option ng-repeat="option in options | filter:{hidden: '!true'}" value="{{option.value}}">{{option.name}}</option>
-</select>
+<ui-select config
+    theme="select2"
+    search-enabled="false"
+    ng-model="export.type"
+    ng-change="downloadReport($select.selected.value)"
+    class="export">
+    <ui-select-match placeholder="Download Report">Download Report</ui-select-match>
+    <ui-select-choices repeat="option in options | filter:{hidden: '!true'}" ui-disable-choice="option.disabled">
+      <div ng-if="option.disabled"
+           zem-lazy-popover-text="This report is not available for download due to the volume of content. Please contact your account manager for assistance."
+           zem-lazy-popover-placement="left"
+           zem-lazy-popover-animation-class="fade"
+           zem-lazy-popover-append-to-body="true">
+            {{option.name}}
+      </div>
+      <div ng-if="!option.disabled">
+            {{option.name}}
+      </div>
+    </ui-select-choices>
+</ui-select>
