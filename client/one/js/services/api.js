@@ -2141,9 +2141,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
         this.get = function (id_, level_) {
             var deferred = $q.defer();
-            var url = '/api/' + level_ + '/' + id_ + '/sources/export_plus/allowed/';
+            var url = '/api/' + level_ + '/' + id_ + '/sources/export_plus/allowed/?filtered_sources=' + zemFilterService.getFilteredSources().join(',');
             if (level_ == constants.level.ALL_ACCOUNTS) {
-              url = '/api/' + level_ + '/sources/export_plus/allowed/';
+              url = '/api/' + level_ + '/sources/export_plus/allowed/?filtered_sources=' + zemFilterService.getFilteredSources().join(',');
             }
 
             var config = {

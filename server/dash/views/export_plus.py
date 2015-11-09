@@ -45,7 +45,7 @@ class AccountCampaignsExport(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'accounts_campaigns_export_plus_get')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.exports_plus'):
-            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
+            raise exc.ForbiddenError(message='Not allowed')
         user = request.user
         account = helpers.get_account(user, account_id)
 
@@ -57,26 +57,21 @@ class AccountCampaignsExport(api_common.BaseApiView):
         order = request.GET.get('order') or 'name'
 
         if export_type == 'view-csv':
-            filename = '{0}_report_{1}_{2}'.format(
-                slugify.slugify(account.name),
-                start_date,
-                end_date
-            )
+            filename = 'report'
             content = export_plus.AccountCampaignsExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields)
         elif export_type == 'adgroup-csv':
-            filename = '{0}_-_by_ad_group_report_{1}_{2}'.format(
-                slugify.slugify(account.name),
-                start_date,
-                end_date
-            )
+            filename = '-_by_ad_group_report'
             content = export_plus.AccountCampaignsExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
         elif export_type == 'contentad-csv':
-            filename = '{0}_-_by_content_ad_report_{1}_{2}'.format(
-                slugify.slugify(account.name),
-                start_date,
-                end_date
-            )
+            filename = '-_by_content_ad_report'
             content = export_plus.AccountCampaignsExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
+
+        filename = '{0}_{1}_{2}_{3}'.format(
+            slugify.slugify(account.name),
+            filename,
+            start_date,
+            end_date
+        )
 
         return self.create_csv_response(filename, content=content)
 
@@ -85,7 +80,7 @@ class CampaignAdGroupsExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'campaigns_ad_groups_export_plus_get')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.exports_plus'):
-            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
+            raise exc.ForbiddenError(message='Not allowed')
         user = request.user
         campaign = helpers.get_campaign(user, campaign_id)
 
@@ -97,21 +92,19 @@ class CampaignAdGroupsExport(ExportApiView):
         order = request.GET.get('order') or 'name'
 
         if export_type == 'view-csv':
-            filename = '{0}_{1}_report_{2}_{3}'.format(
-                slugify.slugify(campaign.account.name),
-                slugify.slugify(campaign.name),
-                start_date,
-                end_date
-            )
+            filename = 'report'
             content = export_plus.CampaignAdGroupsExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields)
         elif export_type == 'contentad-csv':
-            filename = '{0}_{1}_-_by_content_ad_report_{2}_{3}'.format(
-                slugify.slugify(campaign.account.name),
-                slugify.slugify(campaign.name),
-                start_date,
-                end_date
-            )
+            filename = '-_by_content_ad_report'
             content = export_plus.CampaignAdGroupsExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
+
+        filename = '{0}_{1}_{2}_{3}_{4}'.format(
+            slugify.slugify(campaign.account.name),
+            slugify.slugify(campaign.name),
+            filename,
+            start_date,
+            end_date
+        )
 
         return self.create_csv_response(filename, content=content)
 
@@ -122,7 +115,7 @@ class ExportAllowed(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'export_plus_allowed_get')
     def get(self, request, id_, level_):
         if not request.user.has_perm('zemauth.exports_plus'):
-            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
+            raise exc.ForbiddenError(message='Not allowed')
         user = request.user
 
         if level_ == 'ad_groups':
@@ -132,24 +125,24 @@ class ExportAllowed(api_common.BaseApiView):
             })
         elif level_ == 'campaigns':
             campaign = helpers.get_campaign(user, id_)
-            ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+            ad_groups = models.AdGroup.objects.filter(campaign=campaign).exclude_archived()
             return self.create_api_response({
                 'view': ad_groups.count() <= self.MAX_ROWS,
                 'content_ad': models.ContentAd.objects.filter(ad_group=ad_groups).count() <= self.MAX_ROWS
             })
         elif level_ == 'accounts':
             account = helpers.get_account(user, id_)
-            campaigns = models.Campaign.objects.filter(account=account)
-            ad_groups = models.AdGroup.objects.filter(campaign=campaigns)
+            campaigns = models.Campaign.objects.filter(account=account).exclude_archived()
+            ad_groups = models.AdGroup.objects.filter(campaign=campaigns).exclude_archived()
             return self.create_api_response({
                 'view': campaigns.count() <= self.MAX_ROWS,
                 'ad_group': ad_groups.count() <= self.MAX_ROWS,
                 'content_ad': models.ContentAd.objects.filter(ad_group=ad_groups).count() <= self.MAX_ROWS
             })
         elif level_ == 'all_accounts':
-            accounts_num = models.Account.objects.all().filter_by_user(user).count()
-            campaigns_num = models.Campaign.objects.all().filter_by_user(user).count()
-            ad_groups_num = models.AdGroup.objects.all().filter_by_user(user).count()
+            accounts_num = models.Account.objects.all().filter_by_user(user).exclude_archived().count()
+            campaigns_num = models.Campaign.objects.all().filter_by_user(user).exclude_archived().count()
+            ad_groups_num = models.AdGroup.objects.all().filter_by_user(user).exclude_archived().count()
             return self.create_api_response({
                 'view': accounts_num <= self.MAX_ROWS,
                 'campaign': campaigns_num <= self.MAX_ROWS,
@@ -167,7 +160,7 @@ class SourcesExportAllowed(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'sources_export_plus_allowed_get')
     def get(self, request, level_, id_=None):
         if not request.user.has_perm('zemauth.exports_plus'):
-            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
+            raise exc.ForbiddenError(message='Not allowed')
         user = request.user
         filtered_sources_num = len(helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')))
         if level_ == 'ad_groups':
@@ -212,7 +205,7 @@ class AdGroupAdsPlusExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_ads_plus_export_plus_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.exports_plus'):
-            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
+            raise exc.ForbiddenError(message='Not allowed')
         user = request.user
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
@@ -239,7 +232,7 @@ class AllAccountsSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_sources_export_plus_get')
     def get(self, request):
         if not request.user.has_perm('zemauth.exports_plus'):
-            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
+            raise exc.ForbiddenError(message='Not allowed')
         user = request.user
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
@@ -249,29 +242,24 @@ class AllAccountsSourcesExport(ExportApiView):
         export_type = request.GET.get('type')
 
         if export_type == 'view-csv':
-            filename = 'ZemantaOne_media_source_report_{0}_{1}'.format(
-                start_date,
-                end_date
-            )
+            filename = 'ZemantaOne_media_source_report'
             content = export_plus.AllAccountsSourcesExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields,)
         elif export_type == 'account-csv':
-            filename = 'ZemantaOne_-_by_account_media_source_report_{0}_{1}'.format(
-                start_date,
-                end_date
-            )
+            filename = 'ZemantaOne_-_by_account_media_source_report'
             content = export_plus.AllAccountsSourcesExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='account')
         elif export_type == 'campaign-csv':
-            filename = 'ZemantaOne_-_by_campaign_media_source_report_{0}_{1}'.format(
-                start_date,
-                end_date
-            )
+            filename = 'ZemantaOne_-_by_campaign_media_source_report'
             content = export_plus.AllAccountsSourcesExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign')
         elif export_type == 'adgroup-csv':
-            filename = 'ZemantaOne_-_by_ad_group_media_source_report_{0}_{1}'.format(
-                start_date,
-                end_date
-            )
+            filename = 'ZemantaOne_-_by_ad_group_media_source_report'
             content = export_plus.AllAccountsSourcesExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
+
+        filename = '{0}_{1}_{2}'.format(
+            filename,
+            start_date,
+            end_date
+        )
+
         return self.create_csv_response(filename, content=content)
 
 
@@ -279,7 +267,7 @@ class AccountSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'account_sources_export_plus_get')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.exports_plus'):
-            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
+            raise exc.ForbiddenError(message='Not allowed')
         user = request.user
         account = helpers.get_account(user, account_id)
 
@@ -291,33 +279,24 @@ class AccountSourcesExport(ExportApiView):
         export_type = request.GET.get('type')
 
         if export_type == 'view-csv':
-            filename = '{0}_media_source_report_{1}_{2}'.format(
-                slugify.slugify(account.name),
-                start_date,
-                end_date
-            )
+            filename = 'media_source_report'
             content = export_plus.AccountSourcesExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields)
         elif export_type == 'campaign-csv':
-            filename = '{0}_-_by_campaign_media_source_report_{1}_{2}'.format(
-                slugify.slugify(account.name),
-                start_date,
-                end_date
-            )
+            filename = '-_by_campaign_media_source_report'
             content = export_plus.AccountSourcesExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign')
         elif export_type == 'adgroup-csv':
-            filename = '{0}_-_by_ad_group_media_source_report_{1}_{2}'.format(
-                slugify.slugify(account.name),
-                start_date,
-                end_date
-            )
+            filename = '-_by_ad_group_media_source_report'
             content = export_plus.AccountSourcesExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
         elif export_type == 'contentad-csv':
-            filename = '{0}_-_by_content_ad_media_source_report_{1}_{2}'.format(
-                slugify.slugify(account.name),
-                start_date,
-                end_date
-            )
+            filename = '-_by_content_ad_media_source_report'
             content = export_plus.AccountSourcesExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
+
+        filename = '{0}_{1}_{2}_{3}'.format(
+            slugify.slugify(account.name),
+            filename,
+            start_date,
+            end_date
+        )
 
         return self.create_csv_response(filename, content=content)
 
@@ -326,7 +305,7 @@ class CampaignSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'campaign_sources_export_plus_get')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.exports_plus'):
-            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
+            raise exc.ForbiddenError(message='Not allowed')
         user = request.user
         campaign = helpers.get_campaign(user, campaign_id)
 
@@ -338,29 +317,22 @@ class CampaignSourcesExport(ExportApiView):
         export_type = request.GET.get('type')
 
         if export_type == 'view-csv':
-            filename = '{0}_{1}_media_source_report_{2}_{3}'.format(
-                slugify.slugify(campaign.account.name),
-                slugify.slugify(campaign.name),
-                start_date,
-                end_date
-            )
+            filename = 'media_source_report'
             content = export_plus.CampaignSourcesExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields)
         elif export_type == 'adgroup-csv':
-            filename = '{0}_{1}_-_by_ad_group_media_source_report_{2}_{3}'.format(
-                slugify.slugify(campaign.account.name),
-                slugify.slugify(campaign.name),
-                start_date,
-                end_date
-            )
+            filename = '-_by_ad_group_media_source_report'
             content = export_plus.CampaignSourcesExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
         elif export_type == 'contentad-csv':
-            filename = '{0}_{1}_-_by_content_ad_media_source_report_{2}_{3}'.format(
-                slugify.slugify(campaign.account.name),
-                slugify.slugify(campaign.name),
-                start_date,
-                end_date
-            )
+            filename = '-_by_content_ad_media_source_report'
             content = export_plus.CampaignSourcesExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
+
+        filename = '{0}_{1}_{2}_{3}_{4}'.format(
+            slugify.slugify(campaign.account.name),
+            slugify.slugify(campaign.name),
+            filename,
+            start_date,
+            end_date
+        )
 
         return self.create_csv_response(filename, content=content)
 
@@ -369,7 +341,7 @@ class AdGroupSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_sources_export_plus_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.exports_plus'):
-            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
+            raise exc.ForbiddenError(message='Not allowed')
         user = request.user
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
@@ -381,23 +353,21 @@ class AdGroupSourcesExport(ExportApiView):
         export_type = request.GET.get('type')
 
         if export_type == 'view-csv':
-            filename = '{0}_{1}_{2}_media_source_report_{3}_{4}'.format(
-                slugify.slugify(ad_group.campaign.account.name),
-                slugify.slugify(ad_group.campaign.name),
-                slugify.slugify(ad_group.name),
-                start_date,
-                end_date
-            )
+            filename = 'media_source_report'
             content = export_plus.AdGroupSourcesExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields)
         elif export_type == 'contentad-csv':
-            filename = '{0}_{1}_{2}_-_by_content_ad_media_source_report_{3}_{4}'.format(
-                slugify.slugify(ad_group.campaign.account.name),
-                slugify.slugify(ad_group.campaign.name),
-                slugify.slugify(ad_group.name),
-                start_date,
-                end_date
-            )
+            filename = '-_by_content_ad_media_source_report'
             content = export_plus.AdGroupSourcesExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
+
+        filename = '{0}_{1}_{2}_{3}_{4}_{5}'.format(
+            slugify.slugify(ad_group.campaign.account.name),
+            slugify.slugify(ad_group.campaign.name),
+            slugify.slugify(ad_group.name),
+            filename,
+            start_date,
+            end_date
+        )
+
         return self.create_csv_response(filename, content=content)
 
 
@@ -405,7 +375,7 @@ class AllAccountsExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_export_plus_get')
     def get(self, request):
         if not request.user.has_perm('zemauth.exports_plus'):
-            return self.get_exception_response(request, exc.ForbiddenError(message='Not allowed'))
+            raise exc.ForbiddenError(message='Not allowed')
         user = request.user
 
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
@@ -416,13 +386,15 @@ class AllAccountsExport(ExportApiView):
         export_type = request.GET.get('type')
 
         if export_type == 'view-csv':
-            filename = 'ZemantaOne_report_{0}_{1}'.format(start_date, end_date)
+            filename = 'ZemantaOne_report'
             content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields)
         elif export_type == 'campaign-csv':
-            filename = 'ZemantaOne_-_by_campaign_report_{0}_{1}'.format(start_date, end_date)
+            filename = 'ZemantaOne_-_by_campaign_report'
             content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign')
         elif export_type == 'adgroup-csv':
-            filename = 'ZemantaOne_-_by_ad_group_report_{0}_{1}'.format(start_date, end_date)
+            filename = 'ZemantaOne_-_by_ad_group_report'
             content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
+
+        filename = '{0}_{1}_{2}'.format(filename, start_date, end_date)
 
         return self.create_csv_response(filename, content=content)
