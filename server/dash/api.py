@@ -114,7 +114,7 @@ def _clean_existing_publisher_blacklist(key, level, publishers):
         for publisher in publishers:
             queryset |= dash.models.PublisherBlacklist.objects.filter(
                 name=publisher['domain'],
-                source__source_type=args['source']
+                source__source_type=publisher['source']
             )
     else:
         if constants.PublisherBlacklistLevel.compare(
@@ -151,7 +151,7 @@ def _clean_existing_publisher_blacklist(key, level, publishers):
                 )
         elif constants.PublisherBlacklistLevel.compare(
             constants.PublisherBlacklistLevel.ACCOUNT,
-            level) < 0:
+            level) <= 0:
 
             account_id = key[0]
             campaign_ids = dash.models.Campaign.objects.filter(
@@ -166,7 +166,7 @@ def _clean_existing_publisher_blacklist(key, level, publishers):
                 queryset |= dash.models.PublisherBlacklist.objects.filter(
                     name=publisher['domain'],
                     source__tracking_slug__endswith=publisher['exchange'],
-                    ad_group__id__in=campaign_adgroup_ids
+                    ad_group__id__in=adgroup_ids
                 )
 
                 queryset |= dash.models.PublisherBlacklist.objects.filter(
@@ -286,7 +286,7 @@ def refresh_publisher_blacklist(ad_group_source, request):
     )
 
     accountBlacklistedPublishers = []
-    for blacklistEntry in currentCampaignBlacklist:
+    for blacklistEntry in currentAccountBlacklist:
         # setup pending entries
         # create and send blacklist actions
         accountBlacklistedPublishers.append({
@@ -776,11 +776,12 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
     if publisher_blacklist == []:
         return []
 
+    actions = []
     blacklisted_publishers = {}
     # separate publishers per source type
     source_type_cache = {}
     blacklist_per_source = {}
-    for publisher in publishers:
+    for publisher in publisher_blacklist:
         source = publisher['source']
         source_type_id = source.source_type.id
         source_type_cache[source_type_id] = source.source_type
@@ -801,10 +802,8 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
         key = None
         level = constants.PublisherBlacklistLevel.GLOBAL
 
-        blacklisted_publishers[source_type_id].extend(
-            list(map(lambda pub: {
-                'domain': pub['domain'],
-            }, filtered_blacklist))
+        filtered_blacklist = list(
+            map(lambda pub: { 'domain': pub['domain'] }, filtered_blacklist)
         )
 
         actions.extend(
@@ -812,7 +811,7 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
                 key,
                 level,
                 state,
-                blacklisted_publishers,
+                filtered_blacklist,
                 request,
                 source_type_cache[source_type_id],
                 send=send

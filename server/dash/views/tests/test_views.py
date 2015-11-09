@@ -1311,3 +1311,55 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertEqual(1, publisher_blacklist.ad_group.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual('zemanta.com', publisher_blacklist.name)
+
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_global_blacklist(self, cursor):
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'ctr': 0.0,
+            'exchange': 'adiant',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.GLOBAL,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": []
+        }
+        res = self._post_publisher_blacklist(1, payload)
+
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(1, publisher_blacklist_action.count())
+        self.assertDictEqual(
+            {
+                u"key": None,
+                u"state": 2,
+                u"level": u"global",
+                u"publishers": [{
+                    u"domain": u"zemanta.com"
+                }]
+            }, publisher_blacklist_action.first().payload['args'])
+        self.assertTrue(res['success'])
+
+        self.assertEqual(1, models.PublisherBlacklist.objects.count())
+        publisher_blacklist = models.PublisherBlacklist.objects.first()
+
+        self.assertTrue(publisher_blacklist.everywhere)
+        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertIsNone(publisher_blacklist.ad_group)
+        self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
+        self.assertEqual('zemanta.com', publisher_blacklist.name)
