@@ -64,6 +64,8 @@ def update_touchpoint_conversions(date_cp_pairs):
     pool.close()
     pool.join()
 
+    pool.get()  # raises an exception if one of the workers raised one
+
 
 @statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
 def process_touchpoint_conversions(redirects_impressions):
@@ -95,6 +97,7 @@ def process_touchpoint_conversions(redirects_impressions):
             content_ad_id = redirect_impression['contentAdId']
             conversion_key = (account_id, slug)
             source_slug = redirect_impression['source']
+            ad_lookup = redirect_impression.get('adLookup', False)
 
             redirect_id = redirect_impression['redirectId']
             redirect_ts = datetime.datetime.strptime(redirect_impression['redirectTimestamp'], '%Y-%m-%dT%H:%M:%SZ')
@@ -103,6 +106,9 @@ def process_touchpoint_conversions(redirects_impressions):
             impression_ts = datetime.datetime.strptime(redirect_impression['impressionTimestamp'], '%Y-%m-%dT%H:%M:%SZ')
 
             if content_ad_id == 0:  # legacy simple redirect
+                continue
+
+            if ad_lookup:
                 continue
 
             if source_slug == 'z1':  # source slug from dashboard visits
