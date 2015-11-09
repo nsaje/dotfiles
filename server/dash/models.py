@@ -1976,10 +1976,22 @@ class ScheduledReport(models.Model):
         on_delete=models.PROTECT
     )
 
+    ad_group = models.ForeignKey(AdGroup, blank=True, null=True, on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.PROTECT)
+    account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.PROTECT)
+
     state = models.IntegerField(
         default=constants.ScheduledReportState.ACTIVE,
         choices=constants.ScheduledReportState.get_choices()
     )
+
+    granularity = models.IntegerField(
+        default=constants.ScheduledReportGranularity.VIEW,
+        choices=constants.ScheduledReportGranularity.get_choices()
+    )
+
+    breakdown_by_day = models.BooleanField(null=False, blank=False, default=False)
+    breakdown_by_source = models.BooleanField(null=False, blank=False, default=False)
 
     sending_frequency = models.IntegerField(
         default=constants.ScheduledReportSendingFrequency.DAILY,
@@ -1989,18 +2001,6 @@ class ScheduledReport(models.Model):
     order_by = models.CharField(max_length=20, null=True, blank=True)
     additional_fields = models.CharField(max_length=500, null=True, blank=True)
     filtered_sources = models.CharField(max_length=500, null=True, blank=True)
-
-    ad_group = models.ForeignKey(AdGroup, blank=True, null=True, on_delete=models.PROTECT)
-    campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.PROTECT)
-    account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.PROTECT)
-
-    granularity = models.IntegerField(
-        default=constants.ScheduledReportGranularity.VIEW,
-        choices=constants.ScheduledReportGranularity.get_choices()
-    )
-
-    breakdown_by_day = models.BooleanField(null=False, blank=False, default=False)
-    breakdown_by_source = models.BooleanField(null=False, blank=False, default=False)
 
     @property
     def level(self):
@@ -2016,9 +2016,6 @@ class ScheduledReport(models.Model):
         import dash.views.helpers
         return dash.views.helpers.get_filtered_sources(self.created_by, self.filtered_sources)
 
-    def get_email_list(self):
-        return [recipient.email for recipient in self.recipients.all()]
-
     def add_recipient_email(self, email_address):
         validate_email(email_address)
         if self.recipients.filter(email=email_address).count() < 1:
@@ -2026,6 +2023,9 @@ class ScheduledReport(models.Model):
 
     def remove_recipient_email(self, email_address):
         self.recipients.filter(email__exact=email_address).delete()
+
+    def get_recipients_emails_list(self):
+        return [recipient.email for recipient in self.recipients.all()]
 
     def set_recipient_emails_list(self, email_list):
         self.recipients.all().delete()
