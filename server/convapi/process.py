@@ -60,11 +60,11 @@ def _update_touchpoint_conversions_date(date_cp_tup):
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')
 def update_touchpoint_conversions(date_cp_pairs):
     pool = ThreadPool(processes=NUM_THREADS)
-    pool.map_async(_update_touchpoint_conversions_date, date_cp_pairs)
+    result = pool.map_async(_update_touchpoint_conversions_date, date_cp_pairs)
     pool.close()
     pool.join()
 
-    pool.get()  # raises an exception if one of the workers raised one
+    result.get()  # raises an exception if one of the workers raised one
 
 
 @statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
