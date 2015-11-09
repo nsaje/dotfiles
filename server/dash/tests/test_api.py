@@ -1149,6 +1149,168 @@ class UpdateAdGroupSourceState(TestCase):
         self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, second_blacklist.status)
 
 
+    def test_hiearchy_publisher_blacklist(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        adiant = models.Source.objects.get(tracking_slug='b1_adiant')
+        sharethrough = models.Source.objects.get(tracking_slug='b1_sharethrough')
+        models.PublisherBlacklist.objects.create(
+            name='zemanta.com',
+            ad_group=ad_group,
+            source=adiant,
+            status=dash.constants.PublisherStatus.BLACKLISTED
+        )
+
+        models.PublisherBlacklist.objects.create(
+            name='test1.com',
+            ad_group=ad_group,
+            source=sharethrough,
+            status=dash.constants.PublisherStatus.BLACKLISTED
+        )
+
+        args = {
+            'key': [1],
+            'level': dash.constants.PublisherBlacklistLevel.ADGROUP,
+            'state': dash.constants.PublisherStatus.ENABLED,
+            'publishers': [{
+                'domain': 'zemanta.com',
+                'exchange': 'adiant'
+            },
+            {
+                'domain': 'test1.com',
+                'exchange': 'sharethrough',
+            }]
+        }
+
+        api.update_publisher_blacklist_state(args)
+        allblacklist = dash.models.PublisherBlacklist.objects.all()
+        self.assertEqual(0, allblacklist.count())
+
+
+    def test_hiearchy_publisher_blacklist_wo_delete(self):
+        # if we get a request to blacklist per adgroup source
+        # and we already have a blacklist per campaign source,
+        # account source or globally nothing happens
+        ad_group = models.AdGroup.objects.get(pk=1)
+        adiant = models.Source.objects.get(tracking_slug='b1_adiant')
+        sharethrough = models.Source.objects.get(tracking_slug='b1_sharethrough')
+        models.PublisherBlacklist.objects.create(
+            name='zemanta.com',
+            campaign=ad_group.campaign,
+            source=adiant,
+            status=dash.constants.PublisherStatus.BLACKLISTED
+        )
+
+        models.PublisherBlacklist.objects.create(
+            name='test1.com',
+            campaign=ad_group.campaign,
+            source=sharethrough,
+            status=dash.constants.PublisherStatus.BLACKLISTED
+        )
+
+        args = {
+            'key': [1],
+            'level': dash.constants.PublisherBlacklistLevel.ADGROUP,
+            'state': dash.constants.PublisherStatus.ENABLED,
+            'publishers': [{
+                'domain': 'zemanta.com',
+                'exchange': 'adiant'
+            },
+            {
+                'domain': 'test1.com',
+                'exchange': 'sharethrough',
+            }]
+        }
+
+        api.update_publisher_blacklist_state(args)
+        allblacklist = dash.models.PublisherBlacklist.objects.all()
+        self.assertEqual(2, allblacklist.count())
+
+        self.assertTrue(all([blacklist.campaign is not None
+                             for blacklist in allblacklist]))
+
+    def test_hiearchy_publisher_blacklist_plus_one(self):
+        # blacklisting on higher level overrides lower level blacklist
+        # adgroup < campaign < account < global
+        ad_group = models.AdGroup.objects.get(pk=1)
+        adiant = models.Source.objects.get(tracking_slug='b1_adiant')
+        models.PublisherBlacklist.objects.create(
+            name='zemanta.com',
+            ad_group=ad_group,
+            source=adiant,
+            status=dash.constants.PublisherStatus.BLACKLISTED
+        )
+
+        args = {
+            'key': [1],
+            'level': dash.constants.PublisherBlacklistLevel.ADGROUP,
+            'state': dash.constants.PublisherStatus.BLACKLISTED,
+            'publishers': [{
+                'domain': 'zemanta.com',
+                'exchange': 'adiant'
+            }]
+        }
+
+        api.update_publisher_blacklist_state(args)
+        allblacklist = dash.models.PublisherBlacklist.objects.all()
+        self.assertEqual(1, allblacklist.count())
+        self.assertIsNotNone(allblacklist[0].ad_group)
+
+
+        args1 = {
+            'key': [1],
+            'level': dash.constants.PublisherBlacklistLevel.CAMPAIGN,
+            'state': dash.constants.PublisherStatus.BLACKLISTED,
+            'publishers': [{
+                'domain': 'zemanta.com',
+                'exchange': 'adiant'
+            }]
+        }
+
+        api.update_publisher_blacklist_state(args1)
+        allblacklist = dash.models.PublisherBlacklist.objects.all()
+        self.assertEqual(1, allblacklist.count())
+        self.assertIsNone(allblacklist[0].ad_group)
+        self.assertIsNotNone(allblacklist[0].campaign)
+
+
+        args2 = {
+            'key': [1],
+            'level': dash.constants.PublisherBlacklistLevel.ACCOUNT,
+            'state': dash.constants.PublisherStatus.BLACKLISTED,
+            'publishers': [{
+                'domain': 'zemanta.com',
+                'exchange': 'adiant'
+            }]
+        }
+
+        api.update_publisher_blacklist_state(args2)
+        allblacklist = dash.models.PublisherBlacklist.objects.all()
+        self.assertEqual(1, allblacklist.count())
+        self.assertIsNone(allblacklist[0].ad_group)
+        self.assertIsNone(allblacklist[0].campaign)
+        self.assertIsNotNone(allblacklist[0].account)
+
+
+        args3 = {
+            'key': None,
+            'level': dash.constants.PublisherBlacklistLevel.GLOBAL,
+            'state': dash.constants.PublisherStatus.BLACKLISTED,
+            'publishers': [{
+                'domain': 'zemanta.com',
+                'exchange': 'adiant'
+            }]
+        }
+
+        api.update_publisher_blacklist_state(args3)
+        allblacklist = dash.models.PublisherBlacklist.objects.all()
+        self.assertEqual(1, allblacklist.count())
+        self.assertIsNone(allblacklist[0].ad_group)
+        self.assertIsNone(allblacklist[0].campaign)
+        self.assertIsNone(allblacklist[0].account)
+        self.assertTrue(allblacklist[0].everywhere)
+
+
+
 class AdGroupSourceSettingsWriterTest(TestCase):
 
     fixtures = ['test_api.yaml']
