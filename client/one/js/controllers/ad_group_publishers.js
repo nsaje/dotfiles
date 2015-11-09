@@ -216,7 +216,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
             help: 'Blacklisted status of a publisher.',
             totalRow: false,
-            order: true,
+            order: false,
             initialOrder: 'asc'
         },
         {
