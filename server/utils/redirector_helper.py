@@ -53,6 +53,21 @@ def insert_adgroup(ad_group_id, tracking_codes, enable_ga_tracking, enable_adobe
         raise e
 
 
+def get_adgroup(ad_group_id):
+    url = settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group_id)
+    try:
+        adgroup_dict = _call_api_retry(url, method='GET')
+        return {
+            'enable_ga_tracking': adgroup_dict.get('enablegatracking'),
+            'enable_adobe_tracking': adgroup_dict.get('enableadobetracking'),
+            'adobe_tracking_param': adgroup_dict.get('adobetrackingparam'),
+            'tracking_code': adgroup_dict.get('trackingcode'),
+        }
+    except Exception as e:
+        logger.exception('Exception in get_adgroup')
+        raise e
+
+
 @statsd_helper.statsd_timer('redirector_helper', 'fetch_redirects_impressions')
 def fetch_redirects_impressions(date, account_id, slug, timeout=300):
     url = settings.R1_CONVERSION_STATS_URL
