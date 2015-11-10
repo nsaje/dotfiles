@@ -1097,6 +1097,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 count_failed_publisher += 1
                 continue
 
+            # we currently display sources for which we don't yet have publisher
+            # blacklisting support
+            if not source_cache[norm_source_slug].can_modify_publisher_blacklist_automatically():
+                continue
+
             publisher_tuple = (domain, ad_group.id, source_cache[norm_source_slug].tracking_slug,)
             if publisher_tuple in publishers_to_add:
                 continue
