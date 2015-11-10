@@ -113,7 +113,7 @@ class ExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 200000
 
     @statsd_helper.statsd_timer('dash.export_plus', 'export_plus_allowed_get')
-    def get(self, request, id_, level_):
+    def get(self, request, level_, id_=None):
         if not request.user.has_perm('zemauth.exports_plus'):
             raise exc.ForbiddenError(message='Not allowed')
         user = request.user

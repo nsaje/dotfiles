@@ -445,32 +445,11 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         getDailyStats();
         getTableData();
         initColumns();
-        setDisabledExportOptions();
     };
 
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);
     });
-
-    var setDisabledExportOptions = function() {
-        if ($scope.hasPermission('zemauth.exports_plus')) {
-            api.exportPlusAllowed.get(0, 'all_accounts').then(
-                function (data) {
-                    $scope.exportPlusOptions.forEach(function (opt) {
-                        if (opt.value === constants.exportType.VIEW) {
-                            opt.disabled = !data.view;
-                        } else if (opt.value === constants.exportType.CONTENT_AD) {
-                            opt.disabled = !data.content_ad;
-                        } else if (opt.value === constants.exportType.AD_GROUP) {
-                            opt.disabled = !data.ad_group;
-                        } else if (opt.value === constants.exportType.CAMPAIGN) {
-                            opt.disabled = !data.campaign;
-                        }
-                    });
-                }
-             );
-        }
-    };
 
     $scope.init();
 }]);

@@ -543,19 +543,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 }
             }
         );
-        if ($scope.hasPermission('zemauth.exports_plus')) {
-            api.exportPlusAllowed.get($state.params.id, 'campaigns').then(
-                function (data) {
-                    $scope.exportPlusOptions.forEach(function (opt) {
-                        if (opt.value === constants.exportType.VIEW) {
-                            opt.disabled = !data.view;
-                        }else if (opt.value === constants.exportType.CONTENT_AD) {
-                            opt.disabled = !data.content_ad;
-                        }
-                    });
-                }
-            );
-        }
     };
 
     $scope.init();

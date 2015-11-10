@@ -632,7 +632,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.getDailyStats();
 
         getSources();
-        setDisabledExportOptions();
     };
 
     var getSources = function () {
@@ -761,22 +760,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id);
-    };
-
-    var setDisabledExportOptions = function() {
-      if ($scope.hasPermission('zemauth.exports_plus')) {
-          api.sourcesExportPlusAllowed.get($state.params.id, 'ad_groups').then(
-              function (data) {
-                  $scope.exportPlusOptions.forEach(function (opt) {
-                      if (opt.value === constants.exportType.VIEW) {
-                        opt.disabled = !data.view;
-                      } else if (opt.value === constants.exportType.CONTENT_AD) {
-                        opt.disabled = !data.content_ad;
-                      }
-                  });
-              }
-          );
-        }
     };
 
     $scope.init();

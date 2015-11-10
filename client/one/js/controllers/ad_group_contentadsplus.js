@@ -921,17 +921,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 }
             }
         );
-        if ($scope.hasPermission('zemauth.exports_plus')) {
-            api.exportPlusAllowed.get($state.params.id, 'ad_groups').then(
-                function(data) {
-                    $scope.exportPlusOptions.forEach(function (opt) {
-                        if (opt.value === constants.exportType.VIEW) {
-                          opt.disabled = !data.view;
-                        }
-                    });
-                }
-            );
-        }
     };
 
     init();

@@ -514,7 +514,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         getDailyStats();
         getTableData();
         pollSyncStatus();
-        setDisabledExportOptions();
     };
 
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
@@ -594,28 +593,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             api.campaignSync.get(null, $state.params.id);
         } else if ($scope.level === constants.level.CAMPAIGNS) {
             api.campaignSync.get($state.params.id, null);
-        }
-    };
-
-    var setDisabledExportOptions = function() {
-        if ($scope.hasPermission('zemauth.exports_plus')) {
-            api.sourcesExportPlusAllowed.get($state.params.id, $scope.level).then(
-            function(data) {
-                $scope.exportPlusOptions.forEach(function (opt) {
-                    if (opt.value === constants.exportType.VIEW) {
-                        opt.disabled = !data.view;
-                    } else if (opt.value === constants.exportType.ACCOUNT) {
-                        opt.disabled = !data.account;
-                    } else if (opt.value === constants.exportType.AD_GROUP) {
-                        opt.disabled = !data.ad_group;
-                    } else if (opt.value === constants.exportType.CAMPAIGN) {
-                        opt.disabled = !data.campaign;
-                    } else if(opt.value === constants.exportType.CONTENT_AD) {
-                        opt.disabled = !data.content_ad;
-                    }
-                });
-              }
-          );
         }
     };
 

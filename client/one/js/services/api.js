@@ -2102,49 +2102,13 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             };
         }
 
-        this.get = function (id_, level_) {
+        this.get = function (id_, level_, exportSources) {
             var deferred = $q.defer();
-            var url = '/api/' + level_ + '/' + id_ + '/export_plus/allowed/';
 
-            var config = {
-                params: {}
-            };
-
-            $http.get(url, config).
-                success(function (data, status) {
-                    var resource;
-
-                    if (data && data.data) {
-                        resource = convertFromApi(data.data);
-                    }
-
-                    deferred.resolve(resource);
-                }).
-                error(function (data) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function SourcesExportPlusAllowed() {
-        function convertFromApi(data) {
-            return {
-                view: data.view,
-                content_ad: data.content_ad,
-                ad_group: data.ad_group,
-                campaign: data.campaign,
-                account: data.account
-            };
-        }
-
-        this.get = function (id_, level_) {
-            var deferred = $q.defer();
-            var url = '/api/' + level_ + '/' + id_ + '/sources/export_plus/allowed/?filtered_sources=' + zemFilterService.getFilteredSources().join(',');
-            if (level_ == constants.level.ALL_ACCOUNTS) {
-              url = '/api/' + level_ + '/sources/export_plus/allowed/?filtered_sources=' + zemFilterService.getFilteredSources().join(',');
-            }
+            var urlId = ((level_ == constants.level.ALL_ACCOUNTS)?'':id_+'/');
+            var urlSources = ((exportSources.valueOf())?'sources/':'');
+            var urlFilteredSources = ((exportSources.valueOf())?'?filtered_sources=' + zemFilterService.getFilteredSources().join(','):'');
+            var url = '/api/' + level_ + '/' + urlId + urlSources + 'export_plus/allowed/' + urlFilteredSources;
 
             var config = {
                 params: {}
@@ -2617,7 +2581,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupSourceSettings: new AdGroupSourceSettings(),
         adGroupSourcesUpdates: new AdGroupSourcesUpdates(),
         exportPlusAllowed: new ExportPlusAllowed(),
-        sourcesExportPlusAllowed: new SourcesExportPlusAllowed(),
         adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
         adGroupAdsPlusExportAllowed: new AdGroupAdsPlusExportAllowed(),
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),

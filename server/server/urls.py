@@ -357,7 +357,11 @@ urlpatterns += patterns(
         name='user'
     ),
     url(
-        r'^api/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))/(?P<id_>\d+)/export_plus/allowed/',
+        r'^api/(?P<level_>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/export_plus/allowed/',
+        login_required(dash.views.export_plus.ExportAllowed.as_view())
+    ),
+    url(
+        r'^api/(?P<level_>(all_accounts))/export_plus/allowed/',
         login_required(dash.views.export_plus.ExportAllowed.as_view())
     ),
     url(
