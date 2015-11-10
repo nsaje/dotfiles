@@ -1240,7 +1240,8 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                 u"level": u"adgroup",
                 u"publishers": [{
                     u"exchange": u"adiant",
-                    u"domain": u"zemanta.com"
+                    u"domain": u"zemanta.com",
+                    u"ad_group_id": 1
                     }]
             }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])
@@ -1298,7 +1299,8 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                 u"level": u"adgroup",
                 u"publishers": [{
                     u"exchange": u"adiant",
-                    u"domain": u"zemanta.com"
+                    u"domain": u"zemanta.com",
+                    u"ad_group_id": 1
                     }]
             }, publisher_blacklist_action.first().payload['args'])
 
@@ -1350,7 +1352,8 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                 u"state": 2,
                 u"level": u"global",
                 u"publishers": [{
-                    u"domain": u"zemanta.com"
+                    u"domain": u"zemanta.com",
+                    u"exchange": u"adiant"
                 }]
             }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])

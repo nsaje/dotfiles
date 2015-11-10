@@ -775,7 +775,6 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
         return []
 
     actions = []
-    blacklisted_publishers = {}
     # separate publishers per source type
     source_type_cache = {}
     blacklist_per_source = {}
@@ -801,7 +800,12 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
         level = constants.PublisherBlacklistLevel.GLOBAL
 
         filtered_blacklist = list(
-            map(lambda pub: { 'domain': pub['domain'] }, filtered_blacklist)
+            map(lambda pub: {
+                    'domain': pub['domain'],
+                    'exchange': pub['source'].bidder_slug
+                },
+                filtered_blacklist
+            )
         )
 
         actions.extend(
@@ -857,6 +861,7 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
             list(map(lambda pub: {
                 'domain': pub['domain'],
                 'exchange': pub['source'].tracking_slug.replace('b1_', ''),
+                'ad_group_id': ad_group.id,
             }, filtered_blacklist))
         )
 
