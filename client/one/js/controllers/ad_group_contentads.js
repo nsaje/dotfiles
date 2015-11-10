@@ -128,7 +128,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
             'name': 'Audience Metrics',
             'fields': [
                 'visits', 'pageviews', 'percent_new_users',
-                'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'click_discrepancy'
             ]
         }
@@ -161,8 +161,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
                     zemPostclickMetricsService.insertConversionGoalColumns(
                         $scope.columns,
                         $scope.columns.length - 1,
-                        data.rows, 
-                        $scope.columnCategories[1], 
+                        data.rows,
+                        $scope.columnCategories[1],
                         $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
                     );
                 }
@@ -324,7 +324,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         if (isNaN(page)) {
             page = data && data.page;
         }
-        var size = parseInt($location.search().size || '0'); 
+        var size = parseInt($location.search().size || '0');
 
         userSettings.register('order');
         userSettings.register('size');
