@@ -522,7 +522,7 @@ oneApp.config(['$provide', function ($provide) {
                     cachedResponse = zemDemoCacheService.get(cacheId);
                 zemLocalStorageService.set('columns',
                                             defaults.tableColumns.adGroupAdsPlus,
-                                           'adGroupAdsPlus');
+                                           'adGroupContentAdsPlus');
                 if (cachedResponse && !zemDemoAdGroupsService.isNew(id)) {
                     config.params.order = order;
                     zemDemoSourcesService.refresh(id).then(function () {

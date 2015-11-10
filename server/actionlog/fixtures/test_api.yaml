@@ -824,6 +824,7 @@
         brand_name: 'Example'
         description: 'Example description'
         call_to_action: 'Call to action'
+        crop_areas: '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
     model: dash.contentad
     pk: 1
 

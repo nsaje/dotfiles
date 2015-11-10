@@ -19,7 +19,7 @@ from django.forms.models import model_to_dict
 import utils.string_helper
 
 from dash import constants
-from dash import regions
+from dash import region_targeting_helper
 import reports.constants
 from utils import encryption_helpers
 from utils import statsd_helper
@@ -38,7 +38,7 @@ def validate(*validators):
             errors[v.__name__.replace('validate_', '')] = e.error_list
     if errors:
         raise ValidationError(errors)
-        
+
 
 class PermissionMixin(object):
     USERS_FIELD = ''
@@ -85,7 +85,7 @@ class FootprintModel(models.Model):
         if not self.pk:
             return
         self._footprint()
-    
+
     def has_changed(self, field=None):
         if not self.pk:
             return False
@@ -107,7 +107,7 @@ class FootprintModel(models.Model):
     def save(self, *args, **kwargs):
         super(FootprintModel, self).save(*args, **kwargs)
         self._footprint()
-    
+
     class Meta:
         abstract = True
 
@@ -119,11 +119,11 @@ class HistoryModel(models.Model):
 
     def to_dict(self):
         raise NotImplementedError()
-    
+
     class Meta:
         abstract = True
 
-    
+
 class OutbrainAccount(models.Model):
     marketer_id = models.CharField(blank=False, null=False, max_length=255)
     used = models.BooleanField(default=False)
@@ -645,17 +645,40 @@ class SourceType(models.Model):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_MODIFY_DEVICE_TARGETING in self.available_actions
 
-    def can_modify_dma_targeting_automatic(self):
-        return self.available_actions is not None and\
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC in self.available_actions
+    def can_modify_targeting_for_region_type_automatically(self, region_type):
+        if self.available_actions is None:
+            return False
+        elif region_type == constants.RegionType.COUNTRY:
+            return constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING in self.available_actions
+        elif region_type == constants.RegionType.SUBDIVISION:
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC in self.available_actions
+        elif region_type == constants.RegionType.DMA:
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC in self.available_actions
 
-    def can_modify_dma_targeting_manual(self):
-        return self.available_actions is not None and\
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL in self.available_actions
+    def can_modify_targeting_for_region_type_manually(self, region_type):
+        ''' Assume automatic targeting support implies manual targeting support
 
-    def can_modify_country_targeting(self):
-        return self.available_actions is not None and\
-            constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING in self.available_actions
+            This addresses the following situation: Imagine targeting
+            GB (country) and 693 (DMA) and a SourceType that supports automatic
+            DMA targeting and manual country targeting.
+
+            Automatically setting the targeting would be impossible because
+            the SourceType does not support modifying country targeting
+            automatically.
+
+            Manually setting the targeting would also be impossible because
+            the SourceType does not support modifying DMA targeting manually.
+            '''
+        if self.can_modify_targeting_for_region_type_automatically(region_type):
+            return True
+        if region_type == constants.RegionType.COUNTRY:
+            return True
+        elif self.available_actions is None:
+            return False
+        elif region_type == constants.RegionType.SUBDIVISION:
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL in self.available_actions
+        elif region_type == constants.RegionType.DMA:
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL in self.available_actions
 
     def can_modify_tracking_codes(self):
         return self.available_actions is not None and\
@@ -677,8 +700,10 @@ class SourceType(models.Model):
         return self.available_actions is not None and\
             constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS in self.available_actions
 
-    def supports_dma_targeting(self):
-        return self.can_modify_dma_targeting_manual() or self.can_modify_dma_targeting_automatic()
+    def supports_targeting_region_type(self, region_type):
+        return\
+            self.can_modify_targeting_for_region_type_automatically(region_type) or\
+            self.can_modify_targeting_for_region_type_manually(region_type)
 
     def can_fetch_report_by_publisher(self):
         return self.available_actions is not None and\
@@ -759,14 +784,11 @@ class Source(models.Model):
     def can_modify_device_targeting(self):
         return self.source_type.can_modify_device_targeting() and not self.maintenance and not self.deprecated
 
-    def can_modify_dma_targeting_automatic(self):
-        return self.source_type.can_modify_dma_targeting_automatic() and not self.maintenance and not self.deprecated
+    def can_modify_targeting_for_region_type_automatically(self, region_type):
+        return self.source_type.can_modify_targeting_for_region_type_automatically(region_type)
 
-    def can_modify_dma_targeting_manual(self):
-        return self.source_type.can_modify_dma_targeting_manual() and not self.maintenance and not self.deprecated
-
-    def can_modify_country_targeting(self):
-        return self.source_type.can_modify_country_targeting() and not self.maintenance and not self.deprecated
+    def can_modify_targeting_for_region_type_manually(self, region_type):
+        return self.source_type.can_modify_targeting_for_region_type_manually(region_type)
 
     def can_modify_tracking_codes(self):
         return self.source_type.can_modify_tracking_codes() and not self.maintenance and not self.deprecated
@@ -1190,11 +1212,20 @@ class AdGroupSettings(SettingsBase):
         dt += datetime.timedelta(days=1)
         return dt
 
-    def targets_dma(self):
-        return any(tr in regions.DMA_BY_CODE for tr in self.target_regions) if self.target_regions else False
+    def targets_region_type(self, region_type):
+        regions = region_targeting_helper.get_list_for_region_type(region_type)
 
-    def targets_countries(self):
-        return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions) if self.target_regions else False
+        return any(target_region in regions for target_region in self.target_regions or [])
+
+    def get_targets_for_region_type(self, region_type):
+        regions_of_type = region_targeting_helper.get_list_for_region_type(region_type)
+
+        return [target_region for target_region in self.target_regions or [] if target_region in regions_of_type]
+
+    def get_target_names_for_region_type(self, region_type):
+        regions_of_type = region_targeting_helper.get_list_for_region_type(region_type)
+
+        return [regions_of_type[target_region] for target_region in self.target_regions or [] if target_region in regions_of_type]
 
     def is_mobile_only(self):
         return self.target_devices and len(self.target_devices) == 1 and constants.AdTargetDevice.MOBILE in self.target_devices
@@ -1434,6 +1465,7 @@ class ContentAd(models.Model):
     image_width = models.PositiveIntegerField(null=True)
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
+    crop_areas = models.CharField(max_length=128, null=True)
 
     redirect_id = models.CharField(max_length=128, null=True)
 
@@ -1707,15 +1739,20 @@ class PublisherBlacklist(models.Model):
     ad_group = models.ForeignKey(AdGroup, null=False, related_name='ad_group', on_delete=models.PROTECT)
     source = models.ForeignKey(Source, null=False, on_delete=models.PROTECT)
 
+    status = models.IntegerField(
+        default=constants.PublisherStatus.BLACKLISTED,
+        choices=constants.PublisherStatus.get_choices()
+    )
+
     class Meta:
         unique_together = (('name', 'ad_group', 'source'), )
-    
+
 
 class CreditLineItem(FootprintModel):
     account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT)
     start_date = models.DateField()
     end_date = models.DateField()
-    
+
     amount = models.IntegerField()
     license_fee = models.DecimalField(
         decimal_places=4,
@@ -1727,7 +1764,7 @@ class CreditLineItem(FootprintModel):
         choices=constants.CreditLineItemStatus.get_choices()
     )
     comment = models.CharField(max_length=256, blank=True, null=True)
-    
+
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
@@ -1834,11 +1871,11 @@ class BudgetLineItem(FootprintModel):
     credit = models.ForeignKey(CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
     start_date = models.DateField()
     end_date = models.DateField()
-    
+
     amount = models.IntegerField()
-    
+
     comment = models.CharField(max_length=256, blank=True, null=True)
-    
+
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
@@ -1880,7 +1917,7 @@ class BudgetLineItem(FootprintModel):
             self.validate_amount,
             self.validate_credit,
         )
-        
+
 
     def license_fee(self):
         return self.credit.license_fee
@@ -1917,7 +1954,7 @@ class BudgetLineItem(FootprintModel):
         if self.state() == constants.BudgetLineItemState.PENDING:
             return
         if self.has_changed('amount'):
-            raise ValidationError('Budget amount cannot change.')        
+            raise ValidationError('Budget amount cannot change.')
 
 
 class CreditHistory(HistoryModel):

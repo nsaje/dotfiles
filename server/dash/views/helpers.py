@@ -14,6 +14,7 @@ import actionlog.models
 from dash import models
 from dash import constants
 from dash import api
+from dash import region_targeting_helper
 from utils import exc
 from utils import statsd_helper
 import automation.autopilot
@@ -847,29 +848,31 @@ def _get_status_setting_disabled_message(ad_group_source):
     return 'This source must be managed manually.'
 
 
-def _get_status_setting_disabled_message_for_target_regions(ad_group_source, ad_group_settings,
-                                                            ad_group_source_settings):
-
+def _get_status_setting_disabled_message_for_target_regions(
+                 ad_group_source, ad_group_settings, ad_group_source_settings):
     source = ad_group_source.source
-    if not source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma():
-        return 'This source can not be enabled because it does not support DMA targeting.'
-    else:
-        targets_countries = ad_group_settings.targets_countries()
-        targets_dma = ad_group_settings.targets_dma()
+    unsupported_targets = []
+    manual_targets = []
 
-        activation_settings = models.AdGroupSourceSettings.objects.filter(
-            ad_group_source=ad_group_source, state=constants.AdGroupSourceSettingsState.ACTIVE)
+    for region_type in constants.RegionType.get_all():
+        if ad_group_settings.targets_region_type(region_type):
+            if not source.source_type.supports_targeting_region_type(region_type):
+                unsupported_targets.append(constants.RegionType.get_text(region_type))
+            elif not source.source_type.can_modify_targeting_for_region_type_automatically(constants.RegionType.DMA):
+                manual_targets.append(constants.RegionType.get_text(region_type))
 
-        # disable when waiting for manual actions for target_regions after campaign creation
-        # message this only when the source is about to be enabled for the first time
-        if api.can_modify_selected_target_regions_manually(source, targets_countries, targets_dma) and\
-           actionlog.api.is_waiting_for_manual_set_target_regions_action(ad_group_source) and\
-           not activation_settings.exists():
+    if unsupported_targets:
+        return 'This source can not be enabled because it does not support {} targeting.'.format(" and ".join(unsupported_targets))
 
-            message = ('This source needs to set {} targeting manually,'
-                       'please contact support to enable this source.')
+    activation_settings = models.AdGroupSourceSettings.objects.filter(
+        ad_group_source=ad_group_source, state=constants.AdGroupSourceSettingsState.ACTIVE)
 
-            return message.format('DMA' if source.can_modify_dma_targeting_manual() else 'country')
+    # disable when waiting for manual actions for target_regions after campaign creation
+    # message this only when the source is about to be enabled for the first time
+    if manual_targets and\
+       actionlog.api.is_waiting_for_manual_set_target_regions_action(ad_group_source) and\
+       not activation_settings.exists():
+        return 'This source needs to set {} targeting manually, please contact support to enable this source.'.format(" and ".join(manual_targets))
 
     return None
 
