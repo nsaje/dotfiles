@@ -78,10 +78,6 @@ def get_additional_columns(additional_columns):
     return []
 
 
-def get_show_archived(archived):
-    return archived == 'true'
-
-
 def get_account(user, account_id, select_related=False):
     try:
         account = models.Account.objects.all().filter_by_user(user)

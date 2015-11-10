@@ -210,115 +210,14 @@ def _get_conversion_goals(user, campaign):
 
 
 class AllAccountsExport(object):
-    def get_data(self, user, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
-        accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
-        if not user.has_perm('zemauth.view_archived_entities'):
-            accounts = accounts.exclude_archived()
-
-        required_fields = ['start_date', 'end_date', 'account']
-        dimensions = ['account']
-        exclude_fields = []
-
-        if breakdown == 'campaign':
-            required_fields.extend(['campaign'])
-            dimensions.extend(['campaign'])
-        elif breakdown == 'ad_group':
-            required_fields.extend(['campaign', 'ad_group'])
-            dimensions.extend(['campaign', 'ad_group'])
-            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
-
-        fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
-        include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
-
-        results = _generate_rows(
-            dimensions,
-            start_date,
-            end_date,
-            user,
-            order,
-            False,
-            [],
-            include_budgets=include_budgets,
-            account=accounts,
-            source=filtered_sources)
-
-        return get_csv_content(fieldnames, results)
-
-
-class AccountCampaignsExport(object):
-    def get_data(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
-        account = helpers.get_account(user, account_id)
-
-        dimensions = ['campaign']
-        required_fields = ['start_date', 'end_date', 'account', 'campaign']
-        exclude_fields = []
-
-        if breakdown == 'ad_group':
-            required_fields.extend(['ad_group'])
-            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
-            dimensions.extend(['ad_group'])
-        elif breakdown == 'content_ad':
-            required_fields.extend(['ad_group', 'title', 'image_url'])
-            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
-            dimensions.extend(['ad_group', 'content_ad'])
-
-        fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
-        include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
-
-        results = _generate_rows(
-            dimensions,
-            start_date,
-            end_date,
-            user,
-            order,
-            breakdown == 'content_ad',
-            [],
-            include_budgets=include_budgets,
-            account=account,
-            source=filtered_sources)
-
-        return get_csv_content(fieldnames, results)
-
-
-class CampaignAdGroupsExport(object):
-    def get_data(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
-        campaign = helpers.get_campaign(user, campaign_id)
-
-        dimensions = ['ad_group']
-        required_fields = ['start_date', 'end_date', 'account', 'campaign', 'ad_group']
-        if breakdown == 'content_ad':
-            required_fields.extend(['title', 'image_url'])
-            dimensions.extend(['content_ad'])
-        fieldnames = _get_fieldnames(required_fields, additional_fields)
-
-        conversion_goals = _get_conversion_goals(user, campaign)
-        for conversion_goal in conversion_goals:
-            if conversion_goal.get_view_key(conversion_goals) in additional_fields:
-                fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
-
-        results = _generate_rows(
-            dimensions,
-            start_date,
-            end_date,
-            user,
-            order,
-            breakdown == 'content_ad',
-            conversion_goals,
-            campaign=campaign,
-            source=filtered_sources)
-
-        return get_csv_content(fieldnames, results)
-
-
-class AllAccountsSourcesExport(object):
-    def get_data(self, user, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
+    def get_data(self, user, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
         if not user.has_perm('zemauth.view_archived_entities'):
             accounts = accounts.exclude_archived()
 
         required_fields = ['start_date', 'end_date']
         dimensions = []
-
+        exclude_fields = []
         if breakdown == 'account':
             required_fields.extend(['account'])
             dimensions.extend(['account'])
@@ -328,10 +227,14 @@ class AllAccountsSourcesExport(object):
         elif breakdown == 'ad_group':
             required_fields.extend(['account', 'campaign', 'ad_group'])
             dimensions.extend(['account', 'campaign', 'ad_group'])
+            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
-        required_fields.extend(['source'])
-        fieldnames = _get_fieldnames(required_fields, additional_fields)
-        dimensions.extend(['source'])
+        if by_source:
+            required_fields.extend(['source'])
+            dimensions.extend(['source'])
+
+        fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
+        include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
 
         results = _generate_rows(
             dimensions,
@@ -341,32 +244,39 @@ class AllAccountsSourcesExport(object):
             order,
             False,
             [],
+            include_budgets=include_budgets,
             account=accounts,
             source=filtered_sources)
 
         return get_csv_content(fieldnames, results)
 
 
-class AccountSourcesExport(object):
-    def get_data(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
+class AccountExport(object):
+    def get_data(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False):
         account = helpers.get_account(user, account_id)
 
-        required_fields = ['start_date', 'end_date', 'account']
         dimensions = ['account']
+        required_fields = ['start_date', 'end_date', 'account']
+        exclude_fields = []
 
         if breakdown == 'campaign':
             required_fields.extend(['campaign'])
             dimensions.extend(['campaign'])
         elif breakdown == 'ad_group':
             required_fields.extend(['campaign', 'ad_group'])
+            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
             dimensions.extend(['campaign', 'ad_group'])
         elif breakdown == 'content_ad':
             required_fields.extend(['campaign', 'ad_group', 'title', 'image_url'])
+            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
             dimensions.extend(['campaign', 'ad_group', 'content_ad'])
 
-        required_fields.extend(['source'])
-        fieldnames = _get_fieldnames(required_fields, additional_fields)
-        dimensions.extend(['source'])
+        if by_source:
+            required_fields.extend(['source'])
+            dimensions.extend(['source'])
+
+        fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
+        include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
 
         results = _generate_rows(
             dimensions,
@@ -376,17 +286,19 @@ class AccountSourcesExport(object):
             order,
             breakdown == 'content_ad',
             [],
+            include_budgets=include_budgets,
             account=account,
             source=filtered_sources)
+
         return get_csv_content(fieldnames, results)
 
 
-class CampaignSourcesExport(object):
-    def get_data(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
+class CampaignExport(object):
+    def get_data(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False):
         campaign = helpers.get_campaign(user, campaign_id)
 
-        required_fields = ['start_date', 'end_date', 'account', 'campaign']
         dimensions = ['campaign']
+        required_fields = ['start_date', 'end_date', 'account', 'campaign']
 
         if breakdown == 'ad_group':
             required_fields.extend(['ad_group'])
@@ -395,9 +307,11 @@ class CampaignSourcesExport(object):
             required_fields.extend(['ad_group', 'title', 'image_url'])
             dimensions.extend(['ad_group', 'content_ad'])
 
-        required_fields.extend(['source'])
+        if by_source:
+            required_fields.extend(['source'])
+            dimensions.extend(['source'])
+
         fieldnames = _get_fieldnames(required_fields, additional_fields)
-        dimensions.extend(['source'])
 
         conversion_goals = _get_conversion_goals(user, campaign)
         for conversion_goal in conversion_goals:
@@ -414,23 +328,29 @@ class CampaignSourcesExport(object):
             conversion_goals,
             campaign=campaign,
             source=filtered_sources)
+
         return get_csv_content(fieldnames, results)
 
 
-class AdGroupSourcesExport(object):
-    def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None):
+class AdGroupExport(object):
+    def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=None):
+
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
         required_fields = ['start_date', 'end_date', 'account', 'campaign', 'ad_group']
-        dimensions = ['ad_group']
+        dimensions = []
 
-        if breakdown == 'content_ad':
+        if breakdown == 'ad_group':
+            dimensions.extend(['ad_group'])
+        elif breakdown == 'content_ad':
             required_fields.extend(['title', 'image_url'])
             dimensions.extend(['content_ad'])
 
-        required_fields.extend(['source'])
+        if by_source:
+            required_fields.extend(['source'])
+            dimensions.extend(['source'])
+
         fieldnames = _get_fieldnames(required_fields, additional_fields)
-        dimensions.extend(['source'])
 
         conversion_goals = _get_conversion_goals(user, ad_group.campaign)
         for conversion_goal in conversion_goals:
@@ -444,33 +364,6 @@ class AdGroupSourcesExport(object):
             user,
             order,
             breakdown == 'content_ad',
-            conversion_goals,
-            ad_group=ad_group,
-            source=filtered_sources)
-
-        return get_csv_content(fieldnames, results)
-
-
-class AdGroupAdsPlusExport(object):
-    def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields):
-
-        ad_group = helpers.get_ad_group(user, ad_group_id)
-
-        required_fields = ['start_date', 'end_date', 'account', 'campaign', 'ad_group', 'title', 'image_url']
-        fieldnames = _get_fieldnames(required_fields, additional_fields)
-
-        conversion_goals = _get_conversion_goals(user, ad_group.campaign)
-        for conversion_goal in conversion_goals:
-            if conversion_goal.get_view_key(conversion_goals) in additional_fields:
-                fieldnames[conversion_goal.get_view_key(conversion_goals)] = conversion_goal.name
-
-        results = _generate_rows(
-            ['content_ad'],
-            start_date,
-            end_date,
-            user,
-            order,
-            True,
             conversion_goals,
             ad_group=ad_group,
             source=filtered_sources)

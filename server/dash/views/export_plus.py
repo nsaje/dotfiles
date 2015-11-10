@@ -56,15 +56,15 @@ class AccountCampaignsExport(api_common.BaseApiView):
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
 
-        if export_type == 'view-csv':
+        if export_type == 'campaign-csv':
             filename = 'report'
-            content = export_plus.AccountCampaignsExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields)
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign')
         elif export_type == 'adgroup-csv':
             filename = '-_by_ad_group_report'
-            content = export_plus.AccountCampaignsExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
         elif export_type == 'contentad-csv':
             filename = '-_by_content_ad_report'
-            content = export_plus.AccountCampaignsExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
 
         filename = '{0}_{1}_{2}_{3}'.format(
             slugify.slugify(account.name),
@@ -91,12 +91,12 @@ class CampaignAdGroupsExport(ExportApiView):
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
 
-        if export_type == 'view-csv':
+        if export_type == 'adgroup-csv':
             filename = 'report'
-            content = export_plus.CampaignAdGroupsExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields)
+            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
         elif export_type == 'contentad-csv':
             filename = '-_by_content_ad_report'
-            content = export_plus.CampaignAdGroupsExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
+            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
 
         filename = '{0}_{1}_{2}_{3}_{4}'.format(
             slugify.slugify(campaign.account.name),
@@ -121,13 +121,13 @@ class ExportAllowed(api_common.BaseApiView):
         if level_ == 'ad_groups':
             ad_group = helpers.get_ad_group(user, id_)
             return self.create_api_response({
-                'view': models.ContentAd.objects.filter(ad_group=ad_group).count() <= self.MAX_ROWS
+                'content_ad': models.ContentAd.objects.filter(ad_group=ad_group).count() <= self.MAX_ROWS
             })
         elif level_ == 'campaigns':
             campaign = helpers.get_campaign(user, id_)
             ad_groups = models.AdGroup.objects.filter(campaign=campaign).exclude_archived()
             return self.create_api_response({
-                'view': ad_groups.count() <= self.MAX_ROWS,
+                'ad_group': ad_groups.count() <= self.MAX_ROWS,
                 'content_ad': models.ContentAd.objects.filter(ad_group=ad_groups).count() <= self.MAX_ROWS
             })
         elif level_ == 'accounts':
@@ -135,7 +135,7 @@ class ExportAllowed(api_common.BaseApiView):
             campaigns = models.Campaign.objects.filter(account=account).exclude_archived()
             ad_groups = models.AdGroup.objects.filter(campaign=campaigns).exclude_archived()
             return self.create_api_response({
-                'view': campaigns.count() <= self.MAX_ROWS,
+                'campaign': campaigns.count() <= self.MAX_ROWS,
                 'ad_group': ad_groups.count() <= self.MAX_ROWS,
                 'content_ad': models.ContentAd.objects.filter(ad_group=ad_groups).count() <= self.MAX_ROWS
             })
@@ -144,7 +144,7 @@ class ExportAllowed(api_common.BaseApiView):
             campaigns_num = models.Campaign.objects.all().filter_by_user(user).exclude_archived().count()
             ad_groups_num = models.AdGroup.objects.all().filter_by_user(user).exclude_archived().count()
             return self.create_api_response({
-                'view': accounts_num <= self.MAX_ROWS,
+                'account': accounts_num <= self.MAX_ROWS,
                 'campaign': campaigns_num <= self.MAX_ROWS,
                 'ad_group': ad_groups_num <= self.MAX_ROWS
             })
@@ -166,14 +166,14 @@ class SourcesExportAllowed(api_common.BaseApiView):
         if level_ == 'ad_groups':
             ad_group = helpers.get_ad_group(user, id_)
             return self.create_api_response({
-                'view': filtered_sources_num <= self.MAX_ROWS,
+                'ad_group': filtered_sources_num <= self.MAX_ROWS,
                 'content_ad': models.ContentAd.objects.filter(ad_group=ad_group).count() * filtered_sources_num <= self.MAX_ROWS
             })
         elif level_ == 'campaigns':
             campaign = helpers.get_campaign(user, id_)
             ad_groups = models.AdGroup.objects.filter(campaign=campaign)
             return self.create_api_response({
-                'view': filtered_sources_num <= self.MAX_ROWS,
+                'campaign': filtered_sources_num <= self.MAX_ROWS,
                 'ad_group': ad_groups.count() * filtered_sources_num <= self.MAX_ROWS,
                 'content_ad': models.ContentAd.objects.filter(ad_group__in=ad_groups).count() * filtered_sources_num <= self.MAX_ROWS
             })
@@ -182,7 +182,7 @@ class SourcesExportAllowed(api_common.BaseApiView):
             campaigns = models.Campaign.objects.filter(account=account)
             ad_groups = models.AdGroup.objects.filter(campaign=campaigns)
             return self.create_api_response({
-                'view': filtered_sources_num <= self.MAX_ROWS,
+                'account': filtered_sources_num <= self.MAX_ROWS,
                 'campaign': campaigns.count() * filtered_sources_num <= self.MAX_ROWS,
                 'ad_group': ad_groups.count() * filtered_sources_num <= self.MAX_ROWS,
                 'content_ad': models.ContentAd.objects.filter(ad_group__in=ad_groups).count() * filtered_sources_num <= self.MAX_ROWS
@@ -192,7 +192,7 @@ class SourcesExportAllowed(api_common.BaseApiView):
             campaigns_num = models.Campaign.objects.all().filter_by_user(user).count()
             ad_groups_num = models.AdGroup.objects.all().filter_by_user(user).count()
             return self.create_api_response({
-                'view': filtered_sources_num <= self.MAX_ROWS,
+                'add_accounts': filtered_sources_num <= self.MAX_ROWS,
                 'account': accounts_num * filtered_sources_num <= self.MAX_ROWS,
                 'campaign': campaigns_num * filtered_sources_num <= self.MAX_ROWS,
                 'ad_group': ad_groups_num * filtered_sources_num <= self.MAX_ROWS
@@ -216,7 +216,7 @@ class AdGroupAdsPlusExport(ExportApiView):
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
 
-        if export_type == 'view-csv':
+        if export_type == 'contentad-csv':
             filename = '{0}_{1}_{2}_report_{3}_{4}'.format(
                 slugify.slugify(ad_group.campaign.account.name),
                 slugify.slugify(ad_group.campaign.name),
@@ -224,7 +224,7 @@ class AdGroupAdsPlusExport(ExportApiView):
                 start_date,
                 end_date
             )
-            content = export_plus.AdGroupAdsPlusExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields)
+            content = export_plus.AdGroupExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
         return self.create_csv_response(filename, content=content)
 
 
@@ -241,18 +241,18 @@ class AllAccountsSourcesExport(ExportApiView):
         order = request.GET.get('order') or 'name'
         export_type = request.GET.get('type')
 
-        if export_type == 'view-csv':
+        if export_type == 'allaccounts-csv':
             filename = 'ZemantaOne_media_source_report'
-            content = export_plus.AllAccountsSourcesExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields,)
+            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, by_source=True)
         elif export_type == 'account-csv':
             filename = 'ZemantaOne_-_by_account_media_source_report'
-            content = export_plus.AllAccountsSourcesExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='account')
+            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='account', by_source=True)
         elif export_type == 'campaign-csv':
             filename = 'ZemantaOne_-_by_campaign_media_source_report'
-            content = export_plus.AllAccountsSourcesExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign')
+            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_source=True)
         elif export_type == 'adgroup-csv':
             filename = 'ZemantaOne_-_by_ad_group_media_source_report'
-            content = export_plus.AllAccountsSourcesExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
+            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True)
 
         filename = '{0}_{1}_{2}'.format(
             filename,
@@ -278,18 +278,18 @@ class AccountSourcesExport(ExportApiView):
         order = request.GET.get('order') or 'name'
         export_type = request.GET.get('type')
 
-        if export_type == 'view-csv':
+        if export_type == 'account-csv':
             filename = 'media_source_report'
-            content = export_plus.AccountSourcesExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields)
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, by_source=True)
         elif export_type == 'campaign-csv':
             filename = '-_by_campaign_media_source_report'
-            content = export_plus.AccountSourcesExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign')
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_source=True)
         elif export_type == 'adgroup-csv':
             filename = '-_by_ad_group_media_source_report'
-            content = export_plus.AccountSourcesExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True)
         elif export_type == 'contentad-csv':
             filename = '-_by_content_ad_media_source_report'
-            content = export_plus.AccountSourcesExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_source=True)
 
         filename = '{0}_{1}_{2}_{3}'.format(
             slugify.slugify(account.name),
@@ -316,15 +316,15 @@ class CampaignSourcesExport(ExportApiView):
         order = request.GET.get('order') or 'name'
         export_type = request.GET.get('type')
 
-        if export_type == 'view-csv':
+        if export_type == 'campaign-csv':
             filename = 'media_source_report'
-            content = export_plus.CampaignSourcesExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields)
+            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_source=True)
         elif export_type == 'adgroup-csv':
             filename = '-_by_ad_group_media_source_report'
-            content = export_plus.CampaignSourcesExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
+            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True)
         elif export_type == 'contentad-csv':
             filename = '-_by_content_ad_media_source_report'
-            content = export_plus.CampaignSourcesExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
+            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_source=True)
 
         filename = '{0}_{1}_{2}_{3}_{4}'.format(
             slugify.slugify(campaign.account.name),
@@ -352,12 +352,12 @@ class AdGroupSourcesExport(ExportApiView):
         order = request.GET.get('order') or 'name'
         export_type = request.GET.get('type')
 
-        if export_type == 'view-csv':
+        if export_type == 'adgroup-csv':
             filename = 'media_source_report'
-            content = export_plus.AdGroupSourcesExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields)
+            content = export_plus.AdGroupExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True)
         elif export_type == 'contentad-csv':
             filename = '-_by_content_ad_media_source_report'
-            content = export_plus.AdGroupSourcesExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
+            content = export_plus.AdGroupExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_source=True)
 
         filename = '{0}_{1}_{2}_{3}_{4}_{5}'.format(
             slugify.slugify(ad_group.campaign.account.name),
@@ -385,9 +385,9 @@ class AllAccountsExport(ExportApiView):
         order = request.GET.get('order') or 'name'
         export_type = request.GET.get('type')
 
-        if export_type == 'view-csv':
+        if export_type == 'account-csv':
             filename = 'ZemantaOne_report'
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields)
+            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='account')
         elif export_type == 'campaign-csv':
             filename = 'ZemantaOne_-_by_campaign_report'
             content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign')

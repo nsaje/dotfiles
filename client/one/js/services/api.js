@@ -2094,11 +2094,11 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     function ExportPlusAllowed() {
         function convertFromApi(data) {
             return {
-                view: data.view,
                 content_ad: data.content_ad,
                 ad_group: data.ad_group,
                 campaign: data.campaign,
-                account: data.account
+                account: data.account,
+                all_accounts: data.all_accounts
             };
         }
 

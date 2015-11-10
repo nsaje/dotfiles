@@ -71,9 +71,9 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         super(AdGroupAdsPlusExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
-    def test_get_view(self):
+    def test_get_content_ad(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'contentad-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,visits'
@@ -145,9 +145,9 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
         super(CampaignAdGroupsExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
-    def test_get_view(self):
+    def test_get_ad_group(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'adgroup-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
@@ -249,9 +249,9 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
         super(AccountCampaignsExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
-    def test_get_view(self):
+    def test_get_by_campaign(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'campaign-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
@@ -379,9 +379,9 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         super(AllAccountsExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
-    def test_get_view(self):
+    def test_get_by_account(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'account-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
@@ -506,9 +506,9 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
         super(AdGroupSourcesExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
-    def test_get_view(self):
+    def test_get_by_adgroup(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'adgroup-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
@@ -570,9 +570,9 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
         super(CampaignSourcesExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
-    def test_get_view(self):
+    def test_get_by_campaign(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'campaign-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
@@ -691,9 +691,9 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
         super(AccountSourcesExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
-    def test_get_view(self):
+    def test_get_by_account(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'account-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'
@@ -846,9 +846,9 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
         super(AllAccountsSourcesExportTestCase, self).tearDown()
         self.query_patcher.stop()
 
-    def test_get_view(self):
+    def test_get_all_accounts(self):
         request = http.HttpRequest()
-        request.GET['type'] = 'view-csv'
+        request.GET['type'] = 'allaccounts-csv'
         request.GET['start_date'] = '2014-06-30'
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,impressions'

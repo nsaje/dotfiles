@@ -461,7 +461,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.chartMetric2 = constants.chartMetric.CLICKS;
             $scope.exportBaseUrl = 'api/' + constants.level.ALL_ACCOUNTS + '/sources/';
             $scope.exportPlusOptions = [
-              {name: 'Current View', value: 'view-csv'},
+              {name: 'Current View', value: 'allaccounts-csv'},
               {name: 'By Account', value: 'account-csv'},
               {name: 'By Campaign', value: 'campaign-csv'},
               {name: 'By Ad Group', value: 'adgroup-csv'}
@@ -471,7 +471,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.chartMetrics = options.accountChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.ACCOUNTS + '/' + $state.params.id + '/sources/';
             $scope.exportPlusOptions = [
-              {name: 'Current View', value: 'view-csv'},
+              {name: 'Current View', value: 'account-csv'},
               {name: 'By Campaign', value: 'campaign-csv'},
               {name: 'By Ad Group', value: 'adgroup-csv'},
               {name: 'By Content Ad', value: 'contentad-csv'}
@@ -481,7 +481,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.chartMetrics = options.campaignChartMetrics;
             $scope.exportBaseUrl = 'api/' + constants.level.CAMPAIGNS + '/' + $state.params.id + '/sources/';
             $scope.exportPlusOptions = [
-              {name: 'Current View', value: 'view-csv'},
+              {name: 'Current View', value: 'campaign-csv'},
               {name: 'By Ad Group', value: 'adgroup-csv'},
               {name: 'By Content Ad', value: 'contentad-csv'}
             ];
