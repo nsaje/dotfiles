@@ -32,7 +32,7 @@ class Command(BaseCommand):
         ad_groups = models.AdGroup.objects.all()
         if ad_group_ids:
             logger.info('Narrowing to user defined ad group selection')
-            ad_groups = ad_groups.filter(pk__in=ad_group_ids)
+            ad_groups = ad_groups.filter(id__in=ad_group_ids)
 
         nr_exceptions = 0
         nr_not_in_sync = 0
@@ -41,23 +41,23 @@ class Command(BaseCommand):
 
             ad_group_settings = ad_group.get_current_settings()
             if not ad_group_settings:
-                logger.warning('Ad group %s does not have settings', ad_group.pk)
+                logger.warning('Ad group %s does not have settings', ad_group.id)
                 continue
 
             if ad_group_settings.archived:
                 # if ad group was specifically selected than let it through
                 # else skip it
-                if not ad_group_ids or ad_group.pk not in ad_group_ids:
+                if not ad_group_ids or ad_group.id not in ad_group_ids:
                     continue
 
             scanned_ad_groups += 1
 
             redirector_adgroup_data = None
             try:
-                redirector_adgroup_data = redirector_helper.get_adgroup(ad_group.pk)
+                redirector_adgroup_data = redirector_helper.get_adgroup(ad_group.id)
             except Exception:
                 logger.exception(
-                    'Cannot retrieve ad group settings from redirector for ad group %d', ad_group.pk)
+                    'Cannot retrieve ad group settings from redirector for ad group %d', ad_group.id)
                 nr_exceptions += 1
                 continue
 
@@ -70,7 +70,7 @@ class Command(BaseCommand):
 
             if diff:
                 nr_not_in_sync += 1
-                logger.warning('Ad group %s is not in sync, differing keys %s', ad_group.pk, diff)
+                logger.error('Ad group %s is not in sync, differing keys %s', ad_group.id, diff)
 
         logger.info(
             'Ad group propagation consistency - %d exceptions, %d not in sync, %d total scanned',
