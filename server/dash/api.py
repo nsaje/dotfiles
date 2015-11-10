@@ -446,11 +446,11 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             content_ad_source.save()
 
     utils.statsd_helper.statsd_incr(
-        'propagation_consistency.content_ad.active_unexisting',
+        'propagation_consistency.content_ad.active_unexisting.{}'.format(ad_group_source.source.tracking_slug),
         nr_unexisting_active_content_ads
     )
     utils.statsd_helper.statsd_incr(
-        'propagation_consistency.content_ad.inconsistent_internal_state',
+        'propagation_consistency.content_ad.inconsistent_internal_state.{}'.format(ad_group_source.source.tracking_slug),
         nr_inconsistent_internal_states
     )
 
