@@ -46,6 +46,7 @@ class Command(BaseCommand):
 
             if ad_group_settings.archived:
                 # if ad group was specifically selected than let it through
+                # else skip it
                 if not ad_group_ids or ad_group.pk not in ad_group_ids:
                     continue
 
