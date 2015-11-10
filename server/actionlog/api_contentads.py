@@ -1,9 +1,7 @@
 import logging
 import sys
 import traceback
-import urlparse
 
-from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import transaction
 
@@ -251,9 +249,7 @@ def _create_action(ad_group_source, action, args={}, content_ad_source=None, req
 
     try:
         with transaction.atomic():
-            callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-            )
+            callback = utils.url_helper.get_full_z1_url(reverse('api.zwei_callback', kwargs={'action_id': action.id}))
 
             payload = {
                 'action': action.action,
