@@ -133,7 +133,7 @@ class InsertAdGroupTest(TestCase):
         call = mock_urlopen.call_args[0][0]
 
         self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group_id))
-        self.assertEqual(call.get_method(), 'POST')
+        self.assertEqual(call.get_method(), 'PUT')
         self.assertEqual(call.data, json.dumps({
             "trackingcode": tracking_codes,
             "enablegatracking": True,
