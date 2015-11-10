@@ -42,3 +42,6 @@ cron:
 
 - hosts: [knot01.zemanta.com]
   job: '0 5,7,9 * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py fetch_reports_by_publisher > /dev/null 2>&1'
+
+- hosts: [knot01.zemanta.com]
+  job: '50 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py monitor_adgroup_propagation --send-stats > /dev/null 2>&1'
