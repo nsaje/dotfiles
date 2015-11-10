@@ -86,6 +86,7 @@ oneApp.directive('zemTable', ['config', '$window', function(config, $window) {
             };
 
             // HACK: campaign goals experiment
+            // to be removed by 20. 11. 2015
             $scope.getRowStyle = function(row) {
                 // check user
                 var allowedUsers = [5, 8, 13, 70];
