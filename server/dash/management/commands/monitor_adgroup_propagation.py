@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--adgroups', metavar='ADGROUPS', nargs='+',
                             help='A list of Ad Group IDs. Separated with spaces.')
-        parser.add_argument('--send-stats', metavar='SEND_STATS', action='store_true')
+        parser.add_argument('--send-stats', action='store_true')
 
     def handle(self, *args, **options):
         ad_group_ids = options['adgroups']
@@ -35,7 +35,8 @@ class Command(BaseCommand):
             ad_groups = ad_groups.filter(pk__in=ad_group_ids)
 
         nr_exceptions = 0
-        nr_not_synced = 0
+        nr_not_in_sync = 0
+        scanned_ad_groups = 0
         for ad_group in ad_groups:
 
             ad_group_settings = ad_group.get_current_settings()
@@ -48,11 +49,16 @@ class Command(BaseCommand):
                 if not ad_group_ids or ad_group.pk not in ad_group_ids:
                     continue
 
+            scanned_ad_groups += 1
+
+            redirector_adgroup_data = None
             try:
                 redirector_adgroup_data = redirector_helper.get_adgroup(ad_group.pk)
-            except Exception as e:
-                logger.exception('Cannot retrieve ad group settings from redirector for ad group %d', ad_group.pk, e)
+            except Exception:
+                logger.exception(
+                    'Cannot retrieve ad group settings from redirector for ad group %d', ad_group.pk)
                 nr_exceptions += 1
+                continue
 
             ad_group_settings_dict = ad_group_settings.get_settings_dict()
 
@@ -62,9 +68,14 @@ class Command(BaseCommand):
                     diff.append(diff_key)
 
             if diff:
-                nr_not_synced += 1
-                logger.warning('Ad group %s is not synced, differing keys %s', ad_group.pk, diff)
+                nr_not_in_sync += 1
+                logger.warning('Ad group %s is not in sync, differing keys %s', ad_group.pk, diff)
+
+        logger.info(
+            'Ad group propagation consistency - %d exceptions, %d not in sync, %d total scanned',
+            nr_exceptions, nr_not_in_sync, scanned_ad_groups
+        )
 
         if options['send_stats']:
             statsd_helper.statsd_gauge('propagation_consistency.ad_group_r1.exceptions', nr_exceptions)
-            statsd_helper.statsd_gauge('propagation_consistency.ad_group_r1.not_in_sync', nr_not_synced)
+            statsd_helper.statsd_gauge('propagation_consistency.ad_group_r1.not_in_sync', nr_not_in_sync)
