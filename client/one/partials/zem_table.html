@@ -30,7 +30,7 @@
                     <tr ng-show="(!rows || !rows.length) && !showLoader">
                         <td class="no-data" colspan="100">No data</td>
                     </tr>
-                    <tr ng-repeat="row in rows" ng-class="{'archived': row.archived}">
+                    <tr ng-repeat="row in rows" ng-class="{'archived': row.archived}" ng-style="getRowStyle(row)">
                         <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link', 'image': col.type === 'image'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
                                 <span ng-switch-when="image">
