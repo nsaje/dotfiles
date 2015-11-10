@@ -1090,7 +1090,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 if publisher.get('exchange'):
                     source_cache[norm_source_slug] = models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
                 if publisher.get('source'):
-                    source_cache[norm_source_slug] = models.Source.objects.filter(name__startswith=source_slug).first()
+                    source_cache[norm_source_slug] = models.Source.objects.filter(name=source_slug).first()
 
             if not source_cache[norm_source_slug]:
                 failed_publisher_mappings.add(source_slug)
