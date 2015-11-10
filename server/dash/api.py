@@ -23,6 +23,7 @@ from dash import consistency
 from dash import region_targeting_helper
 
 import utils.url_helper
+import utils.statsd_helper
 
 logger = logging.getLogger(__name__)
 
@@ -383,10 +384,23 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
     unsynced_content_ad_sources_actions = []
 
+    nr_unexisting_active_content_ads = 0
+    nr_inconsistent_internal_states = 0
+
     for data in content_ad_data:
         content_ad_source = content_ad_sources.get(data['id'])
 
         if content_ad_source is None:
+            if data.get('state') == constants.ContentAdSourceState.ACTIVE:
+                nr_unexisting_active_content_ads += 1
+                logger.error(
+                    ('Found active external content ad that does not exist in database -'
+                     'source=%s, content ad state=%s, submission status=%s, source content ad id=%s)'),
+                    ad_group_source.source.name,
+                    constants.ContentAdSourceState.get_text(data.get('state')),
+                    constants.ContentAdSubmissionStatus.get_text(data.get('submission_status')),
+                    data.get('source_content_ad_id')
+                )
             continue
 
         changed = False
@@ -402,11 +416,13 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         if data['state'] != content_ad_source.content_ad.state:
             logger.info(
-                'Found inconsistent content ad state on media source %s for content ad %d: source state=%d, z1 state=%d, source submission status=%d, z1 submission status=%d',
+                ('Found inconsistent content ad state on media source %s for content ad %d: source state=%d,'
+                 'z1 state=%d, source submission status=%d, z1 submission status=%d'),
                 content_ad_source.source.name, content_ad_source.content_ad.pk,
                 data.get('state'), content_ad_source.content_ad.state,
                 data.get('submission_status'), content_ad_source.submission_status,
             )
+            nr_inconsistent_internal_states += 1
 
         if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
             is_unsynced = all([
@@ -428,6 +444,15 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         if changed:
             content_ad_source.save()
+
+    utils.statsd_helper.statsd_incr(
+        'propagation_consistency.content_ad.active_unexisting',
+        nr_unexisting_active_content_ads
+    )
+    utils.statsd_helper.statsd_incr(
+        'propagation_consistency.content_ad.inconsistent_internal_state',
+        nr_inconsistent_internal_states
+    )
 
     if unsynced_content_ad_sources_actions:
         logger.info(
