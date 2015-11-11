@@ -1,3 +1,5 @@
+import copy
+
 from reports import db_raw_helpers
 from reports import redshift
 from reports import rs_helpers
@@ -32,15 +34,12 @@ class RSTouchpointConversionsModel(redshift.RSModel):
 RSTouchpointConversions = RSTouchpointConversionsModel()
 
 
-def query(start_date, end_date, order=None, breakdown=None, conversion_goals=None, constraints=None):
-    if not breakdown:
-        breakdown = []
+def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], constraints={}):
 
-    if not constraints:
-        constraints = {}
-
-    if not order:
-        order = []
+    breakdown = copy.copy(breakdown)
+    conversion_goals = copy.copy(conversion_goals)
+    order = copy.copy(order)
+    constraints = copy.copy(constraints)
 
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date

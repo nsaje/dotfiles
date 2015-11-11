@@ -489,7 +489,14 @@ var constants = {
     contentAdSourceState: {
         ACTIVE: 1,
         INACTIVE: 2
-    }
+    },
+    exportType: {
+        VIEW: 'view-csv',
+        ACCOUNT: 'account-csv',
+        CAMPAIGN: 'campaign-csv',
+        AD_GROUP: 'adgroup-csv',
+        CONTENT_AD: 'contentad-csv'
+    },
 };
 var options = {
     adGroupSettingsStates: [{name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
