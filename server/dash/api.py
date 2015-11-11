@@ -96,7 +96,11 @@ def update_ad_group_source_state(ad_group_source, conf):
                     source_slug = pub_blacklist['exchange']
                     if source_slug not in source_cache:
                         source_cache[source_slug] =\
-                            models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
+                            models.Source.objects.exclude(
+                                deprecated=True
+                            ).filter(
+                                tracking_slug__endswith=source_slug
+                            ).first()
 
                     if not source_cache[source_slug]:
                         raise Exception('Invalid tracking slug {}'.format(source_slug or ''))
