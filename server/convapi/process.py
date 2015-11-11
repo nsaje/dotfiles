@@ -39,12 +39,7 @@ def _get_dates_to_sync(conversion_pixels):
 def update_touchpoint_conversions_full():
     conversion_pixels = dash.models.ConversionPixel.objects.filter(archived=False)
     date_cp_pairs = _get_dates_to_sync(conversion_pixels)
-
-    try:
-        update_touchpoint_conversions(date_cp_pairs)
-    except:
-        logger.warning('exception updating touchpoint conversions')
-        return
+    update_touchpoint_conversions(date_cp_pairs)
 
     # all missing dates are guaranteed to be synced so last sync dt can be updated
     conversion_pixels.update(last_sync_dt=datetime.datetime.utcnow())
@@ -69,7 +64,11 @@ def update_touchpoint_conversions(date_cp_pairs):
     pool.close()
     pool.join()
 
-    result.get()  # raises an exception if one of the workers raised one
+    try:
+        result.get()  # raises an exception if one of the workers raised one
+    except:
+        logger.exception('exception updating touchpoint conversions')
+        raise
 
 
 @statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
