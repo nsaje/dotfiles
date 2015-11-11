@@ -39,7 +39,7 @@ def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], con
     breakdown = copy.copy(breakdown)
     conversion_goals = copy.copy(conversion_goals)
     order = copy.copy(order)
-    conversion_goals = copy.copy(conversion_goals)
+    constraints = copy.copy(constraints)
 
     constraints['date__gte'] = start_date
     constraints['date__lte'] = end_date
