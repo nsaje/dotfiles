@@ -384,7 +384,7 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
     unsynced_content_ad_sources_actions = []
 
-    nr_unexisting_active_content_ads = 0
+    nr_nonexisting_active_content_ads = 0
     nr_inconsistent_internal_states = 0
 
     for data in content_ad_data:
@@ -392,7 +392,7 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         if content_ad_source is None:
             if data.get('state') == constants.ContentAdSourceState.ACTIVE:
-                nr_unexisting_active_content_ads += 1
+                nr_nonexisting_active_content_ads += 1
                 logger.error(
                     ('Found active external content ad that does not exist in database -'
                      'source=%s, content ad state=%s, submission status=%s, source content ad id=%s)'),
@@ -446,8 +446,8 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             content_ad_source.save()
 
     utils.statsd_helper.statsd_incr(
-        'propagation_consistency.content_ad.active_unexisting.{}'.format(ad_group_source.source.tracking_slug),
-        nr_unexisting_active_content_ads
+        'propagation_consistency.content_ad.active_nonexisting.{}'.format(ad_group_source.source.tracking_slug),
+        nr_nonexisting_active_content_ads
     )
     utils.statsd_helper.statsd_incr(
         'propagation_consistency.content_ad.inconsistent_internal_state.{}'.format(ad_group_source.source.tracking_slug),
