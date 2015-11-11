@@ -1056,7 +1056,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             raise exc.MissingDataError('Invalid level')
 
         publishers_selected = body["publishers_selected"]
-        publishers_not_selected = body["publishers_not_selected"];
+        publishers_not_selected = body["publishers_not_selected"]
 
         select_all = body["select_all"]
         publishers = []
