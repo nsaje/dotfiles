@@ -1744,6 +1744,8 @@ class PublisherBlacklist(models.Model):
         choices=constants.PublisherStatus.get_choices()
     )
 
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
     class Meta:
         unique_together = (('name', 'ad_group', 'source'), )
 
