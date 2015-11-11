@@ -1088,7 +1088,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             norm_source_slug = source_slug.lower()
             if norm_source_slug not in source_cache:
                 if publisher.get('exchange'):
-                    source_cache[norm_source_slug] = models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
+                    source_cache[norm_source_slug] = models.Source.objects.filter(
+                        tracking_slug__endswith=source_slug
+                    ).exclude(deprecated=True).first()
                 if publisher.get('source'):
                     source_cache[norm_source_slug] = models.Source.objects.filter(name=source_slug).first()
 
