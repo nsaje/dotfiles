@@ -378,6 +378,27 @@ class ViewHelpersTestCase(TestCase):
         with self.assertRaises(exc.ValidationError):
             helpers.parse_post_request_content_ad_ids({'ids': ['1', 'a']}, 'ids')
 
+    def test_get_content_ad_data_status(self):
+        ad_group = models.AdGroup.objects.get(id=1)
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group)
+
+        data_status = helpers.get_content_ad_data_status(ad_group, content_ads)
+
+        self.assertEqual({
+            '1': {
+                'message': 'The status of this Content Ad differs on these 3rd party dashboards: AdsNative, Sharethrough.',
+                'ok': False
+            },
+            '2': {
+                'message': 'All data is OK.',
+                'ok': True
+            },
+            '3': {
+                'message': 'All data is OK.',
+                'ok': True
+            },
+        }, data_status)
+
 
 class GetChangedContentAdsTestCase(TestCase):
     fixtures = ['test_api']
