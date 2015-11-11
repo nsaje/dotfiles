@@ -351,6 +351,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         getTableData();
         initColumns();
         setDisabledExportOptions();
+
+        triggerSync();
     };
 
     $scope.loadPage = function(page) {

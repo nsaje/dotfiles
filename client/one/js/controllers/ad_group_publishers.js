@@ -15,6 +15,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.localStoragePrefix = 'adGroupPublishers';
     $scope.sizeRange = [5, 10, 20, 50];
     $scope.size = $scope.sizeRange[0];
+    $scope.isSyncInProgress = false;
     $scope.pagination = {
         currentPage: 1
     };
@@ -136,6 +137,41 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         return false;
     };
+
+    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
+        if (newValue === true && oldValue === false) {
+            pollSyncStatus();
+        }
+    });
+
+    $scope.pollSyncStatus = function() {
+        if ($scope.isSyncInProgress) {
+            $timeout(function() {
+                api.checkPublisherBlacklistSyncProgress.get($state.params.id).then(
+                    function(data) {
+                        $scope.isSyncInProgress = data.is_sync_in_progress;
+
+                        if ($scope.isSyncInProgress === false) {
+                            // we found out that the sync is no longer in progress
+                            // time to reload the data
+                            getTableData();
+                            getDailyStats();
+                        }
+                    },
+                    function(data) {
+                        // error
+                        $scope.isSyncInProgress = false;
+                    }
+                ).finally(function() {
+                    pollSyncStatus();
+                });
+            }, 10000);
+        }
+    };
+
+    $scope.triggerSync = function() {
+        $scope.isSyncInProgress = true;
+    }
 
     $scope.executeBulkAction = function (action) {
         if (!$scope.isAnythingSelected()) {
@@ -333,6 +369,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             publishersNotSelected,
             $scope.selectedAll
         ).then(function () {
+            $scope.triggerSync();
+
             getTableData();
 
             // clear publisher selection
@@ -461,8 +499,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             return;
         }
 
-        getDailyStats();
         getTableData();
+        getDailyStats();
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
