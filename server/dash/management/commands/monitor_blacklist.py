@@ -40,8 +40,8 @@ class Command(BaseCommand):
             if len(batch) > BATCH_SIZE:
                 for entry in batch:
                     totals_data = reports.api_publishers.query_blacklisted_publishers(
-                        datetime.combine(today, datetime.time.min),
-                        datetime.combine(today, datetime.time.max),
+                        datetime.datetime.combine(today, datetime.time.min),
+                        datetime.datetime.combine(today, datetime.time.max),
                         blacklist=batch
                     )
                     clicks += totals_data['clicks']
@@ -54,8 +54,8 @@ class Command(BaseCommand):
         if len(batch) > 0:
             for entry in batch:
                 totals_data = reports.api_publishers.query_blacklisted_publishers(
-                    datetime.combine(today, datetime.time.min),
-                    datetime.combine(today, datetime.time.max),
+                    datetime.datetime.combine(today, datetime.time.min),
+                    datetime.datetime.combine(today, datetime.time.max),
                     blacklist=batch
                 )
                 clicks += totals_data['clicks']
@@ -80,3 +80,6 @@ class Command(BaseCommand):
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cost', cost)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.ctr', ctr)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cpc', cpc)
+
+
+
