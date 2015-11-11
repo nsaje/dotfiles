@@ -94,9 +94,6 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
                 stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
             stat['account'] = models.Account.objects.get(id=stat['account'])
 
-        for goal in conversion_goals:
-            stat[goal.name] = stat.pop(goal.get_view_key(conversion_goals))
-
     ordering = _adjust_ordering_by_name(ordering, dimensions)
     return sort_results(stats, [ordering])
 
