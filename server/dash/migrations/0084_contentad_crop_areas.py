@@ -8,10 +8,12 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('dash', '0083_publisherblacklist_status'),
-        ('dash', '0084_auto_20151105_1455'),
-        ('dash', '0084_contentad_crop_areas'),
-        ('dash', '0084_publisherblacklist_created_dt'),
     ]
 
     operations = [
+        migrations.AddField(
+            model_name='contentad',
+            name='crop_areas',
+            field=models.CharField(max_length=128, null=True),
+        ),
     ]

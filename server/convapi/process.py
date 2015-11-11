@@ -39,7 +39,12 @@ def _get_dates_to_sync(conversion_pixels):
 def update_touchpoint_conversions_full():
     conversion_pixels = dash.models.ConversionPixel.objects.filter(archived=False)
     date_cp_pairs = _get_dates_to_sync(conversion_pixels)
-    update_touchpoint_conversions(date_cp_pairs)
+
+    try:
+        update_touchpoint_conversions(date_cp_pairs)
+    except:
+        logger.warning('exception updating touchpoint conversions')
+        return
 
     # all missing dates are guaranteed to be synced so last sync dt can be updated
     conversion_pixels.update(last_sync_dt=datetime.datetime.utcnow())
@@ -60,9 +65,11 @@ def _update_touchpoint_conversions_date(date_cp_tup):
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')
 def update_touchpoint_conversions(date_cp_pairs):
     pool = ThreadPool(processes=NUM_THREADS)
-    pool.map_async(_update_touchpoint_conversions_date, date_cp_pairs)
+    result = pool.map_async(_update_touchpoint_conversions_date, date_cp_pairs)
     pool.close()
     pool.join()
+
+    result.get()  # raises an exception if one of the workers raised one
 
 
 @statsd_helper.statsd_timer('convapi', 'process_touchpoint_conversions')
@@ -95,12 +102,22 @@ def process_touchpoint_conversions(redirects_impressions):
             content_ad_id = redirect_impression['contentAdId']
             conversion_key = (account_id, slug)
             source_slug = redirect_impression['source']
+            ad_lookup = redirect_impression.get('adLookup', False)
 
             redirect_id = redirect_impression['redirectId']
             redirect_ts = datetime.datetime.strptime(redirect_impression['redirectTimestamp'], '%Y-%m-%dT%H:%M:%SZ')
 
             impression_id = redirect_impression['impressionId']
             impression_ts = datetime.datetime.strptime(redirect_impression['impressionTimestamp'], '%Y-%m-%dT%H:%M:%SZ')
+
+            if content_ad_id == 0:  # legacy simple redirect
+                continue
+
+            if ad_lookup:
+                continue
+
+            if source_slug == 'z1':  # source slug from dashboard visits
+                continue
 
             if redirect_ts > impression_ts:
                 continue
@@ -122,16 +139,14 @@ def process_touchpoint_conversions(redirects_impressions):
             try:
                 ca = dash.models.ContentAd.objects.select_related('ad_group__campaign').get(id=content_ad_id)
             except dash.models.ContentAd.DoesNotExist:
-                if content_ad_id != 0:  # unless legacy simple redirect
-                    logger.warning('Unknown content ad. content_ad_id=%s ad_group_id=%s source=%s',
-                                   content_ad_id, ad_group_id, source_slug)
+                logger.warning('Unknown content ad. content_ad_id=%s ad_group_id=%s source=%s',
+                               content_ad_id, ad_group_id, source_slug)
                 continue
 
             try:
                 source = dash.models.Source.objects.get(tracking_slug=source_slug)
             except dash.models.Source.DoesNotExist:
-                if source_slug != 'z1':  # unless source slug from dashboard visits
-                    logger.warning('Unknown source slug. source=%s', source_slug)
+                logger.warning('Unknown source slug. source=%s', source_slug)
                 continue
 
             if ca.ad_group.campaign.account_id != pixel.account_id:

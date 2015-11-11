@@ -949,6 +949,7 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
     ['title', 'title'],
     ['image_url', 'image_url'],
     ['description', 'description (optional)'],
+    ['crop_areas', 'crop areas (optional)'],
     ['tracker_urls', 'tracker url (optional)']
 ])
 
@@ -997,6 +998,9 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 'description': content_ad.description,
                 'call_to_action': content_ad.call_to_action,
             }
+
+            if content_ad.crop_areas:
+                content_ad_dict['crop_areas'] = content_ad.crop_areas
 
             if content_ad.tracker_urls:
                 content_ad_dict['tracker_urls'] = ' '.join(content_ad.tracker_urls)
@@ -1084,13 +1088,20 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             norm_source_slug = source_slug.lower()
             if norm_source_slug not in source_cache:
                 if publisher.get('exchange'):
-                    source_cache[norm_source_slug] = models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
+                    source_cache[norm_source_slug] = models.Source.objects.filter(
+                        tracking_slug__endswith=source_slug
+                    ).exclude(deprecated=True).first()
                 if publisher.get('source'):
-                    source_cache[norm_source_slug] = models.Source.objects.filter(name__startswith=source_slug).first()
+                    source_cache[norm_source_slug] = models.Source.objects.filter(name=source_slug).first()
 
             if not source_cache[norm_source_slug]:
                 failed_publisher_mappings.add(source_slug)
                 count_failed_publisher += 1
+                continue
+
+            # we currently display sources for which we don't yet have publisher
+            # blacklisting support
+            if not source_cache[norm_source_slug].can_modify_publisher_blacklist_automatically():
                 continue
 
             publisher_tuple = (domain, ad_group.id, source_cache[norm_source_slug].tracking_slug,)

@@ -10,7 +10,12 @@ CONTENT_AD_IDS = []
 content_ads = models.ContentAd.objects.filter(id__in=CONTENT_AD_IDS).select_related('batch')
 
 per_ad_group = defaultdict(list)
+paused_per_ad_group = defaultdict(list)
+
 for content_ad in content_ads:
+    if content_ad.archived:
+        continue
+
     row = {
         'URL': content_ad.url,
         'Title': content_ad.title,
@@ -37,10 +42,20 @@ for content_ad in content_ads:
     if not row['Call to Action']:
         row['Call to Action'] = content_ad.batch.call_to_action
 
-    per_ad_group[content_ad.ad_group_id].append(row)
+    if content_ad.state == 1:
+        per_ad_group[content_ad.ad_group_id].append(row)
+    else:
+        paused_per_ad_group[content_ad.ad_group_id].append(row)
 
 for ad_group_id, rows in per_ad_group.iteritems():
-    with open('~/reupload/reupload_{}.csv'.format(ad_group_id), 'w') as csvfile:
+    with open('/home/one/reupload/reupload_{}_running.csv'.format(ad_group_id), 'w') as csvfile:
+        writer = unicodecsv.DictWriter(csvfile, fieldnames=FIELDNAMES)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+for ad_group_id, rows in paused_per_ad_group.iteritems():
+    with open('/home/one/reupload/reupload_{}_paused.csv'.format(ad_group_id), 'w') as csvfile:
         writer = unicodecsv.DictWriter(csvfile, fieldnames=FIELDNAMES)
         writer.writeheader()
         for row in rows:

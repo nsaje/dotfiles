@@ -29,6 +29,16 @@ describe('AdGroupSourcesCtrlSpec', function() {
 
         $timeout = _$timeout_;
 
+        var mockApiFunc = function() {
+            return {
+                then: function() {
+                    return {
+                        finally: function() {}
+                    };
+                }
+            };
+        };
+
         api = {
             adGroupSourcesUpdates: {get: function() {}},
             adGroupSourcesTable: {get: function() {
@@ -46,8 +56,11 @@ describe('AdGroupSourcesCtrlSpec', function() {
             adGroupSources: {get: function() {
                 return {
                     then: function() {}
-                };
-            }}
+                }
+            }},
+            sourcesExportPlusAllowed: {
+                get: mockApiFunc
+            }
         };
 
         $state.params = {id: 123};

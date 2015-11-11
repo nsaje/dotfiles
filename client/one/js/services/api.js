@@ -503,7 +503,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 }).error(function(data) {
                     deferred.reject(data);
                 });
- 
+
             return deferred.promise;
         };
 
@@ -1206,7 +1206,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     });
                 }).
                 error(function (data, status) {
-                    deferred.reject(); 
+                    deferred.reject();
                 });
 
             return deferred.promise;
@@ -1602,7 +1602,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     });
                 }).
                 error(function (data, status) {
-                    deferred.reject(); 
+                    deferred.reject();
                 });
 
             return deferred.promise;
@@ -1622,7 +1622,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     });
                 }).
                 error(function (data, status) {
-                    deferred.reject(); 
+                    deferred.reject();
                 });
 
             return deferred.promise;
@@ -1797,7 +1797,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         this.list = function (accountId) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + accountId + '/users/';
-            
+
             $http.get(url).
                 success(function (data) {
                     var resource;
@@ -1805,7 +1805,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     if (data && data.data) {
                         resource = data.data;
                     }
-                    
+
                     deferred.resolve(resource);
                 }).
                 error(function (data) {
@@ -2090,6 +2090,47 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function ExportPlusAllowed() {
+        function convertFromApi(data) {
+            return {
+                content_ad: data.content_ad,
+                ad_group: data.ad_group,
+                campaign: data.campaign,
+                account: data.account,
+                all_accounts: data.all_accounts
+            };
+        }
+
+        this.get = function (id_, level_, exportSources) {
+            var deferred = $q.defer();
+
+            var urlId = ((level_ == constants.level.ALL_ACCOUNTS)?'':id_+'/');
+            var urlSources = ((exportSources.valueOf())?'sources/':'');
+            var urlFilteredSources = ((exportSources.valueOf())?'?filtered_sources=' + zemFilterService.getFilteredSources().join(','):'');
+            var url = '/api/' + level_ + '/' + urlId + urlSources + 'export_plus/allowed/' + urlFilteredSources;
+
+            var config = {
+                params: {}
+            };
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    var resource;
+
+                    if (data && data.data) {
+                        resource = convertFromApi(data.data);
+                    }
+
+                    deferred.resolve(resource);
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AdGroupAdsPlusUpload() {
         this.getDefaults = function(adGroupId) {
             var deferred = $q.defer();
@@ -2115,9 +2156,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 }).error(function(data) {
                     deferred.reject(data);
                 });
- 
+
             return deferred.promise;
-            
+
         };
 
         this.upload = function(adGroupId, data) {
@@ -2156,7 +2197,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
                 deferred.reject(result);
             });
- 
+
             return deferred.promise;
         };
 
@@ -2538,6 +2579,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         accountUsers: new AccountUsers(),
         adGroupSourceSettings: new AdGroupSourceSettings(),
         adGroupSourcesUpdates: new AdGroupSourcesUpdates(),
+        exportPlusAllowed: new ExportPlusAllowed(),
         adGroupAdsExportAllowed: new AdGroupAdsExportAllowed(),
         adGroupAdsPlusExportAllowed: new AdGroupAdsPlusExportAllowed(),
         campaignAdGroupsExportAllowed: new CampaignAdGroupsExportAllowed(),
@@ -2550,4 +2592,3 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         // Also, don't forget to add me to DEMO!
     };
 }]);
-

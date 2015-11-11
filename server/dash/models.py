@@ -1466,6 +1466,7 @@ class ContentAd(models.Model):
     image_width = models.PositiveIntegerField(null=True)
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
+    crop_areas = models.CharField(max_length=128, null=True)
 
     redirect_id = models.CharField(max_length=128, null=True)
 
@@ -1743,6 +1744,8 @@ class PublisherBlacklist(models.Model):
         default=constants.PublisherStatus.BLACKLISTED,
         choices=constants.PublisherStatus.get_choices()
     )
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
     class Meta:
         unique_together = (('name', 'ad_group', 'source'), )
