@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        logger.info('Monitor blacklisting.')
+        logger.info('Monitor publisher blacklisting.')
 
         impressions, clicks = 0, 0
         cost, cpc, ctr = 0, 0, 0
@@ -24,6 +24,8 @@ class Command(BaseCommand):
         batch = []
 
         before_yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=2)
+
+        today = datetime.date.today()
 
         for blacklist_entry in dash.models.PublisherBlacklist.objects.filter(
             created_dt__lte=before_yesterday,
@@ -38,9 +40,9 @@ class Command(BaseCommand):
             if len(batch) > BATCH_SIZE:
                 for entry in batch:
                     totals_data = reports.api_publishers.query_blacklisted_publishers(
-                        datetime.datetime.min, before_yesterday,
-                        constraints=constraints,
-                        blacklist=adg_blacklisted_publishers
+                        datetime.combine(today, datetime.time.min),
+                        datetime.combine(today, datetime.time.max),
+                        blacklist=batch
                     )
                     clicks += totals_data['clicks']
                     impressions += totals_data['impressions']
@@ -49,13 +51,12 @@ class Command(BaseCommand):
                     cpc += totals_data['cpc']
                 batch = []
 
-
         if len(batch) > 0:
             for entry in batch:
                 totals_data = reports.api_publishers.query_blacklisted_publishers(
-                    datetime.datetime.min, before_yesterday,
-                    constraints=constraints,
-                    blacklist=adg_blacklisted_publishers
+                    datetime.combine(today, datetime.time.min),
+                    datetime.combine(today, datetime.time.max),
+                    blacklist=batch
                 )
                 clicks += totals_data['clicks']
                 impressions += totals_data['impressions']
@@ -69,14 +70,13 @@ class Command(BaseCommand):
                 'clicks': clicks,
                 'impressions': impressions,
                 'cost': cost,
-                'cost': cost,
                 'cpc': cpc,
                 'ctr': ctr,
             }
         ))
 
-        statsd_helper.statsd_incr('dash.blacklisted_publisher_stats.clicks', clicks)
-        statsd_helper.statsd_incr('dash.blacklisted_publisher_stats.impressions', impressions)
-        statsd_helper.statsd_incr('dash.blacklisted_publisher_stats.cost', cost)
-        statsd_helper.statsd_incr('dash.blacklisted_publisher_stats.ctr', ctr)
-        statsd_helper.statsd_incr('dash.blacklisted_publisher_stats.cpc', cpc)
+        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.clicks', clicks)
+        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.impressions', impressions)
+        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cost', cost)
+        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.ctr', ctr)
+        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cpc', cpc)
