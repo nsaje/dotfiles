@@ -96,7 +96,11 @@ def update_ad_group_source_state(ad_group_source, conf):
                     source_slug = pub_blacklist['exchange']
                     if source_slug not in source_cache:
                         source_cache[source_slug] =\
-                            models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
+                            models.Source.objects.exclude(
+                                deprecated=True
+                            ).filter(
+                                tracking_slug__endswith=source_slug
+                            ).first()
 
                     if not source_cache[source_slug]:
                         raise Exception('Invalid tracking slug {}'.format(source_slug or ''))
@@ -390,6 +394,11 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             continue
 
         changed = False
+
+        # TODO: should it only be updated when it is None?
+        if data.get('source_content_ad_id'):
+            content_ad_source.source_content_ad_id = str(data['source_content_ad_id'])
+            changed = True
 
         if data['state'] != content_ad_source.source_state:
             content_ad_source.source_state = data['state']

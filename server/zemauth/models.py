@@ -151,6 +151,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_publisher_blacklist_status', 'Can see publishers blacklist status'),
             ('can_modify_publisher_blacklist_status', 'Can modify publishers blacklist status'),
             ('conversion_reports', 'Can see conversions and goals in reports'),
+            ('exports_plus', 'Can download reports using new export facilities'),
         )
 
     def get_full_name(self):

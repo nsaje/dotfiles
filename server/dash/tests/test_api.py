@@ -101,6 +101,21 @@ class UpdateContentAdSourceState(TestCase):
         self.assertEqual(content_ad_source.source_state, content_ad_data[0]['state'])
         self.assertEqual(content_ad_source.submission_status, content_ad_data[0]['submission_status'])
 
+    def test_update_multiple_content_ad_source_ids(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        content_ad_data = [{
+            'id': 1,
+            'state': 2,
+            'submission_status': constants.ContentAdSubmissionStatus.APPROVED,
+            'source_content_ad_id': 'asd123'
+        }]
+
+        api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
+
+        content_ad_source = models.ContentAdSource.objects.get(pk=1)
+
+        self.assertEqual(content_ad_source.source_content_ad_id, content_ad_data[0]['source_content_ad_id'])
+
     def test_update_content_ad_source_state(self):
         content_ad_source = models.ContentAdSource.objects.get(pk=1)
         data = {'source_state': 2, 'submission_status': 2}
