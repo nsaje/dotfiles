@@ -146,6 +146,13 @@ class Account(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
+    uses_credits = models.BooleanField(
+        null=False,
+        blank=False,
+        default=False,
+        verbose_name='Uses credits and budgets accounting'
+    )
+
     objects = QuerySetManager()
     demo_objects = DemoManager()
 
@@ -1959,6 +1966,20 @@ class BudgetLineItem(FootprintModel):
 class CreditHistory(HistoryModel):
     credit = models.ForeignKey(CreditLineItem, related_name='history')
 
+
 class BudgetHistory(HistoryModel):
     budget = models.ForeignKey(BudgetLineItem, related_name='history')
 
+
+class BudgetDailyStatement(models.Model):
+    budget = models.ForeignKey(BudgetLineItem)
+    spend = models.DecimalField(
+        decimal_places=4,
+        max_digits=14,
+    )
+    date = models.DateField()
+    dirty = models.BooleanField(default=False)
+
+    class Meta:
+        get_latest_by = 'date'
+        unique_together = ('budget', 'date')
