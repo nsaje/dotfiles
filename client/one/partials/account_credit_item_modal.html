@@ -1,5 +1,5 @@
 <div class="modal-body modal-page">
-	<h3 ng-if="isNew">New Credit Item</h3>
+	<h3 ng-if="isNew">Add Credit</h3>
 	<h3 ng-if="!isNew">Edit Credit Item</h3>
 	<div class="loader" ng-show="isLoadingInProgress"></div>
 	<form id="form-account-credit-item" class="form-horizontal" ng-class="{ 'new': isNew, 'edit': !isNew }" ng-show="!isLoadingInProgress">
@@ -10,29 +10,29 @@
 			<label class="col-xs-8">Created by {{ user.name }} on {{ today }}</label>
 		</div>
 		<div class="form-group" ng-class="{'has-error': !!errors.startDate}">
-            <label for="start-date-input" class="col-xs-4 control-label">
+            <label for="start-date-input" class="col-xs-3 control-label">
                 Valid from
             </label>
             <div class="col-xs-4">
-                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.startDate" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')" ng-disabled="!isNew">
+                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.startDate" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')" ng-disabled="isSigned">
             </div>
-            <label ng-repeat="error in errors.startDate" class="control-label error" for="start-date-input">{{ error }}</label>
+            <label ng-repeat="error in errors.startDate" class="col-xs-5 control-label error" for="start-date-input">{{ error }}</label>
         </div>
 		<div class="form-group" ng-class="{'has-error': !!errors.endDate}">
-            <label for="end-date-input" class="col-xs-4 control-label">
-                Valid To
+            <label for="end-date-input" class="col-xs-3 control-label">
+                Valid Toc
             </label>
             <div class="col-xs-4">
-                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
+                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.endDate" min-date="minDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
             </div>
-            <label ng-repeat="error in errors.endDate" class="control-label error" for="end-date-input">{{ error }}</label>
+            <label ng-repeat="error in errors.endDate" class="col-xs-5 control-label error" for="end-date-input">{{ error }}</label>
         </div>
 		<div class="form-group" ng-class="{'has-error': !!errors.licenseFee}">
-			<label for="license-fee-input" class="col-xs-4 control-label">
+			<label for="license-fee-input" class="col-xs-3 control-label">
                 Variable License Fee
             </label>
             <div class="col-xs-4">
-                <ui-select theme="select2" id="license-fee-select" class="form-control" ng-model="creditItem.licenseFee" ng-disabled="!isNew">
+                <ui-select theme="select2" id="license-fee-select" class="form-control" ng-model="creditItem.licenseFee" ng-disabled="isSigned">
                     <ui-select-match>{{$select.selected}}</ui-select-match>
                     <ui-select-choices repeat="fee in getLicenseFees($select.search) | filter: $select.search">
                         <span ng-bind-html="fee"></span>
@@ -40,38 +40,88 @@
                 </ui-select>
             </div>
 
-            <label ng-repeat="error in errors.licenseFee" class="control-label error" for="license-fee">{{ error }}</label>
+            <label ng-repeat="error in errors.licenseFee" class="col-xs-5 control-label error" for="license-fee">{{ error }}</label>
 		</div>
 		<div class="form-group" ng-class="{'has-error': !!errors.amount}">
-			<label for="amount-input" class="col-xs-4 control-label">
+			<label for="amount-input" class="col-xs-3 control-label">
                 Available Credit
             </label>
             <div class="col-xs-4">
 				<div class="input-group">
 					<span class="input-group-addon">$</span>
-					<input id="amount-input" type="text" class="form-control" ng-model="creditItem.amount" ng-disabled="!isNew">
+					<input id="amount-input" type="text" class="form-control" ng-model="creditItem.amount" ng-disabled="isSigned">
 				</div>
             </div>
 
-            <label ng-repeat="error in errors.amount" class="control-label error" for="amount">{{ error }}</label>
+            <label ng-repeat="error in errors.amount" class="col-xs-5 control-label error" for="amount">{{ error }}</label>
 		</div>
 		<div class="form-group" ng-class="{'has-error': !!errors.comment}">
-			<label for="comment-input" class="col-xs-4 control-label">
+			<label for="comment-input" class="col-xs-3 control-label">
                 Custom Notes
             </label>
             <div class="col-xs-4">
-                <textarea id="comment-input" type="text" class="form-control" ng-model="creditItem.comment" ng-disabled="!isNew"></textarea>
+                <textarea id="comment-input" type="text" class="form-control" ng-model="creditItem.comment" ng-disabled="isSigned"></textarea>
             </div>
-            <label ng-repeat="error in errors.comment" class="control-label error" for="comment">{{ error }}</label>
+            <label ng-repeat="error in errors.comment" class="col-xs-5 control-label error" for="comment">{{ error }}</label>
 		</div>
+
+		<hr ng-show="!isNew"/>
+
+		<div class="form-group" ng-show="!isNew">
+			<label class="col-xs-8 control-label">
+                Allocated budget items
+            </label>
+		</div>
+		<div class="scrollable" ng-show="!isNew">
+			<table>
+				<thead>
+					<tr>
+						<th>Campaign</amount</th>
+333 th>
+						<th>Budget			<th>Total spend</th>
+						<th>Flight dates</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="item in creditItem.budgets">
+						<td>{{ item.campaign }}</td>
+						<td>{{ item.total | decimalCurrency:"$":2  }}</td>
+						<td>{{ item.spend | decimalCurrency:"$":2  }}</td>
+						<td>{{ item.startDate }} - {{ item.endDate }}</td>
+					</tr>
+					<tr ng-show="!creditItem.numOfBudgets" class="message">
+						<td colspan="9">No allocated budget items.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<hr />
+
+		<div class="form-group" ng-show="!isNew">
+			<label for="is-signed-input" class="col-xs-8 control-label">
+                By signing the credit line item, no more future changes to the amount, fee and start date will be possible.
+            </label>
+		</div>
+		<div class="form-group" ng-class="{'has-error': !!errors.status}" ng-show="!isNew">
+			<div class="col-xs-8">
+                <label>
+					<input type="checkbox" ng-model="isSigned" ng-disabled="creditItem.isSigned"> signed
+				</label>
+            </div>
+            <label ng-repeat="error in errors.status" class="control-label error" for="is-signed-input">{{ error }}</label>
+		</div>
+		
+		<hr ng-show="!isNew" />
+
 		<div class="form-group">
-			<div class="col-xs-4">
+			<div class="col-xs-3">
 				<button type="button" class="btn btn-primary" ng-click="saveCreditItem()">Save</button>
 			</div>
-			<div class="col-xs-4">
+			<div class="col-xs-3">
 				<button type="button" class="btn btn-default" ng-click="discardCreditItem()">Discard</button>
 			</div>
-			<div class="col-xs-4" ng-if="canDelete">
+			<div class="col-xs-3" ng-if="canDelete">
 				<button type="button" class="btn btn-danger" ng-click="deleteCreditItem()">Delete</button>
 			</div>
 		</div>
@@ -81,130 +131,4 @@
 		<span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
 		<span ng-show="discarded" class="success">Your updates have been discarded.</span>
 	</form>
-	<h3>Allocated Budget Items</h3>
-	<div class="scrollable">
-		<table>
-			<thead>
-				<tr>
-					<th>Campaign</th>
-					<th>Budget amount</th>
-					<th>Total spend</th>
-					<th>Signed</th>
-					<th>Flight dates</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>test 1</td>
-					<td>$10,000</td>
-					<td>$5,000</td>
-					<td>3/3/2015 - 4/4/2015</td>
-					<td>
-						<ul class="row-actions">
-							<li>link</li>
-						</ul>
-					</td>
-				</tr>
-				<tr>
-					<td>test 1</td>
-					<td>$10,000</td>
-					<td>$5,000</td>
-					<td>3/3/2015 - 4/4/2015</td>
-					<td>
-						<ul class="row-actions">
-							<li>link</li>
-						</ul>
-					</td>
-				</tr>
-				<tr>
-					<td>test 1</td>
-					<td>$10,000</td>
-					<td>$5,000</td>
-					<td>3/3/2015 - 4/4/2015</td>
-					<td>
-						<ul class="row-actions">
-							<li>link</li>
-						</ul>
-					</td>
-				</tr>
-				<tr>
-					<td>test 1</td>
-					<td>$10,000</td>
-					<td>$5,000</td>
-					<td>3/3/2015 - 4/4/2015</td>
-					<td>
-						<ul class="row-actions">
-							<li>link</li>
-						</ul>
-					</td>
-				</tr>
-				<tr>
-					<td>test 1</td>
-					<td>$10,000</td>
-					<td>$5,000</td>
-					<td>3/3/2015 - 4/4/2015</td>
-					<td>
-						<ul class="row-actions">
-							<li>link</li>
-						</ul>
-					</td>
-				</tr>
-				<tr>
-					<td>test 1</td>
-					<td>$10,000</td>
-					<td>$5,000</td>
-					<td>3/3/2015 - 4/4/2015</td>
-					<td>
-						<ul class="row-actions">
-							<li>link</li>
-						</ul>
-					</td>
-				</tr>
-				<tr>
-					<td>test 1</td>
-					<td>$10,000</td>
-					<td>$5,000</td>
-					<td>3/3/2015 - 4/4/2015</td>
-					<td>
-						<ul class="row-actions">
-							<li>link</li>
-						</ul>
-					</td>
-				</tr>
-				<tr>
-					<td>test 1</td>
-					<td>$10,000</td>
-					<td>$5,000</td>
-					<td>3/3/2015 - 4/4/2015</td>
-					<td>
-						<ul class="row-actions">
-							<li>link</li>
-						</ul>
-					</td>
-				</tr>
-				<tr>
-					<td>test 1</td>
-					<td>$10,000</td>
-					<td>$5,000</td>
-					<td>3/3/2015 - 4/4/2015</td>
-					<td>
-						<ul class="row-actions">
-							<li>link</li>
-						</ul>
-					</td>
-				</tr>
-				<tr>
-					<td>test 1</td>
-					<td>$10,000</td>
-					<td>$5,000</td>
-					<td>3/3/2015 - 4/4/2015</td>
-					<td>
-						<ul class="row-actions">
-							<li>link</li>
-						</ul>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
 </div>

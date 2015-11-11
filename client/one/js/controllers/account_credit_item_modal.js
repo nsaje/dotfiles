@@ -6,6 +6,7 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
     $scope.endDatePicker = { isOpen: false };
     $scope.isLoadingInProgress = false;
     $scope.canDelete = false;
+    $scope.minDate = null;
     $scope.creditItem = {};
     $scope.errors = {};
 
@@ -32,6 +33,9 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
     };
 
     $scope.saveCreditItem = function () {
+        if (!$scope.creditItem.isSigned && $scope.isSigned) {
+            $scope.creditItem.status = constants.creditLineItemStatus.SIGNED;
+        }
         api.accountCredit[
             $scope.isNew ? 'create' : 'save'
         ]($scope.account.id, $scope.creditItem).then(closeModal, function (resp) {
@@ -49,6 +53,7 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
         $modalInstance.close(null);
     };
     $scope.deleteCreditItem = function () {
+        if (!confirm("Are you sure you want to delete the credit line item?")) { return; }
         api.accountCredit.delete($scope.account.id, $scope.selectedCreditItemId).then(function () {
             $modalInstance.close(true);
         });
@@ -57,14 +62,17 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
     $scope.init = function () {
         var itemId = $scope.selectedCreditItemId;
         $scope.isNew = true;
+        $scope.isSigned = false;
         $scope.canDelete = false;
+        $scope.minDate = null;
         if (itemId !== null) {
             $scope.isLoadingInProgress = true;
             $scope.isNew = false;
             api.accountCredit.get($scope.account.id, itemId).then(function (data) {
                 $scope.creditItem = data;
-                console.log(data)
+                $scope.isSigned = data.isSigned;
                 $scope.canDelete = !data.isSigned && !data.numOfBudgets;
+                $scope.minDate = data.endDate;
             }).finally(function () {
                 $scope.isLoadingInProgress = false;
             });
@@ -73,7 +81,7 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
 
     function closeModal(data) {
         $timeout(function() {
-            $modalInstance.close(data.id ? null : data);
+            $modalInstance.close(data.id ? true : data);
         }, 1000);
     }
 

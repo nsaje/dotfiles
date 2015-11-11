@@ -1,8 +1,7 @@
 /*globals oneApp*/
 oneApp.controller('AccountCreditCtrl', ['$scope', '$state', '$modal', 'api', function ($scope, $state, $modal, api) {
     function error() {}
-    function updateView(data, messages) {
-        console.log(data)
+    function updateView(data) {
         if (data === null) {
             error();
             return;
@@ -19,7 +18,8 @@ oneApp.controller('AccountCreditCtrl', ['$scope', '$state', '$modal', 'api', fun
             templateUrl: '/partials/account_credit_item_modal.html',
             controller: 'AccountCreditItemModalCtrl',
             windowClass: 'modal',
-            scope: $scope
+            scope: $scope,
+            size: 'wide'
         });
         modalInstance.result.then(updateView);
         return modalInstance;

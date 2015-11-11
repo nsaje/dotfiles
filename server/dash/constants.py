@@ -1124,9 +1124,11 @@ class BudgetLineItemState(ConstantBase):
     ACTIVE = 1
     PENDING = 2
     INACTIVE = 3
+    DEPLETED = 4
 
     _VALUES = {
         ACTIVE: 'Active',
         PENDING: 'Pending',
         INACTIVE: 'Inactive',
+        DEPLETED: 'Depleted',
     }

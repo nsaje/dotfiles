@@ -5,17 +5,19 @@
 
 		<div class="section named-data">
 			<div class="name">Currently Available Active Total Budget</div>
-			<div class="value">$31,123</div>
+			<div class="value">{{ budgetTotals.currentAvailable | decimalCurrency:"$":2 }}</div>
 			<div class="name bottomborder">Unallocated Account Credit</div>
-			<div class="value bottomborder">$9,900</div>
+			<div class="value bottomborder">
+				{{ budgetTotals.currentUnallocated | decimalCurrency:"$":2 }}
+			</div>
 			<div class="name">Lifetime Campaign Spend</div>
-			<div class="value">$31,123</div>
+			<div class="value">{{ budgetTotals.lifetimeCampaignSpend | decimalCurrency:"$":2 }}</div>
 			<div class="name">Lifetime Media Spend</div>
-			<div class="value">$9,900</div>
+			<div class="value">{{ budgetTotals.lifetimeMediaSpend | decimalCurrency:"$":2 }}</div>
 			<div class="name">Lifetime Data Spend</div>
-			<div class="value">$31,123</div>
+			<div class="value">{{ budgetTotals.lifetimeDataSpend | decimalCurrency:"$":2 }}</div>
 			<div class="name">Lifetime License Fee</div>
-			<div class="value">$9,900</div>
+			<div class="value">{{ budgetTotals.lifetimeLicenseFee | decimalCurrency:"$":2 }}</div>
 		</div>
 	</div>
 	<div class="section budgets-active-pending">
@@ -34,27 +36,33 @@
                 </tr>
             </thead>
             <tbody>
-				<tr>
-					<td>6/3/2015</td>
-					<td>6/30/2015</td>
-					<td>$50,000</td>
-					<td>20%</td>
-					<td>$12,000</td>
-					<td>38,000</td>
-					<td>Empty note</td>
+				<tr ng-repeat="item in activeBudget">
+					<td>{{ item.startDate }}</td>
+					<td>{{ item.endDate }}</td>
+
+					<td>{{ item.total | decimalCurrency:"$":2  }}</td>
+					<td>{{ item.licenseFee  }}</td>
+					<td>{{ item.spend | decimalCurrency:"$":2  }}</td>
+					<td>{{ item.available | decimalCurrency:"$":2  }}</td>
+
+					<td>{{ item.comment }}</td>
+					
 					<td>
 						<ul class="row-actions">
-							<li>edit</li>
+							<li ng-click="editBudgetItem(item.id)">edit</li>
 						</ul>
 					</td>
+				</tr>
+				<tr ng-show="!activeBudget.length" class="message">
+					<td colspan="9">No active budget items.</td>
 				</tr>
             </tbody>
         </table>
 	</div>
 
-	<button type="button" class="btn btn-default" ng-click="addBudgetItem()">Add Budget Item</button>
+	<button type="button" class="btn btn-default" ng-click="addBudgetItem()" ng-disabled="!availableCredit.length">Add Budget Item</button>
 	
-	<div class="section budgets-active-pending">
+	<div class="section budgets-past-pending">
 		<div class="title">Depleted Budget Items</div>
 
 		<table>
@@ -71,33 +79,25 @@
                 </tr>
             </thead>
             <tbody>
-				<tr>
-					<td>6/3/2015</td>
-					<td>6/30/2015</td>
-					<td>$50,000</td>
-					<td>20%</td>
-					<td>$12,000</td>
-					<td>38,000</td>
-					<td>Empty note</td>
+				<tr ng-repeat="item in pastBudget">
+					<td>{{ item.startDate }}</td>
+					<td>{{ item.endDate }}</td>
+
+					<td>{{ item.total | decimalCurrency:"$":2  }}</td>
+					<td>{{ item.licenseFee  }}</td>
+					<td>{{ item.spend | decimalCurrency:"$":2  }}</td>
+					<td>{{ item.available | decimalCurrency:"$":2  }}</td>
+
+					<td>{{ item.comment }}</td>
+					
 					<td>
 						<ul class="row-actions">
-							<li>edit</li>
+							<li ng-click="editBudgetItem(item.id)" ng-if="item.isEditable">edit</li>
 						</ul>
 					</td>
 				</tr>
-				<tr>
-					<td>6/3/2015</td>
-					<td>6/30/2015</td>
-					<td>$50,000</td>
-					<td>20%</td>
-					<td>$12,000</td>
-					<td>38,000</td>
-					<td>Empty note</td>
-					<td>
-						<ul class="row-actions">
-							<li>edit</li>
-						</ul>
-					</td>
+				<tr ng-show="!pastBudget.length" class="message">
+					<td colspan="9">No active budget items.</td>
 				</tr>
             </tbody>
         </table>

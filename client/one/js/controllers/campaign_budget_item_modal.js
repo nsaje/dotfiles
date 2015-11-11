@@ -1,7 +1,19 @@
 /* globals angular,oneApp,defaults,moment */
-oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', function($scope, $modalInstance) {
+oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$timeout', 'api', function($scope, $modalInstance, $timeout, api) {
     $scope.today = moment().format('M/D/YYYY');
     $scope.isNew = true;
+    $scope.startDatePicker = { isOpen: false };
+    $scope.endDatePicker = { isOpen: false };
+    $scope.isLoadingInProgress = false;
+    $scope.canDelete = false;
+    $scope.budgetItem = {};
+    $scope.errors = {};
+    $scope.minDate = null;
+    $scope.maxDate = null;
+    
+    $scope.initStartDate = null; 
+    $scope.endStartDate = null; 
+    
     $scope.getLicenseFees = function(search) {
         // use fresh instance because we modify the collection on the fly
         var fees = ['15', '20', '25'];
@@ -14,9 +26,6 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', fu
         return fees;
     };
 
-    $scope.startDatePicker = {isOpen: false};
-    $scope.endDatePicker = {isOpen: false};
-
     $scope.openDatePicker = function (type) {
         if (type === 'startDate') {
             $scope.startDatePicker.isOpen = true;
@@ -25,13 +34,78 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', fu
         }
     };
 
-    $scope.minDate = "10/1/2015";
-    $scope.maxDate = "12/1/2015";
+    $scope.checkCreditDates = function () {
+        $timeout(function () {
+            var id = $scope.budgetItem.credit.id;
+            $scope.availableCredit.forEach(function (obj) {
+                if (obj.id !== id) { return; }
+            
+                $scope.minDate = obj.startDate;
+                $scope.maxDate = obj.endDate;
+                $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
+                $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
+            });
+        }, 100); // to be sure that the selected id is correct
+        
+    };
 
-    $scope.credits = [
-        {id : 1, name: 'Item One ($10.000 available thru 12/1/2015, 20% fee)'},
-        {id : 2, name: 'Item Two ($5.000 available thru 11/11/2015, 21% fee)'},
-        {id : 3, name: 'Item Three ($22.000 available thru 1/1/2016, 0% fee)'}
-    ];
-    $scope.numOfCredits = $scope.credits.length;
+    $scope.saveBudgetItem = function () {
+        $scope.saveRequestInProgress = true;
+        $scope.budgetItem.id = $scope.selectedBudgetId;
+        api.campaignBudgetPlus[
+            $scope.isNew ? 'create' : 'save'
+        ]($scope.campaign.id, $scope.budgetItem).then(function () {
+            $scope.saved = true;
+            $timeout($modalInstance.close, 1000);
+        }, function (resp) {
+            if (resp.data.data.errors) {
+                $scope.errors = {
+                    amount: resp.data.data.errors.amount,
+                    startDate: resp.data.data.errors.start_date,
+                    endDate: resp.data.data.errors.end_date,
+                    comment: resp.data.data.errors.comment,
+                    credit: resp.data.data.errors.credit
+                };
+            } else {
+                $scope.saved = false;
+            }
+        }).finally(function () {
+            $scope.saveRequestInProgress = false;
+        });
+    };
+
+    $scope.discardBudgetItem = function () {
+        $modalInstance.close();
+    };
+
+    $scope.init = function () {
+        $scope.saveRequestInProgress = false;
+        $scope.isNew = $scope.selectedBudgetId === null;
+        
+        $scope.minDate = $scope.availableCredit[0].startDate;
+        $scope.maxDate = $scope.availableCredit[0].endDate;
+        $scope.initStartDate = moment($scope.minDate).toDate();
+        $scope.initEndDate = moment($scope.maxDate).toDate();
+
+        if ($scope.isNew) {
+            $scope.budgetItem.credit = {};
+            $scope.budgetItem.credit.id = $scope.availableCredit[0].id;
+        } else {
+            api.campaignBudgetPlus.get(
+                $scope.campaign.id,
+                $scope.selectedBudgetId
+            ).then(function (data) {
+                $scope.budgetItem = data;
+                
+                $scope.minDate = data.startDate;
+                $scope.maxDate = data.endDate;
+                $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
+                $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
+            }, function () {
+                
+            });
+        }
+    };
+
+    $scope.init();
 }]);

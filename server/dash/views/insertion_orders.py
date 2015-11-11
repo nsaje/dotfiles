@@ -7,14 +7,23 @@ from dash.views import helpers
 class AccountCreditView(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_credit_get')
     def get(self, request, account_id):
-        return self._get_response(account_id)
+        if not request.user.has_perm('zemauth.account_credit_view'):
+            raise exc.AuthorizationError()
+        account = helpers.get_account(request.user, account_id)
+        return self._get_response(account.id)
 
     @statsd_helper.statsd_timer('dash.api', 'account_credit_put')
     def put(self, request, account_id):
+        if not request.user.has_perm('zemauth.account_credit_view'):
+            raise exc.AuthorizationError()
+        account = helpers.get_account(request.user, account_id)
+        
         data = json.loads(request.body)
         data['status'] = constants.CreditLineItemStatus.PENDING
-        data['account'] = account_id
-        data['license_fee'] = helpers.format_percent_to_decimal(data['license_fee'])
+        data['account'] = account.id
+
+        if 'license_fee' in data:
+            data['license_fee'] = helpers.format_percent_to_decimal(data['license_fee'])
         errors = {}
 
         item = forms.NewCreditLineItemForm(data)
@@ -41,6 +50,9 @@ class AccountCreditView(api_common.BaseApiView):
             'license_fee': helpers.format_decimal_to_percent(item.license_fee) + '%',
             'total': item.amount,
             'allocated': allocated,
+            'budgets': [
+                { 'id': b.pk, 'amount': b.amount } for b in item.budgets.all()
+            ],
             'available': item.amount - allocated,
         }
 
@@ -83,22 +95,42 @@ class AccountCreditView(api_common.BaseApiView):
 class AccountCreditItemView(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_credit_item_get')
     def get(self, request, account_id, credit_id):
-        item = models.CreditLineItem.objects.get(account_id=account_id, pk=credit_id)
+        if not request.user.has_perm('zemauth.account_credit_view'):
+            raise exc.AuthorizationError()
+
+        account = helpers.get_account(request.user, account_id)
+        item = models.CreditLineItem.objects.get(account_id=account.id, pk=credit_id)
         return self._get_response(item)
 
     @statsd_helper.statsd_timer('dash.api', 'account_credit_item_delete')
     def delete(self, request, account_id, credit_id):
-        item = models.CreditLineItem.objects.get(account_id=account_id, pk=credit_id)
+        if not request.user.has_perm('zemauth.account_credit_view'):
+            raise exc.AuthorizationError()
+        
+        account = helpers.get_account(request.user, account_id)
+        item = models.CreditLineItem.objects.get(account_id=account.id, pk=credit_id)
         item.delete()
         return self.create_api_response(True)
     
 
     @statsd_helper.statsd_timer('dash.api', 'account_credit_item_pust')
     def post(self, request, account_id, credit_id):
-        item = models.CreditLineItem.objects.get(account_id=account_id, pk=credit_id)
+        if not request.user.has_perm('zemauth.account_credit_view'):
+            raise exc.AuthorizationError()
+        
+        account = helpers.get_account(request.user, account_id)
+        item = models.CreditLineItem.objects.get(account_id=account.id, pk=credit_id)
         data = json.loads(request.body)
-        item.end_date = data['end_date']
-        item_form = forms.CreditLineItemForm(instance=item)
+
+        data['status'] = item.status
+
+        if 'is_signed' in data:
+            data['status'] = constants.CreditLineItemStatus.SIGNED
+            del data['is_signed']
+        if 'license_fee' in data:
+            data['license_fee'] = helpers.format_percent_to_decimal(data['license_fee'])
+
+        item_form = forms.CreditLineItemForm(data, instance=item)
 
         errors = {}
         errors.update(item_form.errors)
@@ -106,8 +138,7 @@ class AccountCreditItemView(api_common.BaseApiView):
         if errors:
             raise exc.ValidationError(errors=errors)
 
-        #item.save(Form)
-        
+        item_form.save()
         return self._get_response(item)
 
     def _get_response(self, item):
@@ -120,9 +151,18 @@ class AccountCreditItemView(api_common.BaseApiView):
             'is_signed': item.status == constants.CreditLineItemStatus.SIGNED,
             'license_fee': helpers.format_decimal_to_percent(item.license_fee) + '%',
             'amount': item.amount,
+            'account_id': item.account_id,
             'comment': item.comment,
             'budgets': [
-                
+                {
+                    'campaign': str(b.campaign),
+                    'id': b.pk,
+                    'total': b.amount,
+                    'spend': b.get_spend_amount(),
+                    'start_date': b.start_date,
+                    'end_date': b.end_date,
+                }
+                for b in item.budgets.all()
             ],
         })
 
@@ -130,49 +170,148 @@ class AccountCreditItemView(api_common.BaseApiView):
 class CampaignBudgetView(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_plus_get')
     def get(self, request, campaign_id):
-        return self._get_response(campaign_id)
+        if not request.user.has_perm('zemauth.campaign_budget_view'):
+            raise exc.AuthorizationError()
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        return self._get_response(campaign.id)
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_plus_put')
     def put(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.campaign_budget_view'):
+            raise exc.AuthorizationError()
+        campaign = helpers.get_campaign(request.user, campaign_id)
         data = json.loads(request.body)
+
+        data['campaign'] = campaign.id
+        errors = {}
+
+        item = forms.BudgetLineItemForm(data)
         
-        # TODO: create item
+        errors.update(item.errors)
+
+        if errors:
+            raise exc.ValidationError(errors=errors)
+
+        item.instance.created_by = request.user
+        item.save()
+        
         return self._get_response(campaign_id)
 
+    def _prepare_item(self, item):
+        spend = item.get_spend_amount()
+        return {
+            'id': item.pk,
+            'start_date': item.start_date,
+            'end_date': item.end_date,
+            'state': item.state(),
+            'license_fee': helpers.format_decimal_to_percent(item.credit.license_fee) + '%',
+            'total': item.amount,
+            'spend': spend,
+            'available': item.amount - spend,
+            'is_editable': item.is_editable(),
+            'comment': item.comment,
+        }
+
     def _get_response(self, campaign_id):
+        budget_items = models.BudgetLineItem.objects.filter(
+            campaign_id=campaign_id,
+        ).select_related('credit')
         return self.create_api_response({
-            'active': self._get_active_credit(budget_id, budget_items),
-            'past': self._get_past_credit(budget_id, budget_items),
-            'totals': self._get_credit_totals(budget_id, budget_items),
+            'active': self._get_active_budget(budget_items),
+            'past': self._get_past_budget(budget_items),
+            'totals': self._get_budget_totals(budget_items),
+            'credits': self._get_available_credit_items(campaign_id),
         })
 
-    def _get_active_budget(self, budget_id):
-        return []
+    def _get_available_credit_items(self, campaign_id):
+        available_credits = models.CreditLineItem.objects.filter(
+            account=models.Campaign.objects.get(pk=campaign_id).account
+        )
+        return [
+            {
+                'id': credit.pk,
+                'name': str(credit),
+                'start_date': credit.start_date,
+                'end_date': credit.end_date
+            }
+            for credit in available_credits if credit.is_available()
+        ]
+
+    def _get_active_budget(self, items):
+        return [self._prepare_item(b) for b in items if b.state() in (
+            constants.BudgetLineItemState.ACTIVE,
+            constants.BudgetLineItemState.PENDING,
+        )]
     
-    def _get_past_budget(self, budget_id):
-        return []
+    def _get_past_budget(self, items):
+        return [self._prepare_item(b) for b in items if b.state() in (
+            constants.BudgetLineItemState.DEPLETED,
+            constants.BudgetLineItemState.INACTIVE,
+        )]
     
     def _get_budget_totals(self, budget_id):
-        # TODO: calculate totals
+        #TODO: implement
         return {
             'current': {
-                'available': '0',
-                'unallocated': '0',
+                'available': '31123',
+                'unallocated': '9900',
             },
             'lifetime': {
-                'campaign_spend': '0',
-                'media_spend': '0',
-                'data_spend': '0',
-                'license_fee': '0',
+                'campaign_spend': '31123',
+                'media_spend': '9900',
+                'data_spend': '31123',
+                'license_fee': '9900',
             }
         }
 
 
 class CampaignBudgetItemView(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_get')
-    def get(self, request, campaign_id):
-        pass
+    def get(self, request, campaign_id, budget_id):
+        if not request.user.has_perm('zemauth.campaign_budget_view'):
+            raise exc.AuthorizationError()
+        item = models.BudgetLineItem.objects.get(
+            campaign_id=campaign_id,
+            pk=budget_id,
+        )
+        return self._get_response(item)
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_post')
-    def post(self, request, campaign_id):
-        pass
+    def post(self, request, campaign_id, budget_id):
+        if not request.user.has_perm('zemauth.campaign_budget_view'):
+            raise exc.AuthorizationError()
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        data = json.loads(request.body)
+        
+        data['campaign'] = campaign.id
+        errors = {}
+
+        item = forms.BudgetLineItemForm(
+            data,
+            instance=models.BudgetLineItem.objects.get(campaign_id=campaign_id, pk=budget_id)
+        )
+        
+        errors.update(item.errors)
+
+        if errors:
+            raise exc.ValidationError(errors=errors)
+
+        item.save()
+        
+        return self._get_response(item.instance)
+
+    def _get_response(self, item):
+        return self.create_api_response({
+            'amount': item.amount,
+            'created_by': str(item.created_by),
+            'created_at': item.created_dt,
+            'start_date': item.start_date,
+            'end_date': item.end_date,
+            'comment': item.comment,
+            'is_editable': item.is_editable(),
+            'credit': {
+                'id': item.credit.pk,
+                'name': str(item.credit),
+                'license_fee': item.credit.license_fee,
+            }
+        })

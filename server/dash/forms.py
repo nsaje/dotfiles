@@ -630,7 +630,7 @@ class NewCreditLineItemForm(CreditLineItemForm):
         start_date = self.cleaned_data['start_date']
         today = dates_helper.local_today()
         if start_date <= today:
-            raise forms.ValidationError('Start date has to be greater than today.')
+            raise forms.ValidationError('Start date has to be in the future.')
         return start_date    
 
     class Meta:
@@ -646,14 +646,14 @@ class BudgetLineItemForm(forms.ModelForm):
         start_date = self.cleaned_data['start_date']
         today = dates_helper.local_today()
         if start_date <= today:
-            raise forms.ValidationError('Start date has to be greater than today.')
+            raise forms.ValidationError('Start date has to be in the future.')
         return start_date
 
     def clean_end_date(self):
         end_date = self.cleaned_data['end_date']
         today = dates_helper.local_today()
         if end_date <= today:
-            raise forms.ValidationError('End date has to be greater than today.')
+            raise forms.ValidationError('End date has to be in the future.')
         return end_date
 
     def clean_amount(self):

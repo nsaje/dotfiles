@@ -2507,16 +2507,29 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         function convertFromApi(obj) {
             return {
                 createdBy: obj.created_by,
-                createdOn: obj.created_on && moment(obj.created_on).format('MM/DD/YYYY'),
-                startDate: obj.start_date && moment(obj.start_date).format('MM/DD/YYYY'),
-                endDate: obj.end_date && moment(obj.end_date).format('MM/DD/YYYY'),
+                createdOn: obj.created_on && moment(obj.created_on,
+                                                    'YYYY-MM-DD').format('MM/DD/YYYY'),
+                startDate: obj.start_date && moment(obj.start_date,
+                                                    'YYYY-MM-DD').format('MM/DD/YYYY'),
+                endDate: obj.end_date && moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                 isSigned: obj.is_signed,
+                account: obj.account_id,
                 licenseFee: obj.license_fee,
                 total: obj.total,
+                comment: obj.comment,
                 allocated: obj.allocated,
                 available: obj.available,
                 amount: obj.amount,
-                budgets: obj.budgets,
+                budgets: (obj.budgets || []).map(function (itm) {
+                    return {
+                        id: itm.id,
+                        startDate: moment(obj.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                        endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                        total: itm.total,
+                        spend: itm.spend,
+                        campaign: itm.campaign
+                    };
+                }),
                 numOfBudgets: (obj.budgets || []).length,
                 id: obj.id
             };
@@ -2527,7 +2540,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 end_date: obj.endDate && moment(obj.endDate).format('YYYY-MM-DD'),
                 amount: obj.amount,
                 license_fee: obj.licenseFee,
-                comment: obj.comment
+                comment: obj.comment,
+                account: obj.account,
+                is_signed: obj.isSigned
             };
         }
         
@@ -2572,11 +2587,35 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function CampaignBudgetPlus() {
-        function convertFromApi(obj) { return obj; }
-        function convertToApi(obj) { return obj; }
+        function convertFromApi(obj) {
+            return {
+                id: obj.id,
+                credit: obj.credit,
+                amount: obj.amount,
+                startDate: moment(obj.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                total: obj.total || obj.amount,
+                licenseFee: obj.license_fee,
+                createdBy: obj.created_by,
+                createdOn: moment(obj.created_at).format('MM/DD/YYYY'),
+                spend: obj.spend,
+                isEditable: obj.is_editable,
+                available: obj.available,
+                comment: obj.comment
+            };
+        }
+        function convertToApi(obj) {
+            return {
+                credit: obj.credit.id,
+                amount: obj.amount,
+                start_date: moment(obj.startDate).format('YYYY-MM-DD'),
+                end_date: moment(obj.endDate).format('YYYY-MM-DD'),
+                comment: obj.comment
+            };
+        }
         
         this.list = function (campignId) {
-            var url = '/api/campigns/' + campignId + '/budget-plus/';
+            var url = '/api/campaigns/' + campignId + '/budget-plus/';
             return $http.get(url).then(processResponse).then(function (data) {
                 if (data === null) { return null; }
                 return {
@@ -2585,32 +2624,40 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     totals: {
                         currentAvailable: data.totals.current.available,
                         currentUnallocated: data.totals.current.unallocated,
-                        lifetimeCampaignSpend: data.lifetime.campaign_spend,
-                        lifetimeMediaSpend: data.lifetime.media_spend,
-                        lifetimeDataSpend: data.lifetime.data_spend,
-                        lifetimeLicenseFee: data.lifetime.license_fee
-                    }
+                        lifetimeCampaignSpend: data.totals.lifetime.campaign_spend,
+                        lifetimeMediaSpend: data.totals.lifetime.media_spend,
+                        lifetimeDataSpend: data.totals.lifetime.data_spend,
+                        lifetimeLicenseFee: data.totals.lifetime.license_fee
+                    },
+                    credits: data.credits.map(function (obj) {
+                        return {
+                            name: obj.name,
+                            startDate: moment(obj.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                            endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                            id: obj.id                            
+                        };
+                    })
                 };
             });
         };
 
         this.create = function (campignId, budget) {
-            var url = '/api/campigns/' + campignId + '/budget-plus/';
+            var url = '/api/campaigns/' + campignId + '/budget-plus/';
             return $http.put(url, convertToApi(budget)).then(processResponse);
         };
         
         this.save = function (campignId, budget) {
-            var url = '/api/campigns/' + campignId + '/budget-plus/' + budget.id + '/';
+            var url = '/api/campaigns/' + campignId + '/budget-plus/' + budget.id + '/';
             return $http.post(url, convertToApi(budget)).then(processResponse);
         };
 
         this.get = function (campignId, budgetId) {
-            var url = '/api/campigns/' + campignId + '/budget-plus/' + budgetId + '/';
+            var url = '/api/campaigns/' + campignId + '/budget-plus/' + budgetId + '/';
             return $http.get(url).then(processResponse).then(convertFromApi);
         };
 
         this.delete = function (campignId, budgetId) {
-            var url = '/api/campigns/' + campignId + '/budget-plus/' + budgetId + '/';
+            var url = '/api/campaigns/' + campignId + '/budget-plus/' + budgetId + '/';
             return $http.delete(url).then(processResponse).then(convertFromApi);
         };
     }
