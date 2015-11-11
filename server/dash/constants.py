@@ -1154,15 +1154,13 @@ class ScheduledReportState(ConstantBase):
 
 
 class ScheduledReportGranularity(ConstantBase):
-    VIEW = 1
-    ALL_ACCOUNTS = 2
-    ACCOUNT = 3
-    CAMPAIGN = 4
-    AD_GROUP = 5
-    CONTENT_AD = 6
+    ALL_ACCOUNTS = 1
+    ACCOUNT = 2
+    CAMPAIGN = 3
+    AD_GROUP = 4
+    CONTENT_AD = 5
 
     _VALUES = {
-        VIEW: 'View',
         ALL_ACCOUNTS: 'All Accounts',
         ACCOUNT: 'Account',
         CAMPAIGN: 'Campaign',
