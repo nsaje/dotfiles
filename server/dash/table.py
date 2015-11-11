@@ -576,17 +576,6 @@ class SourcesTable(object):
 
         return constants.AdGroupSourceSettingsState.INACTIVE
 
-    def _get_supply_dash_url(self, ad_group_source):
-        if not ad_group_source.source.has_3rd_party_dashboard() or\
-                ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
-            return None
-
-        return '{}?ad_group_id={}&source_id={}'.format(
-            urlresolvers.reverse('dash.views.views.supply_dash_redirect'),
-            ad_group_source.ad_group.id,
-            ad_group_source.source.id
-        )
-
     def _get_supply_dash_disabled_message(self, ad_group_source):
         if not ad_group_source.source.has_3rd_party_dashboard():
             return "This media source doesn't have a dashboard of its own. " \
@@ -662,7 +651,7 @@ class SourcesTable(object):
                         ad_group_source = item
                         break
 
-                row['supply_dash_url'] = self._get_supply_dash_url(ad_group_source)
+                row['supply_dash_url'] = ad_group_source.get_supply_dash_url()
                 row['supply_dash_disabled_message'] = self._get_supply_dash_disabled_message(ad_group_source)
 
                 ad_group_settings = level_sources_table.ad_group_settings
