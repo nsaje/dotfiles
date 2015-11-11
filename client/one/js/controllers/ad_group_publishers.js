@@ -138,13 +138,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         return false;
     };
 
-    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
-        if (newValue === true && oldValue === false) {
-            pollSyncStatus();
-        }
-    });
-
-    $scope.pollSyncStatus = function() {
+    var pollSyncStatus = function() {
         if ($scope.isSyncInProgress) {
             $timeout(function() {
                 api.checkPublisherBlacklistSyncProgress.get($state.params.id).then(
@@ -522,6 +516,13 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     }, true);
 
+
+    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
+        if (newValue === true && oldValue === false) {s
+            $scope.pollSyncStatus();
+        }
+    }, true);
+
     $scope.init = function() {
         var data = $scope.adGroupData[$state.params.id];
 
@@ -562,6 +563,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         getDailyStats();
 
         zemFilterService.setShowBlacklistedPublishers(true);
+        $scope.triggerSync();
     };
 
 
