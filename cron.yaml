@@ -12,6 +12,9 @@ cron:
   job: '20,50 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py monitor_aggregate_discrepancy > /dev/null 2>&1'
 
 - hosts: [knot01.zemanta.com]
+  job: '20,50 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py monitor_blacklist > /dev/null 2>&1'
+
+- hosts: [knot01.zemanta.com]
   job: '20,50 * * * * cd ~/apps/server/server && ~/.virtualenvs/server/bin/python manage.py monitor_redshift_discrepancy > /dev/null 2>&1'
 
 - job: '0 0 * * * mv ~/log/zemanta-eins.server.log ~/log/zemanta-eins.server.$(date +\%Y-\%m-\%d --date="1 day ago").log > /dev/null 2>&1'
