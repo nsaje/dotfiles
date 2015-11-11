@@ -84,7 +84,7 @@ class Command(BaseCommand):
                     subject,
                     body,
                     'Zemanta <{}>'.format(settings.FROM_EMAIL),
-                    [email_list],
+                    email_list,
                     fail_silently=False
                 )
             except Exception:
