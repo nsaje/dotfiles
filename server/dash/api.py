@@ -249,11 +249,11 @@ def refresh_publisher_blacklist(ad_group_source, request):
             ad_group=None,
             status=dash.constants.PublisherStatus.BLACKLISTED
         )
-        campaignBlacklistedPublishers = []
+        campaign_blacklisted_publishers = []
         for blacklistEntry in currentCampaignBlacklist:
             # setup pending entries
             # create and send blacklist actions
-            campaignBlacklistedPublishers.append({
+            campaign_blacklisted_publishers.append({
                 'domain': blacklistEntry.name,
                 'exchange': ad_group_source.source.tracking_slug.replace('b1_', ''),
             })
@@ -264,7 +264,7 @@ def refresh_publisher_blacklist(ad_group_source, request):
                 key,
                 dash.constants.PublisherBlacklistLevel.CAMPAIGN,
                 dash.constants.PublisherStatus.BLACKLISTED,
-                campaignBlacklistedPublishers,
+                campaign_blacklisted_publishers,
                 request,
                 ad_group_source.source.source_type,
                 send=False
