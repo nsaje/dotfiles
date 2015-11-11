@@ -239,8 +239,8 @@ def refresh_publisher_blacklist(ad_group_source, request):
 
     actions = []
 
+    campaign = ad_group_source.ad_group.campaign
     if ad_group_source.source.source_type != dash.constants.SourceType.OUTBRAIN:
-        campaign = ad_group_source.ad_group.campaign
         currentCampaignBlacklist = dash.models.PublisherBlacklist.objects.filter(
             source=ad_group_source.source,
             everywhere=False,
