@@ -1,8 +1,10 @@
+from decimal import Decimal
 import json
 
 from dash import models, constants, forms
 from utils import statsd_helper, api_common, exc
 from dash.views import helpers
+
 
 class AccountCreditView(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_credit_get')
@@ -173,7 +175,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.campaign_budget_view'):
             raise exc.AuthorizationError()
         campaign = helpers.get_campaign(request.user, campaign_id)
-        return self._get_response(campaign.id)
+        return self._get_response(campaign)
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_plus_put')
     def put(self, request, campaign_id):
@@ -195,7 +197,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         item.instance.created_by = request.user
         item.save()
         
-        return self._get_response(campaign_id)
+        return self._get_response(campaign)
 
     def _prepare_item(self, item):
         spend = item.get_spend_amount()
@@ -212,20 +214,20 @@ class CampaignBudgetView(api_common.BaseApiView):
             'comment': item.comment,
         }
 
-    def _get_response(self, campaign_id):
+    def _get_response(self, campaign):
         budget_items = models.BudgetLineItem.objects.filter(
-            campaign_id=campaign_id,
+            campaign_id=campaign.id,
         ).select_related('credit')
         return self.create_api_response({
             'active': self._get_active_budget(budget_items),
             'past': self._get_past_budget(budget_items),
-            'totals': self._get_budget_totals(budget_items),
-            'credits': self._get_available_credit_items(campaign_id),
+            'totals': self._get_budget_totals(campaign),
+            'credits': self._get_available_credit_items(campaign),
         })
 
-    def _get_available_credit_items(self, campaign_id):
+    def _get_available_credit_items(self, campaign):
         available_credits = models.CreditLineItem.objects.filter(
-            account=models.Campaign.objects.get(pk=campaign_id).account
+            account=campaign.account
         )
         return [
             {
@@ -249,20 +251,37 @@ class CampaignBudgetView(api_common.BaseApiView):
             constants.BudgetLineItemState.INACTIVE,
         )]
     
-    def _get_budget_totals(self, budget_id):
-        #TODO: implement
-        return {
+    def _get_budget_totals(self, campaign):
+        data = {
             'current': {
-                'available': '31123',
-                'unallocated': '9900',
+                'available': Decimal('0'),
+                'unallocated': Decimal('0'),
             },
             'lifetime': {
-                'campaign_spend': '31123',
-                'media_spend': '9900',
-                'data_spend': '31123',
-                'license_fee': '9900',
+                'campaign_spend': Decimal('0'),
+                'media_spend': Decimal('0'),
+                'data_spend': Decimal('0'),
+                'license_fee': Decimal('0'),
             }
         }
+        for item in models.CreditLineItem.objects.filter(account=campaign.account).filter_active():
+            allocated = item.get_allocated_amount()
+            data['current']['available'] += Decimal(allocated)
+            data['current']['unallocated'] += Decimal(item.amount - allocated)
+            
+        for item in models.BudgetLineItem.objects.filter(campaign_id=campaign.id):
+            if item.state() == constants.BudgetLineItemState.PENDING:
+                continue
+            campaign_spend = self.get_spend_amount()
+            data_spend = self.get_data_spend_amount()
+            media_spend = self.get_media_spend_amount()
+            
+            data['lifetime']['campaign_spend'] += campaign_spend
+            data['lifetime']['media_spend'] += media_spend
+            data['lifetime']['data_spend'] += data_spend
+            data['lifetime']['license_fee'] += campaign_spend - media_spend
+            
+        return data
 
 
 class CampaignBudgetItemView(api_common.BaseApiView):

@@ -1862,7 +1862,7 @@ class CreditLineItem(FootprintModel):
             return self.filter(
                 start_date__lte=date,
                 end_date__gte=date,
-                status=constants.CreditLineItem.SIGNED
+                status=constants.CreditLineItemStatus.SIGNED
             )
 
         def delete(self):
@@ -1913,8 +1913,14 @@ class BudgetLineItem(FootprintModel):
     def state_text(self, date=None):
         return constants.BudgetLineItemState.get_text(self.state(date=date))
 
-    def get_spend_amount(self):
-        return 0 # TODO: implement
+    def get_spend_amount(self): # TODO: implement
+        return Decimal('0')
+
+    def get_media_spend_amount(self): # TODO: implement
+        return Decimal('0')
+
+    def get_data_spend_amount(self): # TODO: implement
+        return Decimal('0') 
 
     def is_editable(self):
         return self.state() == constants.BudgetLineItemState.PENDING
