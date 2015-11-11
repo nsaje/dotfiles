@@ -45,6 +45,19 @@
                     <a id="resync-loader" class="btn btn-default pull-right" popover="Synchronization of reporting data is currently in progress, and may take a few minutes. You can continue using the dashboard in the meantime." popover-append-to-body="true" popover-trigger="mouseenter" popover-placement="left"><div class="loader"></div></a>
                 </span>
             </span>
+            <div ng-if="hasPermission('zemauth.exports_plus')" class="export-container button-bar-item pull-right">
+              <zem-internal-feature ng-if="isPermissionInternal('zemauth.exports_plus')" popover-placement="bottom"></zem-internal-feature>
+                <zem-export-plus
+                    start-date="dateRange.startDate"
+                    end-date="dateRange.endDate"
+                    base-url="'api/ad_groups/' + $state.params.id + '/'"
+                    options="exportPlusOptions"
+                    columns="columns"
+                    order="order"
+                    level="level"
+                    export-sources="false">
+                </zem-export-plus>
+            </div>
         </div>
 
         <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
@@ -53,7 +66,7 @@
         </alert>
 
         <alert type="info" class="alert-sync" ng-show="archivingResults" close="closeArchivingResults()">
-                {{ archivingResults.archived_count }} {{ archivingResults.archived_count === 1 ? 'Content Ad was' : 'Content Ads were' }} archived and 
+                {{ archivingResults.archived_count }} {{ archivingResults.archived_count === 1 ? 'Content Ad was' : 'Content Ads were' }} archived and
                 <ng-pluralize count="archivingResults.archived_count" when="{'1': 'it {{ archivingResults.active_count === 1 ? &quot;was&quot; : &quot;wasn\'t&quot; }} ',
                                                                             'other': '{{ archivingResults.active_count === 0 ? &quot;none&quot; : archivingResults.active_count }} of them {{ archivingResults.active_count === 1 ? &quot;was&quot; : &quot;were&quot; }}'}"></ng-pluralize>
                 active at the time.
@@ -83,7 +96,7 @@
             </form>
 
             <span>Show rows</span>
-            <zem-paging-dropdown class="show-rows" counts="sizeRange" selection="size"></zem-paging-dropdown> 
+            <zem-paging-dropdown class="show-rows" counts="sizeRange" selection="size"></zem-paging-dropdown>
             <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(1)"><img ng-src="{{ config.static_url }}/one/img/arrow-first.svg"></div>
             <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(pagination.currentPage - 1)"><img ng-src="{{ config.static_url }}/one/img/arrow-prev.svg"></div>
             <span class="current-rows">{{ pagination.startIndex}} - {{ pagination.endIndex }} of {{ pagination.count }}</span>
@@ -117,4 +130,3 @@
         </div>
     </div>
 </script>
-
