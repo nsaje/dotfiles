@@ -19,7 +19,7 @@ def get_ad_group_sources(source):
     ad_group_ids = models.ContentAdSource.objects.filter(
         source=source,
         submission_status=constants.ContentAdSubmissionStatus.PENDING
-    ).values_list('content_ad__ad_group_id', flat=True)
+    ).values('content_ad__ad_group_id').distinct()
 
     return models.AdGroupSource.objects.filter(ad_group_id__in=ad_group_ids, source=source)
 
@@ -72,23 +72,23 @@ class Command(BaseCommand):
         date_str = datetime.date.today().strftime('%Y-%m-%d')
         body = body.format(
             date=date_str,
-            ad_group_links='\n'.join(links)
+            ad_group_links='\n'.join(links) if links else '(No new content)'
         )
 
         subject = 'Zemanta auto-generated approval email for {} {}'.format(source.name, date_str)
-        email = options['email']
+        email_list = options['email']
 
-        if email:
+        if email_list:
             try:
                 send_mail(
                     subject,
                     body,
                     'Zemanta <{}>'.format(settings.FROM_EMAIL),
-                    [email],
+                    [email_list],
                     fail_silently=False
                 )
             except Exception:
                 logger.exception('Content approval auto-generated e-mail to %s was not sent '
-                                 'because an exception was raised', email)
+                                 'because an exception was raised', email_list)
         else:
             logger.info(body)
