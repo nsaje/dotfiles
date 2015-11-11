@@ -211,8 +211,6 @@ def _update_publisher_blacklist(key, level, publishers):
         elif level == constants.PublisherBlacklistLevel.ADGROUP:
             ad_group = dash.models.AdGroup.objects.get(id=key[0])
             blacklist_entry.ad_group = ad_group
-        else:
-            raise Exception("Should never occur")
 
         blacklist.append(blacklist_entry)
 
@@ -876,9 +874,6 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
                 key = [ad_group.campaign.id]
             elif level == constants.PublisherBlacklistLevel.ADGROUP:
                 key = [ad_group.id]
-            else:
-                # should never occur
-                raise Exception('Not implemented')
 
             actions.extend(
                 actionlog.api.set_publisher_blacklist(
