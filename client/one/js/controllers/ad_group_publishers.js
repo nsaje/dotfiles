@@ -583,7 +583,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         getDailyStats();
 
         zemFilterService.setShowBlacklistedPublishers(true);
-        $scope.triggerSync();
     };
 
 
