@@ -5,6 +5,7 @@ from collections import OrderedDict
 from dash import models
 from dash import stats_helper
 from dash import budget
+from dash import constants
 from dash.views import helpers
 import reports.api_contentads
 
@@ -204,6 +205,53 @@ def _get_conversion_goals(user, campaign):
     if user.has_perm('zemauth.conversion_reports'):
         return campaign.conversiongoal_set.all()
     return []
+
+
+def get_granularity_from_type(export_type):
+    return {
+        'allaccounts-csv': constants.ScheduledReportGranularity.ALL_ACCOUNTS,
+        'account-csv': constants.ScheduledReportGranularity.ACCOUNT,
+        'campaign-csv': constants.ScheduledReportGranularity.CAMPAIGN,
+        'adgroup-csv': constants.ScheduledReportGranularity.AD_GROUP,
+        'contentad-csv': constants.ScheduledReportGranularity.CONTENT_AD
+    }.get(export_type)
+
+
+def get_breakdown_from_granularity(granularity):
+    return {
+        constants.ScheduledReportGranularity.ALL_ACCOUNTS: None,
+        constants.ScheduledReportGranularity.ACCOUNT: 'account',
+        constants.ScheduledReportGranularity.CAMPAIGN: 'campaign',
+        constants.ScheduledReportGranularity.AD_GROUP: 'ad_group',
+        constants.ScheduledReportGranularity.CONTENT_AD: 'content_ad'
+    }.get(granularity)
+
+
+def get_report_filename(granularity, start_date, end_date, account_name=None, campaign_name=None, ad_group_name=None, by_source=False, by_day=False):
+    name = ''
+    all_accounts_name = ''
+    if granularity == constants.ScheduledReportGranularity.ALL_ACCOUNTS or not any([account_name, campaign_name, ad_group_name]):
+        all_accounts_name = 'ZemantaOne'
+    if granularity == constants.ScheduledReportGranularity.ACCOUNT and not account_name:
+        name += '-_by_account'
+    elif granularity == constants.ScheduledReportGranularity.CAMPAIGN and not campaign_name:
+        name += '-_by_campaign'
+    elif granularity == constants.ScheduledReportGranularity.AD_GROUP and not ad_group_name:
+        name += '-_by_ad_group'
+    elif granularity == constants.ScheduledReportGranularity.CONTENT_AD:
+        name += '-_by_content_ad'
+
+    return '_'.join(filter(None, (
+        (all_accounts_name if all_accounts_name else ''),
+        (account_name if account_name else ''),
+        (campaign_name if campaign_name else ''),
+        (ad_group_name if ad_group_name else ''),
+        name,
+        ('media_source' if by_source else ''),
+        ('by_day' if by_day else ''),
+        'report',
+        str(start_date),
+        str(end_date))))
 
 
 class AllAccountsExport(object):
