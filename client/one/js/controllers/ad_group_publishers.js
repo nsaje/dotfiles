@@ -538,7 +538,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
 
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
-        if (newValue === true && oldValue === false) {s
+        if (newValue === true && oldValue === false) {
             $scope.pollSyncStatus();
         }
     }, true);
