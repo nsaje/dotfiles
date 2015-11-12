@@ -14,6 +14,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.forms.models import model_to_dict
+from django.core.validators import validate_email
 
 
 import utils.string_helper
@@ -1975,3 +1976,90 @@ class CreditHistory(HistoryModel):
 class BudgetHistory(HistoryModel):
     budget = models.ForeignKey(BudgetLineItem, related_name='history')
 
+
+class ExportReport(models.Model):
+    id = models.AutoField(primary_key=True)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        null=False,
+        blank=False,
+        on_delete=models.PROTECT
+    )
+
+    ad_group = models.ForeignKey(AdGroup, blank=True, null=True, on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.PROTECT)
+    account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.PROTECT)
+
+    granularity = models.IntegerField(
+        default=constants.ScheduledReportGranularity.CONTENT_AD,
+        choices=constants.ScheduledReportGranularity.get_choices()
+    )
+
+    breakdown_by_day = models.BooleanField(null=False, blank=False, default=False)
+    breakdown_by_source = models.BooleanField(null=False, blank=False, default=False)
+
+    order_by = models.CharField(max_length=20, null=True, blank=True)
+    additional_fields = models.CharField(max_length=500, null=True, blank=True)
+    filtered_sources = models.ManyToManyField(Source)
+
+    @property
+    def level(self):
+        if self.account:
+            return constants.ScheduledReportLevel.ACCOUNT
+        elif self.campaign:
+            return constants.ScheduledReportLevel.CAMPAIGN
+        elif self.ad_group:
+            return constants.ScheduledReportLevel.AD_GROUP
+        return constants.ScheduledReportLevel.ALL_ACCOUNTS
+
+
+class ScheduledExportReport(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
+    report = models.ForeignKey(ExportReport, related_name='scheduled_reports')
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        null=False,
+        blank=False,
+        on_delete=models.PROTECT
+    )
+
+    state = models.IntegerField(
+        default=constants.ScheduledReportState.ACTIVE,
+        choices=constants.ScheduledReportState.get_choices()
+    )
+
+    sending_frequency = models.IntegerField(
+        default=constants.ScheduledReportSendingFrequency.DAILY,
+        choices=constants.ScheduledReportSendingFrequency.get_choices()
+    )
+
+    def add_recipient_email(self, email_address):
+        validate_email(email_address)
+        if self.recipients.filter(email=email_address).count() < 1:
+            self.recipients.create(email=email_address)
+
+    def remove_recipient_email(self, email_address):
+        self.recipients.filter(email__exact=email_address).delete()
+
+    def get_recipients_emails_list(self):
+        return [recipient.email for recipient in self.recipients.all()]
+
+    def set_recipient_emails_list(self, email_list):
+        self.recipients.all().delete()
+        for email in email_list:
+            self.add_recipient_email(email)
+
+
+class ScheduledExportReportRecipient(models.Model):
+    scheduled_report = models.ForeignKey(ScheduledExportReport, related_name='recipients')
+    email = models.EmailField()
+
+    class Meta:
+        unique_together = ('scheduled_report', 'email')
