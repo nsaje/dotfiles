@@ -1,6 +1,7 @@
 import datetime
 from decimal import Decimal
-from mock import patch, MagicMock
+from mock import patch, MagicMock, call
+import itertools
 
 from django.test import TestCase
 
@@ -116,6 +117,39 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(datetime.date(2015, 11, 1), statements[1].date)
         self.assertEqual(Decimal('1000.0'), statements[1].spend)
 
+    def test_different_days(self, mock_content_ad_stats, mock_datetime):
+        return_values = {
+            datetime.date(2015, 11, 10): {
+                'cost_cc_sum': 25000000,
+                'data_cost_cc_sum': 5000000,
+            },
+            datetime.date(2015, 11, 11): {
+                'cost_cc_sum': 10000000,
+                'data_cost_cc_sum': 0,
+            }
+        }
+        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 11, 12))
+
+        daily_statements.reprocess_daily_statements(self.campaign1)
+        statements = dash.models.BudgetDailyStatement.objects.all().order_by('date', 'budget_id')
+        self.assertEqual(13, len(statements))
+        for statement in statements[:9]:
+            self.assertEqual(0, statement.spend)
+            self.assertGreater(datetime.date(2015, 11, 11), statement.date)
+        self.assertEqual(1, statements[9].budget_id)
+        self.assertEqual(datetime.date(2015, 11, 10), statements[9].date)
+        self.assertEqual(Decimal('3000.0'), statements[9].spend)
+        self.assertEqual(2, statements[10].budget_id)
+        self.assertEqual(datetime.date(2015, 11, 10), statements[10].date)
+        self.assertEqual(Decimal('600.0'), statements[10].spend)
+        self.assertEqual(1, statements[11].budget_id)
+        self.assertEqual(datetime.date(2015, 11, 11), statements[11].date)
+        self.assertEqual(Decimal('0'), statements[11].spend)
+        self.assertEqual(2, statements[12].budget_id)
+        self.assertEqual(datetime.date(2015, 11, 11), statements[12].date)
+        self.assertEqual(Decimal('1200.0'), statements[12].spend)
+
     def test_dirty_flag(self, mock_content_ad_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 15): {
@@ -155,3 +189,39 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(2, statements[20].budget_id)
         self.assertEqual(datetime.date(2015, 11, 15), statements[20].date)
         self.assertEqual(Decimal('1800'), statements[20].spend)
+
+    @patch('dash.daily_statements._generate_statement')
+    def test_daily_statements_already_exist(self, mock_generate_statement, mock_content_ad_stats, mock_datetime):
+        return_values = {}
+        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 30, 12))
+
+        for date in [datetime.date(2015, 11, 1) + datetime.timedelta(days=i) for i in range(30)]:
+            for budget in dash.models.BudgetLineItem.objects.filter(campaign_id=self.campaign1.id):
+                if budget.start_date <= date and budget.end_date >= date:
+                    dash.models.BudgetDailyStatement.objects.create(
+                        budget_id=budget.id,
+                        date=date,
+                        spend=0
+                    )
+
+        dates = daily_statements._get_dates(self.campaign1)
+        self.assertItemsEqual([datetime.date(2015, 11, 30)], dates)
+
+        daily_statements.reprocess_daily_statements(self.campaign1)
+        mock_generate_statement.assert_called_once_with(self.campaign1, datetime.date(2015, 11, 30))
+
+    @patch('dash.daily_statements._generate_statement')
+    def test_daily_statements_dont_exist(self, mock_generate_statement, mock_content_ad_stats, mock_datetime):
+        return_values = {}
+        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 30, 12))
+
+        self.maxDiff = None
+        dates = daily_statements._get_dates(self.campaign1)
+        expected_dates = [datetime.date(2015, 11, 1) + datetime.timedelta(days=i) for i in range(30)]
+        self.assertItemsEqual(expected_dates, dates)
+
+        daily_statements.reprocess_daily_statements(self.campaign1)
+        expected_calls = [call(x, y) for x, y in itertools.product([self.campaign1], expected_dates)]
+        mock_generate_statement.assert_has_calls(expected_calls)

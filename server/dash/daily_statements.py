@@ -10,9 +10,6 @@ import reports.models
 from utils import dates_helper
 
 
-# TODO: How should we handle canceled account credits and pending campaign budgets?
-# Should canceled credit's budgets have spend until the date the credit has been canceled?
-
 def _generate_statement(campaign, date):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id,
                                                         start_date__lte=date,
@@ -39,14 +36,13 @@ def _generate_statement(campaign, date):
                 attributed_amount = available_budget
             fee_amount = attributed_amount * budget.credit.license_fee
 
-            per_budget_spend[budget.id] += attributed_amount + fee_amount
-            total_spend -= attributed_amount
-
+        per_budget_spend[budget.id] += attributed_amount + fee_amount
+        total_spend -= attributed_amount
         dash.models.BudgetDailyStatement.objects.create(budget_id=budget.id, date=date,
                                                         spend=attributed_amount + fee_amount)
 
     if total_spend > 0:
-        # TODO: over spend, to be decided what to do
+        # TODO: over spend
         pass
 
 
