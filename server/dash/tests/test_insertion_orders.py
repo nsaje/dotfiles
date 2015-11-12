@@ -243,7 +243,7 @@ class CreditsTestCase(TestCase):
         c.save()
 
     def test_form(self):
-        credit_form = forms.NewCreditLineItemForm({
+        credit_form = forms.CreditLineItemForm({
             'account': 2,
             'start_date': str(TODAY - datetime.timedelta(10)),
             'end_date': str(TODAY + datetime.timedelta(10)),
@@ -255,7 +255,7 @@ class CreditsTestCase(TestCase):
         self.assertFalse(credit_form.is_valid())
         self.assertTrue(credit_form.errors)
 
-        credit_form = forms.NewCreditLineItemForm({
+        credit_form = forms.CreditLineItemForm({
             'account': 2,
             'start_date': str(TODAY + datetime.timedelta(1)),
             'end_date': str(TODAY + datetime.timedelta(10)),
@@ -267,7 +267,7 @@ class CreditsTestCase(TestCase):
         self.assertTrue(credit_form.is_valid())
         self.assertFalse(credit_form.errors)
 
-        credit_form = forms.NewCreditLineItemForm({
+        credit_form = forms.CreditLineItemForm({
             'account': 2,
             'start_date': str(TODAY + datetime.timedelta(1)),
             'end_date': str(TODAY + datetime.timedelta(10)),
@@ -280,7 +280,7 @@ class CreditsTestCase(TestCase):
         self.assertTrue(credit_form.errors)
 
         # Check if model validation is triggered
-        credit_form = forms.NewCreditLineItemForm({
+        credit_form = forms.CreditLineItemForm({
             'account': 2,
             'start_date': str(TODAY + datetime.timedelta(1)),
             'end_date': str(TODAY + datetime.timedelta(10)),

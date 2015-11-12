@@ -33,8 +33,8 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
     };
 
     $scope.saveCreditItem = function () {
-        if (!$scope.creditItem.isSigned && $scope.isSigned) {
-            $scope.creditItem.status = constants.creditLineItemStatus.SIGNED;
+        if ((!$scope.creditItem.isSigned || $scope.isNew) && $scope.isSigned) {
+            $scope.creditItem.isSigned = true;
         }
         api.accountCredit[
             $scope.isNew ? 'create' : 'save'

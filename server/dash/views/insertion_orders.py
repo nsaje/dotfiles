@@ -24,6 +24,10 @@ class AccountCreditView(api_common.BaseApiView):
         data['status'] = constants.CreditLineItemStatus.PENDING
         data['account'] = account.id
 
+        if 'is_signed' in data:
+            if data['is_signed']:
+                data['status'] = constants.CreditLineItemStatus.SIGNED
+            del data['is_signed']
         if 'license_fee' in data:
             data['license_fee'] = helpers.format_percent_to_decimal(data['license_fee'])
         errors = {}

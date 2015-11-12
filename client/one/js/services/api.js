@@ -2601,14 +2601,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
         this.create = function (accountId, item) {
             var url = '/api/accounts/' + accountId + '/credit/';
-            return $http.put(url, convertToApi(item)).then(processResponse).then(function (data) {
-                if (data === null) { return null; }
-                return {
-                    active: data.active.map(convertFromApi),
-                    past: data.past.map(convertFromApi),
-                    totals: data.totals
-                };
-            });
+            return $http.put(url, convertToApi(item)).then(processResponse);
         };
         
         this.save = function (accountId, item) {

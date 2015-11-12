@@ -16,6 +16,7 @@ oneApp.controller('AccountCreditCtrl', ['$scope', '$state', '$modal', 'api', fun
             controller: 'AccountCreditItemModalCtrl',
             windowClass: 'modal',
             scope: $scope,
+            backdrop : 'static',
             size: 'wide'
         });
         modalInstance.result.then(refresh);

@@ -605,7 +605,7 @@ class CreditLineItemForm(forms.ModelForm):
         start_date = self.cleaned_data['start_date']
         if not self.instance.pk or start_date != self.instance.start_date:
             today = dates_helper.local_today()
-            if start_date <= today:
+            if start_date < today:
                 raise forms.ValidationError('Start date has to be in the future.')
         return start_date
     
@@ -650,7 +650,7 @@ class BudgetLineItemForm(forms.ModelForm):
         start_date = self.cleaned_data['start_date']
         if not self.instance.pk or start_date != self.instance.start_date:
             today = dates_helper.local_today()
-            if start_date <= today:
+            if start_date < today:
                 raise forms.ValidationError('Start date has to be in the future.')
         return start_date
 

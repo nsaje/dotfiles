@@ -14,7 +14,7 @@
                 Valid From
             </label>
             <div class="col-xs-4 input-group">
-                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.startDate" min-date="today" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')" ng-disabled="isSigned">
+                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.startDate" min-date="today" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')" ng-disabled="isSigned && !isNew">
 				<div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
             </div>
             <label ng-repeat="error in errors.startDate" class="col-xs-5 control-label error" for="start-date-input">{{ error }}</label>
@@ -34,7 +34,7 @@
                 Variable License Fee
             </label>
             <div class="col-xs-4">
-                <ui-select theme="select2" id="license-fee-select" class="form-control" ng-model="creditItem.licenseFee" ng-disabled="isSigned">
+                <ui-select theme="select2" id="license-fee-select" class="form-control" ng-model="creditItem.licenseFee" ng-disabled="isSigned && !isNew">
                     <ui-select-match>{{$select.selected}}</ui-select-match>
                     <ui-select-choices repeat="fee in getLicenseFees($select.search) | filter: $select.search">
                         <span ng-bind-html="fee"></span>
@@ -51,7 +51,7 @@
             <div class="col-xs-4">
 				<div class="input-group">
 					<span class="input-group-addon">$</span>
-					<input id="amount-input" type="text" class="form-control" ng-model="creditItem.amount" ng-disabled="isSigned">
+					<input id="amount-input" type="text" class="form-control" ng-model="creditItem.amount" ng-disabled="isSigned && !isNew">
 					<div class="input-group-addon">.00</div>
 				</div>
             </div>
@@ -63,12 +63,28 @@
                 Custom Notes
             </label>
             <div class="col-xs-4">
-                <textarea id="comment-input" type="text" class="form-control" ng-model="creditItem.comment" ng-disabled="isSigned"></textarea>
+                <textarea id="comment-input" type="text" class="form-control" ng-model="creditItem.comment" ng-disabled="isSigned && !isNew"></textarea>
             </div>
             <label ng-repeat="error in errors.comment" class="col-xs-5 control-label error" for="comment">{{ error }}</label>
 		</div>
 
-		<hr ng-show="!isNew"/>
+		<hr />
+
+		<div class="form-group">
+			<label for="is-signed-input" class="col-xs-8 control-label">
+                By signing the credit line item, no more future changes to the amount, fee and start date will be possible.
+            </label>
+		</div>
+		<div class="form-group" ng-class="{'has-error': !!errors.status}">
+			<div class="col-xs-8">
+                <label>
+					<input type="checkbox" ng-model="isSigned" ng-disabled="creditItem.isSigned"> signed
+				</label>
+            </div>
+            <label ng-repeat="error in errors.status" class="control-label error" for="is-signed-input">{{ error }}</label>
+		</div>
+		
+		<hr ng-show="!isNew" />
 
 		<div class="form-group" ng-show="!isNew">
 			<label class="col-xs-8 control-label">
@@ -100,22 +116,6 @@
 		</div>
 
 		<hr />
-
-		<div class="form-group" ng-show="!isNew">
-			<label for="is-signed-input" class="col-xs-8 control-label">
-                By signing the credit line item, no more future changes to the amount, fee and start date will be possible.
-            </label>
-		</div>
-		<div class="form-group" ng-class="{'has-error': !!errors.status}" ng-show="!isNew">
-			<div class="col-xs-8">
-                <label>
-					<input type="checkbox" ng-model="isSigned" ng-disabled="creditItem.isSigned"> signed
-				</label>
-            </div>
-            <label ng-repeat="error in errors.status" class="control-label error" for="is-signed-input">{{ error }}</label>
-		</div>
-		
-		<hr ng-show="!isNew" />
 
 		<div class="form-group">
 			<div class="col-xs-3">

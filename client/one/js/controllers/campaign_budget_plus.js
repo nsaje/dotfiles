@@ -16,7 +16,9 @@ oneApp.controller('CampaignBudgetPlusCtrl', ['$scope', '$state', '$modal',  'api
             templateUrl: '/partials/campaign_budget_item_modal.html',
             controller: 'CampaignBudgetItemModalCtrl',
             windowClass: 'modal',
-            scope: $scope
+            backdrop : 'static',
+            scope: $scope,
+            size: 'wide'
         });
         modalInstance.result.then(refresh);
         return modalInstance;
