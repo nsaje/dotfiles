@@ -621,12 +621,6 @@ class CreditLineItemForm(forms.ModelForm):
             raise forms.ValidationError('Amount cannot be negative.')
         return self.cleaned_data['amount']
 
-    def clean_comment(self):
-        if not self.cleaned_data['comment']:
-            raise forms.ValidationError('This field is required.')
-        return self.cleaned_data['comment']
-    
-
     class Meta:
         model = models.CreditLineItem
         fields = [
@@ -640,11 +634,6 @@ class BudgetLineItemForm(forms.ModelForm):
         if self.cleaned_data['amount'] <= 0:
             raise forms.ValidationError('Budget amount cannot be less or equal to zero.')
         return self.cleaned_data['amount']
-
-    def clean_comment(self):
-        if not self.cleaned_data['comment']:
-            raise forms.ValidationError('This field is required.')
-        return self.cleaned_data['comment']
 
     def clean_start_date(self):
         start_date = self.cleaned_data['start_date']

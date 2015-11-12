@@ -269,7 +269,7 @@ class CampaignBudgetView(api_common.BaseApiView):
                 'license_fee': Decimal('0'),
             }
         }
-        for item in models.CreditLineItem.objects.filter(account=campaign.account).filter_active():
+        for item in models.CreditLineItem.objects.filter(account=campaign.account):
             allocated = item.get_allocated_amount()
             data['current']['available'] += Decimal(allocated)
             data['current']['unallocated'] += Decimal(item.amount - allocated)

@@ -14,8 +14,8 @@
                 Valid From
             </label>
             <div class="col-xs-4 input-group">
-                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.startDate" min-date="today" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')" ng-disabled="isSigned && !isNew">
 				<div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
+                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.startDate" min-date="today" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')" ng-disabled="isSigned && !isNew">
             </div>
             <label ng-repeat="error in errors.startDate" class="col-xs-5 control-label error" for="start-date-input">{{ error }}</label>
         </div>
@@ -24,14 +24,14 @@
                 Valid To
             </label>
             <div class="col-xs-4 input-group">
-                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.endDate" min-date="minDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
 				<div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
+                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.endDate" min-date="minDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
             </div>
             <label ng-repeat="error in errors.endDate" class="col-xs-5 control-label error" for="end-date-input">{{ error }}</label>
         </div>
 		<div class="form-group" ng-class="{'has-error': !!errors.licenseFee}">
 			<label for="license-fee-input" class="col-xs-3 control-label">
-                Variable License Fee
+                License Fee (%)
             </label>
             <div class="col-xs-4">
                 <ui-select theme="select2" id="license-fee-select" class="form-control" ng-model="creditItem.licenseFee" ng-disabled="isSigned && !isNew">
@@ -46,7 +46,7 @@
 		</div>
 		<div class="form-group" ng-class="{'has-error': !!errors.amount}">
 			<label for="amount-input" class="col-xs-3 control-label">
-                Available Credit
+                Credit
             </label>
             <div class="col-xs-4">
 				<div class="input-group">

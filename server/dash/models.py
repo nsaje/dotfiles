@@ -1922,12 +1922,15 @@ class BudgetLineItem(FootprintModel):
     def get_data_spend_amount(self): # TODO: implement
         return Decimal('0') 
 
-    def is_editable(self):
-        return self.state() == constants.BudgetLineItemState.PENDING
+    def is_editable(self, db=False):
+        return (db and self.db_state() or self.state()) in (
+            constants.BudgetLineItemState.PENDING,
+            constants.BudgetLineItemState.ACTIVE,
+        )
 
     def clean(self):
-        if self.pk and self.db_state() != constants.BudgetLineItemState.PENDING:
-            raise ValidationError('Only pending budgets can change.')
+        if self.pk and not self.is_editable(db=True):
+            raise ValidationError('Only pending and active budgets can change.')
 
         validate(
             self.validate_start_date,
