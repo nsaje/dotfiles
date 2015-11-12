@@ -592,15 +592,16 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             var url = '/api/ad_groups/' + id + '/publishers/check_sync_progress/';
 
             $http.get(url, config).
-                success(function(data, status){
-                    var resource;
-                    if (data && data.success) {
-                        deferred.resolve(data.data);
-                    }
-                }).
-                error(function(data, status, headers, config) {
-                    deferred.reject(data);
-                });
+                then(
+                    function(data, status) {
+                        var resource;
+                        if (data && data.success) {
+                            deferred.resolve(data.data);
+                        }
+                    },
+                    function(data, status, headers, config) {
+                        deferred.reject(data);
+                    });
 
             return deferred.promise;
         };
