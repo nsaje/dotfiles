@@ -6,10 +6,11 @@ import itertools
 from django.test import TestCase
 
 import dash.models
-from dash import daily_statements
+from reports import daily_statements
+import reports.models
 
 
-@patch('dash.daily_statements.datetime')
+@patch('reports.daily_statements.datetime')
 @patch('reports.models.ContentAdStats')
 class DailyStatementsTestCase(TestCase):
 
@@ -48,7 +49,7 @@ class DailyStatementsTestCase(TestCase):
 
         daily_statements.reprocess_daily_statements(self.campaign1)
 
-        statements = dash.models.BudgetDailyStatement.objects.all()
+        statements = reports.models.BudgetDailyStatement.objects.all()
         self.assertEqual(1, len(statements))
         self.assertEqual(1, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
@@ -65,7 +66,7 @@ class DailyStatementsTestCase(TestCase):
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 20, 12))
 
         daily_statements.reprocess_daily_statements(self.campaign1)
-        statements = dash.models.BudgetDailyStatement.objects.all().order_by('date', 'budget_id')
+        statements = reports.models.BudgetDailyStatement.objects.all().order_by('date', 'budget_id')
         self.assertEqual(32, len(statements))
         for statement in statements[:29]:
             self.assertGreater(datetime.date(2015, 11, 20), statement.date)
@@ -91,7 +92,7 @@ class DailyStatementsTestCase(TestCase):
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
 
         daily_statements.reprocess_daily_statements(self.campaign1)
-        statements = dash.models.BudgetDailyStatement.objects.all().order_by('date', 'budget_id')
+        statements = reports.models.BudgetDailyStatement.objects.all().order_by('date', 'budget_id')
         self.assertEqual(1, len(statements))
         self.assertEqual(1, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
@@ -108,7 +109,7 @@ class DailyStatementsTestCase(TestCase):
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
 
         daily_statements.reprocess_daily_statements(self.campaign2)
-        statements = dash.models.BudgetDailyStatement.objects.all().order_by('date', 'budget_id')
+        statements = reports.models.BudgetDailyStatement.objects.all().order_by('date', 'budget_id')
         self.assertEqual(2, len(statements))
         self.assertEqual(4, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
@@ -132,7 +133,7 @@ class DailyStatementsTestCase(TestCase):
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 11, 12))
 
         daily_statements.reprocess_daily_statements(self.campaign1)
-        statements = dash.models.BudgetDailyStatement.objects.all().order_by('date', 'budget_id')
+        statements = reports.models.BudgetDailyStatement.objects.all().order_by('date', 'budget_id')
         self.assertEqual(13, len(statements))
         for statement in statements[:9]:
             self.assertEqual(0, statement.spend)
@@ -164,18 +165,18 @@ class DailyStatementsTestCase(TestCase):
         for date in dates:
             for budget in dash.models.BudgetLineItem.objects.filter(campaign_id=self.campaign1.id):
                 if budget.start_date <= date and budget.end_date >= date:
-                    dash.models.BudgetDailyStatement.objects.create(
+                    reports.models.BudgetDailyStatement.objects.create(
                         budget_id=budget.id,
                         date=date,
                         spend=0
                     )
 
-        st = dash.models.BudgetDailyStatement.objects.get(budget_id=1, date=datetime.date(2015, 11, 15))
+        st = reports.models.BudgetDailyStatement.objects.get(budget_id=1, date=datetime.date(2015, 11, 15))
         st.dirty = True
         st.save()
 
         daily_statements.reprocess_daily_statements(self.campaign1)
-        statements = dash.models.BudgetDailyStatement.objects.all().order_by('date', 'budget_id')
+        statements = reports.models.BudgetDailyStatement.objects.all().order_by('date', 'budget_id')
         self.assertEqual(52, len(statements))
         for statement in statements[:19]:
             self.assertGreater(datetime.date(2015, 11, 15), statement.date)
@@ -190,7 +191,7 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(datetime.date(2015, 11, 15), statements[20].date)
         self.assertEqual(Decimal('1800'), statements[20].spend)
 
-    @patch('dash.daily_statements._generate_statement')
+    @patch('reports.daily_statements._generate_statement')
     def test_daily_statements_already_exist(self, mock_generate_statement, mock_content_ad_stats, mock_datetime):
         return_values = {}
         self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
@@ -199,7 +200,7 @@ class DailyStatementsTestCase(TestCase):
         for date in [datetime.date(2015, 11, 1) + datetime.timedelta(days=i) for i in range(30)]:
             for budget in dash.models.BudgetLineItem.objects.filter(campaign_id=self.campaign1.id):
                 if budget.start_date <= date and budget.end_date >= date:
-                    dash.models.BudgetDailyStatement.objects.create(
+                    reports.models.BudgetDailyStatement.objects.create(
                         budget_id=budget.id,
                         date=date,
                         spend=0
@@ -211,7 +212,7 @@ class DailyStatementsTestCase(TestCase):
         daily_statements.reprocess_daily_statements(self.campaign1)
         mock_generate_statement.assert_called_once_with(self.campaign1, datetime.date(2015, 11, 30))
 
-    @patch('dash.daily_statements._generate_statement')
+    @patch('reports.daily_statements._generate_statement')
     def test_daily_statements_dont_exist(self, mock_generate_statement, mock_content_ad_stats, mock_datetime):
         return_values = {}
         self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)

@@ -7,7 +7,8 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0084_contentad_crop_areas'),
+        ('dash', '0085_account_uses_credits'),
+        ('reports', '0021_auto_20150923_1124'),
     ]
 
     operations = [
@@ -23,11 +24,6 @@ class Migration(migrations.Migration):
             options={
                 'get_latest_by': 'date',
             },
-        ),
-        migrations.AddField(
-            model_name='account',
-            name='uses_credits',
-            field=models.BooleanField(default=False, verbose_name=b'Uses credits and budgets accounting'),
         ),
         migrations.AlterUniqueTogether(
             name='budgetdailystatement',

@@ -1969,17 +1969,3 @@ class CreditHistory(HistoryModel):
 
 class BudgetHistory(HistoryModel):
     budget = models.ForeignKey(BudgetLineItem, related_name='history')
-
-
-class BudgetDailyStatement(models.Model):
-    budget = models.ForeignKey(BudgetLineItem)
-    spend = models.DecimalField(
-        decimal_places=4,
-        max_digits=14,
-    )
-    date = models.DateField()
-    dirty = models.BooleanField(default=False)
-
-    class Meta:
-        get_latest_by = 'date'
-        unique_together = ('budget', 'date')

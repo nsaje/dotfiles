@@ -14,12 +14,13 @@ def _generate_statement(campaign, date):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id,
                                                         start_date__lte=date,
                                                         end_date__gte=date)
-    existing_statements = dash.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
+    existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
     existing_statements.filter(date=date).delete()
 
     stats = reports.models.ContentAdStats.objects\
                                          .filter(content_ad__ad_group__campaign_id=campaign.id, date=date)\
-                                         .aggregate(cost_cc_sum=Sum('cost_cc'), data_cost_cc_sum=Sum('data_cost_cc'))
+                                         .aggregate(cost_cc_sum=Sum('cost_cc'),
+                                                    data_cost_cc_sum=Sum('data_cost_cc'))
 
     per_budget_spend = defaultdict(Decimal)
     for existing_statement in existing_statements:
@@ -38,8 +39,8 @@ def _generate_statement(campaign, date):
 
         per_budget_spend[budget.id] += attributed_amount + fee_amount
         total_spend -= attributed_amount
-        dash.models.BudgetDailyStatement.objects.create(budget_id=budget.id, date=date,
-                                                        spend=attributed_amount + fee_amount)
+        reports.models.BudgetDailyStatement.objects.create(budget_id=budget.id, date=date,
+                                                           spend=attributed_amount + fee_amount)
 
     if total_spend > 0:
         # TODO: over spend
@@ -48,7 +49,7 @@ def _generate_statement(campaign, date):
 
 def _get_dates(campaign):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id)
-    existing_statements = dash.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
+    existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
 
     by_date = defaultdict(dict)
     for existing_statement in existing_statements:
