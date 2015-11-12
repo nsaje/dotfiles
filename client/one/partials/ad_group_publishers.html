@@ -17,7 +17,7 @@
                         zem-css-class="show-rows"></zem-dropdown>
                     </div>
 
-                    <span ng-if="isSyncInProgress">
+                    <span ng-show="isSyncInProgress">
                         <a id="resync-loader" popover="Synchronization of blacklisted publishers is currently in progress, and may take a few minutes. You can continue using the dashboard in the meantime." popover-append-to-body="true" popover-trigger="mouseenter" popover-placement="left"><div class="loader"></div></a>
                     </span>
                 </div>
