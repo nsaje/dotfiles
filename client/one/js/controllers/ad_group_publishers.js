@@ -71,19 +71,18 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
             if ($scope.selectedPublisherStatus[publisherId].checked) {
                 numSelected += 1;
-
             } else {
                 numNotSelected += 1;
             }
         });
 
         Object.keys($scope.selectedPublisherStatus).forEach(function (key) {
-            entry = $scope.selectedPublisherStatus[key]
+            var entry = $scope.selectedPublisherStatus[key];
             if (entry.checked) {
                 if (entry.blacklisted === 'Blacklisted') {
-                    countBlacklistedSelected += 1
+                    countBlacklistedSelected += 1;
                 } else if (entry.blacklisted === 'Active') {
-                    countNonBlacklistedSelected += 1
+                    countNonBlacklistedSelected += 1;
                 }
             }
         });
