@@ -1090,6 +1090,17 @@ class AdGroupSource(models.Model):
             source_name
         )
 
+    def get_supply_dash_url(self):
+        if not self.source.has_3rd_party_dashboard() or\
+                self.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
+            return None
+
+        return '{}?ad_group_id={}&source_id={}'.format(
+            reverse('dash.views.views.supply_dash_redirect'),
+            self.ad_group.id,
+            self.source.id
+        )
+
     def _shorten_name(self, name):
         # if the first word is too long, cut it
         words = name.split()
@@ -1743,6 +1754,8 @@ class PublisherBlacklist(models.Model):
         default=constants.PublisherStatus.BLACKLISTED,
         choices=constants.PublisherStatus.get_choices()
     )
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
     class Meta:
         unique_together = (('name', 'ad_group', 'source'), )

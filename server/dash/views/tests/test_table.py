@@ -618,8 +618,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
         ad_group_source.source.source_type.available_actions = [
             constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
 
-        view = table.SourcesTable()
-        result = view._get_supply_dash_url(ad_group_source)
+        result = ad_group_source.get_supply_dash_url()
 
         self.assertEqual(result, '/supply_dash/?ad_group_id=1&source_id=1')
 
@@ -627,8 +626,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = []
 
-        view = table.SourcesTable()
-        result = view._get_supply_dash_url(ad_group_source)
+        result = ad_group_source.get_supply_dash_url()
 
         self.assertIsNone(result)
 
@@ -638,8 +636,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
             constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
         ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
 
-        view = table.SourcesTable()
-        result = view._get_supply_dash_url(ad_group_source)
+        result = ad_group_source.get_supply_dash_url()
 
         self.assertIsNone(result)
 
