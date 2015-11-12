@@ -540,6 +540,8 @@ def deploy_angular_app(app, params):
 
 @parallel
 def deploy_cron_jobs(params):
+    fabric.utils.warn('THIS IS OBSOLETED. CRON IS __NOT__ INSTALLED!')
+    return
     if env.host in DOCKER_HOSTS:
         return params
 

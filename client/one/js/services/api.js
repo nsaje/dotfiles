@@ -577,6 +577,36 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function CheckPublisherBlacklistSyncProgress() {
+        this.get = function(id) {
+            var deferred = $q.defer();
+            var config = {
+                params: {}
+            };
+
+            if (id === undefined) {
+                deferred.reject();
+                return deferred.promise;
+            }
+
+            var url = '/api/ad_groups/' + id + '/publishers/check_sync_progress/';
+
+            $http.get(url, config).
+                then(
+                    function(data, status) {
+                        var resource;
+                        if (data && data.success) {
+                            deferred.resolve(data.data);
+                        }
+                    },
+                    function(data, status, headers, config) {
+                        deferred.reject(data);
+                    });
+
+            return deferred.promise;
+        };
+    }
+
     function AccountSync() {
         this.get = function () {
             var deferred = $q.defer();
@@ -2573,6 +2603,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
         checkCampaignSyncProgress: new CheckCampaignSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),
+        checkPublisherBlacklistSyncProgress: new CheckPublisherBlacklistSyncProgress(),
         userActivation: new UserActivation(),
         dailyStats: new DailyStats(),
         allAccountsBudget: new AllAccountsBudget(),

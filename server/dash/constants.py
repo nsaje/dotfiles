@@ -1119,7 +1119,6 @@ class CreditLineItemStatus(ConstantBase):
         CANCELED: 'Canceled',
     }
 
-
 class BudgetLineItemState(ConstantBase):
     ACTIVE = 1
     PENDING = 2
@@ -1129,4 +1128,56 @@ class BudgetLineItemState(ConstantBase):
         ACTIVE: 'Active',
         PENDING: 'Pending',
         INACTIVE: 'Inactive',
+    }
+
+
+class ScheduledReportSendingFrequency(ConstantBase):
+    DAILY = 1
+    WEEKLY = 2
+    MONTHLY = 3
+
+    _VALUES = {
+        DAILY: 'Daily',
+        WEEKLY: 'Weekly',
+        MONTHLY: 'Monthly'
+    }
+
+
+class ScheduledReportState(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+
+    _VALUES = {
+        ACTIVE: 'Enabled',
+        INACTIVE: 'Paused'
+    }
+
+
+class ScheduledReportGranularity(ConstantBase):
+    ALL_ACCOUNTS = 1
+    ACCOUNT = 2
+    CAMPAIGN = 3
+    AD_GROUP = 4
+    CONTENT_AD = 5
+
+    _VALUES = {
+        ALL_ACCOUNTS: 'All Accounts',
+        ACCOUNT: 'Account',
+        CAMPAIGN: 'Campaign',
+        AD_GROUP: 'Ad Group',
+        CONTENT_AD: 'Content Ad',
+    }
+
+
+class ScheduledReportLevel(ConstantBase):
+    ALL_ACCOUNTS = 1
+    ACCOUNT = 2
+    CAMPAIGN = 3
+    AD_GROUP = 4
+
+    _VALUES = {
+        ALL_ACCOUNTS: 'All Accounts',
+        ACCOUNT: 'Account',
+        CAMPAIGN: 'Campaign',
+        AD_GROUP: 'Ad Group'
     }
