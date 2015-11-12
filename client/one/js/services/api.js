@@ -2633,6 +2633,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 createdBy: obj.created_by,
                 createdOn: moment(obj.created_at).format('MM/DD/YYYY'),
                 spend: obj.spend,
+                state: obj.state,
                 isEditable: obj.is_editable,
                 available: obj.available,
                 comment: obj.comment

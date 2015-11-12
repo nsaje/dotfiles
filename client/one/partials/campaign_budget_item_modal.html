@@ -72,6 +72,9 @@
 			<div class="col-xs-3">
 				<button type="button" class="btn btn-default" ng-click="discardBudgetItem()">Discard</button>
 			</div>
+			<div class="col-xs-3"  ng-if="canDelete">
+				<button type="button" class="btn btn-danger" ng-click="deleteBudgetItem()">Delete</button>
+			</div>
 		</div>
 		
 		<div class="loader" ng-show="saveRequestInProgress"></div>

@@ -324,6 +324,16 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         
         return self.create_api_response(item.instance.pk)
 
+    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_delete')
+    def delete(self, request, campaign_id, budget_id):
+        if not request.user.has_perm('zemauth.account_credit_view'):
+            raise exc.AuthorizationError()
+        
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        item = models.BudgetLineItem.objects.get(campaign_id=campaign.id, pk=budget_id)
+        item.delete()
+        return self.create_api_response(True)
+
     def _get_response(self, item):
         return self.create_api_response({
             'amount': item.amount,
@@ -333,6 +343,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             'end_date': item.end_date,
             'comment': item.comment,
             'is_editable': item.is_editable(),
+            'state': item.state(),
             'credit': {
                 'id': item.credit.pk,
                 'name': str(item.credit),

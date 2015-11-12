@@ -44,6 +44,12 @@ var constants = {
         PENDING: 2,
         CANCELED: 3
     },
+    budgetLineItemStatus: {
+        ACTIVE: 1,
+        PENDING: 2,
+        INACTIVE: 3,
+        DEPLETED: 4
+    },
     iabCategory: {
         IAB1: "IAB1",
         IAB1_1: "IAB1-1",

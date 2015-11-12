@@ -49,6 +49,8 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
         
     };
 
+    
+
     $scope.saveBudgetItem = function () {
         $scope.saveRequestInProgress = true;
         $scope.budgetItem.id = $scope.selectedBudgetId;
@@ -80,6 +82,13 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
         $modalInstance.close(null);
     };
 
+    $scope.deleteBudgetItem = function () {
+        if (!confirm("Are you sure you want to delete the budget line item?")) { return; }
+        api.campaignBudgetPlus.delete($scope.campaign.id, $scope.selectedBudgetId).then(function () {
+            $modalInstance.close(null);
+        });
+    };
+
     $scope.init = function () {
         $scope.saveRequestInProgress = false;
         $scope.isNew = $scope.selectedBudgetId === null;
@@ -103,6 +112,8 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
                 $scope.maxDate = data.endDate;
                 $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
                 $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
+
+                $scope.canDelete = data.state == constants.budgetLineItemStatus.PENDING;
             }, function () {
                 
             });
