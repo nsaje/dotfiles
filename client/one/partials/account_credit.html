@@ -32,7 +32,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr ng-repeat="item in activeCredit">
+				<tr ng-repeat="item in activeCredit" ng-class="{ 'row-updated': item.id == updatedId }">
 					<td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
 					<td>{{ item.startDate }}</td>
 					<td>{{ item.endDate }}</td>

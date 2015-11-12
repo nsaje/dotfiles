@@ -28,7 +28,7 @@ class AccountCreditView(api_common.BaseApiView):
             data['license_fee'] = helpers.format_percent_to_decimal(data['license_fee'])
         errors = {}
 
-        item = forms.NewCreditLineItemForm(data)
+        item = forms.CreditLineItemForm(data)
         
         errors.update(item.errors)
 
@@ -38,7 +38,7 @@ class AccountCreditView(api_common.BaseApiView):
         item.instance.created_by = request.user
         item.save()
         
-        return self._get_response(account_id)
+        return self.create_api_response(item.instance.pk)
 
     def _prepare_item(self, item):
         allocated = item.get_allocated_amount()
@@ -63,7 +63,7 @@ class AccountCreditView(api_common.BaseApiView):
             account_id=account_id,
         ).exclude(
             status=constants.CreditLineItemStatus.CANCELED
-        ).prefetch_related('budgets')
+        ).prefetch_related('budgets').order_by('-created_dt')
         
         return self.create_api_response({
             'active': self._get_active_credit(account_id, credit_items),
@@ -127,11 +127,11 @@ class AccountCreditItemView(api_common.BaseApiView):
         data['status'] = item.status
 
         if 'is_signed' in data:
-            data['status'] = constants.CreditLineItemStatus.SIGNED
+            if data['is_signed']:
+                data['status'] = constants.CreditLineItemStatus.SIGNED
             del data['is_signed']
         if 'license_fee' in data:
             data['license_fee'] = helpers.format_percent_to_decimal(data['license_fee'])
-
         item_form = forms.CreditLineItemForm(data, instance=item)
 
         errors = {}
@@ -141,7 +141,7 @@ class AccountCreditItemView(api_common.BaseApiView):
             raise exc.ValidationError(errors=errors)
 
         item_form.save()
-        return self._get_response(item)
+        return self.create_api_response(credit_id)
 
     def _get_response(self, item):
         return self.create_api_response({
@@ -164,7 +164,7 @@ class AccountCreditItemView(api_common.BaseApiView):
                     'start_date': b.start_date,
                     'end_date': b.end_date,
                 }
-                for b in item.budgets.all()
+                for b in item.budgets.all().order_by('-created_dt')
             ],
         })
 
@@ -197,7 +197,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         item.instance.created_by = request.user
         item.save()
         
-        return self._get_response(campaign)
+        return self.create_api_response(item.instance.pk)
 
     def _prepare_item(self, item):
         spend = item.get_spend_amount()
@@ -217,7 +217,7 @@ class CampaignBudgetView(api_common.BaseApiView):
     def _get_response(self, campaign):
         budget_items = models.BudgetLineItem.objects.filter(
             campaign_id=campaign.id,
-        ).select_related('credit')
+        ).select_related('credit').order_by('-created_dt')
         return self.create_api_response({
             'active': self._get_active_budget(budget_items),
             'past': self._get_past_budget(budget_items),
@@ -234,9 +234,10 @@ class CampaignBudgetView(api_common.BaseApiView):
                 'id': credit.pk,
                 'name': str(credit),
                 'start_date': credit.start_date,
-                'end_date': credit.end_date
+                'end_date': credit.end_date,
+                'is_available': credit.is_available()
             }
-            for credit in available_credits if credit.is_available()
+            for credit in available_credits
         ]
 
     def _get_active_budget(self, items):
@@ -272,9 +273,9 @@ class CampaignBudgetView(api_common.BaseApiView):
         for item in models.BudgetLineItem.objects.filter(campaign_id=campaign.id):
             if item.state() == constants.BudgetLineItemState.PENDING:
                 continue
-            campaign_spend = self.get_spend_amount()
-            data_spend = self.get_data_spend_amount()
-            media_spend = self.get_media_spend_amount()
+            campaign_spend = item.get_spend_amount()
+            data_spend = item.get_data_spend_amount()
+            media_spend = item.get_media_spend_amount()
             
             data['lifetime']['campaign_spend'] += campaign_spend
             data['lifetime']['media_spend'] += media_spend
@@ -317,7 +318,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
 
         item.save()
         
-        return self._get_response(item.instance)
+        return self.create_api_response(item.instance.pk)
 
     def _get_response(self, item):
         return self.create_api_response({

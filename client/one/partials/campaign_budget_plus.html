@@ -36,7 +36,7 @@
                 </tr>
             </thead>
             <tbody>
-				<tr ng-repeat="item in activeBudget">
+				<tr ng-repeat="item in activeBudget" ng-class="{ 'row-updated': item.id == updatedId }">
 					<td>{{ item.startDate }}</td>
 					<td>{{ item.endDate }}</td>
 
@@ -60,7 +60,7 @@
         </table>
 	</div>
 
-	<button type="button" class="btn btn-default" ng-click="addBudgetItem()" ng-disabled="!availableCredit.length">Add Budget Item</button>
+	<button type="button" class="btn btn-default" ng-click="addBudgetItem()" ng-disabled="!getAvailableCredit().length">Add Budget Item</button>
 	
 	<div class="section budgets-past-pending">
 		<div class="title">Depleted Budget Items</div>
@@ -79,7 +79,7 @@
                 </tr>
             </thead>
             <tbody>
-				<tr ng-repeat="item in pastBudget">
+				<tr ng-repeat="item in pastBudget" ng-class="{ 'row-updated': item.id == updatedId }">
 					<td>{{ item.startDate }}</td>
 					<td>{{ item.endDate }}</td>
 

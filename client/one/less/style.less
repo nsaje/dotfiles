@@ -10,6 +10,14 @@
 @internal-color: #0ab00a;
 @border-color: #e3e3e3;
 
+@updated-color: #dd771b;
+
+@keyframes show-updated {
+    0% { background-color: @updated-color; }
+	50% { background-color: @updated-color; }
+    100% { background-color: white; }
+}
+
 // Mixins
 
 .box-shadow(@shadow) {
@@ -1745,6 +1753,11 @@ div[datepicker] {
 		tr.message td {
 			text-align: center;
 			width: 100%;
+		}
+
+		tr.row-updated {
+			animation-name: show-updated;
+			animation-duration: 2s;
 		}
     }
     .scrollable {

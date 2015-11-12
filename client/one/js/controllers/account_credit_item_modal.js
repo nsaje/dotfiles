@@ -6,7 +6,7 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
     $scope.endDatePicker = { isOpen: false };
     $scope.isLoadingInProgress = false;
     $scope.canDelete = false;
-    $scope.minDate = null;
+    $scope.minDate = $scope.today;
     $scope.creditItem = {};
     $scope.errors = {};
 
@@ -55,7 +55,7 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
     $scope.deleteCreditItem = function () {
         if (!confirm("Are you sure you want to delete the credit line item?")) { return; }
         api.accountCredit.delete($scope.account.id, $scope.selectedCreditItemId).then(function () {
-            $modalInstance.close(true);
+            $modalInstance.close(null);
         });
     };
 
@@ -64,7 +64,7 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
         $scope.isNew = true;
         $scope.isSigned = false;
         $scope.canDelete = false;
-        $scope.minDate = null;
+        $scope.minDate = $scope.today;
         if (itemId !== null) {
             $scope.isLoadingInProgress = true;
             $scope.isNew = false;
@@ -81,7 +81,7 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
 
     function closeModal(data) {
         $timeout(function() {
-            $modalInstance.close(data.id ? true : data);
+            $modalInstance.close(data || null);
         }, 1000);
     }
 

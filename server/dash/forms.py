@@ -601,6 +601,14 @@ class AdGroupAdsPlusUploadForm(forms.Form):
                     self.add_error(column_and_field_name, forms.ValidationError("{0} has to be present here or as a column in CSV.".format(self.fields[column_and_field_name].label)))
 
 class CreditLineItemForm(forms.ModelForm):
+    def clean_start_date(self):
+        start_date = self.cleaned_data['start_date']
+        if not self.instance.pk or start_date != self.instance.start_date:
+            today = dates_helper.local_today()
+            if start_date <= today:
+                raise forms.ValidationError('Start date has to be in the future.')
+        return start_date
+    
     def clean_end_date(self):
         end_date = self.cleaned_data['end_date']
         today = dates_helper.local_today()
@@ -624,37 +632,9 @@ class CreditLineItemForm(forms.ModelForm):
         fields = [
             'account', 'start_date', 'end_date', 'amount', 'license_fee', 'status', 'comment'
         ]
-
-class NewCreditLineItemForm(CreditLineItemForm):
-    def clean_start_date(self):
-        start_date = self.cleaned_data['start_date']
-        today = dates_helper.local_today()
-        if start_date <= today:
-            raise forms.ValidationError('Start date has to be in the future.')
-        return start_date    
-
-    class Meta:
-        model = models.CreditLineItem
-        fields = [
-            'account', 'start_date', 'end_date', 'amount', 'license_fee', 'status', 'comment'
-        ]
     
 class BudgetLineItemForm(forms.ModelForm):
     credit = forms.ModelChoiceField(queryset=models.CreditLineItem.objects.all())
-    
-    def clean_start_date(self):
-        start_date = self.cleaned_data['start_date']
-        today = dates_helper.local_today()
-        if start_date <= today:
-            raise forms.ValidationError('Start date has to be in the future.')
-        return start_date
-
-    def clean_end_date(self):
-        end_date = self.cleaned_data['end_date']
-        today = dates_helper.local_today()
-        if end_date <= today:
-            raise forms.ValidationError('End date has to be in the future.')
-        return end_date
 
     def clean_amount(self):
         if self.cleaned_data['amount'] <= 0:
@@ -665,9 +645,26 @@ class BudgetLineItemForm(forms.ModelForm):
         if not self.cleaned_data['comment']:
             raise forms.ValidationError('This field is required.')
         return self.cleaned_data['comment']
+
+    def clean_start_date(self):
+        start_date = self.cleaned_data['start_date']
+        if not self.instance.pk or start_date != self.instance.start_date:
+            today = dates_helper.local_today()
+            if start_date <= today:
+                raise forms.ValidationError('Start date has to be in the future.')
+        return start_date
+
+    def clean_end_date(self):
+        end_date = self.cleaned_data['end_date']
+        if not self.instance.pk:
+            today = dates_helper.local_today()
+            if end_date <= today:
+                raise forms.ValidationError('End date has to be in the future.')
+        return end_date
     
     class Meta:
         model = models.BudgetLineItem
         fields = [
             'campaign', 'credit', 'start_date', 'end_date', 'amount', 'comment'
         ]
+

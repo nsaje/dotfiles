@@ -37,7 +37,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
     $scope.checkCreditDates = function () {
         $timeout(function () {
             var id = $scope.budgetItem.credit.id;
-            $scope.availableCredit.forEach(function (obj) {
+            $scope.getAvailableCredit().forEach(function (obj) {
                 if (obj.id !== id) { return; }
             
                 $scope.minDate = obj.startDate;
@@ -54,9 +54,11 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
         $scope.budgetItem.id = $scope.selectedBudgetId;
         api.campaignBudgetPlus[
             $scope.isNew ? 'create' : 'save'
-        ]($scope.campaign.id, $scope.budgetItem).then(function () {
+        ]($scope.campaign.id, $scope.budgetItem).then(function (data) {
             $scope.saved = true;
-            $timeout($modalInstance.close, 1000);
+            $timeout(function () {
+                $modalInstance.close(data || null);
+            }, 1000);
         }, function (resp) {
             if (resp.data.data.errors) {
                 $scope.errors = {
@@ -75,21 +77,21 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
     };
 
     $scope.discardBudgetItem = function () {
-        $modalInstance.close();
+        $modalInstance.close(null);
     };
 
     $scope.init = function () {
         $scope.saveRequestInProgress = false;
         $scope.isNew = $scope.selectedBudgetId === null;
         
-        $scope.minDate = $scope.availableCredit[0].startDate;
-        $scope.maxDate = $scope.availableCredit[0].endDate;
+        $scope.minDate = $scope.getAvailableCredit()[0].startDate;
+        $scope.maxDate = $scope.getAvailableCredit()[0].endDate;
         $scope.initStartDate = moment($scope.minDate).toDate();
         $scope.initEndDate = moment($scope.maxDate).toDate();
 
         if ($scope.isNew) {
             $scope.budgetItem.credit = {};
-            $scope.budgetItem.credit.id = $scope.availableCredit[0].id;
+            $scope.budgetItem.credit.id = $scope.getAvailableCredit()[0].id;
         } else {
             api.campaignBudgetPlus.get(
                 $scope.campaign.id,

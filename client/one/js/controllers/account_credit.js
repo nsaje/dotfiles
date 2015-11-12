@@ -1,14 +1,11 @@
 /*globals oneApp*/
 oneApp.controller('AccountCreditCtrl', ['$scope', '$state', '$modal', 'api', function ($scope, $state, $modal, api) {
     function error() {}
+    function refresh(updatedId) {
+        $scope.updatedId = updatedId;
+        $scope.init();
+    }
     function updateView(data) {
-        if (data === null) {
-            error();
-            return;
-        } else if (data === true) {
-            $scope.init();
-            return;
-        }
         $scope.creditTotals = data.totals;
         $scope.activeCredit = data.active;
         $scope.pastCredit = data.past;
@@ -21,7 +18,7 @@ oneApp.controller('AccountCreditCtrl', ['$scope', '$state', '$modal', 'api', fun
             scope: $scope,
             size: 'wide'
         });
-        modalInstance.result.then(updateView);
+        modalInstance.result.then(refresh);
         return modalInstance;
     }
 

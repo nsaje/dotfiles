@@ -13,7 +13,7 @@
 				<label for="credit-input" class="control-label">
 					Select Account Credit for Allocation
 				</label><br />
-				<select id="credit-input" ng-model="budgetItem.credit" size="5" class="no-dropdown" ng-options="credit.name for credit in availableCredit track by credit.id" ng-change="checkCreditDates()" ng-disabled="!isNew">
+				<select id="credit-input" ng-model="budgetItem.credit" size="5" class="no-dropdown" ng-options="credit.name for credit in getAvailableCredit(false, budgetItem.credit.id) track by credit.id" ng-change="checkCreditDates()" ng-disabled="!isNew">
 				</select>
 				<label ng-repeat="error in errors.credit" class="control-label error" for="credit-input">{{ error }}</label>
 			</div>
@@ -24,7 +24,10 @@
                 Valid from
             </label>
             <div class="col-xs-4">
-                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit" init-date="initStartDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.startDate" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')">
+				<div class="input-group">
+					<input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit" init-date="initStartDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.startDate" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')">
+					<div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
+				</div>
             </div>
             <label ng-repeat="error in errors.startDate" class="col-xs-5 control-label error" for="start-date-input">{{ error }}</label>
         </div>
@@ -33,7 +36,10 @@
                 Valid To
             </label>
             <div class="col-xs-4">
-                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit" init-date="initEndDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
+				<div class="input-group">
+					<input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit" init-date="initEndDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
+					<div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
+				</div>
             </div>
             <label ng-repeat="error in errors.endDate" class="col-xs-5 control-label error" for="end-date-input">{{ error }}</label>
         </div>
@@ -45,6 +51,7 @@
 				<div class="input-group">
 					<span class="input-group-addon">$</span>
 					<input id="amount-input" ng-disabled="!budgetItem.credit" type="text" class="form-control" ng-model="budgetItem.amount">
+					<div class="input-group-addon">.00</div>
 				</div>
             </div>
             <label ng-repeat="error in errors.amount" class="col-xs-5 control-label error" for="amount">{{ error }}</label>

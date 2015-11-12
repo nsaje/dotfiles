@@ -1,12 +1,15 @@
 /*globals oneApp*/
 oneApp.controller('CampaignBudgetPlusCtrl', ['$scope', '$state', '$modal',  'api', function ($scope, $state, $modal, api) {
+    var availableCredit = [];
     function updateView(data) {
-        console.log(data);
-
         $scope.activeBudget = data.active;
         $scope.depletedBudget = data.depleted;
         $scope.budgetTotals = data.totals;
-        $scope.availableCredit = data.credits;
+        availableCredit = data.credits;
+    }
+    function refresh(updatedId) {
+        $scope.updatedId = updatedId;
+        $scope.init();
     }
     function openModal() {
         var modalInstance = $modal.open({
@@ -15,9 +18,16 @@ oneApp.controller('CampaignBudgetPlusCtrl', ['$scope', '$state', '$modal',  'api
             windowClass: 'modal',
             scope: $scope
         });
-        modalInstance.result.then($scope.init);
+        modalInstance.result.then(refresh);
         return modalInstance;
     }
+
+    $scope.getAvailableCredit = function (all, include) {
+        return all ? availableCredit : availableCredit.filter(function (obj) {
+            return obj.isAvailable || obj.id === include;
+        });
+    };
+    
     $scope.addBudgetItem = function () {
         $scope.selectedBudgetId = null;
         openModal();
