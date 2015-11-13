@@ -2566,8 +2566,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     budgets: (obj.budgets || []).map(function (itm) {
                         return {
                             id: itm.id,
-                            startDate: moment(obj.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
-                            endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                            startDate: moment(itm.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                            endDate: moment(itm.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                             total: itm.total,
                             spend: itm.spend,
                             campaign: itm.campaign
