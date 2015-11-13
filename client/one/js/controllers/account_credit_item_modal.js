@@ -32,7 +32,7 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
         }
     };
 
-    $scope.saveCreditItem = function () {
+    $scope.upsertCreditItem = function () {
         if ((!$scope.creditItem.isSigned || $scope.isNew) && $scope.isSigned) {
             $scope.creditItem.isSigned = true;
         }
