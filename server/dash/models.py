@@ -2006,6 +2006,19 @@ class ExportReport(models.Model):
     additional_fields = models.CharField(max_length=500, null=True, blank=True)
     filtered_sources = models.ManyToManyField(Source)
 
+    def __str__(self):
+        return ' '.join(filter(None, (
+            constants.ScheduledReportLevel.get_text(self.level),
+            '(',
+            (self.account.name if self.account else ''),
+            (self.campaign.name if self.campaign else ''),
+            (self.ad_group.name if self.ad_group else ''),
+            ') - by',
+            constants.ScheduledReportGranularity.get_text(self.granularity),
+            ('by Source' if self.breakdown_by_source else ''),
+            ('by Day' if self.breakdown_by_day else '')
+        )))
+
     @property
     def level(self):
         if self.account:
@@ -2018,6 +2031,12 @@ class ExportReport(models.Model):
 
     def get_additional_fields(self):
         return views.helpers.get_additional_columns(self.additional_fields)
+
+    def get_filtered_sources(self):
+        all_sources = Source.objects.all()
+        if not self.created_by.has_perm('zemauth.filter_sources') or len(self.filtered_sources.all()) == 0:
+            return all_sources
+        return all_sources.filter(id__in=[source.id for source in self.filtered_sources.all()])
 
 
 class ScheduledExportReport(models.Model):
@@ -2043,6 +2062,15 @@ class ScheduledExportReport(models.Model):
         default=constants.ScheduledReportSendingFrequency.DAILY,
         choices=constants.ScheduledReportSendingFrequency.get_choices()
     )
+
+    def __str__(self):
+        return ' '.join(filter(None, (
+            self.name,
+            '(',
+            self.created_by.email,
+            ') - ',
+            constants.ScheduledReportSendingFrequency.get_text(self.sending_frequency)
+        )))
 
     def add_recipient_email(self, email_address):
         validate_email(email_address)
@@ -2078,6 +2106,7 @@ class ScheduledExportReportLog(models.Model):
     start_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
     report_filename = models.CharField(max_length=1024, blank=False, null=True)
+    recipient_emails = models.CharField(max_length=1024, blank=False, null=True)
 
     state = models.IntegerField(
         default=constants.ScheduledReportSent.FAILED,

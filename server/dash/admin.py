@@ -998,14 +998,15 @@ class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
 
 class ScheduledExportReportLogAdmin(admin.ModelAdmin):
-    search_fields = ['campaign__name']
+    search_fields = ['scheduled_report']
     list_display = (
         'created_dt',
         'start_date',
         'end_date',
         'state',
-        'report',
         'scheduled_report',
+        'report',
+        'recipient_emails',
         'report_filename',
         'errors'
     )
