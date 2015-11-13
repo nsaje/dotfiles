@@ -603,11 +603,12 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 class CreditLineItemForm(forms.ModelForm):
     def clean_start_date(self):
         start_date = self.cleaned_data['start_date']
-        today = dates_helper.local_today()
-        if start_date <= today:
-            raise forms.ValidationError('Start date has to be greater than today.')
+        if not self.instance.pk or start_date != self.instance.start_date:
+            today = dates_helper.local_today()
+            if start_date < today:
+                raise forms.ValidationError('Start date has to be in the future.')
         return start_date
-
+    
     def clean_end_date(self):
         end_date = self.cleaned_data['end_date']
         today = dates_helper.local_today()
@@ -627,27 +628,32 @@ class CreditLineItemForm(forms.ModelForm):
         ]
     
 class BudgetLineItemForm(forms.ModelForm):
-    def clean_start_date(self):
-        start_date = self.cleaned_data['start_date']
-        today = dates_helper.local_today()
-        if start_date <= today:
-            raise forms.ValidationError('Start date has to be greater than today.')
-        return start_date
-
-    def clean_end_date(self):
-        end_date = self.cleaned_data['end_date']
-        today = dates_helper.local_today()
-        if end_date <= today:
-            raise forms.ValidationError('End date has to be greater than today.')
-        return end_date
+    credit = forms.ModelChoiceField(queryset=models.CreditLineItem.objects.all())
 
     def clean_amount(self):
         if self.cleaned_data['amount'] <= 0:
             raise forms.ValidationError('Budget amount cannot be less or equal to zero.')
         return self.cleaned_data['amount']
+
+    def clean_start_date(self):
+        start_date = self.cleaned_data['start_date']
+        if not self.instance.pk or start_date != self.instance.start_date:
+            today = dates_helper.local_today()
+            if start_date < today:
+                raise forms.ValidationError('Start date has to be in the future.')
+        return start_date
+
+    def clean_end_date(self):
+        end_date = self.cleaned_data['end_date']
+        if not self.instance.pk:
+            today = dates_helper.local_today()
+            if end_date <= today:
+                raise forms.ValidationError('End date has to be in the future.')
+        return end_date
     
     class Meta:
         model = models.BudgetLineItem
         fields = [
             'campaign', 'credit', 'start_date', 'end_date', 'amount', 'comment'
         ]
+
