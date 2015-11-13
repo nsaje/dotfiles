@@ -162,8 +162,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $timeout(function() {
                 api.checkPublisherBlacklistSyncProgress.get($state.params.id).then(
                     function(data) {
-                        $scope.isSyncInProgress = data.is_sync_in_progress;
-
+                        $scope.isSyncInProgress = data.data.is_sync_in_progress;
                         if ($scope.isSyncInProgress === false) {
                             // we found out that the sync is no longer in progress
                             // time to reload the data
@@ -384,8 +383,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         ).then(function () {
             $scope.triggerSync();
 
-            getTableData();
-
             // clear publisher selection
             $scope.selectionMenuConfig.partialSelection = false;
             $scope.selectedAll = false;
@@ -538,7 +535,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
         if (newValue === true && oldValue === false) {
-            pollSyncStatus();
+            pollSyncStatus();            
         }
     }, true);
 
@@ -580,7 +577,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         getTableData();
         getDailyStats();
-
         zemFilterService.setShowBlacklistedPublishers(true);
     };
 
