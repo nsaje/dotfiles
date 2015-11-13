@@ -73,6 +73,12 @@ def get_filtered_sources(user, sources_filter):
     return filtered_sources
 
 
+def get_additional_columns(additional_columns):
+    if additional_columns:
+        return additional_columns.split(',')
+    return []
+
+
 def get_account(user, account_id, select_related=False):
     try:
         account = models.Account.objects.all().filter_by_user(user)
@@ -929,7 +935,7 @@ def format_decimal_to_percent(num):
 
 
 def format_percent_to_decimal(num):
-    return Decimal(num) / 100
+    return Decimal(str(num).replace('%', '')) / 100
 
 
 def log_useraction_if_necessary(request, user_action_type, account=None, campaign=None, ad_group=None):

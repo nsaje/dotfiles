@@ -52,6 +52,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         value: 'day-excel'
     }];
 
+    $scope.exportPlusOptions = [
+      {name: 'Current View', value: 'contentad-csv'}
+    ];
+
     $scope.bulkActions = [{
         name: 'Pause',
         value: 'pause',
@@ -561,7 +565,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         getDailyStats();
         getTableData();
-        setDisabledExportOptions();
     });
 
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {

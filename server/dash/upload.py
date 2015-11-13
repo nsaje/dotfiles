@@ -236,7 +236,7 @@ def _clean_inherited_csv_field(field_name, value_from_csv, cleaned_value_from_fo
 def _clean_url(url, ad_group):
     try:
         # URL is considered invalid if it contains any unicode chars
-        url = url.encode('ascii')
+        url = url.encode('ascii').strip()
         url = _validate_url(url)
     except (ValidationError, UnicodeEncodeError):
         raise ValidationError('Invalid URL')
@@ -272,7 +272,7 @@ def _clean_image(image_url, crop_areas):
     errors = []
 
     try:
-        image_url = _validate_url(image_url)
+        image_url = _validate_url(image_url.strip())
     except ValidationError as e:
         errors.append('Invalid Image URL')
 

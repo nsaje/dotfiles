@@ -171,6 +171,11 @@ class ApiContentAdsQueryTest(TestCase):
         self.check_constraints(mock_cursor, sql_constraints)
         self.check_aggregations(mock_cursor)
 
+    def test_remove_contentadstats(self, mock_cursor):
+        api_contentads.remove_contentadstats([1, 2, 3])
+        query = self._get_query(mock_cursor)
+        self.assertEqual(query, 'DELETE FROM "contentadstats" WHERE (content_ad_id IN (%s,%s,%s))')
+
 
 class ApiContentAdsPostclickRedshiftTest(RedshiftTestCase):
     fixtures = ['test_api_contentads.stats.yaml', 'test_api_contentads.yaml']

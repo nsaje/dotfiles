@@ -67,6 +67,11 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         {name: 'Detailed report', value: 'excel_detailed', hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_detailed_report')}
     ];
 
+    $scope.exportPlusOptions = [
+      {name: 'Current View', value: 'adgroup-csv'},
+      {name: 'By content Ad', value: 'contentad-csv'}
+    ];
+
     $scope.columns = [
         {
             name: '',
@@ -500,7 +505,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         getDailyStats();
         getTableData();
-        setDisabledExportOptions();
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {

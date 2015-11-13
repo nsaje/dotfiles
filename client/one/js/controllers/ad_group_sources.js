@@ -21,8 +21,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
     $scope.exportOptions = [
-        {name: 'By Day (CSV)', value: 'csv'},
-        {name: 'By Day (Excel)', value: 'excel'}
+      {name: 'By Day (CSV)', value: 'csv'},
+      {name: 'By Day (Excel)', value: 'excel'}
+    ];
+
+    $scope.exportPlusOptions = [
+      {name: 'Current View', value: 'adgroup-csv'},
+      {name: 'By Content Ad', value: 'contentad-csv'}
     ];
 
     $scope.updateSelectedSources = function (sourceId) {
