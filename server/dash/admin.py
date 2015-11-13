@@ -981,7 +981,6 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     )
 
     readonly_fields = ('created_dt', 'created_by',)
-    form = dash_forms.CreditLineItemForm
     
 
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
@@ -995,7 +994,6 @@ class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     )
 
     readonly_fields = ('created_dt', 'created_by',)
-    form = dash_forms.BudgetLineItemForm
 
 
 admin.site.register(models.Account, AccountAdmin)
