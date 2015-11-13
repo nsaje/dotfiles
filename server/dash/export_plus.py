@@ -35,7 +35,8 @@ FIELDNAMES = {
     'start_date': 'Start Date',
     'title': 'Title',
     'unspent_budget': 'Unspent Budget',
-    'visits': 'Visits'
+    'visits': 'Visits',
+    'date': 'Date'
 }
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
@@ -186,6 +187,9 @@ def get_csv_content(fieldnames, data, title_text=None):
             elif value and key in FORMAT_3_DECIMALS:
                 value = '{:.3f}'.format(value)
 
+            if key == 'date':
+                value = value.strftime('%Y-%m-%d')
+
             row[key] = value
             if repr(value).find(';') != -1:
                 row[key] = '"' + value + '"'
@@ -255,7 +259,7 @@ def get_report_filename(granularity, start_date, end_date, account_name=None, ca
 
 
 class AllAccountsExport(object):
-    def get_data(self, user, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False):
+    def get_data(self, user, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False, by_day=False):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
         if not user.has_perm('zemauth.view_archived_entities'):
             accounts = accounts.exclude_archived()
@@ -278,6 +282,10 @@ class AllAccountsExport(object):
             required_fields.extend(['source'])
             dimensions.extend(['source'])
 
+        if by_day:
+            required_fields.extend(['date'])
+            dimensions.extend(['date'])
+
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
         include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
 
@@ -297,7 +305,7 @@ class AllAccountsExport(object):
 
 
 class AccountExport(object):
-    def get_data(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False):
+    def get_data(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False, by_day=False):
         account = helpers.get_account(user, account_id)
 
         dimensions = ['account']
@@ -320,6 +328,10 @@ class AccountExport(object):
             required_fields.extend(['source'])
             dimensions.extend(['source'])
 
+        if by_day:
+            required_fields.extend(['date'])
+            dimensions.extend(['date'])
+
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
         include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
 
@@ -339,7 +351,7 @@ class AccountExport(object):
 
 
 class CampaignExport(object):
-    def get_data(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False):
+    def get_data(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False, by_day=False):
         campaign = helpers.get_campaign(user, campaign_id)
 
         dimensions = ['campaign']
@@ -355,6 +367,10 @@ class CampaignExport(object):
         if by_source:
             required_fields.extend(['source'])
             dimensions.extend(['source'])
+
+        if by_day:
+            required_fields.extend(['date'])
+            dimensions.extend(['date'])
 
         fieldnames = _get_fieldnames(required_fields, additional_fields)
 
@@ -378,7 +394,7 @@ class CampaignExport(object):
 
 
 class AdGroupExport(object):
-    def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=None):
+    def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False, by_day=False):
 
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
@@ -394,6 +410,10 @@ class AdGroupExport(object):
         if by_source:
             required_fields.extend(['source'])
             dimensions.extend(['source'])
+
+        if by_day:
+            required_fields.extend(['date'])
+            dimensions.extend(['date'])
 
         fieldnames = _get_fieldnames(required_fields, additional_fields)
 

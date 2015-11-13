@@ -105,7 +105,8 @@ def _get_scheduled_report_contents(user, filtered_sources, start_date, end_date,
         'order': order,
         'additional_fields': additional_fields,
         'breakdown': breakdown,
-        'by_source': by_source
+        'by_source': by_source,
+        'by_day': by_day
     }
 
     if account_id:

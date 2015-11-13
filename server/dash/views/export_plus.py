@@ -56,15 +56,16 @@ class AccountCampaignsExport(api_common.BaseApiView):
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
         granularity = export_plus.get_granularity_from_type(request.GET.get('type'))
+        by_day = helpers.get_by_day(request.GET.get('by_day'))
 
         if granularity == constants.ScheduledReportGranularity.CAMPAIGN:
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign')
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.AD_GROUP:
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.CONTENT_AD:
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_day=by_day)
 
-        filename = export_plus.get_report_filename(granularity, start_date, end_date, account_name=slugify.slugify(account.name))
+        filename = export_plus.get_report_filename(granularity, start_date, end_date, account_name=slugify.slugify(account.name), by_day=by_day)
         return self.create_csv_response(filename, content=content)
 
 
@@ -83,13 +84,14 @@ class CampaignAdGroupsExport(ExportApiView):
         order = request.GET.get('order') or 'name'
         granularity = export_plus.get_granularity_from_type(request.GET.get('type'))
         breakdown = export_plus.get_breakdown_from_granularity(granularity)
+        by_day = helpers.get_by_day(request.GET.get('by_day'))
 
         if granularity == constants.ScheduledReportGranularity.AD_GROUP:
-            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=breakdown)
+            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=breakdown, by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.CONTENT_AD:
-            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=breakdown)
+            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=breakdown, by_day=by_day)
 
-        filename = export_plus.get_report_filename(granularity, start_date, end_date, account_name=slugify.slugify(campaign.account.name), campaign_name=slugify.slugify(campaign.name))
+        filename = export_plus.get_report_filename(granularity, start_date, end_date, account_name=slugify.slugify(campaign.account.name), campaign_name=slugify.slugify(campaign.name), by_day=by_day)
         return self.create_csv_response(filename, content=content)
 
 
@@ -199,9 +201,10 @@ class AdGroupAdsPlusExport(ExportApiView):
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
         granularity = export_plus.get_granularity_from_type(request.GET.get('type'))
+        by_day = helpers.get_by_day(request.GET.get('by_day'))
 
         if granularity == constants.ScheduledReportGranularity.CONTENT_AD:
-            content = export_plus.AdGroupExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
+            content = export_plus.AdGroupExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_day=by_day)
 
         filename = export_plus.get_report_filename(
             granularity,
@@ -209,7 +212,8 @@ class AdGroupAdsPlusExport(ExportApiView):
             end_date,
             account_name=slugify.slugify(ad_group.campaign.account.name),
             campaign_name=slugify.slugify(ad_group.campaign.name),
-            ad_group_name=slugify.slugify(ad_group.name))
+            ad_group_name=slugify.slugify(ad_group.name),
+            by_day=by_day)
 
         return self.create_csv_response(filename, content=content)
 
@@ -226,17 +230,18 @@ class AllAccountsSourcesExport(ExportApiView):
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
         granularity = export_plus.get_granularity_from_type(request.GET.get('type'))
+        by_day = helpers.get_by_day(request.GET.get('by_day'))
 
         if granularity == constants.ScheduledReportGranularity.ALL_ACCOUNTS:
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, by_source=True)
+            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, by_source=True, by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.ACCOUNT:
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='account', by_source=True)
+            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='account', by_source=True, by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.CAMPAIGN:
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_source=True)
+            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_source=True, by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.AD_GROUP:
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True)
+            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True, by_day=by_day)
 
-        filename = export_plus.get_report_filename(granularity, start_date, end_date, by_source=True)
+        filename = export_plus.get_report_filename(granularity, start_date, end_date, by_source=True, by_day=by_day)
 
         return self.create_csv_response(filename, content=content)
 
@@ -255,17 +260,18 @@ class AccountSourcesExport(ExportApiView):
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
         granularity = export_plus.get_granularity_from_type(request.GET.get('type'))
+        by_day = helpers.get_by_day(request.GET.get('by_day'))
 
         if granularity == constants.ScheduledReportGranularity.ACCOUNT:
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, by_source=True)
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, by_source=True, by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.CAMPAIGN:
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_source=True)
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_source=True, by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.AD_GROUP:
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True)
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True, by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.CONTENT_AD:
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_source=True)
+            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_source=True, by_day=by_day)
 
-        filename = export_plus.get_report_filename(granularity, start_date, end_date, account_name=slugify.slugify(account.name), by_source=True)
+        filename = export_plus.get_report_filename(granularity, start_date, end_date, account_name=slugify.slugify(account.name), by_source=True, by_day=by_day)
 
         return self.create_csv_response(filename, content=content)
 
@@ -284,13 +290,14 @@ class CampaignSourcesExport(ExportApiView):
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
         granularity = export_plus.get_granularity_from_type(request.GET.get('type'))
+        by_day = helpers.get_by_day(request.GET.get('by_day'))
 
         if granularity == constants.ScheduledReportGranularity.CAMPAIGN:
-            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_source=True)
+            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_source=True, by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.AD_GROUP:
-            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True)
+            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True, by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.CONTENT_AD:
-            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_source=True)
+            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_source=True, by_day=by_day)
 
         filename = export_plus.get_report_filename(
             granularity,
@@ -298,7 +305,8 @@ class CampaignSourcesExport(ExportApiView):
             end_date,
             account_name=slugify.slugify(campaign.account.name),
             campaign_name=slugify.slugify(campaign.name),
-            by_source=True)
+            by_source=True,
+            by_day=by_day)
 
         return self.create_csv_response(filename, content=content)
 
@@ -317,11 +325,12 @@ class AdGroupSourcesExport(ExportApiView):
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
         granularity = export_plus.get_granularity_from_type(request.GET.get('type'))
+        by_day = helpers.get_by_day(request.GET.get('by_day'))
 
         if granularity == constants.ScheduledReportGranularity.AD_GROUP:
-            content = export_plus.AdGroupExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True)
+            content = export_plus.AdGroupExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True, by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.CONTENT_AD:
-            content = export_plus.AdGroupExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_source=True)
+            content = export_plus.AdGroupExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_source=True, by_day=by_day)
 
         filename = export_plus.get_report_filename(
             granularity,
@@ -330,7 +339,8 @@ class AdGroupSourcesExport(ExportApiView):
             account_name=slugify.slugify(ad_group.campaign.account.name),
             campaign_name=slugify.slugify(ad_group.campaign.name),
             ad_group_name=slugify.slugify(ad_group.name),
-            by_source=True)
+            by_source=True,
+            by_day=by_day)
 
         return self.create_csv_response(filename, content=content)
 
@@ -348,14 +358,15 @@ class AllAccountsExport(ExportApiView):
         additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
         order = request.GET.get('order') or 'name'
         granularity = export_plus.get_granularity_from_type(request.GET.get('type'))
+        by_day = helpers.get_by_day(request.GET.get('by_day'))
 
         if granularity == constants.ScheduledReportGranularity.ACCOUNT:
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='account')
+            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='account', by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.CAMPAIGN:
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign')
+            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_day=by_day)
         elif granularity == constants.ScheduledReportGranularity.AD_GROUP:
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
+            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_day=by_day)
 
-        filename = export_plus.get_report_filename(granularity, start_date, end_date)
+        filename = export_plus.get_report_filename(granularity, start_date, end_date, by_day=by_day)
 
         return self.create_csv_response(filename, content=content)
