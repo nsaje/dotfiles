@@ -71,9 +71,7 @@
             </div>
             <label ng-repeat="error in errors.comment" class="col-xs-5 control-label error" for="comment">{{ error }}</label>
         </div>
-
         <hr />
-
         <div class="form-group">
             <label for="is-signed-input" class="col-xs-8 control-label">
                 By signing the credit line item, no more future changes to the amount, fee and start date will be possible.
@@ -87,9 +85,7 @@
             </div>
             <label ng-repeat="error in errors.status" class="control-label error" for="is-signed-input">{{ error }}</label>
         </div>
-        
         <hr ng-show="!isNew" />
-
         <div class="form-group" ng-show="!isNew">
             <label class="col-xs-8 control-label">
                 Allocated budget items
@@ -118,9 +114,7 @@
                 </tbody>
             </table>
         </div>
-
         <hr />
-
         <div class="form-group">
             <div class="col-xs-3">
                 <button type="button" class="btn btn-primary" ng-click="upsertCreditItem()">Save</button>
@@ -132,7 +126,6 @@
                 <button type="button" class="btn btn-danger" ng-click="deleteCreditItem()">Delete</button>
             </div>
         </div>
-        
         <div class="loader" ng-show="saveRequestInProgress"></div>
         <span ng-show="saved" class="success">Your updates have been saved.</span>
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>

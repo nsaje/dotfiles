@@ -49,8 +49,6 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
         
     };
 
-    
-
     $scope.upsertBudgetItem = function () {
         $scope.saveRequestInProgress = true;
         $scope.budgetItem.id = $scope.selectedBudgetId;

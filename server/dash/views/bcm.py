@@ -118,7 +118,6 @@ class AccountCreditItemView(api_common.BaseApiView):
         item.delete()
         return self.create_api_response(True)
     
-
     @statsd_helper.statsd_timer('dash.api', 'account_credit_item_pust')
     def post(self, request, account_id, credit_id):
         if not request.user.has_perm('zemauth.account_credit_view'):

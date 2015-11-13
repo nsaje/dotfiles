@@ -5,7 +5,6 @@
 
         <div class="loader" ng-show="loadingInProgress"></div>
     </div>
-
     <div class="section named-data" ng-show="!loadingInProgress">
         <div class="name">Total Account Value</div>
         <div class="value">{{ creditTotals.total | decimalCurrency:"$":2 }}</div>
@@ -14,7 +13,6 @@
         <div class="name">Available Account Credit</div>
         <div class="value">{{ creditTotals.available | decimalCurrency:"$":2  }}</div>
     </div>
-    
     <div class="section active-credits" ng-show="!loadingInProgress">
         <div class="title">Active Credit Items</div>
         <table>

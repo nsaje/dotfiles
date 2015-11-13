@@ -623,3 +623,4 @@ class BudgetsTestCase(TestCase):
         self.assertFalse(budget_form.is_valid())
         self.assertTrue(budget_form.errors)
         
+

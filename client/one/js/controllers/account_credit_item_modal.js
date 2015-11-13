@@ -22,8 +22,6 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
         return fees;
     };
 
-    
-
     $scope.openDatePicker = function (type) {
         if (type === 'startDate') {
             $scope.startDatePicker.isOpen = true;
