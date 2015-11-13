@@ -374,7 +374,7 @@ def is_publisher_blacklist_sync_in_progress(ad_groups):
         state=constants.ActionState.WAITING,
         action_type=constants.ActionType.AUTOMATIC,
         action=constants.Action.SET_CAMPAIGN_STATE,
-        message__contains="publisher_blacklist",
+        payload__contains="publisher_blacklist",
         ad_group_source__ad_group__in=ad_groups
     )
 

@@ -10,7 +10,7 @@
         is_superuser: true
         last_login: '2014-06-16T12:21:29'
         last_name: ''
-        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
         user_permissions: []
         username: ''
     model: zemauth.user
@@ -33,6 +33,19 @@
         name: 'test account 2'
     model: dash.account
     pk: 2
+
+# test accountsettings
+
+-   fields:
+        account: 1
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        archived: False
+        default_account_manager: 1
+        default_sales_representative: 1
+        service_fee: 0.13
+    model: dash.accountsettings
+    pk: 1
 
 # test campaigns
 

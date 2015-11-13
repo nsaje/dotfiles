@@ -26,7 +26,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
-    $scope.selectionMenuConfig = {};
+    $scope.selectionMenuConfig = {
+        hideCombo: true
+    };
     // selection settings - all or specific publishers can be selected
     $scope.selectedAll = false;
     $scope.selectedPublisherStatus = {};
@@ -59,7 +61,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             "checked": checked,
             "source": row['exchange'],
             "domain": row['domain'],
-            "blacklisted": row['blacklisted'],
+            "blacklisted": row['blacklisted']
         };
 
         var numSelected = 0,
@@ -71,19 +73,18 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
             if ($scope.selectedPublisherStatus[publisherId].checked) {
                 numSelected += 1;
-
             } else {
                 numNotSelected += 1;
             }
         });
 
-        Objects.keys($scope.selectedPublisherStatus).forEach(function (key) {
-            entry = $scope.selectedPublisherStatus[key]
+        Object.keys($scope.selectedPublisherStatus).forEach(function (key) {
+            var entry = $scope.selectedPublisherStatus[key];
             if (entry.checked) {
                 if (entry.blacklisted === 'Blacklisted') {
-                    countBlacklistedSelected += 1
+                    countBlacklistedSelected += 1;
                 } else if (entry.blacklisted === 'Active') {
-                    countNonBlacklistedSelected += 1
+                    countNonBlacklistedSelected += 1;
                 }
             }
         });
@@ -163,8 +164,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $timeout(function() {
                 api.checkPublisherBlacklistSyncProgress.get($state.params.id).then(
                     function(data) {
-                        $scope.isSyncInProgress = data.is_sync_in_progress;
-
+                        $scope.isSyncInProgress = data.data.is_sync_in_progress;
                         if ($scope.isSyncInProgress === false) {
                             // we found out that the sync is no longer in progress
                             // time to reload the data
@@ -385,8 +385,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         ).then(function () {
             $scope.triggerSync();
 
-            getTableData();
-
             // clear publisher selection
             $scope.selectionMenuConfig.partialSelection = false;
             $scope.selectedAll = false;
@@ -539,7 +537,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
         if (newValue === true && oldValue === false) {
-            $scope.pollSyncStatus();
+            pollSyncStatus();            
         }
     }, true);
 
@@ -581,7 +579,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         getTableData();
         getDailyStats();
-
         zemFilterService.setShowBlacklistedPublishers(true);
     };
 

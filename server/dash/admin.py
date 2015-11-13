@@ -977,6 +977,7 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'status',
         'license_fee',
         'created_dt',
+        'created_by',
     )
 
     readonly_fields = ('created_dt', 'created_by',)
@@ -994,7 +995,6 @@ class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     )
 
     readonly_fields = ('created_dt', 'created_by',)
-    form = dash_forms.BudgetLineItemForm
 
 
 class ScheduledExportReportLogAdmin(admin.ModelAdmin):

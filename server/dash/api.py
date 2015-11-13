@@ -398,12 +398,14 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             if data.get('state') == constants.ContentAdSourceState.ACTIVE:
                 nr_nonexisting_active_content_ads += 1
                 logger.error(
-                    ('Found active external content ad that does not exist in database -'
-                     'source=%s, content ad state=%s, submission status=%s, source content ad id=%s)'),
+                    ('Found active external content ad that does not exist in database - '
+                     'source=%s, ad group=%s, content ad state=%s, submission status=%s, source content ad id=%s, data=%s)'),
                     ad_group_source.source.name,
+                    ad_group_source.ad_group_id,
                     constants.ContentAdSourceState.get_text(data.get('state')),
                     constants.ContentAdSubmissionStatus.get_text(data.get('submission_status')),
-                    data.get('source_content_ad_id')
+                    data.get('id'),
+                    data
                 )
             continue
 
