@@ -16,7 +16,12 @@
                         zem-dropdown-options="bulkActions"
                         zem-css-class="show-rows"></zem-dropdown>
                     </div>
+
+                    <span ng-show="isSyncInProgress">
+                        <a id="resync-loader" popover="Synchronization of blacklisted publishers is currently in progress, and may take a few minutes. You can continue using the dashboard in the meantime." popover-append-to-body="true" popover-trigger="mouseenter" popover-placement="left"><div class="loader"></div></a>
+                    </span>
                 </div>
+
                 <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
                 <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
                 <div class="clearfix"></div>

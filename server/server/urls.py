@@ -112,6 +112,11 @@ urlpatterns += patterns(
         name='ad_group_publishers_blacklist'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/check_sync_progress/',
+        login_required(dash.views.sync.AdGroupPublisherBlacklistCheckSyncProgress.as_view()),
+        name='ad_group_publishers_blacklist_sync_progress'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
         login_required(dash.views.export.AdGroupAdsExportAllowed.as_view())
     ),
