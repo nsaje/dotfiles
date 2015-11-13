@@ -8,14 +8,40 @@
 		<div class="form-group" ng-if="isNew">
 			<label class="col-xs-8">Created by {{ user.name }} on {{ today }}</label>
 		</div>
+		<div class="form-group">
+			<label for="credit-input" class="col-xs-12 control-label" ng-if="isNew">
+ 				Select Credit Line
+			</label>
+			<label for="credit-input" class="col-xs-12 control-label" ng-if="!isNew">
+ 				Selected Credit Line
+			</label>
+		</div>
 		<div class="form-group" ng-class="{'has-error': !!errors.credit}">
 			<div class="col-xs-12">
-				<label for="credit-input" class="control-label">
-					Select Account Credit for Allocation
-				</label><br />
-				<select id="credit-input" ng-model="budgetItem.credit" size="5" class="no-dropdown" ng-options="credit.name for credit in getAvailableCredit(false, budgetItem.credit.id) track by credit.id" ng-change="checkCreditDates()" ng-disabled="!isNew">
-				</select>
-				<label ng-repeat="error in errors.credit" class="control-label error" for="credit-input">{{ error }}</label>
+				<table>
+					<thead>
+						<tr>
+							<th ng-if="isNew"></th>
+							<th>Available credit</th>
+							<th>Total Credit</th>
+							<th>License Fee</th>
+							<th>Valid From</th>
+							<th>Valid To</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="credit in availableCredit">
+							<td ng-if="isNew">
+								<input type="radio" ng-model="budgetItem.credit" ng-value="credit" />
+							</td>
+							<td>{{ credit.available | decimalCurrency:"$":2  }}</td>
+							<td>{{ credit.total | decimalCurrency:"$":2  }}</td>
+							<td>{{ credit.licenseFee }}%</td>
+							<td>{{ credit.startDate }}</td>
+							<td>{{ credit.endDate }}</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		</div>
 		

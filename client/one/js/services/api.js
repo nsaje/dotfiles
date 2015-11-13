@@ -2666,7 +2666,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     },
                     credits: data.credits.map(function (obj) {
                         return {
-                            name: obj.name,
+                            licenseFee: obj.license_fee,
+                            total: obj.total,
+                            available: obj.available,
                             startDate: moment(obj.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                             endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                             id: obj.id,

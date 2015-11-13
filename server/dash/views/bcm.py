@@ -236,7 +236,9 @@ class CampaignBudgetView(api_common.BaseApiView):
         return [
             {
                 'id': credit.pk,
-                'name': str(credit),
+                'total': credit.amount,
+                'available': credit.amount - credit.get_allocated_amount(),
+                'license_fee': helpers.format_decimal_to_percent(credit.license_fee),
                 'start_date': credit.start_date,
                 'end_date': credit.end_date,
                 'is_available': credit.is_available()
@@ -326,7 +328,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_delete')
     def delete(self, request, campaign_id, budget_id):
-        if not request.user.has_perm('zemauth.account_credit_view'):
+        if not request.user.has_perm('zemauth.campaign_budget_view'):
             raise exc.AuthorizationError()
         
         campaign = helpers.get_campaign(request.user, campaign_id)

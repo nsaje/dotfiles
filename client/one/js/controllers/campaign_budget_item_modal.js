@@ -99,8 +99,13 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
         $scope.initEndDate = moment($scope.maxDate).toDate();
 
         if ($scope.isNew) {
+            $scope.budgetItem.startDate = $scope.initStartDate;
+            $scope.budgetItem.endDate = $scope.initEndDate;
+            
             $scope.budgetItem.credit = {};
             $scope.budgetItem.credit.id = $scope.getAvailableCredit()[0].id;
+
+            $scope.availableCredit = $scope.getAvailableCredit(false);
         } else {
             api.campaignBudgetPlus.get(
                 $scope.campaign.id,
@@ -114,6 +119,8 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
                 $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
 
                 $scope.canDelete = data.state == constants.budgetLineItemStatus.PENDING;
+
+                $scope.availableCredit = $scope.getAvailableCredit(false, $scope.budgetItem.id);
             }, function () {
                 
             });

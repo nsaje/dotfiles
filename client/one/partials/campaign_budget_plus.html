@@ -45,7 +45,7 @@
 					<td>{{ item.spend | decimalCurrency:"$":2  }}</td>
 					<td>{{ item.available | decimalCurrency:"$":2  }}</td>
 
-					<td>{{ item.comment }}</td>
+					<td class="text-row">{{ item.comment }}</td>
 					
 					<td>
 						<ul class="row-actions">
@@ -88,7 +88,7 @@
 					<td>{{ item.spend | decimalCurrency:"$":2  }}</td>
 					<td>{{ item.available | decimalCurrency:"$":2  }}</td>
 
-					<td>{{ item.comment }}</td>
+					<td class="text-row">{{ item.comment }}</td>
 					
 					<td>
 						<ul class="row-actions">
@@ -97,7 +97,7 @@
 					</td>
 				</tr>
 				<tr ng-show="!pastBudget.length" class="message">
-					<td colspan="9">No active budget items.</td>
+					<td colspan="9">No depleted budget items.</td>
 				</tr>
             </tbody>
         </table>

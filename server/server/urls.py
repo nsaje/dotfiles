@@ -16,7 +16,7 @@ import convapi.views
 import reports.views
 
 import dash.views.daily_stats
-import dash.views.insertion_orders
+import dash.views.bcm
 import dash.views.export
 import dash.views.export_plus
 import dash.views.sync
@@ -353,19 +353,19 @@ urlpatterns += patterns(
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/credit/(?P<credit_id>\d+)/',
-        login_required(dash.views.insertion_orders.AccountCreditItemView.as_view())
+        login_required(dash.views.bcm.AccountCreditItemView.as_view())
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/credit/',
-        login_required(dash.views.insertion_orders.AccountCreditView.as_view())
+        login_required(dash.views.bcm.AccountCreditView.as_view())
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/(?P<budget_id>\d+)/',
-        login_required(dash.views.insertion_orders.CampaignBudgetItemView.as_view())
+        login_required(dash.views.bcm.CampaignBudgetItemView.as_view())
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/',
-        login_required(dash.views.insertion_orders.CampaignBudgetView.as_view())
+        login_required(dash.views.bcm.CampaignBudgetView.as_view())
     ),
     url(r'^api/nav_data$', login_required(dash.views.views.NavigationDataView.as_view())),
     url(
