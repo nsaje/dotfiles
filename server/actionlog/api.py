@@ -418,8 +418,7 @@ def is_publisher_blacklist_sync_in_progress(ad_groups):
     q = models.ActionLog.objects.filter(
         state=constants.ActionState.WAITING,
         action_type=constants.ActionType.AUTOMATIC,
-        action=constants.Action.SET_CAMPAIGN_STATE,
-        payload__contains="publisher_blacklist",
+        action=constants.Action.SET_PUBLISHER_BLACKLIST,
         ad_group_source__ad_group__in=ad_groups
     )
 
