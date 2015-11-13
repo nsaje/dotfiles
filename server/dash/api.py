@@ -131,14 +131,6 @@ def _clean_existing_publisher_blacklist(key, level, publishers):
                 campaign__id__in=campaign_ids
             ).values_list('id', flat=True)
 
-
-                            models.Source.objects.exclude(
-                                deprecated=True
-                            ).filter(
-                                tracking_slug__endswith=source_slug
-                            ).first()
-
-
             for publisher in publishers:
                 queryset |= dash.models.PublisherBlacklist.objects.filter(
                     name=publisher['domain'],
@@ -204,11 +196,11 @@ def _update_publisher_blacklist(key, level, publishers):
     source_cache = {}
     for publisher in publishers:
         exchange = publisher['exchange']
-        source = dash.models.Source.objects.get(
+        source = dash.models.Source.objects.filter(
             tracking_slug__endswith=exchange
         ).exclude(
             deprecated=True,
-        )
+        ).first()
         if exchange not in source_cache:
             source_cache[exchange] = source
 
