@@ -26,7 +26,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
-    $scope.selectionMenuConfig = {};
+    $scope.selectionMenuConfig = {
+        hideCombo: true
+    };
     // selection settings - all or specific publishers can be selected
     $scope.selectedAll = false;
     $scope.selectedPublisherStatus = {};
