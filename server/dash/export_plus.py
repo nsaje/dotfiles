@@ -181,7 +181,7 @@ def get_csv_content(fieldnames, data, title_text=None):
 
             if not value:
                 value = ''
-            elif key in FORMAT_DIVIDE_100 and value != 0:
+            elif key in FORMAT_DIVIDE_100:
                 value = value / 100
 
             if value and key in FORMAT_1_DECIMAL:
