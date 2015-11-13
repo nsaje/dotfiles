@@ -1,19 +1,19 @@
 # -- We removed cron.yaml and moved to more straightforward solution.
 # -- This is plain crontab formatted file. Please note you should be careful with syntax
 
-0 * * * *       docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py fetch_all_order > /dev/null  2>&1
-15,45 * * * *   docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py refresh_actionlog > /dev/null  2>&1
-10 * * * *      docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py monitor_ga_reports > /dev/null  2>&1
-20,50 * * * *   docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py monitor_aggregate_discrepancy > /dev/null  2>&1
-20,50 * * * *   docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py monitor_redshift_discrepancy > /dev/null  2>&1
+0 * * * *       docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py fetch_all_order > /dev/null  2>&1
+15,45 * * * *   docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py refresh_actionlog > /dev/null  2>&1
+10 * * * *      docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_ga_reports > /dev/null  2>&1
+20,50 * * * *   docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_aggregate_discrepancy > /dev/null  2>&1
+20,50 * * * *   docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_redshift_discrepancy > /dev/null  2>&1
 #0 0 * * *      mv ~/log/zemanta-eins.server.log ~/log/zemanta-eins.server.$(date +\%Y-\%m-\%d --date="1 day ago").log > /dev/null  2>&1
-30 * * * *      docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py monitor_recent_demo_data > /dev/null  2>&1
-0 11 * * *      docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py refresh_demo_stats > /dev/null  2>&1
-15,45 * * * *   docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py monitor_content_ads > /dev/null  2>&1
-30 16 * * *     docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py send_supply_report_emails > /dev/null  2>&1
-0 * * * *       docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py notify_depleted_budget_campaigns > /dev/null  2>&1
-0 11 * * *      docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py vacuum_stats_db > /dev/null  2>&1
-0 * * * *       docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py update_touchpoint_conversions_full > /dev/null  2>&1
-10 9 * * *       docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py autopilot_adjust_media_source_bid_cpcs > /dev/null  2>&1
-0 5,7,9 * * *   docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py fetch_reports_by_publisher > /dev/null  2>&1
-0 9 * * *       docker run --rm -w /app/zemanta-eins --entrypoint=python z1-bundle:current manage.py send_content_approval_email > /dev/null  2>&1
+30 * * * *      docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_recent_demo_data > /dev/null  2>&1
+0 11 * * *      docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py refresh_demo_stats > /dev/null  2>&1
+15,45 * * * *   docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_content_ads > /dev/null  2>&1
+30 16 * * *     docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py send_supply_report_emails > /dev/null  2>&1
+0 * * * *       docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py notify_depleted_budget_campaigns > /dev/null  2>&1
+0 11 * * *      docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py vacuum_stats_db > /dev/null  2>&1
+0 * * * *       docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py update_touchpoint_conversions_full > /dev/null  2>&1
+10 9 * * *      docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py autopilot_adjust_media_source_bid_cpcs > /dev/null  2>&1
+0 5,7,9 * * *   docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py fetch_reports_by_publisher > /dev/null  2>&1
+0 9 * * *       docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py send_content_approval_email > /dev/null  2>&1
