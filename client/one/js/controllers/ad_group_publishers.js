@@ -72,27 +72,35 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         return row['exchange'] + ' ' + row['domain'];
     };
 
-    $scope.setBulkActionEnabled = function(action, enabled) {
+    $scope.setAllBulkAction = function(action, enabled) {
+        $scope.setBulkAction(null, action, enabled);
+    };
+
+    $scope.setBulkAction = function(level, action, enabled) {
+        var prefix = level || '',
+            matchRegex = '^'.concat(prefix, '-', action, '$');
+        
         $scope.bulkActions.forEach(function (bulkAction) {
-            if (bulkAction.value === action) {
+            if (matchRegex.test(bulkAction.value)) {
                 bulkAction.disabled = !enabled;
             }
         });
-    }
+    };
 
     $scope.selectedPublisherChanged = function(row, checked) {
+        var numSelected = 0,
+            numNotSelected = 0,
+            countBlacklistedSelected = 0,
+            countNonBlacklistedSelected = 0,
+            countAllSelected = 0;
+
+
         $scope.selectedPublisherStatus[$scope.calculatePublisherHash(row)] = {
             "checked": checked,
             "source": row['exchange'],
             "domain": row['domain'],
             "blacklisted": row['blacklisted']
         };
-
-        var numSelected = 0,
-            numNotSelected = 0,
-            countBlacklistedSelected = 0,
-            countNonBlacklistedSelected = 0,
-            countAllSelected = 0;
 
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
             if ($scope.selectedPublisherStatus[publisherId].checked) {
@@ -112,20 +120,23 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 }
             }
         });
-        countAllSelected = countBlacklistedSelected + countNonBlacklistedSelected
+        countAllSelected = countBlacklistedSelected + countNonBlacklistedSelected;
+
+        // TODO: Append check for attempting to blacklist or whitelist something
+        // which is already blacklisted on higher level
 
         if (countBlacklistedSelected > 0 && countNonBlacklistedSelected > 0) {
             $scope.mixedBlacklistEnabledSelection = true;
-            $scope.setBulkActionEnabled('enable', false);
-            $scope.setBulkActionEnabled('blacklist', false);
+            $scope.setAllBulkAction('enable', false);
+            $scope.setAllBulkAction('blacklist', false);
         } else if (countBlacklistedSelected > 0 || countNonBlacklistedSelected > 0) {
             $scope.mixedBlacklistEnabledSelection = false;
-            $scope.setBulkActionEnabled('enable', countBlacklistedSelected > 0);
-            $scope.setBulkActionEnabled('blacklist', countNonBlacklistedSelected > 0);
+            $scope.setAllBulkAction('enable', countBlacklistedSelected > 0);
+            $scope.setAllBulkAction('blacklist', countNonBlacklistedSelected > 0);
         } else {
             $scope.mixedBlacklistEnabledSelection = false;
-            $scope.setBulkActionEnabled('enable', countAllSelected > 0);
-            $scope.setBulkActionEnabled('blacklist', countAllSelected > 0);
+            $scope.setAllBulkAction('enable', countAllSelected > 0);
+            $scope.setAllBulkAction('blacklist', countAllSelected > 0);
         }
 
         if ($scope.selectedAll) {
