@@ -13,9 +13,11 @@
             <label for="start-date-input" class="col-xs-3 control-label">
                 Valid From
             </label>
-            <div class="col-xs-4 input-group">
-				<div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
-                <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.startDate" min-date="today" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')" ng-disabled="isSigned && !isNew">
+            <div class="col-xs-4">
+				<div class="input-group">
+					<div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
+					<input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.startDate" min-date="today" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')" ng-disabled="isSigned && !isNew" />
+				</div>
             </div>
             <label ng-repeat="error in errors.startDate" class="col-xs-5 control-label error" for="start-date-input">{{ error }}</label>
         </div>
@@ -23,9 +25,11 @@
             <label for="end-date-input" class="col-xs-3 control-label">
                 Valid To
             </label>
-            <div class="col-xs-4 input-group">
-				<div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
-                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.endDate" min-date="minDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
+            <div class="col-xs-4">
+				<div class="input-group">
+					<div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
+					<input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.endDate" min-date="minDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')" />
+				</div>
             </div>
             <label ng-repeat="error in errors.endDate" class="col-xs-5 control-label error" for="end-date-input">{{ error }}</label>
         </div>

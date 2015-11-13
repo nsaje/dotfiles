@@ -62,17 +62,8 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
                 $modalInstance.close(data || null);
             }, 1000);
         }, function (resp) {
-            if (resp.data.data.errors) {
-                $scope.errors = {
-                    amount: resp.data.data.errors.amount,
-                    startDate: resp.data.data.errors.start_date,
-                    endDate: resp.data.data.errors.end_date,
-                    comment: resp.data.data.errors.comment,
-                    credit: resp.data.data.errors.credit
-                };
-            } else {
-                $scope.saved = false;
-            }
+            $scope.errors = api.campaignBudgetPlus.convert.error(resp);
+            $scope.saved = false;
         }).finally(function () {
             $scope.saveRequestInProgress = false;
         });
@@ -119,8 +110,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
                 $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
 
                 $scope.canDelete = data.state == constants.budgetLineItemStatus.PENDING;
-
-                $scope.availableCredit = $scope.getAvailableCredit(false, $scope.budgetItem.id);
+                $scope.availableCredit = $scope.getAvailableCredit(false, data.credit.id);
             }, function () {
                 
             });

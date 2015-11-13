@@ -25,7 +25,6 @@ oneApp.controller('CampaignBudgetPlusCtrl', ['$scope', '$state', '$modal',  'api
     }
 
     $scope.getAvailableCredit = function (all, include) {
-        console.log('include', include)
         return all ? availableCredit : availableCredit.filter(function (obj) {
             return include && obj.id === include || !include && obj.isAvailable;
         });

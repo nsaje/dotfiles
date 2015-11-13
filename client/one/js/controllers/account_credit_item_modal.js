@@ -39,13 +39,7 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
         api.accountCredit[
             $scope.isNew ? 'create' : 'save'
         ]($scope.account.id, $scope.creditItem).then(closeModal, function (resp) {
-            $scope.errors = {
-                startDate: resp.data.data.errors.start_date,
-                endDate: resp.data.data.errors.end_date,
-                amount: resp.data.data.errors.amount,
-                licenseFee: resp.data.data.errors.license_fee,
-                comment: resp.data.data.errors.comment
-            };
+            $scope.errors = api.accountCredit.convert.errors(resp);
         });
     };
 
