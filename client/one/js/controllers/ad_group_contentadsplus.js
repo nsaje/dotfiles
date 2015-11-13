@@ -190,12 +190,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         shown: true,
         totalRow: false,
         titleField: 'title',
-        order: false,
+        order: false
     }, {
-        name: '',
-        nameCssClass: 'active-circle-icon-gray',
+        name: '\u25CF',
         field: 'status_setting',
         type: 'state',
+        order: true,
+        initialOrder: 'asc',
         enabledValue: constants.contentAdSourceState.ACTIVE,
         pausedValue: constants.contentAdSourceState.INACTIVE,
         internal: $scope.isPermissionInternal('zemauth.set_content_ad_status'),
