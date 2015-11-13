@@ -2674,8 +2674,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }
         };
         
-        this.list = function (campignId) {
-            var url = '/api/campaigns/' + campignId + '/budget-plus/';
+        this.list = function (campaignId) {
+            var url = '/api/campaigns/' + campaignId + '/budget-plus/';
             return $http.get(url).then(processResponse).then(function (data) {
                 if (data === null) { return null; }
                 return {
@@ -2704,23 +2704,23 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             });
         };
 
-        this.create = function (campignId, budget) {
-            var url = '/api/campaigns/' + campignId + '/budget-plus/';
+        this.create = function (campaignId, budget) {
+            var url = '/api/campaigns/' + campaignId + '/budget-plus/';
             return $http.put(url, self.convert.dataToApi(budget)).then(processResponse);
         };
         
-        this.save = function (campignId, budget) {
-            var url = '/api/campaigns/' + campignId + '/budget-plus/' + budget.id + '/';
+        this.save = function (campaignId, budget) {
+            var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budget.id + '/';
             return $http.post(url, self.convert.dataToApi(budget)).then(processResponse);
         };
 
-        this.get = function (campignId, budgetId) {
-            var url = '/api/campaigns/' + campignId + '/budget-plus/' + budgetId + '/';
+        this.get = function (campaignId, budgetId) {
+            var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budgetId + '/';
             return $http.get(url).then(processResponse).then(self.convert.dataFromApi);
         };
 
-        this.delete = function (campignId, budgetId) {
-            var url = '/api/campaigns/' + campignId + '/budget-plus/' + budgetId + '/';
+        this.delete = function (campaignId, budgetId) {
+            var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budgetId + '/';
             return $http.delete(url).then(processResponse).then(self.convert.dataFromApi);
         };
     }
