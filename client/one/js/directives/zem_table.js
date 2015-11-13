@@ -95,7 +95,7 @@ oneApp.directive('zemTable', ['config', '$window', function(config, $window) {
                 }
 
                 // check account
-                if ($scope.$parent.account.id !== 11) {
+                if (!$scope.$parent.account || $scope.$parent.account.id !== 11) {
                     return;
                 }
 
