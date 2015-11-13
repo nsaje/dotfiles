@@ -24,6 +24,7 @@ FIELDNAMES = {
     'cpc': 'Average CPC',
     'ctr': 'CTR',
     'ctr': 'CTR',
+    'url': 'URL',
     'end_date': 'End Date',
     'image_url': 'Image URL',
     'impressions': 'Impressions',
@@ -51,6 +52,8 @@ FORMAT_2_DECIMALS = ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_ra
                      'avg_tos', 'cost', 'budget', 'available_budget', 'unspent_budget']
 
 FORMAT_3_DECIMALS = ['cpc']
+
+FORMAT_DIVIDE_100 = ['percent_new_users', 'bounce_rate']
 
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows, conversion_goals, include_budgets=False, **constraints):
@@ -177,8 +180,11 @@ def get_csv_content(fieldnames, data, title_text=None):
             value = item.get(key)
 
             if not value:
-                value = '0'
-            elif value and key in FORMAT_1_DECIMAL:
+                value = ''
+            elif key in FORMAT_DIVIDE_100:
+                value = value / 100
+
+            if value and key in FORMAT_1_DECIMAL:
                 value = '{:.1f}'.format(value)
             elif value and key in FORMAT_2_DECIMALS:
                 value = '{:.2f}'.format(value)
@@ -264,7 +270,7 @@ class AccountExport(object):
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
             dimensions.extend(['campaign', 'ad_group'])
         elif breakdown == 'content_ad':
-            required_fields.extend(['campaign', 'ad_group', 'title', 'image_url'])
+            required_fields.extend(['campaign', 'ad_group', 'title', 'image_url', 'url'])
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
             dimensions.extend(['campaign', 'ad_group', 'content_ad'])
 
@@ -301,7 +307,7 @@ class CampaignExport(object):
             required_fields.extend(['ad_group'])
             dimensions.extend(['ad_group'])
         elif breakdown == 'content_ad':
-            required_fields.extend(['ad_group', 'title', 'image_url'])
+            required_fields.extend(['ad_group', 'title', 'image_url', 'url'])
             dimensions.extend(['ad_group', 'content_ad'])
 
         if by_source:
@@ -340,7 +346,7 @@ class AdGroupExport(object):
         if breakdown == 'ad_group':
             dimensions.extend(['ad_group'])
         elif breakdown == 'content_ad':
-            required_fields.extend(['title', 'image_url'])
+            required_fields.extend(['title', 'image_url', 'url'])
             dimensions.extend(['content_ad'])
 
         if by_source:
