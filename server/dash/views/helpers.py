@@ -790,7 +790,7 @@ def get_editable_fields(ad_group_source, ad_group_settings, ad_group_source_sett
     editable_fields['status_setting'] = _get_editable_fields_status_setting(ad_group_source, ad_group_settings,
                                                                             ad_group_source_settings)
     editable_fields['bid_cpc'] = _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
-    editable_fields['daily_budget'] = _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+    editable_fields['daily_budget'] = _get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
 
     return editable_fields
 
