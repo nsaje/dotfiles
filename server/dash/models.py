@@ -21,6 +21,7 @@ import utils.string_helper
 
 from dash import constants
 from dash import region_targeting_helper
+from dash import views
 import reports.constants
 from utils import encryption_helpers
 from utils import statsd_helper
@@ -2015,6 +2016,9 @@ class ExportReport(models.Model):
             return constants.ScheduledReportLevel.AD_GROUP
         return constants.ScheduledReportLevel.ALL_ACCOUNTS
 
+    def get_additional_fields(self):
+        return views.helpers.get_additional_columns(self.additional_fields)
+
 
 class ScheduledExportReport(models.Model):
     id = models.AutoField(primary_key=True)
@@ -2063,3 +2067,27 @@ class ScheduledExportReportRecipient(models.Model):
 
     class Meta:
         unique_together = ('scheduled_report', 'email')
+
+
+class ScheduledExportReportLog(models.Model):
+    report = models.ForeignKey(ExportReport)
+    scheduled_report = models.ForeignKey(ScheduledExportReport)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    start_date = models.DateField(null=True)
+    end_date = models.DateField(null=True)
+    report_filename = models.CharField(max_length=1024, blank=False, null=True)
+
+    state = models.IntegerField(
+        default=constants.ScheduledReportSent.FAILED,
+        choices=constants.ScheduledReportSent.get_choices(),
+    )
+
+    errors = models.TextField(blank=False, null=True)
+
+    def add_error(self, error_msg):
+        if self.errors is None:
+            self.errors = error_msg
+        else:
+            self.errors += '\n\n' + error_msg

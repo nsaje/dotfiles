@@ -981,7 +981,7 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
     readonly_fields = ('created_dt', 'created_by',)
     form = dash_forms.BudgetLineItemForm
-    
+
 
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
@@ -995,6 +995,21 @@ class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
     readonly_fields = ('created_dt', 'created_by',)
     form = dash_forms.BudgetLineItemForm
+
+
+class ScheduledExportReportLogAdmin(admin.ModelAdmin):
+    search_fields = ['campaign__name']
+    list_display = (
+        'created_dt',
+        'start_date',
+        'end_date',
+        'state',
+        'report',
+        'scheduled_report',
+        'report_filename',
+        'errors'
+    )
+    readonly_fields = ['created_dt']
 
 
 admin.site.register(models.Account, AccountAdmin)
@@ -1015,3 +1030,4 @@ admin.site.register(models.ContentAdSource, ContentAdSourceAdmin)
 admin.site.register(models.UserActionLog, UserActionLogAdmin)
 admin.site.register(models.CreditLineItem, CreditLineItemAdmin)
 admin.site.register(models.BudgetLineItem, BudgetLineItemAdmin)
+admin.site.register(models.ScheduledExportReportLog, ScheduledExportReportLogAdmin)
