@@ -1168,26 +1168,17 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         adgroup_blacklist = set([])
         failed_publisher_mappings = set([])
         count_failed_publisher = 0
+        source_cache = {}
+
         for publisher in publishers:
             domain = publisher['domain']
-            source = models.Source.objects.filter(id=publisher['source_id']).first()
+            if domain not in source_cache:
+               source = models.Source.objects.filter(id=publisher['source_id']).first()
+               source_cache[domain] = source
             if not source:
                 failed_publisher_mappings.add(publisher['source_id'])
                 count_failed_publisher += 1
                 continue
-
-            """
-            # exchange in redshift but source from client selected publishers
-            source_slug = publisher.get('exchange') or publisher.get('source')
-            norm_source_slug = source_slug.lower()
-            if norm_source_slug not in source_cache:
-                if publisher.get('exchange'):
-                    source_cache[norm_source_slug] = models.Source.objects.filter(
-                        tracking_slug__endswith=source_slug
-                    ).exclude(deprecated=True).first()
-                if publisher.get('source'):
-                    source_cache[norm_source_slug] = models.Source.objects.filter(name=source_slug).first()
-            """
 
             # we currently display sources for which we don't yet have publisher
             # blacklisting support
