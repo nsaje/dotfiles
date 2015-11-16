@@ -84,6 +84,29 @@ oneApp.directive('zemTable', ['config', '$window', function(config, $window) {
                 $event.preventDefault();
                 $window.open(data.destinationUrl || data.url, '_blank');
             };
+
+            // HACK: campaign goals experiment
+            // to be removed by 20. 11. 2015
+            $scope.getRowStyle = function(row) {
+                // check user
+                var allowedUsers = [5, 8, 13, 70];
+                if (allowedUsers.indexOf(parseInt($scope.$parent.user.id)) === -1) {
+                    return;
+                }
+
+                // check account
+                if (!$scope.$parent.account || $scope.$parent.account.id !== 11) {
+                    return;
+                }
+
+                var color = 'inherit';
+                if ((row.cpc && row.cpc >= 0.12) || (row.bounce_rate && row.bounce_rate >= 85)) {
+                    color = '#ffb4b4';
+                } else if ((row.cpc && row.cpc <= 0.09) || (row.bounce_rate && row.bounce_rate <= 40)) {
+                    color = '#b4ffb4';
+                }
+                return {'background-color': color};
+            };
         }]
     };
 }]);

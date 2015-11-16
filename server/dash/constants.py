@@ -54,7 +54,7 @@ class AdTargetDevice(ConstantBase):
 
 
 class AdTargetLocation(ConstantBase):
-    _VALUES = dict(regions.COUNTRY_BY_CODE.items() + regions.DMA_BY_CODE.items())
+    _VALUES = dict(regions.COUNTRY_BY_CODE.items() + regions.DMA_BY_CODE.items() + regions.SUBDIVISION_BY_CODE.items())
 
     @classmethod
     def get_choices(cls):
@@ -90,10 +90,12 @@ class ContentAdSourceState(ConstantBase):
 class PublisherStatus(ConstantBase):
     ENABLED = 1
     BLACKLISTED = 2
+    PENDING = 3
 
     _VALUES = {
         ENABLED: 'Enabled',
-        BLACKLISTED: 'Blacklisted'
+        BLACKLISTED: 'Blcklisted',
+        PENDING: 'Pending'
     }
 
 
@@ -942,9 +944,9 @@ class SourceAction(ConstantBase):
     UPDATE_TRACKING_CODES_ON_CONTENT_ADS = 12
     CAN_UPDATE_DAILY_BUDGET_MANUAL = 13
     CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL = 14
-    CAN_MODIFY_DMA_TARGETING_AUTOMATIC = 15
+    CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC = 15
     CAN_MODIFY_COUNTRY_TARGETING = 16
-    CAN_MODIFY_DMA_TARGETING_MANUAL = 17
+    CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL = 17
     CAN_FETCH_REPORT_BY_PUBLISHER = 18
     CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC = 19
 
@@ -957,8 +959,8 @@ class SourceAction(ConstantBase):
         CAN_MODIFY_START_DATE: 'Can modify start date',
         CAN_MODIFY_END_DATE: 'Can modify end date',
         CAN_MODIFY_DEVICE_TARGETING: 'Can modify device targeting',
-        CAN_MODIFY_DMA_TARGETING_AUTOMATIC: 'Can modify DMA targeting automatically',
-        CAN_MODIFY_DMA_TARGETING_MANUAL: 'Can modify DMA targeting manually',
+        CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC: 'Can modify DMA and subdivision targeting automatically',
+        CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL: 'Can modify DMA and subdivision targeting manually',
         CAN_MODIFY_COUNTRY_TARGETING: 'Can modify targeting by country',
         CAN_MODIFY_TRACKING_CODES: 'Can modify tracking codes',
         CAN_MODIFY_AD_GROUP_NAME: 'Can modify adgroup name',
@@ -1093,26 +1095,91 @@ class UserActionType(ConstantBase):
         SET_MEDIA_SOURCE_SETTINGS: 'Set Media Source Settings',
     }
 
+
+class RegionType(ConstantBase):
+    COUNTRY = 1
+    SUBDIVISION = 2
+    DMA = 3
+
+    _VALUES = {
+        COUNTRY: 'Country',
+        SUBDIVISION: 'U.S. state', # NOTE update when subdivisions other than U.S. states are added
+        DMA: 'DMA',
+    }
+
+
 class CreditLineItemStatus(ConstantBase):
     SIGNED = 1 # Only adding BudgetLineItems is permitted
     PENDING = 2 # Internal "waiting" status, fields are editable
-    CANCELED = 3 # Adding BudgetLineItems is not permitted 
+    CANCELED = 3 # Adding BudgetLineItems is not permitted
 
     _VALUES = {
         SIGNED: 'Signed',
         PENDING: 'Pending',
         CANCELED: 'Canceled',
     }
-    
+
 class BudgetLineItemState(ConstantBase):
     ACTIVE = 1
     PENDING = 2
     INACTIVE = 3
+    DEPLETED = 4
 
     _VALUES = {
         ACTIVE: 'Active',
         PENDING: 'Pending',
         INACTIVE: 'Inactive',
+        DEPLETED: 'Depleted',
     }
 
 
+class ScheduledReportSendingFrequency(ConstantBase):
+    DAILY = 1
+    WEEKLY = 2
+    MONTHLY = 3
+
+    _VALUES = {
+        DAILY: 'Daily',
+        WEEKLY: 'Weekly',
+        MONTHLY: 'Monthly'
+    }
+
+
+class ScheduledReportState(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+
+    _VALUES = {
+        ACTIVE: 'Enabled',
+        INACTIVE: 'Paused'
+    }
+
+
+class ScheduledReportGranularity(ConstantBase):
+    ALL_ACCOUNTS = 1
+    ACCOUNT = 2
+    CAMPAIGN = 3
+    AD_GROUP = 4
+    CONTENT_AD = 5
+
+    _VALUES = {
+        ALL_ACCOUNTS: 'All Accounts',
+        ACCOUNT: 'Account',
+        CAMPAIGN: 'Campaign',
+        AD_GROUP: 'Ad Group',
+        CONTENT_AD: 'Content Ad',
+    }
+
+
+class ScheduledReportLevel(ConstantBase):
+    ALL_ACCOUNTS = 1
+    ACCOUNT = 2
+    CAMPAIGN = 3
+    AD_GROUP = 4
+
+    _VALUES = {
+        ALL_ACCOUNTS: 'All Accounts',
+        ACCOUNT: 'Account',
+        CAMPAIGN: 'Campaign',
+        AD_GROUP: 'Ad Group'
+    }

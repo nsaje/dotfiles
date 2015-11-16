@@ -20,11 +20,17 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
     $scope.localStoragePrefix = 'allAccountsAccounts';
 
-    var userSettings = zemUserSettings.getInstance($scope, 'allAccountsAccounts');
+    var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
     $scope.exportOptions = [
-        {name: 'By Day (CSV)', value: 'csv'},
-        {name: 'By Day (Excel)', value: 'excel'}
+           {name: 'By Day (CSV)', value: 'csv'},
+           {name: 'By Day (Excel)', value: 'excel'}
+       ];
+
+    $scope.exportPlusOptions = [
+      {name: 'Current View', value: 'account-csv'},
+      {name: 'By Campaign', value: 'campaign-csv'},
+      {name: 'By Ad Group', value: 'adgroup-csv'}
     ];
 
     $scope.columns = [
@@ -412,11 +418,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
     $scope.init = function() {
         var page = parseInt($location.search().page || '1');
-        var size = parseInt($location.search().size || '0'); 
+        var size = parseInt($location.search().size || '0');
 
-        $scope.chartMetric1 = zemUserSettings.resetUrlAndGetValue('chartMetric1', $scope.localStoragePrefix);
-        $scope.chartMetric2 = zemUserSettings.resetUrlAndGetValue('chartMetric2', $scope.localStoragePrefix);
-
+        userSettings.registerWithoutWatch('chartMetric1');
+        userSettings.registerWithoutWatch('chartMetric2');
         userSettings.register('order');
         userSettings.register('size');
         userSettings.registerGlobal('chartHidden');

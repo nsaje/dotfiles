@@ -930,25 +930,43 @@ class PrepareReportRowsTestCase(test.TestCase):
 
         report_rows = _prepare_report_rows(ad_group, source, data_rows, True)
 
-        article = dashmodels.Article.objects.get(pk=1)
-        content_ad_source = dashmodels.ContentAdSource.objects.get(pk=1)
+        article1 = dashmodels.Article.objects.get(pk=1)
+        article2 = dashmodels.Article.objects.get(pk=2)
+        content_ad_source1 = dashmodels.ContentAdSource.objects.get(pk=1)
+        content_ad_source2 = dashmodels.ContentAdSource.objects.get(pk=2)
 
         self.assertItemsEqual(report_rows, [{
-            'article': article,
-            'content_ad_source': content_ad_source,
+            'article': article1,
+            'content_ad_source': content_ad_source1,
             'id': 's1',
             'clicks': 2,
             'data_cost_cc': 0,
             'impressions': 50,
-            'cost_cc': 2800, }])
+            'cost_cc': 2800,
+        }, {
+            'article': article2,
+            'content_ad_source': content_ad_source2,
+            'impressions': 40,
+            'clicks': 1,
+            'cost_cc': 900,
+            'data_cost_cc': 0,
+            'id': 's2'
+        }])
 
         article_rows = _remove_content_ad_sources_from_report_rows(report_rows)
-        self.assertEqual(article_rows, [{
-            'article': article,
+        self.assertItemsEqual(article_rows, [{
+            'article': article1,
             'clicks': 2,
             'data_cost_cc': 0,
             'impressions': 50,
-            'cost_cc': 2800, }])
+            'cost_cc': 2800
+        }, {
+            'article': article2,
+            'impressions': 40,
+            'clicks': 1,
+            'cost_cc': 900,
+            'data_cost_cc': 0,
+        }])
 
     def test_skip_content_ad_sources(self):
         data_rows = [

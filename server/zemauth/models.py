@@ -81,7 +81,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
 
     show_onboarding_guidance = models.BooleanField(
         default=False,
-        help_text='Designates weather user has self-manage access and needs onboarding guidance.'
+        help_text='Designates whether user has self-manage access and needs onboarding guidance.'
     )
 
     objects = UserManager()
@@ -97,13 +97,15 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('campaign_settings_view', "Can view campaign's settings tab."),
             ('campaign_agency_view', "Can view campaign's agency tab."),
             ('campaign_ad_groups_view', "Can view campaign's ad groups tab in dashboard."),
+            ('campaign_budget_view', "Can view campaign's budget tab."),
             ('campaign_settings_account_manager', 'Can be chosen as account manager.'),
             ('campaign_settings_sales_rep', 'Can be chosen as sales representative.'),
-            ("supply_dash_link_view", "Can view supply dash link."),
+            ('supply_dash_link_view', 'Can view supply dash link.'),
             ('ad_group_agency_tab_view', "Can view ad group's agency tab."),
             ('all_accounts_accounts_view', "Can view all accounts's accounts tab."),
             ('account_campaigns_view', "Can view accounts's campaigns tab."),
             ('account_agency_view', "Can view accounts's agency tab."),
+            ('account_credit_view', "Can view accounts's credit tab."),
             ('ad_group_sources_add_source', "Can add media sources."),
             ('campaign_sources_view', 'Can view campaign sources view.'),
             ('account_sources_view', 'Can view account sources view.'),
@@ -139,6 +141,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_toggle_adobe_performance_tracking', 'Can toggle Adobe Analytics performance tracking.'),
             ('can_see_media_source_status_on_submission_popover', 'Can see media source status on submission status popover'),
             ('can_set_dma_targeting', 'Can set DMA targeting'),
+            ('can_set_subdivision_targeting', 'Can set subdivision targeting'),
             ('can_set_media_source_to_auto_pilot', 'Can set media source to auto-pilot'),
             ('manage_conversion_pixels', 'Can manage conversion pixels'),
             ('add_media_sources_automatically', 'Automatically add media sources on ad group creation'),
@@ -150,6 +153,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_publisher_blacklist_status', 'Can see publishers blacklist status'),
             ('can_modify_publisher_blacklist_status', 'Can modify publishers blacklist status'),
             ('conversion_reports', 'Can see conversions and goals in reports'),
+            ('exports_plus', 'Can download reports using new export facilities'),
         )
 
     def get_full_name(self):

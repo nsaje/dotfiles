@@ -223,6 +223,7 @@ def refresh_contentadstats_diff(date, ad_group, source=None):
         redshift.insert_contentadstats(diff_rows)
         logger.info('refresh_contentadstats_diff: Inserted {count} diff rows into redshift'.format(count=len(diff_rows)))
 
+
 def refresh_adgroup_stats(**constraints):
     # make sure we only filter by the allowed dimensions
     assert len(set(constraints.keys()) - {'datetime', 'ad_group', 'source'}) == 0
@@ -312,3 +313,4 @@ def refresh_adgroup_conversion_stats(**constraints):
                 adgroup_conversion_stats = reports.models.AdGroupGoalConversionStats(**row)
 
             adgroup_conversion_stats.save()
+

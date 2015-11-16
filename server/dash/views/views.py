@@ -42,7 +42,7 @@ import actionlog.zwei_actions
 import actionlog.models
 import actionlog.constants
 
-from dash import models
+from dash import models, region_targeting_helper
 from dash import constants
 from dash import api
 from dash import forms
@@ -498,7 +498,7 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.ForbiddenError('{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
 
         if not self._can_target_existing_regions(source, ad_group.get_current_settings()):
-            raise exc.ValidationError('{} media source can not be added because it does not support DMA targeting.'\
+            raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'\
                                       .format(source.name))
 
         ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
@@ -525,8 +525,8 @@ class AdGroupSources(api_common.BaseApiView):
         settings.save(request)
 
     def _can_target_existing_regions(self, source, ad_group_settings):
-        return (source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma()) or\
-            not ad_group_settings.targets_dma()
+        return region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) or\
+               region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings)
 
 
 class Account(api_common.BaseApiView):
@@ -945,11 +945,14 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
 
 CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
-                        ['url', 'url'],
-                        ['title', 'title'],
-                        ['image_url', 'image_url'],
-                        ['description', 'description (optional)'],
-                    ])
+    ['url', 'url'],
+    ['title', 'title'],
+    ['image_url', 'image_url'],
+    ['description', 'description (optional)'],
+    ['crop_areas', 'crop areas (optional)'],
+    ['tracker_urls', 'tracker url (optional)']
+])
+
 
 class AdGroupContentAdCSV(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
@@ -962,7 +965,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
         except exc.MissingDataError, e:
             email = request.user.email
             if email == settings.DEMO_USER_EMAIL or email in settings.DEMO_USERS:
-                content_ad_dicts = [{ 'url': '', 'title': '', 'image_url': '', 'description': ''}]
+                content_ad_dicts = [{'url': '', 'title': '', 'image_url': '', 'description': ''}]
                 content = self._create_content_ad_csv(content_ad_dicts)
                 return self.create_csv_response('contentads', content=content)
             raise e
@@ -995,6 +998,12 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 'description': content_ad.description,
                 'call_to_action': content_ad.call_to_action,
             }
+
+            if content_ad.crop_areas:
+                content_ad_dict['crop_areas'] = content_ad.crop_areas
+
+            if content_ad.tracker_urls:
+                content_ad_dict['tracker_urls'] = ' '.join(content_ad.tracker_urls)
 
             # delete keys that are not to be exported
             for k in content_ad_dict.keys():
@@ -1079,13 +1088,20 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             norm_source_slug = source_slug.lower()
             if norm_source_slug not in source_cache:
                 if publisher.get('exchange'):
-                    source_cache[norm_source_slug] = models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
+                    source_cache[norm_source_slug] = models.Source.objects.filter(
+                        tracking_slug__endswith=source_slug
+                    ).exclude(deprecated=True).first()
                 if publisher.get('source'):
-                    source_cache[norm_source_slug] = models.Source.objects.filter(name__startswith=source_slug).first()
+                    source_cache[norm_source_slug] = models.Source.objects.filter(name=source_slug).first()
 
             if not source_cache[norm_source_slug]:
                 failed_publisher_mappings.add(source_slug)
                 count_failed_publisher += 1
+                continue
+
+            # we currently display sources for which we don't yet have publisher
+            # blacklisting support
+            if not source_cache[norm_source_slug].can_modify_publisher_blacklist_automatically():
                 continue
 
             publisher_tuple = (domain, ad_group.id, source_cache[norm_source_slug].tracking_slug,)
@@ -1127,6 +1143,31 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
             with transaction.atomic():
                 new_settings.save(request)
+
+                tracking_code_source_cache = {}
+                for publisher in publisher_blacklist:
+                    # store blacklisted publishers and push to other sources
+                    existing_entry = models.PublisherBlacklist.objects.filter(
+                        name=publisher['domain'],
+                        ad_group=ad_group,
+                        source__tracking_slug=publisher['tracking_slug']
+                    ).first()
+                    if existing_entry is not None:
+                        existing_entry.status = constants.PublisherStatus.PENDING
+                        existing_entry.save()
+                    else:
+                        tracking_slug = publisher['tracking_slug']
+                        if tracking_slug not in tracking_code_source_cache:
+                            tracking_code_source_cache[tracking_slug] =\
+                                models.Source.objects.get(tracking_slug=tracking_slug)
+
+                        models.PublisherBlacklist.objects.create(
+                            name=publisher['domain'],
+                            ad_group=ad_group,
+                            source=tracking_code_source_cache[tracking_slug],
+                            status=constants.PublisherStatus.PENDING
+                        )
+
                 actionlogs_to_send.extend(
                     api.create_ad_group_publisher_blacklist_actions(
                         ad_group,

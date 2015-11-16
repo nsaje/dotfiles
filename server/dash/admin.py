@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
 
-from import_export import fields, resources
+from import_export import resources
 from import_export.admin import ExportMixin
 
 from zemauth.models import User as ZemUser
@@ -977,10 +977,10 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'status',
         'license_fee',
         'created_dt',
+        'created_by',
     )
 
     readonly_fields = ('created_dt', 'created_by',)
-    form = dash_forms.BudgetLineItemForm
     
 
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
@@ -994,7 +994,6 @@ class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     )
 
     readonly_fields = ('created_dt', 'created_by',)
-    form = dash_forms.BudgetLineItemForm
 
 
 admin.site.register(models.Account, AccountAdmin)

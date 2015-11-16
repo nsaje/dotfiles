@@ -39,6 +39,17 @@ var constants = {
         CONVERSION_GOAL1: 'conversion_goal_1',
         CONVERSION_GOAL2: 'conversion_goal_2'
     },
+    creditLineItemStatus: {
+        SIGNED: 1,
+        PENDING: 2,
+        CANCELED: 3
+    },
+    budgetLineItemStatus: {
+        ACTIVE: 1,
+        PENDING: 2,
+        INACTIVE: 3,
+        DEPLETED: 4
+    },
     iabCategory: {
         IAB1: "IAB1",
         IAB1_1: "IAB1-1",
@@ -484,7 +495,14 @@ var constants = {
     contentAdSourceState: {
         ACTIVE: 1,
         INACTIVE: 2
-    }
+    },
+    exportType: {
+        VIEW: 'view-csv',
+        ACCOUNT: 'account-csv',
+        CAMPAIGN: 'campaign-csv',
+        AD_GROUP: 'adgroup-csv',
+        CONTENT_AD: 'contentad-csv'
+    },
 };
 var options = {
     adGroupSettingsStates: [{name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},

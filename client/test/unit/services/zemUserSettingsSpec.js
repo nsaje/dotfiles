@@ -144,12 +144,43 @@ describe('zemUserSettings', function() {
         expect($locationMock.search()['setting']).toBe(true);
     });
 
+    it('doesn\'t update settings registered without watch', function () {
+        $scope.setting = false;
+
+        userSettings.registerWithoutWatch('setting');
+        $scope.$digest();
+
+        expect($scope.setting).toBe(false);
+        expect(zemLocalStorageServiceMock.get('setting', 'test')).toBe(undefined);
+        expect($locationMock.search()['setting']).toBe(undefined);
+
+        $scope.setting = true;
+        $scope.$digest();
+
+        expect($scope.setting).toBe(true);
+        expect(zemLocalStorageServiceMock.get('setting', 'test')).toBe(undefined);
+        expect($locationMock.search()['setting']).toBe(undefined);
+    });
+
     it('removes params from url on state change', function() {
         $scope.setting = false;
         userSettings.register('setting');
         $scope.$digest();
 
         $scope.setting = true;
+        $scope.$digest();
+        expect($locationMock.search()['setting']).toBe(true);
+
+        $scope.$broadcast('$stateChangeStart');
+        expect($locationMock.search()['setting']).toBe(null);
+    });
+
+    it('removes params from url on state change on register without watch', function() {
+        $scope.setting = false;
+        userSettings.registerWithoutWatch('setting');
+        $scope.$digest();
+
+        zemUserSettings.setValue('setting', true, 'test');
         $scope.$digest();
         expect($locationMock.search()['setting']).toBe(true);
 

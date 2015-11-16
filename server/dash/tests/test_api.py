@@ -8,7 +8,6 @@ from django.http.request import HttpRequest
 
 import actionlog.constants
 import actionlog.models
-import actionlog.api
 
 import dash.models
 
@@ -102,6 +101,21 @@ class UpdateContentAdSourceState(TestCase):
         self.assertEqual(content_ad_source.source_state, content_ad_data[0]['state'])
         self.assertEqual(content_ad_source.submission_status, content_ad_data[0]['submission_status'])
 
+    def test_update_multiple_content_ad_source_ids(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        content_ad_data = [{
+            'id': 1,
+            'state': 2,
+            'submission_status': constants.ContentAdSubmissionStatus.APPROVED,
+            'source_content_ad_id': 'asd123'
+        }]
+
+        api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
+
+        content_ad_source = models.ContentAdSource.objects.get(pk=1)
+
+        self.assertEqual(content_ad_source.source_content_ad_id, content_ad_data[0]['source_content_ad_id'])
+
     def test_update_content_ad_source_state(self):
         content_ad_source = models.ContentAdSource.objects.get(pk=1)
         data = {'source_state': 2, 'submission_status': 2}
@@ -111,6 +125,7 @@ class UpdateContentAdSourceState(TestCase):
         content_ad_source = models.ContentAdSource.objects.get(pk=1)
         self.assertEqual(content_ad_source.source_state, data['source_state'])
         self.assertEqual(content_ad_source.submission_status, data['submission_status'])
+
 
 class IgnorePendingContentAdSourceSubmissionWhenLocalStatusIsRejected(TestCase):
 
@@ -352,7 +367,7 @@ class UpdateAdGroupSourceSettings(TestCase):
     def test_target_regions_automatic_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC,
         )
         ad_group_source.source.source_type.available_actions.append(
             constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
@@ -361,7 +376,7 @@ class UpdateAdGroupSourceSettings(TestCase):
 
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
-        adgs2.target_regions = ['GB', '693']
+        adgs2.target_regions = ['GB', '693', 'US-AL']
 
         api.order_ad_group_settings_update(
             ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
@@ -369,7 +384,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
         self.assertEqual(1, len(auto_actions))
         self.assertDictEqual(self._get_automatic_action_conf(auto_actions[0]), {
-            'target_regions': ['GB', '693']
+            'target_regions': ['GB', '693', 'US-AL']
         })
 
         man_actions = self._get_manual_set_property_actions(ad_group_source)
@@ -381,7 +396,7 @@ class UpdateAdGroupSourceSettings(TestCase):
             constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
         )
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         )
         ad_group_source.source.source_type.save()
 
@@ -405,6 +420,36 @@ class UpdateAdGroupSourceSettings(TestCase):
             }
         })
 
+    def test_target_regions_automatic_country_and_manual_subdivision_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.append(
+            constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
+        )
+        ad_group_source.source.source_type.available_actions.append(
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
+        )
+        ad_group_source.source.source_type.save()
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.target_regions = ['GB', 'US-AL']
+
+        api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
+        self.assertEqual(0, len(auto_actions))
+
+        man_actions = self._get_manual_set_property_actions(ad_group_source)
+        self.assertEqual(1, len(man_actions))
+        self.assertDictEqual(man_actions[0].payload, {
+            'property': 'target_regions',
+            'value': {
+                'countries': ['GB'],
+                'subdivisions': ['Alabama']
+            }
+        })
+
     def test_target_regions_no_dma_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
 
@@ -421,10 +466,26 @@ class UpdateAdGroupSourceSettings(TestCase):
         man_actions = self._get_manual_set_property_actions(ad_group_source)
         self.assertEqual(0, len(man_actions))
 
+    def test_target_regions_no_subdivision_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.target_regions = ['US-AL', 'US-OK']
+
+        api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
+        self.assertEqual(0, len(auto_actions))
+
+        man_actions = self._get_manual_set_property_actions(ad_group_source)
+        self.assertEqual(0, len(man_actions))
+
     def test_target_regions_manual_country_and_automatic_dma_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC
         )
         ad_group_source.source.source_type.save()
 
@@ -446,10 +507,35 @@ class UpdateAdGroupSourceSettings(TestCase):
                 'dma': ['693 Little Rock-Pine Bluff, AR']
             }})
 
+    def test_target_regions_manual_country_and_automatic_subdivision_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.append(
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC
+        )
+        ad_group_source.source.source_type.save()
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.target_regions = ['GB', 'US-AL']
+
+        api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
+        self.assertEqual(0, len(auto_actions))
+
+        man_actions = self._get_manual_set_property_actions(ad_group_source)
+        self.assertEqual(1, len(man_actions))
+        self.assertDictEqual(man_actions[0].payload, {
+            'property': 'target_regions', 'value': {
+                'countries': ['GB'],
+                'subdivisions': ['Alabama']
+            }})
+
     def test_target_regions_manual_country_and_manual_dma_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         )
         ad_group_source.source.source_type.save()
 
@@ -473,10 +559,37 @@ class UpdateAdGroupSourceSettings(TestCase):
             }
         })
 
+    def test_target_regions_manual_country_and_manual_subdivision_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.append(
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
+        )
+        ad_group_source.source.source_type.save()
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.target_regions = ['GB', 'US-AL']
+
+        api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
+        self.assertEqual(0, len(auto_actions))
+
+        man_actions = self._get_manual_set_property_actions(ad_group_source)
+        self.assertEqual(1, len(man_actions))
+        self.assertDictEqual(man_actions[0].payload, {
+            'property': 'target_regions',
+            'value': {
+                'countries': ['GB'],
+                'subdivisions': ['Alabama']
+            }
+        })
+
     def test_target_regions_manual_dma_targeting_cleared(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         )
         ad_group_source.source.source_type.save()
 
@@ -500,10 +613,37 @@ class UpdateAdGroupSourceSettings(TestCase):
                 'countries': ['GB']
             }})
 
+    def test_target_regions_manual_subdivision_targeting_cleared(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.append(
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
+        )
+        ad_group_source.source.source_type.save()
+
+        adgs1 = models.AdGroupSettings()
+        adgs1.target_regions = ['GB', 'US-AL']
+        adgs2 = models.AdGroupSettings()
+        adgs2.target_regions = ['GB']
+
+        api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
+        self.assertEqual(0, len(auto_actions))
+
+        man_actions = self._get_manual_set_property_actions(ad_group_source)
+        self.assertEqual(1, len(man_actions))
+        self.assertDictEqual(man_actions[0].payload, {
+            'property': 'target_regions',
+            'value': {
+                'subdivisions': 'cleared (no subdivision targeting)',
+                'countries': ['GB']
+            }})
+
     def test_target_regions_manual_dma_manual_country_target_worldwide(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         )
         ad_group_source.source.source_type.save()
 
@@ -525,13 +665,41 @@ class UpdateAdGroupSourceSettings(TestCase):
             'value': {
                 'countries': 'Worldwide',
                 'dma': 'cleared (no DMA targeting)'
+            }
+        })
+
+    def test_target_regions_manual_subdivision_manual_country_target_worldwide(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.append(
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
+        )
+        ad_group_source.source.source_type.save()
+
+        adgs1 = models.AdGroupSettings()
+        adgs1.target_regions = ['GB', 'US-AL']
+        adgs2 = models.AdGroupSettings()
+        adgs2.target_regions = []
+
+        api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
+        self.assertEqual(0, len(auto_actions))
+
+        man_actions = self._get_manual_set_property_actions(ad_group_source)
+        self.assertEqual(1, len(man_actions))
+        self.assertDictEqual(man_actions[0].payload, {
+            'property': 'target_regions',
+            'value': {
+                'countries': 'Worldwide',
+                'subdivisions': 'cleared (no subdivision targeting)'
             }
         })
 
     def test_target_regions_automatic_dma_manual_country_target_worldwide(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC
         )
         ad_group_source.source.source_type.save()
 
@@ -555,6 +723,63 @@ class UpdateAdGroupSourceSettings(TestCase):
                 'dma': 'cleared (no DMA targeting)'
             }
         })
+
+    def test_target_regions_automatic_subdivision_manual_country_target_worldwide(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.append(
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC
+        )
+        ad_group_source.source.source_type.save()
+
+        adgs1 = models.AdGroupSettings()
+        adgs1.target_regions = ['GB', 'US-AL']
+        adgs2 = models.AdGroupSettings()
+        adgs2.target_regions = []
+
+        api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
+        self.assertEqual(0, len(auto_actions))
+
+        man_actions = self._get_manual_set_property_actions(ad_group_source)
+        self.assertEqual(1, len(man_actions))
+        self.assertDictEqual(man_actions[0].payload, {
+            'property': 'target_regions',
+            'value': {
+                'countries': 'Worldwide',
+                'subdivisions': 'cleared (no subdivision targeting)'
+            }
+        })
+
+    def test_target_regions_all_manual(self):
+        ad_group_source = models.AdGroupSource.objects.get(id=1)
+        ad_group_source.source.source_type.available_actions.append(
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
+        )
+        ad_group_source.source.source_type.save()
+
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings()
+        adgs2.target_regions = ['NL', 'US-OK', '693']
+
+        api.order_ad_group_settings_update(
+            ad_group_source.ad_group, adgs1, adgs2, None, iab_update=True)
+
+        auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
+        self.assertEqual(0, len(auto_actions))
+
+        man_actions = self._get_manual_set_property_actions(ad_group_source)
+        self.assertEqual(1, len(man_actions))
+        self.assertDictEqual(man_actions[0].payload, {
+            'property': 'target_regions',
+            'value': {
+                'countries': ['NL'],
+                'subdivisions': ['Oklahoma'],
+                'dma': ['693 Little Rock-Pine Bluff, AR']
+            }
+        })
+
 
     @mock.patch('dash.api.redirector_helper.insert_adgroup')
     def test_tracking_codes_automatic_action_for_gravity(self, insert_adgroup_mock):
@@ -893,7 +1118,7 @@ class UpdateAdGroupSourceState(TestCase):
         self.assertEqual(new_latest_state.cpc_cc, latest_state.cpc_cc)
         self.assertEqual(new_latest_state.daily_budget_cc, latest_state.daily_budget_cc)
 
-    def test_update_publisher_blaklist(self):
+    def test_update_publisher_blacklist(self):
         conf = {
             'publisher_blacklist': {
                 'state': 2,
@@ -915,10 +1140,12 @@ class UpdateAdGroupSourceState(TestCase):
         self.assertEqual(self.ad_group_source.ad_group.id, first_blacklist.ad_group.id)
         self.assertEqual('zemanta.com', first_blacklist.name)
         self.assertEqual('b1_adiant', first_blacklist.source.tracking_slug)
+        self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, first_blacklist.status)
 
         second_blacklist = allblacklist[1]
         self.assertEqual(self.ad_group_source.ad_group.id, second_blacklist.ad_group.id)
         self.assertEqual('b1_sharethrough', second_blacklist.source.tracking_slug)
+        self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, second_blacklist.status)
 
 
 class AdGroupSourceSettingsWriterTest(TestCase):
@@ -1885,7 +2112,7 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
         self._setup_ad_group(ad_group_source, ['GB', '693'], [
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL,
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL,
             constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
         ])
 
@@ -1904,7 +2131,7 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
             ad_group_source,
             ['GB', '693'],
             [
-                constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+                constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC,
                 constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             ])
 
@@ -1938,7 +2165,7 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
             ad_group_source,
             ['GB'],
             [
-                constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+                constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC,
                 constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING
             ])
 

@@ -115,7 +115,8 @@ class CleanRowTest(TestCase):
                 'id': self.image_id,
                 'width': self.image_width,
                 'height': self.image_height,
-                'hash': self.image_hash
+                'hash': self.image_hash,
+                'crop_areas': self.crop_areas
             },
             'title': self.title,
             'tracker_urls': self.tracker_urls.split(' '),
@@ -141,7 +142,6 @@ class CleanRowTest(TestCase):
             'brand_name': self.brand_name,
             'description': self.description,
             'call_to_action': self.call_to_action,
-            
         }
 
         batch_name = 'Test batch name'
@@ -188,6 +188,13 @@ class CleanRowTest(TestCase):
         self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Invalid URL'])
 
+    def test_url_strip(self):
+        self.url = u' http://example.com '
+        data, errors = self._run_clean_row()
+        expected_data = dict(self.default_expected_data)
+        self.assertEqual(data, expected_data)
+        self.assertEqual(errors, [])
+
     def test_unicode_url(self):
         self.url = u'http://exampleś.com'
         data, errors = self._run_clean_row()
@@ -203,6 +210,13 @@ class CleanRowTest(TestCase):
         expected_data.pop('image')
         self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Invalid Image URL'])
+
+    def test_image_url_strip(self):
+        self.image_url = u' http://example.com/image '
+        data, errors = self._run_clean_row()
+        expected_data = dict(self.default_expected_data)
+        self.assertEqual(data, expected_data)
+        self.assertEqual(errors, [])
 
     def test_invalid_crop_areas(self):
         self.crop_areas = '((((177, 122)))'
@@ -379,7 +393,8 @@ class ProcessCallbackTest(TestCase):
                 'id': image_id,
                 'width': image_width,
                 'height': image_height,
-                'hash': image_hash
+                'hash': image_hash,
+                'crop_areas': crop_areas,
             },
             'tracker_urls': tracker_url_list,
             'title': title,
@@ -427,6 +442,7 @@ class ProcessCallbackTest(TestCase):
         self.assertEqual(content_ad.image_hash, image_hash)
         self.assertEqual(content_ad.batch.name, batch_name)
         self.assertEqual(content_ad.state, constants.ContentAdSourceState.ACTIVE)
+        self.assertEqual(content_ad.crop_areas, crop_areas)
 
         content_ad_source = models.ContentAdSource.objects.get(content_ad_id=content_ad.id)
         self.assertEqual(content_ad_source.source_id, ad_group_source.source_id)
@@ -532,7 +548,8 @@ class ProcessCallbackTest(TestCase):
                 'id': image_id,
                 'width': image_width,
                 'height': image_height,
-                'hash': image_hash
+                'hash': image_hash,
+                'crop_areas': crop_areas
             },
             'tracker_urls': tracker_url_list,
             'title': title,

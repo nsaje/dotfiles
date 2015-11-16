@@ -19,10 +19,11 @@ from utils import email_helper
 from dash import exc
 from dash import models
 from dash import constants
-from dash import regions
 from dash import consistency
+from dash import region_targeting_helper
 
 import utils.url_helper
+import utils.statsd_helper
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,11 @@ def update_ad_group_source_state(ad_group_source, conf):
                     source_slug = pub_blacklist['exchange']
                     if source_slug not in source_cache:
                         source_cache[source_slug] =\
-                            models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
+                            models.Source.objects.exclude(
+                                deprecated=True
+                            ).filter(
+                                tracking_slug__endswith=source_slug
+                            ).first()
 
                     if not source_cache[source_slug]:
                         raise Exception('Invalid tracking slug {}'.format(source_slug or ''))
@@ -106,23 +111,23 @@ def update_ad_group_source_state(ad_group_source, conf):
                         models.PublisherBlacklist(
                             name=pub_blacklist['domain'],
                             ad_group=ad_group,
-                            source=source_cache[source_slug]
+                            source=source_cache[source_slug],
+                            status=dash.constants.PublisherStatus.BLACKLISTED
                         )
                     )
                 state = val['state']
+
+                query_set = models.PublisherBlacklist.objects.none()
+                for pub_blacklist in blacklist_list:
+                    query_set = query_set | models.PublisherBlacklist.objects.filter(
+                        name=pub_blacklist.name,
+                        ad_group=pub_blacklist.ad_group,
+                        source=pub_blacklist.source
+                    )
+                query_set.delete()
+
                 if state == constants.PublisherStatus.BLACKLISTED:
                     models.PublisherBlacklist.objects.bulk_create(blacklist_list)
-                elif state == constants.PublisherStatus.ENABLED:
-                    query_set = models.PublisherBlacklist.objects.none()
-                    for pub_blacklist in blacklist_list:
-                        query_set = query_set | models.PublisherBlacklist.objects.filter(
-                            name=pub_blacklist.name,
-                            ad_group=pub_blacklist.ad_group,
-                            source=pub_blacklist.source
-                        )
-                    query_set.delete()
-                else:
-                    raise Exception("Not implemented")
         new_state.save()
 
 
@@ -144,14 +149,13 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
     source = ad_group_source.source
 
-    if can_modify_selected_target_regions_manually(
-            source, ad_group_settings.targets_countries(), ad_group_settings.targets_dma()):
-
+    # if we could not select target regions automatically, see if we can select them manually
+    if not region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) and\
+       region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings):
         new_field_value = _get_manual_action_target_regions_value(
             ad_group_source,
-            ad_group_settings.target_regions,
-            ad_group_settings.targets_countries(),
-            ad_group_settings.targets_dma()
+            None,
+            ad_group_settings
         )
 
         actionlog.api.init_set_ad_group_manual_property(
@@ -384,13 +388,33 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
     unsynced_content_ad_sources_actions = []
 
+    nr_nonexisting_active_content_ads = 0
+    nr_inconsistent_internal_states = 0
+
     for data in content_ad_data:
         content_ad_source = content_ad_sources.get(data['id'])
 
         if content_ad_source is None:
+            if data.get('state') == constants.ContentAdSourceState.ACTIVE:
+                nr_nonexisting_active_content_ads += 1
+                logger.error(
+                    ('Found active external content ad that does not exist in database - '
+                     'source=%s, ad group=%s, content ad state=%s, submission status=%s, source content ad id=%s, data=%s)'),
+                    ad_group_source.source.name,
+                    ad_group_source.ad_group_id,
+                    constants.ContentAdSourceState.get_text(data.get('state')),
+                    constants.ContentAdSubmissionStatus.get_text(data.get('submission_status')),
+                    data.get('id'),
+                    data
+                )
             continue
 
         changed = False
+
+        # TODO: should it only be updated when it is None?
+        if data.get('source_content_ad_id'):
+            content_ad_source.source_content_ad_id = str(data['source_content_ad_id'])
+            changed = True
 
         if data['state'] != content_ad_source.source_state:
             content_ad_source.source_state = data['state']
@@ -398,11 +422,13 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         if data['state'] != content_ad_source.content_ad.state:
             logger.info(
-                'Found inconsistent content ad state on media source %s for content ad %d: source state=%d, z1 state=%d, source submission status=%d, z1 submission status=%d',
+                ('Found inconsistent content ad state on media source %s for content ad %d: source state=%d,'
+                 'z1 state=%d, source submission status=%d, z1 submission status=%d'),
                 content_ad_source.source.name, content_ad_source.content_ad.pk,
                 data.get('state'), content_ad_source.content_ad.state,
                 data.get('submission_status'), content_ad_source.submission_status,
             )
+            nr_inconsistent_internal_states += 1
 
         if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
             is_unsynced = all([
@@ -424,6 +450,15 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         if changed:
             content_ad_source.save()
+
+    utils.statsd_helper.statsd_incr(
+        'propagation_consistency.content_ad.active_nonexisting.{}'.format(ad_group_source.source.tracking_slug),
+        nr_nonexisting_active_content_ads
+    )
+    utils.statsd_helper.statsd_incr(
+        'propagation_consistency.content_ad.inconsistent_internal_state.{}'.format(ad_group_source.source.tracking_slug),
+        nr_inconsistent_internal_states
+    )
 
     if unsynced_content_ad_sources_actions:
         logger.info(
@@ -516,12 +551,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             if field_name == 'ad_group_name':
                 new_field_value = ad_group_source.get_external_name(new_adgroup_name=field_value)
 
-            did_dmas_change = False
-            did_countries_change = False
-            if field_name == 'target_regions':
-                did_dmas_change = new_settings.targets_dma() or current_settings.targets_dma()
-                did_countries_change = new_settings.targets_countries() or current_settings.targets_countries()
-
             if (field_name == 'start_date' and source.can_modify_start_date() or
                field_name == 'end_date' and source.can_modify_end_date() or
                field_name == 'target_devices' and source.can_modify_device_targeting() or
@@ -529,8 +558,8 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 source.update_tracking_codes_on_content_ads()) or
                field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or
                field_name == 'ad_group_name' and source.can_modify_ad_group_name() or
-               field_name == 'target_regions' and can_modify_selected_target_regions_automatically(
-                   source, did_countries_change, did_dmas_change)) and not force_manual_change:
+               field_name == 'target_regions' and region_targeting_helper.can_modify_selected_target_regions_automatically(
+                   source, current_settings, new_settings)) and not force_manual_change:
                 new_field_name = field_name
                 if field_name == 'ad_group_name':
                     new_field_name = 'name'
@@ -578,14 +607,13 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     new_field_value = _substitute_tracking_macros(new_field_value, tracking_slug)
 
                 if field_name == 'target_regions':
-                    if not can_modify_selected_target_regions_manually(source, did_countries_change, did_dmas_change):
+                    if not region_targeting_helper.can_modify_selected_target_regions_manually(source, current_settings, new_settings):
                         continue
 
                     new_field_value = _get_manual_action_target_regions_value(
                         ad_group_source,
-                        new_field_value,
-                        did_countries_change,
-                        did_dmas_change,
+                        current_settings,
+                        new_settings
                     )
 
                 actionlog.api.init_set_ad_group_manual_property(
@@ -636,20 +664,28 @@ def create_ad_group_publisher_blacklist_actions(ad_group, request, state, publis
     return actions
 
 
-def _get_manual_action_target_regions_value(ad_group_source, new_target_regions,
-                                            did_countries_change, did_dmas_change):
+def _get_manual_action_target_regions_value(ad_group_source, current_settings, new_settings):
+    new_country_targeting = new_settings.get_targets_for_region_type(constants.RegionType.COUNTRY)
+    new_subdivision_targeting = new_settings.get_target_names_for_region_type(constants.RegionType.SUBDIVISION)
+    new_dma_targeting = new_settings.get_target_names_for_region_type(constants.RegionType.DMA)
 
-    new_country_targeting = [tr for tr in new_target_regions if tr in regions.COUNTRY_BY_CODE]
-    new_dma_targeting = [regions.DMA_BY_CODE[tr] for tr in new_target_regions if tr in regions.DMA_BY_CODE]
-
-    if not new_country_targeting and not new_dma_targeting:
-        new_country_targeting = 'cleared' if new_dma_targeting else 'Worldwide'
+    # default to worldwide
+    if not new_country_targeting and not new_subdivision_targeting and not new_dma_targeting:
+        new_country_targeting = 'Worldwide'
 
     new_field_value = {
         'countries': new_country_targeting
     }
 
-    if did_dmas_change:
+    if new_subdivision_targeting or\
+       (current_settings is not None and current_settings.targets_region_type(constants.RegionType.SUBDIVISION)):
+        if not new_subdivision_targeting:
+            new_subdivision_targeting = 'cleared (no subdivision targeting)'
+
+        new_field_value['subdivisions'] = new_subdivision_targeting
+
+    if new_dma_targeting or\
+       (current_settings is not None and current_settings.targets_region_type(constants.RegionType.DMA)):
         if not new_dma_targeting:
             new_dma_targeting = 'cleared (no DMA targeting)'
 
@@ -934,18 +970,3 @@ def get_content_ad(content_ad_id):
         return models.ContentAd.objects.get(pk=content_ad_id)
     except models.ContentAd.DoesNotExist:
         return None
-
-
-def can_modify_selected_target_regions_automatically(source, did_countries_change, did_dmas_change):
-    modify_country_auto = source.can_modify_country_targeting()
-    modify_dma_auto = source.can_modify_dma_targeting_automatic()
-    return any([
-        (modify_dma_auto and modify_country_auto),
-        (modify_dma_auto and not did_countries_change),
-        (modify_country_auto and not did_dmas_change)
-    ])
-
-
-def can_modify_selected_target_regions_manually(source, did_countries_change, did_dmas_change):
-    return ((did_dmas_change and source.can_modify_dma_targeting_manual()) or
-            (did_countries_change and not source.can_modify_country_targeting()))

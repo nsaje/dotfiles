@@ -14,12 +14,13 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.forms.models import model_to_dict
+from django.core.validators import validate_email
 
 
 import utils.string_helper
 
 from dash import constants
-from dash import regions
+from dash import region_targeting_helper
 import reports.constants
 from utils import encryption_helpers
 from utils import statsd_helper
@@ -38,7 +39,7 @@ def validate(*validators):
             errors[v.__name__.replace('validate_', '')] = e.error_list
     if errors:
         raise ValidationError(errors)
-        
+
 
 class PermissionMixin(object):
     USERS_FIELD = ''
@@ -85,7 +86,7 @@ class FootprintModel(models.Model):
         if not self.pk:
             return
         self._footprint()
-    
+
     def has_changed(self, field=None):
         if not self.pk:
             return False
@@ -107,7 +108,7 @@ class FootprintModel(models.Model):
     def save(self, *args, **kwargs):
         super(FootprintModel, self).save(*args, **kwargs)
         self._footprint()
-    
+
     class Meta:
         abstract = True
 
@@ -119,11 +120,11 @@ class HistoryModel(models.Model):
 
     def to_dict(self):
         raise NotImplementedError()
-    
+
     class Meta:
         abstract = True
 
-    
+
 class OutbrainAccount(models.Model):
     marketer_id = models.CharField(blank=False, null=False, max_length=255)
     used = models.BooleanField(default=False)
@@ -645,17 +646,40 @@ class SourceType(models.Model):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_MODIFY_DEVICE_TARGETING in self.available_actions
 
-    def can_modify_dma_targeting_automatic(self):
-        return self.available_actions is not None and\
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC in self.available_actions
+    def can_modify_targeting_for_region_type_automatically(self, region_type):
+        if self.available_actions is None:
+            return False
+        elif region_type == constants.RegionType.COUNTRY:
+            return constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING in self.available_actions
+        elif region_type == constants.RegionType.SUBDIVISION:
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC in self.available_actions
+        elif region_type == constants.RegionType.DMA:
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC in self.available_actions
 
-    def can_modify_dma_targeting_manual(self):
-        return self.available_actions is not None and\
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_MANUAL in self.available_actions
+    def can_modify_targeting_for_region_type_manually(self, region_type):
+        ''' Assume automatic targeting support implies manual targeting support
 
-    def can_modify_country_targeting(self):
-        return self.available_actions is not None and\
-            constants.SourceAction.CAN_MODIFY_COUNTRY_TARGETING in self.available_actions
+            This addresses the following situation: Imagine targeting
+            GB (country) and 693 (DMA) and a SourceType that supports automatic
+            DMA targeting and manual country targeting.
+
+            Automatically setting the targeting would be impossible because
+            the SourceType does not support modifying country targeting
+            automatically.
+
+            Manually setting the targeting would also be impossible because
+            the SourceType does not support modifying DMA targeting manually.
+            '''
+        if self.can_modify_targeting_for_region_type_automatically(region_type):
+            return True
+        if region_type == constants.RegionType.COUNTRY:
+            return True
+        elif self.available_actions is None:
+            return False
+        elif region_type == constants.RegionType.SUBDIVISION:
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL in self.available_actions
+        elif region_type == constants.RegionType.DMA:
+            return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL in self.available_actions
 
     def can_modify_tracking_codes(self):
         return self.available_actions is not None and\
@@ -677,8 +701,10 @@ class SourceType(models.Model):
         return self.available_actions is not None and\
             constants.SourceAction.UPDATE_TRACKING_CODES_ON_CONTENT_ADS in self.available_actions
 
-    def supports_dma_targeting(self):
-        return self.can_modify_dma_targeting_manual() or self.can_modify_dma_targeting_automatic()
+    def supports_targeting_region_type(self, region_type):
+        return\
+            self.can_modify_targeting_for_region_type_automatically(region_type) or\
+            self.can_modify_targeting_for_region_type_manually(region_type)
 
     def can_fetch_report_by_publisher(self):
         return self.available_actions is not None and\
@@ -759,14 +785,11 @@ class Source(models.Model):
     def can_modify_device_targeting(self):
         return self.source_type.can_modify_device_targeting() and not self.maintenance and not self.deprecated
 
-    def can_modify_dma_targeting_automatic(self):
-        return self.source_type.can_modify_dma_targeting_automatic() and not self.maintenance and not self.deprecated
+    def can_modify_targeting_for_region_type_automatically(self, region_type):
+        return self.source_type.can_modify_targeting_for_region_type_automatically(region_type)
 
-    def can_modify_dma_targeting_manual(self):
-        return self.source_type.can_modify_dma_targeting_manual() and not self.maintenance and not self.deprecated
-
-    def can_modify_country_targeting(self):
-        return self.source_type.can_modify_country_targeting() and not self.maintenance and not self.deprecated
+    def can_modify_targeting_for_region_type_manually(self, region_type):
+        return self.source_type.can_modify_targeting_for_region_type_manually(region_type)
 
     def can_modify_tracking_codes(self):
         return self.source_type.can_modify_tracking_codes() and not self.maintenance and not self.deprecated
@@ -1068,6 +1091,17 @@ class AdGroupSource(models.Model):
             source_name
         )
 
+    def get_supply_dash_url(self):
+        if not self.source.has_3rd_party_dashboard() or\
+                self.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
+            return None
+
+        return '{}?ad_group_id={}&source_id={}'.format(
+            reverse('dash.views.views.supply_dash_redirect'),
+            self.ad_group.id,
+            self.source.id
+        )
+
     def _shorten_name(self, name):
         # if the first word is too long, cut it
         words = name.split()
@@ -1190,11 +1224,20 @@ class AdGroupSettings(SettingsBase):
         dt += datetime.timedelta(days=1)
         return dt
 
-    def targets_dma(self):
-        return any(tr in regions.DMA_BY_CODE for tr in self.target_regions) if self.target_regions else False
+    def targets_region_type(self, region_type):
+        regions = region_targeting_helper.get_list_for_region_type(region_type)
 
-    def targets_countries(self):
-        return any(tr in regions.COUNTRY_BY_CODE for tr in self.target_regions) if self.target_regions else False
+        return any(target_region in regions for target_region in self.target_regions or [])
+
+    def get_targets_for_region_type(self, region_type):
+        regions_of_type = region_targeting_helper.get_list_for_region_type(region_type)
+
+        return [target_region for target_region in self.target_regions or [] if target_region in regions_of_type]
+
+    def get_target_names_for_region_type(self, region_type):
+        regions_of_type = region_targeting_helper.get_list_for_region_type(region_type)
+
+        return [regions_of_type[target_region] for target_region in self.target_regions or [] if target_region in regions_of_type]
 
     def is_mobile_only(self):
         return self.target_devices and len(self.target_devices) == 1 and constants.AdTargetDevice.MOBILE in self.target_devices
@@ -1434,6 +1477,7 @@ class ContentAd(models.Model):
     image_width = models.PositiveIntegerField(null=True)
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
+    crop_areas = models.CharField(max_length=128, null=True)
 
     redirect_id = models.CharField(max_length=128, null=True)
 
@@ -1707,15 +1751,22 @@ class PublisherBlacklist(models.Model):
     ad_group = models.ForeignKey(AdGroup, null=False, related_name='ad_group', on_delete=models.PROTECT)
     source = models.ForeignKey(Source, null=False, on_delete=models.PROTECT)
 
+    status = models.IntegerField(
+        default=constants.PublisherStatus.BLACKLISTED,
+        choices=constants.PublisherStatus.get_choices()
+    )
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
     class Meta:
         unique_together = (('name', 'ad_group', 'source'), )
-    
+
 
 class CreditLineItem(FootprintModel):
     account = models.ForeignKey(Account, related_name='credits', on_delete=models.PROTECT)
     start_date = models.DateField()
     end_date = models.DateField()
-    
+
     amount = models.IntegerField()
     license_fee = models.DecimalField(
         decimal_places=4,
@@ -1727,7 +1778,7 @@ class CreditLineItem(FootprintModel):
         choices=constants.CreditLineItemStatus.get_choices()
     )
     comment = models.CharField(max_length=256, blank=True, null=True)
-    
+
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
@@ -1739,10 +1790,15 @@ class CreditLineItem(FootprintModel):
     def is_active(self, date=None):
         if date is None:
             date = dates_helper.local_today()
-        return self.status == constants.CreditLineItem.SIGNED and \
+        return self.status == constants.CreditLineItemStatus.SIGNED and \
             (self.start_date <= date <= self.end_date)
 
-    def get_total_credit_amount(self):
+    def is_past(self, date=None):
+        if date is None:
+            date = dates_helper.local_today()
+        return self.end_date <= date
+
+    def get_allocated_amount(self):
         return sum(b.amount for b in self.budgets.all())
 
     def cancel(self):
@@ -1770,6 +1826,10 @@ class CreditLineItem(FootprintModel):
     def is_editable(self):
         return self.status == constants.CreditLineItemStatus.PENDING
 
+    def is_available(self):
+        return not self.is_past() and self.status == constants.CreditLineItemStatus.SIGNED\
+            and (self.amount - self.get_allocated_amount()) > 0
+
     def clean(self):
         has_changed = any((
             self.has_changed('start_date'),
@@ -1780,7 +1840,6 @@ class CreditLineItem(FootprintModel):
             raise ValidationError('Nonpending credit line item cannot change.')
 
         validate(
-            self.validate_start_date,
             self.validate_end_date,
             self.validate_license_fee,
             self.validate_status,
@@ -1795,17 +1854,14 @@ class CreditLineItem(FootprintModel):
             raise ValidationError('Credit line item status cannot change when credit has budgets allocated.')
         if self.status == s.PENDING:
             raise ValidationError('Credit line item status cannot change to PENDING.')
-            
-        
-    def validate_start_date(self):
-        if not self.start_date:
-            return
-        if self.start_date > self.end_date:
-            raise ValidationError('Start date cannot be greater than the end date.')
 
     def validate_end_date(self):
+        if not self.end_date:
+            return
         if self.has_changed('end_date') and self.previous_value('end_date') > self.end_date:
-            raise ValidationError('New end date cannot be less than the previous.')
+            raise ValidationError('New end date cannot be before than the previous.')
+        if self.start_date and self.start_date > self.end_date:
+            raise ValidationError('Start date cannot be greater than the end date.')
         
     def validate_license_fee(self):
         if not self.license_fee:
@@ -1820,7 +1876,7 @@ class CreditLineItem(FootprintModel):
             return self.filter(
                 start_date__lte=date,
                 end_date__gte=date,
-                status=constants.CreditLineItem.SIGNED
+                status=constants.CreditLineItemStatus.SIGNED
             )
 
         def delete(self):
@@ -1833,11 +1889,11 @@ class BudgetLineItem(FootprintModel):
     credit = models.ForeignKey(CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
     start_date = models.DateField()
     end_date = models.DateField()
-    
+
     amount = models.IntegerField()
-    
+
     comment = models.CharField(max_length=256, blank=True, null=True)
-    
+
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
@@ -1859,6 +1915,8 @@ class BudgetLineItem(FootprintModel):
     def state(self, date=None):
         if date is None:
             date = dates_helper.local_today()
+        if (self.amount - self.get_spend_amount()) <= 0:
+            return constants.BudgetLineItemState.DEPLETED
         if self.end_date and self.end_date < date:
             return constants.BudgetLineItemState.INACTIVE
         if self.start_date and self.start_date <= date:
@@ -1869,9 +1927,21 @@ class BudgetLineItem(FootprintModel):
     def state_text(self, date=None):
         return constants.BudgetLineItemState.get_text(self.state(date=date))
 
+    def get_spend_amount(self): # TODO: implement
+        return Decimal('0')
+
+    def get_media_spend_amount(self): # TODO: implement
+        return Decimal('0')
+
+    def get_data_spend_amount(self): # TODO: implement
+        return Decimal('0') 
+
+    def is_editable(self):
+        return self.state() == constants.BudgetLineItemState.PENDING
+
     def clean(self):
-        if self.pk and self.db_state() != constants.BudgetLineItemState.PENDING:
-            raise ValidationError('Only pending budgets can change.')
+        if self.pk and not self.db_state() == constants.BudgetLineItemState.PENDING:
+            raise ValidationError('Only pending and active budgets can change.')
 
         validate(
             self.validate_start_date,
@@ -1879,7 +1949,7 @@ class BudgetLineItem(FootprintModel):
             self.validate_amount,
             self.validate_credit,
         )
-        
+
 
     def license_fee(self):
         return self.credit.license_fee
@@ -1893,8 +1963,6 @@ class BudgetLineItem(FootprintModel):
     def validate_start_date(self):
         if not self.start_date:
             return
-        if self.start_date > self.end_date:
-            raise ValidationError('Start date cannot be bigger than the end date.')
         if self.start_date < self.credit.start_date:
             raise ValidationError('Start date cannot be smaller than the credit\'s start date.')
 
@@ -1903,6 +1971,8 @@ class BudgetLineItem(FootprintModel):
             return
         if self.end_date > self.credit.end_date:
             raise ValidationError('End date cannot be bigger than the credit\'s end date.')
+        if self.start_date and self.start_date > self.end_date:
+            raise ValidationError('Start date cannot be bigger than the end date.')
         
     def validate_amount(self):
         if not self.amount:
@@ -1913,10 +1983,6 @@ class BudgetLineItem(FootprintModel):
             raise ValidationError(
                 'Budget exceeds the total credit amount by ${}.00.'.format(-delta)
             )
-        if self.state() == constants.BudgetLineItemState.PENDING:
-            return
-        if self.has_changed('amount'):
-            raise ValidationError('Budget amount cannot change.')        
 
 
 class CreditHistory(HistoryModel):
@@ -1925,3 +1991,90 @@ class CreditHistory(HistoryModel):
 class BudgetHistory(HistoryModel):
     budget = models.ForeignKey(BudgetLineItem, related_name='history')
 
+
+class ExportReport(models.Model):
+    id = models.AutoField(primary_key=True)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        null=False,
+        blank=False,
+        on_delete=models.PROTECT
+    )
+
+    ad_group = models.ForeignKey(AdGroup, blank=True, null=True, on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.PROTECT)
+    account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.PROTECT)
+
+    granularity = models.IntegerField(
+        default=constants.ScheduledReportGranularity.CONTENT_AD,
+        choices=constants.ScheduledReportGranularity.get_choices()
+    )
+
+    breakdown_by_day = models.BooleanField(null=False, blank=False, default=False)
+    breakdown_by_source = models.BooleanField(null=False, blank=False, default=False)
+
+    order_by = models.CharField(max_length=20, null=True, blank=True)
+    additional_fields = models.CharField(max_length=500, null=True, blank=True)
+    filtered_sources = models.ManyToManyField(Source)
+
+    @property
+    def level(self):
+        if self.account:
+            return constants.ScheduledReportLevel.ACCOUNT
+        elif self.campaign:
+            return constants.ScheduledReportLevel.CAMPAIGN
+        elif self.ad_group:
+            return constants.ScheduledReportLevel.AD_GROUP
+        return constants.ScheduledReportLevel.ALL_ACCOUNTS
+
+
+class ScheduledExportReport(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
+    report = models.ForeignKey(ExportReport, related_name='scheduled_reports')
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        null=False,
+        blank=False,
+        on_delete=models.PROTECT
+    )
+
+    state = models.IntegerField(
+        default=constants.ScheduledReportState.ACTIVE,
+        choices=constants.ScheduledReportState.get_choices()
+    )
+
+    sending_frequency = models.IntegerField(
+        default=constants.ScheduledReportSendingFrequency.DAILY,
+        choices=constants.ScheduledReportSendingFrequency.get_choices()
+    )
+
+    def add_recipient_email(self, email_address):
+        validate_email(email_address)
+        if self.recipients.filter(email=email_address).count() < 1:
+            self.recipients.create(email=email_address)
+
+    def remove_recipient_email(self, email_address):
+        self.recipients.filter(email__exact=email_address).delete()
+
+    def get_recipients_emails_list(self):
+        return [recipient.email for recipient in self.recipients.all()]
+
+    def set_recipient_emails_list(self, email_list):
+        self.recipients.all().delete()
+        for email in email_list:
+            self.add_recipient_email(email)
+
+
+class ScheduledExportReportRecipient(models.Model):
+    scheduled_report = models.ForeignKey(ScheduledExportReport, related_name='recipients')
+    email = models.EmailField()
+
+    class Meta:
+        unique_together = ('scheduled_report', 'email')

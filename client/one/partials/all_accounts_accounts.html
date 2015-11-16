@@ -12,7 +12,7 @@
             </div>
 
             <div class="loader" ng-show="requestInProgress"></div>
-                
+
             <div class="button-bar-item export-container">
                 <zem-export
                     start-date="dateRange.startDate"
@@ -22,7 +22,7 @@
                 </zem-export>
             </div>
 
-            <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" localStoragePrefix="localStoragePrefix"></zem-custom-table-cols>
+            <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
 
             <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
 
@@ -34,6 +34,20 @@
                     <a id="resync-loader" class="btn btn-default pull-right" popover="Synchronization of reporting data is currently in progress, and may take a few minutes. You can continue using the dashboard in the meantime." popover-append-to-body="true" popover-trigger="mouseenter" popover-placement="left"><div class="loader"></div></a>
                 </span>
             </span>
+
+            <div ng-if="hasPermission('zemauth.exports_plus')" class="export-container button-bar-item pull-right">
+              <zem-internal-feature ng-if="isPermissionInternal('zemauth.exports_plus')" popover-placement="bottom"></zem-internal-feature>
+                <zem-export-plus
+                    start-date="dateRange.startDate"
+                    end-date="dateRange.endDate"
+                    base-url="'api/accounts/'"
+                    options="exportPlusOptions"
+                    columns="columns"
+                    order="order"
+                    level="level"
+                    export-sources="false">
+                </zem-export-plus>
+            </div>
 
             <div class="clearfix"></div>
         </div>
@@ -64,7 +78,7 @@
             <form ng-submit="loadPage()">
                 <input class="page-num form-control" type="number" min="1" max="{{ pagination.numPages }}" ng-model="pagination.currentPage">
             </form>
-            
+
             <span>Show rows</span>
             <zem-paging-dropdown class="show-rows" counts="sizeRange" selection="size"></zem-paging-dropdown>
             <div ng-disabled="pagination.currentPage == 1" class="btn btn-default" ng-click="loadPage(1)"><img ng-src="{{ config.static_url }}/one/img/arrow-first.svg"></div>

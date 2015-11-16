@@ -16,7 +16,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
     $scope.chartData = undefined;
     $scope.chartMetricOptions = options.adGroupChartMetrics;
-    $scope.localStoragePrefix = 'adGroupAdsPlus';
+    $scope.localStoragePrefix = 'adGroupContentAdsPlus';
 
     $scope.lastSyncDate = null;
     $scope.isSyncRecent = true;
@@ -51,6 +51,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         name: 'By Day (Excel)',
         value: 'day-excel'
     }];
+
+    $scope.exportPlusOptions = [
+      {name: 'Current View', value: 'contentad-csv'}
+    ];
 
     $scope.bulkActions = [{
         name: 'Pause',
@@ -561,7 +565,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         getDailyStats();
         getTableData();
-        setDisabledExportOptions();
     });
 
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
@@ -739,15 +742,14 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             return;
         }
 
-        var userSettings = zemUserSettings.getInstance($scope, 'adGroupContentAdsPlus');
+        var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
         var page = parseInt($location.search().page || '1');
         var size = parseInt($location.search().size || '0');
 
         setChartOptions();
 
-        $scope.chartMetric1 = zemUserSettings.resetUrlAndGetValue('chartMetric1', $scope.localStoragePrefix);
-        $scope.chartMetric2 = zemUserSettings.resetUrlAndGetValue('chartMetric2', $scope.localStoragePrefix);
-
+        userSettings.registerWithoutWatch('chartMetric1');
+        userSettings.registerWithoutWatch('chartMetric2');
         userSettings.register('order');
         userSettings.register('size');
 

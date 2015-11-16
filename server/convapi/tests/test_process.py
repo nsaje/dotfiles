@@ -4,8 +4,8 @@ import mock
 from django.test import TestCase
 
 from convapi import process
-from utils.test_helper import QuerySetMatcher
 import dash.models
+from utils import dates_helper
 
 
 class UpdateTouchpointConversionsTestCase(TestCase):
@@ -13,51 +13,53 @@ class UpdateTouchpointConversionsTestCase(TestCase):
     fixtures = ['test_api.yaml']
 
     def setUp(self):
-        dash.models.ConversionPixel.objects.create(
+        self.cp1 = dash.models.ConversionPixel.objects.create(
             account_id=1,
             slug='test_slug',
-            last_sync_dt=datetime.datetime(2015, 9, 8) + datetime.timedelta(hours=process.ADDITIONAL_SYNC_HOURS),
+            last_sync_dt=dates_helper.local_to_utc_time(datetime.datetime(2015, 9, 8, process.ADDITIONAL_SYNC_HOURS)),
         )
-        dash.models.ConversionPixel.objects.create(
+        self.cp2 = dash.models.ConversionPixel.objects.create(
             account_id=1,
             slug='test_slug2',
             last_sync_dt=None
         )
 
     @mock.patch('convapi.process.update_touchpoint_conversions')
-    @mock.patch('convapi.process.datetime')
+    @mock.patch('utils.dates_helper.datetime')
     def test_update_full(self, datetime_mock, update_touchpoint_conversions_mock):
         datetime_mock.datetime = mock.Mock()
         datetime_mock.datetime.utcnow = mock.Mock()
-        datetime_mock.datetime.utcnow.return_value = datetime.datetime(2015, 9, 10)
+        datetime_mock.datetime.utcnow.return_value = dates_helper.local_to_utc_time(
+            datetime.datetime(2015, 9, 10, process.ADDITIONAL_SYNC_HOURS + 1))
         datetime_mock.timedelta = datetime.timedelta
 
         process.update_touchpoint_conversions_full()
 
-        conversion_pixels = QuerySetMatcher(dash.models.ConversionPixel.objects.filter(archived=False))
-        update_touchpoint_conversions_mock.assert_called_once_with([datetime.date(2015, 9, 8),
-                                                                    datetime.date(2015, 9, 9),
-                                                                    datetime.date(2015, 9, 10)],
-                                                                   conversion_pixels)
+        update_touchpoint_conversions_mock.assert_called_once_with([(datetime.date(2015, 9, 8), self.cp1),
+                                                                    (datetime.date(2015, 9, 9), self.cp1),
+                                                                    (datetime.date(2015, 9, 10), self.cp1),
+                                                                    (datetime.date(2015, 9, 10), self.cp2)])
 
     @mock.patch('convapi.process.update_touchpoint_conversions')
-    @mock.patch('convapi.process.datetime')
+    @mock.patch('utils.dates_helper.datetime')
     def test_update_full_additional_sync(self, datetime_mock, update_touchpoint_conversions_mock):
         datetime_mock.datetime = mock.Mock()
         datetime_mock.datetime.utcnow = mock.Mock()
-        datetime_mock.datetime.utcnow.return_value = datetime.datetime(2015, 9, 10)
+        datetime_mock.datetime.utcnow.return_value = dates_helper.local_to_utc_time(
+            datetime.datetime(2015, 9, 10, process.ADDITIONAL_SYNC_HOURS + 1))
         datetime_mock.timedelta = datetime.timedelta
 
         dash.models.ConversionPixel.objects.filter(slug='test_slug2').update(last_sync_dt=datetime.datetime(2015, 9, 8))
 
         process.update_touchpoint_conversions_full()
 
-        conversion_pixels = QuerySetMatcher(dash.models.ConversionPixel.objects.filter(archived=False))
-        update_touchpoint_conversions_mock.assert_called_once_with([datetime.date(2015, 9, 7),
-                                                                    datetime.date(2015, 9, 8),
-                                                                    datetime.date(2015, 9, 9),
-                                                                    datetime.date(2015, 9, 10)],
-                                                                   conversion_pixels)
+        update_touchpoint_conversions_mock.assert_called_once_with([(datetime.date(2015, 9, 8), self.cp1),
+                                                                    (datetime.date(2015, 9, 9), self.cp1),
+                                                                    (datetime.date(2015, 9, 10), self.cp1),
+                                                                    (datetime.date(2015, 9, 7), self.cp2),
+                                                                    (datetime.date(2015, 9, 8), self.cp2),
+                                                                    (datetime.date(2015, 9, 9), self.cp2),
+                                                                    (datetime.date(2015, 9, 10), self.cp2)])
 
 
 class ProcessTouchpointsImpressionsTestCase(TestCase):
@@ -88,6 +90,7 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                     'adGroupId': 1,
                     'source': 'outbrain',
                     'contentAdId': 1,
+                    'adLookup': False,
                 }
             ]
         }
@@ -110,6 +113,76 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
                 'conversion_lag': 1,
             }
         ]
+
+        self.assertEqual(expected, conversion_pairs)
+
+    def test_process_ad_lookup(self):
+        redirects_impressions = {
+            '1234-12345-123456': [
+                {
+                    'zuid': '1234-12345-123456',
+                    'slug': 'test_slug',
+                    'impressionId': '12345',
+                    'impressionTimestamp': '2015-09-02T15:15:15Z',
+                    'redirectId': '54321',
+                    'redirectTimestamp': '2015-09-02T15:00:00Z',
+                    'accountId': 1,
+                    'adGroupId': 1,
+                    'source': 'outbrain',
+                    'contentAdId': 1,
+                    'adLookup': True,
+                }
+            ]
+        }
+
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
+        expected = []
+
+        self.assertEqual(expected, conversion_pairs)
+
+    def test_process_source_slug_z1(self):
+        redirects_impressions = {
+            '1234-12345-123456': [
+                {
+                    'zuid': '1234-12345-123456',
+                    'slug': 'test_slug',
+                    'impressionId': '12345',
+                    'impressionTimestamp': '2015-09-02T15:15:15Z',
+                    'redirectId': '54321',
+                    'redirectTimestamp': '2015-09-02T15:00:00Z',
+                    'accountId': 1,
+                    'adGroupId': 1,
+                    'source': 'z1',
+                    'contentAdId': 1,
+                }
+            ]
+        }
+
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
+        expected = []
+
+        self.assertEqual(expected, conversion_pairs)
+
+    def test_process_simple_redirect(self):
+        redirects_impressions = {
+            '1234-12345-123456': [
+                {
+                    'zuid': '1234-12345-123456',
+                    'slug': 'test_slug',
+                    'impressionId': '12345',
+                    'impressionTimestamp': '2015-09-02T15:15:15Z',
+                    'redirectId': '54321',
+                    'redirectTimestamp': '2015-09-02T15:00:00Z',
+                    'accountId': 1,
+                    'adGroupId': 1,
+                    'source': 'outbrain',
+                    'contentAdId': 0,
+                }
+            ]
+        }
+
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
+        expected = []
 
         self.assertEqual(expected, conversion_pairs)
 

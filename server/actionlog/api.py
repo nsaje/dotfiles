@@ -360,6 +360,29 @@ def is_sync_in_progress(ad_groups=None, campaigns=None, accounts=None, sources=N
     return waiting_actions
 
 
+@newrelic.agent.function_trace()
+def is_publisher_blacklist_sync_in_progress(ad_groups):
+    '''
+    sync is in progress if one of the following is true:
+    - a get reports action for this ad_group is in 'waiting' state
+    - a fetch status action for this ad_group is in 'waiting' state
+    '''
+    if ad_groups == [] or ad_groups is None:
+        return False
+
+    q = models.ActionLog.objects.filter(
+        state=constants.ActionState.WAITING,
+        action_type=constants.ActionType.AUTOMATIC,
+        action=constants.Action.SET_CAMPAIGN_STATE,
+        payload__contains="publisher_blacklist",
+        ad_group_source__ad_group__in=ad_groups
+    )
+
+    waiting_actions = q.exists()
+
+    return waiting_actions
+
+
 def _handle_error(action, e, request=None):
     msg = traceback.format_exc(e)
 
@@ -565,7 +588,7 @@ def _init_fetch_reports_by_publisher(ad_group_source, date, order, request=None)
         logger.error('Trying to _init_fetch_reports_by_publisher() on source that does not support it: {}'.format(ad_group_source.id))
         raise exceptions.InsertActionException('Trying to _init_fetch_reports_by_publisher() on source that does not support it: {}'.format(ad_group_source.id))
 
-    
+
     msg = '_init_fetch_reports started: ad_group_source.id: {}, date: {}'.format(
         ad_group_source.id,
         repr(date)
