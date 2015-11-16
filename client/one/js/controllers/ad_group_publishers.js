@@ -97,7 +97,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         $scope.selectedPublisherStatus[$scope.calculatePublisherHash(row)] = {
             "checked": checked,
-            "source": row['exchange'],
+            "source_id": row['source_id'],
             "domain": row['domain'],
             "blacklisted": row['blacklisted']
         };

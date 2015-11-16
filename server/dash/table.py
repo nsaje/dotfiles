@@ -1566,7 +1566,10 @@ class PublishersTable(object):
                 start_date, end_date,
                 constraints=constraints,
             )
-        elif show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+        elif show_blacklisted_publishers in (
+            constants.PublisherBlacklistFilter.SHOW_ACTIVE,
+            constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
+
             # fetch blacklisted status from db
             adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(ad_group=adgroup)
             adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
@@ -1576,42 +1579,24 @@ class PublishersTable(object):
                 'exchange': entry['source__tracking_slug'].replace('b1_', ''),
             }, adg_blacklisted_publishers)
 
-            publishers_data = reports.api_publishers.query_active_publishers(
-                start_date, end_date,
-                breakdown_fields=['domain', 'exchange'],
-                order_fields=[order],
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-            totals_data = reports.api_publishers.query_active_publishers(
-                start_date, end_date,
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-        elif show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
-            # fetch blacklisted status from db
-            adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(ad_group=adgroup)
-            adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
-            adg_blacklisted_publishers = map(lambda entry: {
-                'domain': entry['name'],
-                'adgroup_id': entry['ad_group__id'],
-                'exchange': entry['source__tracking_slug'].replace('b1_', ''),
-            }, adg_blacklisted_publishers)
+            query_func = None
+            if constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+                query_func = reports.api_publishers.query_active_publishers
+            else:
+                query_func = reports.api_publishers.query_blacklisted_publishers
 
-            publishers_data = reports.api_publishers.query_blacklisted_publishers(
+            publishers_data = query_func(
                 start_date, end_date,
                 breakdown_fields=['domain', 'exchange'],
                 order_fields=[order],
                 constraints=constraints,
                 blacklist=adg_blacklisted_publishers
             )
-            totals_data = reports.api_publishers.query_blacklisted_publishers(
+            totals_data = query_func(
                 start_date, end_date,
                 constraints=constraints,
-                blacklist=adg_blacklisted_publishers
             )
-        else:
-            raise Exception("Unknown filter value")
+
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
         publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(publishers_data, page, size)
