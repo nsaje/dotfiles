@@ -807,18 +807,9 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
     if publisher_blacklist == []:
         return []
 
-    actions = []
-    # separate publishers per source type
-    source_type_cache = {}
-    blacklist_per_source = {}
-    for publisher in publisher_blacklist:
-        source = publisher['source']
-        source_type_id = source.source_type.id
-        source_type_cache[source_type_id] = source.source_type
-        blacklist_per_source[source_type_id] =\
-            blacklist_per_source.get(source_type_id, [])
-        blacklist_per_source[source_type_id].append(publisher)
+    blacklist_per_source, source_type_cache = _create_blacklist_per_source(publisher_blacklist)
 
+    actions = []
     # send actions
     for source_type_id, blacklist in blacklist_per_source.iteritems():
         filtered_blacklist = [publisher for publisher in blacklist\
@@ -862,20 +853,10 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
     if publishers == []:
         return []
 
+    blacklist_per_source, source_type_cache = _create_blacklist_per_source(publishers)
+
     actions = []
-
     blacklisted_publishers = {}
-
-    source_type_cache = {}
-    blacklist_per_source = {}
-    for publisher in publishers:
-        source = publisher['source']
-        source_type_id = source.source_type.id
-        source_type_cache[source_type_id] = source.source_type
-        blacklist_per_source[source_type_id] =\
-            blacklist_per_source.get(source_type_id, [])
-        blacklist_per_source[source_type_id].append(publisher)
-
     # send actions
     for source_type_id, blacklist in blacklist_per_source.iteritems():
         filtered_blacklist = [publisher for publisher in blacklist\
@@ -923,6 +904,19 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
             )
     return actions
 
+
+def _create_blacklist_per_source(publishers):
+    source_type_cache = {}
+    blacklist_per_source = {}
+    for publisher in publishers:
+        source = publisher['source']
+        source_type_id = source.source_type.id
+        source_type_cache[source_type_id] = source.source_type
+        blacklist_per_source[source_type_id] =\
+            blacklist_per_source.get(source_type_id, [])
+        blacklist_per_source[source_type_id].append(publisher)
+
+    return blacklist_per_source, source_type_cache
 
 def _get_manual_action_target_regions_value(ad_group_source, current_settings, new_settings):
     new_country_targeting = new_settings.get_targets_for_region_type(constants.RegionType.COUNTRY)
