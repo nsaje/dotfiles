@@ -107,7 +107,6 @@ def update_publisher_blacklist_state(args):
 
 
 def _clean_existing_publisher_blacklist(key, level, publishers):
-
     if level != constants.PublisherBlacklistLevel.GLOBAL:
         if constants.PublisherBlacklistLevel.compare(
             constants.PublisherBlacklistLevel.ACCOUNT,
