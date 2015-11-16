@@ -1248,3 +1248,112 @@ class SyncInProgressTestCase(TestCase):
         alog.save()
 
         self.assertEqual(api.is_sync_in_progress(), False)
+
+    def test_publisher_blacklist_adg_sync_in_progress(self):
+
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+
+        #  def is_publisher_blacklist_sync_in_progress(ad_group):
+        self.assertEqual(models.ActionLog.objects.all().count(), 0)
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+        alog = models.ActionLog(
+            action=constants.Action.SET_PUBLISHER_BLACKLIST,
+            action_type=constants.ActionType.AUTOMATIC,
+            ad_group_source=dashmodels.AdGroupSource.objects.get(pk=1),
+        )
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+    def test_publisher_blacklist_campaign_sync_in_progress(self):
+
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+        campaign = ad_group.campaign
+
+        #  def is_publisher_blacklist_sync_in_progress(ad_group):
+        self.assertEqual(models.ActionLog.objects.all().count(), 0)
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+        alog = models.ActionLog(
+            action=constants.Action.SET_PUBLISHER_BLACKLIST,
+            action_type=constants.ActionType.AUTOMATIC,
+            payload={
+                "args": {
+                    "level": dashconstants.PublisherBlacklistLevel.CAMPAIGN,
+                    "key": [campaign.id]
+                }
+            }
+        )
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+    def test_publisher_blacklist_account_sync_in_progress(self):
+
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+        campaign = ad_group.campaign
+        account = campaign.account
+
+        #  def is_publisher_blacklist_sync_in_progress(ad_group):
+        self.assertEqual(models.ActionLog.objects.all().count(), 0)
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+        alog = models.ActionLog(
+            action=constants.Action.SET_PUBLISHER_BLACKLIST,
+            action_type=constants.ActionType.AUTOMATIC,
+            payload={
+                "args": {
+                    "level": dashconstants.PublisherBlacklistLevel.ACCOUNT,
+                    "key": [account.id]
+                }
+            }
+        )
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+    def test_publisher_blacklist_global_sync_in_progress(self):
+
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+
+        #  def is_publisher_blacklist_sync_in_progress(ad_group):
+        self.assertEqual(models.ActionLog.objects.all().count(), 0)
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+        alog = models.ActionLog(
+            action=constants.Action.SET_PUBLISHER_BLACKLIST,
+            action_type=constants.ActionType.AUTOMATIC,
+            payload={
+                "args": {
+                    "level": dashconstants.PublisherBlacklistLevel.GLOBAL,
+                }
+            }
+        )
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)

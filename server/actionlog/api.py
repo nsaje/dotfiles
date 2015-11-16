@@ -406,28 +406,38 @@ def is_sync_in_progress(ad_groups=None, campaigns=None, accounts=None, sources=N
 
 
 @newrelic.agent.function_trace()
-def is_publisher_blacklist_sync_in_progress(ad_groups):
+def is_publisher_blacklist_sync_in_progress(ad_group):
     '''
     sync is in progress if one of the following is true:
     - a get reports action for this ad_group is in 'waiting' state
     - a fetch status action for this ad_group is in 'waiting' state
     '''
-    if ad_groups == [] or ad_groups is None:
+    if ad_group is None:
         return False
 
-    campaigns = [ad_group.campaign for ad_group in ad_groups]
-    accounts = [ad_group.campaign.account for ad_group in ad_groups]
+    campaign = ad_group.campaign
+    account = campaign.account
+
+    # limit amount of actionlogs through which to sift
+    yesterday = datetime.utcnow() - timedelta(days=1)
 
     q = models.ActionLog.objects.filter(
         Q(
             state=constants.ActionState.WAITING,
             action_type=constants.ActionType.AUTOMATIC,
             action=constants.Action.SET_PUBLISHER_BLACKLIST,
-        ) & Q(Q(ad_group_source__ad_group__in=ad_groups) |
-              Q(ad_group_source__ad_group__campaign__in=campaigns) |
-              Q(ad_group_source__ad_group__campaign__acount__in=accounts) |
-              Q(everywhere=True)
+            created_dt__gte=yesterday
+        ) & Q(
+            Q(ad_group_source__ad_group=ad_group) |
+            Q(Q(
+                Q(payload__contains="level\":\"{level}\"".format(level=dash.constants.PublisherBlacklistLevel.CAMPAIGN)) &
+                Q(payload__contains="\"key\":[{key}".format(key=campaign.id))
+              ) | Q(
+                Q(payload__contains="level\":\"{level}\"".format(level=dash.constants.PublisherBlacklistLevel.ACCOUNT)) &
+                Q(payload__contains="\"key\":[{key}".format(key=account.id))
+              ) | Q(payload__contains="level\":\"{level}\"".format(level=dash.constants.PublisherBlacklistLevel.GLOBAL))
             )
+        )
     )
 
     waiting_actions = q.exists()
