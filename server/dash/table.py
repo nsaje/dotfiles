@@ -1646,11 +1646,11 @@ class PublishersTable(object):
 
         for publisher_data in publishers_data:
             domain = publisher_data['domain']
-            source_id = source_cache_by_slug[publisher_data['exchange']]
-            publisher_data['source_id'] = source_id
-            if [domain, adgroup.id, source_id, constants.PublisherStatus.PENDING] in filtered_publishers:
+            source = source_cache_by_slug[publisher_data['exchange']]
+            publisher_data['source_id'] = source.id
+            if [domain, adgroup.id, source.id, constants.PublisherStatus.PENDING] in filtered_publishers:
                 publisher_data['blacklisted'] = 'Pending'
-            if [domain, adgroup.id, source_id, constants.PublisherStatus.BLACKLISTED] in filtered_publishers:
+            if [domain, adgroup.id, source.id, constants.PublisherStatus.BLACKLISTED] in filtered_publishers:
                 publisher_data['blacklisted'] = 'Blacklisted'
 
         response = {
@@ -1706,6 +1706,7 @@ class PublishersTable(object):
                 'domain_link': domain_link,
                 'blacklisted': publisher_data['blacklisted'],
                 'exchange': source_name,
+                'source_id': publisher_data['source_id'],
                 'cost': publisher_data.get('cost', 0),
                 'cpc': publisher_data.get('cpc', 0),
                 'clicks': publisher_data.get('clicks', None),
