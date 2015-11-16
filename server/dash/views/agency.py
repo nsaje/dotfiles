@@ -50,7 +50,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
+            # TODO this is temp fix and should be reverted
+            'action_is_waiting': False,  # actionlog_api.is_waiting_for_set_actions(ad_group),
         }
 
         return self.create_api_response(response)
