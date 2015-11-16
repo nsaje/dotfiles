@@ -34,7 +34,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
 
   
 
-    $scope.getAllowedMediaSources =  function () {
+    $scope.getAllowedMediaSources = function () {
         var list = [];
         angular.forEach($scope.mediaSourcesData, function(value, key) {
             if(value.allowed){
