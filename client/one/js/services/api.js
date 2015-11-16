@@ -1110,7 +1110,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 name: settings.name,
                 defaultAccountManager: settings.default_account_manager,
                 defaultSalesRepresentative: settings.default_sales_representative,
-                serviceFee: settings.service_fee
+                serviceFee: settings.service_fee,
+                allowedSources: settings.allowed_sources
             };
         }
 

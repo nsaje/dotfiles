@@ -473,6 +473,7 @@ class AccountSettings(SettingsBase):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
+    allowed_sources = ArrayField(models.IntegerField(), default=[])
 
     def save(self, request, *args, **kwargs):
         if self.pk is None:

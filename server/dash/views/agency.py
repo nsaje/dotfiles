@@ -907,6 +907,20 @@ class AccountAgency(api_common.BaseApiView):
         settings.default_sales_representative = resource['default_sales_representative']
         settings.service_fee = helpers.format_percent_to_decimal(resource['service_fee'])
 
+    def get_allowed_sources(self, allowed_sources_ids_list):
+        allowed_sources_dict = {}
+        for source in models.Source.objects.all():
+            source_settings = {'name': source.name}
+            if source.id in allowed_sources_ids_list:
+                source_settings['allowed'] = True
+            
+            if not source_settings.get('allowed', False) and source.deprecated:
+                continue
+
+            allowed_sources_dict[source.id] = source_settings
+        return allowed_sources_dict
+
+
     def get_dict(self, settings, account):
         result = {}
 
@@ -922,6 +936,7 @@ class AccountAgency(api_common.BaseApiView):
                     str(settings.default_sales_representative.id)
                     if settings.default_sales_representative is not None else None,
                 'service_fee': helpers.format_decimal_to_percent(settings.service_fee),
+                'allowed_sources': self.get_allowed_sources(settings.allowed_sources)
             }
 
         return result

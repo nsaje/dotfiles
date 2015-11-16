@@ -23,12 +23,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
     $scope.addUserErrors = null;
     $scope.conversionPixelTagPrefix = '';
 
-    $scope.mediaSourcesData = {
-        'adsnative': {name: 'Ads Native', allowed: true},
-        'outbrain': {name: 'Outbrain', allowed: false},
-        'taboola': {name: 'Taboola', allowed: false},
-        'adbristro': {name: 'Ad Bistro'},
-    };
+    $scope.mediaSourcesData = {};
     $scope.mediaSourcesOrderByProp = 'value';
     $scope.selectedMediaSouces = {allowed:[], available:[]};
 
@@ -109,6 +104,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
         api.accountAgency.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
+                $scope.mediaSourcesData = $scope.settings.allowedSources;
                 $scope.history = data.history;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
