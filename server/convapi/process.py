@@ -42,8 +42,8 @@ def update_touchpoint_conversions_full():
 
     try:
         update_touchpoint_conversions(date_cp_pairs)
-    except:
-        logger.warning('exception updating touchpoint conversions')
+    except Exception:
+        logger.exception('exception updating touchpoint conversions')
         return
 
     # all missing dates are guaranteed to be synced so last sync dt can be updated
