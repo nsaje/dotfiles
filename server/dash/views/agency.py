@@ -872,6 +872,7 @@ class AccountAgency(api_common.BaseApiView):
 
         resource = json.loads(request.body)
 
+
         form = forms.AccountAgencySettingsForm(resource.get('settings', {}))
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
@@ -880,6 +881,7 @@ class AccountAgency(api_common.BaseApiView):
 
         settings = models.AccountSettings()
         self.set_settings(settings, account, form.cleaned_data)
+        self.set_allowed_sources(settings, form.cleaned_data['allowed_sources'])
 
         with transaction.atomic():
             account.save(request)
@@ -899,6 +901,13 @@ class AccountAgency(api_common.BaseApiView):
 
     def set_account(self, account, resource):
         account.name = resource['name']
+
+    def set_allowed_sources(self, settings, allowed_sources_dict):
+        allowed_sources_ids = []
+        for k, v in allowed_sources_dict.iteritems():
+            if v['allowed']:
+                allowed_sources_ids.append(k)
+        settings.allowed_sources = allowed_sources_ids
 
     def set_settings(self, settings, account, resource):
         settings.account = account

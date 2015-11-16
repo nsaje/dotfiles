@@ -1121,7 +1121,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 name: settings.name,
                 default_account_manager: settings.defaultAccountManager,
                 default_sales_representative: settings.defaultSalesRepresentative,
-                service_fee: settings.serviceFee
+                service_fee: settings.serviceFee,
+                allowed_sources: settings.allowedSources
             };
         }
 
@@ -1200,6 +1201,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             var data = {
                 'settings': convertSettingsToApi(settings)
             };
+
+         
 
             $http.put(url, data, config).
                 success(function (data, status) {

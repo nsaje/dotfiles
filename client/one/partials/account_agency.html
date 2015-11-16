@@ -59,16 +59,6 @@
             <label ng-repeat="error in errors.serviceFee" class="control-label error" for="service-fee-select">{{ error }}</label>
         </div>
 
-        <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
-        <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
-        <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the account\'s campaigns have to be paused in order to archive the account.') || '' }}" ng-click="archiveAccount()">Archive account</button>
-        <div class="loader" ng-show="requestInProgress"></div>
-        <span ng-show="saved" class="success">Your updates have been saved.</span>
-        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
-        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
-    </form>
-
-    <div class="form-horizontal">
         <div class="form-group">
             <label for="media-sources-options-choices" class="col-xs-2 control-label">Media Sources <zem-help-popover content="Media sources made available on this account." placement="top"></zem-help-popover></label>
 
@@ -114,7 +104,17 @@
 
             </div>
         </div>
-    </div>
+
+        <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+        <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
+        <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the account\'s campaigns have to be paused in order to archive the account.') || '' }}" ng-click="archiveAccount()">Archive account</button>
+        <div class="loader" ng-show="requestInProgress"></div>
+        <span ng-show="saved" class="success">Your updates have been saved.</span>
+        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
+        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
+    </form>
+
+  
 
     <div class="form-horizontal table-access-permissions" ng-if="hasPermission('zemauth.account_agency_access_permissions')">
         <div class="form-group">

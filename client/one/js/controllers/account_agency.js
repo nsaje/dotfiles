@@ -1,6 +1,7 @@
 /*globals oneApp*/
 oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'zemFilterService', function ($scope, $state, $modal, api, zemFilterService) {
     $scope.settings = {};
+    $scope.settings.allowedSources = {};
     $scope.history = [];
     $scope.conversionPixels = [];
     $scope.canArchive = false;
@@ -23,15 +24,12 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
     $scope.addUserErrors = null;
     $scope.conversionPixelTagPrefix = '';
 
-    $scope.mediaSourcesData = {};
     $scope.mediaSourcesOrderByProp = 'value';
     $scope.selectedMediaSouces = {allowed:[], available:[]};
 
-  
-
     $scope.getAllowedMediaSources = function () {
         var list = [];
-        angular.forEach($scope.mediaSourcesData, function(value, key) {
+        angular.forEach($scope.settings.allowedSources, function(value, key) {
             if(value.allowed){
                 value.value = key;
                 this.push(value);
@@ -42,7 +40,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
 
     $scope.getAvailableMediaSources = function () {
         var list = [];
-        angular.forEach($scope.mediaSourcesData, function(value, key) {
+        angular.forEach($scope.settings.allowedSources, function(value, key) {
             if(!value.allowed){
                 value.value = key;
                 this.push(value);
@@ -52,17 +50,15 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
     };
 
     $scope.addToAllowedMediaSources =  function () {
-        console.log($scope.selectedMediaSouces);
         angular.forEach($scope.selectedMediaSouces.available, function (value, _) {
-            $scope.mediaSourcesData[value].allowed = true;
+            $scope.settings.allowedSources[value].allowed = true;
         });
         $scope.selectedMediaSouces.allowed.length = 0;
     };
 
     $scope.removeFromAllowedMediaSources = function () {
-        console.log($scope.selectedMediaSouces);
         angular.forEach($scope.selectedMediaSouces.allowed, function (value, _) {
-            $scope.mediaSourcesData[value].allowed = false;
+            $scope.settings.allowedSources[value].allowed = false;
         });
         $scope.selectedMediaSouces.available.length = 0;
     };
