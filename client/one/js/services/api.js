@@ -850,20 +850,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             };
         }
 
-        function convertAdGroupSourcesFromApi(adGroupSources) {
-            var sources = [];
-            for (var source, i=0; i < adGroupSources.length; i++) {
-                source = adGroupSources[i];
-                sources.push({
-                    id: source.id,
-                    sourceState: source.source_state,
-                    sourceName: source.source_name
-                });
-            }
-
-            return sources;
-        }
-
         function convertToApi(settings) {
             var targetDevices = [];
             settings.targetDevices.forEach(function (item) {
@@ -929,8 +915,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     }
                     deferred.resolve({
                         settings: resource,
-                        actionIsWaiting: data.data.action_is_waiting,
-                        adGroupSources: convertAdGroupSourcesFromApi(data.data.ad_group_sources)
+                        actionIsWaiting: data.data.action_is_waiting
                     });
                 }).
                 error(function(data, status, headers, config) {
