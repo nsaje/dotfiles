@@ -127,13 +127,12 @@ def _clean_existing_publisher_blacklist(key, level, publishers):
                 campaign__id=campaign_id
             ).values_list('id', flat=True)
 
-
     # we always remove relevant blacklist first
     queryset = dash.models.PublisherBlacklist.objects.none()
     for publisher in publishers:
         match_publisher_blacklist = Q(
             name=publisher['domain'],
-            source__tracking_slug__endswith=publisher['exchange'],
+            source__id=publisher['source_id'],
             source__deprecated=False,
         )
 
@@ -182,17 +181,14 @@ def _update_publisher_blacklist(key, level, publishers):
     source_cache = {}
     for publisher in publishers:
         exchange = publisher['exchange']
-        source = dash.models.Source.objects.filter(
-            tracking_slug__endswith=exchange
-        ).exclude(
-            deprecated=True,
-        ).first()
+        source_id = publisher['source_id']
         if exchange not in source_cache:
+            source = dash.models.Source.objects.get(id=source_id)
             source_cache[exchange] = source
 
         blacklist_entry = models.PublisherBlacklist(
             name=publisher['domain'],
-            source=source_cache[exchange],
+            source=source,
         )
 
         if level == constants.PublisherBlacklistLevel.GLOBAL:
@@ -812,7 +808,8 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
         filtered_blacklist = list(
             map(lambda pub: {
                     'domain': pub['domain'],
-                    'exchange': pub['source'].bidder_slug
+                    'exchange': pub['source'].bidder_slug,
+                    'source_id': pub['source'].id
                 },
                 filtered_blacklist
             )
@@ -861,6 +858,7 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
             list(map(lambda pub: {
                 'domain': pub['domain'],
                 'exchange': pub['source'].tracking_slug.replace('b1_', ''),
+                'source_id': pub['source'].id,
                 'ad_group_id': ad_group.id,
             }, filtered_blacklist))
         )

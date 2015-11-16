@@ -1132,11 +1132,13 @@ class PublisherCallbackTest(TransactionTestCase):
             'state': dash.constants.PublisherStatus.BLACKLISTED,
             'publishers': [{
                 'domain': 'zemanta.com',
-                'exchange': 'adiant'
+                'exchange': 'adiant',
+                'source_id': 7
             },
             {
                 'domain': 'test1.com',
                 'exchange': 'sharethrough',
+                'source_id': 9
             }]
         }
 
@@ -1180,11 +1182,13 @@ class PublisherCallbackTest(TransactionTestCase):
             'state': dash.constants.PublisherStatus.ENABLED,
             'publishers': [{
                 'domain': 'zemanta.com',
-                'exchange': 'adiant'
+                'exchange': 'adiant',
+                'source_id': 7,
             },
             {
                 'domain': 'test1.com',
                 'exchange': 'sharethrough',
+                'source_id': 9,
             }]
         }
 
@@ -1220,11 +1224,13 @@ class PublisherCallbackTest(TransactionTestCase):
             'state': dash.constants.PublisherStatus.ENABLED,
             'publishers': [{
                 'domain': 'zemanta.com',
-                'exchange': 'adiant'
+                'exchange': 'adiant',
+                'source_id': 7,
             },
             {
                 'domain': 'test1.com',
                 'exchange': 'sharethrough',
+                'source_id': 9,
             }]
         }
 
@@ -1253,7 +1259,8 @@ class PublisherCallbackTest(TransactionTestCase):
             'state': dash.constants.PublisherStatus.BLACKLISTED,
             'publishers': [{
                 'domain': 'zemanta.com',
-                'exchange': 'adiant'
+                'exchange': 'adiant',
+                'source_id': 7
             }]
         }
 
@@ -1269,7 +1276,8 @@ class PublisherCallbackTest(TransactionTestCase):
             'state': dash.constants.PublisherStatus.BLACKLISTED,
             'publishers': [{
                 'domain': 'zemanta.com',
-                'exchange': 'adiant'
+                'exchange': 'adiant',
+                'source_id': 7
             }]
         }
 
@@ -1286,7 +1294,8 @@ class PublisherCallbackTest(TransactionTestCase):
             'state': dash.constants.PublisherStatus.BLACKLISTED,
             'publishers': [{
                 'domain': 'zemanta.com',
-                'exchange': 'adiant'
+                'exchange': 'adiant',
+                'source_id': 7
             }]
         }
 
@@ -1304,7 +1313,8 @@ class PublisherCallbackTest(TransactionTestCase):
             'state': dash.constants.PublisherStatus.BLACKLISTED,
             'publishers': [{
                 'domain': 'zemanta.com',
-                'exchange': 'adiant'
+                'exchange': 'adiant',
+                'source_id': 7
             }]
         }
 
