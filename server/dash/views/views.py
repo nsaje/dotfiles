@@ -1177,10 +1177,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         for publisher in publishers:
             domain = publisher['domain']
             if domain not in source_cache:
-               source = models.Source.objects.filter(id=publisher['source_id']).first()
-               source_cache[domain] = source
+               source_cache[domain]  = models.Source.objects.filter(id=publisher['source_id']).first()
+            source = source_cache[domain]
+
             if not source:
-                failed_publisher_mappings.add(publisher['source_id'])
+                failed_publisher_mappings.add(publisher['domain'])
                 count_failed_publisher += 1
                 continue
 

@@ -180,11 +180,10 @@ def _update_publisher_blacklist(key, level, publishers):
 
     source_cache = {}
     for publisher in publishers:
-        exchange = publisher['exchange']
         source_id = publisher['source_id']
-        if exchange not in source_cache:
-            source = dash.models.Source.objects.get(id=source_id)
-            source_cache[exchange] = source
+        if source_id not in source_cache:
+            source_cache[source_id] = dash.models.Source.objects.get(id=source_id)
+        source = source_cache[source_id]
 
         blacklist_entry = models.PublisherBlacklist(
             name=publisher['domain'],
