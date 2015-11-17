@@ -2,6 +2,7 @@ from collections import defaultdict
 import datetime
 from decimal import Decimal
 
+from dateutil import rrule
 from django.db import transaction
 from django.db.models import Sum
 
@@ -69,7 +70,7 @@ def _get_dates(campaign):
 
         from_date += datetime.timedelta(days=1)
 
-    return [from_date + datetime.timedelta(days=i) for i in range((today - from_date).days + 1)]
+    return [dt.date() for dt in rrule.rrule(rrule.DAILY, dtstart=from_date, until=today)]
 
 
 @transaction.atomic
