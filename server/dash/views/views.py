@@ -1309,17 +1309,13 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 if source is None:
                     continue
 
-                if (domain, source_id,) not in existing_blacklisted_publishers and\
-                        state == constants.PublisherStatus.ENABLED:
-                    continue
-
                 if (domain, source_id,) in ignored_publishers:
                     continue
 
                 # store blacklisted publishers and push to other sources
                 new_entry = None
                 existing_entry = models.PublisherBlacklist.objects.filter(
-                    name=publisher['domain'],
+                    name=domain,
                     source=source,
                     everywhere=True
                 ).first()
