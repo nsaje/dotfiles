@@ -16,7 +16,9 @@ import convapi.views
 import reports.views
 
 import dash.views.daily_stats
+import dash.views.bcm
 import dash.views.export
+import dash.views.export_plus
 import dash.views.sync
 import dash.views.table
 import dash.views.agency
@@ -108,6 +110,11 @@ urlpatterns += patterns(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/blacklist/',
         login_required(dash.views.views.PublishersBlacklistStatus.as_view()),
         name='ad_group_publishers_blacklist'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/check_sync_progress/',
+        login_required(dash.views.sync.AdGroupPublisherBlacklistCheckSyncProgress.as_view()),
+        name='ad_group_publishers_blacklist_sync_progress'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
@@ -349,11 +356,79 @@ urlpatterns += patterns(
         r'^api/accounts/$',
         login_required(dash.views.views.Account.as_view()),
     ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/credit/(?P<credit_id>\d+)/',
+        login_required(dash.views.bcm.AccountCreditItemView.as_view()),
+        name='accounts_credit_item',
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/credit/',
+        login_required(dash.views.bcm.AccountCreditView.as_view()),
+        name='accounts_credit'
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/(?P<budget_id>\d+)/',
+        login_required(dash.views.bcm.CampaignBudgetItemView.as_view()),
+        name='campaigns_budget_item'
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/',
+        login_required(dash.views.bcm.CampaignBudgetView.as_view()),
+        name='campaigns_budget'
+    ),
     url(r'^api/nav_data$', login_required(dash.views.views.NavigationDataView.as_view())),
     url(
         r'^api/users/(?P<user_id>(\d+|current))/$',
         login_required(dash.views.views.User.as_view()),
         name='user'
+    ),
+    url(
+        r'^api/(?P<level_>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/export_plus/allowed/',
+        login_required(dash.views.export_plus.ExportAllowed.as_view())
+    ),
+    url(
+        r'^api/(?P<level_>(all_accounts))/export_plus/allowed/',
+        login_required(dash.views.export_plus.ExportAllowed.as_view())
+    ),
+    url(
+        r'^api/(?P<level_>(ad_groups|campaigns|accounts|all_accounts))/(?P<id_>\d+)/sources/export_plus/allowed/',
+        login_required(dash.views.export_plus.SourcesExportAllowed.as_view())
+    ),
+    url(
+        r'^api/(?P<level_>(all_accounts))/sources/export_plus/allowed/',
+        login_required(dash.views.export_plus.SourcesExportAllowed.as_view())
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/export_plus/',
+        login_required(dash.views.export_plus.CampaignAdGroupsExport.as_view())
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/export_plus/',
+        login_required(dash.views.export_plus.AccountCampaignsExport.as_view())
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/export_plus/',
+        login_required(dash.views.export_plus.AdGroupAdsPlusExport.as_view())
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/sources/export_plus/',
+        login_required(dash.views.export_plus.AdGroupSourcesExport.as_view())
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/sources/export_plus/',
+        login_required(dash.views.export_plus.CampaignSourcesExport.as_view())
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/sources/export_plus/',
+        login_required(dash.views.export_plus.AccountSourcesExport.as_view())
+    ),
+    url(
+        r'^api/all_accounts/sources/export_plus/',
+        login_required(dash.views.export_plus.AllAccountsSourcesExport.as_view())
+    ),
+    url(
+        r'^api/accounts/export_plus/',
+        login_required(dash.views.export_plus.AllAccountsExport.as_view())
     )
 )
 

@@ -210,7 +210,6 @@ class NavigationDataView(api_common.BaseApiView):
                     ).lower()
                     ad_group['status'] = constants.AdGroupRunningStatus.get_text(ad_group_settings.get_running_status() if ad_group_settings else constants.AdGroupSettingsState.INACTIVE).lower()
 
-
     def fetch_ad_groups(self, data, user, sources):
         ad_groups = models.AdGroup.objects.all().\
             filter_by_user(user).\
@@ -472,7 +471,7 @@ class AdGroupSources(api_common.BaseApiView):
                                in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)])
 
         return self.create_api_response({
-            'sources': sources,
+            'sources': sorted(sources, key=lambda source: source['name']),
             'sources_waiting': list(sources_waiting),
         })
 
@@ -1047,7 +1046,18 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
         start_date = helpers.parse_datetime(body.get('start_date'))
         end_date = helpers.parse_datetime(body.get('end_date'))
+
         state = int(body.get('state'))
+        if state not in constants.PublisherStatus.get_keys():
+            raise exc.MissingDataError('Invalid state')
+
+        level = body.get('level')
+        if level not in constants.PublisherBlacklistLevel.get_keys():
+            raise exc.MissingDataError('Invalid level')
+
+        if level != constants.PublisherBlacklistLevel.ADGROUP and\
+                not request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status'):
+            raise exc.AuthorizationError()
 
         publishers_selected = body["publishers_selected"]
         publishers_not_selected = body["publishers_not_selected"]
@@ -1055,6 +1065,10 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         select_all = body["select_all"]
         publishers = []
         if select_all:
+            source_cache_by_slug = {
+                'outbrain': models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN)
+            }
+
             # get all publishers from date range with statistics
             # (they represent select-all)
             constraints = {
@@ -1067,121 +1081,267 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 breakdown_fields=breakdown,
                 constraints=constraints
             )
+            for publisher in publishers:
+                source_slug = publisher['exchange']
+                if source_slug not in source_cache_by_slug:
+                    source_cache_by_slug[source_slug] =\
+                        models.Source.objects.get(bidder_slug=source_slug)
+                publisher['source_id'] = source_cache_by_slug[source_slug].id
 
-        existing_blacklisted_publishers = set(models.PublisherBlacklist.objects.filter(
-            ad_group=ad_group
-        ).values_list('name', 'ad_group__id', 'source__tracking_slug'))
 
-        ignored_publishers = set( [(pub['domain'], ad_group.id, pub['source'],)
-            for pub in publishers_not_selected]
-        )
+        # update with pending statuses
+        if level in (constants.PublisherBlacklistLevel.ADGROUP,
+                     constants.PublisherBlacklistLevel.CAMPAIGN,
+                     constants.PublisherBlacklistLevel.ACCOUNT,):
+            self._handle_adgroup_blacklist(request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected)
 
-        publishers_to_add = set([])
+        if level == constants.PublisherBlacklistLevel.GLOBAL:
+            self._handle_global_blacklist(request, ad_group, state, publishers, publishers_selected, publishers_not_selected)
 
-        source_cache = {}
-        failed_publisher_mappings = set([])
-        count_failed_publisher = 0
-        for publisher in publishers + publishers_selected:
-            domain = publisher['domain']
-            # exchange in redshift but source from client selected publishers
-            source_slug = publisher.get('exchange') or publisher.get('source')
-            norm_source_slug = source_slug.lower()
-            if norm_source_slug not in source_cache:
-                if publisher.get('exchange'):
-                    source_cache[norm_source_slug] = models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
-                if publisher.get('source'):
-                    source_cache[norm_source_slug] = models.Source.objects.filter(name__startswith=source_slug).first()
-
-            if not source_cache[norm_source_slug]:
-                failed_publisher_mappings.add(source_slug)
-                count_failed_publisher += 1
-                continue
-
-            publisher_tuple = (domain, ad_group.id, source_cache[norm_source_slug].tracking_slug,)
-            if publisher_tuple in publishers_to_add:
-                continue
-
-            if publisher_tuple in existing_blacklisted_publishers and\
-                    state == constants.PublisherStatus.BLACKLISTED :
-                continue
-
-            if publisher_tuple not in existing_blacklisted_publishers and\
-                    state == constants.PublisherStatus.ENABLED:
-                continue
-
-            if publisher_tuple in ignored_publishers:
-                continue
-
-            publishers_to_add.add((domain, ad_group.id, source_cache[norm_source_slug].tracking_slug, source_cache[norm_source_slug].name))
-
-        if len(failed_publisher_mappings) > 0:
-            logger.warning('Failed mapping {count} publisher source slugs {slug}'.format(
-                count=count_failed_publisher,
-                slug=','.join(failed_publisher_mappings))
-            )
-        publisher_blacklist = [
-            {
-                'domain': dom,
-                'ad_group_id': adgroup_id,
-                'tracking_slug': tracking_slug,
-                'source_name': source_name,
-            }\
-            for (dom, adgroup_id, tracking_slug, source_name,) in publishers_to_add
-        ]
-
-        if len(publisher_blacklist):
-            actionlogs_to_send = []
-            current_settings = ad_group.get_current_settings()
-            new_settings = current_settings.copy_settings()
-
-            with transaction.atomic():
-                new_settings.save(request)
-
-                tracking_code_source_cache = {}
-                for publisher in publisher_blacklist:
-                    # store blacklisted publishers and push to other sources
-                    existing_entry = models.PublisherBlacklist.objects.filter(
-                        name=publisher['domain'],
-                        ad_group=ad_group,
-                        source__tracking_slug=publisher['tracking_slug']
-                    ).first()
-                    if existing_entry is not None:
-                        existing_entry.status = constants.PublisherStatus.PENDING
-                        existing_entry.save()
-                    else:
-                        tracking_slug = publisher['tracking_slug']
-                        if tracking_slug not in tracking_code_source_cache:
-                            tracking_code_source_cache[tracking_slug] =\
-                                models.Source.objects.get(tracking_slug=tracking_slug)
-
-                        models.PublisherBlacklist.objects.create(
-                            name=publisher['domain'],
-                            ad_group=ad_group,
-                            source=tracking_code_source_cache[tracking_slug],
-                            status=constants.PublisherStatus.PENDING
-                        )
-
-                actionlogs_to_send.extend(
-                    api.create_ad_group_publisher_blacklist_actions(
-                        ad_group,
-                        request,
-                        state,
-                        publisher_blacklist,
-                        send=False
-                    )
-                )
-            actionlog.zwei_actions.send(actionlogs_to_send)
-
-        self._add_to_history(request, ad_group, state, publisher_blacklist)
         response = {
             "success": True,
         }
         return self.create_api_response(response)
 
+    def _handle_adgroup_blacklist(self, request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected):
+        ad_group_filter = None
+        if level == constants.PublisherBlacklistLevel.ADGROUP:
+            ad_group_filter = ad_group
+        campaign_filter = None
+        if level == constants.PublisherBlacklistLevel.CAMPAIGN:
+            campaign_filter = ad_group.campaign
+        account_filter = None
+        if level == constants.PublisherBlacklistLevel.ACCOUNT:
+            account_filter = ad_group.campaign.account
+
+        existing_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
+            everywhere=False,
+            account=account_filter,
+            campaign=campaign_filter,
+            ad_group=ad_group_filter
+        ).values('name', 'ad_group__id', 'source__id')
+
+        existing_blacklisted_publishers = map(
+            lambda pub: {
+                'name': pub['name'],
+                'ad_group_id': pub['ad_group__id'],
+                'source_id': pub['source__id']
+            },
+            existing_blacklisted_publishers
+        )
+
+        ignored_publishers = set( [(pub['domain'], ad_group.id, pub['source_id'], )
+            for pub in publishers_not_selected]
+        )
+
+        publishers_to_add = self._create_adgroup_blacklist(
+            ad_group,
+            publishers + publishers_selected,
+            state,
+            level,
+            existing_blacklisted_publishers,
+            ignored_publishers,
+        )
+
+        publisher_blacklist = [
+            {
+                'domain': dom,
+                'ad_group_id': adgroup_id,
+                'source': source,
+            }\
+            for (dom, adgroup_id, source,) in publishers_to_add
+        ]
+
+        if len(publisher_blacklist) > 0:
+            actionlogs_to_send = []
+            with transaction.atomic():
+                actionlogs_to_send.extend(
+                    api.create_publisher_blacklist_actions(
+                        ad_group,
+                        state,
+                        level,
+                        publisher_blacklist,
+                        request,
+                        send=False
+                    )
+                )
+            actionlog.zwei_actions.send(actionlogs_to_send)
+            self._add_to_history(request, ad_group, state, publisher_blacklist)
+
+    def _create_adgroup_blacklist(self, ad_group, publishers, state, level, existing_blacklisted_publishers, ignored_publishers):
+        adgroup_blacklist = set([])
+        failed_publisher_mappings = set([])
+        count_failed_publisher = 0
+        source_cache = {}
+
+        for publisher in publishers:
+            domain = publisher['domain']
+            if domain not in source_cache:
+               source_cache[domain]  = models.Source.objects.filter(id=publisher['source_id']).first()
+            source = source_cache[domain]
+
+            if not source:
+                failed_publisher_mappings.add(publisher['domain'])
+                count_failed_publisher += 1
+                continue
+
+            # we currently display sources for which we don't yet have publisher
+            # blacklisting support
+            if not source.can_modify_publisher_blacklist_automatically():
+                continue
+
+            publisher_tuple = (domain, ad_group.id, source.tracking_slug,)
+            if publisher_tuple in adgroup_blacklist:
+                continue
+
+            if publisher_tuple in existing_blacklisted_publishers and\
+                    state == constants.PublisherStatus.BLACKLISTED:
+                continue
+
+            blacklist_global = False
+            if level == constants.PublisherBlacklistLevel.GLOBAL:
+                blacklist_global = True
+            blacklist_account = None
+            if level == constants.PublisherBlacklistLevel.ACCOUNT:
+                blacklist_account = ad_group.campaign.account
+            blacklist_campaign = None
+            if level == constants.PublisherBlacklistLevel.CAMPAIGN:
+                blacklist_campaign = ad_group.campaign
+            blacklist_ad_group = None
+            if level == constants.PublisherBlacklistLevel.ADGROUP:
+                blacklist_ad_group = ad_group
+
+            # store blacklisted publishers and push to other sources
+            existing_entry = models.PublisherBlacklist.objects.filter(
+                name=publisher['domain'],
+                source=source,
+                everywhere=blacklist_global,
+                account=blacklist_account,
+                campaign=blacklist_campaign,
+                ad_group=blacklist_ad_group
+            ).first()
+            if existing_entry is not None:
+                existing_entry.status = constants.PublisherStatus.PENDING
+                existing_entry.save()
+            else:
+                models.PublisherBlacklist.objects.create(
+                    name=publisher['domain'],
+                    everywhere=blacklist_global,
+                    account=blacklist_account,
+                    campaign=blacklist_campaign,
+                    ad_group=blacklist_ad_group,
+                    source=source,
+                    status=constants.PublisherStatus.PENDING
+                )
+
+            if publisher_tuple in ignored_publishers:
+                continue
+
+            adgroup_blacklist.add(
+                (domain, ad_group.id, source,)
+            )
+        if len(failed_publisher_mappings) > 0:
+            logger.warning('Failed mapping {count} publisher source slugs {slug}'.format(
+                count=count_failed_publisher,
+                slug=','.join(failed_publisher_mappings))
+            )
+        return adgroup_blacklist
+
+    def _handle_global_blacklist(self, request, ad_group, state, publishers, publishers_selected, publishers_not_selected):
+        existing_blacklisted_publishers = set(models.PublisherBlacklist.objects.filter(
+            everywhere=True
+        ).values('name', 'source__tracking_slug'))
+
+        existing_blacklisted_publishers = map(
+            lambda pub: {
+                'name': pub['name'],
+                'source_id': pub['source__id']
+            },
+            existing_blacklisted_publishers
+        )
+
+        ignored_publishers = set([(pub['domain'], pub['source_id'])
+            for pub in publishers_not_selected]
+        )
+
+        global_publishers = self._create_global_blacklist(
+            ad_group,
+            publishers + publishers_selected,
+            state,
+            existing_blacklisted_publishers,
+            ignored_publishers,
+        )
+        global_blacklist = [
+            {
+                'domain': pub.name,
+                'source': pub.source
+            }\
+            for pub in global_publishers
+        ]
+
+        if len(global_blacklist) > 0:
+            actionlogs_to_send = []
+            with transaction.atomic():
+                actionlogs_to_send.extend(
+                    api.create_global_publisher_blacklist_actions(
+                        ad_group,
+                        request,
+                        state,
+                        global_blacklist,
+                        send=False
+                    )
+                )
+            actionlog.zwei_actions.send(actionlogs_to_send)
+            self._add_to_history(request, ad_group, state, global_blacklist)
+
+    def _create_global_blacklist(self, ad_group, publishers, state, existing_blacklisted_publishers, ignored_publishers):
+        blacklist = []
+        source_cache = {}
+        with transaction.atomic():
+            for publisher in publishers:
+                domain = publisher['domain']
+
+                if domain not in existing_blacklisted_publishers and\
+                        state == constants.PublisherStatus.ENABLED:
+                    continue
+
+                if domain in ignored_publishers:
+                    continue
+
+                # exchange in redshift but source from client selected publishers
+                source_slug = publisher.get('exchange') or publisher.get('source')
+                norm_source_slug = source_slug.lower()
+                if norm_source_slug not in source_cache:
+                    if publisher.get('exchange'):
+                        source_cache[norm_source_slug] = models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
+                    if publisher.get('source'):
+                        source_cache[norm_source_slug] = models.Source.objects.filter(name__startswith=source_slug).first()
+
+                # store blacklisted publishers and push to other sources
+                new_entry = None
+                existing_entry = models.PublisherBlacklist.objects.filter(
+                    name=publisher['domain'],
+                    ad_group=ad_group,
+                    source__tracking_slug__endswith=publisher['exchange']
+                ).first()
+                if existing_entry is not None:
+                    existing_entry.status = constants.PublisherStatus.PENDING
+                    existing_entry.save()
+                else:
+                    new_entry = models.PublisherBlacklist.objects.create(
+                        name=publisher['domain'],
+                        source=source_cache[norm_source_slug],
+                        everywhere=True,
+                        status=constants.PublisherStatus.PENDING
+                    )
+
+                blacklist.append(new_entry or existing_entry)
+        return blacklist
+
     def _add_to_history(self, request, ad_group, state, blacklist):
         changes_text = '{action} the following publishers {pubs}.'.format(
             action="Blacklisted" if state == constants.PublisherStatus.BLACKLISTED else "Enabled",
-            pubs=", ".join( ("{pub} on {slug}".format(pub=pub_bl['domain'], slug=pub_bl['source_name'])
+            pubs=", ".join( ("{pub} on {slug}".format(pub=pub_bl['domain'], slug=pub_bl['source'].name)
                  for pub_bl in blacklist)
             )
         )

@@ -59,7 +59,7 @@ oneApp.directive('zemEditableCurrencyField', function() {
                     },
                     $scope.onError
                 );
-            }
+            };
             
             function keyupHandler (e) {
                 if (e.keyCode == 27) {

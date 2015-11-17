@@ -188,6 +188,13 @@ class CleanRowTest(TestCase):
         self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Invalid URL'])
 
+    def test_url_strip(self):
+        self.url = u' http://example.com '
+        data, errors = self._run_clean_row()
+        expected_data = dict(self.default_expected_data)
+        self.assertEqual(data, expected_data)
+        self.assertEqual(errors, [])
+
     def test_unicode_url(self):
         self.url = u'http://exampleś.com'
         data, errors = self._run_clean_row()
@@ -203,6 +210,13 @@ class CleanRowTest(TestCase):
         expected_data.pop('image')
         self.assertEqual(data, expected_data)
         self.assertEqual(errors, ['Invalid Image URL'])
+
+    def test_image_url_strip(self):
+        self.image_url = u' http://example.com/image '
+        data, errors = self._run_clean_row()
+        expected_data = dict(self.default_expected_data)
+        self.assertEqual(data, expected_data)
+        self.assertEqual(errors, [])
 
     def test_invalid_crop_areas(self):
         self.crop_areas = '((((177, 122)))'

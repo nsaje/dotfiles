@@ -70,11 +70,12 @@ def get_adgroup(ad_group_id):
 
 @statsd_helper.statsd_timer('redirector_helper', 'fetch_redirects_impressions')
 def fetch_redirects_impressions(date, account_id, slug, timeout=300):
-    url = settings.R1_CONVERSION_STATS_URL
-    url = url + '?' + urllib.urlencode({'account': account_id, 'slug': slug})
+    url = settings.R1_CONVERSION_STATS_URL.format(date=date.strftime('%Y-%m-%d'),
+                                                  account_id=account_id,
+                                                  slug=slug)
 
     logger.info('Querying redirect impressions')
-    job_id = _call_api_retry(url.format(date=date.strftime('%Y-%m-%d')), method='GET')
+    job_id = _call_api_retry(url, method='GET')
 
     start_time = time.time()
     while (time.time() - start_time) < timeout:

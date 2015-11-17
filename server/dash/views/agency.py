@@ -46,24 +46,12 @@ class AdGroupSettings(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [ad_group])
-        ad_group_sources_states = helpers.get_ad_group_sources_states(active_ad_group_sources)
-
-        ad_group_sources = []
-        for source_state in ad_group_sources_states:
-            ad_group_sources.append({
-                'id': source_state.ad_group_source.id,
-                'source_state': source_state.state,
-                'source_name': source_state.ad_group_source.source.name
-            })
-
         settings = ad_group.get_current_settings()
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
-            'ad_group_sources': ad_group_sources
+            # TODO this is temp fix and should be reverted
+            'action_is_waiting': False,  # actionlog_api.is_waiting_for_set_actions(ad_group),
         }
 
         return self.create_api_response(response)
