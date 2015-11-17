@@ -283,7 +283,7 @@ oneApp.controller('MainCtrl',
             if ($scope.canAccessAllAccounts()) {
                 state = 'main.allAccounts.accounts';
             } else {
-                $scope.accounts.some(function(account) {
+                $scope.accounts.some(function (account) {
                     id = account.id;
 
                     if (id && account.archived === false) {
