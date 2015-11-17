@@ -1748,7 +1748,10 @@ class PublisherBlacklist(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, blank=False, null=False)
-    ad_group = models.ForeignKey(AdGroup, null=False, related_name='ad_group', on_delete=models.PROTECT)
+    everywhere = models.BooleanField(default=False)
+    account = models.ForeignKey(Account, null=True, related_name='account', on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
+    ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
     source = models.ForeignKey(Source, null=False, on_delete=models.PROTECT)
 
     status = models.IntegerField(
@@ -1759,7 +1762,7 @@ class PublisherBlacklist(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
     class Meta:
-        unique_together = (('name', 'ad_group', 'source'), )
+        unique_together = (('name', 'everywhere', 'account', 'campaign', 'ad_group', 'source'), )
 
 
 class CreditLineItem(FootprintModel):
@@ -1862,7 +1865,7 @@ class CreditLineItem(FootprintModel):
             raise ValidationError('New end date cannot be before than the previous.')
         if self.start_date and self.start_date > self.end_date:
             raise ValidationError('Start date cannot be greater than the end date.')
-        
+
     def validate_license_fee(self):
         if not self.license_fee:
             return
@@ -1934,7 +1937,7 @@ class BudgetLineItem(FootprintModel):
         return Decimal('0')
 
     def get_data_spend_amount(self): # TODO: implement
-        return Decimal('0') 
+        return Decimal('0')
 
     def is_editable(self):
         return self.state() == constants.BudgetLineItemState.PENDING
@@ -1973,7 +1976,7 @@ class BudgetLineItem(FootprintModel):
             raise ValidationError('End date cannot be bigger than the credit\'s end date.')
         if self.start_date and self.start_date > self.end_date:
             raise ValidationError('Start date cannot be bigger than the end date.')
-        
+
     def validate_amount(self):
         if not self.amount:
             return
@@ -1987,6 +1990,7 @@ class BudgetLineItem(FootprintModel):
 
 class CreditHistory(HistoryModel):
     credit = models.ForeignKey(CreditLineItem, related_name='history')
+
 
 class BudgetHistory(HistoryModel):
     budget = models.ForeignKey(BudgetLineItem, related_name='history')

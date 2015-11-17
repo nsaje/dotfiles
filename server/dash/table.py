@@ -1566,7 +1566,10 @@ class PublishersTable(object):
                 start_date, end_date,
                 constraints=constraints,
             )
-        elif show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+        elif show_blacklisted_publishers in (
+            constants.PublisherBlacklistFilter.SHOW_ACTIVE,
+            constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
+
             # fetch blacklisted status from db
             adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(ad_group=adgroup)
             adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
@@ -1576,71 +1579,63 @@ class PublishersTable(object):
                 'exchange': entry['source__tracking_slug'].replace('b1_', ''),
             }, adg_blacklisted_publishers)
 
-            publishers_data = reports.api_publishers.query_active_publishers(
-                start_date, end_date,
-                breakdown_fields=['domain', 'exchange'],
-                order_fields=[order],
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-            totals_data = reports.api_publishers.query_active_publishers(
-                start_date, end_date,
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-        elif show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
-            # fetch blacklisted status from db
-            adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(ad_group=adgroup)
-            adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
-            adg_blacklisted_publishers = map(lambda entry: {
-                'domain': entry['name'],
-                'adgroup_id': entry['ad_group__id'],
-                'exchange': entry['source__tracking_slug'].replace('b1_', ''),
-            }, adg_blacklisted_publishers)
+            query_func = None
+            if constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+                query_func = reports.api_publishers.query_active_publishers
+            else:
+                query_func = reports.api_publishers.query_blacklisted_publishers
 
-            publishers_data = reports.api_publishers.query_blacklisted_publishers(
+            publishers_data = query_func(
                 start_date, end_date,
                 breakdown_fields=['domain', 'exchange'],
                 order_fields=[order],
                 constraints=constraints,
                 blacklist=adg_blacklisted_publishers
             )
-            totals_data = reports.api_publishers.query_blacklisted_publishers(
+            totals_data = query_func(
                 start_date, end_date,
                 constraints=constraints,
-                blacklist=adg_blacklisted_publishers
             )
-        else:
-            raise Exception("Unknown filter value")
+
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
         publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(publishers_data, page, size)
 
-        # fetch blacklisted status from db
+        source_cache_by_slug = {
+            'outbrain': models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN)
+        }
+
         pub_blacklist_qs = models.PublisherBlacklist.objects.none()
         for publisher_data in publishers_data:
             publisher_data['blacklisted'] = 'Active'
-            domain, source_slug = publisher_data['domain'], publisher_data['exchange']
+            domain = publisher_data['domain']
+            source_slug = publisher_data['exchange']
+
+            if source_slug not in source_cache_by_slug:
+                source_cache_by_slug[source_slug] =\
+                    models.Source.objects.get(bidder_slug=source_slug)
+
             pub_blacklist_qs |= models.PublisherBlacklist.objects.filter(
                 ad_group=adgroup,
                 name=domain,
-                source__tracking_slug__endswith=source_slug
+                source=source_cache_by_slug[source_slug]
             )
-        blacklisted_publishers = pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug', 'status')
+        blacklisted_publishers = pub_blacklist_qs.values('name', 'ad_group__id', 'source__id', 'status')
         filtered_publishers = []
         for blacklisted_pub in blacklisted_publishers:
             status = blacklisted_pub['status']
             name = blacklisted_pub['name']
             ad_group_id = blacklisted_pub['ad_group__id']
-            slug = blacklisted_pub['source__tracking_slug']
-            slug = slug.replace('b1_', '')
-            filtered_publishers.append([name, ad_group_id, slug, status])
+            source_id = blacklisted_pub['source__id']
+            filtered_publishers.append([name, ad_group_id, source_id, status])
 
         for publisher_data in publishers_data:
-            domain, source_slug = publisher_data['domain'], publisher_data['exchange']
-            if [domain, adgroup.id, source_slug, constants.PublisherStatus.PENDING] in filtered_publishers:
+            domain = publisher_data['domain']
+            source = source_cache_by_slug[publisher_data['exchange']]
+            publisher_data['source_id'] = source.id
+            if [domain, adgroup.id, source.id, constants.PublisherStatus.PENDING] in filtered_publishers:
                 publisher_data['blacklisted'] = 'Pending'
-            if [domain, adgroup.id, source_slug, constants.PublisherStatus.BLACKLISTED] in filtered_publishers:
+            if [domain, adgroup.id, source.id, constants.PublisherStatus.BLACKLISTED] in filtered_publishers:
                 publisher_data['blacklisted'] = 'Blacklisted'
 
         response = {
@@ -1696,6 +1691,7 @@ class PublishersTable(object):
                 'domain_link': domain_link,
                 'blacklisted': publisher_data['blacklisted'],
                 'exchange': source_name,
+                'source_id': publisher_data['source_id'],
                 'cost': publisher_data.get('cost', 0),
                 'cpc': publisher_data.get('cpc', 0),
                 'clicks': publisher_data.get('clicks', None),

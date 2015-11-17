@@ -160,6 +160,6 @@ class AdGroupPublisherBlacklistCheckSyncProgress(api_common.BaseApiView):
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        in_progress = actionlog.api.is_publisher_blacklist_sync_in_progress([ad_group])
+        in_progress = actionlog.api.is_publisher_blacklist_sync_in_progress(ad_group)
 
         return self.create_api_response({'is_sync_in_progress': in_progress})

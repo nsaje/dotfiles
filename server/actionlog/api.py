@@ -123,6 +123,51 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
     return send_delayed_actionlogs([ad_group_source], send=send)
 
 
+def set_publisher_blacklist(key, level, state, publishers, request, source_type, send=True):
+    if not publishers:
+        return []
+
+    action = models.ActionLog(
+        action=constants.Action.SET_PUBLISHER_BLACKLIST,
+        action_type=constants.ActionType.AUTOMATIC,
+        expiration_dt=None,
+        state=constants.ActionState.DELAYED,
+    )
+    action.save(request)
+
+    try:
+        with transaction.atomic():
+            callback = urlparse.urljoin(
+                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+            )
+
+            args = {
+                'key': key,
+                'level': level,
+                'state': state,
+                'publishers': publishers
+            }
+
+            payload = {
+                'action': action.action,
+                'source': source_type.type,
+                'expiration_dt': action.expiration_dt,
+                'args': args,
+                'callback_url': callback,
+            }
+
+            action.payload = payload
+            action.save(request)
+    except Exception as e:
+        logger.exception('An exception occurred while initializing set_publisher_blacklist action.')
+        _handle_error(action, e, request)
+
+        et, ei, tb = sys.exc_info()
+        raise exceptions.InsertActionException, ei, tb
+
+    return send_delayed_actionlogs(send=send)
+
+
 def create_campaign(ad_group_source, name, request, send=True):
     action = None
     try:
@@ -361,21 +406,38 @@ def is_sync_in_progress(ad_groups=None, campaigns=None, accounts=None, sources=N
 
 
 @newrelic.agent.function_trace()
-def is_publisher_blacklist_sync_in_progress(ad_groups):
+def is_publisher_blacklist_sync_in_progress(ad_group):
     '''
     sync is in progress if one of the following is true:
     - a get reports action for this ad_group is in 'waiting' state
     - a fetch status action for this ad_group is in 'waiting' state
     '''
-    if ad_groups == [] or ad_groups is None:
+    if ad_group is None:
         return False
 
+    campaign = ad_group.campaign
+    account = campaign.account
+
+    # limit amount of actionlogs through which to sift
+    yesterday = datetime.utcnow() - timedelta(days=1)
+
     q = models.ActionLog.objects.filter(
-        state=constants.ActionState.WAITING,
-        action_type=constants.ActionType.AUTOMATIC,
-        action=constants.Action.SET_CAMPAIGN_STATE,
-        payload__contains="publisher_blacklist",
-        ad_group_source__ad_group__in=ad_groups
+        Q(
+            state=constants.ActionState.WAITING,
+            action_type=constants.ActionType.AUTOMATIC,
+            action=constants.Action.SET_PUBLISHER_BLACKLIST,
+            created_dt__gte=yesterday
+        ) & Q(
+            Q(ad_group_source__ad_group=ad_group) |
+            Q(Q(
+                Q(payload__contains="level\":\"{level}\"".format(level=dash.constants.PublisherBlacklistLevel.CAMPAIGN)) &
+                Q(payload__contains="\"key\":[{key}".format(key=campaign.id))
+              ) | Q(
+                Q(payload__contains="level\":\"{level}\"".format(level=dash.constants.PublisherBlacklistLevel.ACCOUNT)) &
+                Q(payload__contains="\"key\":[{key}".format(key=account.id))
+              ) | Q(payload__contains="level\":\"{level}\"".format(level=dash.constants.PublisherBlacklistLevel.GLOBAL))
+            )
+        )
     )
 
     waiting_actions = q.exists()
@@ -583,11 +645,11 @@ def _init_fetch_reports(ad_group_source, date, order, request=None):
         et, ei, tb = sys.exc_info()
         raise exceptions.InsertActionException, ei, tb
 
+
 def _init_fetch_reports_by_publisher(ad_group_source, date, order, request=None):
     if not ad_group_source.source.can_fetch_report_by_publisher():
         logger.error('Trying to _init_fetch_reports_by_publisher() on source that does not support it: {}'.format(ad_group_source.id))
         raise exceptions.InsertActionException('Trying to _init_fetch_reports_by_publisher() on source that does not support it: {}'.format(ad_group_source.id))
-
 
     msg = '_init_fetch_reports started: ad_group_source.id: {}, date: {}'.format(
         ad_group_source.id,
@@ -600,7 +662,7 @@ def _init_fetch_reports_by_publisher(ad_group_source, date, order, request=None)
         action_type=constants.ActionType.AUTOMATIC,
         ad_group_source=ad_group_source,
         order=order,
-        expiration_dt=datetime.utcnow() + timedelta(hours = 3)
+        expiration_dt=datetime.utcnow() + timedelta(hours=3)
     )
     action.save(request)
 
