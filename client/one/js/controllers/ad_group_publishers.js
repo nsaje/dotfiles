@@ -44,27 +44,33 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     },{
         name: 'Blacklist in this campaign',
         value: 'blacklist-campaign',
-        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
+            $scope.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
     }, {
         name: 'Re-enable in this campaign',
         value: 'enable-campaign',
-        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
+            $scope.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
     }, {
         name: 'Blacklist in this account',
         value: 'blacklist-account',
-        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
+            $scope.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
     }, {
         name: 'Re-enable in this account',
         value: 'enable-account',
-        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
+            $scope.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
     },{
         name: 'Blacklist globally',
         value: 'blacklist-global',
-        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
+            $scope.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
     }, {
         name: 'Re-enable globally',
         value: 'enable-global',
-        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status')
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
+            $scope.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
     }];
     
     $scope.calculatePublisherHash = function(row) {

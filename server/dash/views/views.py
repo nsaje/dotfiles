@@ -1055,6 +1055,10 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         if level not in constants.PublisherBlacklistLevel.get_keys():
             raise exc.MissingDataError('Invalid level')
 
+        if level != constants.PublisherBlacklistLevel.ADGROUP and\
+                not request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status'):
+            raise exc.AuthorizationError()
+
         publishers_selected = body["publishers_selected"]
         publishers_not_selected = body["publishers_not_selected"]
 
