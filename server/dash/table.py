@@ -1636,6 +1636,10 @@ class PublishersTable(object):
             domain = publisher_data['domain']
             source = source_cache_by_slug.get(publisher_data['exchange']) or publisher_data['exchange']
             publisher_data['source_id'] = source.id if source_cache_by_slug.get(publisher_data['exchange']) is not None else -1
+
+            if source_cache_by_slug.get(publisher_data['exchange']) is None:
+                continue
+
             if [domain, adgroup.id, source.id, constants.PublisherStatus.PENDING] in filtered_publishers:
                 publisher_data['blacklisted'] = 'Pending'
             if [domain, adgroup.id, source.id, constants.PublisherStatus.BLACKLISTED] in filtered_publishers:
