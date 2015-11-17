@@ -84,7 +84,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.setBulkAction = function(level, action, enabled) {
         var prefix = level || '',
-            matchRegex = '^'.concat(prefix, '-', action, '$');
+            matchRegex = new RegExp('^'.concat(prefix, '-', action, '$'));
         
         $scope.bulkActions.forEach(function (bulkAction) {
             if (matchRegex.test(bulkAction.value)) {
@@ -245,10 +245,18 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 }
             }
         });
-        splitAction = action.split('-')
-        action = splitAction[0]
-        level = splitAction[1]
-        bulkUpdatePublishers(publishersSelected, publishersNotSelected, action, level);
+        var splitAction = action.split('-'),
+            action = splitAction[0],
+            level = splitAction[1],
+            state = null;
+
+        
+        if (action == 'enable') {
+            state = constants.publisherStatus.ENABLED;
+        } else {
+            state = constants.publisherStatus.BLACKLISTED;
+        }
+        bulkUpdatePublishers(publishersSelected, publishersNotSelected, state, level);
     };
 
     $scope.columnCategories = [
