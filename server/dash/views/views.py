@@ -1122,11 +1122,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         ).values('name', 'ad_group__id', 'source__id')
 
         existing_blacklisted_publishers = map(
-            lambda pub: {
-                'name': pub['name'],
-                'ad_group_id': pub['ad_group__id'],
-                'source_id': pub['source__id']
-            },
+            lambda pub: (pub['name'], pub['ad_group__id'], pub['source__id'],),
             existing_blacklisted_publishers
         )
 
@@ -1253,10 +1249,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         ).values('name', 'source__id'))
 
         existing_blacklisted_publishers = map(
-            lambda pub: {
-                'name': pub['name'],
-                'source_id': pub['source__id']
-            },
+            lambda pub: (pub['name'], pub['source__id'],),
             existing_blacklisted_publishers
         )
 
@@ -1310,6 +1303,10 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                     continue
 
                 if (domain, source_id,) in ignored_publishers:
+                    continue
+
+                if state == constants.PublisherStatus.BLACKLISTED and\
+                        (domain, source_id,) in existing_blacklisted_publishers:
                     continue
 
                 # store blacklisted publishers and push to other sources
