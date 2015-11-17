@@ -61,7 +61,7 @@ def _get_dates(campaign):
     while True:
         found = False
         for budget in budgets:
-            if budget.start_date <= from_date and budget.end_date >= from_date and\
+            if budget.start_date <= from_date <= budget.end_date and\
                (budget.id not in by_date[from_date] or by_date[from_date][budget.id].dirty):
                 found = True
 
