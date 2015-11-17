@@ -93,7 +93,7 @@ class InsertRedirectTest(TestCase):
 
         call = mock_urlopen.call_args[0][0]
 
-        self.assertEqual(call.get_full_url(), settings.R1_UPDATE_REDIRECT_API_URL.format(redirect_id=redirect_id))
+        self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_API_URL + redirect_id + '/')
         self.assertEqual(call.data, json.dumps({"url": "https://example.com"}))
 
     def test_code_error(self, mock_urlopen):

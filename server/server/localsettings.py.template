@@ -149,7 +149,6 @@ BROKER_TRANSPORT_OPTIONS = {
 
 R1_API_SIGN_KEY = ''
 R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
-R1_UPDATE_REDIRECT_API_URL = 'https://r1.zemanta.com/api/redirects/{redirect_id}/'
 R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
 R1_VALIDATE_API_URL = 'https://r1.zemanta.com/api/validate/'
 R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/'
