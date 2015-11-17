@@ -1250,7 +1250,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
     def _handle_global_blacklist(self, request, ad_group, state, publishers, publishers_selected, publishers_not_selected):
         existing_blacklisted_publishers = set(models.PublisherBlacklist.objects.filter(
             everywhere=True
-        ).values('name', 'source__tracking_slug'))
+        ).values('name', 'source__id'))
 
         existing_blacklisted_publishers = map(
             lambda pub: {
@@ -1301,28 +1301,27 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             for publisher in publishers:
                 domain = publisher['domain']
 
-                if domain not in existing_blacklisted_publishers and\
+                source_id = publisher.get('source_id')
+                if source_id not in source_cache:
+                    source_cache[source_id] = models.Source.objects.filter(id=source_id).first()
+                source = source_cache.get(source_id)
+
+                if source is None:
+                    continue
+
+                if (domain, source_id,) not in existing_blacklisted_publishers and\
                         state == constants.PublisherStatus.ENABLED:
                     continue
 
-                if domain in ignored_publishers:
+                if (domain, source_id,) in ignored_publishers:
                     continue
-
-                # exchange in redshift but source from client selected publishers
-                source_slug = publisher.get('exchange') or publisher.get('source')
-                norm_source_slug = source_slug.lower()
-                if norm_source_slug not in source_cache:
-                    if publisher.get('exchange'):
-                        source_cache[norm_source_slug] = models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
-                    if publisher.get('source'):
-                        source_cache[norm_source_slug] = models.Source.objects.filter(name__startswith=source_slug).first()
 
                 # store blacklisted publishers and push to other sources
                 new_entry = None
                 existing_entry = models.PublisherBlacklist.objects.filter(
                     name=publisher['domain'],
-                    ad_group=ad_group,
-                    source__tracking_slug__endswith=publisher['exchange']
+                    source=source,
+                    everywhere=True
                 ).first()
                 if existing_entry is not None:
                     existing_entry.status = constants.PublisherStatus.PENDING
@@ -1330,11 +1329,10 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 else:
                     new_entry = models.PublisherBlacklist.objects.create(
                         name=publisher['domain'],
-                        source=source_cache[norm_source_slug],
+                        source=source,
                         everywhere=True,
                         status=constants.PublisherStatus.PENDING
                     )
-
                 blacklist.append(new_entry or existing_entry)
         return blacklist
 
