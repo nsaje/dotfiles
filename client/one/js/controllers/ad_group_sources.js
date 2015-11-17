@@ -131,10 +131,11 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             disabled: false
         },
         {
-            name: '',
-            nameCssClass: 'active-circle-icon-gray',
+            name: '\u25CF',
             field: 'status_setting',
             type: 'state',
+            order: true,
+            initialOrder: 'asc',
             enabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             pausedValue: constants.adGroupSourceSettingsState.INACTIVE,
             autopilotEnabledValue: constants.adGroupSourceSettingsAutopilotState.ACTIVE,
@@ -156,7 +157,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                     function (data) {
                         $scope.rows.forEach(function (row) {
                             if (row.id === sourceId) {
-                                row.editable_fields = data.editable_fields
+                                row.editable_fields = data.editable_fields;
                             }
                         });
                         $scope.pollSourcesTableUpdates();
