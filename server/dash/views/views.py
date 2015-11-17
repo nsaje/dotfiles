@@ -471,7 +471,7 @@ class AdGroupSources(api_common.BaseApiView):
                                in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)])
 
         return self.create_api_response({
-            'sources': sources,
+            'sources': sorted(sources, key=lambda source: source['name']),
             'sources_waiting': list(sources_waiting),
         })
 

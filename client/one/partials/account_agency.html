@@ -127,6 +127,7 @@
     <div class="section table-conversion-pixels" ng-if="hasPermission('zemauth.manage_conversion_pixels')">
         <div class="title">
             Set Up Conversion Pixels
+            <zem-help-popover content="A conversion is an action that a person makes while consuming your content such as downloading an eBook, subscribing to a newsletter, adding an item to the shopping, or viewing a particular page." placement="right"></zem-help-popover>
             <div class="loader" ng-show="listPixelsInProgress"></div>
         </div>
         <div class="loader-container" ng-if="conversionPixels.length">
