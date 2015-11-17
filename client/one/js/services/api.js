@@ -2,6 +2,9 @@
 "use strict";
 
 oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, zemFilterService) {
+    function processResponse(resp) {
+        return resp.data.success ? resp.data.data : null;
+    }
     function addFilteredSources(params) {
         if (zemFilterService.getFilteredSources().length > 0) {
             params.filtered_sources = zemFilterService.getFilteredSources().join(',');
@@ -332,12 +335,13 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function AdGroupPublishersState() {
-        this.save = function(id, state, startDate, endDate, publishersSelected, publishersNotSelected, selectedAll) {
+        this.save = function(id, state, level, startDate, endDate, publishersSelected, publishersNotSelected, selectedAll) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/publishers/blacklist/';
 
             $http.post(url, {
                     state: state,
+                    level: level,
                     start_date: startDate,
                     end_date: endDate,
                     select_all: selectedAll,
@@ -572,6 +576,35 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 error(function(data, status, headers, config) {
                     deferred.reject(data);
                 });
+
+            return deferred.promise;
+        };
+    }
+
+    function CheckPublisherBlacklistSyncProgress() {
+        this.get = function(id) {
+            var deferred = $q.defer();
+            var config = {
+                params: {}
+            };
+
+            if (id === undefined) {
+                deferred.reject();
+                return deferred.promise;
+            }
+
+            var url = '/api/ad_groups/' + id + '/publishers/check_sync_progress/';
+            $http.get(url, config).
+                then(
+                    function(response) {
+                        var resource;
+                        if (response && response.data && response.data.success) {
+                            deferred.resolve(response.data);
+                        }
+                    },
+                    function(response) {
+                        deferred.reject(response);
+                    });
 
             return deferred.promise;
         };
@@ -818,20 +851,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             };
         }
 
-        function convertAdGroupSourcesFromApi(adGroupSources) {
-            var sources = [];
-            for (var source, i=0; i < adGroupSources.length; i++) {
-                source = adGroupSources[i];
-                sources.push({
-                    id: source.id,
-                    sourceState: source.source_state,
-                    sourceName: source.source_name
-                });
-            }
-
-            return sources;
-        }
-
         function convertToApi(settings) {
             var targetDevices = [];
             settings.targetDevices.forEach(function (item) {
@@ -897,8 +916,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     }
                     deferred.resolve({
                         settings: resource,
-                        actionIsWaiting: data.data.action_is_waiting,
-                        adGroupSources: convertAdGroupSourcesFromApi(data.data.ad_group_sources)
+                        actionIsWaiting: data.data.action_is_waiting
                     });
                 }).
                 error(function(data, status, headers, config) {
@@ -2540,6 +2558,188 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         return notifications;
     }
 
+
+    function AccountCredit() {
+        var self = this;
+        this.convert = {
+            dataFromApi: function (obj) {
+                return {
+                    createdBy: obj.created_by,
+                    createdOn: obj.created_on && moment(obj.created_on,
+                                                        'YYYY-MM-DD').format('MM/DD/YYYY'),
+                    startDate: obj.start_date && moment(obj.start_date,
+                                                        'YYYY-MM-DD').format('MM/DD/YYYY'),
+                    endDate: obj.end_date && moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                    isSigned: obj.is_signed,
+                    account: obj.account_id,
+                    licenseFee: obj.license_fee,
+                    total: obj.total,
+                    comment: obj.comment,
+                    allocated: obj.allocated,
+                    available: obj.available,
+                    amount: obj.amount,
+                    budgets: (obj.budgets || []).map(function (itm) {
+                        return {
+                            id: itm.id,
+                            startDate: moment(itm.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                            endDate: moment(itm.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                            total: itm.total,
+                            spend: itm.spend,
+                            campaign: itm.campaign
+                        };
+                    }),
+                    numOfBudgets: (obj.budgets || []).length,
+                    id: obj.id
+                };
+            },
+            dataToApi: function (obj) {
+                return {
+                    start_date: obj.startDate && moment(obj.startDate).format('YYYY-MM-DD'),
+                    end_date: obj.endDate && moment(obj.endDate).format('YYYY-MM-DD'),
+                    amount: obj.amount,
+                    license_fee: obj.licenseFee,
+                    comment: obj.comment,
+                    account: obj.account,
+                    is_signed: obj.isSigned
+                };
+            },
+            errors: function (resp) {
+                return {
+                    startDate: resp.data.data.errors.start_date,
+                    endDate: resp.data.data.errors.end_date,
+                    amount: resp.data.data.errors.amount,
+                    licenseFee: resp.data.data.errors.license_fee,
+                    comment: resp.data.data.errors.comment
+                };
+            }
+        };
+        
+        this.list = function (accountId) {
+            var url = '/api/accounts/' + accountId + '/credit/';
+            return $http.get(url).then(processResponse).then(function (data) {
+                if (data === null) { return null; }
+                return {
+                    active: data.active.map(self.convert.dataFromApi),
+                    past: data.past.map(self.convert.dataFromApi),
+                    totals: data.totals
+                };
+            });
+        };
+
+        this.create = function (accountId, item) {
+            var url = '/api/accounts/' + accountId + '/credit/';
+            return $http.put(url, self.convert.dataToApi(item)).then(processResponse);
+        };
+        
+        this.save = function (accountId, item) {
+            var url = '/api/accounts/' + accountId + '/credit/' + item.id + '/';
+            return $http.post(url, self.convert.dataToApi(item)).then(processResponse);
+        };
+
+        this.get = function (accountId, itemId) {
+            var url = '/api/accounts/' + accountId + '/credit/' + itemId + '/';
+            return $http.get(url).then(processResponse).then(self.convert.dataFromApi);
+        };
+
+        this.delete = function (accountId, itemId) {
+            var url = '/api/accounts/' + accountId + '/credit/' + itemId + '/';
+            return $http.delete(url).then(processResponse).then(self.convert.dataFromApi);
+        };
+    }
+
+    function CampaignBudgetPlus() {
+        var self = this;
+        this.convert = {
+            dataFromApi: function (obj) {
+                return {
+                    id: obj.id,
+                    credit: obj.credit,
+                    amount: obj.amount,
+                    startDate: moment(obj.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                    endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                    total: obj.total || obj.amount,
+                    licenseFee: obj.license_fee,
+                    createdBy: obj.created_by,
+                    createdOn: moment(obj.created_at).format('MM/DD/YYYY'),
+                    spend: obj.spend,
+                    state: obj.state,
+                    isEditable: obj.is_editable,
+                    available: obj.available,
+                    comment: obj.comment
+                };
+            },
+            dataToApi: function (obj) {
+                return {
+                    credit: obj.credit.id,
+                    amount: obj.amount,
+                    start_date: moment(obj.startDate).format('YYYY-MM-DD'),
+                    end_date: moment(obj.endDate).format('YYYY-MM-DD'),
+                    comment: obj.comment
+                };
+            },
+            error: function (resp) {
+                if (! resp.data.data.errors) { return null; }
+                return {
+                    amount: resp.data.data.errors.amount,
+                    startDate: resp.data.data.errors.start_date,
+                    endDate: resp.data.data.errors.end_date,
+                    comment: resp.data.data.errors.comment,
+                    credit: resp.data.data.errors.credit
+                };
+            }
+        };
+        
+        this.list = function (campaignId) {
+            var url = '/api/campaigns/' + campaignId + '/budget-plus/';
+            return $http.get(url).then(processResponse).then(function (data) {
+                if (data === null) { return null; }
+                return {
+                    active: data.active.map(self.convert.dataFromApi),
+                    past: data.past.map(self.convert.dataFromApi),
+                    totals: {
+                        currentAvailable: data.totals.current.available,
+                        currentUnallocated: data.totals.current.unallocated,
+                        lifetimeCampaignSpend: data.totals.lifetime.campaign_spend,
+                        lifetimeMediaSpend: data.totals.lifetime.media_spend,
+                        lifetimeDataSpend: data.totals.lifetime.data_spend,
+                        lifetimeLicenseFee: data.totals.lifetime.license_fee
+                    },
+                    credits: data.credits.map(function (obj) {
+                        return {
+                            licenseFee: obj.license_fee,
+                            total: obj.total,
+                            available: obj.available,
+                            startDate: moment(obj.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                            endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
+                            id: obj.id,
+                            isAvailable: obj.is_available
+                        };
+                    })
+                };
+            });
+        };
+
+        this.create = function (campaignId, budget) {
+            var url = '/api/campaigns/' + campaignId + '/budget-plus/';
+            return $http.put(url, self.convert.dataToApi(budget)).then(processResponse);
+        };
+        
+        this.save = function (campaignId, budget) {
+            var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budget.id + '/';
+            return $http.post(url, self.convert.dataToApi(budget)).then(processResponse);
+        };
+
+        this.get = function (campaignId, budgetId) {
+            var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budgetId + '/';
+            return $http.get(url).then(processResponse).then(self.convert.dataFromApi);
+        };
+
+        this.delete = function (campaignId, budgetId) {
+            var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budgetId + '/';
+            return $http.delete(url).then(processResponse).then(self.convert.dataFromApi);
+        };
+    }
+
     return {
         navData: new NavData(),
         user: new User(),
@@ -2573,6 +2773,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),
         checkCampaignSyncProgress: new CheckCampaignSyncProgress(),
         checkSyncProgress: new CheckSyncProgress(),
+        checkPublisherBlacklistSyncProgress: new CheckPublisherBlacklistSyncProgress(),
         userActivation: new UserActivation(),
         dailyStats: new DailyStats(),
         allAccountsBudget: new AllAccountsBudget(),
@@ -2588,7 +2789,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         conversionPixel: new ConversionPixel(),
         conversionGoal: new ConversionGoal(),
         adGroupContentAdState: new AdGroupContentAdState(),
-        adGroupContentAdArchive: new AdGroupContentAdArchive()
+        adGroupContentAdArchive: new AdGroupContentAdArchive(),
+        accountCredit: new AccountCredit(),
+        campaignBudgetPlus: new CampaignBudgetPlus()
         // Also, don't forget to add me to DEMO!
     };
 }]);

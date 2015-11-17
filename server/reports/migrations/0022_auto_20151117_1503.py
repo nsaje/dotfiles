@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0085_account_uses_credits'),
+        ('dash', '0089_account_uses_credits'),
         ('reports', '0021_auto_20150923_1124'),
     ]
 
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='BudgetDailyStatement',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('spend', models.DecimalField(max_digits=14, decimal_places=4)),
+                ('spend', models.DecimalField(max_digits=16, decimal_places=6)),
                 ('date', models.DateField()),
                 ('dirty', models.BooleanField(default=False)),
                 ('budget', models.ForeignKey(to='dash.BudgetLineItem')),

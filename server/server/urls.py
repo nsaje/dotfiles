@@ -16,6 +16,7 @@ import convapi.views
 import reports.views
 
 import dash.views.daily_stats
+import dash.views.bcm
 import dash.views.export
 import dash.views.export_plus
 import dash.views.sync
@@ -109,6 +110,11 @@ urlpatterns += patterns(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/blacklist/',
         login_required(dash.views.views.PublishersBlacklistStatus.as_view()),
         name='ad_group_publishers_blacklist'
+    ),
+    url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/publishers/check_sync_progress/',
+        login_required(dash.views.sync.AdGroupPublisherBlacklistCheckSyncProgress.as_view()),
+        name='ad_group_publishers_blacklist_sync_progress'
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads/export/allowed/',
@@ -349,6 +355,26 @@ urlpatterns += patterns(
     url(
         r'^api/accounts/$',
         login_required(dash.views.views.Account.as_view()),
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/credit/(?P<credit_id>\d+)/',
+        login_required(dash.views.bcm.AccountCreditItemView.as_view()),
+        name='accounts_credit_item',
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/credit/',
+        login_required(dash.views.bcm.AccountCreditView.as_view()),
+        name='accounts_credit'
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/(?P<budget_id>\d+)/',
+        login_required(dash.views.bcm.CampaignBudgetItemView.as_view()),
+        name='campaigns_budget_item'
+    ),
+    url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/',
+        login_required(dash.views.bcm.CampaignBudgetView.as_view()),
+        name='campaigns_budget'
     ),
     url(r'^api/nav_data$', login_required(dash.views.views.NavigationDataView.as_view())),
     url(

@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0084_contentad_crop_areas'),
+        ('dash', '0088_merge'),
     ]
 
     operations = [

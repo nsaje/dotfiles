@@ -11,6 +11,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
             // this tab is only shown for archived campaigns
             {heading: 'Settings', route: 'main.campaigns.archived', active: false, hidden: $scope.hasPermission('zemauth.campaign_settings_view') || !$scope.hasPermission('zemauth.view_archived_entities') || !$scope.campaign || !$scope.campaign.archived, internal: false},
             {heading: 'Campaign', route: 'main.campaigns.settings', active: false, hidden: !$scope.hasPermission('zemauth.campaign_settings_view'), internal: $scope.isPermissionInternal('zemauth.campaign_settings_view')},
+            {heading: 'Budget +', route: 'main.campaigns.budget_plus', active: false, hidden: !$scope.hasPermission('zemauth.campaign_budget_view'), internal: $scope.isPermissionInternal('zemauth.campaign_budget_view')}
         ];
     };
     $scope.setActiveTab = function () {
