@@ -8,7 +8,6 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0037_auto_20141001_1141'),
         ('reports', '0007_auto_20140904_0648'),
     ]
 

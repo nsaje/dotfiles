@@ -3,8 +3,10 @@
 import datetime
 import json
 from mock import patch
+from django.contrib.auth import models as authmodels
 
-from django.test import TestCase
+from django.http.request import HttpRequest
+from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
@@ -12,12 +14,18 @@ from utils.test_helper import QuerySetMatcher
 from zemauth.models import User
 from dash import models
 from dash import constants
-from dash import views
+from dash import table
 from actionlog.models import ActionLog
 import actionlog.constants
 
+import reports.redshift as redshift
 
-@patch('dash.views.table.reports.api_contentads.query')
+
+@override_settings(
+    R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/1/{content_ad_id}/'
+)
+@patch('dash.table.reports.api_touchpointconversions.query')
+@patch('dash.table.reports.api_contentads.query')
 class AdGroupAdsPlusTableTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
@@ -30,17 +38,31 @@ class AdGroupAdsPlusTableTest(TestCase):
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
-    def test_get(self, mock_query):
+        self.patcher = patch('reports.api_contentads.has_complete_postclick_metrics')
+        mock_has_complete_postclick_metrics = self.patcher.start()
+        mock_has_complete_postclick_metrics.return_value = True
+
+    def tearDown(self):
+        self.patcher.stop()
+
+    def test_get(self, mock_query, mock_touchpointconversins_query):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
+            'ctr': '12.5000',
+            'content_ad': 1,
             'date': date.isoformat(),
             'cpc': '0.0100',
             'clicks': 1000,
             'impressions': 1000000,
             'cost': 100,
-            'ctr': '12.5000',
-            'content_ad': 1
+            'visits': 40,
+            'click_discrepancy': 0.2,
+            'pageviews': 123,
+            'percent_new_users': 33.0,
+            'bounce_rate': 12.0,
+            'pv_per_visit': 0.9,
+            'avg_tos': 1.0,
         }]
         mock_stats2 = {
             'date': date.isoformat(),
@@ -49,7 +71,14 @@ class AdGroupAdsPlusTableTest(TestCase):
             'impressions': 2000000,
             'cost': 200,
             'ctr': '15.5000',
-            'content_ad': 1
+            'content_ad': 2,
+            'visits': 30,
+            'click_discrepancy': 0.1,
+            'pageviews': 122,
+            'percent_new_users': 32.0,
+            'bounce_rate': 11.0,
+            'pv_per_visit': 0.8,
+            'avg_tos': 0.9,
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -75,6 +104,9 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
+            order=[],
+            ignore_diff_rows=True,
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
             ad_group=ad_group,
             source=sources_matcher
         )
@@ -83,6 +115,10 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             ad_group=ad_group,
+            breakdown=[],
+            order=[],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            ignore_diff_rows=True,
             source=sources_matcher
         )
 
@@ -114,7 +150,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         for row in result['data']['rows']:
             row['submission_status'] = sorted(row['submission_status'])
 
-        self.assertItemsEqual(result['data']['rows'], [{
+        expected_row_1 = {
             'batch_name': 'batch 1',
             'archived': False,
             'batch_id': 1,
@@ -123,6 +159,8 @@ class AdGroupAdsPlusTableTest(TestCase):
             'description': 'Example description',
             'call_to_action': 'Call to action',
             'clicks': 1000,
+            'conversion_goal_1': 0,
+            'conversion_goal_2': None,
             'cost': 100,
             'cpc': '0.0100',
             'ctr': '12.5000',
@@ -144,19 +182,33 @@ class AdGroupAdsPlusTableTest(TestCase):
                 'status': 2,
                 'source_state': '(paused)',
                 'text': 'Approved / Paused'
+            }, {
+                'name': 'Sharethrough',
+                'status': 1,
+                'source_state': '',
+                'text': 'Pending / Paused',
             }],
             'title': u'Test Article unicode Čžš',
             'upload_time': '2015-02-22T19:00:00',
             'url': 'http://testurl.com',
-            'url_with_tracking_codes': 'http://testurl.com?param1=foo&param2=bar&_z1_adgid=1&_z1_msid=z1',
-        }, {
+            'redirector_url': 'http://example.com/b/abc/z1/1/1/',
+            'visits': 40,
+            'click_discrepancy': 0.2,
+            'pageviews': 123,
+            'percent_new_users': 33.0,
+            'bounce_rate': 12.0,
+            'pv_per_visit': 0.9,
+            'avg_tos': 1.0,
+        }
+
+        expected_row_2 = {
             'archived': False,
             'status_setting': 2,
             'upload_time': '2015-02-22T19:00:00',
             'ctr': None,
             'title': 'Test Article with no content_ad_sources 1',
             'url': 'http://testurl.com',
-            'url_with_tracking_codes': 'http://testurl.com?param1=foo&param2=bar&_z1_adgid=1&_z1_msid=z1',
+            'redirector_url': 'http://example.com/b/abc/z1/1/2/',
             'clicks': None,
             'cpc': None,
             'image_urls': {
@@ -172,16 +224,35 @@ class AdGroupAdsPlusTableTest(TestCase):
             'description': 'Example description',
             'call_to_action': 'Call to action',
             'impressions': None,
-            'id': '2'
-        }])
+            'id': '2',
+            'visits': None,
+            'click_discrepancy': None,
+            'pageviews': None,
+            'percent_new_users': None,
+            'bounce_rate': None,
+            'pv_per_visit': None,
+            'avg_tos': None,
+        }
+
+        self.assertItemsEqual(sorted(result['data']['rows']), [expected_row_1, expected_row_2])
 
         self.assertIn('totals', result['data'])
+
         self.assertEqual(result['data']['totals'], {
             'clicks': 1500,
+            'conversion_goal_1': 0,
+            'conversion_goal_2': None,
             'cost': 200,
             'cpc': '0.0200',
             'ctr': '15.5000',
-            'impressions': 2000000
+            'impressions': 2000000,
+            'visits': 30,
+            'click_discrepancy': 0.1,
+            'pageviews': 122,
+            'percent_new_users': 32.0,
+            'bounce_rate': 11.0,
+            'pv_per_visit': 0.8,
+            'avg_tos': 0.9,
         })
 
         batches = models.UploadBatch.objects.filter(
@@ -192,7 +263,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertIn('batches', result['data'])
         self.assertEqual(result['data']['batches'], [])
 
-    def test_get_filtered_sources(self, mock_query):
+    def test_get_filtered_sources(self, mock_query, mock_touchpointconversions_query):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
@@ -238,13 +309,20 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
+            order=[],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
             ad_group=ad_group,
+            ignore_diff_rows=True,
             source=sources_matcher
         )
 
         mock_query.assert_any_call(
             date,
             date,
+            breakdown=[],
+            order=[],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources_matcher
         )
@@ -260,7 +338,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertEqual(len(result['data']['rows']), 1)
         self.assertEqual(result['data']['rows'][0]['id'], '1')
 
-    def test_get_order(self, mock_query):
+    def test_get_order(self, mock_query, mock_touchpointconversions_query):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
@@ -305,6 +383,9 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             breakdown=['content_ad'],
+            order=[],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            ignore_diff_rows=True,
             ad_group=ad_group,
             source=sources_matcher
         )
@@ -313,6 +394,10 @@ class AdGroupAdsPlusTableTest(TestCase):
             date,
             date,
             ad_group=ad_group,
+            breakdown=[],
+            order=[],
+            conversion_goals=[cg.get_stats_key() for cg in ad_group.campaign.conversiongoal_set.exclude(type=constants.ConversionGoalType.PIXEL)],
+            ignore_diff_rows=True,
             source=sources_matcher
         )
 
@@ -331,7 +416,7 @@ class AdGroupAdsPlusTableTest(TestCase):
         self.assertEqual(result['data']['rows'][0]['title'], u'Test Article with no content_ad_sources 1')
         self.assertEqual(result['data']['rows'][1]['title'], u'Test Article unicode \u010c\u017e\u0161')
 
-    def test_get_batches(self, mock_query):
+    def test_get_batches(self, mock_query, mock_touchpointconversions_query):
         ad_group = models.AdGroup.objects.get(pk=1)
         date = datetime.date(2015, 2, 22)
 
@@ -382,7 +467,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'name': 'batch 1'
         }])
 
-    def test_get_batches_without_permission(self, mock_query):
+    def test_get_batches_without_permission(self, mock_query, mock_touchpointconversions_query):
 
         # login without superuser permissions
         self.user = User.objects.get(pk=2)
@@ -446,56 +531,6 @@ class AdGroupAdsPlusTableTest(TestCase):
         })
 
         self.assertIn('rows', result['data'])
-
-    def test_get_ga_codes_disabled(self, mock_query):
-        self.user = User.objects.get(pk=1)
-        self.client.login(username=self.user.email, password='secret')
-
-        ad_group = models.AdGroup.objects.get(pk=2)
-        date = datetime.date(2015, 2, 22)
-
-        mock_stats1 = [{
-            'date': date.isoformat(),
-            'cpc': '0.0100',
-            'clicks': 1000,
-            'impressions': 1000000,
-            'cost': 100,
-            'ctr': '12.5000',
-            'content_ad': 1
-        }]
-        mock_stats2 = {
-            'date': date.isoformat(),
-            'cpc': '0.0200',
-            'clicks': 1500,
-            'impressions': 2000000,
-            'cost': 200,
-            'ctr': '15.5000',
-            'content_ad': 1
-        }
-        mock_query.side_effect = [mock_stats1, mock_stats2]
-
-        params = {
-            'page': 1,
-            'order': '-title',
-            'size': 2,
-            'start_date': date.isoformat(),
-            'end_date': date.isoformat(),
-        }
-
-        uploadBatches = models.UploadBatch.objects.filter(id__in=(1, 2))
-        for batch in uploadBatches:
-            batch.status = constants.UploadBatchStatus.DONE
-            batch.save()
-
-        response = self.client.get(
-            reverse('ad_group_ads_plus_table', kwargs={'ad_group_id': ad_group.id}),
-            params,
-            follow=True
-        )
-
-        result = json.loads(response.content)
-
-        self.assertEqual(result['data']['rows'][0]['url_with_tracking_codes'], 'http://testurl.com?param1=foo&param2=bar')
 
 
 class AdGroupAdsPlusTableUpdatesTest(TestCase):
@@ -564,6 +599,11 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
                     'source_state': '(paused)',
                     'text': 'Approved / Paused',
                     'name': 'Gravity'
+                }, {
+                    'status': 1,
+                    'source_state': '',
+                    'text': 'Pending / Paused',
+                    'name': 'Sharethrough'
                 }],
                 'status_setting': 1
             }
@@ -578,8 +618,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
         ad_group_source.source.source_type.available_actions = [
             constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
 
-        view = views.table.SourcesTable()
-        result = view._get_supply_dash_url(ad_group_source)
+        result = ad_group_source.get_supply_dash_url()
 
         self.assertEqual(result, '/supply_dash/?ad_group_id=1&source_id=1')
 
@@ -587,8 +626,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = []
 
-        view = views.table.SourcesTable()
-        result = view._get_supply_dash_url(ad_group_source)
+        result = ad_group_source.get_supply_dash_url()
 
         self.assertIsNone(result)
 
@@ -598,8 +636,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
             constants.SourceAction.HAS_3RD_PARTY_DASHBOARD]
         ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
 
-        view = views.table.SourcesTable()
-        result = view._get_supply_dash_url(ad_group_source)
+        result = ad_group_source.get_supply_dash_url()
 
         self.assertIsNone(result)
 
@@ -609,7 +646,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
             constants.SourceAction.HAS_3RD_PARTY_DASHBOARD
         ]
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_supply_dash_disabled_message(ad_group_source)
 
         self.assertIsNone(result)
@@ -618,7 +655,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source.source.source_type.available_actions = []
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_supply_dash_disabled_message(ad_group_source)
 
         self.assertEqual(result,
@@ -632,7 +669,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
         ]
         ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
 
-        view = views.table.SourcesTable()
+        view = table.SourcesTable()
         result = view._get_supply_dash_disabled_message(ad_group_source)
 
         self.assertEqual(result,
@@ -640,237 +677,286 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
                          "media source is still being set up for this ad group.")
 
 
-class AdGroupSourceTableEditableFieldsTest(TestCase):
-    fixtures = ['test_api.yaml']
+@override_settings(
+    R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/1/{content_ad_id}/'
+)
+@patch('dash.table.reports.api_publishers.query')
+class AdGroupPublishersTableTest(TestCase):
+    fixtures = ['test_api.yaml', 'test_views.yaml']
 
-    class DatetimeMock(datetime.datetime):
-        @classmethod
-        def utcnow(cls):
-            return datetime.datetime(2015, 6, 5, 13, 22, 23)
+    def setUp(self):
+        password = 'secret'
+        self.user = User.objects.get(pk=1)
+        self.client.login(username=self.user.email, password=password)
 
-    def test_get_editable_fields_status_setting_enabled(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
-        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        self.maxDiff = None
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+    def test_get(self, mock_query):
+        date = datetime.date(2015, 2, 22)
 
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
+        mock_stats1 = [{
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+         'domain': 'example.com',
+         'exchange': 'adiant',
+        }]
+        mock_stats2 = {
+         'clicks': 323,
+         'cost': 2.1,
+         'cpc': 1.2,
+         'ctr': 99.0,
+         'impressions': 1560,
+         'date': date.isoformat(),
+        }
+        mock_query.side_effect = [mock_stats1, mock_stats2]
 
-        view = views.table.SourcesTable()
-        result = view._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+        ad_group = models.AdGroup.objects.get(pk=1)
 
-        self.assertEqual(result, {
-            'enabled': True,
-            'message': None
+        params = {
+            'page': 1,
+            'order': 'domain',
+            'size': 2,
+            'start_date': date.isoformat(),
+            'end_date': date.isoformat(),
+        }
+
+        response = self.client.get(
+            reverse('ad_group_publishers_table', kwargs={'id_': ad_group.id, 'level_': 'ad_groups'}),
+            params,
+            follow=True
+        )
+
+        sources_matcher = QuerySetMatcher(models.Source.objects.all())
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['domain'],
+            constraints={'ad_group': ad_group.id}
+        )
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            constraints={"ad_group": ad_group.id},
+        )
+
+        result = json.loads(response.content)
+
+        self.assertIn('success', result)
+        self.assertEqual(result['success'], True)
+
+        self.assertIn('data', result)
+
+        self.assertIn('order', result['data'])
+        self.assertEqual(result['data']['order'], 'domain')
+
+        self.assertIn('pagination', result['data'])
+        self.assertEqual(result['data']['pagination'], {
+            'count': 1,
+            'currentPage': 1,
+            'endIndex': 1,
+            'numPages': 1,
+            'size': 2,
+            'startIndex': 1
         })
 
-    def test_get_editable_fields_status_setting_disabled(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
-        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        self.assertIn('rows', result['data'])
 
-        ad_group_source.source.source_type.available_actions = []
+        expected_row_1 = {
+            u'clicks': 123,
+            u'cost': 2.4,
+            u'cpc': 1.3,
+            u'ctr': 100.0,
+            u'domain': None,
+            u'domain_link': u'',
+            u'blacklisted': u'Active',
+            u'exchange': 'Adiant',
+            u'source_id': 7,
+            u'impressions': 10560,
+            u'domain': 'example.com',
+            u'domain_link': 'http://example.com',
+        }
 
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
+        self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
 
-        view = views.table.SourcesTable()
-        result = view._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+        self.assertIn('totals', result['data'])
 
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'This source must be managed manually.'
-        })
+        self.assertEqual(result['data']['totals'], {	u'clicks': 323,
+                                                        u'cost': 2.1,
+                                                        u'cpc': 1.2,
+                                                        u'ctr': 99.0,
+                                                        u'impressions': 1560})
 
-    def test_get_editable_fields_status_setting_maintenance(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
-        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+    def test_get_filtered_sources(self, mock_query):
+        date = datetime.date(2015, 2, 22)
 
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
-        ad_group_source.source.maintenance = True
+        mock_stats1 = [{
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+         'domain': 'example.com',
+         'exchange': 'adsnative',
+        }]
+        mock_stats2 = {
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+        }
+        mock_query.side_effect = [mock_stats1, mock_stats2]
 
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
+        ad_group = models.AdGroup.objects.get(pk=1)
 
-        view = views.table.SourcesTable()
-        result = view._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+        params = {
+            'page': 1,
+            'order': 'domain',
+            'size': 2,
+            'start_date': date.isoformat(),
+            'end_date': date.isoformat(),
+            'filtered_sources': '1'
+        }
 
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'This source is currently in maintenance mode.'
-        })
+        response = self.client.get(
+            reverse('ad_group_publishers_table', kwargs={'id_': ad_group.id, 'level_': 'ad_groups'}),
+            params,
+            follow=True
+        )
 
-    def test_get_editable_fields_status_setting_no_cms_support(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
-        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        mock_query.assert_any_call(
+            date,
+            date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['domain'],
+            constraints={'ad_group': ad_group.id,
+                        'exchange': ['adsnative']}
+        )
 
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        mock_query.assert_any_call(
+            date,
+            date,
+            constraints = {"ad_group": ad_group.id,
+                        'exchange': ['adsnative']}
+        )
 
-        ad_group_source.ad_group.content_ads_tab_with_cms = True
+        result = json.loads(response.content)
 
-        ad_group_source.can_manage_content_ads = False
+        self.assertIn('success', result)
+        self.assertEqual(result['success'], True)
 
-        view = views.table.SourcesTable()
-        result = view._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+        self.assertIn('data', result)
 
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'Please contact support to enable this source.'
-        })
+        self.assertIn('rows', result['data'])
+        self.assertEqual(len(result['data']['rows']), 1)
+        self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'AdsNative', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123, u'source_id': 1})
 
-    def test_get_editable_fields_status_setting_no_dma_support(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
-        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+    def test_get_reverse_order(self, mock_query):
+        date = datetime.date(2015, 2, 22)
 
-        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
-        ad_group_settings.target_regions = ['693']
+        mock_stats1 = [{
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+         'domain': 'example.com',
+         'exchange': 'adiant',
+        }]
+        mock_stats2 = {
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+        }
+        mock_query.side_effect = [mock_stats1, mock_stats2]
 
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
-        ad_group_source.ad_group.content_ads_tab_with_cms = False
+        ad_group = models.AdGroup.objects.get(pk=1)
 
-        view = views.table.SourcesTable()
+        params = {
+            'page': 1,
+            'order': '-cost',
+            'size': 2,
+            'start_date': date.isoformat(),
+            'end_date': date.isoformat(),
+        }
 
-        result = view._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+        response = self.client.get(
+            reverse('ad_group_publishers_table', kwargs={'id_': ad_group.id, 'level_': 'ad_groups'}),
+            params,
+            follow=True
+        )
 
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'This source can not be enabled because it does not support DMA targeting.'
-        })
+        mock_query.assert_any_call(
+            date,
+            date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['-cost'],
+            constraints={'ad_group': ad_group.id, }
+        )
 
-    def test_get_editable_fields_bid_cpc_enabled(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        mock_query.assert_any_call(
+            date,
+            date,
+            constraints={"ad_group": ad_group.id, }
+        )
 
-        ad_group_settings = ad_group_source.ad_group.get_current_settings()
-        ad_group_settings.end_date = None
+        result = json.loads(response.content)
 
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
+        self.assertIn('success', result)
+        self.assertEqual(result['success'], True)
 
-        view = views.table.SourcesTable()
-        result = view._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+        self.assertIn('data', result)
 
-        self.assertEqual(result, {
-            'enabled': True,
-            'message': None
-        })
+        self.assertIn('rows', result['data'])
+        self.assertEqual(len(result['data']['rows']), 1)
+        self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'Adiant', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123, u'source_id': 7})
 
-    def test_get_editable_fields_bid_cpc_disabled(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
 
-        ad_group_settings = ad_group_source.ad_group.get_current_settings()
-        ad_group_settings.end_date = None
+@patch('reports.redshift.get_cursor')
+class AllAccountsSourcesTableTest(TestCase):
+    fixtures = ['test_aggregation.yaml']
 
-        ad_group_source.source.source_type.available_actions = []
+    def setUp(self):
+        self.normal_user = User.objects.get(pk=1)
+        self.redshift_user = User.objects.get(pk=2)
 
-        view = views.table.SourcesTable()
-        result = view._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+        redshift_perm = authmodels.Permission.objects.get(codename="can_see_redshift_postclick_statistics")
+        self.redshift_user.user_permissions.add(redshift_perm)
 
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'This media source doesn\'t support setting this value through the dashboard.'
-        })
+        redshift.STATS_DB_NAME = 'default'
 
-    def test_get_editable_fields_bid_cpc_maintenance(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+    def test_get_normal_all_accounts_table(self, mock_get_cursor):
+        t = table.AllAccountsSourcesTable(self.normal_user, 1, [])
+        today = datetime.datetime.utcnow()
+        r = HttpRequest()
+        t.get_stats(r, today, today)
+        self.assertFalse(mock_get_cursor().dictfetchall.called)
 
-        ad_group_settings = ad_group_source.ad_group.get_current_settings()
-        ad_group_settings.end_date = None
+    def test_get_redshift_all_accounts_table(self, mock_get_cursor):
+        t = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
+        today = datetime.datetime.utcnow()
+        r = HttpRequest()
+        t.get_stats(r, today, today)
+        self.assertTrue(mock_get_cursor().dictfetchall.called)
 
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
-        ad_group_source.source.maintenance = True
+    def test_funcs(self, mock_get_cursor):
+        t = table.AllAccountsSourcesTable(self.redshift_user, 1, [])
+        today = datetime.datetime.utcnow()
+        self.assertTrue(t.has_complete_postclick_metrics(today, today))
 
-        view = views.table.SourcesTable()
-        result = view._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
-
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'This value cannot be edited because the media source is currently in maintenance.'
-        })
-
-    @patch('dash.views.table.datetime.datetime', DatetimeMock)
-    def test_get_editable_fields_bid_cpc_end_date_past(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-
-        ad_group_settings = ad_group_source.ad_group.get_current_settings()
-        ad_group_settings.end_date = datetime.datetime(2015, 1, 1)
-
-        ad_group_source.source.source_type.available_actions = []
-
-        view = views.table.SourcesTable()
-        result = view._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
-
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
-        })
-
-    def test_get_editable_fields_daily_budget_enabled(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-
-        ad_group_settings = ad_group_source.ad_group.get_current_settings()
-        ad_group_settings.end_date = None
-
-        ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC
-        ]
-
-        view = views.table.SourcesTable()
-        result = view._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
-
-        self.assertEqual(result, {
-            'enabled': True,
-            'message': None
-        })
-
-    def test_get_editable_fields_daily_budget_disabled(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-
-        ad_group_settings = ad_group_source.ad_group.get_current_settings()
-        ad_group_settings.end_date = None
-
-        ad_group_source.source.source_type.available_actions = []
-
-        view = views.table.SourcesTable()
-        result = view._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
-
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'This media source doesn\'t support setting this value through the dashboard.'
-        })
-
-    def test_get_editable_fields_daily_budget_maintenance(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-
-        ad_group_settings = ad_group_source.ad_group.get_current_settings()
-        ad_group_settings.end_date = None
-
-        ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC
-        ]
-        ad_group_source.source.maintenance = True
-
-        view = views.table.SourcesTable()
-        result = view._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
-
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'This value cannot be edited because the media source is currently in maintenance.'
-        })
-
-    @patch('dash.views.table.datetime.datetime', DatetimeMock)
-    def test_get_editable_fields_daily_budget_end_date_past(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-
-        ad_group_settings = ad_group_source.ad_group.get_current_settings()
-        ad_group_settings.end_date = datetime.datetime(2015, 1, 1)
-
-        ad_group_source.source.source_type.available_actions = []
-
-        view = views.table.SourcesTable()
-        result = view._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
-
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
-        })
+        self.assertFalse(t.is_sync_in_progress())

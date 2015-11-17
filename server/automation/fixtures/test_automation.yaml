@@ -1,0 +1,151 @@
+# Users
+- fields:
+    date_joined: '2014-06-04T09:58:21'
+    email: 'em@il.com'
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: true
+    is_superuser: true
+    last_login: '2014-06-04T12:20:46'
+    last_name: ''
+    password: pbkdf2_sha256$12000$CWOT1c1UlFEr$GDTv3fbQ6bmJffEg1bvb+O49VfwD9Bg/DyylA3jcWvg=
+    user_permissions: []
+    username: test_user
+  model: zemauth.user
+  pk: 1
+
+# Accounts
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    name: 'Test Account 1'
+  model: dash.account
+  pk: 1
+
+# Campaigns
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 1
+    name: 'Test Campaign 1'
+  model: dash.campaign
+  pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 1
+    name: 'Test Campaign 2'
+  model: dash.campaign
+  pk: 2
+
+# Campaign Settings
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    created_by_id: 1
+    name: 'Campaign Settings 1'
+    account_manager: 1
+    campaign: 1
+    sales_representative: 1
+  model: dash.campaignsettings
+  pk: 1
+
+# Ad Groups
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'Test AdGroup 1'
+  model: dash.adgroup
+  pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 2
+    name: 'Test AdGroup 2'
+  model: dash.adgroup
+  pk: 2
+
+# Ad Group Settings
+- fields:
+    ad_group_id: 1
+    created_dt: '2014-06-04T09:58:21'
+    created_by: 1
+    state: 1
+  model: dash.adgroupsettings
+  pk: 1
+
+- fields:
+    ad_group_id: 2
+    created_dt: '2014-06-04T09:58:21'
+    created_by: 1
+    state: 2
+  model: dash.adgroupsettings
+  pk: 2
+
+# Source Types
+-   fields:
+        type: 'adblade'
+    model: dash.sourcetype
+    pk: 1
+
+# Sources
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: AdBlade
+        source_type: 1
+    model: dash.source
+    pk: 1
+
+
+# Ad Group Sources
+- fields:
+    source: 1
+    ad_group: 1
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 1
+
+- fields:
+    source: 1
+    ad_group: 2
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 2
+
+# Ad Group Source Settings
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    ad_group_source: 1
+    cpc_cc: '0.12'
+    daily_budget_cc: '50.'
+    state: 1
+  model: dash.adgroupsourcesettings
+  pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:22'
+    ad_group_source: 1
+    cpc_cc: '0.12'
+    daily_budget_cc: '60.'
+    state: 1
+  model: dash.adgroupsourcesettings
+  pk: 2
+
+- fields:
+    created_dt: '2014-06-01T09:58:21'
+    ad_group_source: 2
+    cpc_cc: '0.12'
+    daily_budget_cc: '50.'
+    state: 1
+    autopilot_state: 1
+  model: dash.adgroupsourcesettings
+  pk: 3

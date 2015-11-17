@@ -3,8 +3,10 @@ from utils.constant_base import ConstantBase
 
 class Action(ConstantBase):
     FETCH_REPORTS = 'get_reports'
+    FETCH_REPORTS_BY_PUBLISHER = 'get_reports_by_publisher'
     FETCH_CAMPAIGN_STATUS = 'get_campaign_status'
     SET_CAMPAIGN_STATE = 'set_campaign_state'
+    SET_PUBLISHER_BLACKLIST = 'set_publisher_blacklist'
     SET_PROPERTY = 'set_property'
     CREATE_CAMPAIGN = 'create_campaign'
 
@@ -17,8 +19,10 @@ class Action(ConstantBase):
 
     _VALUES = {
         FETCH_REPORTS: 'Get reports',
+        FETCH_REPORTS_BY_PUBLISHER: 'Get reports by publisher',
         FETCH_CAMPAIGN_STATUS: 'Get campaign status',
         SET_CAMPAIGN_STATE: 'Set campaign state',
+        SET_PUBLISHER_BLACKLIST: 'Set publisher blacklist',
         SET_PROPERTY: 'Set property',
         CREATE_CAMPAIGN: 'Create campaign',
 

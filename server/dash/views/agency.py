@@ -1,12 +1,11 @@
+import datetime
 import json
 import logging
 import newrelic.agent
 
 from collections import OrderedDict
-from decimal import Decimal
 from django.db import transaction
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
@@ -19,10 +18,11 @@ from dash import models
 from dash import api
 from dash import budget
 from dash import constants
+import automation.settings
+from reports import redshift
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
-from utils import pagerduty_helper
 from utils import email_helper
 
 from zemauth.models import User as ZemUser
@@ -31,46 +31,12 @@ from zemauth.models import User as ZemUser
 logger = logging.getLogger(__name__)
 
 
-def get_campaign_url(ad_group, request):
-    campaign_settings_url = request.build_absolute_uri(
-        reverse('admin:dash_campaign_change', args=(ad_group.campaign.pk,)))
-    campaign_settings_url = campaign_settings_url.replace('http://', 'https://')
-
-    return campaign_settings_url
+CONVERSION_PIXEL_INACTIVE_DAYS = 7
+MAX_CONVERSION_GOALS_PER_CAMPAIGN = 2
 
 
-def send_ad_group_settings_change_mail_if_necessary(ad_group, user, request):
-    if not settings.SEND_AD_GROUP_SETTINGS_CHANGE_MAIL:
-        return
-
-    campaign_settings = models.CampaignSettings.objects.\
-        filter(campaign=ad_group.campaign).\
-        order_by('-created_dt')[:1]
-
-    if not campaign_settings or not campaign_settings[0].account_manager:
-        logger.error('Could not send e-mail because there is no account manager set for campaign with id %s.', ad_group.campaign.pk)
-
-        desc = {
-            'campaign_settings_url': get_campaign_url(ad_group, request)
-        }
-        pagerduty_helper.trigger(
-            event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
-            incident_key='ad_group_settings_change_mail_failed',
-            description='E-mail notification for ad group settings change was not sent because the campaign settings or account manager is not set.',
-            details=desc,
-        )
-        return
-
-    if user.pk == campaign_settings[0].account_manager.pk:
-        return
-
-    email_helper.send_ad_group_settings_change_email(
-        user,
-        campaign_settings[0].account_manager,
-        request,
-        ad_group,
-        get_campaign_url(ad_group, request)
-    )
+def _get_conversion_pixel_url(account_id, slug):
+    return settings.CONVERSION_PIXEL_PREFIX + '{}/{}/'.format(account_id, slug)
 
 
 class AdGroupSettings(api_common.BaseApiView):
@@ -80,25 +46,12 @@ class AdGroupSettings(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        active_ad_group_sources = helpers.get_active_ad_group_sources(models.AdGroup, [ad_group])
-        ad_group_sources_states = helpers.get_ad_group_sources_states(active_ad_group_sources)
-
-        ad_group_sources = []
-        for source_state in ad_group_sources_states:
-            ad_group_sources.append({
-                'id': source_state.ad_group_source.id,
-                'source_state': source_state.state,
-                'source_name': source_state.ad_group_source.source.name,
-                'supports_dma_targeting': source_state.ad_group_source.source.source_type.supports_dma_targeting()
-            })
-
         settings = ad_group.get_current_settings()
 
         response = {
             'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
-            'ad_group_sources': ad_group_sources
+            # TODO this is temp fix and should be reverted
+            'action_is_waiting': False,  # actionlog_api.is_waiting_for_set_actions(ad_group),
         }
 
         return self.create_api_response(response)
@@ -121,42 +74,26 @@ class AdGroupSettings(api_common.BaseApiView):
 
         self.set_ad_group(ad_group, form.cleaned_data)
 
-        settings = current_settings.copy_settings()
-        self.set_settings(settings, form.cleaned_data,
-                          request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'))
+        new_settings = current_settings.copy_settings()
+        self.set_settings(new_settings, form.cleaned_data,
+                          request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'),
+                          request.user.has_perm('zemauth.can_toggle_adobe_performance_tracking'))
 
-        actionlogs_to_send = []
-        with transaction.atomic():
-            order = actionlog_models.ActionLogOrder.objects.create(
-                order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
-            )
-            ad_group.save(request)
-            settings.save(request)
+        # update ad group name
+        current_settings.ad_group_name = previous_ad_group_name
+        new_settings.ad_group_name = ad_group.name
 
-            if current_settings.state == constants.AdGroupSettingsState.INACTIVE \
-                    and settings.state == constants.AdGroupSettingsState.ACTIVE:
-                actionlogs_to_send.extend(actionlog_api.init_enable_ad_group(
-                    ad_group, request, order=order, send=False))
+        user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS
 
-            if current_settings.state == constants.AdGroupSettingsState.ACTIVE \
-                    and settings.state == constants.AdGroupSettingsState.INACTIVE:
-                actionlogs_to_send.extend(actionlog_api.init_pause_ad_group(
-                    ad_group, request, order=order, send=False))
+        self._send_update_actions(ad_group, current_settings, new_settings, request)
 
-            current_settings.ad_group_name = previous_ad_group_name
-            settings.ad_group_name = ad_group.name
-
-            actionlogs_to_send.extend(api.order_ad_group_settings_update(ad_group, current_settings, settings, request, send=False))
-
-        user = request.user
-        changes = current_settings.get_setting_changes(settings)
+        changes = current_settings.get_setting_changes(new_settings)
         if changes:
-            send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
-
-        zwei_actions.send_multiple(actionlogs_to_send)
+            email_helper.send_ad_group_notification_email(ad_group, request)
+            helpers.log_useraction_if_necessary(request, user_action_type, ad_group=ad_group)
 
         response = {
-            'settings': self.get_dict(settings, ad_group),
+            'settings': self.get_dict(new_settings, ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group)
         }
 
@@ -181,7 +118,9 @@ class AdGroupSettings(api_common.BaseApiView):
                 'target_devices': settings.target_devices,
                 'target_regions': settings.target_regions,
                 'tracking_code': settings.tracking_code,
-                'enable_ga_tracking': settings.enable_ga_tracking
+                'enable_ga_tracking': settings.enable_ga_tracking,
+                'enable_adobe_tracking': settings.enable_adobe_tracking,
+                'adobe_tracking_param': settings.adobe_tracking_param
             }
 
         return result
@@ -189,7 +128,7 @@ class AdGroupSettings(api_common.BaseApiView):
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
 
-    def set_settings(self, settings, resource, can_set_tracking_codes):
+    def set_settings(self, settings, resource, can_set_ga_tracking_params, can_set_adobe_tracking_params):
         settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
@@ -198,15 +137,94 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.ad_group_name = resource['name']
-        if can_set_tracking_codes:
+
+        if can_set_ga_tracking_params:
             settings.enable_ga_tracking = resource['enable_ga_tracking']
             settings.tracking_code = resource['tracking_code']
 
+        if can_set_adobe_tracking_params:
+            settings.enable_adobe_tracking = resource['enable_adobe_tracking']
+            settings.adobe_tracking_param = resource['adobe_tracking_param']
 
-class CampaignSettings(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
+    def _send_update_actions(self, ad_group, current_settings, new_settings, request):
+        actionlogs_to_send = []
+
+        with transaction.atomic():
+            order = actionlog_models.ActionLogOrder.objects.create(
+                order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+            )
+            ad_group.save(request)
+            new_settings.save(request)
+
+            actionlogs_to_send.extend(
+                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False,
+                                                   redirects_update=current_settings.pk is None))
+
+            if current_settings.state == constants.AdGroupSettingsState.INACTIVE and\
+               new_settings.state == constants.AdGroupSettingsState.ACTIVE:
+
+                actionlogs_to_send.extend(
+                    actionlog_api.init_enable_ad_group(
+                        ad_group, request, order=order, send=False))
+
+            if current_settings.state == constants.AdGroupSettingsState.ACTIVE and\
+               new_settings.state == constants.AdGroupSettingsState.INACTIVE:
+
+                actionlogs_to_send.extend(
+                    actionlog_api.init_pause_ad_group(
+                        ad_group, request, order=order, send=False))
+
+        zwei_actions.send(actionlogs_to_send)
+
+    def _add_media_sources(self, ad_group, new_settings, request):
+        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
+
+        # only select relevant media sources
+        if new_settings.is_mobile_only():
+            default_sources_settings = default_sources_settings.exclude(mobile_cpc_cc=None)
+        else:
+            default_sources_settings = default_sources_settings.exclude(default_cpc_cc=None)
+
+        ad_group_sources_w_defaults = []
+        actionlogs_to_send = []
+        with transaction.atomic():
+            ad_group.save(request)
+            new_settings.save(request)
+
+            for default_settings in default_sources_settings:
+
+                ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
+                ad_group_source.save(request)
+
+                ad_group_sources_w_defaults.append((ad_group_source, default_settings))
+
+                external_name = ad_group_source.get_external_name()
+
+                action = actionlog_api.create_campaign(ad_group_source, external_name, request, send=False)
+                if action:
+                    actionlogs_to_send.append(action)
+
+            # note changes in history. If no changes text is set the default message will be shown.
+            if ad_group_sources_w_defaults:
+                changes_text = 'Created settings and automatically created campaigns for {}'.format(
+                    ', '.join([x.source.name for x, _ in ad_group_sources_w_defaults]))
+                new_settings.changes_text = changes_text
+
+            new_settings.save(request)
+
+        # set defaults for created ad group sources
+        for ad_group_source, default_settings in ad_group_sources_w_defaults:
+
+            # the update campaign actions should be created on create campaign callback
+            helpers.set_ad_group_source_defaults(default_settings, new_settings, ad_group_source, request)
+
+        zwei_actions.send(actionlogs_to_send)
+
+
+class CampaignAgency(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_agency_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_settings_view'):
+        if not request.user.has_perm('zemauth.campaign_agency_view'):
             raise exc.MissingDataError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -224,28 +242,47 @@ class CampaignSettings(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_put')
+    @statsd_helper.statsd_timer('dash.api', 'campaign_agency_put')
     def put(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.campaign_settings_view'):
+        if not request.user.has_perm('zemauth.campaign_agency_view'):
             raise exc.MissingDataError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
-
         resource = json.loads(request.body)
 
-        form = forms.CampaignSettingsForm(resource.get('settings', {}))
+        form = forms.CampaignAgencyForm(resource.get('settings', {}))
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        self.set_campaign(campaign, form.cleaned_data)
-
-        settings = models.CampaignSettings()
+        prev_settings = campaign.get_current_settings()
+        settings = prev_settings.copy_settings()
         self.set_settings(settings, campaign, form.cleaned_data)
 
+        self.propagate_and_save(campaign, settings, request)
+
+        changes = prev_settings.get_setting_changes(settings)
+        if changes:
+            helpers.log_useraction_if_necessary(request,
+                                                constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS,
+                                                campaign=campaign)
+
+        response = {
+            'settings': self.get_dict(settings, campaign),
+            'history': self.get_history(campaign),
+            'can_archive': campaign.can_archive(),
+            'can_restore': campaign.can_restore(),
+        }
+
+        return self.create_api_response(response)
+
+    @classmethod
+    def propagate_and_save(cls, campaign, settings, request):
         actions = []
+
         with transaction.atomic():
             campaign.save(request)
             settings.save(request)
+
             # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
             campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
 
@@ -262,16 +299,8 @@ class CampaignSettings(api_common.BaseApiView):
                     )
                 )
 
-        zwei_actions.send_multiple(actions)
-
-        response = {
-            'settings': self.get_dict(settings, campaign),
-            'history': self.get_history(campaign),
-            'can_archive': campaign.can_archive(),
-            'can_restore': campaign.can_restore(),
-        }
-
-        return self.create_api_response(response)
+        email_helper.send_campaign_notification_email(campaign, request)
+        zwei_actions.send(actions)
 
     def get_history(self, campaign):
         settings = models.CampaignSettings.objects.\
@@ -286,30 +315,25 @@ class CampaignSettings(api_common.BaseApiView):
             changes = old_settings.get_setting_changes(new_settings) \
                 if old_settings is not None else None
 
-            if i > 0 and not changes:
-                continue
-
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
+
+            if new_settings.changes_text is not None:
+                changes_text = new_settings.changes_text
+            else:
+                changes_text = self.convert_changes_to_string(changes, settings_dict)
+
+            if i > 0 and not changes_text:
+                continue
 
             history.append({
                 'datetime': new_settings.created_dt,
                 'changed_by': new_settings.created_by.email,
-                'changes_text': self.convert_changes_to_string(changes, settings_dict),
+                'changes_text': changes_text,
                 'settings': settings_dict.values(),
                 'show_old_settings': old_settings is not None
             })
 
         return history
-
-    def format_decimal_to_percent(self, num):
-        return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
-
-    def get_full_name_or_email(self, user):
-        if user is None:
-            return '/'
-
-        result = user.get_full_name() or user.email
-        return result.encode('utf-8')
 
     def convert_settings_to_dict(self, old_settings, new_settings):
         settings_dict = OrderedDict([
@@ -319,19 +343,27 @@ class CampaignSettings(api_common.BaseApiView):
             }),
             ('account_manager', {
                 'name': 'Account Manager',
-                'value': self.get_full_name_or_email(new_settings.account_manager)
+                'value': helpers.get_user_full_name_or_email(new_settings.account_manager)
             }),
             ('sales_representative', {
                 'name': 'Sales Representative',
-                'value': self.get_full_name_or_email(new_settings.sales_representative)
-            }),
-            ('service_fee', {
-                'name': 'Service Fee',
-                'value': self.format_decimal_to_percent(new_settings.service_fee) + '%'
+                'value': helpers.get_user_full_name_or_email(new_settings.sales_representative)
             }),
             ('iab_category', {
                 'name': 'IAB Category',
                 'value': constants.IABCategory.get_text(new_settings.iab_category)
+            }),
+            ('campaign_goal', {
+                'name': 'Campaign goal',
+                'value': constants.CampaignGoal.get_text(new_settings.campaign_goal),
+            }),
+            ('goal_quantity', {
+                'name': 'Goal quantity',
+                'value': new_settings.goal_quantity,
+            }),
+            ('service_fee', {
+                'name': 'Service Fee',
+                'value': helpers.format_decimal_to_percent(new_settings.service_fee) + '%'
             }),
             ('promotion_goal', {
                 'name': 'Promotion Goal',
@@ -348,20 +380,14 @@ class CampaignSettings(api_common.BaseApiView):
 
             if old_settings.account_manager is not None:
                 settings_dict['account_manager']['old_value'] = \
-                    self.get_full_name_or_email(old_settings.account_manager)
+                    helpers.get_user_full_name_or_email(old_settings.account_manager)
 
             if old_settings.sales_representative is not None:
                 settings_dict['sales_representative']['old_value'] = \
-                    self.get_full_name_or_email(old_settings.sales_representative)
-
-            settings_dict['service_fee']['old_value'] = \
-                self.format_decimal_to_percent(old_settings.service_fee) + '%'
+                    helpers.get_user_full_name_or_email(old_settings.sales_representative)
 
             settings_dict['iab_category']['old_value'] = \
                 constants.IABCategory.get_text(old_settings.iab_category)
-
-            settings_dict['promotion_goal']['old_value'] = \
-                constants.PromotionGoal.get_text(old_settings.promotion_goal)
 
             settings_dict['archived']['old_value'] = str(old_settings.archived)
 
@@ -394,24 +420,16 @@ class CampaignSettings(api_common.BaseApiView):
                 'sales_representative':
                     str(settings.sales_representative.id)
                     if settings.sales_representative is not None else None,
-                'service_fee': self.format_decimal_to_percent(settings.service_fee),
                 'iab_category': settings.iab_category,
-                'promotion_goal': settings.promotion_goal
             }
 
         return result
 
-    def set_campaign(self, campaign, resource):
-        campaign.name = resource['name']
-
     def set_settings(self, settings, campaign, resource):
         settings.campaign = campaign
-        settings.name = resource['name']
         settings.account_manager = resource['account_manager']
         settings.sales_representative = resource['sales_representative']
-        settings.service_fee = Decimal(resource['service_fee']) / 100
         settings.iab_category = resource['iab_category']
-        settings.promotion_goal = resource['promotion_goal']
 
     def get_user_list(self, settings, perm_name):
         users = list(ZemUser.objects.get_users_with_perm(perm_name))
@@ -420,19 +438,221 @@ class CampaignSettings(api_common.BaseApiView):
         if manager is not None and manager not in users:
             users.append(manager)
 
-        return [{'id': str(user.id), 'name': self.get_full_name_or_email(user)} for user in users]
+        return [{'id': str(user.id),
+                 'name': helpers.get_user_full_name_or_email(user)} for user in users]
+
+
+class CampaignConversionGoals(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_get')
+    def get(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.manage_conversion_goals'):
+            raise exc.MissingDataError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+
+        rows = []
+        pixel_ids_already_added = []
+        for conversion_goal in campaign.conversiongoal_set.select_related('pixel').order_by('created_dt').all():
+            row = {
+                'id': conversion_goal.id,
+                'type': conversion_goal.type,
+                'name': conversion_goal.name,
+                'conversion_window': conversion_goal.conversion_window,
+                'goal_id': conversion_goal.goal_id,
+            }
+
+            if conversion_goal.type == constants.ConversionGoalType.PIXEL:
+                pixel_ids_already_added.append(conversion_goal.pixel.id)
+                row['pixel'] = {
+                    'id': conversion_goal.pixel.id,
+                    'slug': conversion_goal.pixel.slug,
+                    'url': _get_conversion_pixel_url(campaign.account_id, conversion_goal.pixel.slug),
+                    'archived': conversion_goal.pixel.archived,
+                }
+
+            rows.append(row)
+
+        available_pixels = []
+        for conversion_pixel in campaign.account.conversionpixel_set.filter(archived=False):
+            if conversion_pixel.id in pixel_ids_already_added:
+                continue
+
+            available_pixels.append({
+                'id': conversion_pixel.id,
+                'slug': conversion_pixel.slug,
+            })
+
+        return self.create_api_response({
+            'rows': rows,
+            'available_pixels': available_pixels
+        })
+
+    @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_post')
+    def post(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.manage_conversion_goals'):
+            raise exc.MissingDataError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+
+        try:
+            data = json.loads(request.body)
+        except ValueError:
+            raise exc.ValidationError(message='Invalid json')
+
+        form = forms.ConversionGoalForm(
+            {
+                'name': data.get('name'),
+                'type': data.get('type'),
+                'conversion_window': data.get('conversion_window'),
+                'goal_id': data.get('goal_id'),
+            },
+            campaign_id=campaign_id
+        )
+
+        if not form.is_valid():
+            raise exc.ValidationError(errors=form.errors)
+
+        if models.ConversionGoal.objects.filter(campaign_id=campaign.id).count() >= MAX_CONVERSION_GOALS_PER_CAMPAIGN:
+            raise exc.ValidationError(message='Max conversion goals per campaign exceeded')
+
+        conversion_goal = models.ConversionGoal(campaign_id=campaign.id, type=form.cleaned_data['type'],
+                                                name=form.cleaned_data['name'], goal_id=form.cleaned_data['goal_id'])
+        if form.cleaned_data['type'] == constants.ConversionGoalType.PIXEL:
+            try:
+                pixel = models.ConversionPixel.objects.get(id=form.cleaned_data['goal_id'],
+                                                           account_id=campaign.account_id)
+            except models.ConversionPixel.DoesNotExist:
+                raise exc.MissingDataError(message='Invalid conversion pixel')
+
+            if pixel.archived:
+                raise exc.MissingDataError(message='Invalid conversion pixel')
+
+            conversion_goal.pixel = pixel
+            conversion_goal.conversion_window = form.cleaned_data['conversion_window']
+
+        with transaction.atomic():
+            conversion_goal.save()
+
+            new_settings = campaign.get_current_settings().copy_settings()
+            new_settings.changes_text = u'Added conversion goal with name "{}" of type {}'.format(
+                conversion_goal.name,
+                constants.ConversionGoalType.get_text(conversion_goal.type)
+            )
+            new_settings.save(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CONVERSION_GOAL, campaign=campaign)
+
+        return self.create_api_response()
+
+
+class ConversionGoal(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_delete')
+    def delete(self, request, campaign_id, conversion_goal_id):
+        if not request.user.has_perm('zemauth.manage_conversion_goals'):
+            raise exc.MissingDataError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)  # checks authorization
+        try:
+            conversion_goal = models.ConversionGoal.objects.get(id=conversion_goal_id, campaign_id=campaign.id)
+        except models.ConversionGoal.DoesNotExist:
+            raise exc.MissingDataError(message='Invalid conversion goal')
+
+        with transaction.atomic():
+            conversion_goal.delete()
+
+            new_settings = campaign.get_current_settings().copy_settings()
+            new_settings.changes_text = u'Deleted conversion goal "{}"'.format(
+                conversion_goal.name,
+                constants.ConversionGoalType.get_text(conversion_goal.type)
+            )
+            new_settings.save(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.DELETE_CONVERSION_GOAL, campaign=campaign)
+
+        return self.create_api_response()
+
+
+class CampaignSettings(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
+    def get(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.campaign_settings_view'):
+            raise exc.MissingDataError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign_settings = campaign.get_current_settings()
+
+        response = {
+            'settings': self.get_dict(campaign_settings, campaign),
+        }
+
+        return self.create_api_response(response)
+
+    @statsd_helper.statsd_timer('dash.api', 'campaign_settings_put')
+    def put(self, request, campaign_id):
+        if not request.user.has_perm('zemauth.campaign_settings_view'):
+            raise exc.MissingDataError()
+
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        resource = json.loads(request.body)
+
+        form = forms.CampaignSettingsForm(resource.get('settings', {}))
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        settings = campaign.get_current_settings().copy_settings()
+        self.set_settings(settings, campaign, form.cleaned_data)
+        self.set_campaign(campaign, form.cleaned_data)
+
+        CampaignAgency.propagate_and_save(campaign, settings, request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_SETTINGS, campaign=campaign)
+
+        response = {
+            'settings': self.get_dict(settings, campaign)
+        }
+
+        return self.create_api_response(response)
+
+    def get_dict(self, settings, campaign):
+        result = {}
+
+        if settings:
+            result = {
+                'id': str(campaign.pk),
+                'name': campaign.name,
+                'campaign_goal': settings.campaign_goal,
+                'goal_quantity': settings.goal_quantity
+            }
+
+        return result
+
+    def set_settings(self, settings, campaign, resource):
+        settings.name = resource['name']
+        settings.campaign_goal = resource['campaign_goal']
+        settings.goal_quantity = resource['goal_quantity']
+
+    def set_campaign(self, campaign, resource):
+        campaign.name = resource['name']
 
 
 class CampaignBudget(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
+
+        if not request.user.has_perm('zemauth.campaign_budget_management_view'):
+            raise exc.MissingDataError()
+
         response = self.get_response(campaign)
         return self.create_api_response(response)
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
+
+        if not request.user.has_perm('zemauth.campaign_budget_management_view'):
+            raise exc.MissingDataError()
+
         campaign_budget = budget.CampaignBudget(campaign)
 
         budget_change = json.loads(request.body)
@@ -446,11 +666,13 @@ class CampaignBudget(api_common.BaseApiView):
             allocate_amount=form.get_allocate_amount(),
             revoke_amount=form.get_revoke_amount(),
             request=request,
-            comment='',
         )
 
-        response = self.get_response(campaign)
+        email_helper.send_campaign_notification_email(campaign, request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_BUDGET, campaign=campaign)
+
+        response = self.get_response(campaign)
         return self.create_api_response(response)
 
     def get_response(self, campaign):
@@ -482,6 +704,133 @@ class CampaignBudget(api_common.BaseApiView):
         return result
 
 
+class AccountConversionPixels(api_common.BaseApiView):
+    def _get_pixel_status(self, last_verified_dt):
+        if last_verified_dt is None:
+            return constants.ConversionPixelStatus.NOT_USED
+
+        if last_verified_dt > datetime.datetime.utcnow() - datetime.timedelta(days=CONVERSION_PIXEL_INACTIVE_DAYS):
+            return constants.ConversionPixelStatus.ACTIVE
+
+        return constants.ConversionPixelStatus.INACTIVE
+
+    @statsd_helper.statsd_timer('dash.api', 'conversion_pixels_list')
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
+            raise exc.MissingDataError()
+
+        account_id = int(account_id)
+        account = helpers.get_account(request.user, account_id)
+        last_verified_dts = redshift.get_pixels_last_verified_dt(account_id=account_id)
+
+        rows = [
+            {
+                'id': conversion_pixel.id,
+                'slug': conversion_pixel.slug,
+                'url': _get_conversion_pixel_url(account.id, conversion_pixel.slug),
+                'status': constants.ConversionPixelStatus.get_text(
+                    self._get_pixel_status(last_verified_dts.get((account_id, conversion_pixel.slug)))),
+                'last_verified_dt': last_verified_dts.get((account_id, conversion_pixel.slug)),
+                'archived': conversion_pixel.archived
+            } for conversion_pixel in models.ConversionPixel.objects.filter(account=account)
+        ]
+
+        return self.create_api_response({
+            'rows': rows,
+            'conversion_pixel_tag_prefix': settings.CONVERSION_PIXEL_PREFIX + str(account.id) + '/',
+        })
+
+    @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_post')
+    def post(self, request, account_id):
+        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
+            raise exc.MissingDataError()
+
+        account = helpers.get_account(request.user, account_id)  # check access to account
+
+        try:
+            data = json.loads(request.body)
+        except ValueError:
+            raise exc.ValidationError()
+
+        slug = data.get('slug')
+
+        form = forms.ConversionPixelForm({'slug': slug})
+        if not form.is_valid():
+            raise exc.ValidationError(message=' '.join(dict(form.errors)['slug']))
+
+        try:
+            models.ConversionPixel.objects.get(account_id=account_id, slug=slug)
+            raise exc.ValidationError(message='Conversion pixel with this identifier already exists.')
+        except models.ConversionPixel.DoesNotExist:
+            pass
+
+        with transaction.atomic():
+            conversion_pixel = models.ConversionPixel.objects.create(account_id=account_id, slug=slug)
+
+            new_settings = account.get_current_settings().copy_settings()
+            new_settings.changes_text = u'Added conversion pixel with unique identifier {}.'.format(slug)
+            new_settings.save(request)
+
+        email_helper.send_account_pixel_notification(account, request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CONVERSION_PIXEL, account=account)
+
+        return self.create_api_response({
+            'id': conversion_pixel.id,
+            'slug': conversion_pixel.slug,
+            'url': _get_conversion_pixel_url(account.id, slug),
+            'status': constants.ConversionPixelStatus.get_text(
+                constants.ConversionPixelStatus.NOT_USED),
+            'last_verified_dt': None,
+            'archived': conversion_pixel.archived,
+        })
+
+
+class ConversionPixel(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_put')
+    def put(self, request, conversion_pixel_id):
+        if not request.user.has_perm('zemauth.manage_conversion_pixels'):
+            raise exc.MissingDataError()
+
+        try:
+            conversion_pixel = models.ConversionPixel.objects.get(id=conversion_pixel_id)
+        except models.ConversionPixel.DoesNotExist:
+            raise exc.MissingDataError('Conversion pixel does not exist')
+
+        try:
+            account = helpers.get_account(request.user, conversion_pixel.account_id)  # check access to account
+        except exc.MissingDataError:
+            raise exc.MissingDataError('Conversion pixel does not exist')
+
+        try:
+            data = json.loads(request.body)
+        except ValueError:
+            raise exc.ValidationError()
+
+        if 'archived' in data:
+            if not isinstance(data['archived'], bool):
+                raise exc.ValidationError(message='Invalid value')
+
+            with transaction.atomic():
+                conversion_pixel.archived = data['archived']
+                conversion_pixel.save()
+
+                new_settings = account.get_current_settings().copy_settings()
+                new_settings.changes_text = u'{} conversion pixel with unique identifier {}.'.format(
+                    'Archived' if data['archived'] else 'Restored',
+                    conversion_pixel.slug
+                )
+                new_settings.save(request)
+
+            helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONVERSION_PIXEL,
+                                                account=account)
+
+        return self.create_api_response({
+            'id': conversion_pixel.id,
+            'archived': conversion_pixel.archived,
+        })
+
+
 class AccountAgency(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
     def get(self, request, account_id):
@@ -493,6 +842,8 @@ class AccountAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(account_settings, account),
+            'account_managers': self.get_user_list(account_settings, 'campaign_settings_account_manager'),
+            'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(account),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
@@ -522,6 +873,9 @@ class AccountAgency(api_common.BaseApiView):
             account.save(request)
             settings.save(request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
+                                            account=account)
+
         response = {
             'settings': self.get_dict(settings, account),
             'history': self.get_history(account),
@@ -537,6 +891,9 @@ class AccountAgency(api_common.BaseApiView):
     def set_settings(self, settings, account, resource):
         settings.account = account
         settings.name = resource['name']
+        settings.default_account_manager = resource['default_account_manager']
+        settings.default_sales_representative = resource['default_sales_representative']
+        settings.service_fee = helpers.format_percent_to_decimal(resource['service_fee'])
 
     def get_dict(self, settings, account):
         result = {}
@@ -546,6 +903,13 @@ class AccountAgency(api_common.BaseApiView):
                 'id': str(account.pk),
                 'name': account.name,
                 'archived': settings.archived,
+                'default_account_manager':
+                    str(settings.default_account_manager.id)
+                    if settings.default_account_manager is not None else None,
+                'default_sales_representative':
+                    str(settings.default_sales_representative.id)
+                    if settings.default_sales_representative is not None else None,
+                'service_fee': helpers.format_decimal_to_percent(settings.service_fee),
             }
 
         return result
@@ -606,13 +970,45 @@ class AccountAgency(api_common.BaseApiView):
                 'name': 'Archived',
                 'value': str(new_settings.archived)
             }),
+            ('default_account_manager', {
+                'name': 'Default Account Manager',
+                'value': helpers.get_user_full_name_or_email(new_settings.default_account_manager)
+            }),
+            ('default_sales_representative', {
+                'name': 'Default Sales Representative',
+                'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
+            }),
+            ('service_fee', {
+                'name': 'Service Fee',
+                'value': helpers.format_decimal_to_percent(new_settings.service_fee) + '%'
+            }),
         ])
 
         if old_settings is not None:
             settings_dict['name']['old_value'] = old_settings.name.encode('utf-8')
             settings_dict['archived']['old_value'] = str(old_settings.archived)
 
+            if old_settings.default_account_manager is not None:
+                settings_dict['default_account_manager']['old_value'] = \
+                    helpers.get_user_full_name_or_email(old_settings.default_account_manager)
+
+            if old_settings.default_sales_representative is not None:
+                settings_dict['default_sales_representative']['old_value'] = \
+                    helpers.get_user_full_name_or_email(old_settings.default_sales_representative)
+
+            settings_dict['service_fee']['old_value'] = \
+                helpers.format_decimal_to_percent(old_settings.service_fee) + '%'
+
         return settings_dict
+
+    def get_user_list(self, settings, perm_name):
+        users = list(ZemUser.objects.get_users_with_perm(perm_name))
+
+        manager = settings.default_account_manager
+        if manager is not None and manager not in users:
+            users.append(manager)
+
+        return [{'id': str(user.id), 'name': helpers.get_user_full_name_or_email(user)} for user in users]
 
 
 class AdGroupAgency(api_common.BaseApiView):
@@ -623,85 +1019,25 @@ class AdGroupAgency(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        settings = ad_group.get_current_settings()
-
         response = {
-            'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
             'history': self.get_history(ad_group, request.user),
             'can_archive': ad_group.can_archive(),
             'can_restore': ad_group.can_restore(),
         }
 
         return self.create_api_response(response)
-
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
-    def put(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.ad_group_agency_tab_view'):
-            raise exc.MissingDataError()
-
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        previous_ad_group_name = ad_group.name
-
-        current_settings = ad_group.get_current_settings()
-
-        resource = json.loads(request.body)
-
-        form = forms.AdGroupAgencySettingsForm(resource.get('settings', {}))
-        if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
-
-        settings = current_settings.copy_settings()
-        settings.tracking_code = form.cleaned_data['tracking_code']
-
-        actions = []
-        with transaction.atomic():
-            settings.save(request)
-
-            current_settings.ad_group_name = previous_ad_group_name
-            settings.ad_group_name = ad_group.name
-            actions = api.order_ad_group_settings_update(
-                ad_group, current_settings, settings, request, send=False)
-
-        zwei_actions.send_multiple(actions)
-
-        user = request.user
-        changes = current_settings.get_setting_changes(settings)
-        if changes:
-            send_ad_group_settings_change_mail_if_necessary(ad_group, user, request)
-
-        response = {
-            'settings': self.get_dict(settings, ad_group),
-            'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
-            'history': self.get_history(ad_group, request.user),
-            'can_archive': ad_group.can_archive(),
-            'can_restore': ad_group.can_restore(),
-        }
-
-        return self.create_api_response(response)
-
-    @newrelic.agent.function_trace()
-    def get_dict(self, settings, ad_group):
-        result = {}
-
-        if settings:
-            result = {
-                'id': str(ad_group.pk),
-                'tracking_code': settings.tracking_code
-            }
-
-        return result
 
     @newrelic.agent.function_trace()
     def get_history(self, ad_group, user):
-        settings = models.AdGroupSettings.objects.\
+        ad_group_settings = models.AdGroupSettings.objects.\
             filter(ad_group=ad_group).\
-            order_by('created_dt')
+            order_by('created_dt').\
+            select_related('created_by')
 
         history = []
-        for i in range(0, len(settings)):
-            old_settings = settings[i - 1] if i > 0 else None
-            new_settings = settings[i]
+        for i in range(0, len(ad_group_settings)):
+            old_settings = ad_group_settings[i - 1] if i > 0 else None
+            new_settings = ad_group_settings[i]
 
             changes = old_settings.get_setting_changes(new_settings) \
                 if old_settings is not None else None
@@ -715,10 +1051,13 @@ class AdGroupAgency(api_common.BaseApiView):
                 continue
 
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings, user)
-
+            if new_settings.created_by is None:
+                changed_by = automation.settings.AUTOMATION_AI_NAME
+            else:
+                changed_by = new_settings.created_by.email
             history.append({
                 'datetime': new_settings.created_dt,
-                'changed_by': new_settings.created_by.email,
+                'changed_by': changed_by,
                 'changes_text': changes_text,
                 'settings': settings_dict.values(),
                 'show_old_settings': old_settings is not None
@@ -752,6 +1091,10 @@ class AdGroupAgency(api_common.BaseApiView):
         for field in models.AdGroupSettings._settings_fields:
             if field in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
                     not user.has_perm('zemauth.new_content_ads_tab'):
+                continue
+
+            if field in ['enable_adobe_tracking', 'adobe_tracking_param'] and\
+                    not user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
                 continue
 
             settings_dict[field] = {

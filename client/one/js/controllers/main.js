@@ -4,6 +4,8 @@ oneApp.controller('MainCtrl',
      '$state',
      '$location',
      '$document',
+     '$q',
+     '$modalStack',
      'zemMoment',
      'user',
      'zemUserSettings',
@@ -11,18 +13,22 @@ oneApp.controller('MainCtrl',
      'api',
      'zemFilterService',
      'zemFullStoryService',
+     'zemIntercomService',
       function (
         $scope,
         $state,
         $location,
         $document,
+        $q,
+        $modalStack,
         zemMoment,
         user,
         zemUserSettings,
         accounts,
         api,
         zemFilterService,
-        zemFullStoryService
+        zemFullStoryService,
+        zemIntercomService
 ) {
     $scope.accounts = accounts;
     $scope.user = user;
@@ -30,11 +36,17 @@ oneApp.controller('MainCtrl',
     $scope.inputDateFormat = 'M/D/YYYY';
     $scope.maxDate = zemMoment();
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
+    $scope.enablePublisherFilter = false;
+    $scope.showSelectedPublisher = null;
+
+    $scope.remindToAddBudget = $q.defer(); 
 
     $scope.adGroupData = {};
     $scope.account = null;
     $scope.campaign = null;
     $scope.adGroup = null;
+
+    $scope.user.automaticallyCreateAdGroup = false;
 
     $scope.refreshNavData = function (accounts) {
         $scope.accounts = accounts;
@@ -85,6 +97,10 @@ oneApp.controller('MainCtrl',
         return !!$scope.getDefaultAllAccountsState();
     };
 
+    $scope.canShowBudgetNotification = function () {
+        return $scope.remindToAddBudget.promise;
+    };
+
     $scope.getDefaultAccountState = function () {
         // keep the same tab if possible
         if ($state.includes('**.sources') && $scope.hasPermission('zemauth.account_sources_view')) {
@@ -122,8 +138,11 @@ oneApp.controller('MainCtrl',
         if ($state.includes('**.sources') && $scope.hasPermission('zemauth.campaign_sources_view')) {
             return 'main.campaigns.sources';
         }
-        if ($state.includes('**.agency') && $scope.hasPermission('zemauth.campaign_settings_view')) {
+        if ($state.includes('**.agency') && $scope.hasPermission('zemauth.campaign_agency_view')) {
             return 'main.campaigns.agency';
+        }
+        if ($state.includes('**.settings') && $scope.hasPermission('zemauth.campaign_settings_view')) {
+            return 'main.campaigns.settings';
         }
 
         // otherwise get default state
@@ -133,11 +152,14 @@ oneApp.controller('MainCtrl',
         if ($scope.hasPermission('zemauth.campaign_sources_view')) {
             return 'main.campaings.sources';
         }
-        if ($scope.hasPermission('zemauth.campaign_settings_view')) {
+        if ($scope.hasPermission('zemauth.campaign_agency_view')) {
             return 'main.campaigns.agency';
         }
         if ($scope.hasPermission('zemauth.campaign_budget_management_view')) {
             return 'main.campaings.budget';
+        }
+        if ($scope.hasPermission('zemauth.campaign_settings_view')) {
+            return 'main.campaigns.settings';
         }
 
         // no permissions
@@ -236,6 +258,10 @@ oneApp.controller('MainCtrl',
         $scope.adGroup = adGroup;
     };
 
+    $scope.setPublisherFilterVisible = function (visible) {
+        $scope.enablePublisherFilter = visible;
+    };
+
     $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
@@ -279,11 +305,18 @@ oneApp.controller('MainCtrl',
     $document.bind('keyup', function (e) {
         if (e) {
             if (String.fromCharCode(e.keyCode).toLowerCase() === 'f') {
+                // nav search shortcut
                 var el = $('#nav-search .select2-container');
 
                 if (document.activeElement.tagName.toLowerCase() === 'input' ||
                     document.activeElement.tagName.toLowerCase() === 'select' ||
                     document.activeElement.tagName.toLowerCase() === 'textarea') {
+                    // input element in focus
+                    return;
+                }
+
+                if (!!$modalStack.getTop()) {
+                    // some modal window exists
                     return;
                 }
 
@@ -307,6 +340,10 @@ oneApp.controller('MainCtrl',
         return zemFilterService.getShowArchived();
     };
 
+    $scope.getConversionPixelTag = function (url) {
+        return '<img src="' + url + '" height="1" width="1" border="0" alt="" />';
+    };
+
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         if (angular.equals(newValue, oldValue)) {
             return;
@@ -321,6 +358,14 @@ oneApp.controller('MainCtrl',
         });
     }, true);
 
+    $scope.$watch(zemFilterService.getShowBlacklistedPublishers, function (newValue, oldValue) {
+        if (angular.equals(newValue, oldValue)) {
+            return;
+        }
+        $scope.setPublisherFilterVisible(newValue);
+    }, true);
+
     zemFullStoryService.identify($scope.user);
+    zemIntercomService.boot($scope.user);
 
 }]);

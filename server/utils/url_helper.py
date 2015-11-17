@@ -1,6 +1,8 @@
 import urlparse
 import urllib
 
+from django.conf import settings
+
 
 def clean_url(raw_url):
     '''
@@ -26,26 +28,5 @@ def combine_tracking_codes(*args):
     return '&'.join([arg for arg in args if arg])
 
 
-def add_tracking_codes_to_url(url, tracking_codes):
-    if not tracking_codes:
-        return url
-
-    parsed = list(urlparse.urlparse(url))
-
-    parts = []
-    if parsed[4]:
-        parts.append(parsed[4])
-    parts.append(tracking_codes)
-
-    parsed[4] = '&'.join(parts)
-
-    return urlparse.urlunparse(parsed)
-
-
-def get_tracking_id_params(ad_group_id, tracking_slug):
-    tracking_codes = '_z1_adgid=%s' % (ad_group_id)
-
-    if tracking_slug is not None:
-        tracking_codes += '&_z1_msid=%s' % (tracking_slug)
-
-    return tracking_codes
+def get_full_z1_url(partial_url):
+    return urlparse.urljoin(settings.EINS_HOST, partial_url)

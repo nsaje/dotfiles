@@ -1,6 +1,7 @@
 import datetime
 
 from django import test
+from mock import patch
 
 from dash import models as dashmodels
 from reports import api
@@ -11,13 +12,17 @@ class RollupTestCase(test.TestCase):
     fixtures = ['test_reports_rollup.yaml', 'test_article_stats_rollup.yaml']
 
     def setUp(self):
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
+
         self.start_date = datetime.date(2014,8,1)
         self.end_date = datetime.date(2014, 8, 3)
         refresh.refresh_adgroup_stats()
 
     def test_by_adgroup_for_campaign(self):
         rows = api.query(self.start_date, self.end_date, breakdown=['ad_group'], order=['clicks'], campaign=1)
-        
+
         self.assertEqual(len(rows), 3)
 
         self.assertEqual(rows[0]['clicks'], 32)
@@ -39,7 +44,7 @@ class RollupTestCase(test.TestCase):
 
     def test_by_source_for_campaign(self):
         rows = api.query(self.start_date, self.end_date, breakdown=['source'], order=['clicks'], campaign=2)
-        
+
         self.assertEqual(len(rows), 2)
 
         self.assertEqual(rows[0]['clicks'], 36)

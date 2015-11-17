@@ -8,6 +8,7 @@ import xlrd
 
 from dash import export
 from dash import models
+import reports.redshift as redshift
 
 from utils.test_helper import QuerySetMatcher
 
@@ -15,6 +16,8 @@ from zemauth.models import User
 
 
 class ExportTestCase(test.TestCase):
+    fixtures=['test_api']
+
     def _assert_row(self, worksheet, row_num, row_cell_list):
         for cell_num, cell_value in enumerate(row_cell_list):
             self.assertEqual(worksheet.cell_value(row_num, cell_num), cell_value)
@@ -38,6 +41,8 @@ class ExportTestCase(test.TestCase):
                 'some_random_metric': 14
             }
         ]
+
+        redshift.STATS_DB_NAME = 'default'
 
     def test_get_csv_content(self):
         fieldnames = OrderedDict([
@@ -86,7 +91,7 @@ class ExportTestCase(test.TestCase):
         dimensions = ['date', 'article']
         start_date = datetime.date(2015, 2, 1)
         end_date = datetime.date(2015, 2, 2)
-        user = User(id=1)
+        user = User.objects.get(pk=1)
 
         source = models.Source(id=1)
 
@@ -97,12 +102,42 @@ class ExportTestCase(test.TestCase):
             end_date,
             dimensions,
             ['date'],
+            ignore_diff_rows=False,
             source=source
         )
 
         self.assertEqual(rows, mock_stats)
 
-    fixtures = ['test_api.yaml']
+    @patch('dash.export.reports.api.query')
+    def test_generate_redshift_rows(self, mock_query):
+        mock_stats = [{
+            'date': datetime.date(2015, 2, 1),
+            'cpc': '0.0200',
+            'clicks': 1500,
+            'source': 1
+        }]
+
+        mock_query.return_value = mock_stats
+
+        dimensions = ['date', 'article']
+        start_date = datetime.date(2015, 2, 1)
+        end_date = datetime.date(2015, 2, 2)
+        user = User.objects.get(pk=2)
+
+        source = models.Source(id=1)
+
+        rows = export.generate_rows(dimensions, start_date, end_date, user, source=source)
+
+        mock_query.assert_called_with(
+            start_date,
+            end_date,
+            dimensions,
+            ['date'],
+            ignore_diff_rows=False,
+            source=source
+        )
+
+        self.assertEqual(rows, mock_stats)
 
     @patch('dash.export.reports.api_contentads.query')
     def test_generate_rows_content_ad(self, mock_query):
@@ -120,7 +155,7 @@ class ExportTestCase(test.TestCase):
         dimensions = ['date', 'ad_group', 'content_ad']
         start_date = datetime.date(2015, 2, 1)
         end_date = datetime.date(2015, 2, 2)
-        user = User(id=1)
+        user = User.objects.get(id=1)
 
         sources = models.Source.objects.all()
         sources_matcher = QuerySetMatcher(sources)
@@ -132,6 +167,7 @@ class ExportTestCase(test.TestCase):
             start_date,
             end_date,
             user,
+            ignore_diff_rows=True,
             source=sources,
             campaign=campaign
         )
@@ -139,9 +175,14 @@ class ExportTestCase(test.TestCase):
         mock_query.assert_called_with(
             start_date,
             end_date,
-            dimensions,
-            source=sources_matcher,
-            campaign=campaign
+            breakdown=dimensions,
+            order=[],
+            conversion_goals=[],
+            ignore_diff_rows=True,
+            **{
+                'source': sources_matcher,
+                'campaign': campaign
+            }
         )
 
         self.assertEqual(rows, [{

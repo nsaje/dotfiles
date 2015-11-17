@@ -17,6 +17,7 @@ BOUNCE_RATE = 'bounce_rate'
 PAGEVIEWS_SUM = 'pageviews_sum'
 PV_PER_VISIT = 'pv_per_visit'
 AVG_TOS = 'avg_tos'
+CLICK_DISCREPANCY = 'click_discrepancy'
 
 CONVERSIONS_SUM = 'conversions_sum'
 CONVERSIONS_VALUE_CC_SUM = 'conversions_value_cc_sum'
@@ -32,11 +33,12 @@ AGGREGATE_FIELDS = dict(
 POSTCLICK_AGGREGATE_FIELDS = dict(
     visits_sum=Sum('visits'),
     new_visits_sum=Sum('new_visits'),
+    pageviews_sum=Sum('pageviews'),
     percent_new_users=db_aggregates.SumDivision('new_visits', 'visits'),
     bounce_rate=db_aggregates.SumDivision('bounced_visits', 'visits'),
-    pageviews_sum=Sum('pageviews'),
     pv_per_visit=db_aggregates.SumDivision('pageviews', 'visits'),
     avg_tos=db_aggregates.SumDivision('duration', 'visits'),
+    # click_discrepancy is hidden in redshift
 )
 
 GOAL_AGGREGATE_FIELDS = dict(
@@ -65,7 +67,7 @@ def transform_val(name, val):
     if name in [COST_CC_SUM, CPC_CC, CONVERSIONS_VALUE_CC_SUM]:
         return _transform_cc_to_decimal(val)
 
-    if name in [CTR, BOUNCE_RATE, PERCENT_NEW_USERS]:
+    if name in [CTR, BOUNCE_RATE, PERCENT_NEW_USERS, CLICK_DISCREPANCY]:
         return _tranform_percent(val)
 
     return val

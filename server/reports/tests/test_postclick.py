@@ -1,10 +1,12 @@
 import datetime
 
 from django import test
+from mock import patch
 
 import dash.models
 from reports import api
 from reports import refresh
+from reports import redshift
 from utils.test_helper import dicts_match_for_keys, sequence_of_dicts_match_for_keys
 
 
@@ -13,6 +15,11 @@ class PostclickTestCase(test.TestCase):
     fixtures = ['test_reports_base.yaml', 'test_article_stats_postclick.yaml']
 
     def setUp(self):
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
+        redshift.STATS_DB_NAME = 'default'
+
         self.start_date = datetime.date(2014, 6, 1)
         self.end_date = datetime.date(2014, 7, 1)
         refresh.refresh_adgroup_stats()
@@ -117,12 +124,16 @@ class PostclickTestCase(test.TestCase):
 
 class GoalConversionTestCase(test.TestCase):
     fixtures = [
-        'test_reports_base.yaml', 
+        'test_reports_base.yaml',
         'test_article_stats_postclick.yaml',
         'test_conversion_goal_stats.yaml',
     ]
 
     def setUp(self):
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
+
         self.start_date = datetime.date(2014, 6, 4)
         self.end_date = datetime.date(2014, 6, 4)
         refresh.refresh_adgroup_stats()

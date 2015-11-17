@@ -138,7 +138,7 @@ def _add_computed_metrics(result):
         result['click_discrepancy'] = None
     else:
         result['click_discrepancy'] =  100.0 * max(0, result['clicks'] - result['visits']) / result['clicks']
- 
+
     for goal_name, metrics in result.get('goals', {}).iteritems():
         metrics['conversion_rate'] = metrics['conversions'] / result['visits'] if result['visits'] > 0 else None
 
@@ -196,7 +196,7 @@ def _join_with_conversions(breakdown, report_results, conversion_results):
     return results.values()
 
 
-def query(start_date, end_date, breakdown=None, order=None, **constraints):
+def query(start_date, end_date, breakdown=None, order=None, ignore_diff_rows=False, conversion_goals=[], **constraints):
     report_results = _get_report_results(start_date, end_date, breakdown, **constraints)
     conversion_results = _get_conversion_results(start_date, end_date, breakdown, **constraints)
     results = _join_with_conversions(breakdown, report_results, conversion_results)
@@ -238,15 +238,20 @@ def get_yesterday_cost(**constraints):
     today = datetime.datetime(today.year, today.month, today.day)
     yesterday = today - datetime.timedelta(days=1)
 
+    rs = get_day_cost(yesterday, breakdown=['source'], **constraints)
+
+    result = {row['source']: row['cost'] for row in rs}
+    return result
+
+
+def get_day_cost(day, breakdown=None, **constraints):
     rs = query(
-        start_date=yesterday,
-        end_date=yesterday,
-        breakdown=['source'],
+        start_date=day,
+        end_date=day,
+        breakdown=breakdown,
         **constraints
     )
-    result = {row['source']: row['cost'] for row in rs}
-
-    return result
+    return rs
 
 
 def traffic_metrics_exist(ad_group, source, datetime):

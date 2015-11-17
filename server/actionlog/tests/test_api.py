@@ -17,53 +17,6 @@ from utils import test_helper, url_helper
 from zemauth.models import User
 
 
-class ZweiActionsTestCase(TestCase):
-
-    fixtures = ['test_api.yaml']
-
-    def setUp(self):
-        self.credentials_encription_key = settings.CREDENTIALS_ENCRYPTION_KEY
-        settings.CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-
-    def tearDown(self):
-        settings.CREDENTIALS_ENCRYPTION_KEY = self.credentials_encription_key
-
-    @mock.patch('utils.request_signer._secure_opener.open')
-    def test_log_encrypted_credentials_on_conneciton_success(self, mock_urlopen):
-        test_helper.prepare_mock_urlopen(mock_urlopen)
-        ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
-
-        sync.AdGroupSourceSync(ad_group_source).trigger_status()
-        action = models.ActionLog.objects.latest('created_dt')
-
-        self.assertEqual(action.ad_group_source, ad_group_source)
-        self.assertEqual(action.action, constants.Action.FETCH_CAMPAIGN_STATUS)
-        self.assertEqual(action.state, constants.ActionState.WAITING)
-
-        self.assertEqual(
-            action.payload['credentials'],
-            ad_group_source.source_credentials.credentials
-        )
-
-    @mock.patch('utils.request_signer._secure_opener.open')
-    def test_log_encrypted_credentials_on_conneciton_fail(self, mock_urlopen):
-        exception = urllib2.HTTPError(settings.ZWEI_API_URL, 500, "Server is down.", None, None)
-        test_helper.prepare_mock_urlopen(mock_urlopen, exception=exception)
-        ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
-
-        sync.AdGroupSourceSync(ad_group_source).trigger_status()
-        action = models.ActionLog.objects.latest('created_dt')
-
-        self.assertEqual(action.ad_group_source, ad_group_source)
-        self.assertEqual(action.action, constants.Action.FETCH_CAMPAIGN_STATUS)
-        self.assertEqual(action.state, constants.ActionState.FAILED)
-
-        self.assertEqual(
-            action.payload['credentials'],
-            ad_group_source.source_credentials.credentials
-        )
-
-
 class ActionLogApiTestCase(TestCase):
 
     fixtures = ['test_api.yaml']
@@ -132,7 +85,6 @@ class ActionLogApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.SET_CAMPAIGN_STATE,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'conf': {
@@ -493,7 +445,6 @@ class ActionLogApiTestCase(TestCase):
                 'source': ad_group_source.source.source_type.type,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
                 'expiration_dt': expiration_dt,
-                'credentials': ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
                 },
@@ -533,7 +484,6 @@ class ActionLogApiTestCase(TestCase):
                 'source': ad_group_source.source.source_type.type,
                 'action': constants.Action.FETCH_REPORTS,
                 'expiration_dt': expiration_dt,
-                'credentials': ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
                     'date': date.strftime('%Y-%m-%d'),
@@ -673,13 +623,12 @@ class ActionLogApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.CREATE_CAMPAIGN,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'name': name,
                 'extra': {
                     'tracking_code': url_helper.combine_tracking_codes(
                         ad_group_settings.get_tracking_codes(),
-                        ad_group_source.get_tracking_ids(),
+                        ad_group_source.get_tracking_ids(),  # should have tracking ids
                     ),
                     'tracking_slug': 'yahoo',
                     'target_regions': ['UK', 'US', 'CA'],
@@ -712,14 +661,12 @@ class ActionLogApiTestCase(TestCase):
             'source': ad_group_source_extra.source.source_type.type,
             'action': constants.Action.CREATE_CAMPAIGN,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source_extra.source_credentials.credentials,
             'args': {
                 'name': name,
                 'extra': {
                     'iab_category': 'IAB24',
                     'tracking_code':  url_helper.combine_tracking_codes(
-                        ad_group_settings.get_tracking_codes(),
-                        ad_group_source_extra.get_tracking_ids(),
+                        ad_group_settings.get_tracking_codes()  # no tracking ids as ga tracking is disabled
                     ),
                     'tracking_slug': 'industrybrains',
                     'target_devices': [],
@@ -791,16 +738,6 @@ class ActionLogApiCancelExpiredTestCase(TestCase):
 
         self.assertNotEqual(ad_group_source.source_campaign_key, {})
         self.assertIsNone(api._init_set_ad_group_source_settings(ad_group_source, {}, request, order=None))
-
-    def test_init_ad_group_source_settings_no_source_key(self):
-        ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
-        ad_group_source.source_campaign_key = {}
-
-        request = HttpRequest()
-        request.user = User.objects.create_user('test@example.com')
-
-        with self.assertRaises(exceptions.InsertActionException):
-            api._init_set_ad_group_source_settings(ad_group_source, {}, request, order=None)
 
     def test_init_ad_group_source_settings_pending_source_key(self):
         ad_group_source = dashmodels.AdGroupSource.objects.get(id=1)
@@ -1311,3 +1248,112 @@ class SyncInProgressTestCase(TestCase):
         alog.save()
 
         self.assertEqual(api.is_sync_in_progress(), False)
+
+    def test_publisher_blacklist_adg_sync_in_progress(self):
+
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+
+        #  def is_publisher_blacklist_sync_in_progress(ad_group):
+        self.assertEqual(models.ActionLog.objects.all().count(), 0)
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+        alog = models.ActionLog(
+            action=constants.Action.SET_PUBLISHER_BLACKLIST,
+            action_type=constants.ActionType.AUTOMATIC,
+            ad_group_source=dashmodels.AdGroupSource.objects.get(pk=1),
+        )
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+    def test_publisher_blacklist_campaign_sync_in_progress(self):
+
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+        campaign = ad_group.campaign
+
+        #  def is_publisher_blacklist_sync_in_progress(ad_group):
+        self.assertEqual(models.ActionLog.objects.all().count(), 0)
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+        alog = models.ActionLog(
+            action=constants.Action.SET_PUBLISHER_BLACKLIST,
+            action_type=constants.ActionType.AUTOMATIC,
+            payload={
+                "args": {
+                    "level": dashconstants.PublisherBlacklistLevel.CAMPAIGN,
+                    "key": [campaign.id]
+                }
+            }
+        )
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+    def test_publisher_blacklist_account_sync_in_progress(self):
+
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+        campaign = ad_group.campaign
+        account = campaign.account
+
+        #  def is_publisher_blacklist_sync_in_progress(ad_group):
+        self.assertEqual(models.ActionLog.objects.all().count(), 0)
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+        alog = models.ActionLog(
+            action=constants.Action.SET_PUBLISHER_BLACKLIST,
+            action_type=constants.ActionType.AUTOMATIC,
+            payload={
+                "args": {
+                    "level": dashconstants.PublisherBlacklistLevel.ACCOUNT,
+                    "key": [account.id]
+                }
+            }
+        )
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+    def test_publisher_blacklist_global_sync_in_progress(self):
+
+        ad_group = dashmodels.AdGroup.objects.get(pk=1)
+
+        #  def is_publisher_blacklist_sync_in_progress(ad_group):
+        self.assertEqual(models.ActionLog.objects.all().count(), 0)
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)
+
+        alog = models.ActionLog(
+            action=constants.Action.SET_PUBLISHER_BLACKLIST,
+            action_type=constants.ActionType.AUTOMATIC,
+            payload={
+                "args": {
+                    "level": dashconstants.PublisherBlacklistLevel.GLOBAL,
+                }
+            }
+        )
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), True)
+
+        alog.state = constants.ActionState.SUCCESS
+        alog.save()
+
+        self.assertEqual(api.is_publisher_blacklist_sync_in_progress(ad_group), False)

@@ -12,7 +12,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('dash', '0002_auto_20140716_2233'),
         ('actionlog', '0001_initial'),
     ]
 

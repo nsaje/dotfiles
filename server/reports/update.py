@@ -1,11 +1,18 @@
 import copy
+import datetime
 import logging
 
 from django.db import transaction
+from django.conf import settings
+
+import dash.models
 
 import reports.api
 import reports.refresh
 import reports.models
+from reports import refresh
+from reports import redshift
+from utils.statsd_helper import statsd_timer
 
 from utils import statsd_helper
 
@@ -264,3 +271,125 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
             cost_cc=row['cost_cc'],
             data_cost_cc=row.get('data_cost_cc'),
         )
+
+    date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+    reports.refresh.refresh_contentadstats(date, ad_group, source)
+
+
+@transaction.atomic(using=settings.STATS_DB_NAME)
+def update_touchpoint_conversions(date, account_id, slug, conversion_touchpoint_pairs):
+    redshift.delete_touchpoint_conversions(date, account_id, slug)
+    redshift.insert_touchpoint_conversions(conversion_touchpoint_pairs)
+
+
+@statsd_timer('reports.update', 'process_report')
+@transaction.atomic
+def process_report(date, parsed_report_rows, report_type):
+    """
+    Stores postclick stats and conversion goals stats
+    to DB and updates stats DB
+    """
+    try:
+        sources = dash.models.Source.objects.all()
+        track_source_map = {}
+        for source in sources:
+            track_source_map[source.tracking_slug] = source.id
+
+        bulk_contentad_stats = []
+        bulk_goal_conversion_stats = []
+        content_ad_ids = set()
+        for entry in parsed_report_rows:
+            content_ad_ids.add(entry.content_ad_id)
+
+            stats = _create_contentad_postclick_stats(entry, track_source_map)
+            if stats is None:
+                continue
+            bulk_contentad_stats.append(stats)
+
+            goal_conversion_stats = _create_contentad_goal_conversion_stats(entry, report_type, track_source_map)
+            bulk_goal_conversion_stats.extend(goal_conversion_stats)
+
+        _delete_and_restore_bulk_stats(report_type, bulk_contentad_stats, bulk_goal_conversion_stats)
+        _refresh_contentadstats(date, content_ad_ids)
+    except:
+        logger.exception('Failed processing report')
+        raise
+
+
+@statsd_timer('reports.update', '_delete_and_restore_bulk_stats')
+def _delete_and_restore_bulk_stats(report_type, bulk_contentad_stats, bulk_goal_conversion_stats):
+    for obj in bulk_contentad_stats:
+        reports.models.ContentAdPostclickStats.objects.filter(
+            date=obj.date,
+            content_ad__id=obj.content_ad_id,
+            source__id=obj.source_id
+        ).delete()
+
+    for obj in bulk_goal_conversion_stats:
+        reports.models.ContentAdGoalConversionStats.objects.filter(
+            date=obj.date,
+            content_ad__id=obj.content_ad_id,
+            source__id=obj.source_id,
+            goal_type=report_type,
+        ).delete()
+
+    for obj in bulk_contentad_stats:
+        obj.save()
+
+    for obj in bulk_goal_conversion_stats:
+        obj.save()
+
+
+@statsd_timer('reports.update', '_refresh_contentadstats')
+def _refresh_contentadstats(date, content_ad_ids):
+    # refresh aggregation table
+    for ad_group in dash.models.AdGroup.objects.filter(contentad__id__in=content_ad_ids):
+        reports.refresh.refresh_contentadstats(date, ad_group)
+
+
+def _create_contentad_postclick_stats(entry, track_source_map):
+    created_dt = datetime.datetime.utcnow()
+    try:
+        stats = reports.models.ContentAdPostclickStats(
+            date=entry.report_date,
+            created_dt=created_dt,
+            visits=entry.visits,
+            new_visits=entry.new_visits,
+            bounced_visits=entry.bounced_visits,
+            pageviews=entry.pageviews,
+            total_time_on_site=entry.total_time_on_site,
+        )
+        stats.source_id = track_source_map[entry.source_param]
+        stats.content_ad_id = entry.content_ad_id
+        return stats
+    except:
+        logger.exception("Failed parsing content ad {blob}".format(
+            blob=entry
+        ))
+        raise
+    return None
+
+
+def _create_contentad_goal_conversion_stats(entry, goal_type, track_source_map):
+    created_dt = datetime.datetime.utcnow()
+    try:
+        report_date = entry.report_date
+        stats = []
+        for goal, conversions in entry.goals.iteritems():
+            stat = reports.models.ContentAdGoalConversionStats(
+                date=report_date,
+                created_dt=created_dt,
+                goal_type=goal_type,
+                goal_name=goal,
+                conversions=conversions,
+            )
+            stat.source_id = track_source_map[entry.source_param]
+            stat.content_ad_id = entry.content_ad_id
+            stats.append(stat)
+        return stats
+    except:
+        logger.exception("Failed parsing content ad {blob}".format(
+            blob=entry
+        ))
+        raise
+    return []

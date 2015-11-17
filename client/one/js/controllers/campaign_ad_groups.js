@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
+oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($location, $scope, $state, $timeout, api, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addGroupRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -15,6 +15,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.totalRow = null;
     $scope.order = '-cost';
     $scope.isIncompletePostclickMetrics = false;
+    $scope.localStoragePrefix = 'campaignAdGroups';
 
     var userSettings = zemUserSettings.getInstance($scope, 'campaignAdGroups');
 
@@ -64,6 +65,11 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         {name: 'By Day (CSV)', value: 'csv'},
         {name: 'By Day (Excel)', value: 'excel'},
         {name: 'Detailed report', value: 'excel_detailed', hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_detailed_report')}
+    ];
+
+    $scope.exportPlusOptions = [
+      {name: 'Current View', value: 'adgroup-csv'},
+      {name: 'By content Ad', value: 'contentad-csv'}
     ];
 
     $scope.columns = [
@@ -201,14 +207,16 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             ]
         },
         {
+            'name': 'Conversions',
+            'fields': ['conversion_goal_1', 'conversion_goal_2']
+        },
+        {
             'name': 'Data Sync',
             'fields': ['last_sync']
         }
     ];
 
     var initColumns = function () {
-        var cols;
-
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
             $scope.columns.length - 2,
@@ -221,15 +229,14 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             $scope.columns.length - 2,
             $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+
         );
-
-        cols = zemCustomTableColsService.load('campaignAdGroups', $scope.columns);
-        $scope.selectedColumnsCount = cols.length;
-
-        $scope.$watch('columns', function (newValue, oldValue) {
-            cols = zemCustomTableColsService.save('campaignAdGroups', newValue);
-            $scope.selectedColumnsCount = cols.length;
-        }, true);
+        zemPostclickMetricsService.insertConversionGoalColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.conversion_reports'),
+            $scope.isPermissionInternal('zemauth.conversion_reports')
+        );
     };
 
     $scope.addAdGroup = function () {
@@ -244,7 +251,9 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                             campaign.adGroups.push({
                                 id: data.id,
                                 name: data.name,
-                                contentAdsTabWithCMS: data.contentAdsTabWithCMS
+                                contentAdsTabWithCMS: data.contentAdsTabWithCMS,
+                                status: 'stopped',
+                                state: 'paused'
                             });
 
                             $state.go('main.adGroups.settings', {id: data.id});
@@ -278,16 +287,34 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             return option.value;
         });
 
+        // always query for default metrics
+        var metrics = [constants.chartMetric.CLICKS, constants.chartMetric.IMPRESSIONS];
         if (values.indexOf($scope.chartMetric1) === -1) {
             $scope.chartMetric1 = constants.chartMetric.CLICKS;
+        } else {
+            metrics.push($scope.chartMetric1);
         }
 
         if ($scope.chartMetric2 !== 'none' && values.indexOf($scope.chartMetric2) === -1) {
             $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+        } else {
+            metrics.push($scope.chartMetric2);
         }
 
-        return [$scope.chartMetric1, $scope.chartMetric2];
+        return metrics;
     };
+
+    var setConversionGoalChartOptions = function (conversionGoals) {
+        var validChartMetrics = zemPostclickMetricsService.getValidChartMetrics($scope.chartMetric1, $scope.chartMetric2, conversionGoals);
+        $scope.chartMetric1 = validChartMetrics.chartMetric1;
+        $scope.chartMetric2 = validChartMetrics.chartMetric2;
+        zemPostclickMetricsService.setConversionGoalChartOptions(
+            $scope.chartMetricOptions,
+            conversionGoals,
+            $scope.hasPermission('zemauth.conversion_reports')
+        );
+    };
+
 
     var setChartOptions = function () {
         $scope.chartMetricOptions = options.campaignChartMetrics;
@@ -305,12 +332,20 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
             );
         }
+
+        if ($scope.hasPermission('zemauth.conversion_reports')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.campaignConversionGoalChartMetrics,
+                $scope.isPermissionInternal('zemauth.conversion_reports')
+            );
+        }
     };
 
     var getDailyStats = function () {
         api.dailyStats.list($scope.level, $state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.selectedAdGroupIds, $scope.selectedTotals, getDailyStatsMetrics(), null).then(
             function (data) {
-                setChartOptions();
+                setConversionGoalChartOptions(data.conversionGoals);
                 $scope.chartData = data.chartData;
             },
             function (data) {
@@ -347,6 +382,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.order = data.order;
 
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
+                zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
 
                 $scope.rows = $scope.rows.map(function (x) {
                     x.id = x.ad_group;
@@ -427,12 +463,12 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         var adGroupIds = $location.search().ad_group_ids;
         var adGroupTotals = $location.search().ad_group_totals;
 
-        userSettings.register('chartMetric1');
-        userSettings.register('chartMetric2');
+        setChartOptions();
+
+        userSettings.registerWithoutWatch('chartMetric1');
+        userSettings.registerWithoutWatch('chartMetric2');
         userSettings.register('order');
         userSettings.registerGlobal('chartHidden');
-
-        setChartOptions();
 
         if (adGroupIds) {
             adGroupIds.split(',').forEach(function (id) {
@@ -469,7 +505,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         getDailyStats();
         getTableData();
-        setDisabledExportOptions();
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {

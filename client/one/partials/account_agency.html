@@ -3,7 +3,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.name}">
             <label for="name-input" class="col-xs-2 control-label">
                 Name
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Name of the account." placement="top"></zem-help-popover>
+                <zem-help-popover content="Name of the account." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
                 <input id="name-input" type="text" class="form-control" ng-model="settings.name">
@@ -12,10 +12,67 @@
             <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
         </div>
 
-        <div class="form-group" ng-if="hasPermission('zemauth.account_agency_access_permissions')">
+        <div class="form-group" ng-class="{'has-error': !!errors.defaultAccountManager}">
+            <label for="account-manager-select" class="col-xs-2 control-label">
+                Default Account Manager
+                <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <ui-select theme="select2" id="account-manager-select" class="form-control" ng-model="settings.defaultAccountManager">
+                    <ui-select-match>{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="manager.id as manager in accountManagers | orderBy:getName | filter:$select.search">
+                        <div ng-bind-html="manager.name | highlight: $select.search"></div>
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+            <label ng-repeat="error in errors.defaultAccountManager" class="control-label error" for="account-manager-select">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.defaultSalesRepresentative}">
+            <label for="sales-representative-select" class="col-xs-2 control-label">
+                Default Sales Representative
+                <zem-help-popover content="Sales representative responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <ui-select theme="select2" id="sales-representative-select" class="form-control" ng-model="settings.defaultSalesRepresentative">
+                    <ui-select-match>{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="rep.id as rep in salesReps | orderBy:getName | filter:$select.search">
+                        <div ng-bind-html="rep.name | highlight: $select.search"></div>
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+            <label ng-repeat="error in errors.defaultSalesRepresentative" class="control-label error" for="sales-representative-select">{{ error }}</label>
+        </div>
+        <div class="form-group" ng-class="{'has-error': !!errors.serviceFee}">
+            <label for="service-fee-select" class="col-xs-2 control-label">
+                License Fee
+                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Software licence fee; calculated based on media spend." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-3">
+                <ui-select theme="select2" id="service-fee-select" class="form-control" ng-model="settings.serviceFee">
+                    <ui-select-match>{{$select.selected}}%</ui-select-match>
+                    <ui-select-choices repeat="fee in getServiceFees($select.search) | filter: $select.search">
+                        <span ng-bind-html="fee"></span>%
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+            <label ng-repeat="error in errors.serviceFee" class="control-label error" for="service-fee-select">{{ error }}</label>
+        </div>
+
+        <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+        <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
+        <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the account\'s campaigns have to be paused in order to archive the account.') || '' }}" ng-click="archiveAccount()">Archive account</button>
+        <div class="loader" ng-show="requestInProgress"></div>
+        <span ng-show="saved" class="success">Your updates have been saved.</span>
+        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
+        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
+    </form>
+
+    <div class="form-horizontal table-access-permissions" ng-if="hasPermission('zemauth.account_agency_access_permissions')">
+        <div class="form-group">
             <label for="first-name-input" class="col-xs-2 control-label">
                 Access Permissions
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Users who have access to the account you're currently on." placement="top"></zem-help-popover>
+                <zem-help-popover content="Users who have access to the account you're currently on." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-8">
                 <div ng-repeat="user in users" class="form-group existing-user-row">
@@ -34,11 +91,11 @@
                             <div class="loader" ng-show="user.requestInProgress"></div>
 
                             <div class="dropdown" dropdown ng-show="!user.requestInProgress" aria-haspopup="true">
-                            <a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></a>
-                            <ul class="dropdown-menu dropdown-menu-activation" role="menu">
-                                <li><a ng-show="!user.is_active" tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#">Resend Activation Mail</a></li>
-                                <li><a tabindex="-1" ng-click="userActionChange('remove', user.id)" href="#">Remove</a></li>
-                            </ul>
+                                <a href class="btn btn-default dropdown-toggle" dropdown-toggle>Edit&nbsp;<span class="caret"></span></a>
+                                <ul class="dropdown-menu dropdown-menu-activation" role="menu">
+                                    <li><a ng-show="!user.is_active" tabindex="-1" ng-click="userActionChange('resend', user.id)" href="#">Resend Activation Mail</a></li>
+                                    <li><a tabindex="-1" ng-click="userActionChange('remove', user.id)" href="#">Remove</a></li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -56,7 +113,8 @@
                     <div class="col-xs-4">
                         <button type="button" class="btn btn-default" ng-click="addUser()">Add new user</button>
                         <div class="loader" ng-show="addUserRequestInProgress"></div>
-                    </div><br />
+                    </div>
+                    <br />
                     <div class="col-xs-12" ng-show="addUserErrors">
                         <label class="error">{{addUserErrors.message}}</label>
                         <label ng-show="addUserErrors.conflict" class="error"></label>
@@ -64,19 +122,71 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
-        <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
-        <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the account\'s campaigns have to be paused in order to archive the account.') || '' }}" ng-click="archiveAccount()">Archive account</button>
-        <div class="loader" ng-show="requestInProgress"></div>
-        <span ng-show="saved" class="success">Your updates have been saved.</span>
-        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
-        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
-    </form>
+    <div class="section table-conversion-pixels" ng-if="hasPermission('zemauth.manage_conversion_pixels')">
+        <div class="title">
+            Set Up Conversion Pixels
+            <div class="loader" ng-show="listPixelsInProgress"></div>
+        </div>
+        <div class="loader-container" ng-if="conversionPixels.length">
+            <div class="loader" ng-show="conversionPixels.length && listPixelsInProgress"></div>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="arrow" ng-class="{ordered: pixelOrderField === 'slug' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'slug' && pixelOrderReverse}">
+                            <a href class="order" ng-click="pixelOrderField = 'slug'; pixelOrderReverse = !pixelOrderReverse">Slug</a>
+                            <zem-help-popover content="Conversion pixel's unique identifier" placement="top"></zem-help-popover>
+                        </th>
+                        <th class="arrow" ng-class="{ordered: pixelOrderField === 'status' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'status' && pixelOrderReverse}">
+                            <a href class="order" ng-click="pixelOrderField = 'status'; pixelOrderReverse = !pixelOrderReverse">Status</a>
+                            <zem-help-popover content="<em>Active</em> if conversion has been recorded in the past 7 days, <em>Inactive</em> otherwise, and <em>No activity yet</em> if the conversion pixel has not been triggered yet." placement="top"></zem-help-popover>
+                        </th>
+                        <th class="arrow" ng-class="{ordered: pixelOrderField === 'lastVerifiedDt' && !pixelOrderReverse, 'ordered-reverse': pixelOrderField === 'lastVerifiedDt' && pixelOrderReverse}">
+                            <a href class="order" ng-click="pixelOrderField = 'lastVerifiedDt'; pixelOrderReverse = !pixelOrderReverse">Last verified</a>
+                            <zem-help-popover content="The last time when the conversion pixel was triggered." placement="top"></zem-help-popover>
+                        </th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-class="{'archived': item.archived}" ng-repeat="item in conversionPixels | orderBy:pixelOrderField:pixelOrderReverse | filter: filterConversionPixels">
+                        <td class="pixel-slug">
+                            {{ item.slug }}
+                            <span class="loader" ng-if="item.requestInProgress"></span>
+                        </td>
+                        <td class="pixel-status">{{ item.status }}</td>
+                        <td class="no-wrap pixel-last-verified">{{ (item.lastVerifiedDt | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                        <td>
+                            <div class="dropdown" dropdown aria-haspopup="true">
+                                <a href class="btn btn-default btn-big dropdown-toggle" ng-class="{'disabled': item.requestInProgress}" dropdown-toggle>Actions&nbsp;<span class="caret" /></a>
+                                <ul class="dropdown-menu dropdown-menu-activation" role="menu">
+                                    <li ng-if="!item.archived"><a tabindex="-1" ng-click="archiveConversionPixel(item)" href="#">Archive</a></li>
+                                    <li ng-if="!!item.archived"><a tabindex="-1" ng-click="restoreConversionPixel(item)" href="#">Restore</a></li>
+                                    <li ng-if="!item.archived"><a tabindex="-1" ng-click="copyConversionPixelTag(item)" href="#">Copy tag</a></li>
+                                </ul>
+                            </div>
+                        </td>
+                        <td>
+                            <span ng-if="!!item.error" class="error">
+                                An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button type="button" class="btn btn-default" ng-class="{'disabled': !!listPixelsInProgress || !!listPixelsError}" ng-click="addConversionPixel()">Add Pixel</button>
+        <span ng-if="!!listPixelsError" class="error">
+            An error has occured while loading conversion pixels. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
+        </span>
+    </div>
 
     <div class="section table-account-agency">
-        <div class="title">History<zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="History of settings changes." placement="top"></zem-help-popover>
-</div>
+        <div class="title">History
+            <zem-help-popover content="History of settings changes." placement="top"></zem-help-popover>
+        </div>
         <div class="loader-container">
             <div class="loader" ng-show="history.length && requestInProgress"></div>
             <table class="table table-hover">
@@ -100,7 +210,7 @@
                     <tr ng-repeat="item in history | orderBy:orderField:orderReverse">
                         <td class="no-wrap">{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                         <td>{{ item.changedBy }}</td>
-                        <td zem-html-popover="'popoverContent.html'" popover-trigger="mouseenter" popover-append-to-body="true">{{ item.changesText }}</td>
+                        <td zem-lazy-popover-template="'popoverContent.html'" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade">{{ item.changesText }}</td>
                     </tr>
                 </tbody>
             </table>

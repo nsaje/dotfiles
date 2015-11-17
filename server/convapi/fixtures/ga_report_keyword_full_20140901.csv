@@ -1,0 +1,22 @@
+# ----------------------------------------
+# All Web Site Data
+# Landing Pages
+# 20140901-20140901
+# ----------------------------------------
+
+Keyword,Device Category,Sessions,% New Sessions,New Users,Bounce Rate,Pages / Session,Avg. Session Duration,Buy Beer (Goal 1 Conversion Rate),Buy Beer (Goal 1 Completions),Buy Beer (Goal 1 Value),Get Drunk (Goal 2 Conversion Rate),Get Drunk (Goal 2 Completions),Get Drunk (Goal 2 Value)
+z11yahoo.com1z,desktop,"10,0",90.00%,75,50.00%,2.24,00:00:41,10.00%,10,$20.00,5.00%,5,A$12.00
+z11yahoo.com1z,mobile,10,90.00%,7,50.00%,1.24,00:00:31,20.00%,2,$2.00,10.00%,1,$8.00
+z11outbrain.com1z,desktop,100,90.00%,75,50.00%,2.24,00:00:41,10.00%,10,$20.00,5.00%,5,$12.00
+z11yahoo.com1z,desktop,100,90.00%,75,50.00%,2.24,00:00:41,10.00%,10,$20.00,5.00%,5,$12.00
+z11yahoo.com1z,mobile,10,90.00%,7,50.00%,1.24,00:00:31,20.00%,2,$2.00,10.00%,1,$8.00
+z11infolinks.com1z,desktop,100,90.00%,75,50.00%,2.24,00:00:41,10.00%,10,$20.00,5.00%,5,$12.00
+z11infolinks.com1z,desktop,100,90.00%,75,50.00%,2.24,00:00:41,10.00%,10,$20.00,5.00%,5,$12.00
+,,"1,546",97.15%,"1,502",74.13%,1.58,00:00:22,0.00%,0,$0.00,0.00%,0,$0.00
+z111z,mobile,100,90.00%,75,50.00%,2.24,00:00:41,10.00%,10,$20.00,5.00%,5,$12.00
+z1yahoo.com1z,desktop,100,90.00%,75,50.00%,2.24,00:00:41,10.00%,10,$20.00,5.00%,5,$12.00
+
+Day Index,Sessions
+9/1/14,"5,20"
+,"520"
+

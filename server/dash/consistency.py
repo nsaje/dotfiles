@@ -24,6 +24,24 @@ class SettingsStateConsistence(object):
                 return False
         return True
 
+    def get_needed_state_updates(self):
+        latest_state = self.get_latest_state()
+        latest_settings = self.get_latest_settings()
+
+        changes = {}
+        if not latest_settings:
+            return changes
+
+        for attr_name in ('state', 'daily_budget_cc', 'cpc_cc'):
+            state_val = (getattr(latest_state, attr_name) if latest_state else
+                         models.AdGroupSourceSettings._meta.get_field(attr_name).get_default())
+
+            settings_val = getattr(latest_settings, attr_name)
+            if state_val != settings_val:
+                changes[attr_name] = settings_val
+
+        return changes
+
     def get_latest_state(self):
         try:
             latest_state = models.AdGroupSourceState.objects \

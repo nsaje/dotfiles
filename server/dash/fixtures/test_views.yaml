@@ -32,6 +32,22 @@
     model: zemauth.user
     pk: 2
 
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: john@test.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: false
+        is_superuser: false
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 3
+
 # test account
 
 -   fields:
@@ -39,8 +55,21 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 1'
-        users: [1, 2]
+        users: [1, 2, 3]
     model: dash.account
+    pk: 1
+
+# test accountsettings
+
+-   fields:
+        account: 1
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        archived: False
+        default_account_manager: 2
+        default_sales_representative: 3
+        service_fee: 0.13
+    model: dash.accountsettings
     pk: 1
 
 # test campaign
@@ -64,3 +93,60 @@
         name: 'test adgroup 1'
     model: dash.adgroup
     pk: 1
+
+# test conversion pixel
+
+-   fields:
+        account: 1
+        slug: 'test'
+        archived: false
+        created_dt: '2015-08-25T09:58:21'
+    model: dash.conversionpixel
+    pk: 1
+
+# test conversion goals
+
+-   fields:
+        campaign: 1
+        type: 1
+        pixel: 1
+        name: 'test conversion goal'
+        conversion_window: 168
+        goal_id: '1'
+        created_dt: '2015-09-23T09:58:21'
+    model: dash.conversiongoal
+    pk: 1
+
+-   fields:
+        campaign: 1
+        type: 2
+        pixel: null
+        name: 'test conversion goal 2'
+        conversion_window: null
+        goal_id: '2'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 2
+
+# test campaign budget
+
+-   fields:
+        campaign: 1
+        allocate: 1000
+        revoke: 0
+        total: 1000
+        comment: 'Added budget'
+        created_by: 1
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.campaignbudgetsettings
+    pk: 1
+
+# test uploadbatch
+
+-   fields:
+        name: 'Ich bin eine UploadBatch'
+        status: 3  # in progress
+        batch_size: 100
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.uploadbatch
+    pk: 2

@@ -7,6 +7,7 @@ from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from dash import forms
+from dash import models
 
 
 class AdGroupSettingsFormTest(TestCase):
@@ -22,7 +23,7 @@ class AdGroupSettingsFormTest(TestCase):
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
             'tracking_code': 'code=test',
-            'enable_ga_tracking': True
+            'enable_ga_tracking': True,
         }
 
     def test_form(self):
@@ -40,7 +41,9 @@ class AdGroupSettingsFormTest(TestCase):
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
             'tracking_code': 'code=test',
-            'enable_ga_tracking': True
+            'enable_ga_tracking': True,
+            'enable_adobe_tracking': False,
+            'adobe_tracking_param': ''
         })
 
     def test_no_non_propagated_fields(self):
@@ -85,6 +88,156 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertIn('enable_ga_tracking', form.cleaned_data)
         self.assertFalse(form.cleaned_data['enable_ga_tracking'])
 
+    def test_default_value_enable_adobe_tracking(self):
+        # should be False if not set
+        form = forms.AdGroupSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_adobe_tracking', form.cleaned_data)
+
+        # We need to use assertEqual here, because assertFalse passes
+        # even if the value is falsy (None), which is not ok here
+        self.assertEqual(form.cleaned_data['enable_adobe_tracking'], False)
+
+        self.data['enable_adobe_tracking'] = False
+        form = forms.AdGroupSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_adobe_tracking', form.cleaned_data)
+        self.assertEqual(form.cleaned_data['enable_adobe_tracking'], False)
+
+        self.data['enable_adobe_tracking'] = True
+        form = forms.AdGroupSettingsForm(self.data)
+        self.assertTrue(form.is_valid())
+        self.assertIn('enable_adobe_tracking', form.cleaned_data)
+        self.assertEqual(form.cleaned_data['enable_adobe_tracking'], True)
+
+
+class ConversionGoalFormTestCase(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def test_name(self):
+        data = {
+            'type': '2',
+            'goal_id': '1'
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'name': ['This field is required.']}, form.errors)
+
+        data['name'] = 'a' * 101
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'name': ['Conversion goal name is too long (101/100).']}, form.errors)
+
+        data['name'] = 'a'
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertTrue(form.is_valid())
+
+    def test_type(self):
+        data = {
+            'name': 'name',
+            'goal_id': '1',
+            'conversion_window': 168,
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'type': ['This field is required.']}, form.errors)
+
+        data['type'] = 98765
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'type': ['Select a valid choice. 98765 is not one of the available choices.']}, form.errors)
+
+        data['type'] = 1
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertTrue(form.is_valid())
+
+    def test_conversion_window(self):
+        data = {
+            'name': 'name',
+            'goal_id': '1',
+            'type': '1',
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'conversion_window': ['This field is required.']}, form.errors)
+
+        data['conversion_window'] = 98765
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            {'conversion_window': ['Select a valid choice. 98765 is not one of the available choices.']}, form.errors)
+
+        data['conversion_window'] = 24
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertTrue(form.is_valid())
+
+    def test_goal_id(self):
+        data = {
+            'name': 'name',
+            'type': '1',
+            'conversion_window': '168',
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'goal_id': ['This field is required.']}, form.errors)
+
+        data['goal_id'] = 'a' * 101
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'goal_id': ['Conversion goal id is too long (101/100).']}, form.errors)
+
+        data['goal_id'] = 'a'
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertTrue(form.is_valid())
+
+    def test_unique_name(self):
+        models.ConversionGoal.objects.create(campaign_id=1, type=2, goal_id='1', name='Conversion goal')
+        data = {
+            'name': 'Conversion goal',
+            'type': 3,
+            'goal_id': '2'
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'name': ['This field has to be unique.']}, form.errors)
+
+        form = forms.ConversionGoalForm(data, campaign_id=2)
+        self.assertTrue(form.is_valid())
+
+    def test_unique_goal_id(self):
+        models.ConversionGoal.objects.create(campaign_id=1, type=2, goal_id='1', name='Conversion goal')
+        data = {
+            'name': 'Conversion goal 2',
+            'type': 2,
+            'goal_id': '1'
+        }
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertFalse(form.is_valid())
+        self.assertEqual({'goal_id': ['This field has to be unique.']}, form.errors)
+
+        form = forms.ConversionGoalForm(data, campaign_id=2)
+        self.assertTrue(form.is_valid())
+
+        data['type'] = 3
+
+        form = forms.ConversionGoalForm(data, campaign_id=1)
+        self.assertTrue(form.is_valid())
+
 
 class AdGroupAdsPlusUploadFormTest(TestCase):
     def setUp(self):
@@ -122,6 +275,45 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {'content_ads': [u'Uploaded file is empty.']})
 
+
+
+    def test_empty_display_url_and_not_in_csv(self):
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas'],
+            [[self.url, self.title, self.image_url, self.crop_areas]])
+
+        form = self._init_form(csv_file, {'display_url': ''})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'display_url': ['This field is required.']})
+
+    def test_empty_brand_name_and_not_in_csv(self):
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas'],
+            [[self.url, self.title, self.image_url, self.crop_areas]])
+
+        form = self._init_form(csv_file, {'brand_name': ''})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'brand_name': ['This field is required.']})
+
+
+    def test_empty_description_and_not_in_csv(self):
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas'],
+            [[self.url, self.title, self.image_url, self.crop_areas]])
+
+        form = self._init_form(csv_file, {'description': ''})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'description': ['This field is required.']})
+
+    def test_empty_call_to_action_and_not_in_csv(self):
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas'],
+            [[self.url, self.title, self.image_url, self.crop_areas]])
+
+        form = self._init_form(csv_file, {'call_to_action': ''})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'call_to_action': ['This field is required.']})
+
     def test_invalid_display_url(self):
         csv_file = self._get_csv_file(
             ['Url', 'Title', 'Image Url', 'Crop Areas'],
@@ -129,7 +321,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
         form = self._init_form(csv_file, {'display_url': 'teststring'})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.errors, {'display_url': ['Enter a valid URL.']})
+        self.assertEqual(form.errors, {'display_url': ['Display URL is invalid.']})
 
     def test_cleaned_display_url(self):
         csv_file = self._get_csv_file(
@@ -177,6 +369,81 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
             }]
         })
 
+
+    def test_form_optional_fields_in_csv(self):
+        # optional fields in csv are present (display url, brand name, description, call to action)
+        # they override the ones from the batch upload form for each content ad
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Tracker URLs', 'Display URL', 'Brand name', 'Description', 'Call to action'],
+            [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls, self.display_url + "2", self.brand_name + "2", self.description + "2", self.call_to_action + "2"]])
+
+        form = self._init_form(csv_file, None)
+
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data, {
+            'batch_name': self.batch_name,
+            'display_url': self.display_url,
+            'brand_name': self.brand_name,
+            'description': self.description,
+            'call_to_action': self.call_to_action,
+            'content_ads': [{
+                u'crop_areas': self.crop_areas,
+                u'image_url': self.image_url,
+                u'title': self.title,
+                u'url': self.url,
+                u'tracker_urls': self.tracker_urls,
+                u'display_url': self.display_url + "2",	# From CSV
+                u'brand_name': self.brand_name + "2",
+                u'description': self.description + "2",
+                u'call_to_action': self.call_to_action + "2",
+
+            }]
+        })
+
+    def test_form_optional_fields_in_csv_alternative_column_names(self):
+        # optional fields in csv are present (display url, brand name, description, call to action)
+        # they override the ones from the batch upload form for each content ad.
+        # Those optional fields have alternative endings like spaces and (optional) added. 
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas(optional)', 'Tracker URL', 'Display URL (optional)', 'Brand name  (optional)', 'Description  ', 'Call to action _(optional)_ '],
+            [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls, self.display_url + "2", self.brand_name + "2", self.description + "2", self.call_to_action + "2"]])
+
+        form = self._init_form(csv_file, None)
+
+        self.assertEqual(form.errors, {})
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data, {
+            'batch_name': self.batch_name,
+            'display_url': self.display_url,
+            'brand_name': self.brand_name,
+            'description': self.description,
+            'call_to_action': self.call_to_action,
+            'content_ads': [{
+                u'crop_areas': self.crop_areas,
+                u'image_url': self.image_url,
+                u'title': self.title,
+                u'url': self.url,
+                u'tracker_urls': self.tracker_urls,
+                u'display_url': self.display_url + "2",	# From CSV
+                u'brand_name': self.brand_name + "2",
+                u'description': self.description + "2",
+                u'call_to_action': self.call_to_action + "2",
+
+            }]
+        })
+
+
+    def test_form_optional_fields_duplicated(self):
+        csv_file = self._get_csv_file(
+            ['Url', 'Title', 'Image Url', 'Crop Areas', 'Crop Areas'],
+            [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls]])
+
+        form = self._init_form(csv_file, None)
+        self.assertEqual(form.errors, {'content_ads': [u'Column "crop_areas" appears multiple times (2) in the CSV file.']})
+        
+
+
+
     def test_incorrect_csv_format(self):
         csv_file = StringIO.StringIO()
         csv_file.write('TEST\x00TEST')
@@ -209,22 +476,22 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors['content_ads'], ['Third column in header should be Image URL.'])
 
-    def test_header_no_crop_areas(self):
+    def test_header_unknown_forth_column(self):
         csv_file = self._get_csv_file(['URL', 'Title', 'Image URL', 'aaa'], [])
         form = self._init_form(csv_file, None)
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors['content_ads'],
-            ['Fourth column in header should be Crop areas or Tracker URLs.']
+            ['Unrecognized column name "aaa".']
         )
 
-    def test_header_no_tracker_urls(self):
+    def test_header_unknown_fifth_column(self):
         csv_file = self._get_csv_file(['URL', 'Title', 'Image URL', 'Crop Areas', 'aaa'], [])
         form = self._init_form(csv_file, None)
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors['content_ads'],
-            ['Fifth column in header should be Crop areas or Tracker URLs.']
+            ['Unrecognized column name "aaa".']
         )
 
     def test_windows_1252_encoding(self):

@@ -10,9 +10,9 @@
                     <div class="nav-group account-group" ng-if="$state.includes('main.allAccounts.*') && (!account.archived || getShowArchived())" ng-repeat="account in accounts">
                         <div class="nav-group campaign-group" ng-if="!campaign.archived || getShowArchived()" ng-repeat="campaign in account.campaigns">
                             <span class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived || account.archived }" ng-if="!canAccessCampaigns()">{{ campaign.name }}</span>
-                            <a class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString()}), 'archived': campaign.archived || account.archived }" ng-if="canAccessCampaigns()" ui-sref="{{ getDefaultCampaignState() }}({ id: campaign.id})">{{ campaign.name }}</a>
+                            <a class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString()}), 'archived': campaign.archived || account.archived }" ng-if="canAccessCampaigns()" zem-in-link="{{ getDefaultCampaignState() }}({ id: campaign.id})">{{ campaign.name }}</a>
                             <div class="nav-group ad-group-group" ng-if="!adGroup.archived || getShowArchived()" ng-repeat="adGroup in campaign.adGroups">
-                                <a class="nav-name ad-group-name" ui-sref="{{ getDefaultAdGroupState() }}({ id: adGroup.id })" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }), 'archived': adGroup.archived || campaign.archived || account.archived }">{{ adGroup.name }}</a>
+                                <a class="nav-name ad-group-name" zem-in-link="{{ getDefaultAdGroupState() }}({ id: adGroup.id })" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }), 'archived': adGroup.archived || campaign.archived || account.archived }"><span class="ng-scope" ng-class="'adgroup-status-' + adGroup.state + '-' + adGroup.status + '-icon'"></span>{{ adGroup.name }}</a>
                             </div>
                         </div>
                     </div>
@@ -20,9 +20,9 @@
                         <div class="nav-group account-group">
                             <div class="nav-group campaign-group" ng-if="!campaign.archived || getShowArchived()" ng-repeat="campaign in account.campaigns">
                                 <span class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived || account.archived }" ng-if="!canAccessCampaigns() ">{{ campaign.name }}</span>
-                                <a class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived }" ng-if="canAccessCampaigns()" ui-sref="{{ getDefaultCampaignState() }}({ id: campaign.id})">{{ campaign.name }}</a>
+                                <a class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived }" ng-if="canAccessCampaigns()" zem-in-link="{{ getDefaultCampaignState() }}({ id: campaign.id})">{{ campaign.name }}</a>
                                 <div class="nav-group ad-group-group" ng-if="!adGroup.archived || getShowArchived()" ng-repeat="adGroup in campaign.adGroups">
-                                    <a class="nav-name ad-group-name" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }), 'archived': adGroup.archived }" ui-sref="{{ getDefaultAdGroupState() }}({ id: adGroup.id })">{{ adGroup.name }}</a>
+                                    <a class="nav-name ad-group-name" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }), 'archived': adGroup.archived }" zem-in-link="{{ getDefaultAdGroupState() }}({ id: adGroup.id })"><span class="ng-scope" ng-class="'adgroup-status-' + adGroup.state + '-' + adGroup.status + '-icon'"></span>{{ adGroup.name }}</a>
                                 </div>
                             </div>
                         </div>
@@ -32,14 +32,14 @@
             <div id="nav" ng-if="!hasPermission('zemauth.all_new_sidebar')">
                 <div class="account-group" ng-if="!account.archived || getShowArchived()" ng-repeat="account in accounts">
                     <div ng-if="!canAccessAccounts()" class="account-name" ng-class="{'archived': account.archived}">{{ account.name }}</div>
-                    <a ng-if="canAccessAccounts()" class="account-name" ng-class="{'active': $state.includes('main.accounts', { id: account.id.toString() }), 'archived': account.archived }" ui-sref="{{ $state.includes('*.accounts.**') ? $state.current.name : getDefaultAccountState() }}({ id: account.id })">{{ account.name }}</a>
-                    <ul class="list-group">
+                    <a ng-if="canAccessAccounts()" class="account-name" ng-class="{'active': $state.includes('main.accounts', { id: account.id.toString() }), 'archived': account.archived }" zem-in-link="{{ $state.includes('*.accounts.**') ? $state.current.name : getDefaultAccountState() }}({ id: account.id })">{{ account.name }}</a>
+                    <ul class="list-group list-campaigns">
                         <li class="campaign-group list-group-item" ng-if="!campaign.archived || getShowArchived()" ng-repeat="campaign in account.campaigns">
                             <div ng-if="!canAccessCampaigns()" class="campaign-name" ng-class="{'archived': campaign.archived}">{{ campaign.name }}</div>
-                            <a ng-if="canAccessCampaigns()" class="campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived }" ui-sref="{{ $state.includes('*.campaigns.**') ? $state.current.name : getDefaultCampaignState() }}({ id: campaign.id })">{{ campaign.name }}</a>
+                            <a ng-if="canAccessCampaigns()" class="campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived }" zem-in-link="{{ $state.includes('*.campaigns.**') ? $state.current.name : getDefaultCampaignState() }}({ id: campaign.id })">{{ campaign.name }}</a>
                             <ul class="list-group ad-groups">
-                                <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }) }" ui-sref="{{ $state.includes('*.adGroups.**') ? $state.current.name : getDefaultAdGroupState() }}({ id: adGroup.id })" ng-if="!adGroup.archived || getShowArchived()" ng-repeat="adGroup in campaign.adGroups">
-                                    <img ng-src="{{ config.static_url }}/one/img/ad_group.svg">
+                                <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }) }" zem-in-link="{{ $state.includes('*.adGroups.**') ? $state.current.name : getDefaultAdGroupState() }}({ id: adGroup.id })" ng-if="!adGroup.archived || getShowArchived()" ng-repeat="adGroup in campaign.adGroups">
+                                    <span class="ng-scope" ng-class="'adgroup-status-' + adGroup.state + '-' + adGroup.status + '-icon'"></span>
                                     <span class="ad-group-name" ng-class="{'archived': adGroup.archived}">{{ adGroup.name }}</span>
                                 </a>
                             </ul>
@@ -55,7 +55,12 @@
                     <input type="daterange" class="form-control" ng-model="dateRange" max-date="{{ maxDateStr }}" format="{{ inputDateFormat }}" ranges="{{ dateRanges }}" opens="left">
                 </div>
             </form>
-            <zem-filter zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"></zem-filter>
+            <zem-filter 
+                zem-has-permission="hasPermission" 
+                zem-is-permission-internal="isPermissionInternal" 
+                enable-publisher-filter="enablePublisherFilter"
+                show-publisher-selected="showPublisherSelected">
+            </zem-filter>
             <div ui-view></div>
         </div>
 

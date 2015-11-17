@@ -1,11 +1,11 @@
 <div class="page page-media-sources">
     <div class="section" ng-class="{'chart-hidden': chartHidden}">
-        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-goal-metrics="chartGoalMetrics" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)"></zem-chart>
+        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
     </div>
 
     <div class="section table-sources">
         <div class="button-bar">
-            <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories"></zem-custom-table-cols>
+            <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
 
             <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
 
@@ -18,6 +18,20 @@
                 </span>
             </span>
 
+            <div ng-if="hasPermission('zemauth.exports_plus')" class="export-container button-bar-item pull-right">
+              <zem-internal-feature ng-if="isPermissionInternal('zemauth.exports_plus')" popover-placement="bottom"></zem-internal-feature>
+                <zem-export-plus
+                    start-date="dateRange.startDate"
+                    end-date="dateRange.endDate"
+                    base-url="exportBaseUrl"
+                    options="exportPlusOptions"
+                    columns="columns"
+                    order="order"
+                    level="level"
+                    export-sources="true">
+                </zem-export-plus>
+            </div>
+
             <div class="clearfix"></div>
         </div>
 
@@ -25,7 +39,7 @@
             We are adding the following media source(s): {{sourcesWaiting.join(', ')}}. This may take some time.
         </alert>
         <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
-            We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span> 
+            We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span>
             If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
 
@@ -37,7 +51,7 @@
                     * Reporting metrics haven't been synced yet.
                 </span>
                 <span ng-switch-default>
-                    * Reporting metrics synced {{ lastSyncDate.fromNow() }}. Managed service fee not included. The reporting data is an estimate, and the final amount will be reflected on your invoice.
+                    * Reporting metrics synced {{ lastSyncDate.fromNow() }}. The reporting data is an estimate, and the final amount will be reflected on your invoice.
                 </span>
             </div>
             <div ng-show="isIncompletePostclickMetrics">

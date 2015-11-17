@@ -27,6 +27,7 @@ var nav, chart, tabs,
         this.campaign = {
             adGroups: element(by.cssContainingText('.nav-tabs .tab-title', 'Ad groups')),
             agency: element(by.cssContainingText('.nav-tabs .tab-title', 'Agency')),
+            settings: element(by.cssContainingText('.nav-tabs .tab-title', 'Campaign')),
             budget: element(by.cssContainingText('.nav-tabs .tab-title', 'Budget'))
         };
     };
@@ -77,13 +78,12 @@ describe('Campaign management', function () {
     }
 
     function renameCampaign() {
-        tabs.campaign.agency.click();
+        tabs.campaign.settings.click();
         element(by.id('name-input')).isPresent();
-        expect(browser.getLocationAbsUrl()).toMatch(/campaigns\/[0-9]+\/agency/);
+        expect(browser.getLocationAbsUrl()).toMatch(/campaigns\/[0-9]+\/settings/);
 
         element(by.id('name-input')).sendKeys(' 123');
         element(by.cssContainingText('.btn-primary', 'Save')).click();
-
         expect(
             element(by.cssContainingText('.breadcrumb-container li span',
                                          'New demo campaign')).getText()
@@ -91,7 +91,7 @@ describe('Campaign management', function () {
         expect(
             element(by.cssContainingText('.campaign-group.list-group-item a',
                                          'New demo campaign')).getText()
-        ).toEqual('New demo campaign 123');
+        ).toEqual('New demo campaign 123');        
     }
 
     function addAdGroup() {
@@ -214,7 +214,7 @@ describe('Media sources and ads', function () {
             sourcesAdded = [],
             clickSource = function () {
                 element(by.css('div.add-source')).click();
-                var elt = element.all(by.css('.select2-results .select2-result-label')).first();
+                var elt = element.all(by.css('.add-source-dropdown .select2-results .select2-result-label')).first();
                 elt.getText().then(function (val) {
                     sourcesAdded.push(val);
                     elt.click();

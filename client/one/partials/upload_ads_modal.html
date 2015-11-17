@@ -2,22 +2,25 @@
     <form class="upload-form form-horizontal">
         <div class="form-group" ng-class="{'has-error': !!errors.file}">
             <div class="col-xs-3">
-                <input type="text" id="file-input" readonly class="form-control" placeholder="No file chosen" ng-model="formData.file.name">
-            </div>
-            <div class="col-xs-4">
-                <button type="button" class="btn btn-default" zem-file-input="formData.file">Choose file</button>
-            </div>
-            <div class="col-xs-5">
                 <label ng-repeat="error in errors.file" class="control-label small error" for="file-input" ng-bind-html="error"></label>
                 <label ng-class="{'error-shown': errors.file}" class="control-label small sample-link">
                     <a href="{{ config.static_url }}/one/assets/Zemanta_Content_Ads_Template.csv">Download sample CSV</a>
                 </label>
             </div>
+            <div class="col-xs-5">
+                <button type="button" class="btn btn-default" zem-file-input="formData.file">Choose file</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-3"></div>
+            <div class="col-xs-5">
+                <input type="text" id="file-input" readonly class="form-control" placeholder="No file chosen" ng-model="formData.file.name">
+            </div>
         </div>
         <div class="form-group" ng-class="{'has-error': !!errors.batchName}">
             <label for="batch-name-input" class="col-xs-3 control-label">
                 Batch name
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The name of the upload batch." placement="top"></zem-help-popover>
+                <zem-help-popover content="The name of the upload batch." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
                 <input type="text" id="batch-name-input" class="form-control" ng-model="formData.batchName" ng-focus="clearErrors('batchName')">
@@ -26,13 +29,17 @@
                 <label ng-repeat="error in errors.batchName" class="control-label small error" for="batch-name-input">{{ error }}</label>
             </div>
         </div>
-
-        <hr>
-
+        <hr />
+        <div class="form-group">
+            <div class="col-xs-6">
+                <span class="form-title">Default content ad information</span>
+                <zem-help-popover content="These settings will be used as defaults to generate content ads unless otherwise specified in upload CSV. Not all media sources / ad formats require all of them." placement="top"></zem-help-popover>
+            </div>
+        </div>
         <div class="form-group" ng-class="{'has-error': !!errors.displayUrl}">
             <label for="display-url-input" class="col-xs-3 control-label">
                 Display URL
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Advertiser's display URL." placement="top"></zem-help-popover>
+                <zem-help-popover content="Advertiser's display URL." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
                 <input id="display-url-input" type="text" class="form-control" ng-model="formData.displayUrl" ng-focus="clearErrors('displayUrl')">
@@ -45,7 +52,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.brandName}">
             <label for="brand-name-input" class="col-xs-3 control-label">
                 Brand name
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Advertiser's brand name." placement="top"></zem-help-popover>
+                <zem-help-popover content="Advertiser's brand name." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
                 <input id="brand-name-input" type="text" class="form-control" ng-model="formData.brandName" ng-focus="clearErrors('brandName')">
@@ -58,10 +65,10 @@
         <div class="form-group" ng-class="{'has-error': !!errors.callToAction}">
             <label for="call-to-action-input" class="col-xs-3 control-label">
                 Call to action
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Call to action text." placement="top"></zem-help-popover>
+                <zem-help-popover content="Call to action text." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
-                <input id="call-to-action-input" type="text" class="form-control" ng-model="formData.callToAction" ng-focus="clearErrors('callToAction')">
+                <div ui-select2="callToActionSelect2Config" id="call-to-action-input" class="form-control" ng-model="formData.callToAction" zem-select2-model-transform="text"></div>
             </div>
 
             <label ng-if="!errors.callToAction" class="control-label small">{{formData.callToAction.length}}/25</label>
@@ -71,7 +78,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.description}">
             <label for="description-input" class="col-xs-3 control-label">
                 Description
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Description of a content ad." placement="top"></zem-help-popover>
+                <zem-help-popover content="Description of a content ad." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-5">
                 <textarea id="description-input" type="text" class="form-control" ng-model="formData.description" ng-focus="clearErrors('description')">
@@ -89,7 +96,12 @@
             <div class="col-xs-3">
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
             </div>
-            <div class="col-xs-2" style="padding-top:1px" ng-show="isInProgress"><div style="display:inline-block" ng-show="countAll > 0">{{ countUploaded }}/{{ countAll }}&nbsp;</div><div class="loader"></div></div>
+            <div class="col-xs-6" style="padding-top:1px;" ng-show="isInProgress">
+                <div style="display:inline-block" ng-show="countAll > 0">{{ countUploaded }}/{{ countAll }}&nbsp;</div>
+                <div style="display:inline-block" ng-show="uploadStep">{{ uploadStep }}</div>
+                <div class="loader"></div>
+            </div>
+
         </div>
     </form>
 </div>

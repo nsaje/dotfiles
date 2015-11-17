@@ -1,9 +1,46 @@
-<div class="page page-campaign-settings" ng-if="!!campaign.archived">
-    <p>
-        <strong>This campaign is archived.</strong>
+<div class="page page-campaign-agency" ng-if="!campaign.archived">
+    <form id="form-campaign-agency" class="form-horizontal">
+        <div class="form-group" ng-class="{'has-error': !!errors.name}">
+            <label for="name-input" class="col-xs-3 control-label">
+                Name
+                <zem-help-popover content="Name of the campaign." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-4">
+                <input id="name-input" type="text" class="form-control" ng-model="settings.name">
+            </div>
 
-    </p>
-    <p>
-        Contact <a class="contact" href="mailto:help@zemanta.com?Subject=Archived%20Campaign%20Issue">Zemanta client services</a> if you need assistance.
-    </p>
+            <label ng-repeat="error in errors.name" class="control-label error" for="name-input">{{ error }}</label>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.campaignGoal}">
+            <label for="goal-input-label" class="col-xs-3 control-label">
+                Campaign goal
+                <zem-help-popover content="The top level goal of this campaign." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-4 form-inline">
+                <label id="goal-input-label" class="col-xs-6" for="goal-input">Meet or beat the goal of</label>
+                <input id="goal-input" type="text" class="form-control" ng-model="settings.goalQuantity">
+            </div>
+            <div class="col-xs-3">
+                <select ui-select2="{minimumResultsForSearch: 10}" class="form-control" ng-model="settings.campaignGoal">
+                    <option ng-repeat="goal in options.campaignGoals" value="{{goal.value}}">{{goal.name}}</option>
+                </select>
+            </div>
+            <label ng-repeat="error in errors.campaignGoal" class="control-label error" for="goal-select">{{ error }}</label>
+        </div>
+
+        <button
+			 type="button" class="btn btn-primary" ng-click="saveSettings()"
+			 zem-tutorial-popover-condition-promise="campaignHasFreshSettings()"
+             zem-tutorial-popover="Click here to save campaign settings"
+			 zem-tutorial-popover-placement="top">
+			Save
+		</button>
+        <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
+
+        <div class="loader" ng-show="requestInProgress"></div>
+        <span ng-show="saved" class="success">Your updates have been saved.</span>
+        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
+        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
+    </form>
 </div>

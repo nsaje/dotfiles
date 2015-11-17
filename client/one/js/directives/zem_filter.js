@@ -7,7 +7,9 @@ oneApp.directive('zemFilter', ['config', function(config) {
         templateUrl: '/partials/zem_filter.html',
         scope: {
             hasPermission: '=zemHasPermission',
-            isPermissionInternal: '=zemIsPermissionInternal'
+            isPermissionInternal: '=zemIsPermissionInternal',
+            enablePublisherFilter: '=enablePublisherFilter ',
+            showPublisherSelected: '=showPublisherSelected'
         },
         link: function ($scope, element) {
             element.on('click', function(e) {
@@ -17,6 +19,8 @@ oneApp.directive('zemFilter', ['config', function(config) {
         controller: ['$scope', 'zemFilterService', 'zemUserSettings', 'api', function ($scope, zemFilterService, zemUserSettings, api) {
             $scope.availableSources = [];
             $scope.config = config;
+            $scope.enablePublisherFilter = false;
+            $scope.showPublisherSelected = "all";
 
             $scope.refreshAvailableSources = function () {
                 api.availableSources.list().then(function (data) {
@@ -47,14 +51,14 @@ oneApp.directive('zemFilter', ['config', function(config) {
 
             $scope.isSourceDeprecated = function (source) {
                 return source.deprecated;
-            }
+            };
 
             $scope.isSourceNotFiltered = function (source) {
                 return !$scope.isSourceFiltered(source);
             };
 
             $scope.isFilterOn = function () {
-                return zemFilterService.isSourceFilterOn();
+                return zemFilterService.isSourceFilterOn() || zemFilterService.isPublisherBlacklistFilterOn();
             };
 
             $scope.removeFiltering = function () {
@@ -71,12 +75,27 @@ oneApp.directive('zemFilter', ['config', function(config) {
                 }
             });
 
+            $scope.$watch('showPublisherSelected', function (newValue, oldValue) {
+                if (newValue !== oldValue) {
+                    zemFilterService.setBlacklistedPublishers(newValue);
+                }
+            });
+
             $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
                 if (newValue === oldValue) {
                     return;
                 }
 
                 $scope.refreshAvailableSources();
+            });
+
+
+            $scope.$watch(zemFilterService.getBlacklistedPublishers, function (newValue, oldValue) {
+                if (newValue === oldValue) {
+                    return;
+                }
+
+                $scope.showPublisherSelected = zemFilterService.getBlacklistedPublishers();
             });
 
             $scope.$on('$locationChangeStart', function() {
@@ -97,6 +116,9 @@ oneApp.directive('zemFilter', ['config', function(config) {
 
             $scope.init = function () {
                 $scope.showArchivedSelected = zemFilterService.getShowArchived();
+
+                $scope.enablePublisherFilter = zemFilterService.getShowBlacklistedPublishers();
+                $scope.showPublisherSelected = zemFilterService.getBlacklistedPublishers();
                 $scope.refreshAvailableSources();
             };
 

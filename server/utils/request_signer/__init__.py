@@ -29,9 +29,6 @@ class SignatureError(Exception):
 
 
 def _validate_request(urllib_request):
-    if urllib_request.get_method() not in ('POST', 'PUT'):
-        raise SignatureError('Only POST and PUT requests are allowed')
-
     # Force https for requests outside of localhost
     if urllib_request.get_type() != 'https' and \
             urllib_request.get_origin_req_host() not in LOCAL_HOSTS:
@@ -54,6 +51,9 @@ def _validate_key(secret_key):
 
 
 def _get_signature(ts, path, query, data, secret_key):
+    if data is None:
+        data = ''
+
     request_content = '{}\n{}\n{}\n{}'.format(ts, path, query, data)
     signature = hmac.new(secret_key, request_content, hashlib.sha256)
     return base64.urlsafe_b64encode(signature.digest())

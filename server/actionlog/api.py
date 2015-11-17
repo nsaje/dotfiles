@@ -6,7 +6,7 @@ import collections
 from operator import attrgetter
 import newrelic.agent
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -123,13 +123,63 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
     return send_delayed_actionlogs([ad_group_source], send=send)
 
 
-def create_campaign(ad_group_source, name, request):
+def set_publisher_blacklist(key, level, state, publishers, request, source_type, ad_group_source, send=True):
+    if not publishers:
+        return []
+
+    action = models.ActionLog(
+        action=constants.Action.SET_PUBLISHER_BLACKLIST,
+        action_type=constants.ActionType.AUTOMATIC,
+        expiration_dt=None,
+        state=constants.ActionState.DELAYED,
+    )
+    action.save(request)
+
+    try:
+        with transaction.atomic():
+            callback = urlparse.urljoin(
+                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+            )
+
+            args = {
+                'key': key,
+                'level': level,
+                'state': state,
+                'publishers': publishers
+            }
+
+            payload = {
+                'action': action.action,
+                'source': source_type.type,
+                'expiration_dt': action.expiration_dt,
+                'args': args,
+                'callback_url': callback,
+            }
+
+            action.ad_group_source = ad_group_source
+            action.payload = payload
+            action.save(request)
+    except Exception as e:
+        logger.exception('An exception occurred while initializing set_publisher_blacklist action.')
+        _handle_error(action, e, request)
+
+        et, ei, tb = sys.exc_info()
+        raise exceptions.InsertActionException, ei, tb
+
+    return send_delayed_actionlogs(send=send)
+
+
+def create_campaign(ad_group_source, name, request, send=True):
+    action = None
     try:
         action = _init_create_campaign(ad_group_source, name, request)
     except exceptions.InsertActionException:
         pass
     else:
-        zwei_actions.send(action)
+        if send:
+            zwei_actions.send(action)
+
+    return action
 
 
 @transaction.atomic
@@ -156,7 +206,7 @@ def send_delayed_actionlogs(ad_group_sources=None, send=True):
     new_actionlogs = []
     with transaction.atomic():
         delayed_actionlogs = models.ActionLog.objects.filter(
-            action=constants.Action.SET_CAMPAIGN_STATE,
+            action__in=[constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PUBLISHER_BLACKLIST],
             action_type=constants.ActionType.AUTOMATIC,
             state=constants.ActionState.DELAYED,
         ).order_by('created_dt')
@@ -167,7 +217,7 @@ def send_delayed_actionlogs(ad_group_sources=None, send=True):
         for actionlog in delayed_actionlogs:
             waiting_actionlogs = models.ActionLog.objects.filter(
                 state=constants.ActionState.WAITING,
-                action=constants.Action.SET_CAMPAIGN_STATE,
+                action__in=[constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PUBLISHER_BLACKLIST],
                 action_type=constants.ActionType.AUTOMATIC,
                 ad_group_source=actionlog.ad_group_source,
             )
@@ -188,7 +238,7 @@ def send_delayed_actionlogs(ad_group_sources=None, send=True):
             new_actionlogs.append(actionlog)
 
     if send:
-        zwei_actions.send_multiple(new_actionlogs)
+        zwei_actions.send(new_actionlogs)
 
     return new_actionlogs
 
@@ -220,6 +270,16 @@ def get_ad_group_sources_waiting(**kwargs):
     )
 
     return [action.ad_group_source for action in actions]
+
+
+def is_waiting_for_manual_set_target_regions_action(ad_group_source):
+    set_property_action = models.ActionLog.objects.filter(
+        action=constants.Action.SET_PROPERTY,
+        action_type=constants.ActionType.MANUAL,
+        ad_group_source=ad_group_source,
+        state__in=[constants.ActionState.FAILED, constants.ActionState.WAITING]
+    )
+    return any('target_regions' == act.payload['property'] for act in set_property_action)
 
 
 @newrelic.agent.function_trace()
@@ -290,6 +350,7 @@ def count_failed_stats_actions():
         Q(action=constants.Action.SET_CAMPAIGN_STATE) |
         Q(action=constants.Action.INSERT_CONTENT_AD) |
         Q(action=constants.Action.INSERT_CONTENT_AD_BATCH) |
+        Q(action=constants.Action.SUBMIT_AD_GROUP) |
         Q(action=constants.Action.UPDATE_CONTENT_AD),
         state=constants.ActionState.FAILED
     ).count()
@@ -339,6 +400,46 @@ def is_sync_in_progress(ad_groups=None, campaigns=None, accounts=None, sources=N
 
     if sources:
         q = q.filter(ad_group_source__source__in=sources)
+
+    waiting_actions = q.exists()
+
+    return waiting_actions
+
+
+@newrelic.agent.function_trace()
+def is_publisher_blacklist_sync_in_progress(ad_group):
+    '''
+    sync is in progress if one of the following is true:
+    - a get reports action for this ad_group is in 'waiting' state
+    - a fetch status action for this ad_group is in 'waiting' state
+    '''
+    if ad_group is None:
+        return False
+
+    campaign = ad_group.campaign
+    account = campaign.account
+
+    # limit amount of actionlogs through which to sift
+    yesterday = datetime.utcnow() - timedelta(days=1)
+
+    q = models.ActionLog.objects.filter(
+        Q(
+            state=constants.ActionState.WAITING,
+            action_type=constants.ActionType.AUTOMATIC,
+            action=constants.Action.SET_PUBLISHER_BLACKLIST,
+            created_dt__gte=yesterday
+        ) & Q(
+            Q(ad_group_source__ad_group=ad_group) |
+            Q(Q(
+                Q(payload__contains="level\":\"{level}\"".format(level=dash.constants.PublisherBlacklistLevel.CAMPAIGN)) &
+                Q(payload__contains="\"key\":[{key}".format(key=campaign.id))
+              ) | Q(
+                Q(payload__contains="level\":\"{level}\"".format(level=dash.constants.PublisherBlacklistLevel.ACCOUNT)) &
+                Q(payload__contains="\"key\":[{key}".format(key=account.id))
+              ) | Q(payload__contains="level\":\"{level}\"".format(level=dash.constants.PublisherBlacklistLevel.GLOBAL))
+            )
+        )
+    )
 
     waiting_actions = q.exists()
 
@@ -431,11 +532,6 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
 
     try:
         with transaction.atomic():
-            if ad_group_source.source_campaign_key == {} and\
-                ad_group_source.source.source_type.type and\
-                ad_group_source.source.source_type.type == dash.constants.SourceType.B1:
-                raise Exception("Failed updating settings. Adgroup source campaign keys not set.")
-
             callback = urlparse.urljoin(
                 settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
             )
@@ -444,9 +540,6 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
                     'conf': conf,
@@ -490,9 +583,6 @@ def _init_fetch_status(ad_group_source, order, request=None):
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key
                 },
@@ -537,9 +627,56 @@ def _init_fetch_reports(ad_group_source, date, order, request=None):
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
+                'args': {
+                    'source_campaign_key': ad_group_source.source_campaign_key,
+                    'date': date.strftime('%Y-%m-%d'),
+                },
+                'callback_url': callback,
+            }
+
+            action.payload = payload
+            action.save(request)
+
+            return action
+
+    except Exception as e:
+        logger.exception('An exception occurred while initializing get_reports action')
+        _handle_error(action, e, request)
+
+        et, ei, tb = sys.exc_info()
+        raise exceptions.InsertActionException, ei, tb
+
+
+def _init_fetch_reports_by_publisher(ad_group_source, date, order, request=None):
+    if not ad_group_source.source.can_fetch_report_by_publisher():
+        logger.error('Trying to _init_fetch_reports_by_publisher() on source that does not support it: {}'.format(ad_group_source.id))
+        raise exceptions.InsertActionException('Trying to _init_fetch_reports_by_publisher() on source that does not support it: {}'.format(ad_group_source.id))
+
+    msg = '_init_fetch_reports started: ad_group_source.id: {}, date: {}'.format(
+        ad_group_source.id,
+        repr(date)
+    )
+    logger.info(msg)
+
+    action = models.ActionLog(
+        action=constants.Action.FETCH_REPORTS_BY_PUBLISHER,
+        action_type=constants.ActionType.AUTOMATIC,
+        ad_group_source=ad_group_source,
+        order=order,
+        expiration_dt=datetime.utcnow() + timedelta(hours=3)
+    )
+    action.save(request)
+
+    try:
+        with transaction.atomic():
+            callback = urlparse.urljoin(
+                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
+            )
+
+            payload = {
+                'action': action.action,
+                'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
+                'expiration_dt': action.expiration_dt,
                 'args': {
                     'source_campaign_key': ad_group_source.source_campaign_key,
                     'date': date.strftime('%Y-%m-%d'),
@@ -603,9 +740,6 @@ def _init_create_campaign(ad_group_source, name, request):
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials':
-                    ad_group_source.source_credentials and
-                    ad_group_source.source_credentials.credentials,
                 'args': {
                     'name': name,
                     'extra': {},
@@ -650,7 +784,7 @@ def _init_create_campaign(ad_group_source, name, request):
             payload['args']['extra'].update({
                 'tracking_code': utils.url_helper.combine_tracking_codes(
                     ad_group_tracking_codes,
-                    ad_group_source.get_tracking_ids()
+                    ad_group_source.get_tracking_ids() if ad_group_settings.enable_ga_tracking else ''
                 ),
                 'tracking_slug': ad_group_source.source.tracking_slug
             })

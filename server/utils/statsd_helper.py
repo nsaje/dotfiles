@@ -30,8 +30,8 @@ def statsd_timer(path, name=None):
     return decorator
 
 
-def statsd_incr(name):
-    statsd.incr('{0}.{1}'.format(get_source(), name))
+def statsd_incr(name, count=1):
+    statsd.incr('{0}.{1}'.format(get_source(), name), count)
 
 
 def statsd_gauge(name, value):

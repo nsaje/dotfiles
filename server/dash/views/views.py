@@ -12,6 +12,10 @@ import os
 import StringIO
 import unicodecsv
 import slugify
+import hmac
+import hashlib
+
+from collections import OrderedDict
 
 from django.db import transaction
 from django.conf import settings
@@ -21,6 +25,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
 
 from dash.views import helpers
 
@@ -28,18 +33,22 @@ from utils import statsd_helper
 from utils import api_common
 from utils import exc
 from utils import s3helpers
+from utils import email_helper
 
 import actionlog.api
 import actionlog.api_contentads
 import actionlog.sync
 import actionlog.zwei_actions
+import actionlog.models
+import actionlog.constants
 
-from dash import models
+from dash import models, region_targeting_helper
 from dash import constants
-from dash import regions
 from dash import api
 from dash import forms
 from dash import upload
+
+import reports.api_publishers
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +105,7 @@ def supply_dash_redirect(request):
         raise exc.MissingDataError()
 
     credentials = ad_group_source.source_credentials and \
-        ad_group_source.source_credentials.credentials
+        ad_group_source.source_credentials.decrypt()
 
     url_response = actionlog.zwei_actions.get_supply_dash_url(
         ad_group_source.source.source_type.type, credentials, ad_group_source.source_campaign_key)
@@ -122,6 +131,7 @@ class User(api_common.BaseApiView):
                 'id': str(user.pk),
                 'email': user.email,
                 'name': user.get_full_name(),
+                'show_onboarding_guidance': user.show_onboarding_guidance,
                 'permissions': user.get_all_permissions_with_access_levels(),
                 'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
                     datetime.datetime.utcnow(), is_dst=True).total_seconds()
@@ -194,6 +204,11 @@ class NavigationDataView(api_common.BaseApiView):
 
                     if include_archived_flag:
                         ad_group['archived'] = ad_group_settings.archived if ad_group_settings else False
+                    ad_group['state'] = constants.AdGroupSettingsState.get_text(
+                        ad_group_settings.state if ad_group_settings
+                        else constants.AdGroupSettingsState.INACTIVE
+                    ).lower()
+                    ad_group['status'] = constants.AdGroupRunningStatus.get_text(ad_group_settings.get_running_status() if ad_group_settings else constants.AdGroupSettingsState.INACTIVE).lower()
 
     def fetch_ad_groups(self, data, user, sources):
         ad_groups = models.AdGroup.objects.all().\
@@ -264,6 +279,8 @@ class AccountArchive(api_common.BaseApiView):
         account = helpers.get_account(request.user, account_id)
         account.archive(request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_ACCOUNT, account=account)
+
         return self.create_api_response({})
 
 
@@ -275,6 +292,10 @@ class AccountRestore(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
         account.restore(request)
+
+        actionlog.sync.AccountSync(account).trigger_all(self.request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_ACCOUNT, account=account)
 
         return self.create_api_response({})
 
@@ -288,6 +309,9 @@ class CampaignArchive(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign.archive(request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CAMPAIGN,
+                                            campaign=campaign)
+
         return self.create_api_response({})
 
 
@@ -299,6 +323,11 @@ class CampaignRestore(api_common.BaseApiView):
 
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign.restore(request)
+
+        actionlog.sync.CampaignSync(campaign).trigger_all(self.request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CAMPAIGN,
+                                            campaign=campaign)
 
         return self.create_api_response({})
 
@@ -312,6 +341,9 @@ class AdGroupArchive(api_common.BaseApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group.archive(request)
 
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_AD_GROUP,
+                                            ad_group=ad_group)
+
         return self.create_api_response({})
 
 
@@ -323,6 +355,11 @@ class AdGroupRestore(api_common.BaseApiView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group.restore(request)
+
+        actionlog.sync.AdGroupSync(ad_group).trigger_all(self.request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_AD_GROUP,
+                                            ad_group=ad_group)
 
         return self.create_api_response({})
 
@@ -340,6 +377,9 @@ class CampaignAdGroups(api_common.BaseApiView):
             campaign=campaign
         )
         ad_group.save(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_AD_GROUP,
+                                            ad_group=ad_group, campaign=campaign)
 
         response = {
             'name': ad_group.name,
@@ -415,7 +455,7 @@ class AdGroupSources(api_common.BaseApiView):
 
         sources = []
         for source_settings in models.DefaultSourceSettings.objects.\
-                filter(source__in=filtered_sources).exclude(credentials__isnull=True):
+                filter(source__in=filtered_sources).with_credentials():
 
             if source_settings.source in ad_group_sources:
                 continue
@@ -457,24 +497,22 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.ForbiddenError('{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
 
         if not self._can_target_existing_regions(source, ad_group.get_current_settings()):
-            raise exc.ValidationError('{} media source can not be added because it does not support DMA targeting.'\
+            raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'\
                                       .format(source.name))
 
-        ad_group_source = models.AdGroupSource(
-            source=source,
-            ad_group=ad_group,
-            source_credentials=default_settings.credentials,
-            can_manage_content_ads=source.can_manage_content_ads(),
-        )
-
-        if source.source_type.type == constants.SourceType.GRAVITY:
-            ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
-
+        ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
         ad_group_source.save(request)
 
         external_name = ad_group_source.get_external_name()
         actionlog.api.create_campaign(ad_group_source, external_name, request)
         self._add_to_history(ad_group_source, request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_MEDIA_SOURCE_CAMPAIGN,
+                                            ad_group=ad_group)
+
+        if request.user.has_perm('zemauth.add_media_sources_automatically'):
+            helpers.set_ad_group_source_defaults(default_settings, ad_group.get_current_settings(), ad_group_source,
+                                                 request)
 
         return self.create_api_response(None)
 
@@ -486,8 +524,8 @@ class AdGroupSources(api_common.BaseApiView):
         settings.save(request)
 
     def _can_target_existing_regions(self, source, ad_group_settings):
-        return source.source_type.supports_dma_targeting() and ad_group_settings.targets_dma() or\
-            not ad_group_settings.targets_dma()
+        return region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) or\
+               region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings)
 
 
 class Account(api_common.BaseApiView):
@@ -498,6 +536,8 @@ class Account(api_common.BaseApiView):
 
         account = models.Account(name=create_name(models.Account.objects, 'New account'))
         account.save(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_ACCOUNT, account=account)
 
         response = {
             'name': account.name,
@@ -514,6 +554,7 @@ class AccountCampaigns(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
+        account_settings = account.get_current_settings()
 
         name = create_name(models.Campaign.objects.filter(account=account), 'New campaign')
 
@@ -526,9 +567,15 @@ class AccountCampaigns(api_common.BaseApiView):
         settings = models.CampaignSettings(
             name=name,
             campaign=campaign,
-            account_manager=request.user,
+            account_manager=(account_settings.default_account_manager
+                             if account_settings.default_account_manager else request.user),
+            sales_representative=(account_settings.default_sales_representative
+                                  if account_settings.default_sales_representative else None)
         )
         settings.save(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CAMPAIGN,
+                                            campaign=campaign)
 
         response = {
             'name': campaign.name,
@@ -572,6 +619,15 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'daily_budget_cc' in resource and not daily_budget_form.is_valid():
             errors.update(daily_budget_form.errors)
 
+        autopilot_form = forms.AdGroupSourceSettingsAutopilotStateForm(resource)
+        if 'autopilot_state' in resource and not autopilot_form.is_valid():
+            errors.update(autopilot_form.errors)
+
+        if not request.user.has_perm('zemauth.can_set_media_source_to_auto_pilot') and\
+                'autopilot_state' in resource and\
+                resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
+            errors.update(exc.ForbiddenError(message='Not allowed'))
+
         if errors:
             raise exc.ValidationError(errors=errors)
 
@@ -587,7 +643,17 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         settings_writer.set(resource, request)
 
-        return self.create_api_response()
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
+                                            ad_group=ad_group)
+
+        return self.create_api_response({
+            'editable_fields': helpers.get_editable_fields(
+                ad_group_source,
+                ad_group_source.ad_group.get_current_settings(),
+                helpers.get_ad_group_source_settings(ad_group_source),
+                request.user
+            )
+        })
 
 
 class AdGroupAdsPlusUpload(api_common.BaseApiView):
@@ -605,7 +671,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
                 'display_url': current_settings.display_url,
                 'brand_name': current_settings.brand_name,
                 'description': current_settings.description,
-                'call_to_action': current_settings.call_to_action
+                'call_to_action': current_settings.call_to_action or 'Read More'
             }
         })
 
@@ -621,36 +687,41 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             raise exc.ValidationError(errors=form.errors)
 
         batch_name = form.cleaned_data['batch_name']
-        display_url = form.cleaned_data['display_url']
-        brand_name = form.cleaned_data['brand_name']
-        description = form.cleaned_data['description']
-        call_to_action = form.cleaned_data['call_to_action']
         content_ads = form.cleaned_data['content_ads']
+
+        # we could have passed form.cleaned_data around,
+        # but it's better to have a version that is more predictable
+        upload_form_cleaned_fields = {
+            'display_url': form.cleaned_data['display_url'],
+            'brand_name': form.cleaned_data['brand_name'],
+            'description': form.cleaned_data['description'],
+            'call_to_action': form.cleaned_data['call_to_action']
+        }
 
         batch = models.UploadBatch.objects.create(
             name=batch_name,
-            display_url=display_url,
-            brand_name=brand_name,
-            description=description,
-            call_to_action=call_to_action,
             processed_content_ads=0,
-            batch_size=len(content_ads)
+            batch_size=len(content_ads),
         )
 
         current_settings = ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
 
-        new_settings.display_url = display_url
-        new_settings.brand_name = brand_name
-        new_settings.description = description
-        new_settings.call_to_action = call_to_action
+        new_settings.display_url = upload_form_cleaned_fields['display_url']
+        new_settings.brand_name = upload_form_cleaned_fields['brand_name']
+        new_settings.description = upload_form_cleaned_fields['description']
+        new_settings.call_to_action = upload_form_cleaned_fields['call_to_action']
 
         new_settings.save(request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.UPLOAD_CONTENT_ADS,
+                                            ad_group=ad_group)
 
         upload.process_async(
             content_ads,
             request.FILES['content_ads'].name,
             batch,
+            upload_form_cleaned_fields,
             ad_group,
             request
         )
@@ -693,7 +764,27 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist():
             raise exc.MissingDataException()
 
-        response_data = {'status': batch.status, 'count': batch.processed_content_ads, 'all': batch.batch_size}
+        batch_size = batch.batch_size
+        step_size = batch_size
+
+        if batch.inserted_content_ads is not None and batch.inserted_content_ads >= batch_size:
+            # step past inserting
+            step = 'Sending to external sources (step 3/3)'
+            count = 0
+            step_size = 0
+        elif batch.inserted_content_ads is not None:
+            step = 'Inserting content ads (step 2/3)'
+            count = batch.inserted_content_ads
+        else:
+            step = 'Processing imported file (step 1/3)'
+            count = batch.processed_content_ads
+
+        response_data = {
+            'status': batch.status,
+            'step': step,
+            'count': count or 0,
+            'all': step_size
+        }
 
         if batch.status == constants.UploadBatchStatus.FAILED:
             if batch.error_report_key:
@@ -749,6 +840,10 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
         content_ads = content_ads.all()
 
         api.add_content_ads_archived_change_to_history(ad_group, content_ads, True, request)
+        email_helper.send_ad_group_notification_email(ad_group, request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
+                                            ad_group=ad_group)
 
         with transaction.atomic():
             for content_ad in content_ads:
@@ -793,6 +888,10 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
         )
 
         api.add_content_ads_archived_change_to_history(ad_group, content_ads, False, request)
+        email_helper.send_ad_group_notification_email(ad_group, request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
+                                            ad_group=ad_group)
 
         with transaction.atomic():
             for content_ad in content_ads:
@@ -836,8 +935,22 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
         api.update_content_ads_state(content_ads, state, request)
         api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
+        email_helper.send_ad_group_notification_email(ad_group, request)
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CONTENT_AD_STATE,
+                                            ad_group=ad_group)
 
         return self.create_api_response()
+
+
+CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
+    ['url', 'url'],
+    ['title', 'title'],
+    ['image_url', 'image_url'],
+    ['description', 'description (optional)'],
+    ['crop_areas', 'crop areas (optional)'],
+    ['tracker_urls', 'tracker url (optional)']
+])
 
 
 class AdGroupContentAdCSV(api_common.BaseApiView):
@@ -851,7 +964,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
         except exc.MissingDataError, e:
             email = request.user.email
             if email == settings.DEMO_USER_EMAIL or email in settings.DEMO_USERS:
-                content_ad_dicts = [{ 'url': '', 'title': '', 'image_url': '' }]
+                content_ad_dicts = [{'url': '', 'title': '', 'image_url': '', 'description': ''}]
                 content = self._create_content_ad_csv(content_ad_dicts)
                 return self.create_csv_response('contentads', content=content)
             raise e
@@ -875,11 +988,28 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
         content_ad_dicts = []
         for content_ad in content_ads:
-            content_ad_dicts.append({
+            content_ad_dict = {
                 'url': content_ad.url,
                 'title': content_ad.title,
                 'image_url': content_ad.get_original_image_url(),
-            })
+                'display_url': content_ad.display_url,
+                'brand_name': content_ad.brand_name,
+                'description': content_ad.description,
+                'call_to_action': content_ad.call_to_action,
+            }
+
+            if content_ad.crop_areas:
+                content_ad_dict['crop_areas'] = content_ad.crop_areas
+
+            if content_ad.tracker_urls:
+                content_ad_dict['tracker_urls'] = ' '.join(content_ad.tracker_urls)
+
+            # delete keys that are not to be exported
+            for k in content_ad_dict.keys():
+                if k not in CSV_EXPORT_COLUMN_NAMES_DICT.keys():
+                    del content_ad_dict[k]
+
+            content_ad_dicts.append(content_ad_dict)
 
         filename = '{}_{}_{}_content_ads'.format(
             slugify.slugify(ad_group.campaign.account.name),
@@ -893,13 +1023,331 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
     def _create_content_ad_csv(self, content_ads):
         string = StringIO.StringIO()
 
-        writer = unicodecsv.DictWriter(string, ['url', 'title', 'image_url'])
-        writer.writeheader()
+        writer = unicodecsv.DictWriter(string, CSV_EXPORT_COLUMN_NAMES_DICT.keys())
+
+        # write the header manually as it is different than keys in the dict
+        writer.writerow(CSV_EXPORT_COLUMN_NAMES_DICT)
 
         for row in content_ads:
             writer.writerow(row)
 
         return string.getvalue()
+
+
+class PublishersBlacklistStatus(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_publisher_blacklist_state_post')
+    def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
+            raise exc.AuthorizationError()
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        body = json.loads(request.body)
+
+        start_date = helpers.parse_datetime(body.get('start_date'))
+        end_date = helpers.parse_datetime(body.get('end_date'))
+
+        state = int(body.get('state'))
+        if state not in constants.PublisherStatus.get_keys():
+            raise exc.MissingDataError('Invalid state')
+
+        level = body.get('level')
+        if level not in constants.PublisherBlacklistLevel.get_keys():
+            raise exc.MissingDataError('Invalid level')
+
+        if level != constants.PublisherBlacklistLevel.ADGROUP and\
+                not request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status'):
+            raise exc.AuthorizationError()
+
+        publishers_selected = body["publishers_selected"]
+        publishers_not_selected = body["publishers_not_selected"]
+
+        select_all = body["select_all"]
+        publishers = []
+        if select_all:
+            source_cache_by_slug = {
+                'outbrain': models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN)
+            }
+
+            # get all publishers from date range with statistics
+            # (they represent select-all)
+            constraints = {
+                'ad_group': ad_group.id,
+            }
+            breakdown = ['exchange', 'domain']
+            publishers = reports.api_publishers.query_publisher_list(
+                start_date,
+                end_date,
+                breakdown_fields=breakdown,
+                constraints=constraints
+            )
+            for publisher in publishers:
+                source_slug = publisher['exchange']
+                if source_slug not in source_cache_by_slug:
+                    source_cache_by_slug[source_slug] =\
+                        models.Source.objects.get(bidder_slug=source_slug)
+                publisher['source_id'] = source_cache_by_slug[source_slug].id
+
+
+        # update with pending statuses
+        if level in (constants.PublisherBlacklistLevel.ADGROUP,
+                     constants.PublisherBlacklistLevel.CAMPAIGN,
+                     constants.PublisherBlacklistLevel.ACCOUNT,):
+            self._handle_adgroup_blacklist(request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected)
+
+        if level == constants.PublisherBlacklistLevel.GLOBAL:
+            self._handle_global_blacklist(request, ad_group, state, publishers, publishers_selected, publishers_not_selected)
+
+        response = {
+            "success": True,
+        }
+        return self.create_api_response(response)
+
+    def _handle_adgroup_blacklist(self, request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected):
+        ad_group_filter = None
+        if level == constants.PublisherBlacklistLevel.ADGROUP:
+            ad_group_filter = ad_group
+        campaign_filter = None
+        if level == constants.PublisherBlacklistLevel.CAMPAIGN:
+            campaign_filter = ad_group.campaign
+        account_filter = None
+        if level == constants.PublisherBlacklistLevel.ACCOUNT:
+            account_filter = ad_group.campaign.account
+
+        existing_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
+            everywhere=False,
+            account=account_filter,
+            campaign=campaign_filter,
+            ad_group=ad_group_filter
+        ).values('name', 'ad_group__id', 'source__id')
+
+        existing_blacklisted_publishers = map(
+            lambda pub: {
+                'name': pub['name'],
+                'ad_group_id': pub['ad_group__id'],
+                'source_id': pub['source__id']
+            },
+            existing_blacklisted_publishers
+        )
+
+        ignored_publishers = set( [(pub['domain'], ad_group.id, pub['source_id'], )
+            for pub in publishers_not_selected]
+        )
+
+        publishers_to_add = self._create_adgroup_blacklist(
+            ad_group,
+            publishers + publishers_selected,
+            state,
+            level,
+            existing_blacklisted_publishers,
+            ignored_publishers,
+        )
+
+        publisher_blacklist = [
+            {
+                'domain': dom,
+                'ad_group_id': adgroup_id,
+                'source': source,
+            }\
+            for (dom, adgroup_id, source,) in publishers_to_add
+        ]
+
+        if len(publisher_blacklist) > 0:
+            actionlogs_to_send = []
+            with transaction.atomic():
+                actionlogs_to_send.extend(
+                    api.create_publisher_blacklist_actions(
+                        ad_group,
+                        state,
+                        level,
+                        publisher_blacklist,
+                        request,
+                        send=False
+                    )
+                )
+            actionlog.zwei_actions.send(actionlogs_to_send)
+            self._add_to_history(request, ad_group, state, publisher_blacklist)
+
+    def _create_adgroup_blacklist(self, ad_group, publishers, state, level, existing_blacklisted_publishers, ignored_publishers):
+        adgroup_blacklist = set([])
+        failed_publisher_mappings = set([])
+        count_failed_publisher = 0
+        source_cache = {}
+
+        for publisher in publishers:
+            domain = publisher['domain']
+            if domain not in source_cache:
+               source = models.Source.objects.filter(id=publisher['source_id']).first()
+               source_cache[domain] = source
+            if not source:
+                failed_publisher_mappings.add(publisher['source_id'])
+                count_failed_publisher += 1
+                continue
+
+            # we currently display sources for which we don't yet have publisher
+            # blacklisting support
+            if not source.can_modify_publisher_blacklist_automatically():
+                continue
+
+            publisher_tuple = (domain, ad_group.id, source.tracking_slug,)
+            if publisher_tuple in adgroup_blacklist:
+                continue
+
+            if publisher_tuple in existing_blacklisted_publishers and\
+                    state == constants.PublisherStatus.BLACKLISTED:
+                continue
+
+            blacklist_global = False
+            if level == constants.PublisherBlacklistLevel.GLOBAL:
+                blacklist_global = True
+            blacklist_account = None
+            if level == constants.PublisherBlacklistLevel.ACCOUNT:
+                blacklist_account = ad_group.campaign.account
+            blacklist_campaign = None
+            if level == constants.PublisherBlacklistLevel.CAMPAIGN:
+                blacklist_campaign = ad_group.campaign
+            blacklist_ad_group = None
+            if level == constants.PublisherBlacklistLevel.ADGROUP:
+                blacklist_ad_group = ad_group
+
+            # store blacklisted publishers and push to other sources
+            existing_entry = models.PublisherBlacklist.objects.filter(
+                name=publisher['domain'],
+                source=source,
+                everywhere=blacklist_global,
+                account=blacklist_account,
+                campaign=blacklist_campaign,
+                ad_group=blacklist_ad_group
+            ).first()
+            if existing_entry is not None:
+                existing_entry.status = constants.PublisherStatus.PENDING
+                existing_entry.save()
+            else:
+                models.PublisherBlacklist.objects.create(
+                    name=publisher['domain'],
+                    everywhere=blacklist_global,
+                    account=blacklist_account,
+                    campaign=blacklist_campaign,
+                    ad_group=blacklist_ad_group,
+                    source=source,
+                    status=constants.PublisherStatus.PENDING
+                )
+
+            if publisher_tuple in ignored_publishers:
+                continue
+
+            adgroup_blacklist.add(
+                (domain, ad_group.id, source,)
+            )
+        if len(failed_publisher_mappings) > 0:
+            logger.warning('Failed mapping {count} publisher source slugs {slug}'.format(
+                count=count_failed_publisher,
+                slug=','.join(failed_publisher_mappings))
+            )
+        return adgroup_blacklist
+
+    def _handle_global_blacklist(self, request, ad_group, state, publishers, publishers_selected, publishers_not_selected):
+        existing_blacklisted_publishers = set(models.PublisherBlacklist.objects.filter(
+            everywhere=True
+        ).values('name', 'source__tracking_slug'))
+
+        existing_blacklisted_publishers = map(
+            lambda pub: {
+                'name': pub['name'],
+                'source_id': pub['source__id']
+            },
+            existing_blacklisted_publishers
+        )
+
+        ignored_publishers = set([(pub['domain'], pub['source_id'])
+            for pub in publishers_not_selected]
+        )
+
+        global_publishers = self._create_global_blacklist(
+            ad_group,
+            publishers + publishers_selected,
+            state,
+            existing_blacklisted_publishers,
+            ignored_publishers,
+        )
+        global_blacklist = [
+            {
+                'domain': pub.name,
+                'source': pub.source
+            }\
+            for pub in global_publishers
+        ]
+
+        if len(global_blacklist) > 0:
+            actionlogs_to_send = []
+            with transaction.atomic():
+                actionlogs_to_send.extend(
+                    api.create_global_publisher_blacklist_actions(
+                        ad_group,
+                        request,
+                        state,
+                        global_blacklist,
+                        send=False
+                    )
+                )
+            actionlog.zwei_actions.send(actionlogs_to_send)
+            self._add_to_history(request, ad_group, state, global_blacklist)
+
+    def _create_global_blacklist(self, ad_group, publishers, state, existing_blacklisted_publishers, ignored_publishers):
+        blacklist = []
+        source_cache = {}
+        with transaction.atomic():
+            for publisher in publishers:
+                domain = publisher['domain']
+
+                if domain not in existing_blacklisted_publishers and\
+                        state == constants.PublisherStatus.ENABLED:
+                    continue
+
+                if domain in ignored_publishers:
+                    continue
+
+                # exchange in redshift but source from client selected publishers
+                source_slug = publisher.get('exchange') or publisher.get('source')
+                norm_source_slug = source_slug.lower()
+                if norm_source_slug not in source_cache:
+                    if publisher.get('exchange'):
+                        source_cache[norm_source_slug] = models.Source.objects.filter(tracking_slug__endswith=source_slug).first()
+                    if publisher.get('source'):
+                        source_cache[norm_source_slug] = models.Source.objects.filter(name__startswith=source_slug).first()
+
+                # store blacklisted publishers and push to other sources
+                new_entry = None
+                existing_entry = models.PublisherBlacklist.objects.filter(
+                    name=publisher['domain'],
+                    ad_group=ad_group,
+                    source__tracking_slug__endswith=publisher['exchange']
+                ).first()
+                if existing_entry is not None:
+                    existing_entry.status = constants.PublisherStatus.PENDING
+                    existing_entry.save()
+                else:
+                    new_entry = models.PublisherBlacklist.objects.create(
+                        name=publisher['domain'],
+                        source=source_cache[norm_source_slug],
+                        everywhere=True,
+                        status=constants.PublisherStatus.PENDING
+                    )
+
+                blacklist.append(new_entry or existing_entry)
+        return blacklist
+
+    def _add_to_history(self, request, ad_group, state, blacklist):
+        changes_text = '{action} the following publishers {pubs}.'.format(
+            action="Blacklisted" if state == constants.PublisherStatus.BLACKLISTED else "Enabled",
+            pubs=", ".join( ("{pub} on {slug}".format(pub=pub_bl['domain'], slug=pub_bl['source'].name)
+                 for pub_bl in blacklist)
+            )
+        )
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.changes_text = changes_text
+        settings.save(request)
+        email_helper.send_ad_group_notification_email(ad_group, request)
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
@@ -988,3 +1436,37 @@ def oauth_redirect(request, source_name):
         credentials.save()
 
     return redirect(reverse('admin:dash_sourcecredentials_change', args=(credentials.id,)))
+
+
+@statsd_helper.statsd_timer('dash', 'sharethrough_approval')
+@csrf_exempt
+def sharethrough_approval(request):
+    data = json.loads(request.body)
+
+    logger.info('sharethrough approval, content ad id: %s, status: %s', data['crid'], data['status'])
+
+    sig = request.GET.get('sig')
+    if not sig:
+        logger.warning('Sharethrough approval postback without signature. crid: %s', data['crid'])
+    else:
+        calculated = base64.urlsafe_b64encode(hmac.new(settings.SHARETHROUGH_PARAM_SIGN_KEY,
+                                                       msg=str(data['crid']),
+                                                       digestmod=hashlib.sha256)).digest()
+
+        if sig != calculated:
+            logger.warning('Invalid sharethrough signature. crid: %s', data['crid'])
+
+    content_ad_source = models.ContentAdSource.objects.get(content_ad_id=data['crid'],
+                                                           source=models.Source.objects.get(name='Sharethrough'))
+
+    if data['status'] == 0:
+        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
+    else:
+        content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
+
+    content_ad_source.save()
+
+    actionlog.api_contentads.init_update_content_ad_action(content_ad_source, {'state': content_ad_source.state},
+                                                           request=None, send=True)
+
+    return HttpResponse('OK')

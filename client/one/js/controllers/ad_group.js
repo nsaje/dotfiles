@@ -13,6 +13,12 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
             active: false,
             hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)
         }, {
+            heading: 'Publishers',
+            route: 'main.adGroups.publishers',
+            active: false,
+            hidden: !$scope.hasPermission('zemauth.can_see_publishers'),
+            internal: $scope.isPermissionInternal('zemauth.can_see_publishers')
+        }, {
             heading: 'Settings',
             route: 'main.adGroups.settings',
             active: false,
@@ -63,8 +69,23 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
     // this function is used by ad_grou_ conrollers to set $scope.$scope.isAdGroupPaused
     $scope.setAdGroupPaused = function(val) {
         $scope.isAdGroupPaused = val;
+        
     };
 
+    $scope.getAdGroup = function (id) {
+        var selectedAdGroup = null;
+        $scope.accounts.forEach(function (account) {
+            account.campaigns.forEach(function (campaign) {
+                campaign.adGroups.forEach(function (adGroup) {
+                    if (adGroup.id === id) {
+                        selectedAdGroup = adGroup;
+                    }
+                });
+            });
+        });
+        return selectedAdGroup;
+    };
+    
     $scope.setAdGroupData = function (key, value) {
         var data = $scope.adGroupData[$state.params.id] || {};
         data[key] = value;
@@ -85,11 +106,14 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         });
     };
 
-    $scope.updateAccounts = function (newAdGroupName) {
+    $scope.updateAccounts = function (newAdGroupName, newAdGroupState, newAdGroupStatus) {
         if (!$scope.accounts || !newAdGroupName) {
             return;
         }
         $scope.adGroup.name = newAdGroupName;
+        $scope.adGroup.state = newAdGroupState === constants.adGroupSourceSettingsState.ACTIVE ?
+            'enabled' : 'paused';
+        $scope.adGroup.status = newAdGroupStatus;
     };
 
     $scope.updateBreadcrumbAndTitle = function () {

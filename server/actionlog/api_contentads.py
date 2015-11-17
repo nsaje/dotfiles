@@ -1,9 +1,7 @@
 import logging
 import sys
 import traceback
-import urlparse
 
-from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import transaction
 
@@ -25,15 +23,14 @@ def init_insert_content_ad_action(content_ad_source, request=None, send=True):
     ad_group_source = dash.models.AdGroupSource.objects.filter(
         ad_group=content_ad_source.content_ad.ad_group,
         source=content_ad_source.source
-    ).select_related('ad_group', 'source__source_type', 'source_credentials').get()
-    batch = content_ad_source.content_ad.batch
+    ).select_related('ad_group', 'source__source_type').get()
 
     action = _create_action(
         ad_group_source,
         actionlog.constants.Action.INSERT_CONTENT_AD,
         args={
             'source_campaign_key': ad_group_source.source_campaign_key,
-            'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source, batch)
+            'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source)
         },
         request=request,
         content_ad_source=content_ad_source
@@ -60,11 +57,11 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
     ad_group_source = dash.models.AdGroupSource.objects.filter(
         ad_group=content_ad_sources[0].content_ad.ad_group,
         source=source
-    ).select_related('ad_group', 'source__source_type', 'source_credentials').get()
+    ).select_related('ad_group', 'source__source_type').get()
 
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
-        'content_ads': [_get_content_ad_dict(ad_group_source, cas, batch) for cas in content_ad_sources],
+        'content_ads': [_get_content_ad_dict(ad_group_source, cas) for cas in content_ad_sources],
         'extra': {}
     }
 
@@ -72,6 +69,9 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
         args['extra']['ad_group_id'] = ad_group_source.ad_group.id
         args['extra']['campaign_name'] = ad_group_source.get_external_name()
         args['extra']['batch_name'] = batch.name
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        args['extra']['brand_name'] = ad_group_settings.brand_name
 
         if request and request.user:
             args['extra']['user_email'] = request.user.email
@@ -94,18 +94,10 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
     return action
 
 
-def init_update_content_ad_action(content_ad_source, changes, request, send=True):
-    assert type(changes) is dict, 'changes is not of type dict. changes: {}'.format(changes)
-
-    ad_group_source = dash.models.AdGroupSource.objects.filter(
-        ad_group=content_ad_source.content_ad.ad_group,
-        source=content_ad_source.source
-    ).select_related('ad_group', 'source__source_type', 'source_credentials').get()
-    batch = content_ad_source.content_ad.batch
-
+def _create_update_content_ad_action(content_ad_source, ad_group_source, changes, request):
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
-        'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source, batch),
+        'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source),
         'changes': changes,
     }
 
@@ -122,10 +114,40 @@ def init_update_content_ad_action(content_ad_source, changes, request, send=True
     )
     logger.info(msg)
 
+    return action
+
+
+def init_update_content_ad_action(content_ad_source, changes, request, send=True):
+    if type(changes) is not dict:
+        raise Exception('changes is not of type dict. changes: {}'.format(changes))
+
+    ad_group_source = dash.models.AdGroupSource.objects.filter(
+        ad_group=content_ad_source.content_ad.ad_group,
+        source=content_ad_source.source
+    ).select_related('ad_group', 'source__source_type').get()
+
+    action = _create_update_content_ad_action(content_ad_source, ad_group_source, changes, request)
+
     if send:
         actionlog.zwei_actions.send(action)
 
     return action
+
+
+def init_bulk_update_content_ad_actions(content_ad_sources_changes, request):
+    ad_group_sources = {
+        (ags.ad_group_id, ags.source_id): ags for ags in dash.models.AdGroupSource.objects.filter(
+            ad_group_id__in=[cas.content_ad.ad_group_id for cas, _ in content_ad_sources_changes],
+            source_id__in=[cas.source_id for cas, _ in content_ad_sources_changes]
+        ).select_related('ad_group', 'source__source_type')
+    }
+
+    actions = []
+    for content_ad_source, changes in content_ad_sources_changes:
+        ad_group_source = ad_group_sources.get((content_ad_source.content_ad.ad_group_id, content_ad_source.source_id))
+        actions.append(_create_update_content_ad_action(content_ad_source, ad_group_source, changes, request))
+
+    return actions
 
 
 def init_get_content_ad_status_action(ad_group_source, order, request, send=True):
@@ -153,10 +175,9 @@ def init_get_content_ad_status_action(ad_group_source, order, request, send=True
 
 
 def init_submit_ad_group_action(ad_group_source, content_ad_source, request, send=False):
-    batch = content_ad_source.content_ad.batch
     args = {
         'source_campaign_key': ad_group_source.source_campaign_key,
-        'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source, batch)
+        'content_ad': _get_content_ad_dict(ad_group_source, content_ad_source)
     }
 
     action = _create_action(
@@ -178,7 +199,7 @@ def init_submit_ad_group_action(ad_group_source, content_ad_source, request, sen
     return action
 
 
-def _get_content_ad_dict(ad_group_source, content_ad_source, batch):
+def _get_content_ad_dict(ad_group_source, content_ad_source):
     if ad_group_source.source.update_tracking_codes_on_content_ads() and\
             ad_group_source.can_manage_content_ads:
         ad_group_tracking_codes = ad_group_source.ad_group.get_current_settings().get_tracking_codes()
@@ -205,10 +226,10 @@ def _get_content_ad_dict(ad_group_source, content_ad_source, batch):
         'image_height': content_ad_source.content_ad.image_height,
         'image_hash': content_ad_source.content_ad.image_hash,
         'redirect_id': content_ad_source.content_ad.redirect_id,
-        'display_url': batch.display_url,
-        'brand_name': batch.brand_name,
-        'description': batch.description,
-        'call_to_action': batch.call_to_action,
+        'display_url': content_ad_source.content_ad.display_url,
+        'brand_name': content_ad_source.content_ad.brand_name,
+        'description': content_ad_source.content_ad.description,
+        'call_to_action': content_ad_source.content_ad.call_to_action,
         'tracking_slug': ad_group_source.source.tracking_slug,
         'tracker_urls': content_ad_source.content_ad.tracker_urls
     }
@@ -228,15 +249,12 @@ def _create_action(ad_group_source, action, args={}, content_ad_source=None, req
 
     try:
         with transaction.atomic():
-            callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-            )
+            callback = utils.url_helper.get_full_z1_url(reverse('api.zwei_callback', kwargs={'action_id': action.id}))
 
             payload = {
                 'action': action.action,
                 'source': ad_group_source.source.source_type and ad_group_source.source.source_type.type,
                 'expiration_dt': action.expiration_dt,
-                'credentials': ad_group_source.source_credentials and ad_group_source.source_credentials.credentials,
                 'args': args,
                 'callback_url': callback
             }

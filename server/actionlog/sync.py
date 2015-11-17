@@ -357,7 +357,22 @@ class AdGroupSourceSync(BaseSync):
 
                 actions.append(action)
 
-        zwei_actions.send_multiple(actions)
+        zwei_actions.send(actions)
+
+    def trigger_reports_by_publisher_for_dates(self, dates, order_type=None, request=None):
+        actions = []
+        with transaction.atomic():
+            order = None
+            if order_type is not None:
+                order = actionlog.models.ActionLogOrder.objects.create(order_type=order_type)
+            for date in dates:
+                try:
+                    action = api._init_fetch_reports_by_publisher(self.obj, date, order, request)
+                except InsertActionException:
+                    continue
+                actions.append(action)
+
+        zwei_actions.send(actions)
 
     def get_dates_to_sync_reports(self):
         start_dt = None

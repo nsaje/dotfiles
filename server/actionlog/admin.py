@@ -4,12 +4,44 @@ import datetime
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.html import escape
+from django.contrib import messages
 from django.db import models as db_models
 
 from actionlog import models
 from actionlog import constants
+from actionlog import zwei_actions
 
 import dash.constants
+
+from utils.admin_common import SaveWithRequestMixin
+
+
+def resend_action(modeladmin, request, queryset):
+    try:
+        zwei_actions.resend([
+            action for action in queryset
+        ])
+        modeladmin.message_user(request, 'Actions resent.')
+    except AssertionError, ex:
+        modeladmin.message_user(request, str(ex), level=messages.ERROR)
+resend_action.short_description = "Resend failed actions"
+
+
+def abort_action(modeladmin, request, queryset):
+    try:
+        if not all(action.state == constants.ActionState.FAILED for action in queryset):
+            raise AssertionError('Not all selected actions have failed!')
+
+        if len(set(action.action for action in queryset)) != 1:
+            raise AssertionError('Not all selected actions are of the same action type!')
+
+        for action in queryset:
+            action.state = constants.ActionState.ABORTED
+            action.save(request)
+
+    except AssertionError, ex:
+        modeladmin.message_user(request, str(ex), level=messages.ERROR)
+abort_action.short_description = "Abort failed actions"
 
 
 class CountFilterQuerySet(db_models.QuerySet):
@@ -30,7 +62,7 @@ class CountFilterQuerySet(db_models.QuerySet):
         return super(CountFilterQuerySet, self).count()
 
 
-class ActionLogAdminAdmin(admin.ModelAdmin):
+class ActionLogAdminAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     class AgeFilter(admin.SimpleListFilter):
         title = 'Age'
         parameter_name = 'age__exact'
@@ -58,6 +90,28 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
                     'display': title,
                 }
 
+    class SelfManagedFilter(admin.SimpleListFilter):
+        title = 'Self-managed user status'
+        parameter_name = 'created_by__is_self_managed'
+
+        def lookups(self, request, model_admin):
+            return [
+                (1, 'self-managed'),
+                (2, 'internal (@zemanta)'),
+                (3, 'automatically created'),
+            ]
+
+        def queryset(self, request, queryset):
+            if self.value():
+                val = int(self.value())
+                if val == 1:
+                    return queryset.exclude(db_models.Q(created_by=None) | db_models.Q(created_by__email__contains='@zemanta'))
+                elif val == 2:
+                    return queryset.filter(created_by__email__contains='@zemanta')
+                elif val == 3:
+                    return queryset.filter(created_by=None)
+            return queryset
+
     search_fields = (
         'action',
         'ad_group_source__ad_group__name',
@@ -66,9 +120,9 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
         'ad_group_source__source__name',
     )
 
-    list_filter = ('ad_group_source__source', 'state', 'action', 'action_type', AgeFilter)
+    list_filter = ('ad_group_source__source', 'state', 'action', 'action_type', AgeFilter, SelfManagedFilter)
 
-    list_display = ('action_', 'ad_group_source_', 'created_dt', 'modified_dt', 'action_type', 'state_', 'order_')
+    list_display = ('action_', 'ad_group_source_', 'created_by', 'created_dt', 'modified_dt', 'action_type', 'state_', 'order_')
 
     fields = (
         'action_', 'ad_group_source_', 'content_ad_source', 'state', 'action_type', 'expiration_dt',
@@ -89,6 +143,8 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
         constants.ActionState.WAITING: '#428bca',
         constants.ActionState.DELAYED: '#E6C440',
     }
+
+    actions = [resend_action, abort_action]
 
     def state_(self, obj):
         return '<span style="color:{color}">{state}</span>'.format(
@@ -111,12 +167,15 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
     order_.short_description = 'Order ID'
 
     def ad_group_source_(self, obj):
-        return '<a href="{ad_group_url}">{ad_group}</a>: <a href="{source_url}">{source}</a>'.format(
-            ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group_source.ad_group.id,)),
-            ad_group=obj.ad_group_source.ad_group,
-            source_url=reverse('admin:dash_source_change', args=(obj.ad_group_source.source.id,)),
-            source=obj.ad_group_source.source,
-        )
+        if obj.ad_group_source is not None:
+            return '<a href="{ad_group_url}">{ad_group}</a>: <a href="{source_url}">{source}</a>'.format(
+                ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group_source.ad_group.id,)),
+                ad_group=obj.ad_group_source.ad_group,
+                source_url=reverse('admin:dash_source_change', args=(obj.ad_group_source.source.id,)),
+                source=obj.ad_group_source.source,
+            )
+        else:
+            return ""
     ad_group_source_.allow_tags = True
     ad_group_source_.admin_order_field = 'ad_group_source'
 
@@ -125,7 +184,7 @@ class ActionLogAdminAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return True
-  
+
     def action_(self, obj):
         if obj.action == constants.Action.FETCH_REPORTS:
             description = 'for {}'.format(

@@ -8,6 +8,6 @@ oneApp.directive('zemHelpPopover', function() {
             content: '@',
             placement: '@'
         },
-        template: '<a href="" class="help-popover" popover="{{ content }}" popover-placement="{{ placement }}" popover-trigger="mouseenter" popover-append-to-body="true"></a>'
+          template: '<span class="help-popover" zem-lazy-popover-html-unsafe="{{ content }}" zem-lazy-popover-placement="{{ placement }}" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade"></span>'
     };
 });

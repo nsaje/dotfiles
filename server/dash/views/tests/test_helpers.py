@@ -3,13 +3,15 @@ import pytz
 
 from django.test import TestCase
 from django.conf import settings
+from django.http.request import HttpRequest
 
 import actionlog.sync
 from dash.views import helpers
 from dash import models
 from dash import constants
-
 from utils import exc
+from mock import patch
+from zemauth.models import User
 
 
 class ViewHelpersTestCase(TestCase):
@@ -26,9 +28,9 @@ class ViewHelpersTestCase(TestCase):
 
         last_sync_messages = helpers.get_last_sync_messages(ad_group_sources, last_successful_ags_sync_times)
         self.assertEqual(len(last_sync_messages), 3)
-        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         last_successful_source_sync_times = {}
         for ags in ad_group_sources:
@@ -39,9 +41,9 @@ class ViewHelpersTestCase(TestCase):
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
         self.assertEqual(len(last_source_sync_messages), 3)
-        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
     def test_get_ad_group_last_sync_messages(self):
         ad_groups = models.AdGroup.objects.filter(pk__in=[1, 2])
@@ -54,8 +56,8 @@ class ViewHelpersTestCase(TestCase):
 
         last_sync_messages = helpers.get_last_sync_messages(ad_groups, last_successful_ad_group_sync_times)
         self.assertEqual(len(last_sync_messages), 2)
-        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         last_successful_source_sync_times = {}
         for ag in ad_groups:
@@ -66,13 +68,13 @@ class ViewHelpersTestCase(TestCase):
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
         self.assertEqual(len(last_source_sync_messages), 7)
-        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
         self.assertEquals(last_source_sync_messages[6], ([], True))
-        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         archived_ad_groups = models.AdGroup.objects.filter(pk__in=[5])
         last_successful_archived_sync_times = {}
@@ -96,8 +98,8 @@ class ViewHelpersTestCase(TestCase):
 
         last_sync_messages = helpers.get_last_sync_messages(campaigns, last_successful_campaign_sync_times)
         self.assertEqual(len(last_sync_messages), 2)
-        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         last_successful_source_sync_times = {}
         for campaign in campaigns:
@@ -108,13 +110,13 @@ class ViewHelpersTestCase(TestCase):
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
         self.assertEqual(len(last_source_sync_messages), 7)
-        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
         self.assertEquals(last_source_sync_messages[6], ([], True))
-        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         archived_campaigns = models.Campaign.objects.filter(pk__in=[4])
         last_successful_archived_sync_times = {}
@@ -138,7 +140,7 @@ class ViewHelpersTestCase(TestCase):
 
         last_sync_messages = helpers.get_last_sync_messages(accounts, last_successful_account_sync_times)
         self.assertEqual(len(last_sync_messages), 1)
-        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         last_successful_source_sync_times = {}
         for account in accounts:
@@ -149,13 +151,13 @@ class ViewHelpersTestCase(TestCase):
         sources = models.Source.objects.filter(pk__in=last_successful_source_sync_times.keys())
         last_source_sync_messages = helpers.get_last_sync_messages(sources, last_successful_source_sync_times)
         self.assertEqual(len(last_source_sync_messages), 7)
-        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
-        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[1], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[2], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[3], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[4], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
+        self.assertEquals(last_source_sync_messages[5], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
         self.assertEquals(last_source_sync_messages[6], ([], True))
-        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>'], False))
+        self.assertEquals(last_source_sync_messages[7], (['Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'], False))
 
         archived_accounts = models.Account.objects.filter(pk__in=[3])
         last_successful_archived_sync_times = {}
@@ -197,17 +199,17 @@ class ViewHelpersTestCase(TestCase):
 
         self.assertEqual(
             data_status[ad_group_source1.source_id]['message'],
-            '<b>Status</b> for this Media Source differs from Status in the Media Source\'s 3rd party dashboard.<br />Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+            '<b>Status</b> for this Media Source differs from Status in the Media Source\'s 3rd party dashboard.<br />Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
         )
 
         self.assertEqual(
             data_status[ad_group_source2.source_id]['message'],
-            '<b>Bid CPC</b> for this Media Source differs from Bid CPC in the Media Source\'s 3rd party dashboard.<br /><b>Daily Budget</b> for this Media Source differs from Daily Budget in the Media Source\'s 3rd party dashboard.<br />Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+            '<b>Bid CPC</b> for this Media Source differs from Bid CPC in the Media Source\'s 3rd party dashboard.<br /><b>Daily Budget</b> for this Media Source differs from Daily Budget in the Media Source\'s 3rd party dashboard.<br />Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
         )
 
         self.assertEqual(
             data_status[ad_group_source3.source_id]['message'],
-            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
         )
 
     def test_get_ad_group_sources_data_status_cannot_edit_cpc_budget(self):
@@ -234,7 +236,7 @@ class ViewHelpersTestCase(TestCase):
 
         self.assertEqual(
             data_status[ad_group_source.source_id]['message'],
-            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
         )
 
     def test_get_ad_group_sources_data_status_not_stale(self):
@@ -260,7 +262,7 @@ class ViewHelpersTestCase(TestCase):
 
         self.assertEqual(
             data_status[ad_group_source.source_id]['message'],
-            'All data is OK. Last OK sync was on: <b>{}</b>'.format(
+            'All data is OK. Last OK sync was on: <b>{}</b>.'.format(
                 datetime_string.strftime('%m/%d/%Y %-I:%M %p'))
         )
 
@@ -285,7 +287,7 @@ class ViewHelpersTestCase(TestCase):
 
         self.assertEqual(
             data_status[ad_group_source.source_id]['message'],
-            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
         )
 
     def test_get_ad_group_sources_data_status_property_none(self):
@@ -309,8 +311,62 @@ class ViewHelpersTestCase(TestCase):
 
         self.assertEqual(
             data_status[ad_group_source.source_id]['message'],
-            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>'
+            'Reporting data is stale. Last OK sync was on: <b>06/10/2014 5:58 AM</b>.'
         )
+
+    def test_data_status_last_pixel_sync(self):
+        class TestObj(object):
+            def __init__(self, id):
+                self.id = id
+
+        objects = [
+            TestObj(1),
+            TestObj(2),
+            TestObj(3)
+        ]
+
+        last_sync_messages = {
+            1: (['Last sync OK.'], True),
+            2: (['Last sync not OK.'], False),
+            3: (['Last sync OK.'], True)
+        }
+
+        last_pixel_sync_message = ('Pixel sync OK.', True)
+        data_status = helpers.get_data_status(objects, last_sync_messages,
+                                              last_pixel_sync_message=last_pixel_sync_message)
+        self.assertEqual({
+            1: {
+                'message': 'All data is OK. Last sync OK. Pixel sync OK.',
+                'ok': True
+            },
+            2: {
+                'message': 'Reporting data is stale. Last sync not OK. Pixel sync OK.',
+                'ok': False
+            },
+            3: {
+                'message': 'All data is OK. Last sync OK. Pixel sync OK.',
+                'ok': True
+            },
+        }, data_status)
+
+        self.maxDiff = None
+        last_pixel_sync_message = ('Pixel sync not OK.', False)
+        data_status = helpers.get_data_status(objects, last_sync_messages,
+                                              last_pixel_sync_message=last_pixel_sync_message)
+        self.assertEqual({
+            1: {
+                'message': 'Reporting data is stale. Last sync OK. Pixel sync not OK.',
+                'ok': False
+            },
+            2: {
+                'message': 'Reporting data is stale. Last sync not OK. Pixel sync not OK.',
+                'ok': False
+            },
+            3: {
+                'message': 'Reporting data is stale. Last sync OK. Pixel sync not OK.',
+                'ok': False
+            },
+        }, data_status)
 
     def test_parse_get_request_array(self):
         self.assertEqual(helpers.parse_get_request_content_ad_ids({'ids': '1,2'}, 'ids'), [1, 2])
@@ -495,3 +551,531 @@ class GetSelectedContentAdsTest(TestCase):
     def _assert_content_ads(self, content_ads, expected_ids):
         self.assertQuerysetEqual(
             content_ads, expected_ids, transform=lambda ad: ad.id, ordered=False)
+
+
+class AdGroupSourceTableEditableFieldsTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    class DatetimeMock(datetime.datetime):
+        @classmethod
+        def utcnow(cls):
+            return datetime.datetime(2015, 6, 5, 13, 22, 23)
+
+    def test_get_editable_fields_status_setting_enabled(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': True,
+            'message': None
+        })
+
+    def test_get_editable_fields_status_setting_disabled(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+
+        ad_group_source.source.source_type.available_actions = []
+
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source must be managed manually.'
+        })
+
+    def test_get_editable_fields_status_setting_maintenance(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.source.maintenance = True
+
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source is currently in maintenance mode.'
+        })
+
+    def test_get_editable_fields_status_setting_no_cms_support(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+
+        ad_group_source.ad_group.content_ads_tab_with_cms = True
+
+        ad_group_source.can_manage_content_ads = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'Please contact support to enable this source.'
+        })
+
+    def test_get_editable_fields_status_setting_no_dma_support(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['693']
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source can not be enabled because it does not support DMA targeting.'
+        })
+
+    def test_get_editable_fields_status_setting_no_subdivision_support(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['US-IL']
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source can not be enabled because it does not support U.S. state targeting.'
+        })
+
+    def test_get_editable_fields_status_setting_no_dma_nor_subdivision_support(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['693', 'US-IL']
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source can not be enabled because it does not support DMA and U.S. state targeting.'
+        })
+
+    def test_get_editable_fields_status_setting_waiting_manual_target_regions_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['693']
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_STATE,
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
+        ]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        action_log = actionlog.models.ActionLog(
+            state=actionlog.constants.ActionState.WAITING,
+            action=actionlog.constants.Action.SET_PROPERTY,
+            action_type=actionlog.constants.ActionType.MANUAL,
+            ad_group_source=ad_group_source,
+            payload={'property': 'target_regions', 'value': ['693']}
+        )
+        action_log.save(None)
+
+        for adgs_settings in models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source):
+            adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+            adgs_settings.save(None)
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, adgs_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source needs to set DMA targeting manually, please contact support to enable this source.'
+        })
+
+    def test_get_editable_fields_status_setting_waiting_manual_target_regions_multiple_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['693', 'US-IL']
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_STATE,
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
+        ]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        action_log = actionlog.models.ActionLog(
+            state=actionlog.constants.ActionState.WAITING,
+            action=actionlog.constants.Action.SET_PROPERTY,
+            action_type=actionlog.constants.ActionType.MANUAL,
+            ad_group_source=ad_group_source,
+            payload={'property': 'target_regions', 'value': ['693', 'US-IL']}
+        )
+        action_log.save(None)
+
+        for adgs_settings in models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source):
+            adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+            adgs_settings.save(None)
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, adgs_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source needs to set DMA and U.S. state targeting manually, please contact support to enable this source.'
+        })
+
+    def test_get_editable_fields_status_setting_no_manual_target_regions_action(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.target_regions = ['693']
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_STATE,
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
+        ]
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        for adgs_settings in models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source):
+            adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+            adgs_settings.save(None)
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, adgs_settings)
+
+        self.assertEqual(result, {
+            'enabled': True,
+            'message': None
+        })
+
+    def test_get_editable_fields_bid_cpc_enabled(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
+
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': True,
+            'message': None
+        })
+
+    def test_get_editable_fields_bid_cpc_disabled(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = []
+
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This media source doesn\'t support setting this value through the dashboard.'
+        })
+
+    def test_get_editable_fields_bid_cpc_maintenance(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
+        ad_group_source.source.maintenance = True
+
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This value cannot be edited because the media source is currently in maintenance.'
+        })
+
+    @patch('datetime.datetime', DatetimeMock)
+    def test_get_editable_fields_bid_cpc_end_date_past(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = datetime.datetime(2015, 1, 1)
+
+        ad_group_source.source.source_type.available_actions = []
+
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
+        })
+
+    def test_get_editable_fields_daily_budget_enabled(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC
+        ]
+
+        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': True,
+            'message': None
+        })
+
+    def test_get_editable_fields_daily_budget_disabled(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = []
+
+        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This media source doesn\'t support setting this value through the dashboard.'
+        })
+
+    def test_get_editable_fields_daily_budget_maintenance(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC
+        ]
+        ad_group_source.source.maintenance = True
+
+        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This value cannot be edited because the media source is currently in maintenance.'
+        })
+
+    @patch('datetime.datetime', DatetimeMock)
+    def test_get_editable_fields_daily_budget_end_date_past(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = datetime.datetime(2015, 1, 1)
+
+        ad_group_source.source.source_type.available_actions = []
+
+        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
+        })
+
+
+class SetAdGroupSourceTest(TestCase):
+
+    fixtures = ['test_api']
+
+    def setUp(self):
+        self.request = HttpRequest()
+        self.request.META['SERVER_NAME'] = 'testname'
+        self.request.META['SERVER_PORT'] = 1234
+        self.request.user = User(id=1)
+
+    def test_add_source_to_ad_group(self):
+        ad_group_source_id = 2
+        default_settings = models.DefaultSourceSettings.objects.get(pk=1)
+        self.assertEqual(default_settings.source_id, ad_group_source_id)
+
+        ad_group = models.AdGroup.objects.get(pk=10)
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+
+        # ensure sources are not added before we actually try to add them
+        self.assertFalse(ad_group_sources.exists())
+
+        ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
+        ad_group_source.save()
+
+        self.assertTrue(ad_group_sources.count(), 1)
+
+        ad_group_source = ad_group_sources[0]
+        self.assertEqual(ad_group_source.source, default_settings.source)
+
+    def test_set_ad_group_source_defaults(self):
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=6)
+        # target mobile
+        ad_group_settings.target_devices = ['mobile']
+        ad_group_settings.save(self.request)
+
+        default_settings = models.DefaultSourceSettings.objects.get(pk=1)
+
+        ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group_settings.ad_group)
+        ad_group_source.save()
+
+        helpers.set_ad_group_source_defaults(default_settings, ad_group_settings, ad_group_source, self.request)
+
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
+        self.assertEqual(ad_group_source_settings.count(), 2)
+
+        ad_group_source_settings = ad_group_source_settings.latest()
+        self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
+        self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.mobile_cpc_cc)
+
+
+class PixelLastSyncTestCase(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def test_join_success_with_pixel_sync_no_permissions(self):
+        u = User.objects.get(id=2)
+        last_success_actions = {
+            1: datetime.datetime(2015, 10, 30, 10),
+            2: datetime.datetime(2015, 10, 29, 22),
+            3: datetime.datetime(2015, 10, 30, 9),
+        }
+
+        last_pixel_sync = datetime.datetime(2015, 10, 30, 8)
+        joined = helpers.join_last_success_with_pixel_sync(u, last_success_actions, last_pixel_sync)
+        self.assertEqual(last_success_actions, joined)
+
+    def test_join_success_with_pixel_sync(self):
+        u = User.objects.get(id=1)
+        last_success_actions = {
+            1: datetime.datetime(2015, 10, 30, 10),
+            2: datetime.datetime(2015, 10, 29, 22),
+            3: datetime.datetime(2015, 10, 30, 9),
+        }
+
+        last_pixel_sync = datetime.datetime(2015, 10, 30, 8)
+        joined = helpers.join_last_success_with_pixel_sync(u, last_success_actions, last_pixel_sync)
+        self.assertEqual({
+            1: last_pixel_sync,
+            2: last_success_actions[2],
+            3: last_pixel_sync
+        }, joined)
+
+    def test_join_success_with_pixel_sync_none_last_success(self):
+        u = User.objects.get(id=1)
+        last_success_actions = {
+            1: datetime.datetime(2015, 10, 30, 10),
+            2: None,
+            3: None,
+        }
+
+        last_pixel_sync = datetime.datetime(2015, 10, 30, 8)
+        joined = helpers.join_last_success_with_pixel_sync(u, last_success_actions, last_pixel_sync)
+        self.assertEqual({
+            1: last_pixel_sync,
+            2: None,
+            3: None
+        }, joined)
+
+    def test_join_success_with_pixel_sync_none_last_pixel_sync(self):
+        u = User.objects.get(id=1)
+        last_success_actions = {
+            1: datetime.datetime(2015, 10, 30, 10),
+            2: datetime.datetime(2015, 10, 29, 22),
+            3: datetime.datetime(2015, 10, 30, 9),
+        }
+
+        last_pixel_sync = None
+        joined = helpers.join_last_success_with_pixel_sync(u, last_success_actions, last_pixel_sync)
+        self.assertEqual({
+            1: None,
+            2: None,
+            3: None,
+        }, joined)
+
+
+class LogUserActionHelperTestCase(TestCase):
+    fixtures = ['test_api']
+
+    def test_add_user_action_log(self):
+        user = User.objects.get(pk=1)
+        user.is_self_managed = lambda: True
+
+        request = HttpRequest()
+        request.user = user
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        ad_group_settings = ad_group.get_current_settings()
+
+        campaign = models.Campaign.objects.get(pk=1)
+        campaign_settings = campaign.get_current_settings()
+        campaign_settings.save(request)
+
+        account = models.Account.objects.get(pk=3)
+        account_settings = account.get_current_settings()
+
+        helpers.log_useraction_if_necessary(
+            request,
+            constants.UserActionType.ARCHIVE_RESTORE_ACCOUNT,
+            ad_group=ad_group,
+            campaign=campaign,
+            account=account
+        )
+
+        user_actions = models.UserActionLog.objects.all()
+        self.assertEqual(user_actions.count(), 1)
+
+        user_action = user_actions[0]
+        self.assertEqual(user_action.created_by, user)
+        self.assertEqual(user_action.ad_group, ad_group)
+        self.assertEqual(user_action.campaign, campaign)
+        self.assertEqual(user_action.account, account)
+        self.assertEqual(user_action.ad_group_settings, ad_group_settings)
+        self.assertEqual(user_action.campaign_settings, campaign_settings)
+        self.assertEqual(user_action.account_settings, account_settings)
+
+    def test_dont_add_user_action_log(self):
+        user = User.objects.get(pk=1)
+        user.is_self_managed = lambda: False
+
+        request = HttpRequest()
+        request.user = user
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        campaign = models.Campaign.objects.get(pk=1)
+        account = models.Account.objects.get(pk=3)
+
+        helpers.log_useraction_if_necessary(
+            request,
+            constants.UserActionType.ARCHIVE_RESTORE_ACCOUNT,
+            ad_group=ad_group,
+            campaign=campaign,
+            account=account
+        )
+
+        user_actions = models.UserActionLog.objects.all()
+        self.assertEqual(user_actions.count(), 0)

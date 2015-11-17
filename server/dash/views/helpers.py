@@ -1,18 +1,23 @@
 import datetime
 import dateutil.parser
 import pytz
-import newrelic.agent
+
+from decimal import Decimal
 
 from django.conf import settings
 from django.db.models import Q, Max
+from django.core.exceptions import ObjectDoesNotExist
 
 import actionlog.api
 import actionlog.constants
 import actionlog.models
 from dash import models
 from dash import constants
+from dash import api
+from dash import region_targeting_helper
 from utils import exc
 from utils import statsd_helper
+import automation.autopilot
 
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
@@ -66,6 +71,12 @@ def get_filtered_sources(user, sources_filter):
         filtered_sources = filtered_sources.filter(id__in=filtered_ids)
 
     return filtered_sources
+
+
+def get_additional_columns(additional_columns):
+    if additional_columns:
+        return additional_columns.split(',')
+    return []
 
 
 def get_account(user, account_id, select_related=False):
@@ -132,7 +143,6 @@ def _get_adgroups_for(modelcls, modelobjects):
     return modelobjects
 
 
-@newrelic.agent.function_trace()
 def get_active_ad_group_sources(modelcls, modelobjects):
     all_demo_qs = modelcls.demo_objects.all()
     demo_objects = filter(lambda x: x in all_demo_qs, modelobjects)
@@ -166,7 +176,19 @@ def get_active_ad_group_sources(modelcls, modelobjects):
     return active_ad_group_sources
 
 
-@newrelic.agent.function_trace()
+def join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync):
+    if not user.has_perm('zemauth.conversion_reports'):
+        return last_success_actions
+
+    last_success_actions_joined = {}
+    for id_, last_sync_time in last_success_actions.items():
+        if last_sync_time is None or last_pixel_sync is None:
+            last_success_actions_joined[id_] = None
+            continue
+        last_success_actions_joined[id_] = min(last_sync_time, last_pixel_sync)
+    return last_success_actions_joined
+
+
 def get_ad_group_sources_last_change_dt(ad_group_sources, ad_group_sources_settings,
                                         ad_group_sources_states, last_change_dt=None):
     def get_last_change(ad_group_source):
@@ -222,7 +244,6 @@ def _get_keys_in_progress(ad_group_source, waiting_delayed_actions):
     return keys_in_progress
 
 
-@newrelic.agent.function_trace()
 def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
                                        ad_group_sources_settings, ad_group_sources_states):
     notifications = {}
@@ -304,7 +325,6 @@ def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
     return notifications
 
 
-@newrelic.agent.function_trace()
 def get_content_ad_notifications(ad_group):
     actions = actionlog.models.ActionLog.objects.filter(
         state=actionlog.constants.ActionState.WAITING,
@@ -360,13 +380,11 @@ def get_changed_content_ads(ad_group, sources, last_change_dt=None):
     return set(s.content_ad for s in content_ad_sources)
 
 
-@newrelic.agent.function_trace()
 def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
     content_ad_sources = _get_changed_content_ad_sources(ad_group, sources, last_change_dt)
     return content_ad_sources.aggregate(Max('modified_dt'))['modified_dt__max']
 
 
-@newrelic.agent.function_trace()
 def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_sources):
     submission_status = []
     for content_ad_source in content_ad_sources:
@@ -477,15 +495,20 @@ def _get_budget_update_notification(ags, settings, state):
     return None
 
 
-@newrelic.agent.function_trace()
-def get_data_status(objects, last_sync_messages, state_messages=None):
+def get_data_status(objects, last_sync_messages, state_messages=None, last_pixel_sync_message=None):
     data_status = {}
     for obj in objects:
         messages, state_ok = [], True
         if state_messages:
             messages, state_ok = state_messages[obj.id]
 
-        last_sync_message_parts, last_sync_ok = last_sync_messages[obj.id]
+        last_sync_message_parts = last_sync_messages[obj.id][0][:]  # create a copy
+        last_sync_ok = last_sync_messages[obj.id][1]
+        if last_pixel_sync_message is not None:
+            pixel_sync_message, pixel_sync_ok = last_pixel_sync_message
+            last_sync_ok = last_sync_ok and pixel_sync_ok
+            last_sync_message_parts.append(pixel_sync_message)
+
         if last_sync_ok and state_ok:
             last_sync_message_parts.insert(0, 'All data is OK.')
 
@@ -510,7 +533,6 @@ def get_data_status(objects, last_sync_messages, state_messages=None):
     return data_status
 
 
-@newrelic.agent.function_trace()
 def get_content_ad_data_status(ad_group, content_ads):
     ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
     ad_group_sources_states = get_ad_group_sources_states(ad_group_sources)
@@ -560,7 +582,6 @@ def get_content_ad_data_status(ad_group, content_ads):
     return data_status
 
 
-@newrelic.agent.function_trace()
 def get_last_sync_messages(objects, last_sync_times):
     last_sync_messages = {}
     for obj in objects:
@@ -571,7 +592,7 @@ def get_last_sync_messages(objects, last_sync_times):
             ok = is_sync_recent([last_sync])
 
             last_sync = pytz.utc.localize(last_sync).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE))
-            message_parts.append('Last OK sync was on: <b>{}</b>'.format(last_sync.strftime('%m/%d/%Y %-I:%M %p')))
+            message_parts.append('Last OK sync was on: <b>{}</b>.'.format(last_sync.strftime('%m/%d/%Y %-I:%M %p')))
 
         if hasattr(obj, 'is_archived') and obj.is_archived():
             ok = True
@@ -579,6 +600,19 @@ def get_last_sync_messages(objects, last_sync_times):
         last_sync_messages[obj.id] = message_parts, ok
 
     return last_sync_messages
+
+
+def get_last_pixel_sync_message(last_pixel_sync):
+    ok = False
+    message = 'Last OK conversion pixel sync was on: <b>{}</b>.'
+    if last_pixel_sync is not None:
+        ok = is_sync_recent([last_pixel_sync])
+        last_pixel_sync = pytz.utc.localize(last_pixel_sync).astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE))
+        message = message.format(last_pixel_sync.strftime('%m/%d/%Y %-I:%M %p'))
+    else:
+        message = message.format('N/A')
+
+    return message, ok
 
 
 def get_selected_content_ads(
@@ -600,7 +634,6 @@ def get_selected_content_ads(
     return content_ads.order_by('created_dt')
 
 
-@newrelic.agent.function_trace()
 def get_ad_group_sources_state_messages(ad_group_sources, ad_group_settings,
                                         ad_group_sources_settings, ad_group_sources_states):
     sources_messages = {}
@@ -689,6 +722,16 @@ def get_ad_group_sources_settings(ad_group_sources):
         select_related('ad_group_source')
 
 
+def get_ad_group_source_settings(ad_group_source):
+    try:
+        return models.AdGroupSourceSettings.objects.\
+            filter(ad_group_source=ad_group_source).\
+            select_related('ad_group_source').\
+            latest('created_dt')
+    except ObjectDoesNotExist:
+        return None
+
+
 def parse_get_request_content_ad_ids(request_data, param_name):
     content_ad_ids = request_data.get(param_name)
 
@@ -708,3 +751,204 @@ def parse_post_request_content_ad_ids(request_data, param_name):
         return map(int, content_ad_ids)
     except ValueError:
         raise exc.ValidationError()
+
+
+def get_user_full_name_or_email(user):
+    if user is None:
+        return '/'
+
+    result = user.get_full_name() or user.email
+    return result.encode('utf-8')
+
+
+def copy_stats_to_row(stat, row):
+    for key in ['impressions', 'clicks', 'cost', 'cpc', 'ctr',
+                'visits', 'click_discrepancy', 'pageviews',
+                'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
+        row[key] = stat.get(key)
+
+    for key in [k for k in stat.keys() if k.startswith('conversion_goal_')]:
+        row[key] = stat.get(key)
+
+
+def _is_end_date_past(ad_group_settings):
+    end_utc_datetime = ad_group_settings.get_utc_end_datetime()
+
+    if end_utc_datetime is None:  # user will stop adgroup manually
+        return False
+
+    # if end date is in the past then we can't edit cpc and budget
+    return end_utc_datetime < datetime.datetime.utcnow()
+
+
+def get_editable_fields(ad_group_source, ad_group_settings, ad_group_source_settings, user):
+    editable_fields = {}
+
+    if not user.has_perm('zemauth.set_ad_group_source_settings'):
+        return editable_fields
+
+    editable_fields['status_setting'] = _get_editable_fields_status_setting(ad_group_source, ad_group_settings,
+                                                                            ad_group_source_settings)
+    editable_fields['bid_cpc'] = _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+    editable_fields['daily_budget'] = _get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+
+    return editable_fields
+
+
+def _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings):
+    enabled = True
+    message = None
+
+    if not ad_group_source.source.can_update_cpc() or\
+            _is_end_date_past(ad_group_settings) or\
+            automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source):
+        enabled = False
+        message = _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
+
+    return {
+        'enabled': enabled,
+        'message': message
+    }
+
+
+def _get_editable_fields_daily_budget(ad_group_source, ad_group_settings):
+    enabled = True
+    message = None
+
+    if not ad_group_source.source.can_update_daily_budget_automatic() and\
+       not ad_group_source.source.can_update_daily_budget_manual() or\
+       _is_end_date_past(ad_group_settings):
+        enabled = False
+        message = _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
+
+    return {
+        'enabled': enabled,
+        'message': message
+    }
+
+
+def _get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings):
+    message = None
+
+    if not ad_group_source.source.can_update_state() or (
+       ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
+        message = _get_status_setting_disabled_message(ad_group_source)
+    elif ad_group_source_settings is not None and\
+            ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
+        message = _get_status_setting_disabled_message_for_target_regions(
+            ad_group_source, ad_group_settings, ad_group_source_settings)
+
+    return {
+        'enabled': message is None,
+        'message': message
+    }
+
+
+def _get_status_setting_disabled_message(ad_group_source):
+    if ad_group_source.source.maintenance:
+        return 'This source is currently in maintenance mode.'
+
+    if ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads:
+        return 'Please contact support to enable this source.'
+
+    return 'This source must be managed manually.'
+
+
+def _get_status_setting_disabled_message_for_target_regions(
+                 ad_group_source, ad_group_settings, ad_group_source_settings):
+    source = ad_group_source.source
+    unsupported_targets = []
+    manual_targets = []
+
+    for region_type in constants.RegionType.get_all():
+        if ad_group_settings.targets_region_type(region_type):
+            if not source.source_type.supports_targeting_region_type(region_type):
+                unsupported_targets.append(constants.RegionType.get_text(region_type))
+            elif not source.source_type.can_modify_targeting_for_region_type_automatically(constants.RegionType.DMA):
+                manual_targets.append(constants.RegionType.get_text(region_type))
+
+    if unsupported_targets:
+        return 'This source can not be enabled because it does not support {} targeting.'.format(" and ".join(unsupported_targets))
+
+    activation_settings = models.AdGroupSourceSettings.objects.filter(
+        ad_group_source=ad_group_source, state=constants.AdGroupSourceSettingsState.ACTIVE)
+
+    # disable when waiting for manual actions for target_regions after campaign creation
+    # message this only when the source is about to be enabled for the first time
+    if manual_targets and\
+       actionlog.api.is_waiting_for_manual_set_target_regions_action(ad_group_source) and\
+       not activation_settings.exists():
+        return 'This source needs to set {} targeting manually, please contact support to enable this source.'.format(" and ".join(manual_targets))
+
+    return None
+
+
+def _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings):
+    if ad_group_source.source.maintenance:
+        return 'This value cannot be edited because the media source is currently in maintenance.'
+
+    if _is_end_date_past(ad_group_settings):
+        return 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
+
+    if automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source):
+        return 'This value cannot be edited because the media source is on Auto-Pilot'
+
+    return 'This media source doesn\'t support setting this value through the dashboard.'
+
+
+def add_source_to_ad_group(default_source_settings, ad_group):
+    ad_group_source = models.AdGroupSource(
+        source=default_source_settings.source,
+        ad_group=ad_group,
+        source_credentials=default_source_settings.credentials,
+        can_manage_content_ads=default_source_settings.source.can_manage_content_ads(),
+    )
+
+    if default_source_settings.source.source_type.type == constants.SourceType.GRAVITY:
+        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
+
+    return ad_group_source
+
+
+def set_ad_group_source_defaults(default_source_settings, ad_group_settings, ad_group_source,
+                                 request, send_action=False):
+
+    # set defaults if available
+    cpc_cc = default_source_settings.mobile_cpc_cc if ad_group_settings.is_mobile_only() else\
+        default_source_settings.default_cpc_cc
+
+    daily_budget_cc = default_source_settings.daily_budget_cc
+
+    resource = {}
+    if daily_budget_cc is not None:
+        resource['daily_budget_cc'] = daily_budget_cc
+    if cpc_cc is not None:
+        resource['cpc_cc'] = cpc_cc
+
+    if resource:
+        settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
+        settings_writer.set(resource, request, send_action=send_action)
+
+
+def format_decimal_to_percent(num):
+    return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
+
+
+def format_percent_to_decimal(num):
+    return Decimal(str(num).replace('%', '')) / 100
+
+
+def log_useraction_if_necessary(request, user_action_type, account=None, campaign=None, ad_group=None):
+    if request.user.is_self_managed():
+
+        user_action_log = models.UserActionLog(
+            action_type=user_action_type,
+            created_by=request.user,
+            account=account,
+            campaign=campaign,
+            ad_group=ad_group,
+            account_settings_id=account.get_current_settings().id if account else None,
+            campaign_settings_id=campaign.get_current_settings().id if campaign else None,
+            ad_group_settings_id=ad_group.get_current_settings().id if ad_group else None
+        )
+        user_action_log.save()

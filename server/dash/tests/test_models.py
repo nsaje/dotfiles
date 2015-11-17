@@ -14,7 +14,6 @@ from utils import exc
 
 
 class AdGroupSettingsTest(TestCase):
-
     fixtures = ['test_models.yaml']
 
     def test_settings_fields(self):
@@ -25,7 +24,8 @@ class AdGroupSettingsTest(TestCase):
             'created_dt',
             'created_by',
             'created_by_id',
-            'changes_text'
+            'changes_text',
+            'useractionlog'
         ]
 
         all_fields = set(models.AdGroupSettings._settings_fields + meta_fields)
@@ -49,7 +49,9 @@ class AdGroupSettingsTest(TestCase):
             'description': 'Example description',
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
-            'enable_ga_tracking': True
+            'enable_ga_tracking': True,
+            'enable_adobe_tracking': False,
+            'adobe_tracking_param': ''
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -121,7 +123,7 @@ class AdGroupSourceTest(TestCase):
         ad_group_source = models.AdGroupSource(ad_group=ad_group, source=source)
         ad_group_source.save(request)
 
-        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s' % (ad_group.id))
+        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid=' % (ad_group.id))
 
         source_type.type = constants.SourceType.ZEMANTA
         source_type.save()
@@ -331,19 +333,7 @@ class AdGroupTestCase(TestCase):
     def test_queryset_exclude_archived(self):
         qs = models.AdGroup.objects.all().exclude_archived()
 
-        self.assertEqual(len(qs), 6)
-
-    def test_get_test_tracking_params(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        params = ad_group.get_test_tracking_params()
-
-        self.assertEqual(params, 'param1=foo&param2=bar&_z1_adgid=1&_z1_msid=z1')
-
-    def test_get_test_tracking_params_ga_disabled(self):
-        ad_group = models.AdGroup.objects.get(pk=2)
-        params = ad_group.get_test_tracking_params()
-
-        self.assertEqual(params, 'param1=foo&param2=bar')
+        self.assertEqual(len(qs), 7)
 
 
 class CampaignTestCase(TestCase):

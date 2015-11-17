@@ -43,7 +43,7 @@ class StatsdHelperTestCase(TestCase):
         result = test_function()
         self.assertEqual(result, 100)
         self.assertTrue(self.mock_called)
-    
+
     @mock.patch('utils.statsd_helper.statsd.timing')
     @mock.patch('utils.statsd_helper.time')
     def test_statsd_timer_custom_name(self, time_mock, statsd_timing_mock):
@@ -71,7 +71,7 @@ class StatsdHelperTestCase(TestCase):
 
     @mock.patch('utils.statsd_helper.statsd.incr')
     def test_statsd_incr(self, statsd_incr_mock):
-        def fake_statsd_incr(name):
+        def fake_statsd_incr(name, count=1):
             self.assertEqual(name, 'one-testhost.test.metric')
             self.mock_called = True
 

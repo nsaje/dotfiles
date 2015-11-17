@@ -37,6 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'import_export',
     'dash',
     'zemauth',
     'actionlog',
@@ -44,6 +45,7 @@ INSTALLED_APPS = (
     'zweiapi',
     'convapi',
     'raven.contrib.django.raven_compat',
+    'automation',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -76,6 +78,7 @@ USE_L10N = True
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.request',
+    'django.contrib.messages.context_processors.messages'
 )
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 
@@ -177,6 +180,13 @@ if TESTING:
     Z3_API_THUMBNAIL_URL = ''
 
     CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_DEFAULT_CONVAPI_QUEUE
+    CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_DEFAULT_CONVAPI_V2_QUEUE
+
+    if len(sys.argv) > 1 and '--redshift' not in sys.argv:
+        # if not redshift testing
+        DATABASES.pop(STATS_DB_NAME, None)
+        DATABASES.pop(STATS_E2E_DB_NAME, None)
+        STATS_DB_NAME = 'default'
 
 # App specific
 ACTIONLOG_RECENT_HOURS = 2
@@ -198,13 +208,38 @@ DEFAULT_TIME_ZONE = 'America/New_York'
 # Placeholder value for source_campaign_key while campaign is being created
 SOURCE_CAMPAIGN_KEY_PENDING_VALUE = 'PENDING'
 
+CONVERSION_PIXEL_PREFIX = 'https://p1.zemanta.com/p/'
+
 if os.environ.get('E2E'):
     print 'Using E2E database !!!'
     DATABASES['default'] = DATABASES['e2e']
 
+if os.environ.get('E2E_REDDB'):
+    DATABASES[STATS_DB_NAME]['NAME'] = os.environ.get('E2E_REDDB')
+    print 'Using e2e Redshift DB named', DATABASES[STATS_DB_NAME]['NAME']
+
+    if os.environ.get('REDSHIFT_E2E_USER'):
+        credentials = {
+            'USER': os.environ.get('REDSHIFT_E2E_USER'),
+            'PASSWORD': os.environ.get('REDSHIFT_E2E_PASS'),
+            'HOST': os.environ.get('REDSHIFT_E2E_HOST')
+        }
+
+        DATABASES[STATS_E2E_DB_NAME].update(credentials)
+    else:
+        credentials = {
+            'USER': DATABASES[STATS_E2E_DB_NAME]['USER'],
+            'PASSWORD': DATABASES[STATS_E2E_DB_NAME]['PASSWORD'],
+            'HOST': DATABASES[STATS_E2E_DB_NAME]['HOST']
+        }
+
+    DATABASES[STATS_DB_NAME].update(credentials)
+
+
 if 'e2e' in DATABASES:
     DATABASES['e2e'] = {}
     del DATABASES['e2e']
+
 
 # User agent used when validating uploaded content ads URLs
 URL_VALIDATOR_USER_AGENT = 'Mozilla/5.0 (compatible; Zemanta/1.0; +http://www.zemanta.com)'

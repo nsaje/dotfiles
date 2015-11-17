@@ -1,8 +1,6 @@
 - fields:
     name: alpha
     permissions:
-    - [per_day_sheet_source_export, reports, articlestats]
-    - [yesterday_spend_view, reports, articlestats]
     - [account_agency_access_permissions, zemauth, user]
     - [account_agency_view, zemauth, user]
     - [account_campaigns_add_campaign, zemauth, user]
@@ -21,7 +19,6 @@
     - [campaign_settings_view, zemauth, user]
     - [campaign_sources_view, zemauth, user]
     - [filter_sources, zemauth, user]
-    - [help_view, zemauth, user]
     - [new_content_ads_tab, zemauth, user]
     - [set_content_ad_status, zemauth, user]
     - [supply_dash_link_view, zemauth, user]
@@ -42,8 +39,6 @@
     - [manual_view, actionlog, actionlog]
     - [group_account_automatically_add, dash, account]
     - [settings_view, dash, adgroupsettings]
-    - [per_day_sheet_source_export, reports, articlestats]
-    - [yesterday_spend_view, reports, articlestats]
     - [account_agency_access_permissions, zemauth, user]
     - [account_agency_view, zemauth, user]
     - [account_budget_view, zemauth, user]
@@ -71,7 +66,6 @@
     - [content_ads_postclick_engagement, zemauth, user]
     - [data_status_column, zemauth, user]
     - [filter_sources, zemauth, user]
-    - [help_view, zemauth, user]
     - [see_current_ad_group_source_state, zemauth, user]
     - [set_ad_group_source_settings, zemauth, user]
     - [set_content_ad_status, zemauth, user]
@@ -85,15 +79,12 @@
     name: advertisers
     permissions:
     - [settings_view, dash, adgroupsettings]
-    - [per_day_sheet_source_export, reports, articlestats]
-    - [yesterday_spend_view, reports, articlestats]
     - [account_campaigns_view, zemauth, user]
     - [account_sources_view, zemauth, user]
     - [campaign_ad_groups_view, zemauth, user]
     - [campaign_sources_view, zemauth, user]
     - [filter_sources, zemauth, user]
     - [group_new_user_add, zemauth, user]
-    - [help_view, zemauth, user]
     - [view_archived_entities, zemauth, user]
   model: auth.group
   pk: 5

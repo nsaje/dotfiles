@@ -1,7 +1,6 @@
-import slugify
-
 import reports.api
 
+from dash import stats_helper
 from dash.views import helpers
 from dash import models
 
@@ -12,29 +11,34 @@ from utils.sort_helper import sort_results
 
 
 class BaseDailyStatsView(api_common.BaseApiView):
-    def get_stats(self, request, totals_kwargs, selected_kwargs=None, group_key=None):
+    def get_stats(self, request, totals_kwargs, selected_kwargs=None, group_key=None, conversion_goals=None):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         totals_stats = []
+
         if totals_kwargs:
-            totals_stats = reports.api.query(
+            totals_stats = stats_helper.get_stats_with_conversions(
+                request.user,
                 start_date,
                 end_date,
-                ['date'],
-                ['date'],
-                **totals_kwargs
+                breakdown=['date'],
+                order=['date'],
+                conversion_goals=conversion_goals,
+                constraints=totals_kwargs
             )
 
         breakdown_stats = []
 
         if selected_kwargs:
-            breakdown_stats = reports.api.query(
+            breakdown_stats = stats_helper.get_stats_with_conversions(
+                request.user,
                 start_date,
                 end_date,
-                ['date', group_key],
-                ['date'],
-                **selected_kwargs
+                breakdown=['date', group_key],
+                order=['date'],
+                conversion_goals=conversion_goals,
+                constraints=selected_kwargs,
             )
 
         return breakdown_stats + totals_stats
@@ -58,32 +62,11 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
         return result
 
-    def _process_stat_goals(self, stat_goals, goals, stat):
-        # may modify goal_metrics and stat
-        for goal_name, goal_metrics in stat_goals.items():
-            for metric_type, metric_value in goal_metrics.items():
-                metric_id = '{}_goal_{}'.format(
-                    slugify.slugify(goal_name).encode('ascii', 'replace'),
-                    metric_type
-                )
-
-                if metric_id not in goal_metrics:
-                    goals[metric_id] = {
-                        'name': goal_name,
-                        'type': metric_type
-                    }
-
-                # set it in stat
-                stat[metric_id] = metric_value
-
-    def get_response_dict(self, stats, totals, groups_dict, metrics, group_key=None):
+    def get_response_dict(self, user, stats, totals, groups_dict,
+                          metrics, group_key=None, conversion_goals=None):
         series_groups = self._get_series_groups_dict(totals, groups_dict)
-        goals = {}
 
         for stat in stats:
-            if stat.get('goals') is not None:
-                self._process_stat_goals(stat['goals'], goals, stat)
-
             # get id of group it belongs to
             group_id = stat.get(group_key) or 'totals'
 
@@ -96,10 +79,14 @@ class BaseDailyStatsView(api_common.BaseApiView):
                     (stat['date'], stat.get(metric))
                 )
 
-        return {
-            'goals': goals,
+        result = {
             'chart_data': series_groups.values()
         }
+
+        if user.has_perm('zemauth.conversion_reports') and conversion_goals is not None:
+            result['conversion_goals'] = [{'id': cg.get_view_key(conversion_goals), 'name': cg.name} for cg in conversion_goals]
+
+        return result
 
 
 class AccountDailyStats(BaseDailyStatsView):
@@ -126,12 +113,18 @@ class AccountDailyStats(BaseDailyStatsView):
             totals_kwargs = {'account': int(account.id), 'source': filtered_sources}
 
         if selected_ids:
-            ids = [int(x) for x in selected_ids]
+            ids = map(int, selected_ids)
 
             selected_kwargs = {
                 'account': int(account.id),
-                'source_id' if sources else 'ad_group__campaign__id': ids
             }
+            if request.user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
+                if sources:
+                    selected_kwargs['source'] = ids
+                else:
+                    selected_kwargs['campaign'] = ids
+            else:
+                selected_kwargs['source_id' if sources else 'ad_group__campaign__id'] = ids
 
             if sources:
                 sources = models.Source.objects.filter(pk__in=ids)
@@ -143,6 +136,7 @@ class AccountDailyStats(BaseDailyStatsView):
         stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
 
         return self.create_api_response(self.get_response_dict(
+            request.user,
             stats,
             totals,
             group_names,
@@ -176,7 +170,11 @@ class CampaignDailyStats(BaseDailyStatsView):
 
         if selected_ids:
             ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'campaign': int(campaign.id), '{}_id'.format(group_key): ids}
+
+            if request.user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
+                selected_kwargs = {'campaign': int(campaign.id), '{}'.format(group_key): ids}
+            else:
+                selected_kwargs = {'campaign': int(campaign.id), '{}_id'.format(group_key): ids}
 
             if sources:
                 sources = models.Source.objects.filter(pk__in=ids)
@@ -185,14 +183,17 @@ class CampaignDailyStats(BaseDailyStatsView):
                 ad_groups = models.AdGroup.objects.filter(pk__in=ids)
                 group_names = {ad_group.id: ad_group.name for ad_group in ad_groups}
 
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
+        conversion_goals = campaign.conversiongoal_set.all()
+        stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key, conversion_goals)
 
         return self.create_api_response(self.get_response_dict(
+            request.user,
             stats,
             totals,
             group_names,
             metrics,
-            group_key
+            group_key,
+            conversion_goals=conversion_goals,
         ))
 
 
@@ -215,20 +216,82 @@ class AdGroupDailyStats(BaseDailyStatsView):
             totals_kwargs = {'ad_group': int(ad_group.id), 'source': filtered_sources}
 
         if selected_ids:
-            ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'ad_group': int(ad_group.id), 'source_id': ids}
+            ids = map(int, selected_ids)
+            sources = models.Source.objects.filter(id__in=tuple(ids))
+            selected_kwargs = {'ad_group': int(ad_group.id), 'source': sources}
 
-            sources = models.Source.objects.filter(pk__in=ids)
-
-        stats = self.get_stats(request, totals_kwargs, selected_kwargs, 'source')
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        stats = self.get_stats(
+            request, totals_kwargs, selected_kwargs=selected_kwargs,
+            group_key='source', conversion_goals=conversion_goals)
 
         return self.create_api_response(self.get_response_dict(
+            request.user,
             stats,
             totals,
             {source.id: source.name for source in sources},
             metrics,
-            'source'
+            group_key='source',
+            conversion_goals=conversion_goals,
         ))
+
+
+class AdGroupPublishersDailyStats(BaseDailyStatsView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_publishers_daily_stats_get')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_see_publishers'):
+            raise exc.MissingDataError()
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        metrics = request.GET.getlist('metrics')
+        totals = request.GET.get('totals')
+
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        totals_constraints = None
+        map_exchange_to_source_name = {}
+        # bidder_slug is unique, so no issues with taking all of the sources
+        for s in filtered_sources:
+            if s.bidder_slug:
+                exchange_name = s.bidder_slug
+            else:
+                exchange_name = s.name
+            map_exchange_to_source_name[exchange_name] = s.name
+
+        if totals:
+            totals_constraints = {'ad_group': int(ad_group.id)}
+
+        if set(models.Source.objects.all()) != set(filtered_sources):
+            totals_constraints['exchange'] = map_exchange_to_source_name.keys()
+
+        stats = self.get_stats(request, totals_constraints, selected_kwargs=None, group_key='source')
+
+        return self.create_api_response(self.get_response_dict(
+            request.user,
+            stats,
+            totals,
+            {},
+            metrics,
+            'domain'
+        ))
+
+    def get_stats(self, request, totals_constraints, selected_kwargs=None, group_key=None):
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
+        totals_stats = []
+        if totals_constraints:
+            totals_stats = reports.api_publishers.query(
+                start_date,
+                end_date,
+                order_fields=['date'],
+                breakdown_fields=['date'],
+                constraints=totals_constraints
+            )
+
+        breakdown_stats = []
+
+        return breakdown_stats + totals_stats
 
 
 class AccountsDailyStats(BaseDailyStatsView):
@@ -255,8 +318,9 @@ class AccountsDailyStats(BaseDailyStatsView):
             totals_kwargs = {'account': accounts, 'source': filtered_sources}
 
         if selected_ids:
-            ids = [int(x) for x in selected_ids]
-            selected_kwargs = {'account': accounts, 'source_id': ids}
+            ids = map(int, selected_ids)
+            sources = models.Source.objects.filter(id__in=tuple(ids))
+            selected_kwargs = {'account': accounts, 'source': sources}
 
             group_key = 'source'
 
@@ -266,6 +330,7 @@ class AccountsDailyStats(BaseDailyStatsView):
         stats = self.get_stats(request, totals_kwargs, selected_kwargs, group_key)
 
         return self.create_api_response(self.get_response_dict(
+            request.user,
             stats,
             totals,
             group_names,
@@ -286,25 +351,30 @@ class AdGroupAdsPlusDailyStats(BaseDailyStatsView):
 
         metrics = request.GET.getlist('metrics')
 
-        stats = self._get_stats(request, ad_group.id, filtered_sources)
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        stats = self._get_stats(request, ad_group, filtered_sources, conversion_goals)
 
         return self.create_api_response(self.get_response_dict(
+            request.user,
             stats,
             totals=True,
             groups_dict=None,
-            metrics=metrics
+            metrics=metrics,
+            conversion_goals=conversion_goals
         ))
 
-    def _get_stats(self, request, ad_group_id, sources):
+    def _get_stats(self, request, ad_group, sources, conversion_goals):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
-        stats = reports.api_contentads.query(
+        stats = stats_helper.get_content_ad_stats_with_conversions(
+            request.user,
             start_date,
             end_date,
-            ['date'],
-            ad_group=ad_group_id,
-            source=sources
+            breakdown=['date'],
+            ignore_diff_rows=True,
+            conversion_goals=conversion_goals,
+            constraints={'ad_group': ad_group.id, 'source': sources}
         )
 
         return sort_results(stats, ['date'])

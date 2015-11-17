@@ -1,22 +1,21 @@
 import logging
-import os.path
-import hashlib
 
 import exc
 from constants import ALLOWED_ERRORS_COUNT
-from parse import LandingPageUrl
 from models import RawPostclickStats, RawGoalConversionStats
 from resolve import resolve_source, resolve_article
 from convapi import constants as convapi_constants
 
 import dash.models
 import reports.models
-import utils.s3helpers
 import reports.update
 from utils import statsd_helper
 
-
 logger = logging.getLogger(__name__)
+
+# special source param designating url's from zemanta dashboard
+Z1_SOURCE_PARAM = 'z1'
+
 
 class ReportEmail(object):
 
@@ -72,11 +71,13 @@ class ReportEmail(object):
         visits = int(entry['Sessions'].replace(',', ''))
         data['visits'] += visits
         data['new_visits'] += int(entry['New Users'].replace(',', ''))
-        data['bounced_visits'] += int(round(float(entry['Bounce Rate'].replace('%', '').replace(',', '')) / 100 * visits))
+        data['bounced_visits'] += int(round(float(
+            entry['Bounce Rate'].replace('%', '').replace(',', '')) / 100 * visits))
         data['pageviews'] += int(round(float(entry['Pages / Session']) * visits))
         data['duration'] += visits * self._parse_duration(entry['Avg. Session Duration'])
         for goal_name, metric_fields in goal_fields.items():
-            data['goals'][goal_name]['conversions'] += int(entry[metric_fields['conversions']].replace(',', ''))
+            data['goals'][goal_name]['conversions'] += int(
+                entry[metric_fields['conversions']].replace(',', ''))
             conv_value = self._parse_conversion_value(entry[metric_fields['value']])
             data['goals'][goal_name]['conversions_value_cc'] += int(10000 * conv_value)
 
@@ -98,49 +99,70 @@ class ReportEmail(object):
 
         errors_count = 0
         for entry in self.report.get_entries():
-            url = LandingPageUrl(entry['Landing Page'])
-            if url.source_param not in source_resolve_lookup:
-                source_resolve_lookup[url.source_param] = resolve_source(url.source_param)
-            source = source_resolve_lookup[url.source_param]
+            identifier = self.report.get_identifier_object(entry)
+
+            if identifier.source_param == Z1_SOURCE_PARAM:
+                logger.warning('ERROR: Not resolving z1 dashboard source for (ad_group=%s, sender=%s,\
+recipient=%s, subject=%s, maildate=%s, \
+landing_page_url=%s',
+                    identifier.ad_group_id,
+                    self.sender,
+                    self.recipient,
+                    self.subject,
+                    self.date,
+                    identifier.id.decode('ascii', 'ignore')
+                )
+                self.report_log.add_error(
+                    'Not resolving z1 dashboard source for url=%s' % identifier.id.decode('ascii', 'ignore'))
+                continue
+
+            if identifier.source_param not in source_resolve_lookup:
+                source_resolve_lookup[identifier.source_param] = resolve_source(identifier.source_param)
+            source = source_resolve_lookup[identifier.source_param]
+
             if source is None:
                 errors_count += 1
                 logger.warning('ERROR: Cannot resolve source for (ad_group=%s, sender=%s,\
 recipient=%s, subject=%s, maildate=%s, \
 landing_page_url=%s',
-                    url.ad_group_id,
+                    identifier.ad_group_id,
                     self.sender,
                     self.recipient,
                     self.subject,
                     self.date,
-                    url.raw_url.decode('ascii', 'ignore')
-                 )
-                self.report_log.add_error('Cannot resolve source for url=%s' % url.raw_url.decode('ascii', 'ignore'))
+                    identifier.id.decode('ascii', 'ignore')
+                )
+                self.report_log.add_error(
+                    'Cannot resolve source for url=%s' % identifier.id.decode('ascii', 'ignore'))
                 if errors_count > ALLOWED_ERRORS_COUNT:
-                    self.report_log = convapi_constants.GAReportState.FAILED
-                    self.report_log.add_error('There are too many errors in urls. Adgroup or sources missing in GA report.')
+                    self.report_log.state = convapi_constants.ReportState.FAILED
+                    self.report_log.add_error(
+                        'There are too many errors in urls. Adgroup or sources missing in GA report.')
                     self.report_log.save()
-                    raise exc.TooManyMissingSourcesException("There are too many sources missing in GA report.")
+                    raise exc.TooManyMissingSourcesException(
+                        "There are too many sources missing in GA report.")
                 else:
                     continue
 
-            if url.raw_url not in article_resolve_lookup:
-                article_resolve_lookup[url.raw_url] = resolve_article(url.clean_url, url.ad_group_id, self.report.get_date(), source, self.report_log)
-            article = article_resolve_lookup[url.raw_url]
+            if identifier.id not in article_resolve_lookup:
+                article_resolve_lookup[identifier.id] = resolve_article(
+                    identifier.url, identifier.ad_group_id, self.report.get_date(), source, self.report_log)
+            article = article_resolve_lookup[identifier.id]
             if article is None:
                 logger.warning('ERROR: Cannot resolve article for (ad_group=%s, sender=%s,\
 recipient=%s, subject=%s, maildate=%s, \
 landing_page_url=%s',
-                    url.ad_group_id,
+                    identifier.ad_group_id,
                     self.sender,
                     self.recipient,
                     self.subject,
                     self.date,
-                    url.raw_url.decode('ascii', 'ignore')
+                    identifier.id.decode('ascii', 'ignore')
                  )
-                self.report_log.add_error('Cannot resolve article for url=%s' % url.raw_url.decode('ascii', 'ignore'))
+                self.report_log.add_error('Cannot resolve article for identifier=%s' % identifier.id.decode('ascii', 'ignore'))
                 continue
 
-            key = (self.report.get_date(), article.id, url.ad_group_id, source.id)
+            key = (self.report.get_date(), article.id, identifier.ad_group_id, source.id)
 
             data = stats.get(key, self.get_initial_data(goal_fields))
 
@@ -152,7 +174,7 @@ landing_page_url=%s',
 
     def _parse_duration(self, durstr):
         hours_str, minutes_str, seconds_str = durstr.replace('<', '').split(':')
-        return int(seconds_str) + 60*int(minutes_str) + 60*60*int(hours_str)
+        return int(seconds_str) + 60 * int(minutes_str) + 60 * 60 * int(hours_str)
 
     @statsd_helper.statsd_timer('convapi', 'aggregate')
     def aggregate(self):
@@ -247,10 +269,13 @@ bounced_visits=%s, pageviews=%s, duration=%s',
 
         entries = self.report.get_entries()
 
-        ad_group_id = LandingPageUrl(entries[0]['Landing Page']).ad_group_id
+        identifier = self.report.get_identifier_object(entries[0])
+        ad_group_id = identifier.ad_group_id
 
         if ad_group_id is None:
-            logger.warning('Cannot handle url with no ad_group_id specified %s', entries[0]['Landing Page'])
+            logger.warning(
+                'Cannot handle identifier with no ad_group_id %s',
+                identifier.id.decode('ascii', 'ignore'))
             return
 
         RawPostclickStats.objects.filter(datetime=dt, ad_group_id=ad_group_id).delete()
@@ -258,16 +283,16 @@ bounced_visits=%s, pageviews=%s, duration=%s',
 
         n_visits = 0
         for entry in entries:
-            landing_page = LandingPageUrl(entry['Landing Page'])
+            identifier = self.report.get_identifier_object(entry)
 
-            assert landing_page.ad_group_id == ad_group_id
+            assert identifier.ad_group_id == ad_group_id
             assert ad_group_id is not None
 
-            if landing_page.source_param is None:
+            if identifier.source_param is None:
                 continue
 
-            source = resolve_source(landing_page.source_param)
-            
+            source = resolve_source(identifier.source_param)
+
             source_id = source.id if source is not None else None
 
             metrics_data = self.get_initial_data(goal_fields)
@@ -277,16 +302,13 @@ bounced_visits=%s, pageviews=%s, duration=%s',
 
             raw_postclick_stats = RawPostclickStats(
                 datetime=dt,
-                url_raw=landing_page.raw_url,
-                url_clean=landing_page.clean_url,
-                ad_group_id=int(landing_page.ad_group_id),
+                url_raw=identifier.id,
+                url_clean=identifier.url,
+                ad_group_id=int(identifier.ad_group_id),
                 source_id=source_id,
                 device_type=entry.get('Device Category'),
-                z1_adgid=str(landing_page.ad_group_id),
-                z1_msid=landing_page.source_param,
-                z1_did=landing_page.z1_did,
-                z1_kid=landing_page.z1_kid,
-                z1_tid=landing_page.z1_tid,
+                z1_adgid=str(identifier.ad_group_id)[:32],
+                z1_msid=str(identifier.source_param)[:64],
                 visits=metrics_data['visits'],
                 new_visits=metrics_data['new_visits'],
                 bounced_visits=metrics_data['bounced_visits'],
@@ -298,21 +320,17 @@ bounced_visits=%s, pageviews=%s, duration=%s',
             for goal_name, conversion_metrics in metrics_data.get('goals', {}).items():
                 raw_goal_stats = RawGoalConversionStats(
                     datetime=dt,
-                    ad_group_id=int(landing_page.ad_group_id),
+                    ad_group_id=int(identifier.ad_group_id),
                     source_id=source_id,
                     goal_name=goal_name,
-                    url_raw=landing_page.raw_url,
-                    url_clean=landing_page.clean_url,
+                    url_raw=identifier.id,
+                    url_clean=identifier.url,
                     device_type=entry.get('Device Category'),
-                    z1_adgid=str(landing_page.ad_group_id),
-                    z1_msid=landing_page.source_param,
-                    z1_did=landing_page.z1_did,
-                    z1_kid=landing_page.z1_kid,
-                    z1_tid=landing_page.z1_tid,
+                    z1_adgid=str(identifier.ad_group_id)[:32],
+                    z1_msid=str(identifier.source_param)[:64],
                     conversions=conversion_metrics['conversions'],
                     conversions_value_cc=conversion_metrics['conversions_value_cc'],
                 )
                 raw_goal_stats.save()
 
         self.report_log.add_visits_reported(n_visits)
-

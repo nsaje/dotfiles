@@ -2,7 +2,7 @@
 
 -   fields:
         date_joined: '2014-06-16T12:21:29'
-        email: luka.silovinac@zemanta.com
+        email: superuser@test.com
         first_name: ''
         groups: []
         is_active: true
@@ -10,7 +10,7 @@
         is_superuser: true
         last_login: '2014-06-16T12:21:29'
         last_name: ''
-        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
         user_permissions: []
         username: ''
     model: zemauth.user
@@ -52,6 +52,7 @@
 -   fields:
         type: 'outbrain'
         delete_traffic_metrics_threshold: 10
+        available_actions: []
     model: dash.sourcetype
     pk: 3
 
@@ -96,6 +97,7 @@
         name: Outbrain
         tracking_slug: 'outbrain'
         source_type: 3
+        maintenance: False
     model: dash.source
     pk: 3
 
@@ -183,7 +185,7 @@
     model: dash.adgroupsource
     pk: 6
 
-# test adgroupsourcesettings
+# test adgroupsourcestate
 
 -   fields:
         created_dt: '2014-06-04T09:58:21'
@@ -193,6 +195,26 @@
         state: 1
     model: dash.adgroupsourcestate
     pk: 1
+
+# test adgroupsourcesettings
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 5
+        cpc_cc: null
+        daily_budget_cc: null
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-05T09:58:22'
+        ad_group_source: 3
+        cpc_cc: '0.12'
+        daily_budget_cc: null
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 2
 
 # action log orders
 

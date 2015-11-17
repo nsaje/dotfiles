@@ -16,13 +16,45 @@
     model: zemauth.user
     pk: 1
 
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: mad.max@zemanta.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: false
+        is_superuser: false
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 2
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: supertestuser@test.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: true
+        is_superuser: true
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 3
+
 # test account
 
 -   fields:
         created_dt: '2014-06-04T09:58:21'
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
-        users: [1]
+        users: [1, 2, 3]
         name: 'test account 1 Čžš'
     model: dash.account
     pk: 1
@@ -111,7 +143,7 @@
 
 -   fields:
         type: 'b1'
-        available_actions: [4]
+        available_actions: [4, 19]
     model: dash.sourcetype
     pk: 1
 
@@ -229,6 +261,18 @@
     model: dash.source
     pk: 8
 
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Sharethrough
+        tracking_slug: 'b1_sharethrough'
+        source_type: 1
+        maintenance: false
+        bidder_slug: 'sharethrough'
+        content_ad_submission_type: 1
+    model: dash.source
+    pk: 9
+
 # test adgroupsettings
 
 -   fields:
@@ -288,6 +332,15 @@
         ad_group: 7
     model: dash.adgroupsettings
     pk: 5
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by: 1
+        archived: False
+        ad_group: 8
+    model: dash.adgroupsettings
+    pk: 6
+
 
 # test adgroup
 
@@ -372,6 +425,15 @@
         name: 'test adgroup 7'
     model: dash.adgroup
     pk: 9
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 10'
+    model: dash.adgroup
+    pk: 10
 
 # test adgroupsource
 
@@ -690,16 +752,33 @@
 -   fields:
         source: 2
         credentials: 2
+        auto_add: True
         params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
+        default_cpc_cc: 0.18
+        mobile_cpc_cc: 0.22
+        daily_budget_cc: 22
     model: dash.defaultsourcesettings
     pk: 1
 
 -   fields:
         source: 3
         credentials: 3
+        auto_add: False
         params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
+        mobile_cpc_cc: 0.22
+        daily_budget_cc: 22
     model: dash.defaultsourcesettings
     pk: 2
+
+-   fields:
+        source: 4
+        credentials: 3
+        auto_add: True
+        params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
+        mobile_cpc_cc: 0.23
+        daily_budget_cc: 23
+    model: dash.defaultsourcesettings
+    pk: 3
 
 
 # test article
@@ -717,20 +796,12 @@
 -   fields:
         name: 'batch 1'
         created_dt: '2015-02-23T00:00:00'
-        display_url: 'example.com'
-        brand_name: 'Example'
-        description: 'Example description'
-        call_to_action: 'Call to action'
     model: dash.uploadbatch
     pk: 1
 
 -   fields:
         name: 'batch 2'
         created_dt: '2015-02-23T00:00:00'
-        display_url: 'example.com'
-        brand_name: 'Example'
-        description: 'Example description'
-        call_to_action: 'Call to action'
     model: dash.uploadbatch
     pk: 2
 
@@ -746,8 +817,14 @@
         tracker_urls: ['http://testurl.com', 'http://testurl2.com']
         title: 'Test Article unicode Čžš'
         ad_group: 1
+        redirect_id: 'abc'
         created_dt: '2015-02-21T00:00:00'
         state: 1
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+        crop_areas: '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
     model: dash.contentad
     pk: 1
 
@@ -760,8 +837,13 @@
         url: 'http://testurl.com'
         title: 'Test Article with no content_ad_sources 1'
         ad_group: 1
+        redirect_id: 'abc'
         created_dt: '2015-02-21T00:00:01'
         state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 2
 
@@ -776,6 +858,10 @@
         ad_group: 1
         created_dt: '2015-02-23T00:00:00'
         state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 3
 
@@ -790,6 +876,10 @@
         ad_group: 2
         created_dt: '2015-02-21T00:00:00'
         state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 4
 
@@ -804,6 +894,10 @@
         ad_group: 2
         created_dt: '2015-02-21T00:00:00'
         state: 2
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
     model: dash.contentad
     pk: 5
 
@@ -856,6 +950,18 @@
         modified_dt: '2015-07-01T00:00:00'
     model: dash.contentadsource
     pk: 4
+
+-   fields:
+        source: 9
+        content_ad: 1
+        submission_status: 1
+        state: 1
+        source_state: 2
+        source_content_ad_id: NULL
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 5
 
 # test adgroupsourcesettings
 

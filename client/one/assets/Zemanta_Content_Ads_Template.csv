@@ -1,2 +1,2 @@
-URL,title,image URL
-http://www.example.com/content,Example content ad,http://www.example.com/image.jpg
+URL,Title,Image URL,Description (optional),Crop Areas (optional),Tracker URL (optional)
+http://www.example.com/content,Example content ad,http://www.example.com/image.jpg,Example description,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",http://www.example.com/tracker

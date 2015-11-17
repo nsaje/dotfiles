@@ -158,7 +158,6 @@
   model: reports.articlestats
   pk: 1
 
-
 # GoalConversionStats
 - fields:
     datetime: '2014-09-01T00:00:00'
@@ -181,3 +180,46 @@
     conversions_value_cc: 4000
   model: reports.goalconversionstats
   pk: 2
+
+# UploadBatch
+
+- fields:
+    name: 'batch 1'
+    created_dt: '2015-02-23T00:00:00'
+  model: dash.uploadbatch
+  pk: 1
+
+# ContentAd
+
+- fields:
+    image_id: '123456789'
+    image_width: 200
+    image_height: 300
+    batch: 1
+    archived: False
+    url: 'http://testurl.com'
+    tracker_urls: ['http://testurl.com', 'http://testurl2.com']
+    title: 'Test Article unicode Čžš'
+    ad_group: 1
+    created_dt: '2015-02-21T00:00:00'
+    state: 1
+    display_url: 'example.com'
+    brand_name: 'Example'
+    description: 'Example description'
+    call_to_action: 'Call to action'
+  model: dash.contentad
+  pk: 1
+
+# ContentAdSource
+
+-   fields:
+        source: 1
+        content_ad: 1
+        submission_status: 1
+        state: 1
+        source_state: NULL
+        source_content_ad_id: NULL
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 1

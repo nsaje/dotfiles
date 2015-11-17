@@ -6,9 +6,9 @@
             ng-model="selectedAll"
             ng-click="selectAll($event)">
         </input>
-        <div class="drop-arrow"></div>
+        <div ng-show="config.hideCombo === undefined || config.hideCombo === false" class="drop-arrow"></div>
     </div>
-    <ul class="dropdown-menu" role="menu">
+    <ul ng-show="config.hideCombo === undefined || config.hideCombo === false" class="dropdown-menu" role="menu">
         <li role="presentation" ng-repeat="option in config.selectionOptions" ng-class="{ 'divider': {{option.type=='separator'}} }">
         <div ng-if="option.type == 'link'" class="link">
             <div role="menuitem" tabindex="-1" ng-click="handleOptionClick(option)">{{ option.name }}</div>

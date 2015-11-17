@@ -3,6 +3,7 @@ import logging
 import urllib
 
 from django.contrib import admin
+from django.contrib import messages
 from django import forms
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
@@ -10,17 +11,24 @@ from django.conf import settings
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
 
+from import_export import resources
+from import_export.admin import ExportMixin
+
 from zemauth.models import User as ZemUser
 
 from dash import api
 from dash import constants
 from dash import models
+from dash import forms as dash_forms
 from dash import threads
+from dash import validation_helpers
 
 import actionlog.api_contentads
 import actionlog.zwei_actions
 
 logger = logging.getLogger(__name__)
+
+from utils.admin_common import SaveWithRequestMixin
 
 
 # Forms for inline user functionality.
@@ -184,11 +192,39 @@ class SourceTypeForm(forms.ModelForm):
     )
 
 
+class DefaultSourceSettingsForm(forms.ModelForm):
+    def clean_daily_budget_cc(self):
+        daily_budget_cc = self.cleaned_data.get('daily_budget_cc')
+        if daily_budget_cc:
+            source_type = self.instance.source.source_type
+            validation_helpers.validate_daily_budget_cc(daily_budget_cc, source_type)
+
+        return daily_budget_cc
+
+    def clean_default_cpc_cc(self):
+        cpc_cc = self.cleaned_data.get('default_cpc_cc')
+        if cpc_cc:
+            source = self.instance.source
+            validation_helpers.validate_cpc_cc(cpc_cc, source)
+
+        return cpc_cc
+
+    def clean_mobile_cpc_cc(self):
+        cpc_cc = self.cleaned_data.get('mobile_cpc_cc')
+        if cpc_cc:
+            source = self.instance.source
+            validation_helpers.validate_cpc_cc(cpc_cc, source)
+
+        return cpc_cc
+
+
 class DefaultSourceSettingsAdmin(admin.ModelAdmin):
+    form = DefaultSourceSettingsForm
     search_fields = ['name']
     list_display = (
         'source',
-        'credentials_'
+        'credentials_',
+        'auto_add'
     )
 
     def credentials_(self, obj):
@@ -231,7 +267,7 @@ class CampaignInline(admin.TabularInline):
     readonly_fields = ('admin_link',)
 
 
-class AccountAdmin(admin.ModelAdmin):
+class AccountAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
@@ -241,9 +277,6 @@ class AccountAdmin(admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by')
     exclude = ('users', 'groups')
     inlines = (AccountUserInline, AccountGroupInline, CampaignInline)
-
-    def save_model(self, request, obj, form, change):
-        obj.save(request)
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.Campaign:
@@ -284,7 +317,7 @@ class AdGroupInline(admin.TabularInline):
     readonly_fields = ('admin_link',)
 
 
-class CampaignAdmin(admin.ModelAdmin):
+class CampaignAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
@@ -295,9 +328,6 @@ class CampaignAdmin(admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt', 'modified_by', 'settings_')
     exclude = ('users', 'groups')
     inlines = (CampaignUserInline, CampaignGroupInline, AdGroupInline)
-
-    def save_model(self, request, obj, form, change):
-        obj.save(request)
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.AdGroup:
@@ -378,7 +408,7 @@ class SourceCredentialsAdmin(admin.ModelAdmin):
     readonly_fields = ('created_dt', 'modified_dt')
 
 
-class CampaignSettingsAdmin(admin.ModelAdmin):
+class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         return list(set(
             [field.name for field in self.opts.local_fields] +
@@ -416,9 +446,6 @@ class CampaignSettingsAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
-
-    def save_model(self, request, obj, form, change):
-        obj.save(request)
 
 # Ad Group
 
@@ -471,7 +498,7 @@ class IsArchivedFilter(admin.SimpleListFilter):
         return queryset
 
 
-class AdGroupAdmin(admin.ModelAdmin):
+class AdGroupAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'name',
@@ -538,9 +565,6 @@ class AdGroupAdmin(admin.ModelAdmin):
     campaign_.allow_tags = True
     campaign_.admin_order_field = 'campaign'
 
-    def save_model(self, request, obj, form, change):
-        obj.save(request)
-
     def save_formset(self, request, form, formset, change):
         actions = []
         if formset.model == models.AdGroupSource:
@@ -591,7 +615,7 @@ def reject_ad_group_sources(modeladmin, request, queryset):
 reject_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as REJECTED'
 
 
-class AdGroupSourceAdmin(admin.ModelAdmin):
+class AdGroupSourceAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'ad_group_',
         'source_content_ad_id',
@@ -634,7 +658,7 @@ class AdGroupSourceAdmin(admin.ModelAdmin):
     submission_status_.admin_order_field = 'submission_status'
 
 
-class AdGroupSettingsAdmin(admin.ModelAdmin):
+class AdGroupSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
     actions = None
 
@@ -652,9 +676,6 @@ class AdGroupSettingsAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def save_model(self, request, obj, form, change):
-        obj.save(request)
-
 
 class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
     search_fields = ['ad_group_source__ad_group__name', 'ad_group_source__source__name']
@@ -666,9 +687,6 @@ class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
         'created_dt',
     )
 
-    def save_model(self, request, obj, form, change):
-        obj.save(request)
-
 
 class AdGroupSourceStateAdmin(admin.ModelAdmin):
     search_fields = ['ad_group_source__ad_group__name', 'ad_group_source__source__name']
@@ -679,6 +697,127 @@ class AdGroupSourceStateAdmin(admin.ModelAdmin):
         'daily_budget_cc',
         'created_dt',
     )
+
+
+class UserActionLogResource(resources.ModelResource):
+    class Meta:
+        model = models.UserActionLog
+
+    def _changes_text(self, settings=None):
+        changes_text = '/'
+
+        if settings:
+            changes_text = settings.changes_text if settings.changes_text else '- no description -'
+        return changes_text
+
+    def _get_name(self, obj):
+        return obj.name if obj else '/'
+
+    def dehydrate_action_type(self, obj):
+        return constants.UserActionType.get_text(obj.action_type)
+
+    def dehydrate_ad_group(self, obj):
+        return self._get_name(obj.ad_group)
+
+    def dehydrate_ad_group_settings(self, obj):
+        return self._changes_text(obj.ad_group_settings)
+
+    def dehydrate_campaign(self, obj):
+        return self._get_name(obj.campaign)
+
+    def dehydrate_campaign_settings(self, obj):
+        return self._changes_text(obj.campaign_settings)
+
+    def dehydrate_account(self, obj):
+        return self._get_name(obj.account)
+
+    def dehydrate_account_settings(self, obj):
+        return self._changes_text(obj.account_settings)
+
+    def dehydrate_created_by(self, obj):
+        return obj.created_by.email if obj.created_by else '/'
+
+
+class UserActionLogAdmin(ExportMixin, admin.ModelAdmin):
+    search_fields = ['action_type', 'created_by__email']
+    list_display = (
+        'created_by',
+        'created_dt',
+        'action_type',
+        'ad_group_settings_changes_text_',
+        'campaign_settings_changes_text_',
+        'account_settings_changes_text_',
+    )
+
+    list_filter = ('action_type',
+                   ('created_dt', admin.DateFieldListFilter),
+                   ('created_by', admin.RelatedOnlyFieldListFilter))
+
+    resource_class = UserActionLogResource
+
+    def changelist_view(self, request, extra_context=None):
+        response = super(UserActionLogAdmin, self).changelist_view(request, extra_context=extra_context)
+        qs = response.context_data['cl'].queryset
+        extra_context = {
+            'self_managed_users': (qs.order_by('created_by').distinct('created_by')
+                                   .values_list('created_by__email', flat=True))
+        }
+
+        response.context_data.update(extra_context)
+
+        return response
+
+    def ad_group_settings_changes_text_(self, user_action_log):
+        return self._get_changes_link(
+            user_action_log.ad_group,
+            user_action_log.ad_group_settings,
+            'admin:dash_adgroup_change',
+            'admin:dash_adgroupsettings_change',
+        )
+    ad_group_settings_changes_text_.allow_tags = True
+    ad_group_settings_changes_text_.short_description = 'Ad Group'
+    ad_group_settings_changes_text_.admin_order_field = 'ad_group'
+
+    def campaign_settings_changes_text_(self, user_action_log):
+        return self._get_changes_link(
+            user_action_log.campaign,
+            user_action_log.campaign_settings,
+            'admin:dash_campaign_change',
+            'admin:dash_campaignsettings_change',
+        )
+    campaign_settings_changes_text_.allow_tags = True
+    campaign_settings_changes_text_.short_description = 'Campaign change'
+    campaign_settings_changes_text_.admin_order_field = 'campaign'
+
+    def account_settings_changes_text_(self, user_action_log):
+        return self._get_changes_link(
+            user_action_log.account,
+            user_action_log.account_settings,
+            'admin:dash_account_change',
+            None
+        )
+    account_settings_changes_text_.allow_tags = True
+    account_settings_changes_text_.short_description = 'Account change'
+    account_settings_changes_text_.admin_order_field = 'account'
+
+    def _get_changes_link(self, obj, settings, obj_url_name, settings_url_name):
+        obj_link = ''
+        settings_link = ''
+
+        if obj:
+            obj_link = '<a href="{url}">{name}</a>'.format(
+                name=obj.name,
+                url=reverse(obj_url_name, args=(obj.pk, )))
+
+        if settings_url_name and settings:
+            settings_link = '<a href="{url}">{name}</a>'.format(
+                name=settings.changes_text or '- no changes description -',
+                url=reverse(settings_url_name, args=(settings.pk, ))
+            )
+        elif not settings_url_name and settings:
+            settings_link = settings.changes_text or '- no changes description -'
+
+        return u'{} / {}'.format(obj_link, settings_link)
 
 
 class AdGroupModelChoiceField(forms.ModelChoiceField):
@@ -736,6 +875,27 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
         'modified_dt',
     )
 
+def reject_content_ad_sources(modeladmin, request, queryset):
+    logger.info(
+        'BULK REJECT CONTENT AD SOURCES: Bulk reject content ad sources started. Content ad sources: {}'.format(
+            [el.id for el in queryset]
+        )
+    )
+
+    source = models.Source.objects.get(source_type__type=constants.SourceType.OUTBRAIN)
+    ignored = []
+
+    for content_ad_source in queryset:
+        if content_ad_source.source == source:
+            content_ad_source.submission_status = constants.ContentAdSubmissionStatus.REJECTED
+            content_ad_source.save()
+        else:
+            ignored.append(content_ad_source.content_ad_id)
+
+    if len(ignored) > 0:
+        messages.warning(request, 'Marking content ad sources as rejected is only supported for the Outbrain source,\
+                                   content ad sources with content ad ids {0} were ignored'.format(ignored))
+reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
 
 class ContentAdSourceAdmin(admin.ModelAdmin):
     list_display = (
@@ -750,6 +910,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
     )
 
     list_filter = ('source', 'submission_status')
+    actions = [reject_content_ad_sources]
 
     display_submission_status_colors = {
         constants.ContentAdSubmissionStatus.APPROVED: '#5cb85c',
@@ -758,6 +919,9 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         constants.ContentAdSubmissionStatus.LIMIT_REACHED: '#e6c440',
         constants.ContentAdSubmissionStatus.NOT_SUBMITTED: '#bcbcbc',
     }
+
+    def get_queryset(self, request):
+        return models.ContentAdSource.objects.filter(content_ad__ad_group__is_demo=False)
 
     def submission_status_(self, obj):
         return '<span style="color:{color}">{submission_status}</span>'.format(
@@ -773,7 +937,16 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
 
     def ad_group_name(self, obj):
         ad_group = obj.content_ad.ad_group
-        return ad_group.campaign.account.name + ' / ' + ad_group.campaign.name + ' / ' + ad_group.name + ' (' + str(ad_group.id) + ')'
+        return u'<a href="{account_url}">{account_name}</a> / <a href="{campaign_url}">{campaign_name}</a> / <a href="{ad_group_url}">{ad_group_name}</a> - ({ad_group_id})'.format(
+            account_url=reverse('admin:dash_account_change', args=(ad_group.campaign.account.id, )),
+            account_name=ad_group.campaign.account.name,
+            campaign_url=reverse('admin:dash_campaign_change', args=(ad_group.campaign.id, )),
+            campaign_name=ad_group.campaign.name,
+            ad_group_url=reverse('admin:dash_adgroup_change', args=(ad_group.id, )),
+            ad_group_name=ad_group.name,
+            ad_group_id=str(ad_group.id),
+            )
+    ad_group_name.allow_tags = True
 
     def save_model(self, request, content_ad_source, form, change):
         current_content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
@@ -795,6 +968,33 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)
         self.list_display_links = (None, )
 
+class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+    list_display = (
+        'account',
+        'start_date',
+        'end_date',
+        'amount',
+        'status',
+        'license_fee',
+        'created_dt',
+        'created_by',
+    )
+
+    readonly_fields = ('created_dt', 'created_by',)
+    
+
+class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+    list_display = (
+        'campaign',
+        'start_date',
+        'end_date',
+        'amount',
+        'license_fee',
+        'created_dt',
+    )
+
+    readonly_fields = ('created_dt', 'created_by',)
+
 
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -811,3 +1011,6 @@ admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)
 admin.site.register(models.DemoAdGroupRealAdGroup, DemoAdGroupRealAdGroupAdmin)
 admin.site.register(models.OutbrainAccount, OutbrainAccountAdmin)
 admin.site.register(models.ContentAdSource, ContentAdSourceAdmin)
+admin.site.register(models.UserActionLog, UserActionLogAdmin)
+admin.site.register(models.CreditLineItem, CreditLineItemAdmin)
+admin.site.register(models.BudgetLineItem, BudgetLineItemAdmin)

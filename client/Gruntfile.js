@@ -84,6 +84,7 @@ module.exports = function (grunt) {
                         'lib/components/bootstrap/dist/css/bootstrap.min.css',
                         'lib/components/angular-bootstrap-datetimepicker/src/css/datetimepicker.css',
                         'lib/components/bootstrap-multiselect/css/bootstrap-multiselect.css',
+                        'lib/components/angular-ui-select/dist/select.css',
                         'lib/components/select2/select2.css',
                         'lib/components/select2/select2-bootstrap.css',
                         'lib/components/bootstrap-daterangepicker/daterangepicker-bs3.css'
@@ -94,7 +95,7 @@ module.exports = function (grunt) {
             actionlog_lib: {
                 files: [{
                     src: 'dist/actionlog/zemanta-one.actionlog.lib.css',
-                    dest: 'dist/actionlog/zemanta-one.actionlog.lib.min.css',
+                    dest: 'dist/actionlog/zemanta-one.actionlog.lib.min.css'
                 }]
             }
         },
@@ -104,6 +105,12 @@ module.exports = function (grunt) {
                     {expand: true, flatten: true, src: 'one/img/*', dest: 'dist/one/img/'},
                     {expand: true, flatten: true, src: 'one/assets/*', dest: 'dist/one/assets/'}
                 ]
+            },
+            // This is used for dev instead of uglifying which takes half of build time
+            onedev: {
+                files: [
+                        {src: 'dist/one/zemanta-one.js', dest: 'dist/one/zemanta-one.min.js'},
+                    ]
             },
             one_lib: {
                 files: [
@@ -175,10 +182,15 @@ module.exports = function (grunt) {
                 files: [
                     'one/js/**/*.js',
                     'one/partials/**/*.html',
-                    'one/less/**/*.less',
                     'one/img/**/*'
                 ],
-                tasks: ['build:one']
+                tasks: ['html2js:one', 'concat:one', 'copy:onedev', 'copy:one']
+            },
+            one_css: {
+                files: [
+                    'one/less/**/*.less',
+                ],
+                tasks: ['less:one', 'copy:one']
             },
             actionlog: {
                 files: [
@@ -229,7 +241,7 @@ module.exports = function (grunt) {
             dev: {
                 constants: {
                     config: {
-                        static_url: 'http://192.168.100.50:9999',
+                        static_url: 'http://localhost:9999',
                         debug: true
                     }
                 } 
@@ -238,7 +250,7 @@ module.exports = function (grunt) {
         karma: {
             local: {
                 configFile: 'test/karma.conf.js',
-                singleRun: true,
+                singleRun: true
             },
             sauce: {
                 configFile: 'test/karma.conf-sauce.js'
@@ -247,7 +259,7 @@ module.exports = function (grunt) {
         protractor: {
             local: {
                 configFile: 'test/protractor.conf.js',
-                chromeDriver: 'node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update',
+                chromeDriver: 'node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update'
             },
             sauce: {
                 configFile: 'test/protractor.conf-sauce.js'

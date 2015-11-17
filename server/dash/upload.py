@@ -2,27 +2,27 @@ import json
 import logging
 import unicodecsv
 import StringIO
-import urllib2
-import httplib
+
 from functools import partial
 from multiprocessing.pool import ThreadPool
 
 from django.db import transaction
 from django.forms import ValidationError
 from django.core import validators
-from django.conf import settings
 from django.db.models import F
 
 import actionlog.zwei_actions
 
 from utils import redirector_helper
 from utils import s3helpers
-from utils import url_helper
+from utils import email_helper
 
 from dash import models
 from dash import api
 from dash import constants
 from dash import image_helper
+from dash import threads
+from dash.forms import AdGroupAdsPlusUploadForm, MANDATORY_CSV_FIELDS, OPTIONAL_CSV_FIELDS  # to get fields & validators
 
 logger = logging.getLogger(__name__)
 
@@ -36,22 +36,23 @@ class UploadFailedException(Exception):
     pass
 
 
-def process_async(content_ads_data, filename, batch, ad_group, request):
+def process_async(content_ads_data, filename, batch, upload_form_cleaned_fields, ad_group, request):
     ad_group_sources = [s for s in models.AdGroupSource.objects.filter(ad_group_id=ad_group.id)
                         if s.can_manage_content_ads and s.source.can_manage_content_ads()]
 
     pool = ThreadPool(processes=NUM_THREADS)
     pool.map_async(
-        partial(_clean_row, batch, ad_group),
+        partial(_clean_row, batch, upload_form_cleaned_fields, ad_group),
         content_ads_data,
-        callback=partial(_process_callback, batch, ad_group.id, ad_group_sources, filename, request),
+        callback=partial(_process_callback, batch, ad_group, ad_group_sources, filename, request),
     )
 
 
-def _process_callback(batch, ad_group_id, ad_group_sources, filename, request, results):
+def _process_callback(batch, ad_group, ad_group_sources, filename, request, results):
     try:
         # ensure content ads are only commited to DB
         # if all of them are successfully processed
+        count_inserted = 0
         with transaction.atomic():
             rows = []
             all_content_ad_sources = []
@@ -60,7 +61,7 @@ def _process_callback(batch, ad_group_id, ad_group_sources, filename, request, r
             for row, cleaned_data, errors in results:
                 if not errors:
                     content_ad, content_ad_sources = _create_objects(
-                        cleaned_data, batch, ad_group_id, ad_group_sources)
+                        cleaned_data, batch, ad_group.id, ad_group_sources)
 
                     errors = _create_redirect_id(content_ad)
 
@@ -73,6 +74,11 @@ def _process_callback(batch, ad_group_id, ad_group_sources, filename, request, r
 
                 rows.append(row)
 
+                # update progress in another thread to escape transaction
+                count_inserted += 1
+                t = threads.UpdateUploadBatchThread(batch.id, count_inserted)
+                t.start_and_join()
+
             if num_errors > 0:
                 # raise exception to rollback transaction
                 raise UploadFailedException()
@@ -81,42 +87,41 @@ def _process_callback(batch, ad_group_id, ad_group_sources, filename, request, r
 
             batch.status = constants.UploadBatchStatus.DONE
             batch.save()
+
+            _add_to_history(request, batch, ad_group)
+
     except UploadFailedException:
         batch.error_report_key = _save_error_report(rows, filename)
         batch.status = constants.UploadBatchStatus.FAILED
         batch.num_errors = num_errors
         batch.save()
         return
-    except Exception:
-        logger.exception('Exception in ProcessUploadThread')
+    except Exception as e:
+        logger.exception('Exception in ProcessUploadThread: {0}'.format(e))
         batch.status = constants.UploadBatchStatus.FAILED
         batch.save()
         return
 
-    actionlog.zwei_actions.send_multiple(actions)
+    actionlog.zwei_actions.send(actions)
 
 
 def _save_error_report(rows, filename):
     string = StringIO.StringIO()
 
-    fields = ['url', 'title', 'image_url']
+    fields = list(MANDATORY_CSV_FIELDS)
 
-    if any(row.get('crop_areas') for row in rows):
-        fields.append('crop_areas')
-
-    if any(row.get('tracker_urls') for row in rows):
-        fields.append('tracker_urls')
+    for field_name in OPTIONAL_CSV_FIELDS:
+        if any(row.get(field_name) for row in rows):
+            fields.append(field_name)
 
     fields.append('errors')
     writer = unicodecsv.DictWriter(string, fields)
 
     writer.writeheader()
     for row in rows:
-        if 'crop_areas' not in fields and 'crop_areas' in row:
-            del row['crop_areas']
-
-        if 'tracker_urls' not in fields and 'tracker_urls' in row:
-            del row['tracker_urls']
+        for field_name in OPTIONAL_CSV_FIELDS:
+            if field_name not in fields and field_name in row:
+                del row[field_name]
 
         writer.writerow(row)
 
@@ -160,8 +165,13 @@ def _create_objects(data, batch, ad_group_id, ad_group_sources):
         url=data['url'],
         title=data['title'],
         batch=batch,
+        display_url=data['display_url'],
+        brand_name=data['brand_name'],
+        description=data['description'],
+        call_to_action=data['call_to_action'],
         ad_group_id=ad_group_id,
-        tracker_urls=data['tracker_urls']
+        tracker_urls=data['tracker_urls'],
+        crop_areas=data['image']['crop_areas']
     )
 
     content_ad_sources = []
@@ -178,26 +188,24 @@ def _create_objects(data, batch, ad_group_id, ad_group_sources):
     return content_ad, content_ad_sources
 
 
-def _clean_row(batch, ad_group, row):
+def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
     try:
-        title = row.get('title')
-        url = row.get('url')
-        image_url = row.get('image_url')
-        crop_areas = row.get('crop_areas')
-        tracker_urls_string = row.get('tracker_urls')
-
-        cleaners = {
-            'title': partial(_clean_title, title),
-            'url': partial(_clean_url, url, ad_group),
-            'image': partial(_clean_image, image_url, crop_areas),
-            'tracker_urls': partial(_clean_tracker_urls, tracker_urls_string)
-        }
-
         errors = []
         data = {}
-        for key, cleaner in cleaners.items():
+        for key in ['title', 'url', 'image', 'tracker_urls', 'display_url', 'brand_name', 'description', 'call_to_action']:
             try:
-                data[key] = cleaner()
+                if key == 'title':
+                    data[key] = _clean_title(row.get('title'))
+                elif key == 'url':
+                    data[key] = _clean_url(row.get('url'), ad_group)
+                elif key == 'image':
+                    data[key] = _clean_image(row.get('image_url'), row.get('crop_areas'))
+                elif key == 'tracker_urls':
+                    data[key] = _clean_tracker_urls(row.get('tracker_urls'))
+                elif key in ['description', 'display_url', 'brand_name', 'call_to_action']:
+                    data[key] = _clean_inherited_csv_field(key, row.get(key), upload_form_cleaned_fields[key])
+                else:
+                    raise Exception("Unknown key: {0}".format(key))	# should never happen, guards against coding errors
             except ValidationError as e:
                 errors.extend(e.messages)
 
@@ -211,25 +219,35 @@ def _clean_row(batch, ad_group, row):
         raise
 
 
+# This function cleans the fields that are, when column is not present or the value is empty, inherited from form submission
+def _clean_inherited_csv_field(field_name, value_from_csv, cleaned_value_from_form):
+    field = AdGroupAdsPlusUploadForm.base_fields[field_name]
+
+    if value_from_csv:
+        return field.clean(value_from_csv)
+
+    if cleaned_value_from_form:
+        return cleaned_value_from_form
+
+    # this currently can never happen as the form values are still mandatory
+    raise ValidationError("{0} has to be present in CSV or default value should be submitted in the upload form.".format(field.label))
+
+
 def _clean_url(url, ad_group):
     try:
         # URL is considered invalid if it contains any unicode chars
-        url = url.encode('ascii')
+        url = url.encode('ascii').strip()
         url = _validate_url(url)
     except (ValidationError, UnicodeEncodeError):
         raise ValidationError('Invalid URL')
 
-    tracking_codes = ad_group.get_test_tracking_params()
-    url_with_tracking_codes = url_helper.add_tracking_codes_to_url(url, tracking_codes)
-
-    if not _is_content_reachable(url_with_tracking_codes):
+    if not redirector_helper.validate_url(url, ad_group.id):
         raise ValidationError('Content unreachable')
-
     return url
 
 
 def _clean_tracker_urls(tracker_urls_string):
-    if tracker_urls_string is None:
+    if tracker_urls_string is None or tracker_urls_string.strip() == '':
         return None
 
     tracker_urls = tracker_urls_string.strip().split(' ')
@@ -250,34 +268,16 @@ def _clean_tracker_urls(tracker_urls_string):
     return result
 
 
-def _is_content_reachable(url):
-    request = urllib2.Request(url)
-    request.add_header('User-Agent', settings.URL_VALIDATOR_USER_AGENT)
-
-    for _ in range(URL_VALIDATOR_NUM_RETRIES):
-        try:
-            response = urllib2.urlopen(request)
-        except (urllib2.HTTPError, urllib2.URLError):
-            continue
-
-        if response.code != httplib.OK:
-            continue
-
-        return True
-
-    return False
-
-
 def _clean_image(image_url, crop_areas):
     errors = []
 
     try:
-        image_url = _validate_url(image_url)
+        image_url = _validate_url(image_url.strip())
     except ValidationError as e:
         errors.append('Invalid Image URL')
 
     try:
-        crop_areas = _clean_crop_areas(crop_areas)
+        cleaned_crop_areas = _clean_crop_areas(crop_areas)
     except ValidationError as e:
         errors.append(e.message)
 
@@ -285,7 +285,7 @@ def _clean_image(image_url, crop_areas):
         raise ValidationError(errors)
 
     try:
-        image_id, width, height, image_hash = image_helper.process_image(image_url, crop_areas)
+        image_id, width, height, image_hash = image_helper.process_image(image_url, cleaned_crop_areas)
     except image_helper.ImageProcessingException as e:
         error_status = e.status()
 
@@ -302,7 +302,8 @@ def _clean_image(image_url, crop_areas):
         'id': image_id,
         'width': width,
         'height': height,
-        'hash': image_hash
+        'hash': image_hash,
+        'crop_areas': crop_areas  # take the original
     }
 
 
@@ -316,7 +317,7 @@ def _clean_title(title):
 
 
 def _clean_crop_areas(crop_string):
-    if not crop_string:
+    if crop_string is None or crop_string.strip() == '':
         # crop areas are optional, so return None
         # if they are not provided
         return None
@@ -353,3 +354,14 @@ def _validate_crops(crop_list):
             for k in range(2):
                 if not isinstance(crop_list[i][j][k], (int, long)):
                     raise ValueError('Coordinate is not an integer')
+
+
+def _add_to_history(request, batch, ad_group):
+    changes_text = 'Imported batch "{}" with {} content ads.'.format(
+        batch.name,
+        batch.batch_size
+    )
+    settings = ad_group.get_current_settings().copy_settings()
+    settings.changes_text = changes_text
+    settings.save(request)
+    email_helper.send_ad_group_notification_email(ad_group, request)

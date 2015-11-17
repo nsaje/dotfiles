@@ -4,7 +4,7 @@ import json
 from mock import patch
 import datetime
 
-from django.test import TransactionTestCase, TestCase, Client
+from django.test import TestCase, Client, TransactionTestCase
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -14,6 +14,10 @@ from zemauth.models import User
 from dash import models
 from dash import constants
 from dash import api
+
+from reports import redshift
+
+import actionlog.models
 
 
 class UserTest(TestCase):
@@ -48,6 +52,7 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
+                    'show_onboarding_guidance': False,
                     'timezone_offset': -18000.0
                 }
             },
@@ -68,6 +73,7 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
+                    'show_onboarding_guidance': False,
                     'timezone_offset': -14400.0
                 }
             },
@@ -89,6 +95,7 @@ class UserTest(TestCase):
                     'email': 'user@test.com',
                     'name': '',
                     'permissions': {},
+                    'show_onboarding_guidance': False,
                     'timezone_offset': -14400.0
                 }
             },
@@ -135,7 +142,23 @@ class AdGroupSourceSettingsTest(TestCase):
             data=json.dumps({'cpc_cc': '0.15'})
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.content), {'success': True})
+
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_logs_user_action(self, mock_log_useraction):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        settings = ad_group.get_current_settings()
+        settings.end_date = datetime.date.today()
+        settings.save(None)
+
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '0.15'})
+        )
+        self.assertEqual(response.status_code, 200)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
+            ad_group=ad_group)
 
 
 class AdGroupContentAdCSVTest(TestCase):
@@ -152,9 +175,9 @@ class AdGroupContentAdCSVTest(TestCase):
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
+        expected_content = '''url,title,image_url,description (optional),crop areas (optional),tracker url (optional)\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",http://testurl.com http://testurl2.com\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description,,\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -167,10 +190,10 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg\r
+        expected_content = '''url,title,image_url,description (optional),crop areas (optional),tracker url (optional)\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",http://testurl.com http://testurl2.com\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description,,\r
+http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg,Example description,,\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -183,8 +206,8 @@ http://testurl.com,Test Article with no content_ad_sources 2,123456789.jpg\r
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
+        expected_content = '''url,title,image_url,description (optional),crop areas (optional),tracker url (optional)\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description,,\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -196,9 +219,9 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
+        expected_content = '''url,title,image_url,description (optional),crop areas (optional),tracker url (optional)\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",http://testurl.com http://testurl2.com\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description,,\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -211,10 +234,10 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 
         response = self._get_csv_from_server(data)
 
-        expected_lines = ['url,title,image_url',
-                          'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg',
-                          'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg',
-                          'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg']
+        expected_lines = ['url,title,image_url,description (optional),crop areas (optional),tracker url (optional)',
+                          'http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",http://testurl.com http://testurl2.com',
+                          'http://testurl.com,Test Article with no content_ad_sources 4,123456789.jpg,Example description,,',
+                          'http://testurl.com,Test Article with no content_ad_sources 3,123456789.jpg,Example description,,']
 
         lines = response.content.splitlines()
 
@@ -226,9 +249,9 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
 
         response = self._get_csv_from_server(data)
 
-        expected_content = '''url,title,image_url\r
-http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg\r
-http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
+        expected_content = '''url,title,image_url,description (optional),crop areas (optional),tracker url (optional)\r
+http://testurl.com,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,123456789.jpg,Example description,"(((44, 22), (144, 122)), ((33, 22), (177, 122)))",http://testurl.com http://testurl2.com\r
+http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg,Example description,,\r
 '''
 
         self.assertEqual(response.content, expected_content)
@@ -247,7 +270,7 @@ http://testurl.com,Test Article with no content_ad_sources 1,123456789.jpg\r
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
 
 
-class AdGroupContentAdStateTest(TransactionTestCase):
+class AdGroupContentAdStateTest(TestCase):
     fixtures = ['test_api', 'test_views']
 
     def _post_content_ad_state(self, ad_group_id, data):
@@ -261,7 +284,8 @@ class AdGroupContentAdStateTest(TransactionTestCase):
             follow=True
         )
 
-    def test_post(self):
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_post(self, mock_log_useraction):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
@@ -279,7 +303,7 @@ class AdGroupContentAdStateTest(TransactionTestCase):
         self.assertEqual(content_ad.state, constants.ContentAdSourceState.INACTIVE)
 
         content_ad_sources = models.ContentAdSource.objects.filter(content_ad=content_ad)
-        self.assertEqual(len(content_ad_sources), 2)
+        self.assertEqual(len(content_ad_sources), 3)
 
         for content_ad_source in content_ad_sources:
             self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.INACTIVE)
@@ -287,6 +311,11 @@ class AdGroupContentAdStateTest(TransactionTestCase):
         self.assertJSONEqual(response.content, {
             'success': True
         })
+
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.SET_CONTENT_AD_STATE,
+            ad_group=models.AdGroup.objects.get(pk=1))
 
     def test_state_set_all(self):
         username = User.objects.get(pk=1).email
@@ -353,8 +382,8 @@ class AdGroupContentAdStateTest(TransactionTestCase):
         restored_ad.refresh_from_db()
         self.assertEqual(restored_ad.state, constants.ContentAdSourceState.ACTIVE)
 
-    @patch('dash.views.views.actionlog.zwei_actions.send_multiple')
-    def test_update_content_ads(self, mock_send_multiple):
+    @patch('dash.views.views.actionlog.zwei_actions.send')
+    def test_update_content_ads(self, mock_send):
         content_ad = models.ContentAd.objects.get(pk=1)
         state = constants.ContentAdSourceState.INACTIVE
         request = None
@@ -368,7 +397,7 @@ class AdGroupContentAdStateTest(TransactionTestCase):
         for content_ad_source in content_ad.contentadsource_set.all():
             self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.INACTIVE)
 
-        self.assertTrue(mock_send_multiple.called)
+        self.assertTrue(mock_send.called)
 
     def test_get_content_ad_ids_validation_error(self):
         username = User.objects.get(pk=1).email
@@ -415,7 +444,7 @@ class AdGroupContentAdStateTest(TransactionTestCase):
         )
 
 
-class AdGroupContentAdArchive(TransactionTestCase):
+class AdGroupContentAdArchive(TestCase):
     fixtures = ['test_api', 'test_views']
 
     def _post_content_ad_archive(self, ad_group_id, data):
@@ -433,15 +462,17 @@ class AdGroupContentAdArchive(TransactionTestCase):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
-    def test_post(self):
-        ad_group_id = 1
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_post(self, mock_send_mail, mock_log_useraction):
+        ad_group = models.AdGroup.objects.get(pk=1)
         content_ad_id = 2
 
         data = {
             'content_ad_ids_selected': [content_ad_id],
         }
 
-        response = self._post_content_ad_archive(ad_group_id, data)
+        response = self._post_content_ad_archive(ad_group.id, data)
 
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
         self.assertEqual(content_ad.archived, True)
@@ -455,9 +486,17 @@ class AdGroupContentAdArchive(TransactionTestCase):
                 'status_setting': 2
             }})
 
-    def test_archive_set_all(self):
-        ad_group_id = 2
-        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
+            ad_group=ad_group
+        )
+
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_archive_set_all(self, mock_send_mail):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group.id)
 
         self.assertGreater(len(content_ads), 0)
 
@@ -465,9 +504,9 @@ class AdGroupContentAdArchive(TransactionTestCase):
             'select_all': True,
         }
 
-        response = self._post_content_ad_archive(ad_group_id, payload)
+        response = self._post_content_ad_archive(ad_group.id, payload)
 
-        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group.id)
         self.assertTrue(all([ad.archived is True for ad in content_ads]))
 
         response_dict = json.loads(response.content)
@@ -477,8 +516,11 @@ class AdGroupContentAdArchive(TransactionTestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-    def test_archive_set_batch(self):
-        ad_group_id = 2
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_archive_set_batch(self, mock_send_mail):
+        ad_group = models.AdGroup.objects.get(pk=2)
         batch_id = 2
         content_ads = models.ContentAd.objects.filter(batch__id=batch_id, archived=False)
 
@@ -489,7 +531,7 @@ class AdGroupContentAdArchive(TransactionTestCase):
             'select_batch': batch_id,
         }
 
-        response = self._post_content_ad_archive(ad_group_id, payload)
+        response = self._post_content_ad_archive(ad_group.id, payload)
 
         for content_ad in content_ads:
             content_ad.refresh_from_db()
@@ -503,9 +545,12 @@ class AdGroupContentAdArchive(TransactionTestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-    def test_archive_pause_active_before_archiving(self):
-        ad_group_id = 1
-        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id, archived=False)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_archive_pause_active_before_archiving(self, mock_send_mail):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group.id, archived=False)
         self.assertGreater(len(content_ads), 0)
         self.assertFalse(all([ad.state == constants.ContentAdSourceState.INACTIVE for ad in content_ads]))
 
@@ -516,9 +561,9 @@ class AdGroupContentAdArchive(TransactionTestCase):
             'select_all': True
         }
 
-        response = self._post_content_ad_archive(ad_group_id, payload)
+        response = self._post_content_ad_archive(ad_group.id, payload)
 
-        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group.id)
         self.assertTrue(all([ad.state == constants.ContentAdSourceState.INACTIVE and ad.archived
                              for ad in content_ads]))
 
@@ -527,9 +572,16 @@ class AdGroupContentAdArchive(TransactionTestCase):
         self.assertEqual(response_dict['data']['active_count'], active_count)
         self.assertEqual(response_dict['data']['archived_count'], archived_count)
 
-    def test_content_ad_ids_validation_error(self):
-        response = self._post_content_ad_archive(1, {'content_ad_ids_selected': ['1', 'a']})
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_content_ad_ids_validation_error(self, mock_send_mail):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        response = self._post_content_ad_archive(ad_group.id, {'content_ad_ids_selected': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
+
+        self.assertFalse(mock_send_mail.called)
 
     def test_add_to_history(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -584,8 +636,10 @@ class AdGroupContentAdRestore(TestCase):
         username = User.objects.get(pk=1).email
         self.client.login(username=username, password='secret')
 
-    def test_post(self):
-        ad_group_id = 1
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_post(self, mock_send_mail, mock_log_useraction):
+        ad_group = models.AdGroup.objects.get(pk=1)
         content_ad_id = 2
 
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
@@ -596,7 +650,7 @@ class AdGroupContentAdRestore(TestCase):
             'content_ad_ids_selected': [content_ad_id],
         }
 
-        response = self._post_content_ad_restore(ad_group_id, data)
+        response = self._post_content_ad_restore(ad_group.id, data)
 
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
         self.assertEqual(content_ad.archived, False)
@@ -606,9 +660,17 @@ class AdGroupContentAdRestore(TestCase):
         self.assertTrue(response_dict['success'])
         self.assertEqual(response_dict['data']['rows'], {'2': {'archived': False, 'status_setting': content_ad.state}})
 
-    def test_restore_set_all(self):
-        ad_group_id = 2
-        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
+            ad_group=ad_group
+        )
+
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_restore_set_all(self, mock_send_mail):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group.id)
         for ad in content_ads:
             ad.archived = True
             ad.save()
@@ -619,9 +681,9 @@ class AdGroupContentAdRestore(TestCase):
             'select_all': True,
         }
 
-        response = self._post_content_ad_restore(ad_group_id, payload)
+        response = self._post_content_ad_restore(ad_group.id, payload)
 
-        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group.id)
         self.assertTrue(all([ad.archived is False for ad in content_ads]))
 
         response_dict = json.loads(response.content)
@@ -631,8 +693,11 @@ class AdGroupContentAdRestore(TestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-    def test_archive_set_batch(self):
-        ad_group_id = 2
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_archive_set_batch(self, mock_send_mail):
+        ad_group = models.AdGroup.objects.get(pk=2)
         batch_id = 2
         content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
         for ad in content_ads:
@@ -646,7 +711,7 @@ class AdGroupContentAdRestore(TestCase):
             'select_batch': batch_id,
         }
 
-        response = self._post_content_ad_restore(ad_group_id, payload)
+        response = self._post_content_ad_restore(ad_group.id, payload)
 
         content_ads = models.ContentAd.objects.filter(batch__id=batch_id)
         self.assertTrue(all([ad.archived is False for ad in content_ads]))
@@ -658,9 +723,12 @@ class AdGroupContentAdRestore(TestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-    def test_restore_success_when_all_restored(self):
-        ad_group_id = 2
-        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_restore_success_when_all_restored(self, mock_send_mail):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group.id)
 
         self.assertGreater(len(content_ads), 0)
         self.assertTrue(all([not ad.archived for ad in content_ads]))
@@ -669,17 +737,24 @@ class AdGroupContentAdRestore(TestCase):
             'select_all': True
         }
 
-        response = self._post_content_ad_restore(ad_group_id, payload)
+        response = self._post_content_ad_restore(ad_group.id, payload)
 
-        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group_id)
+        content_ads = models.ContentAd.objects.filter(ad_group__id=ad_group.id)
         self.assertFalse(all([ad.archived for ad in content_ads]))
 
         response_dict = json.loads(response.content)
         self.assertTrue(response_dict['success'])
 
-    def test_content_ad_ids_validation_error(self):
-        response = self._post_content_ad_restore(1, {'content_ad_ids_selected': ['1', 'a']})
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+
+    @patch('dash.views.views.email_helper.send_ad_group_notification_email')
+    def test_content_ad_ids_validation_error(self, mock_send_mail):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        response = self._post_content_ad_restore(ad_group.id, {'content_ad_ids_selected': ['1', 'a']})
         self.assertEqual(json.loads(response.content)['data']['error_code'], 'ValidationError')
+
+        self.assertFalse(mock_send_mail.called)
 
     def test_add_to_history(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -730,8 +805,9 @@ class AdGroupAdsPlusUploadTest(TestCase):
 
         return client
 
+    @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.views.upload.process_async')
-    def test_post(self, mock_process_async):
+    def test_post(self, mock_process_async, mock_log_useraction):
         request = HttpRequest()
         request.user = User(id=1)
 
@@ -755,9 +831,54 @@ class AdGroupAdsPlusUploadTest(TestCase):
             },
             follow=True
         )
-
         self.assertEqual(response.status_code, 200)
         self.assertTrue(mock_process_async.called)
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.UPLOAD_CONTENT_ADS,
+            ad_group=models.AdGroup.objects.get(pk=1))
+
+    @patch('dash.views.views.upload.process_async')
+    def test_post_empty_fields_not_in_csv(self, mock_process_async):
+        request = HttpRequest()
+        request.user = User(id=1)
+
+        ad_group_settings = models.AdGroupSettings(
+            ad_group_id=1,
+            created_by_id=1,
+        )
+        ad_group_settings.save(request)
+
+        mock_file = SimpleUploadedFile('testfile.csv', 'Url,title,image_url\nhttp://example.com,testtitle,http://example.com/image')
+
+        response = self._get_client().post(
+            reverse('ad_group_ads_plus_upload', kwargs={'ad_group_id': 1}),
+            {
+                'content_ads': mock_file,
+                'batch_name': 'testname',
+                'display_url': '',
+                'brand_name': '',
+                'description': '',
+                'call_to_action': '',
+            },
+            follow=True
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.content),
+                    {
+                        "data": {
+                        "message": None,
+                        "errors": {
+                            "display_url": ["This field is required."],
+                            "call_to_action": ["This field is required."],
+                            "brand_name": ["This field is required."],
+                            "description": ["This field is required."],
+                            },
+                        "error_code": "ValidationError"
+                        },
+                        "success": False
+                    })
+        self.assertFalse(mock_process_async.called)
 
     def test_validation_error(self):
         response = self._get_client().post(
@@ -803,6 +924,71 @@ class AdGroupAdsPlusUploadTest(TestCase):
         )
 
         self.assertNotIn('Description is too long', response.content)
+
+
+class AdGroupAdsPlusUploadStatusTest(TestCase):
+
+    fixtures = ['test_views.yaml']
+
+    def _get_client(self, superuser=True):
+        password = 'secret'
+
+        user_id = 1 if superuser else 2
+        username = User.objects.get(pk=user_id).email
+
+        client = Client()
+        client.login(username=username, password=password)
+
+        return client
+
+    def _get_status(self):
+        response = self._get_client().get(
+            reverse('ad_group_ads_plus_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+
+        return json.loads(response.content)['data']
+
+    def test_get(self):
+        batch = models.UploadBatch.objects.get(pk=2)
+        batch.processed_content_ads = 55
+        batch.save()
+
+        response = self._get_status()
+        self.assertEqual(response, {
+            'status': constants.UploadBatchStatus.IN_PROGRESS,
+            'step': 'Processing imported file (step 1/3)',
+            'count': 55,
+            'all': 100
+        })
+
+        batch.inserted_content_ads = 55
+        batch.save()
+
+        # processing ended
+        response = self._get_status()
+        self.assertEqual(response, {
+            'status': constants.UploadBatchStatus.IN_PROGRESS,
+            'step': 'Inserting content ads (step 2/3)',
+            'count': 55,
+            'all': 100
+        })
+
+        # inserting ended
+        batch.inserted_content_ads = batch.batch_size
+        batch.save()
+
+        response = self._get_status()
+        self.assertEqual(response, {
+            'status': constants.UploadBatchStatus.IN_PROGRESS,
+            'step': 'Sending to external sources (step 3/3)',
+            'count': 0,
+            'all': 0
+        })
+
+    def test_permission(self):
+        response = self._get_client(superuser=False).get(
+            reverse('ad_group_ads_plus_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+
+        self.assertEqual(response.status_code, 403)
 
 
 class AdGroupSourcesTest(TestCase):
@@ -914,7 +1100,7 @@ class AdGroupSourcesTest(TestCase):
 
         ad_group_source = models.AdGroupSource.objects.get(id=3)
         ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.CAN_MODIFY_DMA_TARGETING_AUTOMATIC,
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC
         ]
         ad_group_source.source.source_type.save()
 
@@ -930,3 +1116,256 @@ class AdGroupSourcesTest(TestCase):
             {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False},  # should return False when DMAs used
             {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
         ])
+
+
+@patch('dash.views.views.actionlog.api_contentads.init_update_content_ad_action')
+class SharethroughApprovalTest(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.client = Client()
+
+    def test_approved_creative(self, mock_update):
+        data = {
+            'status': 0,
+            'crid': 1,
+            'seat': 'abc123',
+            'expiry': '2015-12-31'
+        }
+        cas = models.ContentAdSource.objects.get(content_ad_id=1, source=models.Source.objects.get(name='Sharethrough'))
+        self.assertEqual(1, cas.submission_status)
+
+        self.client.post(
+            reverse('sharethrough_approval'),
+            follow=True,
+            content_type='application/json',
+            data=json.dumps(data)
+        )
+
+        cas = models.ContentAdSource.objects.get(id=cas.id)
+
+        self.assertEqual(2, cas.submission_status)
+        self.assertEqual(None, cas.submission_errors)
+        self.assertTrue(mock_update.called)
+        mock_update.assert_called_with(cas, {'state': cas.state}, request=None, send=True)
+
+    def test_rejected_creative(self, mock_update):
+        data = {
+            'status': 1,
+            'crid': 1,
+            'seat': 'abc123',
+            'expiry': '2015-12-31'
+        }
+        cas = models.ContentAdSource.objects.get(content_ad_id=1, source=models.Source.objects.get(name='Sharethrough'))
+        self.assertEqual(1, cas.submission_status)
+
+        self.client.post(
+            reverse('sharethrough_approval'),
+            follow=True,
+            content_type='application/json',
+            data=json.dumps(data)
+        )
+
+        cas = models.ContentAdSource.objects.get(id=cas.id)
+
+        self.assertEqual(3, cas.submission_status)
+        self.assertEqual(None, cas.submission_errors)
+        self.assertTrue(mock_update.called)
+        mock_update.assert_called_with(cas, {'state': cas.state}, request=None, send=True)
+
+
+class PublishersBlacklistStatusTest(TransactionTestCase):
+    fixtures = ['test_api.yaml', 'test_models.yaml']
+
+    def setUp(self):
+        redshift.STATS_DB_NAME = 'default'
+        for s in models.SourceType.objects.all():
+            if s.available_actions == None:
+                s.available_actions = []
+            s.available_actions.append(constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC )
+            s.save()
+
+
+    def _post_publisher_blacklist(self, ad_group_id, data):
+        username = User.objects.get(pk=3).email
+        self.client.login(username=username, password='secret')
+        reversed_url = reverse(
+                'ad_group_publishers_blacklist',
+                kwargs={'ad_group_id': ad_group_id})
+        response = self.client.post(
+            reversed_url,
+            data=json.dumps(data),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+        return json.loads(response.content)
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_blacklist(self, cursor):
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'ctr': 0.0,
+            'exchange': 'adiant',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.ADGROUP,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": []
+        }
+        res = self._post_publisher_blacklist(1, payload)
+
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(1, publisher_blacklist_action.count())
+        self.assertDictEqual(
+            {
+                u"key": [1],
+                u"state": 2,
+                u"level": u"adgroup",
+                u"publishers": [{
+                    u"exchange": u"adiant",
+                    u"source_id": 7,
+                    u"domain": u"zemanta.com",
+                    u"ad_group_id": 1
+                    }]
+            }, publisher_blacklist_action.first().payload['args'])
+        self.assertTrue(res['success'])
+
+        self.assertEqual(1, models.PublisherBlacklist.objects.count())
+        publisher_blacklist = models.PublisherBlacklist.objects.first()
+        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(1, publisher_blacklist.ad_group.id)
+        self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
+        self.assertEqual('zemanta.com', publisher_blacklist.name)
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_enable(self, cursor):
+
+        # blacklist must first exist in order to be deleted
+        models.PublisherBlacklist.objects.create(
+            name="zemanta.com",
+            ad_group=models.AdGroup.objects.get(pk=1),
+            source=models.Source.objects.get(tracking_slug='b1_adiant'),
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'ctr': 0.0,
+            'exchange': 'adiant',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.ENABLED,
+            "level": constants.PublisherBlacklistLevel.ADGROUP,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected":[],
+            "publishers_not_selected":[]
+        }
+        res = self._post_publisher_blacklist('1', payload)
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(1, publisher_blacklist_action.count())
+        self.assertDictEqual(
+            {
+                u"key": [1],
+                u"state": 1,
+                u"level": u"adgroup",
+                u"publishers": [{
+                    u"exchange": u"adiant",
+                    u"source_id": 7,
+                    u"domain": u"zemanta.com",
+                    u"ad_group_id": 1
+                    }]
+            }, publisher_blacklist_action.first().payload['args'])
+
+        self.assertTrue(res['success'])
+
+        self.assertEqual(1, models.PublisherBlacklist.objects.count())
+
+        publisher_blacklist = models.PublisherBlacklist.objects.first()
+        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(1, publisher_blacklist.ad_group.id)
+        self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
+        self.assertEqual('zemanta.com', publisher_blacklist.name)
+
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_global_blacklist(self, cursor):
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'ctr': 0.0,
+            'exchange': 'adiant',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.GLOBAL,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": []
+        }
+        res = self._post_publisher_blacklist(1, payload)
+
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(1, publisher_blacklist_action.count())
+        self.assertDictEqual(
+            {
+                u"key": None,
+                u"state": 2,
+                u"level": u"global",
+                u"publishers": [{
+                    u"domain": u"zemanta.com",
+                    u"exchange": u"adiant",
+                    u"source_id": 7,
+                }]
+            }, publisher_blacklist_action.first().payload['args'])
+        self.assertTrue(res['success'])
+
+        self.assertEqual(1, models.PublisherBlacklist.objects.count())
+        publisher_blacklist = models.PublisherBlacklist.objects.first()
+
+        self.assertTrue(publisher_blacklist.everywhere)
+        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertIsNone(publisher_blacklist.ad_group)
+        self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
+        self.assertEqual('zemanta.com', publisher_blacklist.name)

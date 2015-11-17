@@ -1,6 +1,7 @@
 import json
 import logging
 import traceback
+import datetime
 
 import hashlib
 from django.core.cache import cache
@@ -22,6 +23,8 @@ import actionlog.zwei_actions
 import dash.api
 import dash.models
 import reports.update
+import reports.api_publishers
+from reports.api import get_day_cost
 
 from utils import request_signer
 from utils import statsd_helper
@@ -30,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
+@statsd_helper.statsd_timer('zweiapi.views', 'zwei_callback')
 def zwei_callback(request, action_id):
     newrelic.agent.set_background_task(flag=True)
     logger.info('Received zwei callback: %s', action_id)
@@ -110,9 +114,6 @@ def _prepare_report_rows(ad_group, source, data_rows, filter_by_content_ad_sourc
         if data_row_id is not None:
             content_ad_source = content_ad_sources.get(data_row_id)
 
-        if content_ad_source and content_ad_source.content_ad.archived:
-            continue
-
         r = {
             'article': article,
             'impressions': data_row['impressions'],
@@ -162,56 +163,10 @@ def _process_zwei_response(action, data, request):
         action.save()
 
         if action.action == actionlog.constants.Action.FETCH_REPORTS:
-            date = action.payload['args']['date']
-            ad_group = action.ad_group_source.ad_group
-            source = action.ad_group_source.source
+            _fetch_reports_callback(action, data)
 
-            traffic_metrics_exist = reports.api.traffic_metrics_exist(ad_group, source, date)
-            rows_raw = data['data']
-
-            valid_response = True
-            empty_response = False
-
-            if traffic_metrics_exist and len(rows_raw) == 0:
-                empty_response = True
-                if not reports.api.can_delete_traffic_metrics(ad_group, source, date):
-                    valid_response = False
-
-            if valid_response and _has_changed(data, ad_group, source, date):
-                can_manage_content_ads = action.ad_group_source.can_manage_content_ads
-
-                rows = _prepare_report_rows(ad_group, source, data['data'], can_manage_content_ads)
-                article_rows = _remove_content_ad_sources_from_report_rows(rows) if can_manage_content_ads else rows
-
-                reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, article_rows)
-
-                if can_manage_content_ads:
-                    reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
-
-                # set cache only after everything has updated successfully
-                _set_reports_cache(data, ad_group, source, date)
-
-            if not valid_response:
-                msg = 'Update of source traffic for adgroup %d, source %d, datetime '\
-                      '%s skipped due to report not being valid (empty response).'
-
-                action.state = actionlog.constants.ActionState.FAILED
-                action.message = msg % (ad_group.id, source.id, date)
-                action.save()
-
-                logger.warning(msg, ad_group.id, source.id, date)
-
-            if empty_response:
-                logger.warning(
-                    'Empty report received for adgroup %d, source %d, datetime %s',
-                    ad_group.id,
-                    source.id,
-                    date
-                )
-                statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
-                statsd_helper.statsd_incr(
-                    'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
-                )
+        elif action.action == actionlog.constants.Action.FETCH_REPORTS_BY_PUBLISHER:
+            _fetch_reports_by_publisher_callback(action, data)
 
         elif action.action == actionlog.constants.Action.FETCH_CAMPAIGN_STATUS:
             dash.api.update_ad_group_source_state(action.ad_group_source, data['data'])
@@ -223,6 +178,10 @@ def _process_zwei_response(action, data, request):
             dash.api.update_ad_group_source_state(ad_group_source, conf)
             actions.extend(actionlog.api.send_delayed_actionlogs([ad_group_source], send=False))
 
+        elif action.action == actionlog.constants.Action.SET_PUBLISHER_BLACKLIST:
+            args = action.payload['args']
+            dash.api.update_publisher_blacklist_state(args)
+
         elif action.action == actionlog.constants.Action.CREATE_CAMPAIGN:
             dash.api.create_campaign_callback(
                 action.ad_group_source,
@@ -230,8 +189,13 @@ def _process_zwei_response(action, data, request):
                 request
             )
 
+            logger.info('Submitting content ads after campaign creation. Action %s', action)
             content_ad_sources = dash.api.add_content_ad_sources(action.ad_group_source)
             actions.extend(dash.api.submit_content_ads(content_ad_sources, request=None))
+
+            logger.info('Ordering additional updates after campaign creation. Action %s', action)
+            dash.api.order_additional_updates_after_campaign_creation(action.ad_group_source,
+                                                                      request=None)
 
         elif action.action == actionlog.constants.Action.INSERT_CONTENT_AD:
             if 'source_content_ad_id' in data['data']:
@@ -251,9 +215,11 @@ def _process_zwei_response(action, data, request):
             )
 
         elif action.action == actionlog.constants.Action.GET_CONTENT_AD_STATUS:
-            dash.api.update_multiple_content_ad_source_states(
-                action.ad_group_source,
-                data['data']
+            actions.extend(
+                dash.api.update_multiple_content_ad_source_states(
+                    action.ad_group_source,
+                    data['data']
+                )
             )
 
         elif action.action == actionlog.constants.Action.SUBMIT_AD_GROUP:
@@ -268,40 +234,42 @@ def _process_zwei_response(action, data, request):
 
         logger.info('Process action successful. Action: %s', action)
 
-    actionlog.zwei_actions.send_multiple(actions)
+    actionlog.zwei_actions.send(actions)
 
 
-def _get_reports_cache_key_val(data, ad_group, source, date):
+def _get_reports_cache_key_val(data, ad_group, source, date, key_type):
     md5_hash = hashlib.md5()
     md5_hash.update(json.dumps(data['data']))
 
     val = md5_hash.hexdigest()
-    key = 'fetch_reports_response_hash_{}_{}_{}'.format(ad_group.id, source.id, date)
+    key = 'fetch_reports_response_hash_{}_{}_{}_{}'.format(ad_group.id, source.id, date, key_type)
 
     return key, val
 
 
-def _has_changed(data, ad_group, source, date):
+def _has_changed(data, ad_group, source, date, key_type):
     if not settings.USE_HASH_CACHE:
         # treat everything as new data
         return True
 
-    key, val = _get_reports_cache_key_val(data, ad_group, source, date)
+    key, val = _get_reports_cache_key_val(data, ad_group, source, date, key_type)
     old_val = cache.get(key)
+
     if old_val is None or val != old_val:
-        logger.info('Reports data has changed since last sync for ad group: {}, source: {}, date: {}'.format(
-            ad_group.id, source.id, date))
+        logger.info('Change of data for ad group: {}, source: {}, date: {}, key type {}'.format(
+            ad_group.id, source.id, date, key_type))
+        logger.info("Old key {}, new key {}".format(old_val, val))
 
         return True
 
     return False
 
 
-def _set_reports_cache(data, ad_group, source, date):
+def _set_reports_cache(data, ad_group, source, date, key_type):
     if not settings.USE_HASH_CACHE:
         return
 
-    key, val = _get_reports_cache_key_val(data, ad_group, source, date)
+    key, val = _get_reports_cache_key_val(data, ad_group, source, date, key_type)
     cache.set(key, val, settings.HASH_CACHE_TTL)
 
 
@@ -342,3 +310,128 @@ def _get_action(action_id):
         return action
     except ObjectDoesNotExist:
         raise Exception('Invalid action_id in callback')
+
+
+def _fetch_reports_callback(action, data):
+    date = action.payload['args']['date']
+    ad_group = action.ad_group_source.ad_group
+    source = action.ad_group_source.source
+
+    logger.info('_fetch_reports_callback: Processing reports callback for adgroup {adgroup_id}  source {source_id}'.format(
+        adgroup_id=ad_group.id, source_id=source.id if source is not None else 0)
+    )
+
+    traffic_metrics_exist = reports.api.traffic_metrics_exist(ad_group, source, date)
+    rows_raw = data['data']
+
+    valid_response = True
+    empty_response = False
+
+    if traffic_metrics_exist and len(rows_raw) == 0:
+        empty_response = True
+        if not reports.api.can_delete_traffic_metrics(ad_group, source, date):
+            valid_response = False
+
+    # centralize in order to reduce possibility of mistake
+    change_unique_key = "reports_by_link"
+
+    if not _has_changed(data, ad_group, source, date, change_unique_key):
+        logger.info('_fetch_reports_callback: no changes adgroup {adgroup_id}  source {source_id}'.format(
+            adgroup_id=ad_group.id, source_id=source.id if source is not None else 0)
+        )
+
+    if valid_response and _has_changed(data, ad_group, source, date, change_unique_key):
+        can_manage_content_ads = action.ad_group_source.can_manage_content_ads
+
+        rows = _prepare_report_rows(ad_group, source, data['data'], can_manage_content_ads)
+        article_rows = _remove_content_ad_sources_from_report_rows(rows) if can_manage_content_ads else rows
+
+        reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, article_rows)
+
+        if can_manage_content_ads:
+            reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
+
+        # set cache only after everything has updated successfully
+        _set_reports_cache(data, ad_group, source, date, change_unique_key)
+
+    if not valid_response:
+        msg = 'Update of source traffic for adgroup %d, source %d, datetime '\
+              '%s skipped due to report not being valid (empty response).'
+
+        action.state = actionlog.constants.ActionState.FAILED
+        action.message = msg % (ad_group.id, source.id, date)
+        action.save()
+
+        logger.warning(msg, ad_group.id, source.id, date)
+
+    if empty_response:
+        logger.warning(
+            'Empty report received for adgroup %d, source %d, datetime %s',
+            ad_group.id,
+            source.id,
+            date
+        )
+        statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
+        statsd_helper.statsd_incr(
+            'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
+        )
+
+
+
+
+def _fetch_reports_by_publisher_callback(action, data):
+    date_str = action.payload['args']['date']
+    date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+    ad_group = action.ad_group_source.ad_group
+    source = action.ad_group_source.source
+
+    rows_raw = data['data']
+
+    valid_response = True
+    empty_response = False
+
+    # centralize in order to reduce possibility of mistakes, if you want everything to run again, just increase the number
+    change_unique_key = "reports_by_publisher_2"
+
+    if valid_response: # and _has_changed(data, ad_group, source, date, change_unique_key):
+        ret = get_day_cost(date, ad_group=ad_group, source=source)
+        cost = ret['cost']
+        if cost is None:
+            cost = 0
+
+        reports.api_publishers.ob_insert_adgroup_date(	date,
+                                                        ad_group.id,
+                                                        "Outbrain",	# Hardcoding this at the time, the problem is that source.name can change
+                                                        rows_raw,
+                                                        cost)
+        _set_reports_cache(data, ad_group, source, date, change_unique_key)
+
+
+    if not valid_response:
+        msg = 'Update of publishers for adgroup %d, source %d, datetime '\
+              '%s skipped due to report not being valid (empty response).'
+
+        action.state = actionlog.constants.ActionState.FAILED
+        action.message = msg % (ad_group.id, source.id, date)
+        action.save()
+
+        logger.warning(msg, ad_group.id, source.id, date)
+
+    if empty_response:
+        logger.warning(
+            'Empty report received for adgroup %d, source %d, datetime %s',
+            ad_group.id,
+            source.id,
+            date
+        )
+        statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
+        statsd_helper.statsd_incr(
+            'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
+        )
+
+
+
+
+
+
+

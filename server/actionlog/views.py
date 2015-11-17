@@ -166,7 +166,7 @@ class ActionLogApiView(api_common.BaseApiView):
             'created_dt': action.created_dt,
             'modified_dt': action.modified_dt,
 
-            'created_by': action.created_by and [action.created_by.email, action.created_by.id],
+            'created_by': [action.created_by.email, action.created_by.id] if action.created_by else ['Automatically created', None],
             'modified_by': action.modified_by and [action.modified_by.email, action.modified_by.id],
 
             'order': action.order and action.order.id,

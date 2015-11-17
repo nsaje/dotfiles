@@ -4,7 +4,7 @@
         <div class="form-group">
             <label for="total-budget" class="col-xs-2 control-label">
                 Total budget
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Total allocated budget" placement="top"></zem-help-popover>
+                <zem-help-popover content="Total allocated budget" placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
                 <p id="total-budget" class="control-label">{{ (total | decimalCurrency:"$":2) }}</p>
@@ -13,7 +13,7 @@
         <div class="form-group">
             <label for="spend-budget" class="col-xs-2 control-label">
                 Spend
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Total spent budget" placement="top"></zem-help-popover>
+                <zem-help-popover content="Total spent budget" placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
                 <p id="spend-budget" class="control-label">{{ (spend | decimalCurrency:"$":2) }}</p>
@@ -22,7 +22,7 @@
         <div class="form-group">
             <label for="available-budget" class="col-xs-2 control-label">
                 Available budget
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Total budget still available" placement="top"></zem-help-popover>
+                <zem-help-popover content="Total budget still available" placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
                 <p id="available-budget" class="control-label">{{ (available | decimalCurrency:"$":2) }}</p>
@@ -31,7 +31,7 @@
         <div class="form-group" ng-class="{'has-error': !!errors.amount}">
             <label for="manage-budget" class="col-xs-2 control-label">
                 Manage budget
-                <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="Amount of budget to allocate/revoke" placement="top"></zem-help-popover>
+                <zem-help-popover content="Amount of budget to allocate/revoke" placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
                 <div class="input-group">
@@ -46,7 +46,7 @@
     </form>
 
     <div class="section table-campaign-budget">
-        <div class="title">History<zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="History of budget changes" placement="top"></zem-help-popover></div>
+        <div class="title">History<zem-help-popover content="History of budget changes" placement="top"></zem-help-popover></div>
         <div class="loader-container">
             <div class="loader" ng-show="history.length && requestInProgress"></div>
             <table class="table table-hover">

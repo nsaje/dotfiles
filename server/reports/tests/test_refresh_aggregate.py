@@ -1,3 +1,6 @@
+import mock
+from mock import patch, MagicMock
+import datetime
 
 from django import test
 from django.db.models import Sum
@@ -5,13 +8,191 @@ from django.db.models import Sum
 from reports import refresh
 from reports import models
 
+import dash.models
+
+from utils import test_helper
+
+
+class DictMatcher():
+    def __init__(self, obj):
+        self.obj = obj
+
+    def __eq__(self, other):
+        obj_copy = dict(self.obj[0])
+        other_copy = dict(other[0])
+        del obj_copy['content_ad_id']
+        del other_copy['content_ad_id']
+        return obj_copy == other_copy
+
+
+@patch('reports.refresh.redshift')
+class RefreshContentAdStats(test.TestCase):
+    fixtures = ['test_api_contentads.yaml']
+
+    def test_refresh_contentadstats(self, mock_redshift):
+
+        mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+
+        date = datetime.datetime(2015, 2, 1)
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        source = dash.models.Source.objects.get(pk=1)
+
+        refresh.refresh_contentadstats(date, ad_group, source)
+
+        mock_redshift.delete_contentadstats.assert_called_with(
+            date, ad_group.id, source.id)
+
+        rows = [{
+            'conversions': '{"omniture__Transaction 2": 20, "ga__Goal 1": 10}',
+            'cost_cc': 150000,
+            'pageviews': 1500,
+            'content_ad_id': 1,
+            'new_visits': 100,
+            'clicks': 100,
+            'total_time_on_site': 60,
+            'bounced_visits': 150,
+            'visits': 1000,
+            'source_id': 1,
+            'date': datetime.date(2015, 2, 1),
+            'impressions': 1000000,
+            'data_cost_cc': 150000,
+            'adgroup_id': 1,
+            'campaign_id': 1,
+            'account_id': 1
+        }, {
+            'conversions': '{}',
+            'cost_cc': 250000,
+            'pageviews': 2500,
+            'content_ad_id': 2,
+            'new_visits': 200,
+            'clicks': 200,
+            'total_time_on_site': 70,
+            'bounced_visits': 250,
+            'visits': 2000,
+            'source_id': 1,
+            'date': datetime.date(2015, 2, 1),
+            'impressions': 2000000,
+            'data_cost_cc': 250000,
+            'adgroup_id': 1,
+            'campaign_id': 1,
+            'account_id': 1
+        }]
+
+        diff_rows = [{
+            'conversions': '{}',
+            'cost_cc': -400000,
+            'pageviews': -4000,
+            'account_id': 1,
+            'content_ad_id': -1,
+            'new_visits': -300,
+            'total_time_on_site': -130,
+            'campaign_id': 1,
+            'visits': -3000,
+            'data_cost_cc': -400000,
+            'bounced_visits': -400,
+            'source_id': 1,
+            'date': '2015-02-01',
+            'impressions': -3000000,
+            'clicks': -300,
+            'adgroup_id': 1,
+        }]
+
+        mock_redshift.insert_contentadstats.assert_has_call(test_helper.ListMatcher(rows))
+        # DictMatcher here is needed because we mock redshift module which
+        # causes comparisons to fail because redshift constants are also mocked
+        # (ie. DIFF caid -1 becomes a MagicMock
+        mock_redshift.insert_contentadstats.assert_any_call(DictMatcher(diff_rows))
+
+    def test_refresh_contentadstats_no_source_id(self, mock_redshift):
+        date = datetime.datetime(2015, 2, 2)
+        ad_group = dash.models.AdGroup.objects.get(pk=2)
+
+        refresh.refresh_contentadstats(date, ad_group)
+
+        mock_redshift.delete_contentadstats.assert_called_with(
+            date, ad_group.id, None)
+
+        rows = [{
+            'conversions': '{"omniture__Transaction 2": 30}',
+            'cost_cc': 550000,
+            'pageviews': 4500,
+            'content_ad_id': 3,
+            'new_visits': 400,
+            'clicks': 500,
+            'total_time_on_site': 90,
+            'bounced_visits': 450,
+            'visits': 4000,
+            'source_id': 2,
+            'date': datetime.date(2015, 2, 2),
+            'impressions': 5000000,
+            'data_cost_cc': 550000,
+            'adgroup_id': 2,
+            'campaign_id': 1,
+            'account_id': 1
+        }, {
+            'conversions': '{}',
+            'cost_cc': 650000,
+            'pageviews': None,
+            'content_ad_id': 3,
+            'new_visits': None,
+            'clicks': 600,
+            'total_time_on_site': None,
+            'bounced_visits': None,
+            'visits': None,
+            'source_id': 1,
+            'date': datetime.date(2015, 2, 2),
+            'impressions': 6000000,
+            'data_cost_cc': 650000,
+            'adgroup_id': 2,
+            'campaign_id': 1,
+            'account_id': 1
+        }]
+
+        mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
+
+    def test_refresh_contentadstats_missing_contentad_stats(self, mock_redshift):
+        date = datetime.datetime(2015, 2, 2)
+        ad_group = dash.models.AdGroup.objects.get(pk=3)
+        source = dash.models.Source.objects.get(pk=1)
+
+        refresh.refresh_contentadstats(date, ad_group, source)
+
+        mock_redshift.delete_contentadstats.assert_called_with(
+            date, ad_group.id, source.id)
+
+        rows = [{
+            'conversions': '{}',
+            'cost_cc': None,
+            'pageviews': 5500,
+            'content_ad_id': 4,
+            'new_visits': 500,
+            'clicks': None,
+            'total_time_on_site': 90,
+            'bounced_visits': 550,
+            'visits': 5000,
+            'source_id': 1,
+            'date': datetime.date(2015, 2, 2),
+            'impressions': None,
+            'data_cost_cc': None,
+            'adgroup_id': 3,
+            'campaign_id': 1,
+            'account_id': 1
+        }]
+
+        mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
+
 
 class RefreshAdGroupStatsTestCase(test.TestCase):
-    fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml'] 
+    fixtures = ['test_reports_base.yaml', 'test_article_stats.yaml']
+
+    def setUp(self):
+        cursor_patcher = patch('reports.redshift.get_cursor')
+        self.cursor_mock = cursor_patcher.start()
+        self.addCleanup(cursor_patcher.stop)
 
     def test_refresh_all(self):
         refresh.refresh_adgroup_stats()
-        
+
         # totals are correct
         article_stats_totals = models.ArticleStats.objects.aggregate(
             clicks=Sum('clicks'),

@@ -2,7 +2,7 @@
     <tab ng-repeat="tab in tabs | filter:{hidden: '!true'}" active="tab.active">
         <tab-heading>
             <div class="tab-top"></div>
-            <a class="tab-title" ui-sref="{{ tab.route }}({ id: $state.params.id })">
+            <a class="tab-title" ng-click="tabClick($event)" zem-in-link="{{ tab.route }}({ id: $state.params.id })">
                 <zem-internal-feature ng-if="tab.internal" popover-placement="bottom"></zem-internal-feature>
                 {{ tab.heading }}
             </a>

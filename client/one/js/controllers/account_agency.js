@@ -1,19 +1,38 @@
 /*globals oneApp*/
-oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
+oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'zemFilterService', function ($scope, $state, $modal, api, zemFilterService) {
     $scope.settings = {};
     $scope.history = [];
+    $scope.conversionPixels = [];
     $scope.canArchive = false;
     $scope.canRestore = true;
+    $scope.accountManagers = [];
+    $scope.salesReps = [];
     $scope.errors = {};
     $scope.requestInProgress = false;
+    $scope.listPixelsInProgress = false;
+    $scope.listPixelsError = false;
     $scope.saved = null;
     $scope.discarded = null;
     $scope.orderField = 'datetime';
     $scope.orderReverse = true;
+    $scope.pixelOrderField = 'slug';
+    $scope.pixelOrderReverse = false;
     $scope.users = null;
     $scope.addUserRequestInProgress = false;
     $scope.addUserData = {};
     $scope.addUserErrors = null;
+    $scope.conversionPixelTagPrefix = '';
+    $scope.getServiceFees = function(search) {
+        // use fresh instance because we modify the collection on the fly
+        var fees = ['15', '20', '25'];
+
+        // adds the searched for value to the array
+        if (search && fees.indexOf(search) === -1) {
+            fees.unshift(search);
+        }
+
+        return fees;
+    };
 
     $scope.userActionChange = function (action, userId) {
         if (action === '') {
@@ -28,7 +47,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         }
 
         usr.action = null;
-    }
+    };
 
     $scope.getSettings = function (discarded) {
         $scope.saved = null;
@@ -41,7 +60,13 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.history = data.history;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
-                $scope.discarded = discarded;
+
+                if (discarded) {
+                    $scope.discarded = true;
+                } else {
+                    $scope.accountManagers = data.accountManagers;
+                    $scope.salesReps = data.salesReps;
+                }
             },
             function (data) {
                 // error
@@ -49,6 +74,21 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
             }
         ).finally(function () {
             $scope.requestInProgress = false;
+        });
+    };
+
+    $scope.getConversionPixels = function () {
+        $scope.listPixelsInProgress = true;
+        api.conversionPixel.list($scope.account.id).then(
+            function (data) {
+                $scope.conversionPixels = data.rows;
+                $scope.conversionPixelTagPrefix = data.conversionPixelTagPrefix;
+            },
+            function (data) {
+                $scope.listPixelsError = true;
+            }
+        ).finally(function () {
+            $scope.listPixelsInProgress = false;
         });
     };
 
@@ -76,7 +116,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
             $scope.requestInProgress = false;
         });
     };
-    
+
     $scope.refreshPage = function () {
         api.navData.list().then(function (accounts) {
             $scope.refreshNavData(accounts);
@@ -99,6 +139,22 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.refreshPage();
             });
         }
+    };
+
+    $scope.addConversionPixel = function () {
+        var modalInstance = $modal.open({
+            templateUrl: '/partials/add_conversion_pixel_modal.html',
+            controller: 'AddConversionPixelModalCtrl',
+            windowClass: 'modal',
+            scope: $scope
+        });
+
+        modalInstance.result.then(function(conversionPixel) {
+            $scope.conversionPixels.push(conversionPixel);
+            $scope.getSettings();
+        });
+
+        return modalInstance;
     };
 
     var getUser = function (userId) {
@@ -205,9 +261,67 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         });
     };
 
+    $scope.archiveConversionPixel = function (conversionPixel) {
+        conversionPixel.requestInProgress = true;
+        conversionPixel.error = false;
+        api.conversionPixel.archive(conversionPixel.id).then(
+            function (data) {
+                conversionPixel.archived = data.archived;
+                $scope.getSettings();
+            },
+            function (data) {
+                conversionPixel.error = true;
+            }
+        ).finally(function () {
+            conversionPixel.requestInProgress = false;
+        });
+    };
+
+    $scope.restoreConversionPixel = function (conversionPixel) {
+        conversionPixel.requestInProgress = true;
+        conversionPixel.error = false;
+        api.conversionPixel.restore(conversionPixel.id).then(
+            function (data) {
+                conversionPixel.archived = data.archived;
+                $scope.getSettings();
+            },
+            function (data) {
+                conversionPixel.error = true;
+            }
+        ).finally(function () {
+            conversionPixel.requestInProgress = false;
+        });
+    };
+
+    $scope.copyConversionPixelTag = function (conversionPixel) {
+        var scope = $scope.$new(true);
+        scope.conversionPixelTag = $scope.getConversionPixelTag(conversionPixel.url);
+
+        var modalInstance = $modal.open({
+            templateUrl: '/partials/copy_conversion_pixel_modal.html',
+            windowClass: 'modal',
+            scope: scope
+        });
+
+        return modalInstance;
+    };
+
+    $scope.filterConversionPixels = function (conversionPixel) {
+        if (zemFilterService.getShowArchived()) {
+            return true;
+        }
+
+        return !conversionPixel.archived;
+    };
+
     $scope.getSettings();
+    $scope.getConversionPixels();
 
     if ($scope.hasPermission('zemauth.account_agency_access_permissions')) {
         $scope.getUsers();
     }
+
+    $scope.getName = function (user) {
+        return user.name;
+    };
 }]);

@@ -124,3 +124,6 @@ client/test-results.xml
 
 # Client test config
 client/test/protractor.localconf.json
+
+# Andraz's editor
+DEADJOE

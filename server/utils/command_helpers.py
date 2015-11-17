@@ -1,3 +1,4 @@
+import logging
 import datetime
 import dateutil.parser
 
@@ -43,3 +44,15 @@ def parse_date(options, field_name='date'):
         return
 
     return dateutil.parser.parse(options[field_name]).date()
+
+
+def set_logger_verbosity(logger_, options):
+    verbosity = int(options['verbosity'])
+    if verbosity == 0:
+        logger_.setLevel(logging.CRITICAL)
+    elif verbosity == 1:  # default
+        logger_.setLevel(logging.INFO)
+    elif verbosity == 2:
+        logger_.setLevel(logging.DEBUG)
+    elif verbosity > 2:
+        logger_.setLevel(logging.NOTSET)

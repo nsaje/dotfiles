@@ -2,12 +2,14 @@
 "use strict"
 
 oneApp.factory('zemFilterService', ['$location', function($location) {
-    // Because filteredSoruces is being watched (through getFilteredSources function) from
+    // Because filteredSources is being watched (through getFilteredSources function) from
     // different controllers, it has to always point to the same array. Special care is taken
     // to never replace the reference (no assignments to this variable) so the array is
     // always modified in place.
     var filteredSources = [];
     var showArchived = false;
+    var showBlacklistedPublisher = false;
+    var blacklistedPublisherFilter = null;
 
     function init(user) {
         if ('zemauth.filter_sources' in user.permissions) {
@@ -20,6 +22,10 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
 
         if ('zemauth.view_archived_entities' in user.permissions) {
             showArchived = $location.search().show_archived || false;
+        }
+
+        if ('zemauth.can_see_publishers' in user.permissions) {
+            blacklistedPublisherFilter = $location.search().show_blacklisted_publishers || null;
         }
     }
 
@@ -39,6 +45,14 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
     }
 
+    function setBlacklistedPublishersLocation() {
+        if (blacklistedPublisherFilter) {
+            $location.search('show_blacklisted_publishers', blacklistedPublisherFilter);
+        } else {
+            $location.search('show_blacklisted_publishers', null);
+        }
+    }
+
     function getFilteredSources() {
         return filteredSources;
     }
@@ -51,6 +65,14 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
 
         return false;
+    }
+
+    function isArchivedFilterOn() {
+        return showArchived;
+    }
+
+    function isPublisherBlacklistFilterOn () {
+        return blacklistedPublisherFilter !== null && blacklistedPublisherFilter !== 'all';
     }
 
     function isSourceFilterOn () {
@@ -86,6 +108,9 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
 
         setFilteredSourcesLocation();
         setShowArchivedLocation();
+
+        blacklistedPublisherFilter = null;
+        setBlacklistedPublishers(null);
     }
 
     function getShowArchived() {
@@ -94,12 +119,29 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
 
     function setShowArchived(newValue) {
         showArchived = newValue;
-
         setShowArchivedLocation();
+    }
+    
+    function getBlacklistedPublishers() {
+        return blacklistedPublisherFilter;
+    }
+
+    function setBlacklistedPublishers(newValue) {
+        blacklistedPublisherFilter = newValue;
+        setBlacklistedPublishersLocation();
+    }
+
+    function getShowBlacklistedPublishers() {
+        return showBlacklistedPublisher;
+    }
+
+    function setShowBlacklistedPublishers(newValue) {
+        showBlacklistedPublisher = newValue;
     }
 
     return {
         init: init,
+        isArchivedFilterOn: isArchivedFilterOn,
         getShowArchived: getShowArchived,
         setShowArchived: setShowArchived,
         getFilteredSources: getFilteredSources,
@@ -108,6 +150,11 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         addFilteredSource: addFilteredSource,
         exclusivelyFilterSource: exclusivelyFilterSource,
         removeFilteredSource: removeFilteredSource,
-        removeFiltering: removeFiltering
+        removeFiltering: removeFiltering,
+        isPublisherBlacklistFilterOn: isPublisherBlacklistFilterOn,
+        getBlacklistedPublishers: getBlacklistedPublishers,
+        setBlacklistedPublishers: setBlacklistedPublishers,
+        getShowBlacklistedPublishers: getShowBlacklistedPublishers,
+        setShowBlacklistedPublishers: setShowBlacklistedPublishers
     };
 }]);

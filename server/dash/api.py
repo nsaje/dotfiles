@@ -11,16 +11,19 @@ import actionlog.api
 import actionlog.api_contentads
 import actionlog.models
 import actionlog.constants
+import dash.models
+import utils.exc
 from utils import redirector_helper
+from utils import email_helper
 
 from dash import exc
 from dash import models
 from dash import constants
-from dash import regions
 from dash import consistency
-from dash import threads
+from dash import region_targeting_helper
 
 import utils.url_helper
+import utils.statsd_helper
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +91,124 @@ def update_ad_group_source_state(ad_group_source, conf):
         new_state.save()
 
 
+@transaction.atomic
+def update_publisher_blacklist_state(args):
+    _clean_existing_publisher_blacklist(
+        args['key'],
+        args['level'],
+        args['publishers']
+    )
+    if args['state'] == constants.PublisherStatus.BLACKLISTED:
+        _update_publisher_blacklist(
+            args['key'],
+            args['level'],
+            args['publishers']
+        )
+
+
+def _clean_existing_publisher_blacklist(key, level, publishers):
+    if level != constants.PublisherBlacklistLevel.GLOBAL:
+        if constants.PublisherBlacklistLevel.compare(
+            constants.PublisherBlacklistLevel.ACCOUNT,
+            level) <= 0:
+            account_id = key[0]
+            campaign_ids = dash.models.Campaign.objects.filter(
+                account_id=account_id
+            ).values_list('id', flat=True)
+
+            adgroup_ids = dash.models.AdGroup.objects.filter(
+                campaign__id__in=campaign_ids
+            ).values_list('id', flat=True)
+        elif constants.PublisherBlacklistLevel.compare(
+            constants.PublisherBlacklistLevel.CAMPAIGN,
+            level) <= 0:
+            campaign_id = key[0]
+            campaign_adgroup_ids = dash.models.AdGroup.objects.filter(
+                campaign__id=campaign_id
+            ).values_list('id', flat=True)
+
+    # we always remove relevant blacklist first
+    queryset = dash.models.PublisherBlacklist.objects.none()
+    for publisher in publishers:
+        match_publisher_blacklist = Q(
+            name=publisher['domain'],
+            source__id=publisher['source_id'],
+            source__deprecated=False,
+        )
+
+        # first delete all associated blacklist entries
+        if level == constants.PublisherBlacklistLevel.GLOBAL:
+            queryset |= dash.models.PublisherBlacklist.objects.filter(
+                match_publisher_blacklist
+            )
+        else:
+            if constants.PublisherBlacklistLevel.compare(
+                constants.PublisherBlacklistLevel.ACCOUNT,
+                level) <= 0:
+                queryset |= dash.models.PublisherBlacklist.objects.filter(
+                    match_publisher_blacklist &
+                    Q(
+                        Q(ad_group__id__in=adgroup_ids) |
+                        Q(campaign_id__in=campaign_ids) |
+                        Q(account_id=account_id)
+                    )
+                )
+            elif constants.PublisherBlacklistLevel.compare(
+                constants.PublisherBlacklistLevel.CAMPAIGN,
+                level) <= 0:
+                queryset |= dash.models.PublisherBlacklist.objects.filter(
+                    match_publisher_blacklist &
+                    Q(
+                        Q(ad_group__id__in=campaign_adgroup_ids) |
+                        Q(campaign_id=campaign_id)
+                    )
+                )
+            elif constants.PublisherBlacklistLevel.compare(
+                constants.PublisherBlacklistLevel.ADGROUP,
+                level) <= 0:
+
+                ad_group_id = key[0]
+                queryset |= dash.models.PublisherBlacklist.objects.filter(
+                    match_publisher_blacklist &
+                    Q(ad_group__id=ad_group_id)
+                )
+    queryset.delete()
+
+
+def _update_publisher_blacklist(key, level, publishers):
+    blacklist = []
+
+    source_cache = {}
+    for publisher in publishers:
+        exchange = publisher['exchange']
+        source_id = publisher['source_id']
+        if exchange not in source_cache:
+            source = dash.models.Source.objects.get(id=source_id)
+            source_cache[exchange] = source
+
+        blacklist_entry = models.PublisherBlacklist(
+            name=publisher['domain'],
+            source=source,
+        )
+
+        if level == constants.PublisherBlacklistLevel.GLOBAL:
+            blacklist_entry.everywhere = True
+        elif level == constants.PublisherBlacklistLevel.ACCOUNT:
+            account = dash.models.Account.objects.get(id=key[0])
+            blacklist_entry.account = account
+        elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
+            campaign = dash.models.Campaign.objects.get(id=key[0])
+            blacklist_entry.campaign = campaign
+        elif level == constants.PublisherBlacklistLevel.ADGROUP:
+            ad_group = dash.models.AdGroup.objects.get(id=key[0])
+            blacklist_entry.ad_group = ad_group
+
+        blacklist.append(blacklist_entry)
+
+    if blacklist != []:
+        models.PublisherBlacklist.objects.bulk_create(blacklist)
+
+
 def _get_latest_ad_group_source_state(ad_group_source):
     try:
         agss = models.AdGroupSourceState.objects.filter(ad_group_source=ad_group_source).latest()
@@ -100,6 +221,116 @@ def create_campaign_callback(ad_group_source, source_campaign_key, request):
     ad_group_source.source_campaign_key = source_campaign_key
     ad_group_source.last_successful_sync_dt = datetime.datetime.utcnow()
     ad_group_source.save(request)
+
+
+def refresh_publisher_blacklist(ad_group_source, request):
+    # copy blacklisting information on account and campaign level
+    if not ad_group_source.source.can_modify_publisher_blacklist_automatically():
+        return []
+
+    actions = []
+
+    campaign = ad_group_source.ad_group.campaign
+    if ad_group_source.source.source_type != dash.constants.SourceType.OUTBRAIN:
+        currentCampaignBlacklist = dash.models.PublisherBlacklist.objects.filter(
+            source=ad_group_source.source,
+            everywhere=False,
+            account=None,
+            campaign=campaign,
+            ad_group=None,
+            status=dash.constants.PublisherStatus.BLACKLISTED
+        )
+        campaign_blacklisted_publishers = []
+        for blacklistEntry in currentCampaignBlacklist:
+            # setup pending entries
+            # create and send blacklist actions
+            campaign_blacklisted_publishers.append({
+                'domain': blacklistEntry.name,
+                'exchange': ad_group_source.source.tracking_slug.replace('b1_', ''),
+            })
+
+        key = [campaign.id]
+        actions.extend(
+            actionlog.api.set_publisher_blacklist(
+                key,
+                dash.constants.PublisherBlacklistLevel.CAMPAIGN,
+                dash.constants.PublisherStatus.BLACKLISTED,
+                campaign_blacklisted_publishers,
+                request,
+                ad_group_source.source.source_type,
+                ad_group_source,
+                send=False
+            )
+        )
+
+    account = campaign.account
+    currentAccountBlacklist = dash.models.PublisherBlacklist.objects.filter(
+        source=ad_group_source.source,
+        everywhere=False,
+        account=account,
+        campaign=campaign,
+        ad_group=None,
+        status=dash.constants.PublisherStatus.BLACKLISTED
+    )
+
+    accountBlacklistedPublishers = []
+    for blacklistEntry in currentAccountBlacklist:
+        # setup pending entries
+        # create and send blacklist actions
+        accountBlacklistedPublishers.append({
+            'domain': blacklistEntry.name,
+            'exchange': ad_group_source.source.tracking_slug.replace('b1_', ''),
+        })
+
+    key = [ad_group_source.ad_group.campaign.account.id]
+    if ad_group_source.source.source_type == constants.SourceType.OUTBRAIN:
+        key.append(campaign.account.outbrain_marketer_id)
+
+    actions.extend(
+        actionlog.api.set_publisher_blacklist(
+            key,
+            dash.constants.PublisherBlacklistLevel.ACCOUNT,
+            dash.constants.PublisherStatus.BLACKLISTED,
+            accountBlacklistedPublishers,
+            request,
+            ad_group_source.source.source_type,
+            ad_group_source,
+            send=False
+        )
+    )
+    return actions
+
+
+def order_additional_updates_after_campaign_creation(ad_group_source, request):
+    ad_group_settings = ad_group_source.ad_group.get_current_settings()
+    source = ad_group_source.source
+
+    # if we could not select target regions automatically, see if we can select them manually
+    if not region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) and\
+       region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings):
+        new_field_value = _get_manual_action_target_regions_value(
+            ad_group_source,
+            None,
+            ad_group_settings
+        )
+
+        actionlog.api.init_set_ad_group_manual_property(
+            ad_group_source,
+            request,
+            'target_regions',
+            new_field_value
+        )
+
+    # update ad group source settings
+    cons = consistency.SettingsStateConsistence(ad_group_source)
+    settings_changes = cons.get_needed_state_updates()
+    if settings_changes:
+        actionlog.api.set_ad_group_source_settings(settings_changes, ad_group_source, request=request, send=True)
+
+    # copy all currently blacklisted entries on campaign creation
+    actionlogs_to_send = refresh_publisher_blacklist(ad_group_source, request)
+    if actionlogs_to_send != []:
+        actionlog.zwei_actions.send(actionlogs_to_send)
 
 
 def insert_content_ad_callback(
@@ -307,6 +538,8 @@ def update_content_ads_submission_status(ad_group_source, request=None):
 
 @transaction.atomic()
 def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
+    """ Returns update_content_ad actions for content_ad_sources
+    that are not in sync with external systems. """
     content_ad_sources = {}
 
     for content_ad_source in models.ContentAdSource.objects.filter(
@@ -314,21 +547,63 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             source=ad_group_source.source):
         content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
 
+    unsynced_content_ad_sources_actions = []
+
+    nr_nonexisting_active_content_ads = 0
+    nr_inconsistent_internal_states = 0
+
     for data in content_ad_data:
         content_ad_source = content_ad_sources.get(data['id'])
 
         if content_ad_source is None:
+            if data.get('state') == constants.ContentAdSourceState.ACTIVE:
+                nr_nonexisting_active_content_ads += 1
+                logger.error(
+                    ('Found active external content ad that does not exist in database - '
+                     'source=%s, ad group=%s, content ad state=%s, submission status=%s, source content ad id=%s, data=%s)'),
+                    ad_group_source.source.name,
+                    ad_group_source.ad_group_id,
+                    constants.ContentAdSourceState.get_text(data.get('state')),
+                    constants.ContentAdSubmissionStatus.get_text(data.get('submission_status')),
+                    data.get('id'),
+                    data
+                )
             continue
 
         changed = False
+
+        # TODO: should it only be updated when it is None?
+        if data.get('source_content_ad_id'):
+            content_ad_source.source_content_ad_id = str(data['source_content_ad_id'])
+            changed = True
 
         if data['state'] != content_ad_source.source_state:
             content_ad_source.source_state = data['state']
             changed = True
 
+        if data['state'] != content_ad_source.content_ad.state:
+            logger.info(
+                ('Found inconsistent content ad state on media source %s for content ad %d: source state=%d,'
+                 'z1 state=%d, source submission status=%d, z1 submission status=%d'),
+                content_ad_source.source.name, content_ad_source.content_ad.pk,
+                data.get('state'), content_ad_source.content_ad.state,
+                data.get('submission_status'), content_ad_source.submission_status,
+            )
+            nr_inconsistent_internal_states += 1
+
         if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
-            _update_content_ad_source_submission_status(content_ad_source, data['submission_status'])
-            changed = True
+            is_unsynced = all([
+                data['submission_status'] == constants.ContentAdSubmissionStatus.APPROVED,
+                content_ad_source.content_ad.state != data['state'],
+            ])
+            if is_unsynced:
+                # Content ad state was not synced with media source
+                unsynced_content_ad_sources_actions.append(
+                    (content_ad_source, {'state': content_ad_source.content_ad.state})
+                )
+
+            if _update_content_ad_source_submission_status(content_ad_source, data['submission_status']):
+                changed = True
 
         if 'submission_errors' in data and data['submission_errors'] != content_ad_source.submission_errors:
             content_ad_source.submission_errors = data['submission_errors']
@@ -336,6 +611,26 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         if changed:
             content_ad_source.save()
+
+    utils.statsd_helper.statsd_incr(
+        'propagation_consistency.content_ad.active_nonexisting.{}'.format(ad_group_source.source.tracking_slug),
+        nr_nonexisting_active_content_ads
+    )
+    utils.statsd_helper.statsd_incr(
+        'propagation_consistency.content_ad.inconsistent_internal_state.{}'.format(ad_group_source.source.tracking_slug),
+        nr_inconsistent_internal_states
+    )
+
+    if unsynced_content_ad_sources_actions:
+        logger.info(
+            'Found unsynced content ads for ad group %s on sources: %s',
+            ad_group_source.ad_group,
+            ', '.join(set(action[0].source.name for action in unsynced_content_ad_sources_actions))
+        )
+        return actionlog.api_contentads.init_bulk_update_content_ad_actions(
+            unsynced_content_ad_sources_actions, None)
+
+    return []
 
 
 def update_content_ad_source_state(content_ad_source, data):
@@ -351,7 +646,8 @@ def update_content_ad_source_state(content_ad_source, data):
     content_ad_source.save()
 
 
-def order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=True, iab_update=False):
+def order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=True,
+                                   iab_update=False, redirects_update=False):
     changes = current_settings.get_setting_changes(new_settings)
 
     campaign_settings = ad_group.campaign.get_current_settings()
@@ -360,6 +656,10 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     if iab_update:
         changes['iab_category'] = campaign_settings.iab_category
 
+    if redirects_update:
+        # TODO: temporary hack to force ad group insertion into redirector
+        changes['tracking_code'] = new_settings.get_tracking_codes()
+
     if not changes:
         return []
 
@@ -367,9 +667,15 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
         order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
     )
 
-    if 'tracking_code' in changes or 'enable_ga_tracking' in changes:
+    if any(prop in changes for prop in
+           ['tracking_code', 'enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param']):
         redirector_helper.insert_adgroup(ad_group.id, new_settings.get_tracking_codes(),
-                                         disable_auto_tracking=not new_settings.enable_ga_tracking)
+                                         new_settings.enable_ga_tracking,
+                                         new_settings.enable_adobe_tracking,
+                                         new_settings.adobe_tracking_param)
+
+        if 'tracking_code' not in changes:
+            changes['tracking_code'] = new_settings.get_tracking_codes()
 
     actions = []
     for field_name, field_value in changes.iteritems():
@@ -390,23 +696,31 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 continue
 
             new_field_value = field_value
+            force_manual_change = False
             if field_name == 'tracking_code':
                 new_field_value = utils.url_helper.combine_tracking_codes(
                     new_settings.get_tracking_codes(),
-                    ad_group_source.get_tracking_ids(),
+                    ad_group_source.get_tracking_ids() if new_settings.enable_ga_tracking else ''
                 )
+
+                # Temporary bug fix for a bug in Gravity - codes that don't have a value assigned can not
+                # be assigned automatically
+                if new_field_value and any(('=' not in tc) for tc in new_field_value.split('&')) and\
+                   ad_group_source.source.source_type.type == constants.SourceType.GRAVITY:
+                    force_manual_change = True
 
             if field_name == 'ad_group_name':
                 new_field_value = ad_group_source.get_external_name(new_adgroup_name=field_value)
 
-            if field_name == 'start_date' and source.can_modify_start_date() or\
-               field_name == 'end_date' and source.can_modify_end_date() or\
-               field_name == 'target_devices' and source.can_modify_device_targeting() or\
+            if (field_name == 'start_date' and source.can_modify_start_date() or
+               field_name == 'end_date' and source.can_modify_end_date() or
+               field_name == 'target_devices' and source.can_modify_device_targeting() or
                (field_name == 'tracking_code' and source.can_modify_tracking_codes() and not
-                source.update_tracking_codes_on_content_ads()) or\
-               field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or\
-               field_name == 'ad_group_name' and source.can_modify_ad_group_name():
-
+                source.update_tracking_codes_on_content_ads()) or
+               field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or
+               field_name == 'ad_group_name' and source.can_modify_ad_group_name() or
+               field_name == 'target_regions' and region_targeting_helper.can_modify_selected_target_regions_automatically(
+                   source, current_settings, new_settings)) and not force_manual_change:
                 new_field_name = field_name
                 if field_name == 'ad_group_name':
                     new_field_name = 'name'
@@ -441,54 +755,8 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                             send=send
                         )
                     )
-            elif field_name == 'target_regions':
-                diff = set(new_settings.target_regions).symmetric_difference(set(current_settings.target_regions))
-
-                if source.can_modify_country_targeting() or source.can_modify_dma_targeting_automatic():
-                    actions.extend(
-                        actionlog.api.set_ad_group_source_settings(
-                            {field_name: new_field_value},
-                            ad_group_source,
-                            request,
-                            order,
-                            send=send
-                        )
-                    )
-
-                did_countries_change = len([tr for tr in diff if tr in regions.COUNTRY_BY_CODE]) > 0
-
-                new_country_targeting = [tr for tr in new_field_value if tr in regions.COUNTRY_BY_CODE]
-                new_dma_targeting = [regions.DMA_BY_CODE[tr] for tr in new_field_value if tr in regions.DMA_BY_CODE]
-
-                if not new_country_targeting and not new_dma_targeting:
-                    new_country_targeting = 'cleared' if new_dma_targeting else 'Worldwide'
-
-                if did_countries_change and not source.can_modify_country_targeting():
-                    actionlog.api.init_set_ad_group_manual_property(
-                        ad_group_source,
-                        request,
-                        'target_regions_countries',
-                        new_country_targeting
-                    )
-
-                did_dmas_change = len([tr for tr in diff if tr in regions.DMA_BY_CODE]) > 0
-                if did_dmas_change and not source.can_modify_dma_targeting_automatic() and\
-                   source.can_modify_dma_targeting_manual():
-                    if not new_dma_targeting:
-                        new_dma_targeting = ['cleared (no DMA targeting)']
-
-                    # append country codes to the manual action for a better overview of
-                    # the overall location targeting
-                    new_dma_targeting.append('countries: ' + str(new_country_targeting))
-
-                    actionlog.api.init_set_ad_group_manual_property(
-                        ad_group_source,
-                        request,
-                        'target_regions_dma',
-                        new_dma_targeting
-                    )
             else:
-                if field_name == 'enable_ga_tracking':
+                if field_name in ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param']:
                     # do not create an action - only used for our redirector
                     continue
 
@@ -499,6 +767,16 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     tracking_slug = ad_group_source.source.tracking_slug
                     new_field_value = _substitute_tracking_macros(new_field_value, tracking_slug)
 
+                if field_name == 'target_regions':
+                    if not region_targeting_helper.can_modify_selected_target_regions_manually(source, current_settings, new_settings):
+                        continue
+
+                    new_field_value = _get_manual_action_target_regions_value(
+                        ad_group_source,
+                        current_settings,
+                        new_settings
+                    )
+
                 actionlog.api.init_set_ad_group_manual_property(
                     ad_group_source,
                     request,
@@ -507,6 +785,170 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 )
 
     return actions
+
+
+def create_global_publisher_blacklist_actions(ad_group, request, state, publisher_blacklist, send=True):
+    if publisher_blacklist == []:
+        return []
+
+    blacklist_per_source, source_type_cache = _create_blacklist_per_source(publisher_blacklist)
+
+    actions = []
+    # send actions
+    first_ad_group_source = None
+    for source_type_id, blacklist in blacklist_per_source.iteritems():
+        filtered_blacklist = [publisher for publisher in blacklist\
+                              if publisher['source'].can_modify_publisher_blacklist_automatically()]
+        # we only support per account outbrain blacklist
+        if source_type_id == constants.SourceType.OUTBRAIN:
+            continue
+        if filtered_blacklist == []:
+            continue
+
+        if first_ad_group_source is None:
+            first_ad_group_source = models.AdGroupSource.objects.filter(
+                ad_group=ad_group,
+                source=publisher['source']
+            ).first()
+
+        key = None
+        level = constants.PublisherBlacklistLevel.GLOBAL
+
+        filtered_blacklist = list(
+            map(lambda pub: {
+                    'domain': pub['domain'],
+                    'exchange': pub['source'].bidder_slug,
+                    'source_id': pub['source'].id
+                },
+                filtered_blacklist
+            )
+        )
+
+        actions.extend(
+            actionlog.api.set_publisher_blacklist(
+                key,
+                level,
+                state,
+                filtered_blacklist,
+                request,
+                source_type_cache[source_type_id],
+                first_ad_group_source,
+                send=send
+            )
+        )
+
+    return actions
+
+
+def create_publisher_blacklist_actions(ad_group, state, level, publishers, request, send=True):
+    if level == constants.PublisherBlacklistLevel.GLOBAL:
+        return []
+    if publishers == []:
+        return []
+
+    blacklist_per_source, source_type_cache = _create_blacklist_per_source(publishers)
+
+    actions = []
+    blacklisted_publishers = {}
+    first_ad_group_source = None
+    # send actions
+    for source_type_id, blacklist in blacklist_per_source.iteritems():
+        filtered_blacklist = [publisher for publisher in blacklist\
+                              if publisher['source'].can_modify_publisher_blacklist_automatically()]
+        # we only support per account outbrain blacklist
+        if source_type_id == constants.SourceType.OUTBRAIN and\
+                level != constants.PublisherBlacklistLevel.ACCOUNT:
+            continue
+        if filtered_blacklist == []:
+            continue
+
+        if first_ad_group_source is None:
+            first_ad_group_source = models.AdGroupSource.objects.filter(
+                ad_group=ad_group,
+                source=publisher['source']
+            ).first()
+
+
+        blacklisted_publishers[source_type_id] =\
+            blacklisted_publishers.get(source_type_id, [])
+
+        blacklisted_publishers[source_type_id].extend(
+            list(map(lambda pub: {
+                'domain': pub['domain'],
+                'exchange': pub['source'].tracking_slug.replace('b1_', ''),
+                'source_id': pub['source'].id,
+                'ad_group_id': ad_group.id,
+            }, filtered_blacklist))
+        )
+
+    if blacklisted_publishers != {}:
+        for source_type_id, blacklist in blacklisted_publishers.iteritems():
+            key = None
+            if level == constants.PublisherBlacklistLevel.ACCOUNT:
+                key = [ad_group.campaign.account.id]
+                if source_type_id == constants.SourceType.OUTBRAIN:
+                    key.append(ad_group.campaign.account.outbrain_marketer_id)
+            elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
+                key = [ad_group.campaign.id]
+            elif level == constants.PublisherBlacklistLevel.ADGROUP:
+                key = [ad_group.id]
+
+            actions.extend(
+                actionlog.api.set_publisher_blacklist(
+                    key,
+                    level,
+                    state,
+                    blacklist,
+                    request,
+                    source_type_cache[source_type_id],
+                    first_ad_group_source,
+                    send=send
+                )
+            )
+    return actions
+
+
+def _create_blacklist_per_source(publishers):
+    source_type_cache = {}
+    blacklist_per_source = {}
+    for publisher in publishers:
+        source = publisher['source']
+        source_type_id = source.source_type.id
+        source_type_cache[source_type_id] = source.source_type
+        blacklist_per_source[source_type_id] =\
+            blacklist_per_source.get(source_type_id, [])
+        blacklist_per_source[source_type_id].append(publisher)
+
+    return blacklist_per_source, source_type_cache
+
+def _get_manual_action_target_regions_value(ad_group_source, current_settings, new_settings):
+    new_country_targeting = new_settings.get_targets_for_region_type(constants.RegionType.COUNTRY)
+    new_subdivision_targeting = new_settings.get_target_names_for_region_type(constants.RegionType.SUBDIVISION)
+    new_dma_targeting = new_settings.get_target_names_for_region_type(constants.RegionType.DMA)
+
+    # default to worldwide
+    if not new_country_targeting and not new_subdivision_targeting and not new_dma_targeting:
+        new_country_targeting = 'Worldwide'
+
+    new_field_value = {
+        'countries': new_country_targeting
+    }
+
+    if new_subdivision_targeting or\
+       (current_settings is not None and current_settings.targets_region_type(constants.RegionType.SUBDIVISION)):
+        if not new_subdivision_targeting:
+            new_subdivision_targeting = 'cleared (no subdivision targeting)'
+
+        new_field_value['subdivisions'] = new_subdivision_targeting
+
+    if new_dma_targeting or\
+       (current_settings is not None and current_settings.targets_region_type(constants.RegionType.DMA)):
+        if not new_dma_targeting:
+            new_dma_targeting = 'cleared (no DMA targeting)'
+
+        new_field_value['dma'] = new_dma_targeting
+
+    return new_field_value
 
 
 def _substitute_tracking_macros(tracking_code, tracking_slug):
@@ -592,40 +1034,43 @@ def get_state_by_account():
 
 def _update_content_ad_source_submission_status(content_ad_source, submission_status):
     if content_ad_source.source.source_type.type == constants.SourceType.OUTBRAIN and\
+       content_ad_source.submission_status == constants.ContentAdSubmissionStatus.REJECTED and\
+       submission_status == constants.ContentAdSubmissionStatus.PENDING:
+        return False
+
+    if content_ad_source.source.source_type.type == constants.SourceType.OUTBRAIN and\
        submission_status == constants.ContentAdSubmissionStatus.PENDING and\
        content_ad_source.content_ad.ad_group.campaign.account.outbrain_marketer_id == AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT:
         content_ad_source.submission_status = constants.ContentAdSubmissionStatus.APPROVED
     else:
         content_ad_source.submission_status = submission_status
 
+    return True
+
 
 @newrelic.agent.function_trace()
 def update_content_ads_state(content_ads, state, request):
-    actions = []
     with transaction.atomic():
-        for content_ad in content_ads:
-            content_ad.state = state
-            content_ad.save()
-            for content_ad_source in content_ad.contentadsource_set.all():
-                prev_state = content_ad_source.state
-                content_ad_source.state = state
-                content_ad_source.save()
+        models.ContentAd.objects.filter(id__in=[ca.id for ca in content_ads]).update(state=state)
+        content_ad_sources = models.ContentAdSource.objects.filter(
+            ~Q(state=state) | ~Q(source_state=state),
+            content_ad_id__in=[ca.id for ca in content_ads],
+        ).select_related('content_ad__ad_group', 'content_ad__batch', 'source')
+        content_ad_sources.update(state=state)
+        content_ad_sources = content_ad_sources.all()
 
-                if prev_state == state:
-                    continue
+        content_ad_sources_changes = []
+        for content_ad_source in content_ad_sources:
+            content_ad_sources_changes.append(
+                (content_ad_source, {'state': content_ad_source.state})
+            )
 
-                changes = {'state': content_ad_source.state}
+        actions = actionlog.api_contentads.init_bulk_update_content_ad_actions(
+            content_ad_sources_changes,
+            request
+        )
 
-                actions.append(
-                    actionlog.api_contentads.init_update_content_ad_action(
-                        content_ad_source,
-                        changes,
-                        request,
-                        send=False,
-                    )
-                )
-
-    threads.SendActionLogsThread(actions).start()
+    actionlog.zwei_actions.send(actions)
 
 
 def add_content_ads_state_change_to_history(ad_group, content_ads, state, request):
@@ -667,47 +1112,60 @@ class AdGroupSourceSettingsWriter(object):
         self.ad_group_source = ad_group_source
         assert type(self.ad_group_source) is models.AdGroupSource
 
-    def set(self, settings_obj, request):
+    def set(self, settings_obj, request, send_action=True):
         latest_settings = self.get_latest_settings()
 
         state = settings_obj.get('state')
         cpc_cc = settings_obj.get('cpc_cc')
         daily_budget_cc = settings_obj.get('daily_budget_cc')
+        autopilot_state = settings_obj.get('autopilot_state')
 
         assert cpc_cc is None or isinstance(cpc_cc, decimal.Decimal)
         assert daily_budget_cc is None or isinstance(daily_budget_cc, decimal.Decimal)
 
         if any([
                 state is not None and state != latest_settings.state,
+                autopilot_state is not None and autopilot_state != latest_settings.autopilot_state,
                 cpc_cc is not None and cpc_cc != latest_settings.cpc_cc,
-                daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc
-        ]):
-                new_settings = latest_settings
-                new_settings.pk = None  # make a copy of the latest settings
+                daily_budget_cc is not None and daily_budget_cc != latest_settings.daily_budget_cc]):
+            new_settings = latest_settings
+            new_settings.pk = None  # make a copy of the latest settings
 
-                old_settings_obj = {}
+            old_settings_obj = {}
 
-                if state is not None:
-                    new_settings.state = state
-                if cpc_cc is not None:
-                    old_settings_obj['cpc_cc'] = new_settings.cpc_cc
-                    new_settings.cpc_cc = cpc_cc
-                if daily_budget_cc is not None:
-                    old_settings_obj['daily_budget_cc'] = new_settings.daily_budget_cc
-                    new_settings.daily_budget_cc = daily_budget_cc
-                new_settings.save(request)
+            if state is not None:
+                new_settings.state = state
+            if autopilot_state is not None:
+                if new_settings.state == constants.AdGroupSettingsState.INACTIVE and\
+                        autopilot_state == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
+                    raise utils.exc.ValidationError('Auto-pilot can not be enabled when source is disabled.')
+                old_settings_obj['autopilot_state'] = latest_settings.autopilot_state
+                new_settings.autopilot_state = autopilot_state
+            if cpc_cc is not None:
+                old_settings_obj['cpc_cc'] = latest_settings.cpc_cc
+                new_settings.cpc_cc = cpc_cc
+            if daily_budget_cc is not None:
+                old_settings_obj['daily_budget_cc'] = latest_settings.daily_budget_cc
+                new_settings.daily_budget_cc = daily_budget_cc
+            new_settings.save(request)
 
-                self.add_to_history(settings_obj, old_settings_obj, request)
+            self.add_to_history(settings_obj, old_settings_obj, request)
 
+            if request:
+                email_helper.send_ad_group_notification_email(self.ad_group_source.ad_group, request)
+
+            if send_action:
+                filtered_settings_obj = {k: v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}
                 if 'state' not in settings_obj or self.can_trigger_action():
-                    actionlog.api.set_ad_group_source_settings(settings_obj, new_settings.ad_group_source, request)
+                    if filtered_settings_obj:
+                        actionlog.api.set_ad_group_source_settings(filtered_settings_obj, new_settings.ad_group_source, request)
                 else:
                     logger.info(
                         'settings=%s on ad_group_source=%s will be triggered when the ad group will be enabled',
                         settings_obj,
                         self.ad_group_source
                     )
-        else:
+        elif send_action:
             ssc = consistency.SettingsStateConsistence(self.ad_group_source)
             if not ssc.is_consistent() and ('state' not in settings_obj or self.can_trigger_action()):
                 new_settings = latest_settings
@@ -762,3 +1220,10 @@ class AdGroupSourceSettingsWriter(object):
         settings = self.ad_group_source.ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
+
+
+def get_content_ad(content_ad_id):
+    try:
+        return models.ContentAd.objects.get(pk=content_ad_id)
+    except models.ContentAd.DoesNotExist:
+        return None

@@ -1,0 +1,94 @@
+# Articles
+
+- fields:
+    url: 'http://test1.com'
+    title: 'Test Article 1'
+    ad_group: 1
+    created_dt: '2014-06-04T09:58:21'
+  model: dash.article
+  pk: 1
+
+- fields:
+    url: 'http://test2.com'
+    title: 'Test Article 2'
+    ad_group: 1
+    created_dt: '2014-06-04T09:58:21'
+  model: dash.article
+  pk: 2
+
+# Article Stats
+
+# ... for Test Article 1
+- fields:
+    datetime: '2014-06-04T00:00:00'
+    ad_group: 1
+    article: 1
+    source: 1
+    impressions: 1264
+    clicks: 21
+    cost_cc: 11426
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 1
+
+- fields:
+    datetime: '2014-06-05T00:00:00'
+    ad_group: 1
+    article: 1
+    source: 1
+    impressions: 178
+    clicks: 0
+    cost_cc: 0
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 2
+
+- fields:
+    datetime: '2014-06-06T00:00:00'
+    ad_group: 1
+    article: 1
+    source: 1
+    impressions: 1859
+    clicks: 20
+    cost_cc: 10882
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 3
+ 
+# ... for Test Article 2
+- fields:
+    datetime: '2014-06-04T00:00:00'
+    ad_group: 1
+    article: 2
+    source: 1
+    impressions: 1037
+    clicks: 17
+    cost_cc: 7617
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 4
+
+- fields:
+    datetime: '2014-06-05T00:00:00'
+    ad_group: 1
+    article: 2
+    source: 1
+    impressions: 1216
+    clicks: 16
+    cost_cc: 5441
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 5
+
+- fields:
+    datetime: '2014-06-06T00:00:00'
+    ad_group: 1
+    article: 2
+    source: 1
+    impressions: 443
+    clicks: 4
+    cost_cc: 2176
+    created_dt: '2014-06-04T09:58:21'
+  model: reports.articlestats
+  pk: 6
+

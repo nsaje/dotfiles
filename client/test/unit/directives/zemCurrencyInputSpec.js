@@ -74,12 +74,12 @@ describe('zemCurrencyInput', function () {
         expect($scope.value).toEqual('1234.12');
     });
 
-    it('does not allow leading zeros', function () {
+    it('allows leading zeros in integer part', function () {
         var element = prepareElement();
 
         setVal(element, '0012');
-        expect(element.val()).toEqual('12');
-        expect($scope.value).toEqual('12');
+        expect(element.val()).toEqual('0,012');
+        expect($scope.value).toEqual('0012');
     });
 
     it('ignores all characters except numbers and dot', function () {

@@ -1,5 +1,5 @@
 /*globals oneApp,constants,moment*/
-oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', 'api', 'zemCustomTableColsService', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($window, $location, $scope, $state, $timeout, api, zemCustomTableColsService, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
+oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($window, $location, $scope, $state, $timeout, $q, api, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -15,12 +15,24 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     $scope.totalRow = null;
     $scope.order = '-cost';
     $scope.isIncompletePostclickMetrics = false;
+    $scope.localStoragePrefix = 'accountCampaigns';
 
-    var userSettings = zemUserSettings.getInstance($scope, 'accountCampaigns');
+    var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix),
+        canShowAddCampaignTutorial = $q.defer();
+
+    $scope.showAddCampaignTutorial = function () {
+        return canShowAddCampaignTutorial.promise;
+    };
 
     $scope.exportOptions = [
         {name: 'By Day (CSV)', value: 'csv'},
         {name: 'By Day (Excel)', value: 'excel'}
+    ];
+
+    $scope.exportPlusOptions = [
+      {name: 'Current View', value: 'campaign-csv'},
+      {name: 'By Ad Group', value: 'adgroup-csv'},
+      {name: 'By Content Ad', value: 'contentad-csv'}
     ];
 
     $scope.updateSelectedCampaigns = function (campaignId) {
@@ -232,7 +244,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             'name': 'Audience Metrics',
             'fields': [
                 'visits', 'pageviews', 'percent_new_users',
-                'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'click_discrepancy'
             ]
         },
@@ -247,21 +259,20 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         $scope.addCampaignRequestInProgress = true;
 
         api.accountCampaigns.create(accountId).then(
-            function (data) {
+            function (campaignData) {
                 $scope.accounts.forEach(function (account) {
                     if (account.id.toString() === accountId.toString()) {
                         account.campaigns.push({
-                            id: data.id,
-                            name: data.name,
+                            id: campaignData.id,
+                            name: campaignData.name,
                             adGroups: []
                         });
-                        
+
                         if ($window.isDemo) {
-                            $state.go('main.campaigns.ad_groups', {id: data.id});
+                            $state.go('main.campaigns.ad_groups', {id: campaignData.id});
                         } else {
-                            $state.go('main.campaigns.agency', {id: data.id});
+                            $state.go('main.campaigns.settings', {id: campaignData.id});
                         }
-                        
                     }
                 });
             },
@@ -291,15 +302,21 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             return option.value;
         });
 
+        // always query for default metrics
+        var metrics = [constants.chartMetric.CLICKS, constants.chartMetric.IMPRESSIONS];
         if (values.indexOf($scope.chartMetric1) === -1) {
             $scope.chartMetric1 = constants.chartMetric.CLICKS;
+        } else {
+            metrics.push($scope.chartMetric1);
         }
 
         if ($scope.chartMetric2 !== 'none' && values.indexOf($scope.chartMetric2) === -1) {
             $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;
+        } else {
+            metrics.push($scope.chartMetric2);
         }
 
-        return [$scope.chartMetric1, $scope.chartMetric2];
+        return metrics;
     };
 
     var setChartOptions = function () {
@@ -382,6 +399,12 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
                 $scope.dataStatus = data.dataStatus;
                 $scope.selectRows();
+
+                canShowAddCampaignTutorial.resolve($scope.rows.length == 0);
+                if ($scope.user.showOnboardingGuidance) {
+                    $scope.user.automaticallyCreateAdGroup = $scope.rows.length == 0;
+                }
+
             },
             function (data) {
                 // error
@@ -438,8 +461,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     };
 
     var initColumns = function () {
-        var cols;
-
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
             $scope.columns.length - 2,
@@ -453,22 +474,14 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
         );
-
-        cols = zemCustomTableColsService.load('accountCampaigns', $scope.columns);
-        $scope.selectedColumnsCount = cols.length;
-
-        $scope.$watch('columns', function (newValue, oldValue) {
-            cols = zemCustomTableColsService.save('accountCampaigns', newValue);
-            $scope.selectedColumnsCount = cols.length;
-        }, true);
     };
 
     $scope.init = function() {
         var campaignIds = $location.search().campaign_ids;
         var campaignTotals = $location.search().campaign_totals;
 
-        userSettings.register('chartMetric1');
-        userSettings.register('chartMetric2');
+        userSettings.registerWithoutWatch('chartMetric1');
+        userSettings.registerWithoutWatch('chartMetric2');
         userSettings.register('order');
         userSettings.registerGlobal('chartHidden');
 

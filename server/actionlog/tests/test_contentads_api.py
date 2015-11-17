@@ -71,7 +71,6 @@ class ContentAdsApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.INSERT_CONTENT_AD,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ad': {
@@ -86,10 +85,10 @@ class ContentAdsApiTestCase(TestCase):
                     'image_width': content_ad_source.content_ad.image_width,
                     'image_height': content_ad_source.content_ad.image_height,
                     'image_hash': content_ad_source.content_ad.image_hash,
-                    'display_url': content_ad_source.content_ad.batch.display_url,
-                    'brand_name': content_ad_source.content_ad.batch.brand_name,
-                    'description': content_ad_source.content_ad.batch.description,
-                    'call_to_action': content_ad_source.content_ad.batch.call_to_action,
+                    'display_url': content_ad_source.content_ad.display_url,
+                    'brand_name': content_ad_source.content_ad.brand_name,
+                    'description': content_ad_source.content_ad.description,
+                    'call_to_action': content_ad_source.content_ad.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug,
                     'redirect_id': content_ad_source.content_ad.redirect_id,
                     'tracker_urls': content_ad_source.content_ad.tracker_urls
@@ -131,7 +130,6 @@ class ContentAdsApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.INSERT_CONTENT_AD,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ad': {
@@ -151,10 +149,10 @@ class ContentAdsApiTestCase(TestCase):
                     'image_width': content_ad_source.content_ad.image_width,
                     'image_height': content_ad_source.content_ad.image_height,
                     'image_hash': content_ad_source.content_ad.image_hash,
-                    'display_url': content_ad_source.content_ad.batch.display_url,
-                    'brand_name': content_ad_source.content_ad.batch.brand_name,
-                    'description': content_ad_source.content_ad.batch.description,
-                    'call_to_action': content_ad_source.content_ad.batch.call_to_action,
+                    'display_url': content_ad_source.content_ad.display_url,
+                    'brand_name': content_ad_source.content_ad.brand_name,
+                    'description': content_ad_source.content_ad.description,
+                    'call_to_action': content_ad_source.content_ad.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug,
                     'redirect_id': content_ad_source.content_ad.redirect_id,
                     'tracker_urls': content_ad_source.content_ad.tracker_urls
@@ -193,7 +191,6 @@ class ContentAdsApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.INSERT_CONTENT_AD_BATCH,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ads': [{
@@ -208,10 +205,10 @@ class ContentAdsApiTestCase(TestCase):
                     'image_width': content_ad_source.content_ad.image_width,
                     'image_height': content_ad_source.content_ad.image_height,
                     'image_hash': content_ad_source.content_ad.image_hash,
-                    'display_url': content_ad_source.content_ad.batch.display_url,
-                    'brand_name': content_ad_source.content_ad.batch.brand_name,
-                    'description': content_ad_source.content_ad.batch.description,
-                    'call_to_action': content_ad_source.content_ad.batch.call_to_action,
+                    'display_url': content_ad_source.content_ad.display_url,
+                    'brand_name': content_ad_source.content_ad.brand_name,
+                    'description': content_ad_source.content_ad.description,
+                    'call_to_action': content_ad_source.content_ad.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug,
                     'redirect_id': content_ad_source.content_ad.redirect_id,
                     'tracker_urls': content_ad_source.content_ad.tracker_urls
@@ -229,6 +226,8 @@ class ContentAdsApiTestCase(TestCase):
             source=content_ad_source.source
         )
 
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+
         batch = dash.models.UploadBatch.objects.get(pk=1)
 
         request = HttpRequest()
@@ -241,7 +240,8 @@ class ContentAdsApiTestCase(TestCase):
             'batch_name': batch.name,
             'campaign_name': ad_group_source.get_external_name(),
             'ad_group_id': ad_group_source.ad_group.id,
-            'user_email': request.user.email
+            'user_email': request.user.email,
+            'brand_name': ad_group_settings.brand_name
         })
 
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
@@ -281,7 +281,6 @@ class ContentAdsApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.UPDATE_CONTENT_AD,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'changes': {
@@ -299,10 +298,10 @@ class ContentAdsApiTestCase(TestCase):
                     'image_width': content_ad_source.content_ad.image_width,
                     'image_height': content_ad_source.content_ad.image_height,
                     'image_hash': content_ad_source.content_ad.image_hash,
-                    'display_url': content_ad_source.content_ad.batch.display_url,
-                    'brand_name': content_ad_source.content_ad.batch.brand_name,
-                    'description': content_ad_source.content_ad.batch.description,
-                    'call_to_action': content_ad_source.content_ad.batch.call_to_action,
+                    'display_url': content_ad_source.content_ad.display_url,
+                    'brand_name': content_ad_source.content_ad.brand_name,
+                    'description': content_ad_source.content_ad.description,
+                    'call_to_action': content_ad_source.content_ad.call_to_action,
                     'tracking_slug': ad_group_source.source.tracking_slug,
                     'redirect_id': content_ad_source.content_ad.redirect_id,
                     'tracker_urls': content_ad_source.content_ad.tracker_urls
@@ -344,7 +343,6 @@ class ContentAdsApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.GET_CONTENT_AD_STATUS,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
             },
@@ -381,7 +379,6 @@ class ContentAdsApiTestCase(TestCase):
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.SUBMIT_AD_GROUP,
             'expiration_dt': expiration_dt,
-            'credentials': ad_group_source.source_credentials.credentials,
             'args': {
                 'source_campaign_key': ad_group_source.source_campaign_key,
                 'content_ad': {

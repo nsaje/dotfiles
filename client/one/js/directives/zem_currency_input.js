@@ -81,9 +81,11 @@ oneApp.directive('zemCurrencyInput', ['$filter', function($filter) {
 
                     integerPart = value.split('.')[0];
 
-                    // replace leading zeros
-                    integerPart = integerPart.replace(/^0+(?=\d)/, '');
-
+                    // we do not touch leading zeros in integer part
+                    // workflow bugs would happen:
+                    // chaning $1000 to $2000 by deleting digit '1' and entering '2' ends up with $20
+                    
+                    // however we do fix the decimal part
                     decimalPart = decimalRegex.exec(value);
 
                     return integerPart + (decimalPart || '');

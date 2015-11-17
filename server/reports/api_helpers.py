@@ -4,6 +4,18 @@ POSTCLICK_ACQUISITION_FIELDS = ['visits', 'click_discrepancy', 'pageviews']
 POSTCLICK_ENGAGEMENT_FIELDS = [
     'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals'
 ]
+CONVERSION_GOAL_FIELDS = ['conversions']
+
+CONTENTADSTATS_FIELD_MAPPING = {
+    'date': 'date',
+    'duration': 'total_time_on_site',
+    'content_ad': 'content_ad_id',
+    'source': 'source_id',
+    'campaign': 'campaign_id',
+    'account': 'account_id',
+    'ad_group': 'adgroup_id'
+}
+CONTENTADSTATS_FIELD_REVERSE_MAPPING = {v: k for k, v in CONTENTADSTATS_FIELD_MAPPING.iteritems()}
 
 
 def filter_by_permissions(result, user):
@@ -26,6 +38,10 @@ def filter_by_permissions(result, user):
         if (user.has_perm('zemauth.content_ads_postclick_engagement') or
                 user.has_perm('zemauth.aggregate_postclick_engagement')):
             for field in POSTCLICK_ENGAGEMENT_FIELDS:
+                if field in row:
+                    filtered_row[field] = row[field]
+        if (user.has_perm('zemauth.conversion_reports')):
+            for field in CONVERSION_GOAL_FIELDS:
                 if field in row:
                     filtered_row[field] = row[field]
         return filtered_row

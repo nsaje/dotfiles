@@ -1,35 +1,12 @@
 <div class="page page-ad-group-agency" ng-if="!adGroup.archived">
     <alert ng-repeat="alert in alerts" type="{{ alert.type }}" close="closeAlert($index)" ng-bind-html="alert.message"></alert>
-    <alert type="info" ng-show="actionIsWaiting">
-        Settings changes are being propagated to external sources. The sync might take a few hours. If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
-    </alert>
-
     <form id="form-ad-group-agency" class="form-horizontal">
-        <div class="form-vertical">
-            <div class="form-group" ng-class="{'has-error': !!errors.trackingCode}">
-                <label for="tracking-input" class="col-xs-2 control-label">
-                    Tracking codes
-                    <zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="The tracking code / UTM to be appended to all URLs being promoted." placement="top"></zem-help-popover>
-                </label>
-                <div class="col-xs-4">
-                    <textarea id="tracking-input" type="text" class="form-control" rows="4" ng-model="settings.trackingCode"></textarea>
-                </div>
 
-                <label ng-repeat="error in errors.trackingCode" class="control-label error" for="tracking-input">{{ error }}</label>
-            </div>
-        </div>
-
-		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
-		<button type="button" class="btn btn-default" ng-click="discardSettings()">Discard</button>
                 <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" ng-click="archiveAdGroup()" title="{{ (!canArchive && 'An ad group has to be paused in order to archive it.') || ''}}">Archive ad group</button>
-        <div class="loader" ng-show="saveRequestInProgress"></div>
-        <span ng-show="saved" class="success">Your updates have been saved.</span>
-        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
-        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
 	</form>
 
     <div class="section ad-group-agency-history-table">
-        <div class="title">History<zem-help-popover ng-if="hasPermission('zemauth.help_view')" content="History of settings changes." placement="top"></zem-help-popover>
+        <div class="title">History<zem-help-popover content="History of settings changes." placement="top"></zem-help-popover>
 </div>
         <div class="loader-container">
             <div class="loader" ng-show="history.length && requestInProgress"></div>
@@ -54,7 +31,7 @@
                     <tr ng-repeat="item in history | orderBy:orderField:orderReverse">
                         <td class="no-wrap">{{ (item.datetime | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
                         <td>{{ item.changedBy }}</td>
-                        <td zem-html-popover="'popoverContent.html'" popover-trigger="mouseenter" popover-append-to-body="true">{{ item.changesText }}</td>
+                        <td zem-lazy-popover-template="'popoverContent.html'" zem-lazy-popover-append-to-body="true" zem-lazy-popover-placement="top" zem-lazy-popover-animation-class="fade">{{ item.changesText }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -87,3 +64,6 @@
         </div>
     </div>
 </script>
+
+
+

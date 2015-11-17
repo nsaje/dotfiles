@@ -5,6 +5,10 @@ TEMPLATE_DEBUG = DEBUG
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
 
+STATS_DB_NAME = 'stats'
+STATS_E2E_DB_NAME = 'stats_e2e'
+
+
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 DATABASES = {
@@ -19,10 +23,28 @@ DATABASES = {
         'NAME': '',
         'USER': '',
         'PASSWORD': ''
+    },
+    STATS_DB_NAME: {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': 5439
+    },
+    STATS_E2E_DB_NAME: {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': 5439
     }
 }
 
 ALLOWED_HOSTS = []
+
+BASE_URL = 'https://one.zemanta.com'
 
 # Email settings
 EMAIL_USE_TLS = True
@@ -31,7 +53,7 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 
-SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = False
+SEND_NOTIFICATION_MAIL = False
 FROM_EMAIL = 'help-test@zemanta.com'
 
 MAILGUN_API_KEY = ''
@@ -59,9 +81,9 @@ CLIENT_STATIC_URL = ''
 EINS_HOST = ''
 
 # Zwei API
-ZWEI_API_URL = 'http://127.0.0.1/'
-ZWEI_API_GET_DASH_URL_URL = ZWEI_API_URL + 'purcel/dash_url/'
-ZWEI_API_SIGN_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+ZWEI_API_TASKS_URL = 'http://127.0.0.1/purcel/tasks/'
+ZWEI_API_GET_DASH_URL_URL = 'http://127.0.0.1/purcel/dash_url/'
+ZWEI_API_SIGN_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 
 # Source credentials encryption key
 CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'  # has to be 32 bytes
@@ -90,8 +112,8 @@ USE_S3 = False
 QUERY_AGGREGATE_REPORTS=False
 
 # email of the demo user
-DEMO_USER_EMAIL = ''
-DEMO_USER_PASSWORD = ''
+DEMO_USER_EMAIL = 'test.account@zemanta.si'
+DEMO_USER_PASSWORD = 'zemantadsp'
 
 # cache settings
 CACHES = {
@@ -117,6 +139,7 @@ CELERY_ACCEPT_CONTENT = ['pickle']
 
 CELERY_QUEUE_PREFIX = 'test'
 CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_QUEUE_PREFIX + '-' +'convapi'
+CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_QUEUE_PREFIX + '-' + 'convapi_v2'
 
 BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': 10 * 60,
@@ -127,3 +150,9 @@ BROKER_TRANSPORT_OPTIONS = {
 R1_API_SIGN_KEY = ''
 R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
 R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
+R1_VALIDATE_API_URL = 'https://r1.zemanta.com/api/validate/'
+R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/'
+R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions/request/{date}/{account_id}/{slug}/'
+R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions/result/{job_id}/'
+
+SHARETHROUGH_PARAM_SIGN_KEY = ''

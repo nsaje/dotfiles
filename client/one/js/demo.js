@@ -26,18 +26,20 @@ oneApp.config(['$provide', function ($provide) {
                     );
                 };
             },
-            defaultGetWrapper = function (cacheIdTemplate, wrappedFn, httpErrorFn) {
+            defaultGetWrapper = function (cacheIdTemplate, wrappedFn, httpErrorFn, dataFilterFn) {
+                if (! dataFilterFn) { dataFilterFn = function (x) { return x; }; }
+                if (! httpErrorFn) { httpErrorFn = function () {}; }
                 return function demo(id) {
                     var deferred = $q.defer(),
                          promise = null,
                         cacheId = cacheIdTemplate.replace('{id}', id),
                         cachedResponse = zemDemoCacheService.get(cacheId);
-                    if (! httpErrorFn) { httpErrorFn = function () {}; }
                     if (cachedResponse !== undefined) {
                         deferred.resolve(cachedResponse);
                         return deferred.promise;
                     } else {
                         wrappedFn(id).then(function (data) {
+                            data = dataFilterFn(data);
                             zemDemoCacheService.set(cacheId, data);
                             deferred.resolve(data);
                         }, httpErrorFn(cacheId, cachedResponse, deferred));
@@ -142,11 +144,34 @@ oneApp.config(['$provide', function ($provide) {
 
         /* CAMPAIGN SETTINTS */
         $delegate.campaignSettings.get = resetIfErrorWrapper(
-            defaultGetWrapper('/api/campaigns/{id}/settings/', $delegate.campaignSettings.get)
+            defaultGetWrapper(
+                '/api/campaigns/{id}/settings/',
+                $delegate.campaignSettings.get,
+                function () { return function () {
+                    resetDemo();
+                }; }
+            )
         );
         $delegate.campaignSettings.save = function demo(settings) {
             var deferred = $q.defer(),
-                cacheId = '/api/campaigns/' + settings.id + '/settings/',
+                cacheId = '/api/campaigns/' + settings.id + '/settings/';
+            deferred.resolve({ settings: settings });
+            zemDemoCacheService.update(cacheId, 'settings', settings);
+            return deferred.promise;
+        };
+
+        $delegate.campaignAgency.get = resetIfErrorWrapper(
+            defaultGetWrapper(
+                '/api/campaigns/{id}/agency/',
+                $delegate.campaignAgency.get,
+                function () { return function () {
+                    resetDemo();
+                }; }
+            )
+        );
+        $delegate.campaignAgency.save = function demo(settings) {
+            var deferred = $q.defer(),
+                cacheId = '/api/campaigns/' + settings.id + '/agency/',
                 history = (zemDemoCacheService.get(cacheId) || {}).history,
                 response = {
                     settings: settings,
@@ -332,27 +357,6 @@ oneApp.config(['$provide', function ($provide) {
             defaultGetWrapper('/api/ad_groups/{id}/agency/', $delegate.adGroupAgency.get)
         );
 
-        $delegate.adGroupAgency.save = function demo(settings) {
-            var deferred = $q.defer(),
-                cacheId = '/api/ad_groups/' + settings.id + '/settings/',
-                cachedData = zemDemoCacheService.get(cacheId),
-                save = function () {
-                    angular.forEach(settings, function (v, k) {
-                        if (k == 'id') { return; }
-                        cachedData.settings[k] = v;
-                    });
-                    $delegate.adGroupSettings.save(cachedData.settings).then(function (data) {
-                        deferred.resolve(data);
-                    });
-                };
-            if (cachedData) { save(); return deferred.promise; }
-            $delegate.adGroupSettings.get(settings.id).then(function (data) {
-                cachedData = zemDemoCacheService.get(cacheId);
-                save();
-            });
-            return deferred.promise;
-        };
-
         /* Ad group media sources */
         $delegate.availableSources.list = defaultGetWrapper('/api/sources/',
                                                             $delegate.availableSources.list);
@@ -442,7 +446,7 @@ oneApp.config(['$provide', function ($provide) {
                     displayUrl: 'zemanta.com',
                     brandName: 'Zemanta',
                     description: 'Zemanta Content DSP brings science to the top of the funnel marketing',
-                    callToAction: 'Read more'
+                    callToAction: 'Read More'
                 }
             });
             return deferred.promise;
@@ -518,7 +522,7 @@ oneApp.config(['$provide', function ($provide) {
                     cachedResponse = zemDemoCacheService.get(cacheId);
                 zemLocalStorageService.set('columns',
                                             defaults.tableColumns.adGroupAdsPlus,
-                                           'adGroupAdsPlus');
+                                           'adGroupContentAdsPlus');
                 if (cachedResponse && !zemDemoAdGroupsService.isNew(id)) {
                     config.params.order = order;
                     zemDemoSourcesService.refresh(id).then(function () {

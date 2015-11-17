@@ -57,6 +57,15 @@
     model: dash.adgroup
     pk: 2
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 3'
+    model: dash.adgroup
+    pk: 3
+
 # test uploadbatch
 
 -   fields:
@@ -96,6 +105,16 @@
         created_dt: '2015-02-23T00:00:00'
     model: dash.contentad
     pk: 3
+
+-   fields:
+        image_id: '123456789'
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article'
+        ad_group: 3
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.contentad
+    pk: 4
 
 # test source
 
@@ -180,6 +199,31 @@
     model: dash.contentadsource
     pk: 5
 
+-   fields:
+        source: 1
+        content_ad: 3
+        submission_status: 2
+        state: 2
+        source_state: 2
+        source_content_ad_id: '123456789'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 6
+
+# test adgroupstats
+
+-   fields:
+        datetime: '2015-02-01T00:00:00'
+        ad_group: 1
+        source: 1
+        impressions: 0
+        clicks: 0
+        cost_cc: 0
+        created_dt: '2014-06-04T09:58:21'
+    model: reports.adgroupstats
+    pk: 1
+
 # test contentadstats
 
 -   fields:
@@ -247,16 +291,163 @@
         content_ad: 3
         source: 2
 
-        impressions: 4000000
-        clicks: 400
-        cost_cc: 450000
-        data_cost_cc: 450000
+        impressions: 5000000
+        clicks: 500
+        cost_cc: 550000
+        data_cost_cc: 550000
 
         date: '2015-02-02'
         created_dt: '2015-02-23T00:00:00'
     model: reports.contentadstats
     pk: 5
 
+-   fields:
+        content_ad_source: 6
+        content_ad: 3
+        source: 1
+
+        impressions: 6000000
+        clicks: 600
+        cost_cc: 650000
+        data_cost_cc: 650000
+
+        date: '2015-02-02'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadstats
+    pk: 6
+
+# test contentadpostclickstats
+
+-   fields:
+        content_ad: 1
+        source: 1
+
+        visits: 1000
+        new_visits: 100
+        bounced_visits: 150
+        pageviews: 1500
+        total_time_on_site: 60
+
+        date: '2015-02-01'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadpostclickstats
+    pk: 1
+
+-   fields:
+        content_ad: 2
+        source: 1
+
+        visits: 2000
+        new_visits: 200
+        bounced_visits: 250
+        pageviews: 2500
+        total_time_on_site: 70
+
+        date: '2015-02-01'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadpostclickstats
+    pk: 2
+
+-   fields:
+        content_ad: 1
+        source: 2
+
+        visits: 3000
+        new_visits: 300
+        bounced_visits: 350
+        pageviews: 3500
+        total_time_on_site: 80
+
+        date: '2015-02-02'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadpostclickstats
+    pk: 3
+
+-   fields:
+        content_ad: 2
+        source: 2
+
+        visits: 4000
+        new_visits: 400
+        bounced_visits: 450
+        pageviews: 4500
+        total_time_on_site: 90
+
+        date: '2015-02-02'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadpostclickstats
+    pk: 4
+
+-   fields:
+        content_ad: 3
+        source: 2
+
+        visits: 4000
+        new_visits: 400
+        bounced_visits: 450
+        pageviews: 4500
+        total_time_on_site: 90
+
+        date: '2015-02-02'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadpostclickstats
+    pk: 5
+
+-   fields:
+        content_ad: 4
+        source: 1
+
+        visits: 5000
+        new_visits: 500
+        bounced_visits: 550
+        pageviews: 5500
+        total_time_on_site: 90
+
+        date: '2015-02-02'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadpostclickstats
+    pk: 6
+
+# test ContentAdGoalConversionStats
+
+-   fields:
+        content_ad: 1
+        source: 1
+
+        goal_type: 'ga'
+        goal_name: 'Goal 1'
+        conversions: 10
+
+        date: '2015-02-01'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadgoalconversionstats
+    pk: 1
+
+-   fields:
+        content_ad: 1
+        source: 1
+
+        goal_type: 'omniture'
+        goal_name: 'Transaction 2'
+        conversions: 20
+
+        date: '2015-02-01'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadgoalconversionstats
+    pk: 2
+
+-   fields:
+        content_ad: 3
+        source: 2
+
+        goal_type: 'omniture'
+        goal_name: 'Transaction 2'
+        conversions: 30
+
+        date: '2015-02-02'
+        created_dt: '2015-02-23T00:00:00'
+    model: reports.contentadgoalconversionstats
+    pk: 3
 
 # RefreshContentAdDemoTest
 

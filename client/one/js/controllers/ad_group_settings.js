@@ -1,7 +1,9 @@
 /*globals oneApp,constants,options*/
-oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', function ($scope, $state, api, regions) {
+oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', function ($scope, $state, $q, $timeout, api, regions) {
+    var freshSettings = $q.defer(),
+        goToContentAds = false;
     $scope.settings = {};
-    $scope.sourcesWithoutDMASupport = [];
+    $scope.loadRequestInProgress = true;
     $scope.actionIsWaiting = false;
     $scope.errors = {};
     $scope.regions = regions;
@@ -19,6 +21,10 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
     $scope.startDatePicker = {isOpen: false};
     $scope.endDatePicker = {isOpen: false};
 
+    $scope.adGroupHasFreshSettings = function () {
+        return freshSettings.promise;
+    };
+    
     $scope.closeAlert = function(index) {
         $scope.alerts.splice(index, 1);
     };
@@ -31,18 +37,12 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
         }
     };
 
-    var setSourcesWithoutDMASupport = function(adGroupSources) {
-        $scope.sourcesWithoutDMASupport = [];
-        if(!adGroupSources) {
-            return;
-        }
-        
-        for (var source, i=0; i < adGroupSources.length; i++) {
-            source = adGroupSources[i];
-            if (source.sourceState === constants.adGroupSourceSettingsState.ACTIVE && !source.supportsDMATargeting) {
-                $scope.sourcesWithoutDMASupport.push(source.sourceName);
-            }
-        }
+    var getAdGroupStatus = function (settings) {
+        var now = new Date(),
+            running0 = settings.state === constants.adGroupSettingsState.ACTIVE,
+            running1 = settings.endDate && (now <= moment(settings.endDate).toDate() && moment(settings.startDate).toDate() <= now),
+            running2 = !settings.endDate && (moment(settings.startDate).toDate() <= now);
+        return running0 && (running1 || running2) ? 'running' : 'stopped';
     };
 
     $scope.availableRegions = function() {
@@ -64,18 +64,23 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
     };
 
     $scope.getSettings = function (id) {
+        $scope.loadRequestInProgress = true;
+
         api.adGroupSettings.get(id).then(
             function (data) {
                 $scope.settings = data.settings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
-                setSourcesWithoutDMASupport(data.adGroupSources);
                 $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
+                freshSettings.resolve(data.settings.name == 'New ad group');
+                goToContentAds = data.settings.name == 'New ad group';
             },
             function (data) {
                 // error
                 return;
             }
-        );
+        ).finally(function () {
+            $scope.loadRequestInProgress = false;
+        });
     };
 
     $scope.discardSettings = function () {
@@ -87,7 +92,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
             function (data) {
                 $scope.settings = data.settings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
-                setSourcesWithoutDMASupport(data.adGroupSources);
                 $scope.saveRequestInProgress = false;
                 $scope.discarded = true;
             },
@@ -100,20 +104,41 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', 'api', 'regions', 
     };
 
     $scope.saveSettings = function () {
+        var prevAdGroup = $scope.adGroup.id,
+            stateActive = constants.adGroupSourceSettingsState.ACTIVE;
         $scope.saved = null;
         $scope.discarded = null;
         $scope.saveRequestInProgress = true;
 
         api.adGroupSettings.save($scope.settings).then(
             function (data) {
+                var currAdGroup = $scope.adGroup.id,
+                    adGroupToEdit = null,
+                    status = getAdGroupStatus($scope.settings);
                 $scope.errors = {};
-                $scope.settings = data.settings;
-                $scope.actionIsWaiting = data.actionIsWaiting;
-                $scope.updateAccounts(data.settings.name);
-                $scope.updateBreadcrumbAndTitle();
+                if (prevAdGroup != currAdGroup) {
+                    adGroupToEdit = $scope.getAdGroup(prevAdGroup);
+                    adGroupToEdit.name = data.settings.name;
+                    adGroupToEdit.state = data.settings.state === stateActive ? 'enabled' : 'paused';
+                } else {
+                    $scope.settings = data.settings;
+                    $scope.actionIsWaiting = data.actionIsWaiting;
+                    
+                    $scope.updateAccounts(data.settings.name, data.settings.state, status);
+                    $scope.updateBreadcrumbAndTitle();
+                    $scope.setAdGroupPaused(
+                        $scope.settings.state === constants.adGroupSettingsState.INACTIVE
+                    );
+                }
+
                 $scope.saveRequestInProgress = false;
                 $scope.saved = true;
-                $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
+
+                if ($scope.user.showOnboardingGuidance && goToContentAds) {
+                    $timeout(function() {
+                        $state.go('main.adGroups.adsPlus', {id: $scope.settings.id});
+                    }, 100);
+                }
             },
             function (data) {
                 $scope.errors = data;

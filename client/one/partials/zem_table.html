@@ -30,19 +30,19 @@
                     <tr ng-show="(!rows || !rows.length) && !showLoader">
                         <td class="no-data" colspan="100">No data</td>
                     </tr>
-                    <tr ng-repeat="row in rows" ng-class="{'archived': row.archived}">
+                    <tr ng-repeat="row in rows" ng-class="{'archived': row.archived}" ng-style="getRowStyle(row)">
                         <td ng-if="col.shown" ng-class="{'number': isNumberColumnType(col.type), 'text-right': isNumberColumnType(col.type), 'input-one-char': col.type === 'checkbox', 'text-center': col.type === 'link', 'image': col.type === 'image'}" class="{{ col.extraTdCss }}" ng-repeat="col in columns | filter: {checked: true}">
                             <span ng-switch="col.type">
                                 <span ng-switch-when="image">
-                                    <img ng-if="row[col.field].square" ng-src="{{row[col.field].square}}" popover-append-to-body="true" popover-trigger="mouseenter" zem-html-popover="'thumbnailPopover.html'" popover-placement="left">
-                                    <img ng-if="!row[col.field].square">
+                                    <img ng-show="row[col.field].square" ng-src="{{row[col.field].square}}" zem-lazy-popover-template="'thumbnailPopover.html'" zem-lazy-popover-placement="left" zem-lazy-popover-animation-class="fade" zem-lazy-popover-append-to-body="true"/>
+                                    <img ng-show="!row[col.field].square"/>
                                 </span>
                                 <span ng-switch-when="submissionStatus">
                                     <zem-submission-status status-items="row[col.field]" archived="row[col.archivedField]" />
                                 </span>
                                 <span ng-switch-when="currency">
                                     <span class="non-editable-currency-field" ng-if="!isFieldEditable(row, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
-                                        <span ng-if="col.settingsField" popover-append-to-body="true" popover-trigger="mouseenter" popover-html-unsafe="{{ getSettingsFieldMessage(row, col.field) }}" popover-placement="right">
+                                        <span ng-if="col.settingsField" zem-lazy-popover-append-to-body="true" zem-lazy-popover-html-unsafe="{{ getSettingsFieldMessage(row, col.field) }}" zem-lazy-popover-placement="right" zem-lazy-popover-animation-class="fade">
                                             {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
                                         </span>
                                         <span ng-if="!col.settingsField">
@@ -94,16 +94,16 @@
                                 </span>
                                 <span ng-switch-when="link">
                                     <a ng-if="row[col.field] !== null" ng-href="{{ row[col.field] }}" target="_blank"><img ng-src="{{ config.static_url }}/one/img/link.svg" class="link-img"></a>
-                                    <img ng-if="row[col.field] === null" ng-src="{{ config.static_url }}/one/img/link.svg" class="link-img link-img-disabled" popover="{{row.supply_dash_disabled_message}}" popover-placement="right" popover-trigger="mouseenter" popover-append-to-body="true">
+                                    <img ng-if="row[col.field] === null" ng-src="{{ config.static_url }}/one/img/link.svg" class="link-img link-img-disabled" zem-lazy-popover-text="{{row.supply_dash_disabled_message}}" zem-lazy-popover-placement="right" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade">
 
 
                                 </span>
                                 <span ng-switch-when="linkText">
-                                    <a ng-href="{{ row[col.field].url }}" target="_blank" ng-attr-title="{{ row[col.titleField] }}" ng-if="!!row[col.field].url">{{ row[col.field].text }}</a>
+                                    <a ng-href="{{ row[col.field].url }}" ng-click="openUrl(row[col.field], $event)" ng-attr-title="{{ row[col.titleField] }}" ng-if="!!row[col.field].url">{{ row[col.field].text }}</a>
                                     <span ng-if="!row[col.field].url">{{ row[col.field].text }}</span>
                                 </span>
-                                <span ng-switch-when="linkNav">
-                                    <a ui-sref="{{row[col.field].state}}({id: {{row[col.field].id}}})">{{ row[col.field].text }}</a>
+                                <span ng-switch-when="linkNav" class="pointer">
+                                    <a zem-in-link="{{row[col.field].state}}({id: {{row[col.field].id}}})">{{ row[col.field].text }} </a>
                                 </span>
                                 <span ng-switch-when="clickPermissionOrText">
                                     <a ng-if="col.hasPermission" ng-click="col.clickCallback(row.id)" href>{{ row[col.field] }}</a>
@@ -112,12 +112,11 @@
                                 <span ng-switch-when="text">
                                     {{ row[col.field] }}
                                 </span>
-                                <span 
+                                <span
                                     ng-switch-when="notification"
-                                    popover-append-to-body="true"
-                                    popover-trigger="mouseenter"
-                                    popover-html-unsafe="{{ notifications[row.id].message }}"
-                                    popover-placement="bottom">
+                                    zem-lazy-popover-html-unsafe="{{ notifications[row.id].message }}"
+                                    zem-lazy-popover-placement="bottom"
+                                    zem-lazy-popover-animation-class="fade">
                                     <span ng-if="row[col.field]" class="text" ng-class="{'important': notifications[row.id].important}">{{ row[col.field] }}</span>
                                     <span ng-if="notifications[row.id].inProgress" class="loader"></span>
                                 </span>
@@ -125,23 +124,29 @@
                                     <span
                                         ng-style="{'margin-left': col.internal ? '20px' : '3px'}"
                                         ng-class="{'okay-icon': dataStatus[row.id].ok, 'alert-icon': !dataStatus[row.id].ok}"
-                                        popover-append-to-body="true"
-                                        popover-trigger="mouseenter"
-                                        popover-html-unsafe="{{ dataStatus[row.id].message }}"
-                                        popover-placement="left">
+                                        zem-lazy-popover-html-unsafe="{{ dataStatus[row.id].message }}"
+                                        zem-lazy-popover-placement="left"
+                                        zem-lazy-popover-animation-class="fade"
+                                        zem-lazy-popover-append-to-body="true">
                                     </span>
                                 </span>
                                 <span ng-switch-when="checkbox" class="checkbox">
                                     <input type="checkbox" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="col.selectCallback(row, row[col.field])"/>
                                 </span>
                                 <span ng-switch-when="state">
-                                    <zem-state-selector 
+                                    <zem-state-selector
                                         id="row.id"
                                         on-change="col.onChange",
+                                        on-autopilot-change="col.onAutopilotChange",
                                         is-editable="isFieldEditable(row, col.field)"
                                         value="row[col.field]"
                                         enabled-value="col.enabledValue"
                                         paused-value="col.pausedValue"
+                                        autopilot-enabled-value="col.autopilotEnabledValue"
+                                        autopilot-paused-value="col.autopilotPausedValue"
+                                        autopilot-value="row.autopilot_state"
+                                        autopilot-internal="col.autopilotInternal"
+                                        autopilot-shown="col.autopilotShown"
                                         disabled-message="col.getDisabledMessage(row)"
                                         archived="row[col.archivedField]">
                                     </zem-state-selector>
@@ -214,9 +219,10 @@
     </div>
 </div>
 
+<!-- yes, we have width and height in html, so popup gets correctly sized immediately on html load, otherwise flickering due to resize ensues -->
 <script id="thumbnailPopover.html" type="text/ng-template">
     <div class="thumbnail-popover">
-        <img ng-src="{{ row[col.field].landscape }}">
-        <img ng-src="{{ row[col.field].square }}">
+        <img width="128" height="80" ng-src="{{ row[col.field].landscape }}"/>
+        <img width="80" height="80" ng-src="{{ row[col.field].square }}"/>
     </div>
 </script>
