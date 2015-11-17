@@ -4,7 +4,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         goToContentAds = false;
     $scope.settings = {};
     $scope.loadRequestInProgress = true;
-    $scope.sourcesWithoutDMASupport = [];
     $scope.actionIsWaiting = false;
     $scope.errors = {};
     $scope.regions = regions;
