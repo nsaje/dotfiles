@@ -1613,7 +1613,10 @@ class PublishersTable(object):
 
             if source_slug not in source_cache_by_slug:
                 source_cache_by_slug[source_slug] =\
-                    models.Source.objects.get(bidder_slug=source_slug)
+                    models.Source.objects.filter(bidder_slug=source_slug).first()
+
+            if source_cache_by_slug[source_slug] is None:
+                continue
 
             pub_blacklist_qs |= models.PublisherBlacklist.objects.filter(
                 ad_group=adgroup,
@@ -1631,8 +1634,8 @@ class PublishersTable(object):
 
         for publisher_data in publishers_data:
             domain = publisher_data['domain']
-            source = source_cache_by_slug[publisher_data['exchange']]
-            publisher_data['source_id'] = source.id
+            source = source_cache_by_slug.get(publisher_data['exchange']) or publisher_data['exchange']
+            publisher_data['source_id'] = source.id if source_cache_by_slug.get(publisher_data['exchange']) is not None else -1
             if [domain, adgroup.id, source.id, constants.PublisherStatus.PENDING] in filtered_publishers:
                 publisher_data['blacklisted'] = 'Pending'
             if [domain, adgroup.id, source.id, constants.PublisherStatus.BLACKLISTED] in filtered_publishers:

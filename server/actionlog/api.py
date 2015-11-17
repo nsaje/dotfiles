@@ -123,7 +123,7 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
     return send_delayed_actionlogs([ad_group_source], send=send)
 
 
-def set_publisher_blacklist(key, level, state, publishers, request, source_type, send=True):
+def set_publisher_blacklist(key, level, state, publishers, request, source_type, ad_group_source, send=True):
     if not publishers:
         return []
 
@@ -156,6 +156,7 @@ def set_publisher_blacklist(key, level, state, publishers, request, source_type,
                 'callback_url': callback,
             }
 
+            action.ad_group_source = ad_group_source
             action.payload = payload
             action.save(request)
     except Exception as e:
