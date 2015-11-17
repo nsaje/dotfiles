@@ -1244,9 +1244,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         return adgroup_blacklist
 
     def _handle_global_blacklist(self, request, ad_group, state, publishers, publishers_selected, publishers_not_selected):
-        existing_blacklisted_publishers = set(models.PublisherBlacklist.objects.filter(
+        existing_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
             everywhere=True
-        ).values('name', 'source__id'))
+        ).values('name', 'source__id')
 
         existing_blacklisted_publishers = map(
             lambda pub: (pub['name'], pub['source__id'],),
