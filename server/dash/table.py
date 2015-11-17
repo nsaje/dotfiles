@@ -1580,7 +1580,7 @@ class PublishersTable(object):
             }, adg_blacklisted_publishers)
 
             query_func = None
-            if constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+            if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
                 query_func = reports.api_publishers.query_active_publishers
             else:
                 query_func = reports.api_publishers.query_blacklisted_publishers
