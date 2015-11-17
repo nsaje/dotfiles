@@ -38,7 +38,7 @@
                 Conversion pixel
                 <zem-help-popover content="One of pre-set conversions pixels. You can add additional ones on agency tab of the account." placement="top"></zem-help-popover>
             </label>
-            <div class="col-xs-4" ng-if="availablePixels.length > 0">
+            <div class="col-xs-4" ng-if="availablePixels.length">
                 <ui-select theme="select2" search-enabled="false" id="pixel-slug-select" class="form-control" ng-model="conversionGoal.goalId">
                     <ui-select-match>{{$select.selected.slug}}</ui-select-match>
                     <ui-select-choices repeat="pixel.id as pixel in availablePixels">
@@ -46,16 +46,16 @@
                     </ui-select-choices>
                 </ui-select>
             </div>
-            <div class="col-xs-8" ng-if="availablePixels.length === 0">
+            <div class="col-xs-8" ng-if="!availablePixels.length">
                 <p class="form-control-static">
-                Not available. You must first
+                Not available. You must
                 <a ng-if="hasPermission('zemauth.account_agency_view')" ng-href="/accounts/{{ account.id }}/agency" target="_blank">set up a conversion pixel</a>
                 <span ng-if="!hasPermission('zemauth.account_agency_view')">set up a conversion pixel</span> first.
                 </p>
             </div>
 
             <!-- This div is here to move error messages below the value field (it serves as a blank label) -->
-            <div class="col-xs-4" ng-if="availablePixels.length === 0"></div>
+            <div class="col-xs-4" ng-if="!availablePixels.length"></div>
 
             <div class="col-xs-4">
                 <label ng-repeat="error in errors.goalId" class="control-label small error" for="pixel-slug-select">{{ error }}</label>
