@@ -5,15 +5,98 @@ import StringIO
 
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth.models import Permission
 
 from dash import forms
 from dash import models
+from zemauth.models import User
 
 
 class AccountAgencySettingsFormTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    @classmethod
+    def setUpClass(cls):
+        super(AccountAgencySettingsFormTest, cls).setUpClass() # loads fixtures
+
+        permission = Permission.objects.get(codename='campaign_settings_account_manager')
+        user = User.objects.get(pk=3)
+        user.user_permissions.add(permission)
+        user.save()
+
+        permission = Permission.objects.get(codename='campaign_settings_sales_rep')
+        user = User.objects.get(pk=2)
+        user.user_permissions.add(permission)
+        user.save()
+
+    def test_invalid_sales_rep(self):
+        form = forms.AccountAgencySettingsForm({
+            'id': 1,
+            'name': 'Name',
+            'default_account_manager': 2,
+            'default_sales_representative': 3,
+            'service_fee': 1,
+            'allowed_sources': {'1': {'name': 'Source name'}}
+            })
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error('default_sales_representative'))
+
+    def test_invalid_account_manager(self):
+        form = forms.AccountAgencySettingsForm({
+            'id': 1,
+            'name': 'Name',
+            'default_account_manager': 2,
+            'default_sales_representative': 2,
+            'service_fee': 1,
+            'allowed_sources': {'1': {'name': 'Source name'}}
+            })
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error('default_account_manager'))
 
     def test_allowed_sources(self):
-        print 1 
+        form = forms.AccountAgencySettingsForm({
+            'id': 1,
+            'name': 'Name',
+            'default_account_manager': 3,
+            'default_sales_representative': 2,
+            'service_fee': 1,
+            'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}}
+            })
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data['allowed_sources'], 
+            {1: {'name': 'Source name', 'allowed': False}}
+        )
+
+    def _gen_allowed_sources_form(self, allowed_sources_dict):
+        return forms.AccountAgencySettingsForm({
+            'id': 1,
+            'name': 'Name',
+            'default_account_manager': 3,
+            'default_sales_representative': 2,
+            'service_fee': 1,
+            'allowed_sources': allowed_sources_dict
+            })
+
+    def test_invalid_allowed_sources(self):
+        form = self._gen_allowed_sources_form([])
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error('__all__'))
+
+        form = self._gen_allowed_sources_form({1: {}})
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error('__all__'))
+
+        form = self._gen_allowed_sources_form({'1': []})
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error('__all__'))
+
+        form = self._gen_allowed_sources_form({'string':{}})
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.has_error('__all__'))
+       
+
+        
+
 
 
 class AdGroupSettingsFormTest(TestCase):
