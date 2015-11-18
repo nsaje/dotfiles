@@ -60,6 +60,9 @@ class Command(BaseCommand):
         content_ads = ContentAd.objects.filter(ad_group_id=ad_group_id)
 
         for i, content_ad in enumerate(content_ads):
+            self.stdout.write(
+                'Processing content ad {} of {}'.format(i + 1, len(content_ads)))
+
             if content_ad.url not in mapping:
                 continue
 
@@ -67,6 +70,3 @@ class Command(BaseCommand):
             content_ad.save()
 
             update_redirect(content_ad.url, content_ad.redirect_id)
-
-            self.stdout.write(
-                'Processed {} of {} content_ads'.format(i + 1, len(content_ads)))
