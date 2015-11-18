@@ -79,6 +79,23 @@ class InsertRedirectTest(TestCase):
         self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_API_URL)
         self.assertEqual(call.data, json.dumps({"url": "https://example.com", "creativeid": content_ad_id, "adgroupid": ad_group_id}))
 
+    def test_update_redirect(self, mock_urlopen):
+        url = "https://example.com"
+
+        redirect_id = "u123456"
+
+        response = Mock()
+        response.read.return_value = '{"data": "%s", "status": "ok"}' % redirect_id
+        response.getcode = lambda: 200
+        mock_urlopen.return_value = response
+
+        redirector_helper.update_redirect(url, redirect_id)
+
+        call = mock_urlopen.call_args[0][0]
+
+        self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_API_URL + redirect_id + '/')
+        self.assertEqual(call.data, json.dumps({"url": "https://example.com"}))
+
     def test_code_error(self, mock_urlopen):
         url = 'https://example.com/image'
 
