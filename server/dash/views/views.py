@@ -1071,6 +1071,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         if level in (constants.PublisherBlacklistLevel.ADGROUP,
                      constants.PublisherBlacklistLevel.CAMPAIGN,
                      constants.PublisherBlacklistLevel.ACCOUNT,):
+            from pudb import set_trace; set_trace()
             self._handle_adgroup_blacklist(request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected)
 
         if level == constants.PublisherBlacklistLevel.GLOBAL:
@@ -1107,28 +1108,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         return publishers
 
     def _handle_adgroup_blacklist(self, request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected):
-        ad_group_filter = None
-        if level == constants.PublisherBlacklistLevel.ADGROUP:
-            ad_group_filter = ad_group
-        campaign_filter = None
-        if level == constants.PublisherBlacklistLevel.CAMPAIGN:
-            campaign_filter = ad_group.campaign
-        account_filter = None
-        if level == constants.PublisherBlacklistLevel.ACCOUNT:
-            account_filter = ad_group.campaign.account
-
-        existing_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
-            everywhere=False,
-            account=account_filter,
-            campaign=campaign_filter,
-            ad_group=ad_group_filter
-        ).values('name', 'ad_group__id', 'source__id')
-
-        existing_blacklisted_publishers = map(
-            lambda pub: (pub['name'], pub['ad_group__id'], pub['source__id'],),
-            existing_blacklisted_publishers
-        )
-
         ignored_publishers = set( [(pub['domain'], ad_group.id, pub['source_id'], )
             for pub in publishers_not_selected]
         )
@@ -1138,8 +1117,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             publishers + publishers_selected,
             state,
             level,
-            existing_blacklisted_publishers,
-            ignored_publishers,
+            ignored_publishers
         )
 
         publisher_blacklist = [
@@ -1167,7 +1145,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             actionlog.zwei_actions.send(actionlogs_to_send)
             self._add_to_history(request, ad_group, state, publisher_blacklist)
 
-    def _create_adgroup_blacklist(self, ad_group, publishers, state, level, existing_blacklisted_publishers, ignored_publishers):
+    def _create_adgroup_blacklist(self, ad_group, publishers, state, level, ignored_publishers):
         adgroup_blacklist = set([])
         failed_publisher_mappings = set([])
         count_failed_publisher = 0
@@ -1189,12 +1167,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             if not source.can_modify_publisher_blacklist_automatically():
                 continue
 
-            publisher_tuple = (domain, ad_group.id, source.tracking_slug,)
+            publisher_tuple = (domain, ad_group.id, source.id,)
+
             if publisher_tuple in adgroup_blacklist:
                 continue
-
-            if publisher_tuple in existing_blacklisted_publishers and\
-                    state == constants.PublisherStatus.BLACKLISTED:
+            if publisher_tuple in ignored_publishers:
                 continue
 
             blacklist_global = False
@@ -1219,6 +1196,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 campaign=blacklist_campaign,
                 ad_group=blacklist_ad_group
             ).first()
+
+            # don't create pending pub. blacklist entry
+            if existing_entry.status == state:
+                continue
+
             if existing_entry is not None:
                 existing_entry.status = constants.PublisherStatus.PENDING
                 existing_entry.save()
@@ -1232,9 +1214,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                     source=source,
                     status=constants.PublisherStatus.PENDING
                 )
-
-            if publisher_tuple in ignored_publishers:
-                continue
 
             adgroup_blacklist.add(
                 (domain, ad_group.id, source,)
