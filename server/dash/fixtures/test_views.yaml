@@ -150,34 +150,3 @@
         created_dt: '2015-09-23T09:57:22'
     model: dash.uploadbatch
     pk: 2
-
-
-# test account agency
-
--   fields:
-        tracking_slug: Source_1
-        name: Source 1
-        deprecated: true
-        created_dt: '2015-09-23T09:57:22'
-        modified_dt: '2015-09-23T09:57:22'
-    model: dash.Source 
-    pk: 1
-
-
--   fields:
-        tracking_slug: Source_2
-        name: Source 2
-        deprecated: false
-        created_dt: '2015-09-23T09:57:22'
-        modified_dt: '2015-09-23T09:57:22'
-    model: dash.Source 
-    pk: 2
-
--   fields:
-        tracking_slug: Source_3
-        name: Source 3
-        deprecated: false
-        created_dt: '2015-09-23T09:57:22'
-        modified_dt: '2015-09-23T09:57:22'
-    model: dash.Source 
-    pk: 3

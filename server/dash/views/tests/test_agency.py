@@ -1652,7 +1652,7 @@ class CampaignSettingsTest(TestCase):
 
 
 class AccountAgencyTest(TestCase):
-    fixtures = ['test_views.yaml']
+    fixtures = ['test_views.yaml', 'test_account_agency.yaml']
 
     def setUp(self):
         password = 'secret'
