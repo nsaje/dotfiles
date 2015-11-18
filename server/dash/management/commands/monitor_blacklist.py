@@ -58,8 +58,8 @@ class Command(BaseCommand):
 
         if len(batch) > 0:
             totals_data = reports.api_publishers.query_blacklisted_publishers(
-                no_stats_after,
-                datetime.datetime.utcnow(),
+                no_stats_after.date(),
+                datetime.datetime.utcnow().date(),
                 blacklist=batch
             )
             clicks += totals_data.get('clicks', 0) or 0
