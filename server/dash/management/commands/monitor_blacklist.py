@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
 
+    @statsd_helper.statsd_timer('dash.commands', 'monitor_blacklist')
     def handle(self, *args, **options):
         logger.info('Monitor publisher blacklisting.')
 
@@ -80,6 +81,3 @@ class Command(BaseCommand):
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cost', cost)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.ctr', ctr)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cpc', cpc)
-
-
-
