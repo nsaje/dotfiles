@@ -54,6 +54,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
             $scope.settings.allowedSources[value].allowed = true;
         });
         $scope.selectedMediaSouces.allowed.length = 0;
+        $scope.selectedMediaSouces.available.length = 0;
     };
 
     $scope.removeFromAllowedMediaSources = function () {
@@ -61,9 +62,8 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
             $scope.settings.allowedSources[value].allowed = false;
         });
         $scope.selectedMediaSouces.available.length = 0;
+        $scope.selectedMediaSouces.allowed.length = 0;
     };
-
-
 
     $scope.getServiceFees = function(search) {
         // use fresh instance because we modify the collection on the fly
