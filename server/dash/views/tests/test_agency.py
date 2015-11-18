@@ -1676,11 +1676,15 @@ class AccountAgencyTest(TestCase):
             'default_sales_representative': '3',
             'default_account_manager': '2',
             'id': '1',
-            'archived': False
+            'archived': False,
+            'allowed_sources':  {
+                '2': {'name': 'Source 2'},
+                '3': {'name': 'Source 3'}
+            }
         })
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_post(self, mock_log_useraction):
+    def test_put(self, mock_log_useraction):
         permission = Permission.objects.get(codename='campaign_settings_account_manager')
         user = User.objects.get(pk=3)
         user.user_permissions.add(permission)
@@ -1706,7 +1710,6 @@ class AccountAgencyTest(TestCase):
         )
 
         content = json.loads(response.content)
-
         self.assertTrue(content['success'])
 
         account = models.Account.objects.get(pk=1)
@@ -1724,3 +1727,32 @@ class AccountAgencyTest(TestCase):
             constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
             account=account
         )
+
+    def test_set_allowed_sources(self):
+        settings = models.AccountSettings()
+        view = agency.AccountAgency()
+        view.set_allowed_sources(settings, {
+            1: {'allowed': True},
+            2: {'allowed': True},
+            3: {}
+            })
+        self.assertEqual(set(settings.allowed_sources),set([1,2]))
+
+    def test_set_allowed_sources_none(self):
+        settings = models.AccountSettings()
+        view = agency.AccountAgency()
+        view.set_allowed_sources(settings, None)
+        self.assertEqual(settings.allowed_sources, [])
+
+    def test_get_allowed_sources(self):
+        view = agency.AccountAgency()
+        allowed_sources_dict = view.get_allowed_sources([2])
+        self.assertEqual(allowed_sources_dict, {
+            2: {'name': 'Source 2', 'allowed': True},
+            3: {'name': 'Source 3'}
+            })
+
+
+
+
+

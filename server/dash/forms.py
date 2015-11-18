@@ -242,6 +242,9 @@ class AccountAgencySettingsForm(forms.Form):
     def _clean_allowed_sources_dict(self, allowed_sources_dict):
         err = forms.ValidationError('Invalid allowed source.')
 
+        if allowed_sources_dict is  None:
+            return
+
         if not isinstance(allowed_sources_dict, dict):
             raise err
 
@@ -264,7 +267,7 @@ class AccountAgencySettingsForm(forms.Form):
 
     def clean(self):
         super(AccountAgencySettingsForm, self).clean()
-        self._clean_allowed_sources_dict(self.data['allowed_sources'])
+        self._clean_allowed_sources_dict(self.data.get('allowed_sources', None))
 
 
 

@@ -872,7 +872,6 @@ class AccountAgency(api_common.BaseApiView):
 
         resource = json.loads(request.body)
 
-
         form = forms.AccountAgencySettingsForm(resource.get('settings', {}))
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
@@ -881,7 +880,7 @@ class AccountAgency(api_common.BaseApiView):
 
         settings = models.AccountSettings()
         self.set_settings(settings, account, form.cleaned_data)
-        self.set_allowed_sources(settings, form.cleaned_data['allowed_sources'])
+        self.set_allowed_sources(settings, form.cleaned_data.get('allowed_sources', None))
 
         with transaction.atomic():
             account.save(request)
@@ -889,7 +888,6 @@ class AccountAgency(api_common.BaseApiView):
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
                                             account=account)
-
         response = {
             'settings': self.get_dict(settings, account),
             'history': self.get_history(account),
@@ -903,9 +901,12 @@ class AccountAgency(api_common.BaseApiView):
         account.name = resource['name']
 
     def set_allowed_sources(self, settings, allowed_sources_dict):
+        if allowed_sources_dict is None:
+            return
+
         allowed_sources_ids = []
         for k, v in allowed_sources_dict.iteritems():
-            if v['allowed']:
+            if v.get('allowed', False):
                 allowed_sources_ids.append(k)
         settings.allowed_sources = allowed_sources_ids
 
@@ -916,18 +917,23 @@ class AccountAgency(api_common.BaseApiView):
         settings.default_sales_representative = resource['default_sales_representative']
         settings.service_fee = helpers.format_percent_to_decimal(resource['service_fee'])
 
+
+    def filter_deprecated_sources(self, allowed_sources_dict, all_sources):
+        new_allowed_sources_dict = {}
+        for source in all_sources:
+            if not source.deprecated:
+                new_allowed_sources_dict[source.id] = allowed_sources_dict[source.id]
+        return new_allowed_sources_dict
+
     def get_allowed_sources(self, allowed_sources_ids_list):
         allowed_sources_dict = {}
-        for source in models.Source.objects.all():
+        all_sources = list(models.Source.objects.all())
+        for source in all_sources:
             source_settings = {'name': source.name}
             if source.id in allowed_sources_ids_list:
                 source_settings['allowed'] = True
-            
-            if not source_settings.get('allowed', False) and source.deprecated:
-                continue
-
             allowed_sources_dict[source.id] = source_settings
-        return allowed_sources_dict
+        return self.filter_deprecated_sources(allowed_sources_dict, all_sources)
 
 
     def get_dict(self, settings, account):
