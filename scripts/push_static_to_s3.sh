@@ -4,7 +4,4 @@ sudo pip install awscli
 
 S3_PATH="s3://z1-static/build-$CIRCLE_BUILD_NUM"
 
-echo "Syncing static files to $S3_PATH"
-
-aws s3 sync --acl public-read client/one/assets $S3_PATH/assets
-aws s3 sync --acl public-read client/one/img $S3_PATH/img
+aws s3 sync --acl public-read client/dist $S3_PATH/dist
