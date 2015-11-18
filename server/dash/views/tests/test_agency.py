@@ -1751,8 +1751,3 @@ class AccountAgencyTest(TestCase):
             2: {'name': 'Source 2', 'allowed': True},
             3: {'name': 'Source 3'}
             })
-
-
-
-
-
