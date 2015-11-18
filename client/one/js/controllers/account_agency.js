@@ -100,7 +100,6 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
         api.accountAgency.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
-                $scope.mediaSourcesData = $scope.settings.allowedSources;
                 $scope.history = data.history;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
