@@ -52,4 +52,11 @@ test:
         - coverage xml:
             pwd: server
         - test "$CIRCLE_BRANCH" == "master" && pushci --debug || exit 0
+
+deployment:
+    s3push:
+        branch: fea_push_static_to_s3
+        commands:
+            - bash ./scripts/push_static_to_s3.sh
+
 #teardown:
