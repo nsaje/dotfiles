@@ -38,11 +38,11 @@ class Command(BaseCommand):
                 'exchange': blacklist_entry.source.tracking_slug.replace('b1_', ''),
             })
 
-            if len(batch) > BATCH_SIZE:
+            if len(batch) >= BATCH_SIZE:
                 totals_data = reports.api_publishers.query_blacklisted_publishers(
-                    no_stats_after,
-                    datetime.datetime.utcnow(),
-                    blacklist=batch
+                    no_stats_after.date(),
+                    datetime.datetime.utcnow().date(),
+                    blacklist=batch,
                 )
                 clicks += totals_data.get('clicks', 0) or 0
                 impressions += totals_data.get('impressions', 0) or 0
@@ -52,6 +52,7 @@ class Command(BaseCommand):
                 processed += BATCH_SIZE
                 print "Processed blacklist entries", processed
                 logger.info("Processed %d blacklist entries", processed)
+                batch = []
 
         if len(batch) > 0:
             totals_data = reports.api_publishers.query_blacklisted_publishers(
