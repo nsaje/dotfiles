@@ -929,6 +929,13 @@ class AccountAgency(api_common.BaseApiView):
                 new_allowed_sources_dict[source.id] = allowed_sources_dict[source.id]
         return new_allowed_sources_dict
 
+    def add_unreleased_label_to_names(self, allowed_sources_dict, all_sources):
+        for source in all_sources:
+            if source.id in allowed_sources_dict and not source.released:
+                name = allowed_sources_dict[source.id]['name'] 
+                allowed_sources_dict[source.id]['name'] = '{} (unreleased)'.format(name)
+        return allowed_sources_dict
+
     def get_allowed_sources(self, allowed_sources_ids_list):
         allowed_sources_dict = {}
         all_sources = list(models.Source.objects.all())
@@ -937,8 +944,9 @@ class AccountAgency(api_common.BaseApiView):
             if source.id in allowed_sources_ids_list:
                 source_settings['allowed'] = True
             allowed_sources_dict[source.id] = source_settings
-        return self.filter_deprecated_sources(allowed_sources_dict, all_sources)
-
+        allowed_sources_dict = self.filter_deprecated_sources(allowed_sources_dict, all_sources)
+        allowed_sources_dict = self.add_unreleased_label_to_names(allowed_sources_dict, all_sources)
+        return allowed_sources_dict
 
     def get_dict(self, settings, account):
         result = {}

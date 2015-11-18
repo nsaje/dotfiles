@@ -14,6 +14,7 @@
         tracking_slug: Source_2
         name: Source 2
         deprecated: false
+        released: true
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
     model: dash.Source 
@@ -23,6 +24,7 @@
         tracking_slug: Source_3
         name: Source 3
         deprecated: false
+        released: false
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
     model: dash.Source 

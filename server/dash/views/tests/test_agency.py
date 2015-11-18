@@ -1705,7 +1705,7 @@ class AccountAgencyTest(TestCase):
             'archived': False,
             'allowed_sources':  {
                 '2': {'name': 'Source 2'},
-                '3': {'name': 'Source 3'}
+                '3': {'name': 'Source 3 (unreleased)'}
             }
         })
 
@@ -1796,5 +1796,5 @@ class AccountAgencyTest(TestCase):
         allowed_sources_dict = view.get_allowed_sources([2])
         self.assertEqual(allowed_sources_dict, {
             2: {'name': 'Source 2', 'allowed': True},
-            3: {'name': 'Source 3'}
+            3: {'name': 'Source 3 (unreleased)'}
             })
