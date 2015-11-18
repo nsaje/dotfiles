@@ -31,6 +31,8 @@ class Command(BaseCommand):
         for blacklist_entry in dash.models.PublisherBlacklist.objects.filter(
             created_dt__lte=blacklisted_before,
             status=dash.constants.PublisherStatus.BLACKLISTED):
+            if blacklist_entry.ad_group is None:
+                continue
             # fetch blacklisted status from db
             batch.append({
                 'domain': blacklist_entry.name,
