@@ -16,42 +16,42 @@ machine:
     node:
         version: v0.10.22
 
-dependencies:
-    override:
-        - pip install -r server/requirements.txt
-        - pip install -r server/requirements_dev.txt
-        - 'npm prune && npm install':
-            pwd:
-                client
-        - bower install:
-            pwd:
-                client
-    cache_directories:
-        - "client/node_modules"
+#dependencies:
+#    override:
+#        - pip install -r server/requirements.txt
+#        - pip install -r server/requirements_dev.txt
+#        - 'npm prune && npm install':
+#            pwd:
+#                client
+#        - bower install:
+#            pwd:
+#                client
+#    cache_directories:
+#        - "client/node_modules"
 
 #database:
 
-test:
-    pre:
-        - 'python manage.py collectstatic --noinput':
-            pwd: server
-            parallel: true
-    override:
-        - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test  ;; 1) cd client && grunt test && cd .. && ./run_e2e.sh ;; esac':
-            parallel: true
-    post:
-        - 'mkdir client/dist && git rev-parse HEAD | tee server/git_commit_hash.txt client/dist/git_commit_hash.txt'
-        - 'if [[ "$CIRCLE_NODE_INDEX" == "0" ]]; then  tar -pc * -zf ../server.tar.gz; fi':
-            parallel: true
-            pwd: server
-        - 'if [[ "$CIRCLE_NODE_INDEX" == "1" ]]; then  tar -pc dist/ ../server/static -zf ../client.tar.gz; else export; fi':
-            parallel: true
-            pwd: client
-        - coverage report > coverage_report.txt:
-            pwd: server
-        - coverage xml:
-            pwd: server
-        - test "$CIRCLE_BRANCH" == "master" && pushci --debug || exit 0
+#test:
+#    pre:
+#        - 'python manage.py collectstatic --noinput':
+#            pwd: server
+#            parallel: true
+#    override:
+#        - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test  ;; 1) cd client && grunt test && cd .. && ./run_e2e.sh ;; esac':
+#            parallel: true
+#    post:
+#        - 'mkdir client/dist && git rev-parse HEAD | tee server/git_commit_hash.txt client/dist/git_commit_hash.txt'
+#        - 'if [[ "$CIRCLE_NODE_INDEX" == "0" ]]; then  tar -pc * -zf ../server.tar.gz; fi':
+#            parallel: true
+#            pwd: server
+#        - 'if [[ "$CIRCLE_NODE_INDEX" == "1" ]]; then  tar -pc dist/ ../server/static -zf ../client.tar.gz; else export; fi':
+#            parallel: true
+#            pwd: client
+#        - coverage report > coverage_report.txt:
+#            pwd: server
+#        - coverage xml:
+#            pwd: server
+#        - test "$CIRCLE_BRANCH" == "master" && pushci --debug || exit 0
 
 deployment:
     s3push:
