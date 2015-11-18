@@ -1598,6 +1598,7 @@ class PublishersTable(object):
             totals_data = query_func(
                 start_date, end_date,
                 constraints=constraints,
+                blacklist=adg_blacklisted_publishers
             )
 
 
