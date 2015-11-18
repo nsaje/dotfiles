@@ -1065,29 +1065,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         select_all = body["select_all"]
         publishers = []
         if select_all:
-            source_cache_by_slug = {
-                'outbrain': models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN)
-            }
-
-            # get all publishers from date range with statistics
-            # (they represent select-all)
-            constraints = {
-                'ad_group': ad_group.id,
-            }
-            breakdown = ['exchange', 'domain']
-            publishers = reports.api_publishers.query_publisher_list(
-                start_date,
-                end_date,
-                breakdown_fields=breakdown,
-                constraints=constraints
-            )
-            for publisher in publishers:
-                source_slug = publisher['exchange']
-                if source_slug not in source_cache_by_slug:
-                    source_cache_by_slug[source_slug] =\
-                        models.Source.objects.get(bidder_slug=source_slug)
-                publisher['source_id'] = source_cache_by_slug[source_slug].id
-
+            publishers = self._query_all_publishers(ad_group, start_date, end_date)
 
         # update with pending statuses
         if level in (constants.PublisherBlacklistLevel.ADGROUP,
@@ -1102,6 +1080,31 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             "success": True,
         }
         return self.create_api_response(response)
+
+    def _query_all_publishers(self, ad_group, start_date, end_date):
+        source_cache_by_slug = {
+            'outbrain': models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN)
+        }
+
+        # get all publishers from date range with statistics
+        # (they represent select-all)
+        constraints = {
+            'ad_group': ad_group.id,
+        }
+        breakdown = ['exchange', 'domain']
+        publishers = reports.api_publishers.query_publisher_list(
+            start_date,
+            end_date,
+            breakdown_fields=breakdown,
+            constraints=constraints
+        )
+        for publisher in publishers:
+            source_slug = publisher['exchange']
+            if source_slug not in source_cache_by_slug:
+                source_cache_by_slug[source_slug] =\
+                    models.Source.objects.get(bidder_slug=source_slug)
+            publisher['source_id'] = source_cache_by_slug[source_slug].id
+        return publishers
 
     def _handle_adgroup_blacklist(self, request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected):
         ad_group_filter = None
@@ -1251,13 +1254,10 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             everywhere=True
         ).values('name', 'source__tracking_slug'))
 
-        existing_blacklisted_publishers = map(
-            lambda pub: {
-                'name': pub['name'],
-                'source_id': pub['source__id']
-            },
+        existing_blacklisted_publishers = set(map(
+            lambda pub: (pub['name'], pub['source__id'],),
             existing_blacklisted_publishers
-        )
+        ))
 
         ignored_publishers = set([(pub['domain'], pub['source_id'])
             for pub in publishers_not_selected]
@@ -1267,7 +1267,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             ad_group,
             publishers + publishers_selected,
             state,
-            existing_blacklisted_publishers,
+            existing_blacklisted_publishers.union(ignored_publishers),
             ignored_publishers,
         )
         global_blacklist = [

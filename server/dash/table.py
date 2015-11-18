@@ -2,6 +2,7 @@ import datetime
 import pytz
 from slugify import slugify
 from django.conf import settings
+from django.db.models import Q
 
 from dash.views import helpers
 from dash import models
@@ -1616,9 +1617,15 @@ class PublishersTable(object):
                     models.Source.objects.get(bidder_slug=source_slug)
 
             pub_blacklist_qs |= models.PublisherBlacklist.objects.filter(
-                ad_group=adgroup,
-                name=domain,
-                source=source_cache_by_slug[source_slug]
+                Q(
+                    name=domain,
+                    source=source_cache_by_slug[source_slug]
+                ) | Q(
+                    Q(ad_group=adgroup) |
+                    Q(campaign=adgroup.campaign) |
+                    Q(account=adgroup.campaign.account) |
+                    Q(everywhere=True)
+                )
             )
         blacklisted_publishers = pub_blacklist_qs.values('name', 'ad_group__id', 'source__id', 'status')
         filtered_publishers = []
