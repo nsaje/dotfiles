@@ -59,8 +59,8 @@
             <label ng-repeat="error in errors.serviceFee" class="control-label error" for="service-fee-select">{{ error }}</label>
         </div>
 
-        <div class="form-group">
-            <label for="media-sources-options-choices" class="col-xs-2 control-label">Media Sources <zem-help-popover content="Media sources made available on this account." placement="top"></zem-help-popover></label>
+        <div class="form-group" ng-if="hasPermission('zemauth.can_modify_allowed_sources')">
+            <label for="media-sources-options-choices" class="col-xs-2 control-label">Media Sources {{hasPermission('zemauth.can_modify_allowed_sources')}} <zem-help-popover content="Media sources made available on this account." placement="top"></zem-help-popover></label>
 
 
             <div class="col-xs-10">

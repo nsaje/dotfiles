@@ -753,6 +753,7 @@ class Source(models.Model):
     deprecated = models.BooleanField(default=False, null=False)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    released = models.BooleanField(default=True)
     content_ad_submission_type = models.IntegerField(
         default=constants.SourceSubmissionType.DEFAULT,
         choices=constants.SourceSubmissionType.get_choices()
