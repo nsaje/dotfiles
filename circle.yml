@@ -57,6 +57,6 @@ deployment:
     s3push:
         branch: fea_push_static_to_s3
         commands:
-            - 'if [[ "$CIRCLE_NODE_INDEX" == "1" ]]; then ./scripts/push_static_to_s3.sh; fi'
+            - bash ./scripts/push_static_to_s3.sh
 
 #teardown:
