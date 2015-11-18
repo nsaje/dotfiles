@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--adgroups', metavar='ADGROUPS', nargs='+',
                             help='A list of Ad Group IDs. Separated with spaces.')
-        parser.add_argument('--send-stats', action='store_true')
+        parser.add_argument('--no-statsd', action='store_true')
 
     def handle(self, *args, **options):
         ad_group_ids = options['adgroups']
@@ -40,9 +40,8 @@ class Command(BaseCommand):
         for ad_group in ad_groups:
 
             ad_group_settings = ad_group.get_current_settings()
-            if not ad_group_settings:
+            if ad_group_settings.id is None:
                 logger.warning('Ad group %s does not have settings', ad_group.id)
-                continue
 
             if ad_group_settings.archived:
                 # if ad group was specifically selected than let it through
@@ -77,6 +76,6 @@ class Command(BaseCommand):
             nr_exceptions, nr_not_in_sync, scanned_ad_groups
         )
 
-        if options['send_stats']:
+        if not options['no_statsd']:
             statsd_helper.statsd_gauge('propagation_consistency.ad_group_r1.exceptions', nr_exceptions)
             statsd_helper.statsd_gauge('propagation_consistency.ad_group_r1.not_in_sync', nr_not_in_sync)

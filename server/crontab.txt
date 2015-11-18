@@ -19,3 +19,4 @@
 10 9 * * *      docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py autopilot_adjust_media_source_bid_cpcs > /dev/null  2>&1
 0 5,7,9 * * *   docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py fetch_reports_by_publisher > /dev/null  2>&1
 0 9 * * *       docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py send_content_approval_email > /dev/null  2>&1
+40 * * * *      docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_adgroup_propagation > /dev/null  2>&1
