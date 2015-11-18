@@ -48,7 +48,6 @@ class Command(BaseCommand):
                 cost += totals_data.get('cost', 0) or 0
                 ctr += totals_data.get('ctr', 0) or 0
                 cpc += totals_data.get('cpc', 0) or 0
-                batch = []
                 processed += BATCH_SIZE
                 print "Processed blacklist entries", processed
                 logger.info("Processed %d blacklist entries", processed)
