@@ -25,7 +25,7 @@ class Command(BaseCommand):
         batch = []
 
         blacklisted_before = datetime.datetime.utcnow() - datetime.timedelta(days=1)
-        no_stats_after = datetime.datetime.utcnow() - datetime.timedelta(hours=12)
+        no_stats_after = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
         processed = 0
 
         for blacklist_entry in dash.models.PublisherBlacklist.objects.filter(
