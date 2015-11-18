@@ -9,6 +9,7 @@
 20,50 * * * *   docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_blacklist > /dev/null  2>&1
 #0 0 * * *      mv ~/log/zemanta-eins.server.log ~/log/zemanta-eins.server.$(date +\%Y-\%m-\%d --date="1 day ago").log > /dev/null  2>&1
 30 * * * *      docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_recent_demo_data > /dev/null  2>&1
+15,45 * * * *   docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_conversion_pixels > /dev/null  2>&1
 0 11 * * *      docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py refresh_demo_stats > /dev/null  2>&1
 15,45 * * * *   docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_content_ads > /dev/null  2>&1
 30 16 * * *     docker run --rm -w /app/zemanta-eins --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py send_supply_report_emails > /dev/null  2>&1

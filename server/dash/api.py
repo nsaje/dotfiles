@@ -180,11 +180,10 @@ def _update_publisher_blacklist(key, level, publishers):
 
     source_cache = {}
     for publisher in publishers:
-        exchange = publisher['exchange']
         source_id = publisher['source_id']
-        if exchange not in source_cache:
-            source = dash.models.Source.objects.get(id=source_id)
-            source_cache[exchange] = source
+        if source_id not in source_cache:
+            source_cache[source_id] = dash.models.Source.objects.get(id=source_id)
+        source = source_cache[source_id]
 
         blacklist_entry = models.PublisherBlacklist(
             name=publisher['domain'],
@@ -258,6 +257,7 @@ def refresh_publisher_blacklist(ad_group_source, request):
                 campaign_blacklisted_publishers,
                 request,
                 ad_group_source.source.source_type,
+                ad_group_source,
                 send=False
             )
         )
@@ -293,6 +293,7 @@ def refresh_publisher_blacklist(ad_group_source, request):
             accountBlacklistedPublishers,
             request,
             ad_group_source.source.source_type,
+            ad_group_source,
             send=False
         )
     )
@@ -793,6 +794,7 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
 
     actions = []
     # send actions
+    first_ad_group_source = None
     for source_type_id, blacklist in blacklist_per_source.iteritems():
         filtered_blacklist = [publisher for publisher in blacklist\
                               if publisher['source'].can_modify_publisher_blacklist_automatically()]
@@ -801,6 +803,12 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
             continue
         if filtered_blacklist == []:
             continue
+
+        if first_ad_group_source is None:
+            first_ad_group_source = models.AdGroupSource.objects.filter(
+                ad_group=ad_group,
+                source=publisher['source']
+            ).first()
 
         key = None
         level = constants.PublisherBlacklistLevel.GLOBAL
@@ -823,6 +831,7 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
                 filtered_blacklist,
                 request,
                 source_type_cache[source_type_id],
+                first_ad_group_source,
                 send=send
             )
         )
@@ -840,6 +849,7 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
 
     actions = []
     blacklisted_publishers = {}
+    first_ad_group_source = None
     # send actions
     for source_type_id, blacklist in blacklist_per_source.iteritems():
         filtered_blacklist = [publisher for publisher in blacklist\
@@ -850,6 +860,13 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
             continue
         if filtered_blacklist == []:
             continue
+
+        if first_ad_group_source is None:
+            first_ad_group_source = models.AdGroupSource.objects.filter(
+                ad_group=ad_group,
+                source=publisher['source']
+            ).first()
+
 
         blacklisted_publishers[source_type_id] =\
             blacklisted_publishers.get(source_type_id, [])
@@ -883,6 +900,7 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
                     blacklist,
                     request,
                     source_type_cache[source_type_id],
+                    first_ad_group_source,
                     send=send
                 )
             )

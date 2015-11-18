@@ -123,7 +123,7 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
     return send_delayed_actionlogs([ad_group_source], send=send)
 
 
-def set_publisher_blacklist(key, level, state, publishers, request, source_type, send=True):
+def set_publisher_blacklist(key, level, state, publishers, request, source_type, ad_group_source, send=True):
     if not publishers:
         return []
 
@@ -156,6 +156,7 @@ def set_publisher_blacklist(key, level, state, publishers, request, source_type,
                 'callback_url': callback,
             }
 
+            action.ad_group_source = ad_group_source
             action.payload = payload
             action.save(request)
     except Exception as e:
@@ -205,7 +206,7 @@ def send_delayed_actionlogs(ad_group_sources=None, send=True):
     new_actionlogs = []
     with transaction.atomic():
         delayed_actionlogs = models.ActionLog.objects.filter(
-            action=constants.Action.SET_CAMPAIGN_STATE,
+            action__in=[constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PUBLISHER_BLACKLIST],
             action_type=constants.ActionType.AUTOMATIC,
             state=constants.ActionState.DELAYED,
         ).order_by('created_dt')
@@ -216,7 +217,7 @@ def send_delayed_actionlogs(ad_group_sources=None, send=True):
         for actionlog in delayed_actionlogs:
             waiting_actionlogs = models.ActionLog.objects.filter(
                 state=constants.ActionState.WAITING,
-                action=constants.Action.SET_CAMPAIGN_STATE,
+                action__in=[constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PUBLISHER_BLACKLIST],
                 action_type=constants.ActionType.AUTOMATIC,
                 ad_group_source=actionlog.ad_group_source,
             )

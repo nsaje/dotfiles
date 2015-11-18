@@ -167,12 +167,15 @@ class ActionLogAdminAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     order_.short_description = 'Order ID'
 
     def ad_group_source_(self, obj):
-        return '<a href="{ad_group_url}">{ad_group}</a>: <a href="{source_url}">{source}</a>'.format(
-            ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group_source.ad_group.id,)),
-            ad_group=obj.ad_group_source.ad_group,
-            source_url=reverse('admin:dash_source_change', args=(obj.ad_group_source.source.id,)),
-            source=obj.ad_group_source.source,
-        )
+        if obj.ad_group_source is not None:
+            return '<a href="{ad_group_url}">{ad_group}</a>: <a href="{source_url}">{source}</a>'.format(
+                ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group_source.ad_group.id,)),
+                ad_group=obj.ad_group_source.ad_group,
+                source_url=reverse('admin:dash_source_change', args=(obj.ad_group_source.source.id,)),
+                source=obj.ad_group_source.source,
+            )
+        else:
+            return ""
     ad_group_source_.allow_tags = True
     ad_group_source_.admin_order_field = 'ad_group_source'
 

@@ -702,7 +702,13 @@ class SourcesTable(object):
             rows.append(row)
 
         if order:
-            rows = sort_results(rows, [order])
+            order_list = [order]
+
+            # status setting should also be sorted by autopilot state
+            if 'status_setting' in order:
+                order_list.append(('-' if order.startswith('-') else '') + 'autopilot_state')
+
+            rows = sort_results(rows, order_list)
 
         return rows
 
@@ -1040,7 +1046,7 @@ class AdGroupAdsPlusTable(object):
         page_rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
             rows, page, size)
 
-        rows = self._add_status_to_rows(user, page_rows, filtered_sources, ad_group)
+        rows = self._add_submission_status_to_rows(user, page_rows, filtered_sources, ad_group)
 
         total_stats = stats_helper.get_content_ad_stats_with_conversions(
             user,
@@ -1157,6 +1163,7 @@ class AdGroupAdsPlusTable(object):
                     'square': content_ad.get_image_url(160, 160),
                     'landscape': content_ad.get_image_url(256, 160)
                 },
+                'status_setting': content_ad.state,
             }
             helpers.copy_stats_to_row(stat, row)
 
@@ -1167,7 +1174,7 @@ class AdGroupAdsPlusTable(object):
 
         return rows
 
-    def _add_status_to_rows(self, user, rows, filtered_sources, ad_group):
+    def _add_submission_status_to_rows(self, user, rows, filtered_sources, ad_group):
         all_content_ad_sources = models.ContentAdSource.objects.filter(
             source=filtered_sources,
             content_ad_id__in=[row['id'] for row in rows]
@@ -1185,10 +1192,6 @@ class AdGroupAdsPlusTable(object):
             content_ad_id = int(row['id'])
 
             content_ad_sources = [cas for cas in all_content_ad_sources if cas.content_ad_id == content_ad_id]
-            if content_ad_sources:
-                content_ad = content_ad_sources[0].content_ad
-            else:
-                content_ad = models.ContentAd.objects.get(id=content_ad_id)
 
             submission_status = helpers.get_content_ad_submission_status(
                 user,
@@ -1198,7 +1201,6 @@ class AdGroupAdsPlusTable(object):
 
             row.update({
                 'submission_status': submission_status,
-                'status_setting': content_ad.state,
                 'editable_fields': {
                     'status_setting': {
                         'enabled': True,
@@ -1581,7 +1583,7 @@ class PublishersTable(object):
             }, adg_blacklisted_publishers)
 
             query_func = None
-            if constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+            if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
                 query_func = reports.api_publishers.query_active_publishers
             else:
                 query_func = reports.api_publishers.query_blacklisted_publishers
@@ -1614,7 +1616,10 @@ class PublishersTable(object):
 
             if source_slug not in source_cache_by_slug:
                 source_cache_by_slug[source_slug] =\
-                    models.Source.objects.get(bidder_slug=source_slug)
+                    models.Source.objects.filter(bidder_slug=source_slug).first()
+
+            if source_cache_by_slug[source_slug] is None:
+                continue
 
             pub_blacklist_qs |= models.PublisherBlacklist.objects.filter(
                 Q(
@@ -1638,8 +1643,12 @@ class PublishersTable(object):
 
         for publisher_data in publishers_data:
             domain = publisher_data['domain']
-            source = source_cache_by_slug[publisher_data['exchange']]
-            publisher_data['source_id'] = source.id
+            source = source_cache_by_slug.get(publisher_data['exchange']) or publisher_data['exchange']
+            publisher_data['source_id'] = source.id if source_cache_by_slug.get(publisher_data['exchange']) is not None else -1
+
+            if source_cache_by_slug.get(publisher_data['exchange']) is None:
+                continue
+
             if [domain, adgroup.id, source.id, constants.PublisherStatus.PENDING] in filtered_publishers:
                 publisher_data['blacklisted'] = 'Pending'
             if [domain, adgroup.id, source.id, constants.PublisherStatus.BLACKLISTED] in filtered_publishers:
