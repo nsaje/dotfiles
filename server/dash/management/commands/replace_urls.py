@@ -12,6 +12,17 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
+    """Replaces URLs for a given ad group.
+
+    Takes an id of the ad group and a .csv file of the following format:
+
+    Old URL,New URL
+    http://www.example.com/old,http://www.example.com/new
+    ...
+
+    If any content ad URL in given ad group matches any of the old URLs,
+    it will be replaced with the new URL.
+    """
     def add_arguments(self, parser):
         parser.add_argument('ad_group_id', nargs=1, type=int)
         parser.add_argument('csv_file', nargs=1, type=argparse.FileType('r'))
