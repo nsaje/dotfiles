@@ -10,6 +10,12 @@ from dash import forms
 from dash import models
 
 
+class AccountAgencySettingsFormTest(TestCase):
+
+    def test_allowed_sources(self):
+        print 1 
+
+
 class AdGroupSettingsFormTest(TestCase):
     def setUp(self):
         self.data = {
