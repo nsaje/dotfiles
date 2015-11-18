@@ -1071,7 +1071,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         if level in (constants.PublisherBlacklistLevel.ADGROUP,
                      constants.PublisherBlacklistLevel.CAMPAIGN,
                      constants.PublisherBlacklistLevel.ACCOUNT,):
-            from pudb import set_trace; set_trace()
             self._handle_adgroup_blacklist(request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected)
 
         if level == constants.PublisherBlacklistLevel.GLOBAL:
@@ -1167,11 +1166,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             if not source.can_modify_publisher_blacklist_automatically():
                 continue
 
-            publisher_tuple = (domain, ad_group.id, source.id,)
-
-            if publisher_tuple in adgroup_blacklist:
-                continue
-            if publisher_tuple in ignored_publishers:
+            if (domain, ad_group.id, source.id,) in ignored_publishers:
                 continue
 
             blacklist_global = False
@@ -1198,7 +1193,10 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             ).first()
 
             # don't create pending pub. blacklist entry
-            if existing_entry.status == state:
+            if existing_entry is not None and existing_entry.status == state:
+                continue
+
+            if existing_entry is None and state == constants.PublisherStatus.ENABLED:
                 continue
 
             if existing_entry is not None:
@@ -1280,6 +1278,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 if source_id not in source_cache:
                     source_cache[source_id] = models.Source.objects.filter(id=source_id).first()
                 source = source_cache.get(source_id)
+
+                # we currently display sources for which we don't yet have publisher
+                # blacklisting support
+                if not source.can_modify_publisher_blacklist_automatically():
+                    continue
 
                 if source is None:
                     continue
