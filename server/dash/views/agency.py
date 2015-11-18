@@ -876,6 +876,10 @@ class AccountAgency(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
+        if 'allowed_sources' in form.cleaned_data \
+        and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+            raise exc.MissingDataError()
+
         self.set_account(account, form.cleaned_data)
 
         settings = models.AccountSettings()
