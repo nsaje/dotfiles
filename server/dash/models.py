@@ -1815,6 +1815,8 @@ class CreditLineItem(FootprintModel):
 
     def save(self, request=None, *args, **kwargs):
         self.full_clean()
+        if request and not self.pk:
+            self.created_by = request.user
         super(CreditLineItem, self).save(*args, **kwargs)
         CreditHistory.objects.create(
             created_by=request.user if request else None,
@@ -1903,8 +1905,12 @@ class BudgetLineItem(FootprintModel):
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
 
+    objects = QuerySetManager()
+
     def save(self, request=None, *args, **kwargs):
         self.full_clean()
+        if request and not self.pk:
+            self.created_by = request.user
         super(BudgetLineItem, self).save(*args, **kwargs)
         BudgetHistory.objects.create(
             created_by=request.user if request else None,
@@ -1914,6 +1920,11 @@ class BudgetLineItem(FootprintModel):
 
     def db_state(self, date=None):
         return BudgetLineItem.objects.get(pk=self.pk).state(date=date)
+
+    def delete(self):
+        if self.db_state() != constants.BudgetLineItemState.PENDING:
+            raise AssertionError('Cannot delete nonpending budgets')
+        super(BudgetLineItem, self).delete()
 
     def state(self, date=None):
         if date is None:
@@ -1986,6 +1997,12 @@ class BudgetLineItem(FootprintModel):
             raise ValidationError(
                 'Budget exceeds the total credit amount by ${}.00.'.format(-delta)
             )
+
+    class QuerySet(models.QuerySet):
+        def delete(self):
+            if any(itm.state() != constants.BudgetLineItemState.PENDING for itm in self):
+                raise AssertionError('Some budget items are not pending')
+            super(BudgetLineItem.QuerySet, self).delete()
 
 
 class CreditHistory(HistoryModel):

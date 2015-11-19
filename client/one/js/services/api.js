@@ -872,7 +872,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 tracking_code: settings.trackingCode,
                 enable_ga_tracking: settings.enableGaTracking,
                 enable_adobe_tracking: settings.enableAdobeTracking,
-                adobe_tracking_param: settings.adobeTrackingParam,
+                adobe_tracking_param: settings.adobeTrackingParam
             };
 
             return result;
@@ -895,7 +895,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 callToAction: errors.call_to_action,
                 enableGaTracking: errors.enable_ga_tracking,
                 enableAdobeTracking: errors.enable_adobe_tracking,
-                adobeTrackingParam: errors.adobe_tracking_param,
+                adobeTrackingParam: errors.adobe_tracking_param
             };
 
             return result;

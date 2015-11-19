@@ -29,12 +29,12 @@ oneApp.controller('AccountCreditCtrl', ['$scope', '$state', '$modal', 'api', fun
 
     $scope.addCreditItem = function () {
         $scope.selectedCreditItemId = null;
-        openModal();
+        return openModal();
     };
 
     $scope.editCreditItem = function (id) {
         $scope.selectedCreditItemId = id;
-        openModal();
+        return openModal();
     };
 
     $scope.init = function () {
