@@ -1128,6 +1128,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             for (dom, adgroup_id, source,) in publishers_to_add
         ]
 
+        # when blacklisting at campaign or account level we also need
+        # to generate blacklist entries on external sources
+        # for all adgroups in campaign or account
+        related_publisher_blacklist = self._create_campaign_and_account_blacklist(ad_group, level, publishers + publishers_selected)
+
         if len(publisher_blacklist) > 0:
             actionlogs_to_send = []
             with transaction.atomic():
@@ -1136,13 +1141,46 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                         ad_group,
                         state,
                         level,
-                        publisher_blacklist,
+                        publisher_blacklist + related_publisher_blacklist,
                         request,
                         send=False
                     )
                 )
             actionlog.zwei_actions.send(actionlogs_to_send)
             self._add_to_history(request, ad_group, state, publisher_blacklist)
+
+    def _create_campaign_and_account_blacklist(self, ad_group, level, publishers):
+        if level not in (constants.PublisherBlacklistLevel.CAMPAIGN,
+                         constants.PublisherBlacklistLevel.ACCOUNT):
+            return []
+
+        ad_groups_on_level = []
+        if level == constants.PublisherBlacklistLevel.CAMPAIGN:
+            ad_groups_on_level = models.AdGroup.objects.filter(
+                campaign=ad_group.campaign
+            ).exclude(id=ad_group.id).values_list('id', flat=True)
+        elif level == constants.PublisherBlacklistLevel.ACCOUNT:
+            ad_groups_on_level = models.AdGroup.objects.filter(
+                campaign__account=ad_group.campaign.account
+            ).exclude(id=ad_group.id).values_list('id', flat=True)
+
+        ret = []
+        source_cache = {}
+        for publisher in publishers:
+            domain = publisher['domain']
+            if domain not in source_cache:
+               source_cache[domain]  = models.Source.objects.filter(id=publisher['source_id']).first()
+            source = source_cache[domain]
+
+            # get all adgroups
+            for ad_group_id in ad_groups_on_level:
+                ret.append({
+                    'domain': domain,
+                    'ad_group_id': ad_group_id,
+                    'source': source,
+                })
+
+        return ret
 
     def _create_adgroup_blacklist(self, ad_group, publishers, state, level, ignored_publishers):
         adgroup_blacklist = set([])

@@ -1633,27 +1633,26 @@ class PublishersTable(object):
                     Q(everywhere=True)
                 )
             )
-        blacklisted_publishers = pub_blacklist_qs.values('name', 'ad_group__id', 'source__id', 'status')
-        filtered_publishers = []
-        for blacklisted_pub in blacklisted_publishers:
-            status = blacklisted_pub['status']
-            name = blacklisted_pub['name']
-            ad_group_id = blacklisted_pub['ad_group__id']
-            source_id = blacklisted_pub['source__id']
-            filtered_publishers.append([name, ad_group_id, source_id, status])
 
         for publisher_data in publishers_data:
-            domain = publisher_data['domain']
-            source = source_cache_by_slug.get(publisher_data['exchange']) or publisher_data['exchange']
-            publisher_data['source_id'] = source.id if source_cache_by_slug.get(publisher_data['exchange']) is not None else -1
+            publisher_domain = publisher_data['domain']
+            publisher_source = source_cache_by_slug.get(publisher_data['exchange']) or publisher_data['exchange']
+            publisher_data['source_id'] = publisher_source.id if source_cache_by_slug.get(publisher_data['exchange']) is not None else -1
 
             if source_cache_by_slug.get(publisher_data['exchange']) is None:
                 continue
 
-            if [domain, adgroup.id, source.id, constants.PublisherStatus.PENDING] in filtered_publishers:
-                publisher_data['blacklisted'] = 'Pending'
-            if [domain, adgroup.id, source.id, constants.PublisherStatus.BLACKLISTED] in filtered_publishers:
-                publisher_data['blacklisted'] = 'Blacklisted'
+            for blacklisted_pub in pub_blacklist_qs:
+                if publisher_domain == blacklisted_pub.name and\
+                        publisher_source == blacklisted_pub.source and\
+                        (blacklisted_pub.everywhere or
+                         blacklisted_pub.account == adgroup.campaign.account or
+                         blacklisted_pub.campaign == adgroup.campaign or
+                         blacklisted_pub.ad_group == adgroup):
+                    if blacklisted_pub.status == constants.PublisherStatus.BLACKLISTED:
+                        publisher_data['blacklisted'] = 'Blacklisted'
+                    elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
+                        publisher_data['blacklisted'] = 'Pending'
 
         response = {
             'rows': self.get_rows(
