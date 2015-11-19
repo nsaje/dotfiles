@@ -876,7 +876,7 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
                 'domain': pub['domain'],
                 'exchange': pub['source'].tracking_slug.replace('b1_', ''),
                 'source_id': pub['source'].id,
-                'ad_group_id': ad_group.id,
+                'ad_group_id': pub['ad_group_id'],
             }, filtered_blacklist))
         )
 
