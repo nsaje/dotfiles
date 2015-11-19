@@ -77,7 +77,17 @@ GOOGLE_OAUTH_CLIENT_ID = ''
 GOOGLE_OAUTH_CLIENT_SECRET = ''
 
 # Client static files
-CLIENT_STATIC_URL = ''
+import os
+
+if os.path.isfile('build_number.txt'):
+    BUILD_NUMBER = 0
+
+    with open('build_number.txt', 'r') as build_number:
+        BUILD_NUMBER = build_number.read().strip()
+
+    CLIENT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}/dist'.format(BUILD_NUMBER)
+else:
+    # TODO: figure out what to do if the build number is not available
 
 # Eins host
 EINS_HOST = ''
