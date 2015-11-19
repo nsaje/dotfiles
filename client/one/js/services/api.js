@@ -2664,6 +2664,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     spend: obj.spend,
                     state: obj.state,
                     isEditable: obj.is_editable,
+                    isUpdatable: obj.is_updatable,
                     available: obj.available,
                     comment: obj.comment
                 };

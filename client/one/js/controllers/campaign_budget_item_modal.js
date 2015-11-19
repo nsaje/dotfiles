@@ -60,9 +60,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
             $scope.isNew ? 'create' : 'save'
         ]($scope.campaign.id, $scope.budgetItem).then(function (data) {
             $scope.saved = true;
-            $timeout(function () {
-                $modalInstance.close(data || null);
-            }, 1000);
+            closeModal();
         }, function (resp) {
             $scope.errors = api.campaignBudgetPlus.convert.error(resp);
             $scope.saved = false;
