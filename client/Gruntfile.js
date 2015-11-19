@@ -161,7 +161,10 @@ module.exports = function (grunt) {
         },
         less: {
             options: {
-                cleancss: true
+                cleancss: true,
+                rootpath: grunt.option('static_url') !== undefined ?
+                    "https://s3.amazonaws.com/z1-static/build-" + grunt.option('static_url') + "/dist/one/" :
+                    undefined
             },
             one: {
                 files: {
@@ -233,7 +236,7 @@ module.exports = function (grunt) {
             prod: {
                 constants: {
                     config: {
-                        static_url: '/client',
+                        static_url: "https://s3.amazonaws.com/z1-static/build-" + grunt.option('build-number') + "/dist",
                         debug: false
                     }
                 }
