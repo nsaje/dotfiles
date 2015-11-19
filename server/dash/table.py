@@ -1648,7 +1648,7 @@ class PublishersTable(object):
                         (blacklisted_pub.everywhere or
                          blacklisted_pub.account == adgroup.campaign.account or
                          blacklisted_pub.campaign == adgroup.campaign or
-                         blacklisted_pub.adgroup == adgroup):
+                         blacklisted_pub.ad_group == adgroup):
                     if blacklisted_pub.status == constants.PublisherStatus.BLACKLISTED:
                         publisher_data['blacklisted'] = 'Blacklisted'
                     elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
