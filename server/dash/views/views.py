@@ -1158,25 +1158,32 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         if level == constants.PublisherBlacklistLevel.CAMPAIGN:
             ad_groups_on_level = models.AdGroup.objects.filter(
                 campaign=ad_group.campaign
-            ).exclude(id=ad_group.id).values_list('id', flat=True)
+            ).exclude(
+                id=ad_group.id
+            )
         elif level == constants.PublisherBlacklistLevel.ACCOUNT:
             ad_groups_on_level = models.AdGroup.objects.filter(
                 campaign__account=ad_group.campaign.account
-            ).exclude(id=ad_group.id).values_list('id', flat=True)
+            ).exclude(
+                id=ad_group.id
+            )
+
+        # filter archived
+        filtered_ad_groups = [adg for adg in ad_groups_on_level if not adg.is_archived()]
 
         ret = []
         source_cache = {}
         for publisher in publishers:
             domain = publisher['domain']
             if domain not in source_cache:
-               source_cache[domain]  = models.Source.objects.filter(id=publisher['source_id']).first()
+               source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
             source = source_cache[domain]
 
             # get all adgroups
-            for ad_group_id in ad_groups_on_level:
+            for ad_group in filtered_ad_groups:
                 ret.append({
                     'domain': domain,
-                    'ad_group_id': ad_group_id,
+                    'ad_group_id': ad_group.id,
                     'source': source,
                 })
 
