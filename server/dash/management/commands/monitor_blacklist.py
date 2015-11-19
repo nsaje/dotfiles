@@ -24,7 +24,7 @@ class Command(BaseCommand):
         BATCH_SIZE = 50
         batch = []
 
-        blacklisted_before = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+        blacklisted_before = datetime.datetime.utcnow() - datetime.timedelta(days=2)
         no_stats_after = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         processed = 0
 
