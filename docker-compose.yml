@@ -1,4 +1,5 @@
 postgres:
+    container_name: postgres
     image: postgres:9.3
     environment:
       - POSTGRES_PASSWORD=devpwd
@@ -12,8 +13,9 @@ postgres:
 #      - "$HOME/docker-vols/postgres-eins:/var/lib/postgresql"
 
 
-# this is fake statsd
+# this is fake statsd that only prints stats on stdout
 statsd:
+    container_name: statsd
     image: verb/socat
     expose:
       - "8125:8125/udp"
@@ -31,7 +33,6 @@ eins_static:
     container_name: eins-static
     hostname: eins-static
     image: digitallyseamless/nodejs-bower-grunt
-#     docker run -it -v $PWD/client:/data --rm digitallyseamless/nodejs-bower-grunt bash -c "bower --config.interactive=false install ; grunt --hel
     expose:
       - "9999"
     volumes:
@@ -53,7 +54,7 @@ eins:
       - "statsd:statsd"
       - "memcached:memcached"
     volumes:
-      - "$HOME/docker-vols/eins/logs/:/app/logs/"
+      - "$HOME/docker-vols/eins/logs/:/app/logs/" # this one will create new folder in your home if it doesn't exist
       - "./server/:/app/zemanta-eins/"
       - "./server/server/localsettings.py.docker:/app/zemanta-eins/server/localsettings.py"
     working_dir: /app/zemanta-eins/

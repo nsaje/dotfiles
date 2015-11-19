@@ -28,11 +28,11 @@ DATABASES = {
     },
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': 5439
+        'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one'),
+        'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'one'),
+        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'eins'),
+        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
+        'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
     },
     STATS_E2E_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
