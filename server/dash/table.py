@@ -1645,10 +1645,10 @@ class PublishersTable(object):
             for blacklisted_pub in pub_blacklist_qs:
                 if publisher_domain == blacklisted_pub.name and\
                         publisher_source == blacklisted_pub.source and\
-                        (pub_blacklist_qs.everywhere or
-                         pub_blacklist_qs.account == adgroup.campaign.account or
-                         pub_blacklist_qs.campaign == adgroup.campaign or
-                         pub_blacklist_qs.adgroup == adgroup):
+                        (blacklisted_pub.everywhere or
+                         blacklisted_pub.account == adgroup.campaign.account or
+                         blacklisted_pub.campaign == adgroup.campaign or
+                         blacklisted_pub.adgroup == adgroup):
                     if blacklisted_pub.status == constants.PublisherStatus.BLACKLISTED:
                         publisher_data['blacklisted'] = 'Blacklisted'
                     elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
