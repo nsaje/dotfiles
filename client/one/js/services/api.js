@@ -858,7 +858,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     targetDevices.push(item.value);
                 }
             });
-
             var result = {
                 id: settings.id,
                 name: settings.name,
@@ -2594,8 +2593,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             },
             dataToApi: function (obj) {
                 return {
-                    start_date: obj.startDate && moment(obj.startDate).format('YYYY-MM-DD'),
-                    end_date: obj.endDate && moment(obj.endDate).format('YYYY-MM-DD'),
+                    start_date: obj.startDate && moment(obj.startDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+                    end_date: obj.endDate && moment(obj.endDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
                     amount: obj.amount,
                     license_fee: obj.licenseFee,
                     comment: obj.comment,
@@ -2673,8 +2672,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 return {
                     credit: obj.credit.id,
                     amount: obj.amount,
-                    start_date: moment(obj.startDate).format('YYYY-MM-DD'),
-                    end_date: moment(obj.endDate).format('YYYY-MM-DD'),
+                    start_date: moment(obj.startDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+                    end_date: moment(obj.endDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
                     comment: obj.comment
                 };
             },
