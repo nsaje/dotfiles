@@ -795,7 +795,9 @@ class AdGroupPublishersTableTest(TestCase):
                                                         u'ctr': 99.0,
                                                         u'impressions': 1560})
 
-    def test_get_filtered_sources(self, mock_query):
+
+    @patch('dash.table.reports.api_publishers.query_active_publishers')
+    def test_get_filtered_sources(self, mock_active, mock_query):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
@@ -816,7 +818,7 @@ class AdGroupPublishersTableTest(TestCase):
          'impressions': 10560,
          'date': date.isoformat(),
         }
-        mock_query.side_effect = [mock_stats1, mock_stats2]
+        mock_active.side_effect = [mock_stats1, mock_stats2]
 
         ad_group = models.AdGroup.objects.get(pk=1)
 
@@ -826,7 +828,8 @@ class AdGroupPublishersTableTest(TestCase):
             'size': 2,
             'start_date': date.isoformat(),
             'end_date': date.isoformat(),
-            'filtered_sources': '1'
+            'filtered_sources': '1',
+            'show_blacklisted_publishers': constants.PublisherBlacklistFilter.SHOW_ACTIVE,
         }
 
         response = self.client.get(
@@ -835,18 +838,20 @@ class AdGroupPublishersTableTest(TestCase):
             follow=True
         )
 
-        mock_query.assert_any_call(
+        mock_active.assert_any_call(
             date,
             date,
+            blacklist=[],
             breakdown_fields=['domain', 'exchange'],
             order_fields=['domain'],
             constraints={'ad_group': ad_group.id,
                         'exchange': ['adsnative']}
         )
 
-        mock_query.assert_any_call(
+        mock_active.assert_any_call(
             date,
             date,
+            blacklist=[],
             constraints = {"ad_group": ad_group.id,
                         'exchange': ['adsnative']}
         )
