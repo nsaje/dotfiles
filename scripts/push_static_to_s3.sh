@@ -6,5 +6,5 @@ then
 	
 	S3_PATH="s3://z1-static/build-$CIRCLE_BUILD_NUM"
 	
-	aws s3 sync --acl public-read client/dist $S3_PATH/dist
+	aws s3 sync --acl public-read client/dist "${S3_PATH}/dist"
 fi
