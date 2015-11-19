@@ -8,8 +8,10 @@
     <div class="section named-data" ng-show="!loadingInProgress">
         <div class="name">Total Account Value</div>
         <div class="value">{{ creditTotals.total | decimalCurrency:"$":2 }}</div>
-        <div class="name bottomborder">Allocated To Budget Items</div>
-        <div class="value bottomborder">{{ creditTotals.allocated | decimalCurrency:"$":2  }}</div>
+        <div class="name">Allocated To Budget Items</div>
+        <div class="value">{{ creditTotals.allocated | decimalCurrency:"$":2  }}</div>
+        <div class="name bottomborder">Past Credit</div>
+        <div class="value bottomborder">{{ creditTotals.past | decimalCurrency:"$":2  }}</div>
         <div class="name">Available Account Credit</div>
         <div class="value">{{ creditTotals.available | decimalCurrency:"$":2  }}</div>
     </div>

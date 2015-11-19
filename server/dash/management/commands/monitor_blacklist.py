@@ -84,3 +84,13 @@ class Command(BaseCommand):
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cost', cost)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.ctr', ctr)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cpc', cpc)
+
+        # monitor PENDING publisherblacklist entries
+        count_pending = dash.models.PublisherBlacklist.objects.filter(
+            status=dash.constants.PublisherStatus.PENDING
+        ).count()
+        statsd_helper.statsd_gauge('dash.blacklisted_publisher.pending', count_pending)
+        count_blacklisted = dash.models.PublisherBlacklist.objects.filter(
+            status=dash.constants.PublisherStatus.BLACKLISTED
+        ).count()
+        statsd_helper.statsd_gauge('dash.blacklisted_publisher.blacklisted', count_blacklisted)

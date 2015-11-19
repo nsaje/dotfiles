@@ -178,6 +178,8 @@ def _clean_existing_publisher_blacklist(key, level, publishers):
 def _update_publisher_blacklist(key, level, publishers):
     blacklist = []
 
+    already_blacklisted = set([])
+
     source_cache = {}
     for publisher in publishers:
         source_id = publisher['source_id']
@@ -202,6 +204,18 @@ def _update_publisher_blacklist(key, level, publishers):
             ad_group = dash.models.AdGroup.objects.get(id=key[0])
             blacklist_entry.ad_group = ad_group
 
+
+        blacklist_tuple = (
+            level,
+            tuple(key) if key is not None else (),
+            publisher['domain'],
+            source_id,
+        )
+        if blacklist_tuple in already_blacklisted:
+            # skip adding duplicated entries on callback
+            continue
+
+        already_blacklisted.add(blacklist_tuple)
         blacklist.append(blacklist_entry)
 
     if blacklist != []:
