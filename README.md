@@ -168,6 +168,12 @@ The test suite will be run in your local Chrome browser.
 
 ##### Notes on Amazon Redshift and E2E tests
 
+Redshift unit tests aren't run automatically. You can run them with:
+
+```bash
+python manage.py test --redshift
+```
+
 Each time when end-to-end tests are run, a new Amazon Redshift database with a random name is created. This way each e2e test suite run uses its own Amazon Redshift database. How it works:
 
 The DATABASES dictionary should contain 2 entries for Redshift database connections:

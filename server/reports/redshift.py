@@ -242,6 +242,9 @@ class RSQ(object):
             parts.append(child_parts)
             params.extend(child_params)
 
+        if not parts and not params:
+            return '', []
+
         ret = '(' + self.join_operator.join(parts) + ')'
         if self.negate:
             ret = 'NOT ' + ret
@@ -331,6 +334,9 @@ class RSModel(object):
         self.constraints_fields_app = set(self.by_app_mapping.keys())
 
     def _translate_app_field_to_sql(self, field_name):
+        if field_name == '*':
+            return '*'
+
         if not is_json_field(field_name):
             return self.by_app_mapping[field_name]['sql']
 
@@ -357,6 +363,10 @@ class RSModel(object):
         json_fields = []
 
         for field_name in field_names:
+            if field_name == '*':
+                fields.append('*')
+                continue
+
             if not is_json_field(field_name):
                 desc = self.by_sql_mapping[field_name]
                 fields.append(self._get_expanded_field_sql(field_name, desc))
@@ -415,7 +425,7 @@ class RSModel(object):
         return self.expand_returned_sql_fields(self.translate_app_fields(returned_fields))
 
     def _prepare_select_query(self, returned_fields, breakdown_fields, order_fields, offset, limit,
-                              constraints, constraints_list, having_constraints):
+                              constraints, constraints_list, having_constraints, subquery):
         # Takes app-based fields and first checks & translates them and then creates a query
         # first translate constraints into tuples, then create a single constraints str
         (constraint_str, constraint_params) = RSQ(*constraints_list, **constraints).expand(self)
@@ -423,9 +433,26 @@ class RSModel(object):
         order_fields = self.translate_order_fields(order_fields)
         returned_fields, returned_params, json_fields = self.get_returned_fields(returned_fields)
 
-        params = returned_params + constraint_params
+        from_table = self.TABLE_NAME
+        from_params = []
+        if subquery:
+            from_table, from_params, from_json_fields = self._prepare_select_query(
+                returned_fields=subquery['returned_fields'],
+                breakdown_fields=[],
+                order_fields=[],
+                offset=None,
+                limit=None,
+                constraints=subquery.get('constraints', {}),
+                constraints_list=subquery.get('constraints_list', []),
+                having_constraints=None,
+                subquery=None
+            )
+            from_table = '(' + from_table + ')'
+            json_fields.extend(from_json_fields)
+
+        params = returned_params + from_params + constraint_params
         statement = self._form_select_query(
-            self.TABLE_NAME,
+            from_table,
             breakdown_fields + returned_fields,
             constraint_str,
             breakdown_fields=breakdown_fields,
@@ -440,11 +467,13 @@ class RSModel(object):
     @staticmethod
     def _form_select_query(table, fields, constraint_str, breakdown_fields=None, order_fields=None, limit=None,
                            offset=None, having_constraints=None):
-        cmd = 'SELECT {fields} FROM {table} WHERE {constraint_str}'.format(
+        cmd = 'SELECT {fields} FROM {table}'.format(
             fields=','.join(fields),
             table=table,
-            constraint_str=constraint_str,
         )
+
+        if constraint_str:
+            cmd += ' WHERE {constraint_str}'.format(constraint_str=constraint_str)
 
         if breakdown_fields:
             cmd += ' GROUP BY {}'.format(','.join(breakdown_fields))
@@ -494,17 +523,18 @@ class RSModel(object):
     # Default cursor can be obtained by get_cursor()
 
     def execute_select_query(self, cursor, returned_fields, breakdown_fields, order_fields, offset, limit, constraints,
-                             constraints_list=None, having_constraints=None):
+                             constraints_list=None, having_constraints=None, subquery=None):
 
         (statement, params, json_fields) = self._prepare_select_query(
-            returned_fields,
-            breakdown_fields,
-            order_fields,
-            offset,
-            limit,
-            constraints,
-            constraints_list if constraints_list else [],
-            having_constraints)
+            returned_fields=returned_fields,
+            breakdown_fields=breakdown_fields,
+            order_fields=order_fields,
+            offset=offset,
+            limit=limit,
+            constraints=constraints,
+            constraints_list=constraints_list if constraints_list else [],
+            having_constraints=having_constraints,
+            subquery=subquery)
 
         cursor.execute(statement, params)
         results = cursor.dictfetchall()
