@@ -88,6 +88,7 @@ if os.path.isfile('build_number.txt'):
     CLIENT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}/dist'.format(BUILD_NUMBER)
 else:
     # TODO: figure out what to do if the build number is not available
+    CLIENT_STATIC_URL = ''
 
 # Eins host
 EINS_HOST = ''
