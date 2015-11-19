@@ -1574,13 +1574,27 @@ class PublishersTable(object):
             constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
 
             # fetch blacklisted status from db
-            adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(ad_group=adgroup)
+            adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
+                Q(ad_group=adgroup) |
+                Q(campaign=adgroup.campaign) |
+                Q(account=adgroup.campaign.account)
+            )
             adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
             adg_blacklisted_publishers = map(lambda entry: {
                 'domain': entry['name'],
-                'adgroup_id': entry['ad_group__id'],
+                'adgroup_id': adgroup.id,
                 'exchange': entry['source__tracking_slug'].replace('b1_', ''),
             }, adg_blacklisted_publishers)
+
+            # include global, campaign and account stats if they exist
+            global_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
+                everywhere=True
+            )
+            adg_blacklisted_publishers.extend(map(lambda entry: {
+                    'domain': entry['name'],
+                    'exchange': entry['source__tracking_slug'].replace('b1_', ''),
+                }, global_pub_blacklist_qs)
+            )
 
             query_func = None
             if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
