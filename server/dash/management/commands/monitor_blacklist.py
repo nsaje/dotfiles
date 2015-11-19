@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
 
+    @statsd_helper.statsd_timer('dash.commands', 'monitor_blacklist')
     def handle(self, *args, **options):
         logger.info('Monitor publisher blacklisting.')
 
@@ -24,12 +25,14 @@ class Command(BaseCommand):
         batch = []
 
         blacklisted_before = datetime.datetime.utcnow() - datetime.timedelta(days=1)
-        no_stats_after = datetime.datetime.utcnow() - datetime.timedelta(hours=12)
+        no_stats_after = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         processed = 0
 
         for blacklist_entry in dash.models.PublisherBlacklist.objects.filter(
             created_dt__lte=blacklisted_before,
             status=dash.constants.PublisherStatus.BLACKLISTED):
+            if blacklist_entry.ad_group is None:
+                continue
             # fetch blacklisted status from db
             batch.append({
                 'domain': blacklist_entry.name,
@@ -37,11 +40,11 @@ class Command(BaseCommand):
                 'exchange': blacklist_entry.source.tracking_slug.replace('b1_', ''),
             })
 
-            if len(batch) > BATCH_SIZE:
+            if len(batch) >= BATCH_SIZE:
                 totals_data = reports.api_publishers.query_blacklisted_publishers(
-                    no_stats_after,
-                    datetime.datetime.utcnow(),
-                    blacklist=batch
+                    no_stats_after.date(),
+                    datetime.datetime.utcnow().date(),
+                    blacklist=batch,
                 )
                 clicks += totals_data.get('clicks', 0) or 0
                 impressions += totals_data.get('impressions', 0) or 0
@@ -51,11 +54,12 @@ class Command(BaseCommand):
                 processed += BATCH_SIZE
                 print "Processed blacklist entries", processed
                 logger.info("Processed %d blacklist entries", processed)
+                batch = []
 
         if len(batch) > 0:
             totals_data = reports.api_publishers.query_blacklisted_publishers(
-                no_stats_after,
-                datetime.datetime.utcnow(),
+                no_stats_after.date(),
+                datetime.datetime.utcnow().date(),
                 blacklist=batch
             )
             clicks += totals_data.get('clicks', 0) or 0
@@ -80,6 +84,3 @@ class Command(BaseCommand):
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cost', cost)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.ctr', ctr)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cpc', cpc)
-
-
-
