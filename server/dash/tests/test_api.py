@@ -245,6 +245,10 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.props = []
         self.values = []
 
+        patcher = mock.patch('utils.redirector_helper.insert_adgroup')
+        self.mock_insert_adgroup = patcher.start()
+        self.addCleanup(patcher.stop)
+
     def _get_manual_set_property_actions(self, ad_group_source):
         return actionlog.models.ActionLog.objects.filter(
             ad_group_source=ad_group_source,
@@ -262,8 +266,7 @@ class UpdateAdGroupSourceSettings(TestCase):
     def _get_automatic_action_conf(self, action_log):
         return action_log.payload['args']['conf']
 
-    @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_ad_group_name_change(self, insert_adgroup_mock):
+    def test_ad_group_name_change(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
             constants.SourceAction.CAN_MODIFY_AD_GROUP_NAME
@@ -279,10 +282,9 @@ class UpdateAdGroupSourceSettings(TestCase):
         auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
         self.assertEqual(1, len(auto_actions))
         self.assertTrue('name' in self._get_automatic_action_conf(auto_actions[0]))
-        self.assertFalse(insert_adgroup_mock.called)
+        self.assertTrue(self.mock_insert_adgroup.called, 'Should be called because settings are fresh')
 
-    @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_basic_manual_actions(self, insert_adgroup_mock):
+    def test_basic_manual_actions(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.maintenance = True
         ad_group_source.save()
@@ -293,11 +295,10 @@ class UpdateAdGroupSourceSettings(TestCase):
 
         ret = api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
         self.assertEqual([], ret)
-        self.assertFalse(insert_adgroup_mock.called)
+        self.assertTrue(self.mock_insert_adgroup.called, 'Should be called because settings are fresh')
 
-    @mock.patch('dash.api.redirector_helper.insert_adgroup')
     @mock.patch('dash.api.actionlog.api')
-    def test_tracking_code_manual_action(self, mock_api, insert_adgroup_mock):
+    def test_tracking_code_manual_action(self, mock_api):
         ad_group_source = models.AdGroupSource.objects.get(id=16)
 
         adgs1 = models.AdGroupSettings()
@@ -313,12 +314,11 @@ class UpdateAdGroupSourceSettings(TestCase):
         mock_api.init_set_ad_group_manual_property.assert_called_with(
             mock.ANY, None, 'tracking_code', expected_value)
 
-        self.assertTrue(insert_adgroup_mock.called)
-        self.assertEqual(insert_adgroup_mock.call_args[0][0], ad_group_source.ad_group_id)
-        self.assertEqual(insert_adgroup_mock.call_args[0][1], adgs2.tracking_code)
+        self.assertTrue(self.mock_insert_adgroup.called)
+        self.assertEqual(self.mock_insert_adgroup.call_args[0][0], ad_group_source.ad_group_id)
+        self.assertEqual(self.mock_insert_adgroup.call_args[0][1], adgs2.tracking_code)
 
-    @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_tracking_codes_automatic(self, insert_adgroup_mock):
+    def test_tracking_codes_automatic(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
             constants.SourceAction.CAN_MODIFY_TRACKING_CODES
@@ -334,12 +334,11 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertEqual(ret[0].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
         self.assertEqual(ret[1].action, actionlog.constants.Action.SET_CAMPAIGN_STATE)
 
-        self.assertTrue(insert_adgroup_mock.called)
-        self.assertEqual(insert_adgroup_mock.call_args[0][0], ad_group_source.ad_group_id)
-        self.assertEqual(insert_adgroup_mock.call_args[0][1], adgs2.tracking_code)
+        self.assertTrue(self.mock_insert_adgroup.called)
+        self.assertEqual(self.mock_insert_adgroup.call_args[0][0], ad_group_source.ad_group_id)
+        self.assertEqual(self.mock_insert_adgroup.call_args[0][1], adgs2.tracking_code)
 
-    @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_tracking_codes_automatic_per_content_ad(self, insert_adgroup_mock):
+    def test_tracking_codes_automatic_per_content_ad(self):
         ad_group_source1 = models.AdGroupSource.objects.get(id=1)
         ad_group_source1.can_manage_content_ads = True
         ad_group_source1.save()
@@ -360,9 +359,9 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertEqual(1, len(ret))
         self.assertEqual(ret[0].action, actionlog.constants.Action.UPDATE_CONTENT_AD)
 
-        self.assertTrue(insert_adgroup_mock.called)
-        self.assertEqual(insert_adgroup_mock.call_args[0][0], ad_group_source1.ad_group_id)
-        self.assertEqual(insert_adgroup_mock.call_args[0][1], adgs2.tracking_code)
+        self.assertTrue(self.mock_insert_adgroup.called)
+        self.assertEqual(self.mock_insert_adgroup.call_args[0][0], ad_group_source1.ad_group_id)
+        self.assertEqual(self.mock_insert_adgroup.call_args[0][1], adgs2.tracking_code)
 
     def test_target_regions_automatic_action(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
@@ -780,9 +779,7 @@ class UpdateAdGroupSourceSettings(TestCase):
             }
         })
 
-
-    @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_tracking_codes_automatic_action_for_gravity(self, insert_adgroup_mock):
+    def test_tracking_codes_automatic_action_for_gravity(self):
         """ Tests a fix for a bug in gravitys dashboard - when a tracking code does not
         have a value assigned, it should create a manual action, even though the source
         is set to create an automatic action for tracking code changes.
@@ -818,8 +815,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertEqual(0, len(manual_actions))
         self.assertIn('tracking_code', automatic_actions[0].payload['args']['conf'])
 
-    @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_tracking_codes_manual_action_for_gravity(self, insert_adgroup_mock):
+    def test_tracking_codes_manual_action_for_gravity(self):
         """ Tests a fix for a bug in gravitys dashboard - when a tracking code does not
         have a value assigned, it should create a manual action, even though the source
         is set to create an automatic action for tracking code changes.
@@ -917,8 +913,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertEqual([], ret)
         self.assertFalse(manual_actions.exists())
 
-    @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_tracking_propagation_remove_tracking_ids(self, insert_adgroup_mock):
+    def test_tracking_propagation_remove_tracking_ids(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
             constants.SourceAction.CAN_MODIFY_TRACKING_CODES
@@ -934,7 +929,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         adgs2.adobe_tracking_param = ''
 
         api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
-        insert_adgroup_mock.assert_called_with(1, '', False, False, '')
+        self.mock_insert_adgroup.assert_called_with(1, '', False, False, '')
 
         manual_actions = self._get_manual_set_property_actions(ad_group_source)
         auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
@@ -950,8 +945,7 @@ class UpdateAdGroupSourceSettings(TestCase):
             }
         )
 
-    @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_tracking_propagation_add_tracking_ids(self, insert_adgroup_mock):
+    def test_tracking_propagation_add_tracking_ids(self):
         ad_group_source = models.AdGroupSource.objects.get(id=1)
         ad_group_source.source.source_type.available_actions.append(
             constants.SourceAction.CAN_MODIFY_TRACKING_CODES
@@ -968,7 +962,7 @@ class UpdateAdGroupSourceSettings(TestCase):
         adgs2.adobe_tracking_param = 'cid'
 
         api.order_ad_group_settings_update(ad_group_source.ad_group, adgs1, adgs2, None)
-        insert_adgroup_mock.assert_called_with(1, '', True, True, 'cid')
+        self.mock_insert_adgroup.assert_called_with(1, '', True, True, 'cid')
 
         manual_actions = self._get_manual_set_property_actions(ad_group_source)
         auto_actions = self._get_automatic_set_campaign_state_actions(ad_group_source)
@@ -984,21 +978,32 @@ class UpdateAdGroupSourceSettings(TestCase):
             }
         )
 
-    @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_force_propagate_redirects(self, insert_adgroup_mock):
+    def test_propagate_redirects(self):
         adgs1 = models.AdGroupSettings()
         adgs2 = models.AdGroupSettings()
 
-        api.order_ad_group_settings_update(models.AdGroup.objects.get(pk=1), adgs1, adgs2, None, redirects_update=True)
-        insert_adgroup_mock.assert_called_with(1, '', True, False, '')
+        api.order_ad_group_settings_update(models.AdGroup.objects.get(pk=1), adgs1, adgs2, None)
 
-    @mock.patch('dash.api.redirector_helper.insert_adgroup')
-    def test_no_propagation_if_no_force_propagate_redirects(self, insert_adgroup_mock):
-        adgs1 = models.AdGroupSettings()
+        # should insert ad group into redirector as settings are fresh
+        self.mock_insert_adgroup.assert_called_with(1, '', True, False, '')
+
+    def test_no_need_to_propagate_redirects(self):
+        adgs1 = models.AdGroupSettings(ad_group_id=1)
+        adgs1.save(None)
+
         adgs2 = models.AdGroupSettings()
 
-        api.order_ad_group_settings_update(models.AdGroup.objects.get(pk=1), adgs1, adgs2, None, redirects_update=False)
-        self.assertFalse(insert_adgroup_mock.called)
+        api.order_ad_group_settings_update(models.AdGroup.objects.get(pk=1), adgs1, adgs2, None)
+        # no need to insert into redirector - settings exist from before, no changes
+        self.assertFalse(self.mock_insert_adgroup.called)
+
+    def test_changes_propagate_redirects(self):
+        adgs1 = models.AdGroupSettings()
+        adgs2 = models.AdGroupSettings(tracking_code='asd')
+
+        api.order_ad_group_settings_update(models.AdGroup.objects.get(pk=1), adgs1, adgs2, None)
+        # should insert ad group into redirector as relevant settings were changed
+        self.mock_insert_adgroup.assert_called_with(1, 'asd', True, False, '')
 
 
 class UpdateAdGroupSourceState(TestCase):

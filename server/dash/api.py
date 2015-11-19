@@ -645,8 +645,7 @@ def update_content_ad_source_state(content_ad_source, data):
     content_ad_source.save()
 
 
-def order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=True,
-                                   iab_update=False, redirects_update=False):
+def order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=True, iab_update=False):
     changes = current_settings.get_setting_changes(new_settings)
 
     campaign_settings = ad_group.campaign.get_current_settings()
@@ -655,8 +654,19 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     if iab_update:
         changes['iab_category'] = campaign_settings.iab_category
 
-    if redirects_update:
-        # TODO: temporary hack to force ad group insertion into redirector
+    has_tracking_changes = any(prop in changes for prop in
+                               ['tracking_code', 'enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param'])
+
+    # insert settings into redirector if settings are fresh or there are some changes
+    if (current_settings.id is None or has_tracking_changes):
+        redirector_helper.insert_adgroup(ad_group.id, new_settings.get_tracking_codes(),
+                                         new_settings.enable_ga_tracking,
+                                         new_settings.enable_adobe_tracking,
+                                         new_settings.adobe_tracking_param)
+
+    # add tracking_code key if any change in tracking settings, so that the tracking codes
+    # get recalculated and propagated to external sources
+    if has_tracking_changes and 'tracking_code' not in changes:
         changes['tracking_code'] = new_settings.get_tracking_codes()
 
     if not changes:
@@ -665,16 +675,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     order = actionlog.models.ActionLogOrder.objects.create(
         order_type=actionlog.constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
     )
-
-    if any(prop in changes for prop in
-           ['tracking_code', 'enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param']):
-        redirector_helper.insert_adgroup(ad_group.id, new_settings.get_tracking_codes(),
-                                         new_settings.enable_ga_tracking,
-                                         new_settings.enable_adobe_tracking,
-                                         new_settings.adobe_tracking_param)
-
-        if 'tracking_code' not in changes:
-            changes['tracking_code'] = new_settings.get_tracking_codes()
 
     actions = []
     for field_name, field_value in changes.iteritems():
@@ -866,7 +866,6 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
                 ad_group=ad_group,
                 source=publisher['source']
             ).first()
-
 
         blacklisted_publishers[source_type_id] =\
             blacklisted_publishers.get(source_type_id, [])

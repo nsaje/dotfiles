@@ -257,6 +257,7 @@ urlpatterns += patterns(
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/',
         login_required(dash.views.views.CampaignAdGroups.as_view()),
+        name='campaign_ad_groups'
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/agency/',
