@@ -85,7 +85,7 @@ if os.path.isfile('build_number.txt'):
     with open('build_number.txt', 'r') as build_number:
         BUILD_NUMBER = build_number.read().strip()
 
-    CLIENT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}/dist'.format(BUILD_NUMBER)
+    CLIENT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}/client'.format(BUILD_NUMBER)
 else:
     # TODO: figure out what to do if the build number is not available
     CLIENT_STATIC_URL = ''
