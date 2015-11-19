@@ -979,7 +979,8 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'created_dt',
         'created_by',
     )
-
+    date_hierarchy = 'start_date'
+    list_filter = ['status', 'license_fee', 'created_by']
     readonly_fields = ('created_dt', 'created_by',)
     
 
@@ -992,7 +993,8 @@ class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'license_fee',
         'created_dt',
     )
-
+    date_hierarchy = 'start_date'
+    list_filter = ['credit', 'created_by']
     readonly_fields = ('created_dt', 'created_by',)
 
 

@@ -18,7 +18,7 @@ class CreditsTestCase(TestCase):
     fixtures = ['test_io.yaml']
     
     def test_creation(self):
-        self.assertEqual(models.CreditLineItem.objects.all().count(), 1)
+        self.assertEqual(models.CreditLineItem.objects.all().count(), 2)
         
         with self.assertRaises(ValidationError) as err:
             create_credit(
@@ -33,7 +33,7 @@ class CreditsTestCase(TestCase):
         self.assertTrue('license_fee' in err.exception.error_dict)
         self.assertFalse('start_date' in err.exception.error_dict) # we check this in form
         self.assertFalse('end_date' in err.exception.error_dict) # we check this in form
-        self.assertEqual(models.CreditLineItem.objects.all().count(), 1)
+        self.assertEqual(models.CreditLineItem.objects.all().count(), 2)
 
         with self.assertRaises(ValidationError) as err:
             create_credit(
@@ -48,7 +48,7 @@ class CreditsTestCase(TestCase):
         self.assertTrue('license_fee' in err.exception.error_dict)
         self.assertFalse('start_date' in err.exception.error_dict)
         self.assertFalse('end_date' in err.exception.error_dict)
-        self.assertEqual(models.CreditLineItem.objects.all().count(), 1)
+        self.assertEqual(models.CreditLineItem.objects.all().count(), 2)
         
         credit = create_credit(
             account_id=1,
@@ -330,7 +330,7 @@ class BudgetsTestCase(TestCase):
     fixtures = ['test_io.yaml']
 
     def test_creation(self):
-        self.assertEqual(models.CreditLineItem.objects.all().count(), 1)
+        self.assertEqual(models.CreditLineItem.objects.all().count(), 2)
         c = create_credit(
             account_id=2,
             start_date=TODAY + datetime.timedelta(1),
@@ -563,6 +563,48 @@ class BudgetsTestCase(TestCase):
             campaign_id=1,
         )
         self.assertEqual(b.credit, c)
+
+    def test_delete(self):
+        c = create_credit(
+            account_id=2,
+            start_date=TODAY - datetime.timedelta(10),
+            end_date=TODAY + datetime.timedelta(10),
+            amount=10000,
+            license_fee=Decimal('0.456'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        b1 = create_budget(
+            credit=c,
+            amount=800,
+            start_date=TODAY-datetime.timedelta(4),
+            end_date=TODAY+datetime.timedelta(8),
+            campaign_id=1,
+        )
+        b2 = create_budget(
+            credit=c,
+            amount=800,
+            start_date=TODAY+datetime.timedelta(4),
+            end_date=TODAY+datetime.timedelta(8),
+            campaign_id=1,
+        )
+        b3 = create_budget(
+            credit=c,
+            amount=800,
+            start_date=TODAY+datetime.timedelta(4),
+            end_date=TODAY+datetime.timedelta(8),
+            campaign_id=1,
+        )
+        with self.assertRaises(AssertionError) as _:
+            b1.delete()
+        with self.assertRaises(AssertionError) as _:
+            models.BudgetLineItem.objects.filter(pk__in=[b1.pk, b2.pk, b3.pk]).delete()
+
+        models.BudgetLineItem.objects.filter(pk__in=[b2.pk]).delete()
+        b3.delete()
+
+        self.assertEqual(c.budgets.all().count(), 1)
+        
         
     def test_form(self):
         c = create_credit(

@@ -10,6 +10,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
     $scope.errors = {};
     $scope.minDate = null;
     $scope.maxDate = null;
+    $scope.saveRequestInProgress = false;
     
     $scope.initStartDate = null; 
     $scope.endStartDate = null; 
@@ -26,16 +27,16 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
         return fees;
     };
 
-    $scope.openDatePicker = function (type) {
-        if (type === 'startDate') {
-            $scope.startDatePicker.isOpen = true;
-        } else if (type === 'endDate') {
-            $scope.endDatePicker.isOpen = true;
-        }
+    $scope.openStartDatePicker = function () {
+        $scope.startDatePicker.isOpen = true;
+    };
+    $scope.openEndDatePicker = function () {
+        $scope.endDatePicker.isOpen = true;
     };
 
-    $scope.checkCreditDates = function () {
+    $scope.checkCreditValues = function () {
         $timeout(function () {
+            console.log('delam', $scope.budgetItem.credit)
             var id = $scope.budgetItem.credit.id;
             $scope.getAvailableCredit().forEach(function (obj) {
                 if (obj.id !== id) { return; }
@@ -44,6 +45,9 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
                 $scope.maxDate = obj.endDate;
                 $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
                 $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
+                $scope.budgetItem.amount = obj.total;
+                $scope.budgetItem.startDate = $scope.initStartDate;
+                $scope.budgetItem.endDate = $scope.initEndDate;
             });
         }, 100); // to be sure that the selected id is correct
         
@@ -68,13 +72,14 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
     };
 
     $scope.discardBudgetItem = function () {
-        $modalInstance.close(null);
+        $scope.discarded = true;
+        closeModal();
     };
 
     $scope.deleteBudgetItem = function () {
         if (!confirm("Are you sure you want to delete the budget line item?")) { return; }
         api.campaignBudgetPlus.delete($scope.campaign.id, $scope.selectedBudgetId).then(function () {
-            $modalInstance.close(null);
+            closeModal();
         });
     };
 
@@ -86,14 +91,15 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
         $scope.maxDate = $scope.getAvailableCredit()[0].endDate;
         $scope.initStartDate = moment($scope.minDate).toDate();
         $scope.initEndDate = moment($scope.maxDate).toDate();
+        $scope.discarded = false;
 
         if ($scope.isNew) {
             $scope.budgetItem.startDate = $scope.initStartDate;
             $scope.budgetItem.endDate = $scope.initEndDate;
             
-            $scope.budgetItem.credit = {};
-            $scope.budgetItem.credit.id = $scope.getAvailableCredit()[0].id;
-
+            $scope.budgetItem.credit = $scope.getAvailableCredit()[0];
+            
+            $scope.budgetItem.amount = $scope.getAvailableCredit()[0].total;
             $scope.availableCredit = $scope.getAvailableCredit(false);
         } else {
             api.campaignBudgetPlus.get(
@@ -109,11 +115,16 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
 
                 $scope.canDelete = data.state == constants.budgetLineItemStatus.PENDING;
                 $scope.availableCredit = $scope.getAvailableCredit(false, data.credit.id);
-            }, function () {
-                
             });
         }
     };
+
+    function closeModal(data) {
+        $timeout(function() {
+            $scope.saveRequestInProgress = false;
+            $modalInstance.close(data);
+        }, 1000);
+    }
 
     $scope.init();
 }]);

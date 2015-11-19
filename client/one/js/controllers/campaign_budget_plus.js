@@ -32,11 +32,11 @@ oneApp.controller('CampaignBudgetPlusCtrl', ['$scope', '$state', '$modal',  'api
     
     $scope.addBudgetItem = function () {
         $scope.selectedBudgetId = null;
-        openModal();
+        return openModal();
     };
     $scope.editBudgetItem = function (id) {
         $scope.selectedBudgetId = id;
-        openModal();
+        return openModal();
     };
 
     $scope.init = function () {
