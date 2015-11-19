@@ -41,6 +41,9 @@ test:
             parallel: true
     post:
         - 'mkdir client/dist && git rev-parse HEAD | tee server/git_commit_hash.txt client/dist/git_commit_hash.txt'
+        - 'echo "${CIRCLE_BUILD_NUM}" > build_number.txt; fi':
+            parallel: true
+            pwd: server
         - 'if [[ "$CIRCLE_NODE_INDEX" == "0" ]]; then  tar -pc * -zf ../server.tar.gz; fi':
             parallel: true
             pwd: server
