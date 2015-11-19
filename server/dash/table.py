@@ -1675,7 +1675,7 @@ class PublishersTable(object):
             )
             adg_blacklisted_publishers.extend(map(lambda pub_bl: {
                     'domain': pub_bl.name,
-                    'exchange': pub_bl.tracking_slug.replace('b1_', ''),
+                    'exchange': pub_bl.source.tracking_slug.replace('b1_', ''),
                 }, global_pub_blacklist_qs)
             )
 
