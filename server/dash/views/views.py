@@ -358,6 +358,9 @@ class AdGroupRestore(api_common.BaseApiView):
 
         actionlog.sync.AdGroupSync(ad_group).trigger_all(self.request)
 
+        for ad_group_source in ad_group.sources:
+            api.refresh_publisher_blacklist(ad_group_source, request)
+
         helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_AD_GROUP,
                                             ad_group=ad_group)
 
