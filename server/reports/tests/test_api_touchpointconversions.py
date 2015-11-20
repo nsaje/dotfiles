@@ -146,6 +146,7 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
                                         '"date">=%s',
                                         '"date"<=%s'])
 
+
 class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
 
     fixtures = ['test_api_touchpointconversions.yaml', 'test_api_touchpointconversions.stats.yaml']
