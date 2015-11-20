@@ -1557,64 +1557,14 @@ class PublishersTable(object):
         if set(models.Source.objects.all()) != set(filtered_sources):
             constraints['exchange'] = map_exchange_to_source_name.keys()
 
-        if not show_blacklisted_publishers or\
-                show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
-            publishers_data = reports.api_publishers.query(
-                start_date, end_date,
-                breakdown_fields=['domain', 'exchange'],
-                order_fields=[order],
-                constraints=constraints,
-            )
-            totals_data = reports.api_publishers.query(
-                start_date, end_date,
-                constraints=constraints,
-            )
-        elif show_blacklisted_publishers in (
-            constants.PublisherBlacklistFilter.SHOW_ACTIVE,
-            constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
-
-            # fetch blacklisted status from db
-            adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
-                Q(ad_group=adgroup) |
-                Q(campaign=adgroup.campaign) |
-                Q(account=adgroup.campaign.account)
-            )
-            adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
-            adg_blacklisted_publishers = map(lambda entry: {
-                'domain': entry['name'],
-                'adgroup_id': adgroup.id,
-                'exchange': entry['source__tracking_slug'].replace('b1_', ''),
-            }, adg_blacklisted_publishers)
-
-            # include global, campaign and account stats if they exist
-            global_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
-                everywhere=True
-            )
-            adg_blacklisted_publishers.extend(map(lambda entry: {
-                    'domain': entry['name'],
-                    'exchange': entry['source__tracking_slug'].replace('b1_', ''),
-                }, global_pub_blacklist_qs)
-            )
-
-            query_func = None
-            if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
-                query_func = reports.api_publishers.query_active_publishers
-            else:
-                query_func = reports.api_publishers.query_blacklisted_publishers
-
-            publishers_data = query_func(
-                start_date, end_date,
-                breakdown_fields=['domain', 'exchange'],
-                order_fields=[order],
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-            totals_data = query_func(
-                start_date, end_date,
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-
+        publishers_data, totals_data = self._query_filtered_publishers(
+            show_blacklisted_publishers,
+            start_date,
+            end_date,
+            adgroup,
+            constraints,
+            order
+        )
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
         publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(publishers_data, page, size)
@@ -1688,6 +1638,66 @@ class PublishersTable(object):
             'order': order,
         }
         return response
+
+    def _query_filtered_publishers(self, show_blacklisted_publishers, start_date, end_date, adgroup, constraints, order):
+        if not show_blacklisted_publishers or\
+                show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
+            publishers_data = reports.api_publishers.query(
+                start_date, end_date,
+                breakdown_fields=['domain', 'exchange'],
+                order_fields=[order],
+                constraints=constraints,
+            )
+            totals_data = reports.api_publishers.query(
+                start_date, end_date,
+                constraints=constraints,
+            )
+        elif show_blacklisted_publishers in (
+            constants.PublisherBlacklistFilter.SHOW_ACTIVE,
+            constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
+
+            # fetch blacklisted status from db
+            adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
+                Q(ad_group=adgroup) |
+                Q(campaign=adgroup.campaign) |
+                Q(account=adgroup.campaign.account)
+            )
+            adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
+            adg_blacklisted_publishers = map(lambda entry: {
+                'domain': entry['name'],
+                'adgroup_id': adgroup.id,
+                'exchange': entry['source__tracking_slug'].replace('b1_', ''),
+            }, adg_blacklisted_publishers)
+
+            # include global, campaign and account stats if they exist
+            global_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
+                everywhere=True
+            )
+            adg_blacklisted_publishers.extend(map(lambda pub_bl: {
+                    'domain': pub_bl.name,
+                    'exchange': pub_bl.source.tracking_slug.replace('b1_', ''),
+                }, global_pub_blacklist_qs)
+            )
+
+            query_func = None
+            if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+                query_func = reports.api_publishers.query_active_publishers
+            else:
+                query_func = reports.api_publishers.query_blacklisted_publishers
+
+            publishers_data = query_func(
+                start_date, end_date,
+                breakdown_fields=['domain', 'exchange'],
+                order_fields=[order],
+                constraints=constraints,
+                blacklist=adg_blacklisted_publishers
+            )
+            totals_data = query_func(
+                start_date, end_date,
+                constraints=constraints,
+                blacklist=adg_blacklisted_publishers
+            )
+        return publishers_data, totals_data
 
     def get_totals(self,
                    user,
