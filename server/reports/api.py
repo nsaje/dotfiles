@@ -317,7 +317,7 @@ def row_has_postclick_data(row):
                api_helpers.POSTCLICK_ACQUISITION_FIELDS + api_helpers.POSTCLICK_ENGAGEMENT_FIELDS)
 
 def row_has_conversion_goal_data(row):
-    return any(k.startswith('conversion_goal__') for k in row.keys())
+    return any(k.startswith('conversion_goal_') and v > 0 for k, v in row.iteritems())
 
 
 def _get_ad_group_ids_with_postclick_data(key, objects, exclude_archived=True):
