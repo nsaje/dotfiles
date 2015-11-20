@@ -1613,10 +1613,14 @@ class PublishersTable(object):
                          blacklisted_pub.account == adgroup.campaign.account or
                          blacklisted_pub.campaign == adgroup.campaign or
                          blacklisted_pub.ad_group == adgroup):
+
                     if blacklisted_pub.status == constants.PublisherStatus.BLACKLISTED:
                         publisher_data['blacklisted'] = 'Blacklisted'
                     elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
                         publisher_data['blacklisted'] = 'Pending'
+                    level, level_verbose = self._convert_blacklist_to_level(blacklisted_pub)
+                    publisher_data['level'] = level
+                    publisher_data['level_description'] = level_verbose
 
         response = {
             'rows': self.get_rows(
@@ -1638,6 +1642,20 @@ class PublishersTable(object):
             'order': order,
         }
         return response
+
+    def _convert_blacklist_to_level(self, blacklisted_pub):
+        level = constants.PublisherBlacklistLevel.ADGROUP
+        level_verbose = "Blacklisted in this ad group"
+        if blacklisted_pub.campaign is not None:
+            level = constants.PublisherBlacklistLevel.CAMPAIGN
+            level_verbose = "Blacklisted in this campaign"
+        if blacklisted_pub.account is not None:
+            level = constants.PublisherBlacklistLevel.ACCOUNT
+            level_verbose = "Blacklisted in this account"
+        if blacklisted_pub.everywhere:
+            level = constants.PublisherBlacklistLevel.GLOBAL
+            level_verbose = "Blacklisted globally"
+        return level, level_verbose
 
     def _query_filtered_publishers(self, show_blacklisted_publishers, start_date, end_date, adgroup, constraints, order):
         if not show_blacklisted_publishers or\
@@ -1738,6 +1756,10 @@ class PublishersTable(object):
                 'impressions': publisher_data.get('impressions', None),
                 'ctr': publisher_data.get('ctr', None),
             }
+
+            if publisher_data.get('level'):
+                row['level'] = publisher_data['level']
+                row['level_description'] = publisher_data['level_description']
 
             rows.append(row)
 
