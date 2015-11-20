@@ -544,6 +544,33 @@ class AdGroupArchiveRestoreTest(TestCase):
         )
         self.assertEqual(2, pub_blacklist_actions.count())
 
+        first_al_entry = pub_blacklist_actions[0]
+        self.assertDictEqual({
+            u'key': [1],
+            u'level': u'account',
+            'publishers': [
+                {
+                    u'domain': u'google.com',
+                    u'exchange': u'adiant',
+                }
+            ],
+            'state': 2
+        }, first_al_entry.payload['args'])
+
+        second_al_entry = pub_blacklist_actions[1]
+        self.assertDictEqual({
+            u'key': [1],
+            u'level': u'campaign',
+            'publishers': [
+                {
+                    u'domain': u'zemanta.com',
+                    u'exchange': u'adiant',
+                }
+            ],
+            'state': 2
+        }, second_al_entry.payload['args'])
+
+
 
 class AdGroupContentAdArchive(TestCase):
     fixtures = ['test_api', 'test_views']
