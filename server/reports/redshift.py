@@ -438,14 +438,14 @@ class RSModel(object):
         if subquery:
             from_table, from_params, from_json_fields = self._prepare_select_query(
                 returned_fields=subquery['returned_fields'],
-                breakdown_fields=[],
-                order_fields=[],
-                offset=None,
-                limit=None,
+                breakdown_fields=subquery.get('breakdown_fields', []),
+                order_fields=subquery.get('order_fields', []),
+                offset=subquery.get('offset'),
+                limit=subquery.get('limit'),
                 constraints=subquery.get('constraints', {}),
                 constraints_list=subquery.get('constraints_list', []),
-                having_constraints=None,
-                subquery=None
+                having_constraints=subquery.get('having_constraints'),
+                subquery=subquery.get('subquery')
             )
             from_table = '(' + from_table + ')'
             json_fields.extend(from_json_fields)
