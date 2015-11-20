@@ -1,7 +1,6 @@
 import json
 import logging
 import time
-import urllib
 import urllib2
 
 from django.conf import settings
@@ -34,7 +33,17 @@ def insert_redirect(url, content_ad_id, ad_group_id):
 
         return _call_api_retry(settings.R1_REDIRECTS_API_URL, data)
     except Exception as e:
-        logger.exception('Exception in insert_redirect_try')
+        logger.exception('Exception in insert_redirect')
+        raise e
+
+
+def update_redirect(url, redirect_id):
+    try:
+        data = json.dumps({'url': url})
+
+        _call_api_retry(settings.R1_REDIRECTS_API_URL + redirect_id + '/', data, method='PUT')
+    except Exception as e:
+        logger.exception('Exception in update_redirect')
         raise e
 
 
@@ -49,7 +58,22 @@ def insert_adgroup(ad_group_id, tracking_codes, enable_ga_tracking, enable_adobe
         })
         return _call_api_retry(url, data, method='PUT')
     except Exception as e:
-        logger.exception('Exception in insert_adgroup_try')
+        logger.exception('Exception in insert_adgroup')
+        raise e
+
+
+def get_adgroup(ad_group_id):
+    url = settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group_id)
+    try:
+        adgroup_dict = _call_api_retry(url, method='GET')
+        return {
+            'enable_ga_tracking': adgroup_dict.get('enablegatracking'),
+            'enable_adobe_tracking': adgroup_dict.get('enableadobetracking'),
+            'adobe_tracking_param': adgroup_dict.get('adobetrackingparam'),
+            'tracking_code': adgroup_dict.get('trackingcode'),
+        }
+    except Exception as e:
+        logger.exception('Exception in get_adgroup')
         raise e
 
 

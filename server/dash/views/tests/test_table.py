@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import json
+import unittest
 from mock import patch
 from django.contrib.auth import models as authmodels
 
@@ -795,7 +796,9 @@ class AdGroupPublishersTableTest(TestCase):
                                                         u'ctr': 99.0,
                                                         u'impressions': 1560})
 
-    def test_get_filtered_sources(self, mock_query):
+
+    @patch('dash.table.reports.api_publishers.query_active_publishers')
+    def test_get_filtered_sources(self, mock_active, mock_query):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
@@ -816,7 +819,7 @@ class AdGroupPublishersTableTest(TestCase):
          'impressions': 10560,
          'date': date.isoformat(),
         }
-        mock_query.side_effect = [mock_stats1, mock_stats2]
+        mock_active.side_effect = [mock_stats1, mock_stats2]
 
         ad_group = models.AdGroup.objects.get(pk=1)
 
@@ -826,7 +829,8 @@ class AdGroupPublishersTableTest(TestCase):
             'size': 2,
             'start_date': date.isoformat(),
             'end_date': date.isoformat(),
-            'filtered_sources': '1'
+            'filtered_sources': '1',
+            'show_blacklisted_publishers': constants.PublisherBlacklistFilter.SHOW_ACTIVE,
         }
 
         response = self.client.get(
@@ -835,18 +839,20 @@ class AdGroupPublishersTableTest(TestCase):
             follow=True
         )
 
-        mock_query.assert_any_call(
+        mock_active.assert_any_call(
             date,
             date,
+            blacklist=[],
             breakdown_fields=['domain', 'exchange'],
             order_fields=['domain'],
             constraints={'ad_group': ad_group.id,
                         'exchange': ['adsnative']}
         )
 
-        mock_query.assert_any_call(
+        mock_active.assert_any_call(
             date,
             date,
+            blacklist=[],
             constraints = {"ad_group": ad_group.id,
                         'exchange': ['adsnative']}
         )
@@ -861,6 +867,132 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
         self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'AdsNative', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123, u'source_id': 1})
+
+    """
+    # TODO: Fix this
+    @patch('dash.table.reports.api_publishers.query_blacklisted_publishers')
+    def test_get_filtered_blacklisted_sources(self, mock_blacklisted, mock_query):
+        # blacklist must first exist in order to be deleted
+        models.PublisherBlacklist.objects.create(
+            name="google.com",
+            ad_group=models.AdGroup.objects.get(pk=1),
+            source=models.Source.objects.get(tracking_slug='b1_adiant'),
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+
+        models.PublisherBlacklist.objects.create(
+            name="google1.com",
+            campaign=models.Campaign.objects.get(pk=1),
+            source=models.Source.objects.get(tracking_slug='b1_adiant'),
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+
+        models.PublisherBlacklist.objects.create(
+            name="google2.com",
+            account=models.Account.objects.get(pk=1),
+            source=models.Source.objects.get(tracking_slug='b1_adiant'),
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+
+        models.PublisherBlacklist.objects.create(
+            name="google3.com",
+            everywhere=True,
+            source=models.Source.objects.get(tracking_slug='b1_adiant'),
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+
+        date = datetime.date(2015, 2, 22)
+
+        mock_stats1 = [{
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+         'domain': 'example.com',
+         'exchange': 'adsnative',
+        }]
+        mock_stats2 = {
+         'clicks': 123,
+         'cost': 2.4,
+         'cpc': 1.3,
+         'ctr': 100.0,
+         'impressions': 10560,
+         'date': date.isoformat(),
+        }
+        mock_blacklisted.side_effect = [mock_stats1, mock_stats2]
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        params = {
+            'page': 1,
+            'order': 'domain',
+            'size': 2,
+            'start_date': date.isoformat(),
+            'end_date': date.isoformat(),
+            'filtered_sources': '1',
+            'show_blacklisted_publishers': constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,
+        }
+
+        response = self.client.get(
+            reverse('ad_group_publishers_table', kwargs={'id_': ad_group.id, 'level_': 'ad_groups'}),
+            params,
+            follow=True
+        )
+
+        expected_blacklist = [
+            {
+                'domain': 'google2.com',
+                'adgroup_id': 1,
+                'exchange': 'adiant',
+            },
+            {
+                'domain': 'google1.com',
+                'adgroup_id': 1,
+                'exchange': 'adiant',
+            },
+            {
+                'domain': 'google.com',
+                'adgroup_id': 1,
+                'exchange': 'adiant',
+            },
+            {
+                'domain': 'google3.com',
+                'exchange': 'adiant',
+            }
+        ]
+
+        from pudb import set_trace; set_trace()
+        mock_blacklisted.assert_any_call(
+            date,
+            date,
+            blacklist=expected_blacklist,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['domain'],
+            constraints={'ad_group': ad_group.id,
+                        'exchange': ['adsnative']}
+        )
+
+        mock_blacklisted.assert_any_call(
+            date,
+            date,
+            blacklist=expected_blacklist,
+            constraints = {"ad_group": ad_group.id,
+                        'exchange': ['adsnative']}
+        )
+
+        result = json.loads(response.content)
+
+        self.assertIn('success', result)
+        self.assertEqual(result['success'], True)
+
+        self.assertIn('data', result)
+
+        self.assertIn('rows', result['data'])
+        self.assertEqual(len(result['data']['rows']), 1)
+        self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'AdsNative', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123, u'source_id': 1})
+    """
 
     def test_get_reverse_order(self, mock_query):
         date = datetime.date(2015, 2, 22)

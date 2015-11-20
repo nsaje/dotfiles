@@ -71,6 +71,12 @@ Apply the schema to the newly created Amazon Redshift database:
 python manage.py redshift_migrate
 ```
 
+There are Redshift unit tests but they aren't run automatically. You can run them with:
+
+```bash
+python manage.py test --redshift
+```
+
 
 ### Visualize models
 ```bash

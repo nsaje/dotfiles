@@ -83,8 +83,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     };
 
     $scope.setBulkAction = function(level, action, enabled) {
-        var prefix = level || '',
-            matchRegex = new RegExp('^'.concat(prefix, '-', action, '$'));
+        var postfix = level || '.*',
+            matchRegex = new RegExp('^'.concat(action, '-', postfix, '$'));
         
         $scope.bulkActions.forEach(function (bulkAction) {
             if (matchRegex.test(bulkAction.value)) {

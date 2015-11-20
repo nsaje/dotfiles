@@ -286,10 +286,13 @@ oneApp.controller('MainCtrl',
                 $scope.accounts.some(function (account) {
                     id = account.id;
 
-                    if (id) {
+                    if (id && account.archived === false) {
                         return true;
                     }
+
+                    return false;
                 });
+
                 state = $scope.getDefaultAccountState();
             }
         }

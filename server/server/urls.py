@@ -462,6 +462,15 @@ urlpatterns += patterns(
     )
 )
 
+# Crossvalidation Api
+urlpatterns += patterns(
+    '',
+    url(
+        r'^api/crossvalidation$',
+        reports.views.crossvalidation,
+        name='api.crossvalidation',
+    )
+)
 
 # Conversion Api
 urlpatterns += patterns(

@@ -28,11 +28,11 @@ DATABASES = {
     },
     STATS_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': 5439
+        'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'one'),
+        'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'one'),
+        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'eins'),
+        'HOST': os.environ.get('DB_PORT_5432_TCP_ADDR', 'db'),
+        'PORT': int(os.environ.get('DB_PORT_5432_TCP_PORT', 5432)),
     },
     STATS_E2E_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -156,5 +156,7 @@ R1_VALIDATE_API_URL = 'https://r1.zemanta.com/api/validate/'
 R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/'
 R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions/request/{date}/{account_id}/{slug}/'
 R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions/result/{job_id}/'
+
+BIDDER_API_SIGN_KEY = ''
 
 SHARETHROUGH_PARAM_SIGN_KEY = ''
