@@ -162,8 +162,8 @@ module.exports = function (grunt) {
         less: {
             options: {
                 cleancss: true,
-                rootpath: grunt.option('static_url') !== undefined ?
-                    "https://s3.amazonaws.com/z1-static/build-" + grunt.option('static_url') + "/client/one/" :
+                rootpath: grunt.option('build-number') !== undefined ?
+                    "https://s3.amazonaws.com/z1-static/build-" + grunt.option('build-number') + "/client/one/" :
                     undefined
             },
             one: {
