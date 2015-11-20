@@ -989,7 +989,7 @@ class UpdateAdGroupSourceSettings(TestCase):
 
     def test_no_need_to_propagate_redirects(self):
         adgs1 = models.AdGroupSettings(ad_group_id=1)
-        adgs1.save(None)
+        adgs1.save(None)  # id is not null - settings are not fresh
 
         adgs2 = models.AdGroupSettings()
 
@@ -998,7 +998,8 @@ class UpdateAdGroupSourceSettings(TestCase):
         self.assertFalse(self.mock_insert_adgroup.called)
 
     def test_changes_propagate_redirects(self):
-        adgs1 = models.AdGroupSettings()
+        adgs1 = models.AdGroupSettings(ad_group_id=1)
+        adgs1.save(None)  # id is not null - settings are not fresh
         adgs2 = models.AdGroupSettings(tracking_code='asd')
 
         api.order_ad_group_settings_update(models.AdGroup.objects.get(pk=1), adgs1, adgs2, None)
