@@ -146,7 +146,6 @@ class ApiTouchpointConversionsQueryTestCase(TestCase):
                                         '"date">=%s',
                                         '"date"<=%s'])
 
-
 class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
 
     fixtures = ['test_api_touchpointconversions.yaml', 'test_api_touchpointconversions.stats.yaml']
@@ -173,6 +172,19 @@ class ApiTouchpointConversionsDuplicatesRedshiftTest(RedshiftTestCase):
 
         for k, v in totals_expected.iteritems():
             self.assertEqual(v, totals[k])
+
+    def test_no_breakdown(self):
+        d1 = datetime.date(2015, 11, 1)
+        d2 = datetime.date(2015, 11, 30)
+        ad_group = dash.models.AdGroup.objects.get(id=1)
+        start_date = datetime.date(2015, 11, 1)
+        end_date = datetime.date(2015, 11, 18)
+        breakdown = []
+        conversion_goals = ad_group.campaign.conversiongoal_set.all()
+        constraints = {'ad_group': ad_group, 'source': dash.models.Source.objects.all()}
+
+        result = api_touchpointconversions.query(d1, d2, conversion_goals=conversion_goals, constraints=constraints)
+        self.assertEqual(result, [{'account': 1, 'conversion_count': 1L, 'touchpoint_count': 3L, 'slug': u'slug1'}])
 
     def test_no_duplicates_content_ad_level(self):
         d1 = datetime.date(2015, 11, 1)
