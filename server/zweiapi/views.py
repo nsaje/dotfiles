@@ -22,8 +22,10 @@ import actionlog.zwei_actions
 
 import dash.api
 import dash.models
+import reports.refresh
 import reports.update
 import reports.api_publishers
+import reports.daily_statements
 from reports.api import get_day_cost
 
 from utils import request_signer
@@ -92,7 +94,7 @@ def _get_error_message(data):
     return '\n'.join(message)
 
 
-def _prepare_report_rows(ad_group, source, data_rows, filter_by_content_ad_sources=False):
+def _prepare_report_rows(ad_group, source, data_rows):
     raw_articles = [{'url': row['url'], 'title': row['title']} for row in data_rows]
     articles = dash.api.reconcile_articles(ad_group, raw_articles)
 
@@ -100,38 +102,32 @@ def _prepare_report_rows(ad_group, source, data_rows, filter_by_content_ad_sourc
         raise Exception('Not all articles were reconciled')
 
     content_ad_sources = {}
-    if filter_by_content_ad_sources:
-        for content_ad_source in dash.models.ContentAdSource.objects.filter(
-                content_ad__ad_group=ad_group,
-                source=source):
-            content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
+    for content_ad_source in dash.models.ContentAdSource.objects.filter(
+            content_ad__ad_group=ad_group,
+            source=source):
+        content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
 
     stats_rows = []
     for article, data_row in zip(articles, data_rows):
+        if 'id' not in data_row:
+            raise Exception('\'id\' field not present in data row.')
 
-        content_ad_source = None
-        data_row_id = data_row.get('id')
-        if data_row_id is not None:
-            content_ad_source = content_ad_sources.get(data_row_id)
+        if data_row['id'] not in content_ad_sources:
+            raise Exception('Stats for an unknown id. ad group={}. source={}. id={}.'.format(
+                ad_group.id,
+                source.id,
+                data_row['id']
+            ))
 
-        r = {
+        stats_rows.append({
+            'id': data_row['id'],
             'article': article,
             'impressions': data_row['impressions'],
             'clicks': data_row['clicks'],
-            'data_cost_cc': data_row.get('data_cost_cc') or 0
-        }
-
-        # TODO: why is this different for ArticleStats and for ContentAdStats?
-        if data_row.get('cost_cc') is None:
-            r['cost_cc'] = data_row['cpc_cc'] * data_row['clicks']
-        else:
-            r['cost_cc'] = data_row['cost_cc']
-
-        if filter_by_content_ad_sources:
-            r['content_ad_source'] = content_ad_source
-            r['id'] = data_row_id
-
-        stats_rows.append(r)
+            'data_cost_cc': data_row.get('data_cost_cc') or 0,
+            'cost_cc': data_row['cost_cc'],
+            'content_ad_source': content_ad_sources[data_row['id']],
+        })
 
     return stats_rows
 
@@ -157,15 +153,20 @@ def _process_zwei_response(action, data, request):
 
         return
 
+    if action.action == actionlog.constants.Action.FETCH_REPORTS:
+        # has to be processed outside of transaction
+        action.state = actionlog.constants.ActionState.SUCCESS
+        _fetch_reports_callback(action, data)
+        logger.info('Processing reports action successful. Action: %s', action)
+        action.save()
+        return
+
     actions = []
     with transaction.atomic():
         action.state = actionlog.constants.ActionState.SUCCESS
         action.save()
 
-        if action.action == actionlog.constants.Action.FETCH_REPORTS:
-            _fetch_reports_callback(action, data)
-
-        elif action.action == actionlog.constants.Action.FETCH_REPORTS_BY_PUBLISHER:
+        if action.action == actionlog.constants.Action.FETCH_REPORTS_BY_PUBLISHER:
             _fetch_reports_by_publisher_callback(action, data)
 
         elif action.action == actionlog.constants.Action.FETCH_CAMPAIGN_STATUS:
@@ -341,15 +342,15 @@ def _fetch_reports_callback(action, data):
         )
 
     if valid_response and _has_changed(data, ad_group, source, date, change_unique_key):
-        can_manage_content_ads = action.ad_group_source.can_manage_content_ads
+        rows = _prepare_report_rows(ad_group, source, data['data'])
+        article_rows = _remove_content_ad_sources_from_report_rows(rows)
 
-        rows = _prepare_report_rows(ad_group, source, data['data'], can_manage_content_ads)
-        article_rows = _remove_content_ad_sources_from_report_rows(rows) if can_manage_content_ads else rows
-
-        reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, article_rows)
-
-        if can_manage_content_ads:
+        with transaction.atomic():
+            reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, article_rows)
             reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
+
+        reports.daily_statements.reprocess_daily_statements(ad_group.campaign)
+        reports.refresh.refresh_contentadstats(date, ad_group, source)
 
         # set cache only after everything has updated successfully
         _set_reports_cache(data, ad_group, source, date, change_unique_key)
@@ -377,8 +378,6 @@ def _fetch_reports_callback(action, data):
         )
 
 
-
-
 def _fetch_reports_by_publisher_callback(action, data):
     date_str = action.payload['args']['date']
     date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
@@ -393,19 +392,18 @@ def _fetch_reports_by_publisher_callback(action, data):
     # centralize in order to reduce possibility of mistakes, if you want everything to run again, just increase the number
     change_unique_key = "reports_by_publisher_2"
 
-    if valid_response: # and _has_changed(data, ad_group, source, date, change_unique_key):
+    if valid_response:  # and _has_changed(data, ad_group, source, date, change_unique_key):
         ret = get_day_cost(date, ad_group=ad_group, source=source)
         cost = ret['cost']
         if cost is None:
             cost = 0
 
-        reports.api_publishers.ob_insert_adgroup_date(	date,
-                                                        ad_group.id,
-                                                        "Outbrain",	# Hardcoding this at the time, the problem is that source.name can change
-                                                        rows_raw,
-                                                        cost)
+        reports.api_publishers.ob_insert_adgroup_date(date,
+                                                      ad_group.id,
+                                                      "Outbrain",  # Hardcoding this at the time, the problem is that source.name can change
+                                                      rows_raw,
+                                                      cost)
         _set_reports_cache(data, ad_group, source, date, change_unique_key)
-
 
     if not valid_response:
         msg = 'Update of publishers for adgroup %d, source %d, datetime '\
@@ -428,10 +426,3 @@ def _fetch_reports_by_publisher_callback(action, data):
         statsd_helper.statsd_incr(
             'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
         )
-
-
-
-
-
-
-

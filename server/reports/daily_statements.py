@@ -52,6 +52,9 @@ def _get_dates(campaign):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id)
     existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
 
+    if not budgets:
+        return []
+
     by_date = defaultdict(dict)
     for existing_statement in existing_statements:
         by_date[existing_statement.date][existing_statement.budget_id] = existing_statement
