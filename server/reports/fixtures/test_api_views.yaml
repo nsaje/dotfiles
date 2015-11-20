@@ -1,0 +1,107 @@
+# Users
+- fields:
+    date_joined: '2014-06-04T09:58:21'
+    email: ''
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: true
+    is_superuser: true
+    last_login: '2014-06-04T12:20:46'
+    last_name: ''
+    password: pbkdf2_sha256$12000$CWOT1c1UlFEr$GDTv3fbQ6bmJffEg1bvb+O49VfwD9Bg/DyylA3jcWvg=
+    user_permissions: []
+    username: test_user
+  model: zemauth.user
+  pk: 1
+
+# Accounts
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    name: 'Test Account 1'
+  model: dash.account
+  pk: 1
+
+# Campaigns
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 1
+    name: 'Test Campaign 1'
+  model: dash.campaign
+  pk: 1
+
+# Ad Groups
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'test adgroup 1'
+  model: dash.adgroup
+  pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'test adgroup 2'
+  model: dash.adgroup
+  pk: 2
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 1
+    name: 'test adgroup 3'
+    is_demo: true
+  model: dash.adgroup
+  pk: 3
+
+# Source types
+- fields:
+    type: 'b1'
+    delete_traffic_metrics_threshold: 10
+  model: dash.sourcetype
+  pk: 1
+
+- fields:
+    type: 'sourcetype2'
+    delete_traffic_metrics_threshold: 0
+  model: dash.sourcetype
+  pk: 2
+
+# Sources
+- fields:
+    source_type: 1
+    name: 'Test 1'
+    tracking_slug: 'b1_test1'
+    bidder_slug: 'test1'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+  model: dash.source
+  pk: 1
+
+- fields:
+    source_type: 1
+    name: 'Test 2'
+    tracking_slug: 'b1_test2'
+    bidder_slug: 'test2'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+  model: dash.source
+  pk: 2
+
+- fields:
+    source_type: 2
+    name: 'Test 3'
+    tracking_slug: 'test3'
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+  model: dash.source
+  pk: 3
