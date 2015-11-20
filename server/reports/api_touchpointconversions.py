@@ -77,8 +77,4 @@ def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], con
     )
 
     cursor.close()
-
-    if breakdown:
-        return results
-
-    return results[0]
+    return results
