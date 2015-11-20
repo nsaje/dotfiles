@@ -444,6 +444,107 @@ class AdGroupContentAdStateTest(TestCase):
         )
 
 
+class AdGroupArchiveRestoreTest(TestCase):
+    fixtures = ['test_models.yaml', 'test_views.yaml', ]
+
+    class MockSettingsWriter(object):
+        def __init__(self, init):
+            pass
+
+        def set(self, resource, request):
+            pass
+
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username=User.objects.get(pk=1).email, password='secret')
+
+    def _post_archive_ad_group(self, ad_group_id):
+        return self.client.post(
+            reverse(
+                'ad_group_archive',
+                kwargs={'ad_group_id': ad_group_id}),
+            data=json.dumps({}),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def _post_restore_ad_group(self, ad_group_id):
+        return self.client.post(
+            reverse(
+                'ad_group_restore',
+                kwargs={'ad_group_id': ad_group_id}),
+            data=json.dumps({}),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def test_basic_archive_restore(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertFalse(ad_group.is_archived())
+
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
+        ad_group_settings.save(None)
+
+        self._post_archive_ad_group(1)
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertTrue(ad_group.is_archived())
+
+        self._post_restore_ad_group(1)
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertFalse(ad_group.is_archived())
+
+    def test_archive_restore_with_pub_blacklisting(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertFalse(ad_group.is_archived())
+
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
+        ad_group_settings.save(None)
+
+        self._post_archive_ad_group(1)
+
+        for s in models.Source.objects.all():
+            print s.tracking_slug
+
+        adiant = models.Source.objects.get(id=2)
+        adiant.source_type.available_actions = [
+            constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC
+        ]
+        adiant.source_type.save()
+
+        models.PublisherBlacklist.objects.create(
+            name='zemanta.com',
+            campaign=ad_group.campaign,
+            source=adiant,
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+        models.PublisherBlacklist.objects.create(
+            name='google.com',
+            account=ad_group.campaign.account,
+            source=adiant,
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+
+        # do some blacklisting inbetween
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertTrue(ad_group.is_archived())
+
+        self._post_restore_ad_group(1)
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertFalse(ad_group.is_archived())
+
+        pub_blacklist_actions = actionlog.models.ActionLog.objects.filter(
+            action='set_publisher_blacklist',
+        )
+        self.assertEqual(2, pub_blacklist_actions.count())
+
+
 class AdGroupContentAdArchive(TestCase):
     fixtures = ['test_api', 'test_views']
 
