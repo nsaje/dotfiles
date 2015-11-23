@@ -1838,25 +1838,50 @@ class CreditLineItem(FootprintModel):
     def clean(self):
         has_changed = any((
             self.has_changed('start_date'),
-            self.has_changed('amount'),
             self.has_changed('license_fee'),
         ))
         if has_changed and not self.is_editable():
-            raise ValidationError('Nonpending credit line item cannot change.')
+            raise ValidationError({
+                '__all__': ['Nonpending credit line item cannot change.'],
+            })
 
         validate(
             self.validate_end_date,
             self.validate_license_fee,
             self.validate_status,
+            self.validate_amount,
         )
 
+        if not self.pk or self.previous_value('status') != constants.CreditLineItemStatus.SIGNED:
+            return
 
+        budgets = self.budgets.all()
+        if not budgets:
+            return
+
+        min_end_date = min(b.end_date for b in budgets)
+
+        if self.has_changed('end_date') and self.end_date < min_end_date:
+            raise ValidationError({
+                'end_date': ['End date minimum is depending on budgets.'],
+            })
+
+    def validate_amount(self):
+        if not self.pk or not self.has_changed('amount'):
+            return
+        prev_amount = self.previous_value('amount')
+        budgets = self.budgets.all()
+        if prev_amount < self.amount or not budgets:
+            return
+        if self.amount < sum(b.amount for b in budgets):
+            raise ValidationError(
+                'Credit line item amount needs to be larger than the sum of budgets.'
+            )
+        
     def validate_status(self):
         s = constants.CreditLineItemStatus
         if not self.has_changed('status'):
             return
-        if self.status == s.CANCELED and self.budgets.all():
-            raise ValidationError('Credit line item status cannot change when credit has budgets allocated.')
         if self.status == s.PENDING:
             raise ValidationError('Credit line item status cannot change to PENDING.')
 
@@ -1953,9 +1978,21 @@ class BudgetLineItem(FootprintModel):
     def is_editable(self):
         return self.state() == constants.BudgetLineItemState.PENDING
 
+    def is_updatable(self):
+        return self.state() == constants.BudgetLineItemState.ACTIVE
+
     def clean(self):
-        if self.pk and not self.db_state() == constants.BudgetLineItemState.PENDING:
-            raise ValidationError('Only pending and active budgets can change.')
+        if self.pk:
+            have_changed = any([
+                self.has_changed('start_date'),
+                self.has_changed('amount'),
+            ])
+            db_state = self.db_state()
+            if have_changed and not db_state == constants.BudgetLineItemState.PENDING:
+                raise ValidationError('Only pending budgets can change start date and amount.')
+            if db_state not in (constants.BudgetLineItemState.PENDING,
+                                constants.BudgetLineItemState.ACTIVE, ):
+                raise ValidationError('Only pending and active budgets can change.')
 
         validate(
             self.validate_start_date,
