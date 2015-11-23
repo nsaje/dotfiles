@@ -1186,10 +1186,10 @@ class ScheduledReportLevel(ConstantBase):
 
 
 class ScheduledReportSent(ConstantBase):
-    FAILED = -1
     SUCCESS = 1
+    FAILED = 2
 
     _VALUES = {
-        FAILED: 'Failed',
         SUCCESS: 'Success',
+        FAILED: 'Failed'
     }

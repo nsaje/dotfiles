@@ -1,14 +1,15 @@
 import logging
-import traceback
 
 from django.core.management.base import BaseCommand
 
 from dash import models
 from dash import constants
 from dash import scheduled_report
+from dash import export_plus
 
 from utils.statsd_helper import statsd_timer
 from utils.statsd_helper import statsd_gauge
+from utils import email_helper
 
 logger = logging.getLogger(__name__)
 
@@ -22,31 +23,29 @@ class Command(BaseCommand):
         statsd_gauge('dash.scheduled_reports.num_reports_due', len(due_scheduled_reports))
         num_reports_logs_made = num_success_logs = num_failed_logs = 0
         for sr in due_scheduled_reports:
-            report = sr.report
-            log = models.ScheduledExportReportLog()
-            log.scheduled_report = sr
-            log.report = report
+            report_log = models.ScheduledExportReportLog()
+            report_log.scheduled_report = sr
 
             try:
                 start_date, end_date = scheduled_report.get_scheduled_report_date_range(sr.sending_frequency)
-                report_contents, report_filename = scheduled_report.get_scheduled_report(report, start_date, end_date)
+                report_contents, report_filename = export_plus.get_report_from_export_report(sr.report, start_date, end_date)
                 email_adresses = sr.get_recipients_emails_list()
 
-                log.start_date = start_date
-                log.end_date = end_date
-                log.report_filename = report_filename
-                log.recipient_emails = ', '.join(email_adresses)
+                report_log.start_date = start_date
+                report_log.end_date = end_date
+                report_log.report_filename = report_filename
+                report_log.recipient_emails = ', '.join(email_adresses)
 
-                scheduled_report.send_scheduled_report(sr.name, email_adresses, report_contents, report_filename)
-                log.state = constants.ScheduledReportSent.SUCCESS
+                email_helper.send_scheduled_export_report(sr.name, email_adresses, report_contents, report_filename)
+                report_log.state = constants.ScheduledReportSent.SUCCESS
                 num_success_logs += 1
 
             except Exception as e:
-                logger.warning(e.message, exc_info=(traceback))
-                log.add_error(e.message)
+                logger.exception('Exception raised while sending scheduled export report.')
+                report_log.add_error(e.message)
                 num_failed_logs += 1
 
-            log.save()
+            report_log.save()
             num_reports_logs_made += 1
 
         statsd_gauge('dash.scheduled_reports.num_reports_logs_made', num_reports_logs_made)

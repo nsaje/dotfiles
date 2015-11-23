@@ -1005,7 +1005,6 @@ class ScheduledExportReportLogAdmin(admin.ModelAdmin):
         'end_date',
         'state',
         'scheduled_report',
-        'report',
         'recipient_emails',
         'report_filename',
         'errors'

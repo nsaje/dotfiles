@@ -1863,7 +1863,7 @@ class CreditLineItem(FootprintModel):
             raise ValidationError('New end date cannot be before than the previous.')
         if self.start_date and self.start_date > self.end_date:
             raise ValidationError('Start date cannot be greater than the end date.')
-        
+
     def validate_license_fee(self):
         if not self.license_fee:
             return
@@ -1935,7 +1935,7 @@ class BudgetLineItem(FootprintModel):
         return Decimal('0')
 
     def get_data_spend_amount(self): # TODO: implement
-        return Decimal('0') 
+        return Decimal('0')
 
     def is_editable(self):
         return self.state() == constants.BudgetLineItemState.PENDING
@@ -1974,7 +1974,7 @@ class BudgetLineItem(FootprintModel):
             raise ValidationError('End date cannot be bigger than the credit\'s end date.')
         if self.start_date and self.start_date > self.end_date:
             raise ValidationError('Start date cannot be bigger than the end date.')
-        
+
     def validate_amount(self):
         if not self.amount:
             return
@@ -2084,7 +2084,9 @@ class ScheduledExportReport(models.Model):
             '(',
             self.created_by.email,
             ') - ',
-            constants.ScheduledReportSendingFrequency.get_text(self.sending_frequency)
+            constants.ScheduledReportSendingFrequency.get_text(self.sending_frequency),
+            '-',
+            str(self.report)
         )))
 
     def add_recipient_email(self, email_address):
@@ -2113,7 +2115,6 @@ class ScheduledExportReportRecipient(models.Model):
 
 
 class ScheduledExportReportLog(models.Model):
-    report = models.ForeignKey(ExportReport)
     scheduled_report = models.ForeignKey(ScheduledExportReport)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
