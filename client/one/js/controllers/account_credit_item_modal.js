@@ -36,8 +36,13 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
         $scope.saveRequestInProgress = true;
         api.accountCredit[
             $scope.isNew ? 'create' : 'save'
-        ]($scope.account.id, $scope.creditItem).then(closeModal, function (resp) {
+        ]($scope.account.id, $scope.creditItem).then(function () {
+            $scope.saved = true;
+            closeModal();
+        }, function (resp) {
             $scope.errors = api.accountCredit.convert.errors(resp);
+        }).finally(function () {
+            $scope.saveRequestInProgress = false;
         });
     };
 

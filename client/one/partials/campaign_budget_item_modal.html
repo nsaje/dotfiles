@@ -1,7 +1,7 @@
 <div class="modal-body modal-page">
     <h3 ng-if="isNew">Add Budget</h3>
     <h3 ng-if="!isNew">Edit Budget Item</h3>
-    <form id="form-campaign-budget-item" class="form-horizontal" ng-class="{ 'new': isNew, 'edit': !isNew }">
+    <form id="form-campaign-budget-budgetItem" class="form-horizontal" ng-class="{ 'new': isNew, 'edit': !isNew }">
         <div class="form-group" ng-if="!isNew">
             <label class="col-xs-8">Created by {{ budgetItem.createdBy }} on {{ budgetItem.createdOn }} </label>
         </div>
@@ -50,7 +50,7 @@
             </label>
             <div class="col-xs-4">
                 <div class="input-group">
-                    <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit" init-date="initStartDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.startDate" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" />
+                    <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit || !budgetItem.isEditable" init-date="initStartDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.startDate" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" />
                     <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
                 </div>
             </div>
@@ -62,7 +62,7 @@
             </label>
             <div class="col-xs-4">
                 <div class="input-group">
-                    <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit" init-date="initEndDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.endDate" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()">
+                    <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit || !(budgetItem.isUpdatable || budgetItem.isEditable)" init-date="initEndDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.endDate" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()">
                     <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
                 </div>
             </div>
@@ -75,7 +75,7 @@
             <div class="col-xs-4">
                 <div class="input-group">
                     <span class="input-group-addon">$</span>
-                    <input id="amount-input" ng-disabled="!budgetItem.credit" type="text" class="form-control" ng-model="budgetItem.amount" zem-currency-input fraction-size="0" />
+                    <input id="amount-input" ng-disabled="!budgetItem.credit || !budgetItem.isEditable" type="text" class="form-control" ng-model="budgetItem.amount" zem-currency-input fraction-size="0" />
                     <div class="input-group-addon">.00</div>
                 </div>
             </div>
