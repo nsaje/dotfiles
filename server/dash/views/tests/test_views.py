@@ -508,9 +508,6 @@ class AdGroupArchiveRestoreTest(TestCase):
 
         self._post_archive_ad_group(1)
 
-        for s in models.Source.objects.all():
-            print s.tracking_slug
-
         adiant = models.Source.objects.get(id=2)
         adiant.source_type.available_actions = [
             constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC
