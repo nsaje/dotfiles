@@ -27,7 +27,10 @@ def _generate_statement(campaign, date):
     for existing_statement in existing_statements:
         per_budget_spend[existing_statement.budget_id] += existing_statement.spend
 
-    total_spend = (Decimal(stats['cost_cc_sum']) / 10000) + (Decimal(stats['data_cost_cc_sum']) / 10000)
+    cost_cc_sum = stats['cost_cc_sum'] if stats['cost_cc_sum'] is not None else 0
+    data_cost_cc_sum = stats['data_cost_cc_sum'] if stats['data_cost_cc_sum'] is not None else 0
+
+    total_spend = (Decimal(cost_cc_sum) / 10000) + (Decimal(data_cost_cc_sum) / 10000)
     for budget in budgets.order_by('created_dt'):
         attributed_amount = 0
         fee_amount = 0
