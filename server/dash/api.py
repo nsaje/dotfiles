@@ -657,7 +657,9 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     has_tracking_changes = any(prop in changes for prop in
                                ['tracking_code', 'enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param'])
 
-    # insert settings into redirector if settings are fresh or there are some changes
+    # insert settings into redirector if settings are fresh or if there are some changes
+    # this way the ad groups settings are kept consistent between external sources, z1 and
+    # redirector
     if current_settings.id is None or has_tracking_changes:
         redirector_helper.insert_adgroup(ad_group.id, new_settings.get_tracking_codes(),
                                          new_settings.enable_ga_tracking,
