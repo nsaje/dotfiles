@@ -770,6 +770,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }
 
             addFilteredSources(config.params);
+            addShowBlacklistedPublisher(config.params);
 
             $http.get(url, config).
                 success(function (response, status) {
