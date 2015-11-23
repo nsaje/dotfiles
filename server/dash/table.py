@@ -1623,9 +1623,9 @@ class PublishersTable(object):
                         publisher_data['blacklisted'] = 'Blacklisted'
                     elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
                         publisher_data['blacklisted'] = 'Pending'
-                    level = blacklisted_pub.get_blacklisted_level()
-                    publisher_data['level'] = level
-                    publisher_data['level_description'] = constants.PublisherBlacklistLevel.verbose(level)
+                    level = blacklisted_pub.get_blacklist_level()
+                    publisher_data['blacklist_level'] = level
+                    publisher_data['blacklist_level_description'] = constants.PublisherBlacklistLevel.verbose(level)
 
         response = {
             'rows': self.get_rows(
@@ -1647,20 +1647,6 @@ class PublishersTable(object):
             'order': order,
         }
         return response
-
-    def _convert_blacklist_to_level(self, blacklisted_pub):
-        level = constants.PublisherBlacklistLevel.ADGROUP
-        level_verbose = "Blacklisted in this ad group"
-        if blacklisted_pub.campaign is not None:
-            level = constants.PublisherBlacklistLevel.CAMPAIGN
-            level_verbose = "Blacklisted in this campaign"
-        if blacklisted_pub.account is not None:
-            level = constants.PublisherBlacklistLevel.ACCOUNT
-            level_verbose = "Blacklisted in this account"
-        if blacklisted_pub.everywhere:
-            level = constants.PublisherBlacklistLevel.GLOBAL
-            level_verbose = "Blacklisted globally"
-        return level, level_verbose
 
     def _query_filtered_publishers(self, show_blacklisted_publishers, start_date, end_date, adgroup, constraints, order):
         if not show_blacklisted_publishers or\
@@ -1762,9 +1748,9 @@ class PublishersTable(object):
                 'ctr': publisher_data.get('ctr', None),
             }
 
-            if publisher_data.get('level'):
-                row['level'] = publisher_data['level']
-                row['level_description'] = publisher_data['level_description']
+            if publisher_data.get('blacklisted_level'):
+                row['blacklisted_level'] = publisher_data['blacklisted_level']
+                row['blacklisted_level_description'] = publisher_data['blacklisted_level_description']
 
             rows.append(row)
 

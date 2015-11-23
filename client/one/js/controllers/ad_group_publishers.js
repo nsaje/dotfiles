@@ -299,7 +299,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             checked: true,
             extraTdCss: 'no-wrap',
             type: 'textWithPopup',
-            popupField: 'level_description',
+            popupField: 'blacklisted_level_description',
             shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
             help: 'Blacklisted status of a publisher.',
             totalRow: false,
