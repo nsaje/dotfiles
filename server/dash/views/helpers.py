@@ -546,7 +546,7 @@ def get_content_ad_data_status(ad_group, content_ads):
 
     data_status = {}
     for content_ad in content_ads:
-        in_sync = True
+        out_of_sync = []
         for content_ad_source in content_ad_sources:
             if content_ad_source.content_ad_id != content_ad.id:
                 continue
@@ -569,18 +569,17 @@ def get_content_ad_data_status(ad_group, content_ads):
                     continue
 
             if content_ad_source.state != content_ad_source.source_state:
-                in_sync = False
-                break
+                out_of_sync.append(content_ad_source.source.name)
 
         message = ''
-        if in_sync:
+        if not out_of_sync:
             message = 'All data is OK.'
         else:
-            message = 'The status of this Content Ad differs from the one in the 3rd party dashboard.'
+            message = 'The status of this Content Ad differs on these 3rd party dashboards: {}.'.format(", ".join(out_of_sync))
 
         data_status[str(content_ad.id)] = {
             'message': message,
-            'ok': in_sync,
+            'ok': len(out_of_sync) == 0,
         }
 
     return data_status

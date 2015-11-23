@@ -61,6 +61,12 @@
     model: dash.sourcetype
     pk: 1
 
+-   fields:
+        type: 'bidder'
+        available_actions: [19]
+    model: dash.sourcetype
+    pk: 2
+
 # sources
 
 -   fields:
@@ -70,6 +76,17 @@
         source_type: 1
     model: dash.source
     pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Adiant
+        source_type: 2
+        tracking_slug: 'adiant'
+        maintenance: false
+        deprecated: false
+    model: dash.source
+    pk: 2
 
 # test adgroup
 
@@ -134,6 +151,13 @@
         source_campaign_key: '["fake"]'
     model: dash.adgroupsource
     pk: 1
+
+-   fields:
+        source: 2
+        ad_group: 1
+        source_campaign_key: '["fake"]'
+    model: dash.adgroupsource
+    pk: 2
 
 # test adgroupsourcesettings
 

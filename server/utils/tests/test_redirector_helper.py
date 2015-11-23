@@ -79,6 +79,23 @@ class InsertRedirectTest(TestCase):
         self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_API_URL)
         self.assertEqual(call.data, json.dumps({"url": "https://example.com", "creativeid": content_ad_id, "adgroupid": ad_group_id}))
 
+    def test_update_redirect(self, mock_urlopen):
+        url = "https://example.com"
+
+        redirect_id = "u123456"
+
+        response = Mock()
+        response.read.return_value = '{"data": "%s", "status": "ok"}' % redirect_id
+        response.getcode = lambda: 200
+        mock_urlopen.return_value = response
+
+        redirector_helper.update_redirect(url, redirect_id)
+
+        call = mock_urlopen.call_args[0][0]
+
+        self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_API_URL + redirect_id + '/')
+        self.assertEqual(call.data, json.dumps({"url": "https://example.com"}))
+
     def test_code_error(self, mock_urlopen):
         url = 'https://example.com/image'
 
@@ -133,6 +150,7 @@ class InsertAdGroupTest(TestCase):
         call = mock_urlopen.call_args[0][0]
 
         self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=ad_group_id))
+        self.assertEqual(call.get_method(), 'PUT')
         self.assertEqual(call.data, json.dumps({
             "trackingcode": tracking_codes,
             "enablegatracking": True,
@@ -162,3 +180,47 @@ class InsertAdGroupTest(TestCase):
         with self.assertRaises(Exception):
             redirector_helper.insert_adgroup(url, '', True, False, '')
         self.assertEqual(len(mock_urlopen.call_args_list), 3)
+
+
+@override_settings(
+    R1_REDIRECTS_API_URL='https://r1.example.com/api/redirects/',
+    R1_REDIRECTS_ADGROUP_API_URL='https://r1.example.com/api/redirects/',
+    R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA'
+)
+@patch('utils.request_signer._secure_opener.open')
+class GetAdgroupTest(TestCase):
+
+    def test_get_adgroup(self, mock_urlopen):
+        response = Mock()
+        response.read.return_value = ('{"status":"ok","data":{"trackingcode":"xyz","enablegatracking":true,'
+                                      '"enableadobetracking":false,"adobetrackingparam":"",'
+                                      '"createddt":"2015-02-01T22:00:00Z","modifieddt":"2015-11-09T15:30:24.463752Z"}}')
+        response.getcode = lambda: 200
+        mock_urlopen.return_value = response
+
+        ad_group_id = 123
+
+        ad_group_dict = redirector_helper.get_adgroup(ad_group_id)
+
+        self.assertDictEqual(ad_group_dict, {
+            'tracking_code': 'xyz',
+            'enable_ga_tracking': True,
+            'enable_adobe_tracking': False,
+            'adobe_tracking_param': '',
+        })
+
+        call = mock_urlopen.call_args[0][0]
+
+        self.assertEqual(call.get_full_url(), settings.R1_REDIRECTS_ADGROUP_API_URL.format(adgroup=123))
+        self.assertEqual(call.get_method(), 'GET')
+        self.assertEqual(call.data, None)
+
+    def test_get_adgroup_non_existent(self, mock_urlopen):
+        response = Mock()
+        response.getcode = lambda: 404
+        mock_urlopen.return_value = response
+
+        with self.assertRaises(Exception):
+            redirector_helper.get_adgroup(100)
+
+        self.assertEqual(len(mock_urlopen.call_args_list), 3, "Should retry the call 3-times")

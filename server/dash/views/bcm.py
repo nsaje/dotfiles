@@ -19,8 +19,11 @@ class AccountCreditView(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
         account = helpers.get_account(request.user, account_id)
+
+        request_data = json.loads(request.body)
+        data = {}
+        data.update(request_data)
         
-        data = json.loads(request.body)
         data['status'] = constants.CreditLineItemStatus.PENDING
         data['account'] = account.id
 
@@ -30,18 +33,15 @@ class AccountCreditView(api_common.BaseApiView):
             del data['is_signed']
         if 'license_fee' in data:
             data['license_fee'] = helpers.format_percent_to_decimal(data['license_fee'])
-        errors = {}
 
         item = forms.CreditLineItemForm(data)
-        
-        errors.update(item.errors)
 
-        if errors:
-            raise exc.ValidationError(errors=errors)
+        if item.errors:
+            raise exc.ValidationError(errors=item.errors)
 
         item.instance.created_by = request.user
         item.save()
-        
+
         return self.create_api_response(item.instance.pk)
 
     def _prepare_item(self, item):
@@ -90,11 +90,15 @@ class AccountCreditView(api_common.BaseApiView):
     
     def _get_credit_totals(self, account_id, credit_items):
         total = sum(credit.amount for credit in credit_items)
-        allocated = sum(credit.get_allocated_amount() for credit in credit_items)
+        allocated = sum(
+            credit.get_allocated_amount() for credit in credit_items if not credit.is_past()
+        )
+        past = sum(credit.amount for credit in credit_items if credit.is_past())
         return {
             'total': str(total),
             'allocated': str(allocated),
-            'available': str(total - allocated),
+            'past': str(past),
+            'available': str(total - allocated - past),
         }
 
 
@@ -114,19 +118,22 @@ class AccountCreditItemView(api_common.BaseApiView):
             raise exc.AuthorizationError()
         
         account = helpers.get_account(request.user, account_id)
+
         item = models.CreditLineItem.objects.get(account_id=account.id, pk=credit_id)
         item.delete()
-        return self.create_api_response(True)
+        return self.create_api_response()
     
-    @statsd_helper.statsd_timer('dash.api', 'account_credit_item_pust')
+    @statsd_helper.statsd_timer('dash.api', 'account_credit_item_post')
     def post(self, request, account_id, credit_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
         
         account = helpers.get_account(request.user, account_id)
         item = models.CreditLineItem.objects.get(account_id=account.id, pk=credit_id)
-        data = json.loads(request.body)
+        request_data = json.loads(request.body)
 
+        data = {}
+        data.update(request_data)
         data['status'] = item.status
 
         if 'is_signed' in data:
@@ -137,11 +144,8 @@ class AccountCreditItemView(api_common.BaseApiView):
             data['license_fee'] = helpers.format_percent_to_decimal(data['license_fee'])
         item_form = forms.CreditLineItemForm(data, instance=item)
 
-        errors = {}
-        errors.update(item_form.errors)
-
-        if errors:
-            raise exc.ValidationError(errors=errors)
+        if item_form.errors:
+            raise exc.ValidationError(errors=item_form.errors)
 
         item_form.save()
         return self.create_api_response(credit_id)
@@ -185,17 +189,16 @@ class CampaignBudgetView(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.campaign_budget_view'):
             raise exc.AuthorizationError()
         campaign = helpers.get_campaign(request.user, campaign_id)
-        data = json.loads(request.body)
+
+        request_data = json.loads(request.body)
+        data = {}
+        data.update(request_data)
 
         data['campaign'] = campaign.id
-        errors = {}
 
         item = forms.BudgetLineItemForm(data)
-        
-        errors.update(item.errors)
-
-        if errors:
-            raise exc.ValidationError(errors=errors)
+        if item.errors:
+            raise exc.ValidationError(errors=item.errors)
 
         item.instance.created_by = request.user
         item.save()
@@ -214,6 +217,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             'spend': spend,
             'available': item.amount - spend,
             'is_editable': item.is_editable(),
+            'is_updatable': item.is_updatable(),
             'comment': item.comment,
         }
 
@@ -262,6 +266,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             'current': {
                 'available': Decimal('0'),
                 'unallocated': Decimal('0'),
+                'past': Decimal('0'),
             },
             'lifetime': {
                 'campaign_spend': Decimal('0'),
@@ -272,8 +277,9 @@ class CampaignBudgetView(api_common.BaseApiView):
         }
         for item in models.CreditLineItem.objects.filter(account=campaign.account):
             allocated = item.get_allocated_amount()
-            data['current']['available'] += Decimal(allocated)
-            data['current']['unallocated'] += Decimal(item.amount - allocated)
+            data['current'][item.is_past() and 'past' or 'available'] += Decimal(item.amount)
+            if not item.is_past():
+                data['current']['unallocated'] += Decimal(item.amount - allocated)
             
         for item in models.BudgetLineItem.objects.filter(campaign_id=campaign.id):
             if item.state() == constants.BudgetLineItemState.PENDING:
@@ -306,20 +312,20 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.campaign_budget_view'):
             raise exc.AuthorizationError()
         campaign = helpers.get_campaign(request.user, campaign_id)
-        data = json.loads(request.body)
+
+        request_data = json.loads(request.body)
+        data = {}
+        data.update(request_data)
         
         data['campaign'] = campaign.id
-        errors = {}
 
         item = forms.BudgetLineItemForm(
             data,
             instance=models.BudgetLineItem.objects.get(campaign_id=campaign_id, pk=budget_id)
         )
         
-        errors.update(item.errors)
-
-        if errors:
-            raise exc.ValidationError(errors=errors)
+        if item.errors:
+            raise exc.ValidationError(errors=item.errors)
 
         item.save()
         
@@ -332,7 +338,10 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         
         campaign = helpers.get_campaign(request.user, campaign_id)
         item = models.BudgetLineItem.objects.get(campaign_id=campaign.id, pk=budget_id)
-        item.delete()
+        try:
+            item.delete()
+        except AssertionError:
+            raise exc.ValidationError('Budget item is not pending')
         return self.create_api_response(True)
 
     def _get_response(self, item):
@@ -344,6 +353,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             'end_date': item.end_date,
             'comment': item.comment,
             'is_editable': item.is_editable(),
+            'is_updatable': item.is_updatable(),
             'state': item.state(),
             'credit': {
                 'id': item.credit.pk,

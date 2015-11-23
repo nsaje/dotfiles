@@ -3,7 +3,7 @@ oneApp.controller('CampaignBudgetPlusCtrl', ['$scope', '$state', '$modal',  'api
     var availableCredit = [];
     function updateView(data) {
         $scope.activeBudget = data.active;
-        $scope.depletedBudget = data.depleted;
+        $scope.pastBudget = data.past;
         $scope.budgetTotals = data.totals;
         availableCredit = data.credits;
     }
@@ -32,11 +32,11 @@ oneApp.controller('CampaignBudgetPlusCtrl', ['$scope', '$state', '$modal',  'api
     
     $scope.addBudgetItem = function () {
         $scope.selectedBudgetId = null;
-        openModal();
+        return openModal();
     };
     $scope.editBudgetItem = function (id) {
         $scope.selectedBudgetId = id;
-        openModal();
+        return openModal();
     };
 
     $scope.init = function () {

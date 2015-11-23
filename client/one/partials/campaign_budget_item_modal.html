@@ -1,7 +1,7 @@
 <div class="modal-body modal-page">
     <h3 ng-if="isNew">Add Budget</h3>
     <h3 ng-if="!isNew">Edit Budget Item</h3>
-    <form id="form-campaign-budget-item" class="form-horizontal" ng-class="{ 'new': isNew, 'edit': !isNew }">
+    <form id="form-campaign-budget-budgetItem" class="form-horizontal" ng-class="{ 'new': isNew, 'edit': !isNew }">
         <div class="form-group" ng-if="!isNew">
             <label class="col-xs-8">Created by {{ budgetItem.createdBy }} on {{ budgetItem.createdOn }} </label>
         </div>
@@ -32,7 +32,7 @@
                     <tbody>
                         <tr ng-repeat="credit in availableCredit">
                             <td ng-if="isNew">
-                                <input type="radio" ng-model="budgetItem.credit" ng-value="credit" />
+                                <input type="radio" ng-model="budgetItem.credit" ng-click="checkCreditValues()" ng-value="credit" />
                             </td>
                             <td>{{ credit.available | decimalCurrency:"$":2  }}</td>
                             <td>{{ credit.total | decimalCurrency:"$":2  }}</td>
@@ -50,7 +50,7 @@
             </label>
             <div class="col-xs-4">
                 <div class="input-group">
-                    <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit" init-date="initStartDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.startDate" is-open="startDatePicker.isOpen" ng-click="openDatePicker('startDate')">
+                    <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit || !budgetItem.isEditable" init-date="initStartDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.startDate" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" />
                     <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
                 </div>
             </div>
@@ -62,7 +62,7 @@
             </label>
             <div class="col-xs-4">
                 <div class="input-group">
-                    <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit" init-date="initEndDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
+                    <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-disabled="!budgetItem.credit || !(budgetItem.isUpdatable || budgetItem.isEditable)" init-date="initEndDate" min-date="minDate" max-date="maxDate" ng-model="budgetItem.endDate" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()">
                     <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
                 </div>
             </div>
@@ -75,7 +75,7 @@
             <div class="col-xs-4">
                 <div class="input-group">
                     <span class="input-group-addon">$</span>
-                    <input id="amount-input" ng-disabled="!budgetItem.credit" type="text" class="form-control" ng-model="budgetItem.amount">
+                    <input id="amount-input" ng-disabled="!budgetItem.credit || !budgetItem.isEditable" type="text" class="form-control" ng-model="budgetItem.amount" zem-currency-input fraction-size="0" />
                     <div class="input-group-addon">.00</div>
                 </div>
             </div>
@@ -92,17 +92,18 @@
         </div>
         <div class="form-group">
             <div class="col-xs-3">
-                <button type="button" class="btn btn-primary" ng-click="upsertBudgetItem()">Save</button>
+                <button type="button" class="btn btn-primary" ng-click="upsertBudgetItem()" ng-disabled="saveRequestInProgress">Save</button>
             </div>
             <div class="col-xs-3">
-                <button type="button" class="btn btn-default" ng-click="discardBudgetItem()">Discard</button>
+                <button type="button" class="btn btn-default" ng-click="discardBudgetItem()" ng-disabled="saveRequestInProgress">Discard</button>
             </div>
             <div class="col-xs-3"  ng-if="canDelete">
-                <button type="button" class="btn btn-danger" ng-click="deleteBudgetItem()">Delete</button>
+                <button type="button" class="btn btn-danger" ng-click="deleteBudgetItem()" ng-disabled="saveRequestInProgress">Delete</button>
             </div>
         </div>
         <div class="loader" ng-show="saveRequestInProgress"></div>
         <span ng-show="saved" class="success">Your updates have been saved.</span>
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
+        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
     </form>
 </div>

@@ -112,6 +112,14 @@
                                 <span ng-switch-when="text">
                                     {{ row[col.field] }}
                                 </span>
+                                <span ng-switch-when="textWithPopup">
+                                    <div zem-lazy-popover-text="{{ row[col.popupField] }}"
+                                        zem-lazy-popover-placement="left"
+                                        zem-lazy-popover-animation-class="fade"
+                                        zem-lazy-popover-append-to-body="true">
+                                    {{ row[col.field] }}
+                                    </div>
+                                </span>
                                 <span
                                     ng-switch-when="notification"
                                     zem-lazy-popover-html-unsafe="{{ notifications[row.id].message }}"

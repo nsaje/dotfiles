@@ -1,0 +1,65 @@
+# test touchpointconverisons
+
+-   fields:
+        zuid: '1234567890'
+        slug: 'slug1'
+        date: '2015-11-15'
+        conversion_id: 'cid1'
+        conversion_timestamp: '2015-11-15T10:00:00'
+        account_id: 1
+        campaign_id: 1
+        ad_group_id: 1
+        content_ad_id: 1
+        source_id: 1
+        touchpoint_id: 'tid1'
+        touchpoint_timestamp: '2015-11-15T09:00:00'
+        conversion_lag: 1
+    table: touchpointconversions
+
+-   fields:
+        zuid: '1234567890'
+        slug: 'slug1'
+        date: '2015-11-15'
+        conversion_id: 'cid1'
+        conversion_timestamp: '2015-11-15T10:00:00'
+        account_id: 1
+        campaign_id: 1
+        ad_group_id: 1
+        content_ad_id: 2
+        source_id: 1
+        touchpoint_id: 'tid2'
+        touchpoint_timestamp: '2015-11-15T08:00:00'
+        conversion_lag: 2
+    table: touchpointconversions
+
+-   fields:
+        zuid: '1234567890'
+        slug: 'slug1'
+        date: '2015-11-15'
+        conversion_id: 'cid1'
+        conversion_timestamp: '2015-11-15T10:00:00'
+        account_id: 1
+        campaign_id: 1
+        ad_group_id: 1
+        content_ad_id: 1
+        source_id: 2
+        touchpoint_id: 'tid3'
+        touchpoint_timestamp: '2015-11-15T07:00:00'
+        conversion_lag: 3
+    table: touchpointconversions
+
+-   fields:
+        zuid: '1234567890'
+        slug: 'slug1'
+        date: '2015-11-15'
+        conversion_id: 'cid1'
+        conversion_timestamp: '2015-11-15T10:00:00'
+        account_id: 1
+        campaign_id: 1
+        ad_group_id: 2
+        content_ad_id: 3
+        source_id: 1
+        touchpoint_id: 'tid4'
+        touchpoint_timestamp: '2015-11-15T06:00:00'
+        conversion_lag: 4
+    table: touchpointconversions
