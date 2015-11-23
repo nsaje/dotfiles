@@ -1619,14 +1619,13 @@ class PublishersTable(object):
                          blacklisted_pub.account == adgroup.campaign.account or
                          blacklisted_pub.campaign == adgroup.campaign or
                          blacklisted_pub.ad_group == adgroup):
-
                     if blacklisted_pub.status == constants.PublisherStatus.BLACKLISTED:
                         publisher_data['blacklisted'] = 'Blacklisted'
                     elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
                         publisher_data['blacklisted'] = 'Pending'
-                    level, level_verbose = self._convert_blacklist_to_level(blacklisted_pub)
+                    level = blacklisted_pub.get_blacklisted_level()
                     publisher_data['level'] = level
-                    publisher_data['level_description'] = level_verbose
+                    publisher_data['level_description'] = constants.PublisherBlacklistLevel.verbose(level)
 
         response = {
             'rows': self.get_rows(
