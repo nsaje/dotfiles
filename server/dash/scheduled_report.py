@@ -38,6 +38,9 @@ def get_scheduled_report_date_range(sending_frequency):
         week_ago = yesterday - datetime.timedelta(days=6)
         return (week_ago, yesterday)
     elif sending_frequency == constants.ScheduledReportSendingFrequency.MONTHLY:
-        month_ago = today.replace(month=today.month - 1)
+        if today.month == 1:
+            month_ago = today.replace(month=12, year=today.year - 1)
+        else:
+            month_ago = today.replace(month=today.month - 1)
         return (month_ago, yesterday)
     return None, None
