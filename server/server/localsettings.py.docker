@@ -77,20 +77,20 @@ GOOGLE_OAUTH_ENABLED = False
 GOOGLE_OAUTH_CLIENT_ID = ''
 GOOGLE_OAUTH_CLIENT_SECRET = ''
 
-# Client static files
+# Static files
 if os.environ.get('BUILD'):
     BUILD_NUMBER = os.environ.get('BUILD')
-    CLIENT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}/client'.format(BUILD_NUMBER)
 elif os.path.isfile('build_number.txt'):
-    BUILD_NUMBER = 0
-
     with open('build_number.txt', 'r') as build_number:
         BUILD_NUMBER = build_number.read().strip()
 
-    CLIENT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}/client'.format(BUILD_NUMBER)
+if BUILD_NUMBER:
+    ROOT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}'.format(BUILD_NUMBER)
+    SERVER_STATIC_URL = ROOT_STATIC_URL + '/server'
+    CLIENT_STATIC_URL = ROOT_STATIC_URL + '/client'
 else:
-    # TODO: figure out what to do if the build number is not available
-    CLIENT_STATIC_URL = 'http://localhost:9999'
+    SERVER_STATIC_URL = '/static'
+    CLIENT_STATIC_URL = 'http://0.0.0.0:9999'
 
 # Eins host
 EINS_HOST = ''
