@@ -147,6 +147,13 @@ class Account(models.Model):
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
 
+    uses_credits = models.BooleanField(
+        null=False,
+        blank=False,
+        default=False,
+        verbose_name='Uses credits and budgets accounting'
+    )
+
     objects = QuerySetManager()
     demo_objects = DemoManager()
 
