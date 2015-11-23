@@ -1,5 +1,6 @@
 from django.db import models
 
+import dash.models
 from reports import constants
 
 
@@ -202,3 +203,17 @@ class ContentAdGoalConversionStats(models.Model):
         unique_together = (
             ('date', 'content_ad', 'source', 'goal_type', 'goal_name'),
         )
+
+
+class BudgetDailyStatement(models.Model):
+    budget = models.ForeignKey(dash.models.BudgetLineItem)
+    spend = models.DecimalField(
+        decimal_places=6,
+        max_digits=16,
+    )
+    date = models.DateField()
+    dirty = models.BooleanField(default=False)
+
+    class Meta:
+        get_latest_by = 'date'
+        unique_together = ('budget', 'date')
