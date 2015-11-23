@@ -77,7 +77,7 @@ def create_name(objects, name):
 @statsd_helper.statsd_timer('dash', 'index')
 @login_required
 def index(request):
-    return render(request, 'index.html', {'staticUrl': settings.CLIENT_STATIC_URL})
+    return render(request, 'index.html', {'staticUrl': settings.CLIENT_STATIC_URL, 'debug': settings.DEBUG})
 
 
 @statsd_helper.statsd_timer('dash', 'supply_dash_redirect')
