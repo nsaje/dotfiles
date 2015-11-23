@@ -295,6 +295,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                 {
                     "available": "100000",
                     "is_editable": False,
+                    "is_updatable": True,
                     "state": 1,
                     "end_date": "2015-11-30",
                     "license_fee": "20%",
@@ -342,6 +343,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                 {
                     "available": "100000",
                     "is_editable": True,
+                    "is_updatable": False,
                     "state": 2,
                     "end_date": "2015-11-30",
                     "license_fee": "20%",
@@ -449,6 +451,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             {
                 "comment": "Test case",
                 "is_editable": False,
+                "is_updatable": True,
                 "amount": 100000,
                 "end_date": "2015-11-30",
                 "state": 1,

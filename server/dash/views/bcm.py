@@ -217,6 +217,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             'spend': spend,
             'available': item.amount - spend,
             'is_editable': item.is_editable(),
+            'is_updatable': item.is_updatable(),
             'comment': item.comment,
         }
 
@@ -352,6 +353,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             'end_date': item.end_date,
             'comment': item.comment,
             'is_editable': item.is_editable(),
+            'is_updatable': item.is_updatable(),
             'state': item.state(),
             'credit': {
                 'id': item.credit.pk,

@@ -44,7 +44,7 @@
                     <td class="text-row">{{ item.comment }}</td>
                     <td>
                         <ul class="row-actions">
-                            <li ng-click="editBudgetItem(item.id)" ng-if="item.isEditable">edit</li>
+                            <li ng-click="editBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable">edit</li>
                         </ul>
                     </td>
                 </tr>
