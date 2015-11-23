@@ -1624,8 +1624,8 @@ class PublishersTable(object):
                     elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
                         publisher_data['blacklisted'] = 'Pending'
                     level = blacklisted_pub.get_blacklist_level()
-                    publisher_data['blacklist_level'] = level
-                    publisher_data['blacklist_level_description'] = constants.PublisherBlacklistLevel.verbose(level)
+                    publisher_data['blacklisted_level'] = level
+                    publisher_data['blacklisted_level_description'] = constants.PublisherBlacklistLevel.verbose(level)
 
         response = {
             'rows': self.get_rows(
