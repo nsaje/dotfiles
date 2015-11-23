@@ -619,8 +619,10 @@ class SourcesTable(object):
                     source_data = item
                     break
 
-            if source.deprecated and not level_sources_table.reports_api.row_has_traffic_data(source_data)\
-               and not level_sources_table.reports_api.row_has_postclick_data(source_data):
+            if source.deprecated and\
+               not level_sources_table.reports_api.row_has_traffic_data(source_data) and\
+               not level_sources_table.reports_api.row_has_postclick_data(source_data) and\
+               not reports.api.row_has_conversion_goal_data(source_data):
                 continue  # deprecated sources without data don't have to be shown
 
             last_sync = last_actions.get(source.id)
@@ -856,8 +858,9 @@ class AccountsAccountsTable(object):
                     break
 
             if has_view_archived_permission and not show_archived and archived and\
-               not (reports.api.row_has_traffic_data(account_data) or
-                    reports.api.row_has_postclick_data(account_data)):
+               not reports.api.row_has_traffic_data(account_data) and\
+               not reports.api.row_has_postclick_data(account_data) and\
+               not reports.api.row_has_conversion_goal_data(account_data):
                 continue
 
             state = account_state.get(aid, constants.AdGroupSettingsState.INACTIVE)
@@ -1140,8 +1143,9 @@ class AdGroupAdsPlusTable(object):
 
             archived = content_ad.archived
             if has_view_archived_permission and not show_archived and archived and\
-               not (reports.api.row_has_traffic_data(stat) or
-                    reports.api.row_has_postclick_data(stat)):
+               not reports.api.row_has_traffic_data(stat) and\
+               not reports.api.row_has_postclick_data(stat) and\
+               not reports.api.row_has_conversion_goal_data(stat):
                 continue
 
             url = self._get_url(ad_group, content_ad, is_demo)
@@ -1336,8 +1340,9 @@ class CampaignAdGroupsTable(object):
 
             reports_api = get_reports_api_module(user)
             if has_view_archived_permission and not show_archived and archived and\
-               not (reports_api.row_has_traffic_data(ad_group_data) or
-                    reports_api.row_has_postclick_data(ad_group_data)):
+               not reports_api.row_has_traffic_data(ad_group_data) and\
+               not reports_api.row_has_postclick_data(ad_group_data) and\
+               not reports.api.row_has_conversion_goal_data(ad_group_data):
                 continue
 
             row['state'] = state
@@ -1493,8 +1498,9 @@ class AccountCampaignsTable(object):
 
             reports_api = get_reports_api_module(user)
             if has_view_archived_permission and not show_archived and archived and\
-               not (reports_api.row_has_traffic_data(campaign_stat) or
-                    reports_api.row_has_postclick_data(campaign_stat)):
+               not reports_api.row_has_traffic_data(campaign_stat) and\
+               not reports_api.row_has_postclick_data(campaign_stat) and\
+               not reports.api.row_has_conversion_goal_data(campaign_stat):
                 continue
 
             state = constants.AdGroupSettingsState.INACTIVE

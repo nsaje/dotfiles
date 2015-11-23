@@ -57,8 +57,8 @@ def count_agr(field_name):
     return 'COUNT("{field_name}")'.format(field_name=field_name)
 
 
-def count_distinct_agr(field_name):
-    return 'COUNT(DISTINCT "{field_name}")'.format(field_name=field_name)
+def count_ranked(field_name, rank):
+    return 'SUM(CASE WHEN {} = {} THEN 1 ELSE 0 END)'.format(field_name, rank)
 
 
 def sum_agr(field_name):
@@ -78,3 +78,9 @@ def extract_json_or_null(field_name):
         "THEN NULL ELSE JSON_EXTRACT_PATH_TEXT({field_name}, %s) END".format(
             field_name=field_name
         )
+
+
+def ranked(field_name, order_field):
+    if order_field.startswith('-'):
+        order_field = order_field[1:] + ' DESC'
+    return "RANK() OVER (PARTITION BY {} ORDER BY {})".format(field_name, order_field)

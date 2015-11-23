@@ -1,0 +1,139 @@
+# test user
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: luka.silovinac@zemanta.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: true
+        is_superuser: true
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 1
+
+# test account
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 1'
+    model: dash.account
+    pk: 1
+
+# test campaign
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 1 # test account 1
+        name: 'test campaign 1'
+    model: dash.campaign
+    pk: 1
+
+# test adgroup
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 1'
+    model: dash.adgroup
+    pk: 1
+
+# test adgroup
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 2'
+    model: dash.adgroup
+    pk: 2
+
+# test source
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: AdsNative
+        tracking_slug: 'industrybrains'
+        maintenance: false
+        bidder_slug: 'adsnative'
+    model: dash.source
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Gravity
+        tracking_slug: 'gravity'
+        maintenance: false
+    model: dash.source
+    pk: 2
+
+# test uploadbatch
+
+-   fields:
+        name: 'batch 1'
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.uploadbatch
+    pk: 1
+
+# test contentad
+
+-   fields:
+        image_id: '123456789'
+        batch: 1
+        url: 'http://testurl.com'
+        title: 'Test Article'
+        ad_group: 1
+        created_dt: '2015-02-23T00:00:00'
+    model: dash.contentad
+    pk: 1
+
+# test contentadsource
+
+-   fields:
+        source: 1
+        content_ad: 1
+        submission_status: 1
+        state: 1
+        source_state: NULL
+        source_content_ad_id: NULL
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 1
+
+# test conversion pixels
+
+-   fields:
+        account: 1
+        slug: 'slug1'
+        archived: false
+        last_sync_dt: '2015-11-01T00:00:00'
+        created_dt: '2015-11-01T00:00:00'
+    model: dash.conversionpixel
+    pk: 1
+
+# test conversion goal
+
+-   fields:
+        campaign: 1
+        type: 1
+        name: 'goal name 1'
+        conversion_window: 720
+        goal_id: 'slug1'
+        pixel: 1
+        created_dt: '2015-11-01T00:00:00'
+    model: dash.conversiongoal
+    pk: 1

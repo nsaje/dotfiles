@@ -4,6 +4,7 @@
         {% load staticfiles %}
         <link rel="shortcut icon" href="{% static "img/favicon.ico" %}" />
         <!-- TypeKit async code -->
+        {% if not debug %}
         <script type="text/javascript">
             (function(d) {
                 var config = {
@@ -13,6 +14,8 @@
                     h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='//use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
             })(document);
         </script>
+        {% endif %}
+        {% if not debug %}
         <script>
             var _prum = [['id', '5448f1e2abe53db246b9639a'],
                          ['mark', 'firstbyte', (new Date()).getTime()]];
@@ -24,6 +27,8 @@
                 s.parentNode.insertBefore(p, s);
             })();
         </script>
+        {% endif %}
+        {% if not debug %}
         <script>
             // FullStory snippet
             window['_fs_debug'] = false;
@@ -37,8 +42,9 @@
               g.setSessionVars=function(v){FS('session',v)};g.setPageVars=function(v){FS('page',v)};
             })(window,document,'FS','script','user');
         </script>
+        {% endif %}
         
-        {% if perms.zemauth.has_intercom %}
+        {% if perms.zemauth.has_intercom and not debug %}
         <script>(function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',intercomSettings);}else{var d=document;var i=function(){i.c(arguments)};i.q=[];i.c=function(args){i.q.push(args)};w.Intercom=i;function l(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/anyekw96';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);}if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})()</script>
         {% endif %}
         
@@ -50,7 +56,5 @@
         {% block header %}{% endblock %}
         {% block content %}{% endblock %}
         {% block footer %}{% endblock %}
-        
-     
     </body>
 </html>
