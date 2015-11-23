@@ -140,15 +140,15 @@ def _get_stats_with_conversions(
         start_date,
         end_date,
         order=order,
-        breakdown=breakdown + ['slug'],
+        breakdown=breakdown,
         conversion_goals=touchpoint_conversion_goals,
         constraints=constraints
     )
 
-    tp_conv_goals_by_slug = {cg.pixel.slug: cg for cg in touchpoint_conversion_goals}
+    tp_conv_goals_by_slug = {(cg.pixel.slug, cg.pixel.account_id): cg for cg in touchpoint_conversion_goals}
     for tp_conv_stat in touchpoint_conversion_stats:
         key = tuple(tp_conv_stat[b] for b in breakdown)
-        conversion_goal = tp_conv_goals_by_slug[tp_conv_stat['slug']]
+        conversion_goal = tp_conv_goals_by_slug[(tp_conv_stat['slug'], tp_conv_stat['account'])]
 
         if key in ca_stats_by_breakdown:
             ca_stats_by_breakdown[key][conversion_goal.get_view_key(conversion_goals)] = tp_conv_stat['conversion_count']

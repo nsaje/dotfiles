@@ -60,9 +60,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
             $scope.isNew ? 'create' : 'save'
         ]($scope.campaign.id, $scope.budgetItem).then(function (data) {
             $scope.saved = true;
-            $timeout(function () {
-                $modalInstance.close(data || null);
-            }, 1000);
+            closeModal();
         }, function (resp) {
             $scope.errors = api.campaignBudgetPlus.convert.error(resp);
             $scope.saved = false;
@@ -89,8 +87,8 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
         
         $scope.minDate = $scope.getAvailableCredit()[0].startDate;
         $scope.maxDate = $scope.getAvailableCredit()[0].endDate;
-        $scope.initStartDate = moment($scope.minDate).toDate();
-        $scope.initEndDate = moment($scope.maxDate).toDate();
+        $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
+        $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
         $scope.discarded = false;
 
         if ($scope.isNew) {
