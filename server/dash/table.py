@@ -75,6 +75,7 @@ def get_reports_api_module(user):
 
     return reports.api
 
+
 def get_conversion_pixels_last_sync(conversion_pixels):
     conversion_pixels = conversion_pixels.extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
                                                 order_by=['-last_sync_null', 'last_sync_dt'])
@@ -82,6 +83,7 @@ def get_conversion_pixels_last_sync(conversion_pixels):
         return conversion_pixels[0].last_sync_dt
 
     return datetime.datetime.utcnow()
+
 
 class AllAccountsSourcesTable(object):
     def __init__(self, user, id_, filtered_sources):
