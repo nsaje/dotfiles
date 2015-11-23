@@ -4,7 +4,8 @@
 oneApp.factory('zemFullStoryService', function() {
     function identify(user) {
         var email = user.email;
-        if (typeof FS === 'undefined') {
+        
+        if (window.FS === undefined) {
             return;
         }
         FS.identify(email, {
