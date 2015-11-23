@@ -90,9 +90,6 @@ class AdGroupSettingsForm(forms.Form):
         end_date = self.cleaned_data.get('end_date')
         start_date = self.cleaned_data.get('start_date')
 
-        # maticz: We deal with UTC dates even if a not-UTC date date was submitted from
-        # user.
-        # Product guys confirmed it.
         if start_date and end_date and end_date < start_date:
             raise forms.ValidationError('End date must not occur before start date.')
 
@@ -368,6 +365,16 @@ class CampaignSettingsForm(forms.Form):
         empty_value=None
     )
     goal_quantity = forms.DecimalField(decimal_places=4)
+    target_devices = forms.MultipleChoiceField(
+        choices=constants.AdTargetDevice.get_choices(),
+        error_messages={
+            'required': 'Please select at least one target device.',
+        }
+    )
+    target_regions = forms.MultipleChoiceField(
+        required=False,
+        choices=constants.AdTargetLocation.get_choices()
+    )
 
 
 class CampaignBudgetForm(forms.Form):

@@ -1549,7 +1549,9 @@ class CampaignSettingsTest(TestCase):
         self.assertTrue(content['success'])
         self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
         self.assertEqual(content['data']['settings']['campaign_goal'], 3)
-        self.assertEqual(content['data']['settings']['goal_quantity'], 0)
+        self.assertEqual(content['data']['settings']['goal_quantity'], '0.00')
+        self.assertEqual(content['data']['settings']['target_devices'], ['mobile'])
+        self.assertEqual(content['data']['settings']['target_regions'], ['NC', '501'])
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
@@ -1562,6 +1564,8 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'goal_quantity': 10,
+                    'target_devices': ['mobile'],
+                    'target_regions': ['NC', '501']
                 }
             }),
             content_type='application/json',
@@ -1574,6 +1578,8 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(campaign.name, 'test campaign 2')
         self.assertEqual(settings.goal_quantity, 10)
         self.assertEqual(settings.campaign_goal, 2)
+        self.assertEqual(settings.target_devices, ['mobile'])
+        self.assertEqual(settings.target_regions, ['NC', '501'])
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
         mock_log_useraction.assert_called_with(
@@ -1589,6 +1595,8 @@ class CampaignSettingsTest(TestCase):
                     'id': 1,
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
+                    'target_devices': ['nonexistent'],
+                    'target_regions': ['NC', '501']
                 }
             }),
             content_type='application/json',
@@ -1612,6 +1620,7 @@ class CampaignSettingsTest(TestCase):
         content = json.loads(response.content)
         self.assertFalse(content['success'])
         self.assertTrue('campaign_goal' in content['data']['errors'])
+        self.assertTrue('target_devices' in content['data']['errors'])
 
 
 class AccountAgencyTest(TestCase):

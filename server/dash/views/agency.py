@@ -620,7 +620,9 @@ class CampaignSettings(api_common.BaseApiView):
                 'id': str(campaign.pk),
                 'name': campaign.name,
                 'campaign_goal': settings.campaign_goal,
-                'goal_quantity': settings.goal_quantity
+                'goal_quantity': settings.goal_quantity,
+                'target_devices': settings.target_devices,
+                'target_regions': settings.target_regions
             }
 
         return result
@@ -629,6 +631,8 @@ class CampaignSettings(api_common.BaseApiView):
         settings.name = resource['name']
         settings.campaign_goal = resource['campaign_goal']
         settings.goal_quantity = resource['goal_quantity']
+        settings.target_devices = resource['target_devices']
+        settings.target_regions = resource['target_regions']
 
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']

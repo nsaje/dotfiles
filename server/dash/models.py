@@ -549,6 +549,8 @@ class CampaignSettings(SettingsBase):
         null=False,
         default=0
     )
+    target_devices = jsonfield.JSONField(blank=True, default=[])
+    target_regions = jsonfield.JSONField(blank=True, default=[])
 
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
