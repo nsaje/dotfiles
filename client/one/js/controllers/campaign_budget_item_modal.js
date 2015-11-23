@@ -36,7 +36,6 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
 
     $scope.checkCreditValues = function () {
         $timeout(function () {
-            console.log('delam', $scope.budgetItem.credit)
             var id = $scope.budgetItem.credit.id;
             $scope.getAvailableCredit().forEach(function (obj) {
                 if (obj.id !== id) { return; }
@@ -84,21 +83,24 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
     $scope.init = function () {
         $scope.saveRequestInProgress = false;
         $scope.isNew = $scope.selectedBudgetId === null;
+
+        $scope.availableCredit = $scope.getAvailableCredit(false);
         
-        $scope.minDate = $scope.getAvailableCredit()[0].startDate;
-        $scope.maxDate = $scope.getAvailableCredit()[0].endDate;
+        $scope.minDate = $scope.availableCredit[0].startDate;
+        $scope.maxDate = $scope.availableCredit[0].endDate;
         $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
         $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
         $scope.discarded = false;
 
         if ($scope.isNew) {
+            $scope.budgetItem.isEditable = true;
             $scope.budgetItem.startDate = $scope.initStartDate;
             $scope.budgetItem.endDate = $scope.initEndDate;
             
-            $scope.budgetItem.credit = $scope.getAvailableCredit()[0];
+            $scope.budgetItem.credit = $scope.availableCredit[0]; 
             
             $scope.budgetItem.amount = $scope.getAvailableCredit()[0].total;
-            $scope.availableCredit = $scope.getAvailableCredit(false);
+            
         } else {
             api.campaignBudgetPlus.get(
                 $scope.campaign.id,
