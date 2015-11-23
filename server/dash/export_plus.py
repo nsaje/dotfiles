@@ -188,7 +188,7 @@ def get_csv_content(fieldnames, data, title_text=None):
             if not value:
                 formatted_value = ''
             elif key in FORMAT_DIVIDE_100:
-                formatted_value = value / 100
+                value = value / 100
 
             if value and key in FORMAT_1_DECIMAL:
                 formatted_value = '{:.1f}'.format(value)
