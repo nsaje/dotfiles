@@ -28,8 +28,7 @@ def get_due_scheduled_reports():
 
 def get_scheduled_report_date_range(sending_frequency):
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
-    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
-    today = datetime.date(today.year, today.month, today.day)
+    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None).date()
     yesterday = today - datetime.timedelta(days=1)
 
     if sending_frequency == constants.ScheduledReportSendingFrequency.DAILY:
