@@ -1,0 +1,134 @@
+<div class="modal-body modal-page">
+    <h3 ng-if="isNew">Add Credit</h3>
+    <h3 ng-if="!isNew">Edit Credit Item</h3>
+    <div class="loader" ng-show="isLoadingInProgress"></div>
+    <form id="form-account-credit-item" class="form-horizontal" ng-class="{ 'new': isNew, 'edit': !isNew }" ng-show="!isLoadingInProgress">
+        <div class="form-group" ng-if="!isNew">
+            <label class="col-xs-8">Created by {{ creditItem.createdBy }} on {{ creditItem.createdOn }}</label>
+        </div>
+        <div class="form-group" ng-if="isNew">
+            <label class="col-xs-8">Created by {{ user.name }} on {{ today }}</label>
+        </div>
+        <div class="form-group" ng-class="{'has-error': !!errors.startDate}">
+            <label for="start-date-input" class="col-xs-3 control-label">
+                Valid From
+            </label>
+            <div class="col-xs-4">
+                <div class="input-group">
+                    <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
+                    <input id="start-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.startDate" min-date="today" is-open="startDatePicker.isOpen" ng-click="openStartDatePicker()" ng-disabled="creditItem.isSigned" />
+                </div>
+            </div>
+            <label ng-repeat="error in errors.startDate" class="col-xs-5 control-label error" for="start-date-input">{{ error }}</label>
+        </div>
+        <div class="form-group" ng-class="{'has-error': !!errors.endDate}">
+            <label for="end-date-input" class="col-xs-3 control-label">
+                Valid To
+            </label>
+            <div class="col-xs-4">
+                <div class="input-group">
+                    <div class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></div>
+                    <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="creditItem.endDate" min-date="minDate" is-open="endDatePicker.isOpen" ng-click="openEndDatePicker()" />
+                </div>
+            </div>
+            <label ng-repeat="error in errors.endDate" class="col-xs-5 control-label error" for="end-date-input">{{ error }}</label>
+        </div>
+        <div class="form-group" ng-class="{'has-error': !!errors.licenseFee}">
+            <label for="license-fee-input" class="col-xs-3 control-label">
+                License Fee (%)
+            </label>
+            <div class="col-xs-4">
+                <ui-select theme="select2" id="license-fee-select" class="form-control" ng-model="creditItem.licenseFee" ng-disabled="creditItem.isSigned">
+                    <ui-select-match>{{$select.selected}}</ui-select-match>
+                    <ui-select-choices repeat="fee in getLicenseFees($select.search) | filter: $select.search">
+                        <span ng-bind-html="fee"></span>
+                    </ui-select-choices>
+                </ui-select>
+            </div>
+
+            <label ng-repeat="error in errors.licenseFee" class="col-xs-5 control-label error" for="license-fee">{{ error }}</label>
+        </div>
+        <div class="form-group" ng-class="{'has-error': !!errors.amount}">
+            <label for="amount-input" class="col-xs-3 control-label">
+                Credit
+            </label>
+            <div class="col-xs-4">
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input id="amount-input" type="text" class="form-control" ng-model="creditItem.amount" zem-currency-input fraction-size="0">
+                    <div class="input-group-addon">.00</div>
+                </div>
+            </div>
+
+            <label ng-repeat="error in errors.amount" class="col-xs-5 control-label error" for="amount">{{ error }}</label>
+        </div>
+        <div class="form-group" ng-class="{'has-error': !!errors.comment}">
+            <label for="comment-input" class="col-xs-3 control-label">
+                Custom Notes
+            </label>
+            <div class="col-xs-4">
+                <textarea id="comment-input" type="text" class="form-control" ng-model="creditItem.comment"></textarea>
+            </div>
+            <label ng-repeat="error in errors.comment" class="col-xs-5 control-label error" for="comment">{{ error }}</label>
+        </div>
+        <hr />
+        <div class="form-group">
+            <label for="is-signed-input" class="col-xs-8 control-label">
+                By signing the credit line item, no more future changes to the amount, fee and start date will be possible.
+            </label>
+        </div>
+        <div class="form-group" ng-class="{'has-error': !!errors.status}">
+            <div class="col-xs-8">
+                <label>
+                    <input type="checkbox" ng-model="creditItem.isSigned" ng-disabled="wasSigned"> signed
+                </label>
+            </div>
+            <label ng-repeat="error in errors.status" class="control-label error" for="is-signed-input">{{ error }}</label>
+        </div>
+        <hr ng-show="!isNew" />
+        <div class="form-group" ng-show="!isNew">
+            <label class="col-xs-8 control-label">
+                Allocated budget items
+            </label>
+        </div>
+        <div class="scrollable" ng-show="!isNew">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Campaign</th>
+                        <th>Budget</th>
+                        <th>Total spend</th>
+                        <th>Flight dates</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="item in creditItem.budgets">
+                        <td>{{ item.campaign }}</td>
+                        <td>{{ item.total | decimalCurrency:"$":2  }}</td>
+                        <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
+                        <td>{{ item.startDate }} - {{ item.endDate }}</td>
+                    </tr>
+                    <tr ng-show="!creditItem.numOfBudgets" class="message">
+                        <td colspan="9">No allocated budget items.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <hr />
+        <div class="form-group">
+            <div class="col-xs-3">
+                <button type="button" class="btn btn-primary" ng-click="upsertCreditItem()" ng-disabled="saveRequestInProgress">Save</button>
+            </div>
+            <div class="col-xs-3">
+                <button type="button" class="btn btn-default" ng-click="discardCreditItem()" ng-disabled="saveRequestInProgress">Discard</button>
+            </div>
+            <div class="col-xs-3" ng-if="canDelete">
+                <button type="button" class="btn btn-danger" ng-click="deleteCreditItem()" ng-disabled="saveRequestInProgress">Delete</button>
+            </div>
+        </div>
+        <div class="loader" ng-show="saveRequestInProgress"></div>
+        <span ng-show="saved" class="success">Your updates have been saved.</span>
+        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
+        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
+    </form>
+</div>

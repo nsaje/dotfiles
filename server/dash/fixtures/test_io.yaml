@@ -6,11 +6,11 @@
         first_name: ''
         groups: []
         is_active: true
-        is_staff: true
-        is_superuser: true
+        is_staff: false
+        is_superuser: false
         last_login: '2014-06-16T12:21:29'
         last_name: ''
-        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
         user_permissions: []
         username: ''
     model: zemauth.user
@@ -34,6 +34,49 @@
     model: dash.account
     pk: 2
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 3'
+    model: dash.account
+    pk: 3
+
+# test accountsettings
+
+-   fields:
+        account: 1
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        archived: False
+        default_account_manager: 1
+        default_sales_representative: 1
+        service_fee: 0.13
+    model: dash.accountsettings
+    pk: 1
+
+-   fields:
+        account: 2
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        archived: False
+        default_account_manager: 1
+        default_sales_representative: 1
+        service_fee: 0.13
+    model: dash.accountsettings
+    pk: 2
+
+-   fields:
+        account: 3
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        archived: False
+        default_account_manager: 1
+        default_sales_representative: 1
+        service_fee: 0.13
+    model: dash.accountsettings
+    pk: 3
+  
 # test campaigns
 
 -   fields:
@@ -44,6 +87,7 @@
         name: 'test campaign 1'
     model: dash.campaign
     pk: 1
+
 
 # test creditlineitems
 
@@ -60,6 +104,20 @@
         comment: 'Test case'
     model: dash.creditlineitem
     pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        account: 3 # test account 3
+        start_date: '2015-10-01'
+        end_date: '2015-11-30'
+        amount: 100000
+        license_fee: 0.2
+        status: 2
+        comment: 'Pending test case'
+    model: dash.creditlineitem
+    pk: 2
 
 # test budgetlineitems
 

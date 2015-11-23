@@ -1219,6 +1219,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         end_date = start_date + datetime.timedelta(days=31)
         payload = {
             "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.ADGROUP,
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "select_all": True,
@@ -1229,19 +1230,21 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
 
         publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
             action_type=actionlog.constants.ActionType.AUTOMATIC,
-            action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
         )
         self.assertEqual(1, publisher_blacklist_action.count())
         self.assertDictEqual(
             {
-                u"publisher_blacklist": {
-                    u"state": 2,
-                    u"blacklist": [{
-                        u"exchange": u"adiant",
-                        u"domain": u"zemanta.com"
-                        }]
-                }
-            }, publisher_blacklist_action.first().payload['args']['conf'])
+                u"key": [1],
+                u"state": 2,
+                u"level": u"adgroup",
+                u"publishers": [{
+                    u"exchange": u"adiant",
+                    u"source_id": 7,
+                    u"domain": u"zemanta.com",
+                    u"ad_group_id": 1
+                    }]
+            }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
@@ -1265,12 +1268,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         cursor().dictfetchall.return_value = [
         {
             'domain': u'zemanta.com',
-            'ctr': 0.0,
             'exchange': 'adiant',
-            'cpc_micro': 0,
-            'cost_micro_sum': 1e-05,
-            'impressions_sum': 1000L,
-            'clicks_sum': 0L,
         },
         ]
 
@@ -1278,6 +1276,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         end_date = start_date + datetime.timedelta(days=31)
         payload = {
             "state": constants.PublisherStatus.ENABLED,
+            "level": constants.PublisherBlacklistLevel.ADGROUP,
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
             "select_all": True,
@@ -1286,19 +1285,21 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         }
         res = self._post_publisher_blacklist('1', payload)
         publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
-            action=actionlog.constants.Action.SET_CAMPAIGN_STATE
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
         )
         self.assertEqual(1, publisher_blacklist_action.count())
         self.assertDictEqual(
             {
-                u"publisher_blacklist": {
-                    u"state": 1,
-                    u"blacklist": [{
-                        u"exchange": u"adiant",
-                        u"domain": u"zemanta.com"
-                        }]
-                }
-            }, publisher_blacklist_action.first().payload['args']['conf'])
+                u"key": [1],
+                u"state": 1,
+                u"level": u"adgroup",
+                u"publishers": [{
+                    u"exchange": u"adiant",
+                    u"source_id": 7,
+                    u"domain": u"zemanta.com",
+                    u"ad_group_id": 1
+                    }]
+            }, publisher_blacklist_action.first().payload['args'])
 
         self.assertTrue(res['success'])
 
@@ -1309,3 +1310,364 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertEqual(1, publisher_blacklist.ad_group.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual('zemanta.com', publisher_blacklist.name)
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_global_blacklist(self, cursor):
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'exchange': 'adiant',
+        },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.GLOBAL,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": []
+        }
+        res = self._post_publisher_blacklist(1, payload)
+
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(1, publisher_blacklist_action.count())
+        self.assertDictEqual(
+            {
+                u"key": None,
+                u"state": 2,
+                u"level": u"global",
+                u"publishers": [{
+                    u"domain": u"zemanta.com",
+                    u"exchange": u"adiant",
+                    u"source_id": 7,
+                }]
+            }, publisher_blacklist_action.first().payload['args'])
+        self.assertTrue(res['success'])
+
+        self.assertEqual(1, models.PublisherBlacklist.objects.count())
+        publisher_blacklist = models.PublisherBlacklist.objects.first()
+
+        self.assertTrue(publisher_blacklist.everywhere)
+        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertIsNone(publisher_blacklist.ad_group)
+        self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
+        self.assertEqual('zemanta.com', publisher_blacklist.name)
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_global_blacklist_1(self, cursor):
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'exchange': 'adiant',
+        },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.GLOBAL,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": False,
+            "publishers_selected": [
+                {
+                    "blacklisted": "Active",
+                    "checked": True,
+                    "domain": "zemanta.com",
+                    "source_id": 7
+                }
+            ],
+            "publishers_not_selected": []
+        }
+        res = self._post_publisher_blacklist(1, payload)
+
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(1, publisher_blacklist_action.count())
+        self.assertDictEqual(
+            {
+                u"key": None,
+                u"state": 2,
+                u"level": u"global",
+                u"publishers": [{
+                    u"domain": u"zemanta.com",
+                    u"exchange": u"adiant",
+                    u"source_id": 7,
+                }]
+            }, publisher_blacklist_action.first().payload['args'])
+        self.assertTrue(res['success'])
+
+        self.assertEqual(1, models.PublisherBlacklist.objects.count())
+        publisher_blacklist = models.PublisherBlacklist.objects.first()
+
+        self.assertTrue(publisher_blacklist.everywhere)
+        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertIsNone(publisher_blacklist.ad_group)
+        self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
+        self.assertEqual('zemanta.com', publisher_blacklist.name)
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_global_all_but_blacklist_1(self, cursor):
+        # simulate select all
+        # unselect the only publisher
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'exchange': 'adiant',
+        },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.GLOBAL,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": [
+                {
+                    "blacklisted": "Active",
+                    "checked": True,
+                    "domain": "zemanta.com",
+                    "source_id": 7
+                }
+            ]
+        }
+        res = self._post_publisher_blacklist(1, payload)
+
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(0, publisher_blacklist_action.count())
+        self.assertTrue(res['success'])
+        self.assertEqual(0, models.PublisherBlacklist.objects.count())
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_global_all_but_blacklist_2(self, cursor):
+        # simulate select all
+        # publisher is already blacklisted
+        # (essentialy blacklisting blacklisted pub)
+
+        models.PublisherBlacklist.objects.create(
+            name="zemanta.com",
+            source=models.Source.objects.get(tracking_slug='b1_adiant'),
+            status=constants.PublisherStatus.BLACKLISTED,
+            everywhere=True
+        )
+
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'exchange': 'adiant',
+        },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.GLOBAL,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": [],
+        }
+        res = self._post_publisher_blacklist(1, payload)
+
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(0, publisher_blacklist_action.count())
+        self.assertTrue(res['success'])
+        self.assertEqual(1, models.PublisherBlacklist.objects.count())
+
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_global_all_but_enable_1(self, cursor):
+        models.PublisherBlacklist.objects.create(
+            name="zemanta.com",
+            source=models.Source.objects.get(tracking_slug='b1_adiant'),
+            status=constants.PublisherStatus.BLACKLISTED,
+            everywhere=True
+        )
+
+        # simulate select all
+        # unselect the only publisher
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'exchange': 'adiant',
+        },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.ENABLED,
+            "level": constants.PublisherBlacklistLevel.GLOBAL,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": [
+                {
+                    "blacklisted": "Enabled",
+                    "checked": True,
+                    "domain": "zemanta.com",
+                    "source_id": 7
+                }
+            ]
+        }
+        res = self._post_publisher_blacklist(1, payload)
+
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(0, publisher_blacklist_action.count())
+        self.assertTrue(res['success'])
+        self.assertEqual(1, models.PublisherBlacklist.objects.count())
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_campaign_blacklist(self, cursor):
+
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'exchange': 'adiant',
+        },
+        ]
+
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.CAMPAIGN,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected":[],
+            "publishers_not_selected":[]
+        }
+        res = self._post_publisher_blacklist('1', payload)
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(1, publisher_blacklist_action.count())
+        self.assertDictEqual(
+            {
+                u"key": [1],
+                u"state": 2,
+                u"level": u"campaign",
+                u"publishers": [{
+                        u"exchange": u"adiant",
+                        u"source_id": 7,
+                        u"domain": u"zemanta.com",
+                        u"ad_group_id": 1
+                    },
+                    {
+                        u'ad_group_id': 10,
+                        u'domain': u'zemanta.com',
+                        u'exchange': u'adiant',
+                        u'source_id': 7
+                    },
+                    {
+                        u'ad_group_id': 9,
+                        u'domain': u'zemanta.com',
+                        u'exchange': u'adiant',
+                        u'source_id': 7
+                    }
+                ]
+            }, publisher_blacklist_action.first().payload['args'])
+
+        self.assertTrue(res['success'])
+
+        self.assertEqual(1, models.PublisherBlacklist.objects.count())
+
+        publisher_blacklist = models.PublisherBlacklist.objects.first()
+        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertIsNone(publisher_blacklist.ad_group)
+        self.assertEqual(1, publisher_blacklist.campaign.id)
+        self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
+        self.assertEqual('zemanta.com', publisher_blacklist.name)
+
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_campaign_all_but_blacklist_1(self, cursor):
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'exchange': 'adiant',
+        },
+        ]
+
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.CAMPAIGN,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected":[],
+            "publishers_not_selected":[{
+                "blacklisted": "Enabled",
+                "checked": True,
+                "domain": "zemanta.com",
+                "source_id": 7
+            }]
+        }
+        res = self._post_publisher_blacklist('1', payload)
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(0, publisher_blacklist_action.count())
+        self.assertTrue(res['success'])
+
+        self.assertEqual(0, models.PublisherBlacklist.objects.count())
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_campaign_all_but_blacklist_2(self, cursor):
+        models.PublisherBlacklist.objects.create(
+            name="zemanta.com",
+            source=models.Source.objects.get(tracking_slug='b1_adiant'),
+            status=constants.PublisherStatus.BLACKLISTED,
+            campaign=models.Campaign.objects.get(pk=1)
+        )
+
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'exchange': 'adiant',
+        },
+        ]
+
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.CAMPAIGN,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected":[],
+            "publishers_not_selected":[]
+        }
+        res = self._post_publisher_blacklist('1', payload)
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(0, publisher_blacklist_action.count())
+        self.assertTrue(res['success'])
+
+        self.assertEqual(1, models.PublisherBlacklist.objects.count())

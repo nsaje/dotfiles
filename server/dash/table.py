@@ -2,6 +2,7 @@ import datetime
 import pytz
 from slugify import slugify
 from django.conf import settings
+from django.db.models import Q
 
 from dash.views import helpers
 from dash import models
@@ -576,17 +577,6 @@ class SourcesTable(object):
 
         return constants.AdGroupSourceSettingsState.INACTIVE
 
-    def _get_supply_dash_url(self, ad_group_source):
-        if not ad_group_source.source.has_3rd_party_dashboard() or\
-                ad_group_source.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
-            return None
-
-        return '{}?ad_group_id={}&source_id={}'.format(
-            urlresolvers.reverse('dash.views.views.supply_dash_redirect'),
-            ad_group_source.ad_group.id,
-            ad_group_source.source.id
-        )
-
     def _get_supply_dash_disabled_message(self, ad_group_source):
         if not ad_group_source.source.has_3rd_party_dashboard():
             return "This media source doesn't have a dashboard of its own. " \
@@ -629,8 +619,10 @@ class SourcesTable(object):
                     source_data = item
                     break
 
-            if source.deprecated and not level_sources_table.reports_api.row_has_traffic_data(source_data)\
-               and not level_sources_table.reports_api.row_has_postclick_data(source_data):
+            if source.deprecated and\
+               not level_sources_table.reports_api.row_has_traffic_data(source_data) and\
+               not level_sources_table.reports_api.row_has_postclick_data(source_data) and\
+               not reports.api.row_has_conversion_goal_data(source_data):
                 continue  # deprecated sources without data don't have to be shown
 
             last_sync = last_actions.get(source.id)
@@ -662,7 +654,7 @@ class SourcesTable(object):
                         ad_group_source = item
                         break
 
-                row['supply_dash_url'] = self._get_supply_dash_url(ad_group_source)
+                row['supply_dash_url'] = ad_group_source.get_supply_dash_url()
                 row['supply_dash_disabled_message'] = self._get_supply_dash_disabled_message(ad_group_source)
 
                 ad_group_settings = level_sources_table.ad_group_settings
@@ -712,7 +704,13 @@ class SourcesTable(object):
             rows.append(row)
 
         if order:
-            rows = sort_results(rows, [order])
+            order_list = [order]
+
+            # status setting should also be sorted by autopilot state
+            if 'status_setting' in order:
+                order_list.append(('-' if order.startswith('-') else '') + 'autopilot_state')
+
+            rows = sort_results(rows, order_list)
 
         return rows
 
@@ -860,8 +858,9 @@ class AccountsAccountsTable(object):
                     break
 
             if has_view_archived_permission and not show_archived and archived and\
-               not (reports.api.row_has_traffic_data(account_data) or
-                    reports.api.row_has_postclick_data(account_data)):
+               not reports.api.row_has_traffic_data(account_data) and\
+               not reports.api.row_has_postclick_data(account_data) and\
+               not reports.api.row_has_conversion_goal_data(account_data):
                 continue
 
             state = account_state.get(aid, constants.AdGroupSettingsState.INACTIVE)
@@ -1050,7 +1049,7 @@ class AdGroupAdsPlusTable(object):
         page_rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
             rows, page, size)
 
-        rows = self._add_status_to_rows(user, page_rows, filtered_sources, ad_group)
+        rows = self._add_submission_status_to_rows(user, page_rows, filtered_sources, ad_group)
 
         total_stats = stats_helper.get_content_ad_stats_with_conversions(
             user,
@@ -1144,8 +1143,9 @@ class AdGroupAdsPlusTable(object):
 
             archived = content_ad.archived
             if has_view_archived_permission and not show_archived and archived and\
-               not (reports.api.row_has_traffic_data(stat) or
-                    reports.api.row_has_postclick_data(stat)):
+               not reports.api.row_has_traffic_data(stat) and\
+               not reports.api.row_has_postclick_data(stat) and\
+               not reports.api.row_has_conversion_goal_data(stat):
                 continue
 
             url = self._get_url(ad_group, content_ad, is_demo)
@@ -1167,6 +1167,7 @@ class AdGroupAdsPlusTable(object):
                     'square': content_ad.get_image_url(160, 160),
                     'landscape': content_ad.get_image_url(256, 160)
                 },
+                'status_setting': content_ad.state,
             }
             helpers.copy_stats_to_row(stat, row)
 
@@ -1177,7 +1178,7 @@ class AdGroupAdsPlusTable(object):
 
         return rows
 
-    def _add_status_to_rows(self, user, rows, filtered_sources, ad_group):
+    def _add_submission_status_to_rows(self, user, rows, filtered_sources, ad_group):
         all_content_ad_sources = models.ContentAdSource.objects.filter(
             source=filtered_sources,
             content_ad_id__in=[row['id'] for row in rows]
@@ -1195,10 +1196,6 @@ class AdGroupAdsPlusTable(object):
             content_ad_id = int(row['id'])
 
             content_ad_sources = [cas for cas in all_content_ad_sources if cas.content_ad_id == content_ad_id]
-            if content_ad_sources:
-                content_ad = content_ad_sources[0].content_ad
-            else:
-                content_ad = models.ContentAd.objects.get(id=content_ad_id)
 
             submission_status = helpers.get_content_ad_submission_status(
                 user,
@@ -1208,7 +1205,6 @@ class AdGroupAdsPlusTable(object):
 
             row.update({
                 'submission_status': submission_status,
-                'status_setting': content_ad.state,
                 'editable_fields': {
                     'status_setting': {
                         'enabled': True,
@@ -1344,8 +1340,9 @@ class CampaignAdGroupsTable(object):
 
             reports_api = get_reports_api_module(user)
             if has_view_archived_permission and not show_archived and archived and\
-               not (reports_api.row_has_traffic_data(ad_group_data) or
-                    reports_api.row_has_postclick_data(ad_group_data)):
+               not reports_api.row_has_traffic_data(ad_group_data) and\
+               not reports_api.row_has_postclick_data(ad_group_data) and\
+               not reports.api.row_has_conversion_goal_data(ad_group_data):
                 continue
 
             row['state'] = state
@@ -1501,8 +1498,9 @@ class AccountCampaignsTable(object):
 
             reports_api = get_reports_api_module(user)
             if has_view_archived_permission and not show_archived and archived and\
-               not (reports_api.row_has_traffic_data(campaign_stat) or
-                    reports_api.row_has_postclick_data(campaign_stat)):
+               not reports_api.row_has_traffic_data(campaign_stat) and\
+               not reports_api.row_has_postclick_data(campaign_stat) and\
+               not reports.api.row_has_conversion_goal_data(campaign_stat):
                 continue
 
             state = constants.AdGroupSettingsState.INACTIVE
@@ -1565,94 +1563,66 @@ class PublishersTable(object):
         if set(models.Source.objects.all()) != set(filtered_sources):
             constraints['exchange'] = map_exchange_to_source_name.keys()
 
-        if not show_blacklisted_publishers or\
-                show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
-            publishers_data = reports.api_publishers.query(
-                start_date, end_date,
-                breakdown_fields=['domain', 'exchange'],
-                order_fields=[order],
-                constraints=constraints,
-            )
-            totals_data = reports.api_publishers.query(
-                start_date, end_date,
-                constraints=constraints,
-            )
-        elif show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
-            # fetch blacklisted status from db
-            adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(ad_group=adgroup)
-            adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
-            adg_blacklisted_publishers = map(lambda entry: {
-                'domain': entry['name'],
-                'adgroup_id': entry['ad_group__id'],
-                'exchange': entry['source__tracking_slug'].replace('b1_', ''),
-            }, adg_blacklisted_publishers)
-
-            publishers_data = reports.api_publishers.query_active_publishers(
-                start_date, end_date,
-                breakdown_fields=['domain', 'exchange'],
-                order_fields=[order],
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-            totals_data = reports.api_publishers.query_active_publishers(
-                start_date, end_date,
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-        elif show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
-            # fetch blacklisted status from db
-            adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(ad_group=adgroup)
-            adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
-            adg_blacklisted_publishers = map(lambda entry: {
-                'domain': entry['name'],
-                'adgroup_id': entry['ad_group__id'],
-                'exchange': entry['source__tracking_slug'].replace('b1_', ''),
-            }, adg_blacklisted_publishers)
-
-            publishers_data = reports.api_publishers.query_blacklisted_publishers(
-                start_date, end_date,
-                breakdown_fields=['domain', 'exchange'],
-                order_fields=[order],
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-            totals_data = reports.api_publishers.query_blacklisted_publishers(
-                start_date, end_date,
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-        else:
-            raise Exception("Unknown filter value")
+        publishers_data, totals_data = self._query_filtered_publishers(
+            show_blacklisted_publishers,
+            start_date,
+            end_date,
+            adgroup,
+            constraints,
+            order
+        )
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
         publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(publishers_data, page, size)
 
-        # fetch blacklisted status from db
+        source_cache_by_slug = {
+            'outbrain': models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN)
+        }
+
         pub_blacklist_qs = models.PublisherBlacklist.objects.none()
         for publisher_data in publishers_data:
             publisher_data['blacklisted'] = 'Active'
-            domain, source_slug = publisher_data['domain'], publisher_data['exchange']
+            domain = publisher_data['domain']
+            source_slug = publisher_data['exchange']
+
+            if source_slug not in source_cache_by_slug:
+                source_cache_by_slug[source_slug] =\
+                    models.Source.objects.filter(bidder_slug=source_slug).first()
+
+            if source_cache_by_slug[source_slug] is None:
+                continue
+
             pub_blacklist_qs |= models.PublisherBlacklist.objects.filter(
-                ad_group=adgroup,
-                name=domain,
-                source__tracking_slug__endswith=source_slug
+                Q(
+                    name=domain,
+                    source=source_cache_by_slug[source_slug]
+                ) | Q(
+                    Q(ad_group=adgroup) |
+                    Q(campaign=adgroup.campaign) |
+                    Q(account=adgroup.campaign.account) |
+                    Q(everywhere=True)
+                )
             )
-        blacklisted_publishers = pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug', 'status')
-        filtered_publishers = []
-        for blacklisted_pub in blacklisted_publishers:
-            status = blacklisted_pub['status']
-            name = blacklisted_pub['name']
-            ad_group_id = blacklisted_pub['ad_group__id']
-            slug = blacklisted_pub['source__tracking_slug']
-            slug = slug.replace('b1_', '')
-            filtered_publishers.append([name, ad_group_id, slug, status])
 
         for publisher_data in publishers_data:
-            domain, source_slug = publisher_data['domain'], publisher_data['exchange']
-            if [domain, adgroup.id, source_slug, constants.PublisherStatus.PENDING] in filtered_publishers:
-                publisher_data['blacklisted'] = 'Pending'
-            if [domain, adgroup.id, source_slug, constants.PublisherStatus.BLACKLISTED] in filtered_publishers:
-                publisher_data['blacklisted'] = 'Blacklisted'
+            publisher_domain = publisher_data['domain']
+            publisher_source = source_cache_by_slug.get(publisher_data['exchange']) or publisher_data['exchange']
+            publisher_data['source_id'] = publisher_source.id if source_cache_by_slug.get(publisher_data['exchange']) is not None else -1
+
+            if source_cache_by_slug.get(publisher_data['exchange']) is None:
+                continue
+
+            for blacklisted_pub in pub_blacklist_qs:
+                if publisher_domain == blacklisted_pub.name and\
+                        publisher_source == blacklisted_pub.source and\
+                        (blacklisted_pub.everywhere or
+                         blacklisted_pub.account == adgroup.campaign.account or
+                         blacklisted_pub.campaign == adgroup.campaign or
+                         blacklisted_pub.ad_group == adgroup):
+                    if blacklisted_pub.status == constants.PublisherStatus.BLACKLISTED:
+                        publisher_data['blacklisted'] = 'Blacklisted'
+                    elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
+                        publisher_data['blacklisted'] = 'Pending'
 
         response = {
             'rows': self.get_rows(
@@ -1674,6 +1644,66 @@ class PublishersTable(object):
             'order': order,
         }
         return response
+
+    def _query_filtered_publishers(self, show_blacklisted_publishers, start_date, end_date, adgroup, constraints, order):
+        if not show_blacklisted_publishers or\
+                show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
+            publishers_data = reports.api_publishers.query(
+                start_date, end_date,
+                breakdown_fields=['domain', 'exchange'],
+                order_fields=[order],
+                constraints=constraints,
+            )
+            totals_data = reports.api_publishers.query(
+                start_date, end_date,
+                constraints=constraints,
+            )
+        elif show_blacklisted_publishers in (
+            constants.PublisherBlacklistFilter.SHOW_ACTIVE,
+            constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
+
+            # fetch blacklisted status from db
+            adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
+                Q(ad_group=adgroup) |
+                Q(campaign=adgroup.campaign) |
+                Q(account=adgroup.campaign.account)
+            )
+            adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
+            adg_blacklisted_publishers = map(lambda entry: {
+                'domain': entry['name'],
+                'adgroup_id': adgroup.id,
+                'exchange': entry['source__tracking_slug'].replace('b1_', ''),
+            }, adg_blacklisted_publishers)
+
+            # include global, campaign and account stats if they exist
+            global_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
+                everywhere=True
+            )
+            adg_blacklisted_publishers.extend(map(lambda pub_bl: {
+                    'domain': pub_bl.name,
+                    'exchange': pub_bl.source.tracking_slug.replace('b1_', ''),
+                }, global_pub_blacklist_qs)
+            )
+
+            query_func = None
+            if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+                query_func = reports.api_publishers.query_active_publishers
+            else:
+                query_func = reports.api_publishers.query_blacklisted_publishers
+
+            publishers_data = query_func(
+                start_date, end_date,
+                breakdown_fields=['domain', 'exchange'],
+                order_fields=[order],
+                constraints=constraints,
+                blacklist=adg_blacklisted_publishers
+            )
+            totals_data = query_func(
+                start_date, end_date,
+                constraints=constraints,
+                blacklist=adg_blacklisted_publishers
+            )
+        return publishers_data, totals_data
 
     def get_totals(self,
                    user,
@@ -1707,6 +1737,7 @@ class PublishersTable(object):
                 'domain_link': domain_link,
                 'blacklisted': publisher_data['blacklisted'],
                 'exchange': source_name,
+                'source_id': publisher_data['source_id'],
                 'cost': publisher_data.get('cost', 0),
                 'cpc': publisher_data.get('cpc', 0),
                 'clicks': publisher_data.get('clicks', None),

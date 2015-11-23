@@ -14,6 +14,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.forms.models import model_to_dict
+from django.core.validators import validate_email
 
 
 import utils.string_helper
@@ -1090,6 +1091,17 @@ class AdGroupSource(models.Model):
             source_name
         )
 
+    def get_supply_dash_url(self):
+        if not self.source.has_3rd_party_dashboard() or\
+                self.source_campaign_key == settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE:
+            return None
+
+        return '{}?ad_group_id={}&source_id={}'.format(
+            reverse('dash.views.views.supply_dash_redirect'),
+            self.ad_group.id,
+            self.source.id
+        )
+
     def _shorten_name(self, name):
         # if the first word is too long, cut it
         words = name.split()
@@ -1736,7 +1748,10 @@ class PublisherBlacklist(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, blank=False, null=False)
-    ad_group = models.ForeignKey(AdGroup, null=False, related_name='ad_group', on_delete=models.PROTECT)
+    everywhere = models.BooleanField(default=False)
+    account = models.ForeignKey(Account, null=True, related_name='account', on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
+    ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
     source = models.ForeignKey(Source, null=False, on_delete=models.PROTECT)
 
     status = models.IntegerField(
@@ -1744,8 +1759,10 @@ class PublisherBlacklist(models.Model):
         choices=constants.PublisherStatus.get_choices()
     )
 
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
     class Meta:
-        unique_together = (('name', 'ad_group', 'source'), )
+        unique_together = (('name', 'everywhere', 'account', 'campaign', 'ad_group', 'source'), )
 
 
 class CreditLineItem(FootprintModel):
@@ -1776,10 +1793,15 @@ class CreditLineItem(FootprintModel):
     def is_active(self, date=None):
         if date is None:
             date = dates_helper.local_today()
-        return self.status == constants.CreditLineItem.SIGNED and \
+        return self.status == constants.CreditLineItemStatus.SIGNED and \
             (self.start_date <= date <= self.end_date)
 
-    def get_total_credit_amount(self):
+    def is_past(self, date=None):
+        if date is None:
+            date = dates_helper.local_today()
+        return self.end_date <= date
+
+    def get_allocated_amount(self):
         return sum(b.amount for b in self.budgets.all())
 
     def cancel(self):
@@ -1793,6 +1815,8 @@ class CreditLineItem(FootprintModel):
 
     def save(self, request=None, *args, **kwargs):
         self.full_clean()
+        if request and not self.pk:
+            self.created_by = request.user
         super(CreditLineItem, self).save(*args, **kwargs)
         CreditHistory.objects.create(
             created_by=request.user if request else None,
@@ -1807,42 +1831,67 @@ class CreditLineItem(FootprintModel):
     def is_editable(self):
         return self.status == constants.CreditLineItemStatus.PENDING
 
+    def is_available(self):
+        return not self.is_past() and self.status == constants.CreditLineItemStatus.SIGNED\
+            and (self.amount - self.get_allocated_amount()) > 0
+
     def clean(self):
         has_changed = any((
             self.has_changed('start_date'),
-            self.has_changed('amount'),
             self.has_changed('license_fee'),
         ))
         if has_changed and not self.is_editable():
-            raise ValidationError('Nonpending credit line item cannot change.')
+            raise ValidationError({
+                '__all__': ['Nonpending credit line item cannot change.'],
+            })
 
         validate(
-            self.validate_start_date,
             self.validate_end_date,
             self.validate_license_fee,
             self.validate_status,
+            self.validate_amount,
         )
 
+        if not self.pk or self.previous_value('status') != constants.CreditLineItemStatus.SIGNED:
+            return
 
+        budgets = self.budgets.all()
+        if not budgets:
+            return
+
+        min_end_date = min(b.end_date for b in budgets)
+
+        if self.has_changed('end_date') and self.end_date < min_end_date:
+            raise ValidationError({
+                'end_date': ['End date minimum is depending on budgets.'],
+            })
+
+    def validate_amount(self):
+        if not self.pk or not self.has_changed('amount'):
+            return
+        prev_amount = self.previous_value('amount')
+        budgets = self.budgets.all()
+        if prev_amount < self.amount or not budgets:
+            return
+        if self.amount < sum(b.amount for b in budgets):
+            raise ValidationError(
+                'Credit line item amount needs to be larger than the sum of budgets.'
+            )
+        
     def validate_status(self):
         s = constants.CreditLineItemStatus
         if not self.has_changed('status'):
             return
-        if self.status == s.CANCELED and self.budgets.all():
-            raise ValidationError('Credit line item status cannot change when credit has budgets allocated.')
         if self.status == s.PENDING:
             raise ValidationError('Credit line item status cannot change to PENDING.')
 
-
-    def validate_start_date(self):
-        if not self.start_date:
-            return
-        if self.start_date > self.end_date:
-            raise ValidationError('Start date cannot be greater than the end date.')
-
     def validate_end_date(self):
+        if not self.end_date:
+            return
         if self.has_changed('end_date') and self.previous_value('end_date') > self.end_date:
-            raise ValidationError('New end date cannot be less than the previous.')
+            raise ValidationError('New end date cannot be before than the previous.')
+        if self.start_date and self.start_date > self.end_date:
+            raise ValidationError('Start date cannot be greater than the end date.')
 
     def validate_license_fee(self):
         if not self.license_fee:
@@ -1857,7 +1906,7 @@ class CreditLineItem(FootprintModel):
             return self.filter(
                 start_date__lte=date,
                 end_date__gte=date,
-                status=constants.CreditLineItem.SIGNED
+                status=constants.CreditLineItemStatus.SIGNED
             )
 
         def delete(self):
@@ -1881,8 +1930,12 @@ class BudgetLineItem(FootprintModel):
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
 
+    objects = QuerySetManager()
+
     def save(self, request=None, *args, **kwargs):
         self.full_clean()
+        if request and not self.pk:
+            self.created_by = request.user
         super(BudgetLineItem, self).save(*args, **kwargs)
         BudgetHistory.objects.create(
             created_by=request.user if request else None,
@@ -1893,9 +1946,16 @@ class BudgetLineItem(FootprintModel):
     def db_state(self, date=None):
         return BudgetLineItem.objects.get(pk=self.pk).state(date=date)
 
+    def delete(self):
+        if self.db_state() != constants.BudgetLineItemState.PENDING:
+            raise AssertionError('Cannot delete nonpending budgets')
+        super(BudgetLineItem, self).delete()
+
     def state(self, date=None):
         if date is None:
             date = dates_helper.local_today()
+        if (self.amount - self.get_spend_amount()) <= 0:
+            return constants.BudgetLineItemState.DEPLETED
         if self.end_date and self.end_date < date:
             return constants.BudgetLineItemState.INACTIVE
         if self.start_date and self.start_date <= date:
@@ -1906,9 +1966,33 @@ class BudgetLineItem(FootprintModel):
     def state_text(self, date=None):
         return constants.BudgetLineItemState.get_text(self.state(date=date))
 
+    def get_spend_amount(self): # TODO: implement
+        return Decimal('0')
+
+    def get_media_spend_amount(self): # TODO: implement
+        return Decimal('0')
+
+    def get_data_spend_amount(self): # TODO: implement
+        return Decimal('0')
+
+    def is_editable(self):
+        return self.state() == constants.BudgetLineItemState.PENDING
+
+    def is_updatable(self):
+        return self.state() == constants.BudgetLineItemState.ACTIVE
+
     def clean(self):
-        if self.pk and self.db_state() != constants.BudgetLineItemState.PENDING:
-            raise ValidationError('Only pending budgets can change.')
+        if self.pk:
+            have_changed = any([
+                self.has_changed('start_date'),
+                self.has_changed('amount'),
+            ])
+            db_state = self.db_state()
+            if have_changed and not db_state == constants.BudgetLineItemState.PENDING:
+                raise ValidationError('Only pending budgets can change start date and amount.')
+            if db_state not in (constants.BudgetLineItemState.PENDING,
+                                constants.BudgetLineItemState.ACTIVE, ):
+                raise ValidationError('Only pending and active budgets can change.')
 
         validate(
             self.validate_start_date,
@@ -1930,8 +2014,6 @@ class BudgetLineItem(FootprintModel):
     def validate_start_date(self):
         if not self.start_date:
             return
-        if self.start_date > self.end_date:
-            raise ValidationError('Start date cannot be bigger than the end date.')
         if self.start_date < self.credit.start_date:
             raise ValidationError('Start date cannot be smaller than the credit\'s start date.')
 
@@ -1940,6 +2022,8 @@ class BudgetLineItem(FootprintModel):
             return
         if self.end_date > self.credit.end_date:
             raise ValidationError('End date cannot be bigger than the credit\'s end date.')
+        if self.start_date and self.start_date > self.end_date:
+            raise ValidationError('Start date cannot be bigger than the end date.')
 
     def validate_amount(self):
         if not self.amount:
@@ -1950,15 +2034,105 @@ class BudgetLineItem(FootprintModel):
             raise ValidationError(
                 'Budget exceeds the total credit amount by ${}.00.'.format(-delta)
             )
-        if self.state() == constants.BudgetLineItemState.PENDING:
-            return
-        if self.has_changed('amount'):
-            raise ValidationError('Budget amount cannot change.')
+
+    class QuerySet(models.QuerySet):
+        def delete(self):
+            if any(itm.state() != constants.BudgetLineItemState.PENDING for itm in self):
+                raise AssertionError('Some budget items are not pending')
+            super(BudgetLineItem.QuerySet, self).delete()
 
 
 class CreditHistory(HistoryModel):
     credit = models.ForeignKey(CreditLineItem, related_name='history')
 
+
 class BudgetHistory(HistoryModel):
     budget = models.ForeignKey(BudgetLineItem, related_name='history')
 
+
+class ExportReport(models.Model):
+    id = models.AutoField(primary_key=True)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        null=False,
+        blank=False,
+        on_delete=models.PROTECT
+    )
+
+    ad_group = models.ForeignKey(AdGroup, blank=True, null=True, on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, blank=True, null=True, on_delete=models.PROTECT)
+    account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.PROTECT)
+
+    granularity = models.IntegerField(
+        default=constants.ScheduledReportGranularity.CONTENT_AD,
+        choices=constants.ScheduledReportGranularity.get_choices()
+    )
+
+    breakdown_by_day = models.BooleanField(null=False, blank=False, default=False)
+    breakdown_by_source = models.BooleanField(null=False, blank=False, default=False)
+
+    order_by = models.CharField(max_length=20, null=True, blank=True)
+    additional_fields = models.CharField(max_length=500, null=True, blank=True)
+    filtered_sources = models.ManyToManyField(Source)
+
+    @property
+    def level(self):
+        if self.account:
+            return constants.ScheduledReportLevel.ACCOUNT
+        elif self.campaign:
+            return constants.ScheduledReportLevel.CAMPAIGN
+        elif self.ad_group:
+            return constants.ScheduledReportLevel.AD_GROUP
+        return constants.ScheduledReportLevel.ALL_ACCOUNTS
+
+
+class ScheduledExportReport(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
+    report = models.ForeignKey(ExportReport, related_name='scheduled_reports')
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='+',
+        null=False,
+        blank=False,
+        on_delete=models.PROTECT
+    )
+
+    state = models.IntegerField(
+        default=constants.ScheduledReportState.ACTIVE,
+        choices=constants.ScheduledReportState.get_choices()
+    )
+
+    sending_frequency = models.IntegerField(
+        default=constants.ScheduledReportSendingFrequency.DAILY,
+        choices=constants.ScheduledReportSendingFrequency.get_choices()
+    )
+
+    def add_recipient_email(self, email_address):
+        validate_email(email_address)
+        if self.recipients.filter(email=email_address).count() < 1:
+            self.recipients.create(email=email_address)
+
+    def remove_recipient_email(self, email_address):
+        self.recipients.filter(email__exact=email_address).delete()
+
+    def get_recipients_emails_list(self):
+        return [recipient.email for recipient in self.recipients.all()]
+
+    def set_recipient_emails_list(self, email_list):
+        self.recipients.all().delete()
+        for email in email_list:
+            self.add_recipient_email(email)
+
+
+class ScheduledExportReportRecipient(models.Model):
+    scheduled_report = models.ForeignKey(ScheduledExportReport, related_name='recipients')
+    email = models.EmailField()
+
+    class Meta:
+        unique_together = ('scheduled_report', 'email')
