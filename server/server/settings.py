@@ -90,7 +90,7 @@ from localsettings import *
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'common_static'),)
 STATIC_ROOT = 'static'
-STATIC_URL = SERVER_STATIC_URL
+STATIC_URL = SERVER_STATIC_URL + '/'
 
 LOGIN_URL = '/signin'
 LOGIN_REDIRECT_URL = '/'
