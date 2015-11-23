@@ -75,6 +75,7 @@ def get_reports_api_module(user):
 
     return reports.api
 
+
 def get_conversion_pixels_last_sync(conversion_pixels):
     conversion_pixels = conversion_pixels.extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
                                                 order_by=['-last_sync_null', 'last_sync_dt'])
@@ -82,6 +83,7 @@ def get_conversion_pixels_last_sync(conversion_pixels):
         return conversion_pixels[0].last_sync_dt
 
     return datetime.datetime.utcnow()
+
 
 class AllAccountsSourcesTable(object):
     def __init__(self, user, id_, filtered_sources):
@@ -1623,6 +1625,9 @@ class PublishersTable(object):
                         publisher_data['blacklisted'] = 'Blacklisted'
                     elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
                         publisher_data['blacklisted'] = 'Pending'
+                    level = blacklisted_pub.get_blacklist_level()
+                    publisher_data['blacklisted_level'] = level
+                    publisher_data['blacklisted_level_description'] = constants.PublisherBlacklistLevel.verbose(level)
 
         response = {
             'rows': self.get_rows(
@@ -1744,6 +1749,10 @@ class PublishersTable(object):
                 'impressions': publisher_data.get('impressions', None),
                 'ctr': publisher_data.get('ctr', None),
             }
+
+            if publisher_data.get('blacklisted_level'):
+                row['blacklisted_level'] = publisher_data['blacklisted_level']
+                row['blacklisted_level_description'] = publisher_data['blacklisted_level_description']
 
             rows.append(row)
 
