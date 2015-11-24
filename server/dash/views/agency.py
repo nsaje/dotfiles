@@ -884,7 +884,7 @@ class AccountAgency(api_common.BaseApiView):
 
         settings = models.AccountSettings()
         self.set_settings(settings, account, form.cleaned_data)
-        self.set_allowed_sources(settings, form.cleaned_data.get('allowed_sources', None))
+        self.set_allowed_sources(settings, form.cleaned_data.get('allowed_sources'))
 
         with transaction.atomic():
             account.save(request)
