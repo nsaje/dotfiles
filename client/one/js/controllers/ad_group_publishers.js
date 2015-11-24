@@ -166,7 +166,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.rows.forEach(function (row) {
             row.publisherSelected = false;
         });
-    } ;
+    };
 
     $scope.updatePublisherSelection = function() {
         $scope.rows.forEach(function(row) {
