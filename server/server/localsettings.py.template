@@ -75,6 +75,8 @@ GOOGLE_OAUTH_CLIENT_ID = ''
 GOOGLE_OAUTH_CLIENT_SECRET = ''
 
 # Static files
+BUILD_NUMBER = None
+
 if os.environ.get('BUILD'):
     BUILD_NUMBER = os.environ.get('BUILD')
 elif os.path.isfile('build_number.txt'):
