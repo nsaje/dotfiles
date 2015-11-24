@@ -24,7 +24,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
     $scope.addUserErrors = null;
     $scope.conversionPixelTagPrefix = '';
 
-    $scope.mediaSourcesOrderByProp = 'value';
+    $scope.mediaSourcesOrderByProp = 'name';
     $scope.selectedMediaSouces = {allowed:[], available:[]};
 
     $scope.getAllowedMediaSources = function () {
