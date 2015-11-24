@@ -1702,11 +1702,7 @@ class AccountAgencyTest(TestCase):
             'default_sales_representative': '3',
             'default_account_manager': '2',
             'id': '1',
-            'archived': False,
-            'allowed_sources':  {
-                '2': {'name': 'Source 2'},
-                '3': {'name': 'Source 3 (unreleased)'}
-            }
+            'archived': False
         })
 
 
