@@ -921,14 +921,6 @@ class AccountAgency(api_common.BaseApiView):
         settings.default_sales_representative = resource['default_sales_representative']
         settings.service_fee = helpers.format_percent_to_decimal(resource['service_fee'])
 
-
-    def filter_deprecated_sources(self, allowed_sources_dict, all_sources):
-        new_allowed_sources_dict = {}
-        for source in all_sources:
-            if not source.deprecated:
-                new_allowed_sources_dict[source.id] = allowed_sources_dict[source.id]
-        return new_allowed_sources_dict
-
     def add_unreleased_label_to_names(self, allowed_sources_dict, all_sources):
         for source in all_sources:
             if source.id in allowed_sources_dict and not source.released:
@@ -938,13 +930,12 @@ class AccountAgency(api_common.BaseApiView):
 
     def get_allowed_sources(self, allowed_sources_ids_list):
         allowed_sources_dict = {}
-        all_sources = list(models.Source.objects.all())
+        all_sources = list(models.Source.objects.filter(deprecated=False))
         for source in all_sources:
             source_settings = {'name': source.name}
             if source.id in allowed_sources_ids_list:
                 source_settings['allowed'] = True
             allowed_sources_dict[source.id] = source_settings
-        allowed_sources_dict = self.filter_deprecated_sources(allowed_sources_dict, all_sources)
         allowed_sources_dict = self.add_unreleased_label_to_names(allowed_sources_dict, all_sources)
         return allowed_sources_dict
 
