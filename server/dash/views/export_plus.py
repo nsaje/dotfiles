@@ -418,7 +418,10 @@ class AccountReports(api_common.BaseApiView):
         for r in reports:
             item = {}
             item['name'] = r.name
-            item['level'] = constants.ScheduledReportLevel.get_text(r.report.level)
+            item['level'] = ' - '.join(filter(None, [
+                constants.ScheduledReportLevel.get_text(r.report.level),
+                (r.report.campaign.name if r.report.campaign else ''),
+                (r.report.ad_group.campaign.name + ': ' + r.report.ad_group.name if r.report.ad_group else '')]))
             item['granularity'] = ', '.join(filter(None, [
                 constants.ScheduledReportGranularity.get_text(r.report.granularity),
                 ('by Media Source' if r.report.breakdown_by_source else ''),
