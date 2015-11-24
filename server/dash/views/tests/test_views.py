@@ -161,6 +161,31 @@ class AdGroupSourceSettingsTest(TestCase):
             ad_group=ad_group)
 
 
+class CampaignAdGroups(TestCase):
+    fixtures = ['test_models.yaml', 'test_views.yaml', ]
+
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username=User.objects.get(pk=1).email, password='secret')
+
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_put(self, mock_insert_adgroup):
+        campaign = models.Campaign.objects.get(pk=1)
+
+        response = self.client.put(
+            reverse('campaign_ad_groups', kwargs={'campaign_id': campaign.id}),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(mock_insert_adgroup.called)
+
+        response_dict = json.loads(response.content)
+        self.assertDictContainsSubset({'name': 'New ad group'}, response_dict['data'])
+
+        ad_group = models.AdGroup.objects.get(pk=response_dict['data']['id'])
+        ad_group_settings = ad_group.get_current_settings()
+        self.assertIsNotNone(ad_group_settings.id)
+
+
 class AdGroupContentAdCSVTest(TestCase):
     fixtures = ['test_api', 'test_views']
 

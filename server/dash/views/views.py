@@ -379,10 +379,27 @@ class CampaignAdGroups(api_common.BaseApiView):
             name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
             campaign=campaign
         )
-        ad_group.save(request)
+
+        actionlogs_to_send = []
+        with transaction.atomic():
+            ad_group.save(request)
+
+            # always create settings when creating an ad group
+            # and propagate them to external sources
+            ad_group_settings = ad_group.get_current_settings()
+            ad_group_settings.save(request)
+
+            actionlogs_to_send.extend(
+                api.order_ad_group_settings_update(
+                    ad_group, models.AdGroupSettings(), ad_group_settings, request,
+                    send=False
+                )
+            )
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_AD_GROUP,
                                             ad_group=ad_group, campaign=campaign)
+
+        actionlog.zwei_actions.send(actionlogs_to_send)
 
         response = {
             'name': ad_group.name,
