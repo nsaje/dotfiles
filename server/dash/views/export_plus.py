@@ -6,10 +6,12 @@ import slugify
 from collections import OrderedDict
 
 from django.conf import settings
+from django.db.models import Q
 
 from dash.views import helpers
 from dash import models
 from dash import export_plus
+from dash import constants
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
@@ -398,3 +400,52 @@ class AllAccountsExport(ExportApiView):
         filename = '{0}_{1}_{2}'.format(filename, start_date, end_date)
 
         return self.create_csv_response(filename, content=content)
+
+
+class AccountReports(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_scheduled_reports_get')
+    def get(self, request, account_id):
+        account = helpers.get_account(request.user, account_id)
+        if not request.user.has_perm('zemauth.exports_plus'):
+            raise exc.ForbiddenError(message='Not allowed')
+        response = {
+            'reports': self.format_reports(self.get_scheduled_reports(request.user, account))
+        }
+        return self.create_api_response(response)
+
+    def format_reports(self, reports):
+        result = []
+        for r in reports:
+            item = {}
+            item['name'] = r.name
+            item['level'] = constants.ScheduledReportLevel.get_text(r.report.level)
+            item['granularity'] = ', '.join(filter(None, [
+                constants.ScheduledReportGranularity.get_text(r.report.granularity),
+                ('by Media Source' if r.report.breakdown_by_source else ''),
+                ('by day' if r.report.breakdown_by_day else '')]))
+            item['frequency'] = constants.ScheduledReportSendingFrequency.get_text(r.sending_frequency)
+            item['scheduled_report_id'] = r.id
+            item['recipients'] = ', '.join(r.get_recipients_emails_list())
+            result.append(item)
+        return result
+
+    def get_scheduled_reports(self, user, account):
+        reports = models.ScheduledExportReport.objects.select_related('report').filter(
+            ~Q(state=constants.ScheduledReportState.REMOVED),
+            Q(created_by=user),
+            (Q(report__account=account) | Q(report__campaign__account=account) | Q(report__ad_group__campaign__account=account))
+        )
+        return reports
+
+
+class AccountReportsRemove(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'account_scheduled_reports_get')
+    def post(self, request, scheduled_report_id):
+        scheduled_report = models.ScheduledExportReport.objects.get(id=scheduled_report_id)
+
+        if not request.user.has_perm('zemauth.exports_plus') or scheduled_report.created_by != request.user:
+            raise exc.ForbiddenError(message='Not allowed')
+
+        scheduled_report.state = constants.ScheduledReportState.REMOVED
+        scheduled_report.save()
+        return self.create_api_response({})
