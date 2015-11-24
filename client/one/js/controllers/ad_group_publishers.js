@@ -165,7 +165,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.clearPublisherSelection = function () {
         $scope.rows.forEach(function (row) {
             row.publisherSelected = false;
-            row.disabledSelection = !row.can_blacklist_publisher;
         });
     } ;
 
