@@ -12,6 +12,7 @@ from django.http.request import HttpRequest
 from django.core import mail
 from django.contrib.auth.models import Permission
 from django.conf import settings
+from django.test import Client
 
 from zemauth.models import User
 from dash import models
@@ -1615,18 +1616,43 @@ class CampaignSettingsTest(TestCase):
 
 
 class AccountAgencyTest(TestCase):
-    fixtures = ['test_views.yaml']
+    fixtures = ['test_views.yaml', 'test_account_agency.yaml']
+
+    @classmethod
+    def setUpClass(cls):
+        super(AccountAgencyTest, cls).setUpClass()
+
+        permission = Permission.objects.get(codename='campaign_settings_account_manager')
+        user = User.objects.get(pk=3)
+        user.user_permissions.add(permission)
+        user.save()
+
+        permission = Permission.objects.get(codename='campaign_settings_sales_rep')
+        user = User.objects.get(pk=1)
+        user.user_permissions.add(permission)
+        user.save()
 
     def setUp(self):
-        password = 'secret'
-        self.user = User.objects.get(pk=1)
-        self.client.login(username=self.user.email, password=password)
-
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
+    def _get_client_with_permissions(self, permissions_list):
+        password = 'secret'
+        user = User.objects.get(pk=2)
+
+        for perm in permissions_list:
+            permission_object = Permission.objects.get(codename=perm)
+            user.user_permissions.add(permission_object)
+        user.save()
+        
+        client = Client()
+        client.login(username=user.email, password=password)
+        return client
+
     def test_get(self):
-        response = self.client.get(
+        client = self._get_client_with_permissions(['account_agency_view'])
+
+        response = client.get(
             reverse('account_agency', kwargs={'account_id': 1}),
             follow=True
         )
@@ -1642,19 +1668,15 @@ class AccountAgencyTest(TestCase):
             'archived': False
         })
 
+
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_post(self, mock_log_useraction):
-        permission = Permission.objects.get(codename='campaign_settings_account_manager')
-        user = User.objects.get(pk=3)
-        user.user_permissions.add(permission)
-        user.save()
+    def test_put(self, mock_log_useraction):
+        client = self._get_client_with_permissions([
+            'account_agency_view',
+            'can_modify_allowed_sources'
+            ])
 
-        permission = Permission.objects.get(codename='campaign_settings_sales_rep')
-        user = User.objects.get(pk=1)
-        user.user_permissions.add(permission)
-        user.save()
-
-        response = self.client.put(
+        response = client.put(
             reverse('account_agency', kwargs={'account_id': 1}),
             json.dumps({
                 'settings': {
@@ -1663,13 +1685,13 @@ class AccountAgencyTest(TestCase):
                     'default_sales_representative': '1',
                     'default_account_manager': '3',
                     'id': '1',
+                    'allowed_sources': {}
                 }
             }),
             content_type='application/json',
         )
 
         content = json.loads(response.content)
-
         self.assertTrue(content['success'])
 
         account = models.Account.objects.get(pk=1)
@@ -1687,3 +1709,51 @@ class AccountAgencyTest(TestCase):
             constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
             account=account
         )
+
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    def test_put_no_permission_can_modify_allowed_sources(self, mock_log_useraction):
+        client = self._get_client_with_permissions([
+            'account_agency_view',
+            ])
+        response = client.put(
+            reverse('account_agency', kwargs={'account_id': 1}),
+            json.dumps({
+                'settings': {
+                    'name': 'changed name',
+                    'service_fee': '15',
+                    'default_sales_representative': '1',
+                    'default_account_manager': '3',
+                    'id': '1',
+                    'allowed_sources': {}
+                }
+            }),
+            content_type='application/json',
+        )
+
+        content = json.loads(response.content)
+        self.assertFalse(content['success'])
+
+
+    def test_set_allowed_sources(self):
+        settings = models.AccountSettings()
+        view = agency.AccountAgency()
+        view.set_allowed_sources(settings, {
+            1: {'allowed': True},
+            2: {'allowed': True},
+            3: {}
+            })
+        self.assertEqual(set(settings.allowed_sources),set([1,2]))
+
+    def test_set_allowed_sources_none(self):
+        settings = models.AccountSettings()
+        view = agency.AccountAgency()
+        view.set_allowed_sources(settings, None)
+        self.assertEqual(settings.allowed_sources, [])
+
+    def test_get_allowed_sources(self):
+        view = agency.AccountAgency()
+        allowed_sources_dict = view.get_allowed_sources([2])
+        self.assertEqual(allowed_sources_dict, {
+            2: {'name': 'Source 2', 'allowed': True},
+            3: {'name': 'Source 3 (unreleased)'}
+            })
