@@ -156,8 +156,8 @@ class AdGroupSettings(api_common.BaseApiView):
             new_settings.save(request)
 
             actionlogs_to_send.extend(
-                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False,
-                                                   redirects_update=current_settings.pk is None))
+                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
+            )
 
             if current_settings.state == constants.AdGroupSettingsState.INACTIVE and\
                new_settings.state == constants.AdGroupSettingsState.ACTIVE:

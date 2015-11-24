@@ -38,6 +38,10 @@ def resend(actions):
     expiration_date = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
     for action in actions:
         action.payload['expiration_dt'] = expiration_date.isoformat()
+
+        if action.action == constants.Action.INSERT_CONTENT_AD:
+            action.payload['args']['content_ad']['check_already_inserted'] = True
+
         action.modified_dt = modified_date
         action.state = constants.ActionState.WAITING
         action.expiration_dt = expiration_date

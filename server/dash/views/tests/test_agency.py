@@ -45,8 +45,7 @@ class AdGroupSettingsTest(TestCase):
         self.client.login(username=user.email, password='secret')
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
-    def test_put(self, mock_log_useraction, mock_actionlog_api,
-                                 mock_order_ad_group_settings_update):
+    def test_put(self, mock_log_useraction, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
@@ -102,7 +101,7 @@ class AdGroupSettingsTest(TestCase):
         # end date is in the past.
         mock_manager.assert_has_calls([
             call.mock_order_ad_group_settings_update(
-                ad_group, old_settings, new_settings, ANY, send=False, redirects_update=False),
+                ad_group, old_settings, new_settings, ANY, send=False),
             ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
             call.mock_actionlog_api.init_enable_ad_group(ad_group, ANY, order=ANY, send=False)
         ])
@@ -142,7 +141,7 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(new_settings.daily_budget_cc, None)
 
         mock_order_ad_group_settings_update.assert_called_with(
-            ad_group, old_settings, new_settings, ANY, send=False, redirects_update=False)
+            ad_group, old_settings, new_settings, ANY, send=False)
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
@@ -194,7 +193,7 @@ class AdGroupSettingsTest(TestCase):
         # uses 'ANY' instead of 'current_settings' because before settings are created, the
         # 'get_current_settings' returns a new AdGroupSettings instance each time
         mock_order_ad_group_settings_update.assert_called_with(
-            ad_group, ANY, new_settings, response.wsgi_request, send=False, redirects_update=True)
+            ad_group, ANY, new_settings, response.wsgi_request, send=False)
 
         # when saving settings, previous ad_group.name gets added to previous settings
         # - and the only time it makes a real difference is the first time the settings are
@@ -1497,9 +1496,10 @@ class CampaignAgencyTest(TestCase):
         self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
         self.assertEqual(content['data']['settings']['iab_category'], 'IAB24')
 
+    @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_post(self, mock_send_campaign_notification_email, mock_log_useraction):
+    def test_post(self, mock_send_campaign_notification_email, mock_log_useraction, mock_insert_adgroup):
         response = self.client.put(
             '/api/campaigns/1/agency/',
             json.dumps({
@@ -1514,7 +1514,7 @@ class CampaignAgencyTest(TestCase):
         )
         content = json.loads(response.content)
 
-        self.assertTrue(content['success'], True)
+        self.assertTrue(content['success'])
 
         campaign = models.Campaign.objects.get(pk=1)
         settings = campaign.get_current_settings()
@@ -1552,9 +1552,10 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['campaign_goal'], 3)
         self.assertEqual(content['data']['settings']['goal_quantity'], 0)
 
+    @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_post(self, mock_send_campaign_notification_email, mock_log_useraction):
+    def test_post(self, mock_send_campaign_notification_email, mock_log_useraction, mock_insert_adgroup):
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
