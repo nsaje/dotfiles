@@ -247,7 +247,7 @@ module.exports = function (grunt) {
             prod: {
                 constants: {
                     config: {
-                        static_url: getS3BuildPath() + "/client",
+                        static_url: "/client",
                         debug: false
                     }
                 }
