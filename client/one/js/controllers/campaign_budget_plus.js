@@ -3,7 +3,7 @@ oneApp.controller('CampaignBudgetPlusCtrl', ['$scope', '$state', '$modal',  'api
     var availableCredit = [];
     function updateView(data) {
         $scope.activeBudget = data.active;
-        $scope.depletedBudget = data.depleted;
+        $scope.pastBudget = data.past;
         $scope.budgetTotals = data.totals;
         availableCredit = data.credits;
     }

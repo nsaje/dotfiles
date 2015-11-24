@@ -73,6 +73,9 @@ module.exports = function (grunt) {
             actionlog_lib: {
                 dest: 'dist/actionlog/zemanta-one.actionlog.lib.js',
                 cssDest: 'dist/actionlog/zemanta-one.actionlog.lib.css',
+                mainFiles: {
+                    bootstrap: ['dist/css/bootstrap.min.css', 'dist/js/bootstrap.min.js']
+                },
                 include: [
                     'jquery',
                     'bootstrap',

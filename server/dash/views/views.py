@@ -77,7 +77,7 @@ def create_name(objects, name):
 @statsd_helper.statsd_timer('dash', 'index')
 @login_required
 def index(request):
-    return render(request, 'index.html', {'staticUrl': settings.CLIENT_STATIC_URL})
+    return render(request, 'index.html', {'staticUrl': settings.CLIENT_STATIC_URL, 'debug': settings.DEBUG})
 
 
 @statsd_helper.statsd_timer('dash', 'supply_dash_redirect')
@@ -357,6 +357,9 @@ class AdGroupRestore(api_common.BaseApiView):
         ad_group.restore(request)
 
         actionlog.sync.AdGroupSync(ad_group).trigger_all(self.request)
+
+        for ad_group_source in ad_group.adgroupsource_set.all():
+            api.refresh_publisher_blacklist(ad_group_source, request)
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_AD_GROUP,
                                             ad_group=ad_group)

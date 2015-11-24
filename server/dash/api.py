@@ -281,7 +281,7 @@ def refresh_publisher_blacklist(ad_group_source, request):
         source=ad_group_source.source,
         everywhere=False,
         account=account,
-        campaign=campaign,
+        campaign=None,
         ad_group=None,
         status=dash.constants.PublisherStatus.BLACKLISTED
     )

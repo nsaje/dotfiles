@@ -1,8 +1,11 @@
+from django.db.models import Q
+
 import reports.api
 
 from dash import stats_helper
 from dash.views import helpers
 from dash import models
+from dash import constants
 
 from utils import statsd_helper
 from utils import api_common
@@ -238,7 +241,7 @@ class AdGroupDailyStats(BaseDailyStatsView):
 
 class AdGroupPublishersDailyStats(BaseDailyStatsView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_publishers_daily_stats_get')
-    def get(self, request, ad_group_id):
+    def get(self, request, ad_group_id, ):
         if not request.user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
 
@@ -246,6 +249,7 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
 
         metrics = request.GET.getlist('metrics')
         totals = request.GET.get('totals')
+        show_blacklisted_publishers = request.GET.get('show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL)
 
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
         totals_constraints = None
@@ -264,7 +268,7 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
         if set(models.Source.objects.all()) != set(filtered_sources):
             totals_constraints['exchange'] = map_exchange_to_source_name.keys()
 
-        stats = self.get_stats(request, totals_constraints, selected_kwargs=None, group_key='source')
+        stats = self.get_stats(request, ad_group, totals_constraints, show_blacklisted_publishers, selected_kwargs=None, group_key='source')
 
         return self.create_api_response(self.get_response_dict(
             request.user,
@@ -275,19 +279,64 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
             'domain'
         ))
 
-    def get_stats(self, request, totals_constraints, selected_kwargs=None, group_key=None):
+    def get_stats(self, request, ad_group, totals_constraints, show_blacklisted_publishers, selected_kwargs=None, group_key=None):
         start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
         end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
 
         totals_stats = []
         if totals_constraints:
-            totals_stats = reports.api_publishers.query(
-                start_date,
-                end_date,
-                order_fields=['date'],
-                breakdown_fields=['date'],
-                constraints=totals_constraints
-            )
+
+            if not show_blacklisted_publishers or\
+                    show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
+                totals_stats = reports.api_publishers.query(
+                    start_date,
+                    end_date,
+                    order_fields=['date'],
+                    breakdown_fields=['date'],
+                    constraints=totals_constraints
+                )
+
+            elif show_blacklisted_publishers in (
+                constants.PublisherBlacklistFilter.SHOW_ACTIVE,
+                constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
+
+                # fetch blacklisted status from db
+                adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
+                    Q(ad_group=ad_group) |
+                    Q(campaign=ad_group.campaign) |
+                    Q(account=ad_group.campaign.account)
+                )
+                adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
+                adg_blacklisted_publishers = map(lambda entry: {
+                    'domain': entry['name'],
+                    'adgroup_id': ad_group.id,
+                    'exchange': entry['source__tracking_slug'].replace('b1_', ''),
+                }, adg_blacklisted_publishers)
+
+                # include global, campaign and account stats if they exist
+                global_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
+                    everywhere=True
+                )
+                adg_blacklisted_publishers.extend(map(lambda pub_bl: {
+                        'domain': pub_bl.name,
+                        'exchange': pub_bl.source.tracking_slug.replace('b1_', ''),
+                    }, global_pub_blacklist_qs)
+                )
+
+                query_func = None
+                if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+                    query_func = reports.api_publishers.query_active_publishers
+                else:
+                    query_func = reports.api_publishers.query_blacklisted_publishers
+
+                totals_stats = query_func(
+                    start_date,
+                    end_date,
+                    order_fields=['date'],
+                    breakdown_fields=['date'],
+                    constraints=totals_constraints,
+                    blacklist=adg_blacklisted_publishers
+                )
 
         breakdown_stats = []
 

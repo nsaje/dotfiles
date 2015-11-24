@@ -30,6 +30,7 @@ from utils import dates_helper
 
 SHORT_NAME_MAX_LENGTH = 22
 
+
 def validate(*validators):
     errors = {}
     for v in validators:
@@ -55,9 +56,11 @@ class PermissionMixin(object):
 
         return False
 
+
 class QuerySetManager(models.Manager):
     def get_queryset(self):
         return self.model.QuerySet(self.model)
+
 
 class DemoManager(models.Manager):
     def get_queryset(self):
@@ -79,6 +82,7 @@ class DemoManager(models.Manager):
                     id__in=(d2r.demo_ad_group_id for d2r in DemoAdGroupRealAdGroup.objects.all())
                 )
         return queryset
+
 
 class FootprintModel(models.Model):
     def __init__(self, *args, **kwargs):
@@ -111,6 +115,7 @@ class FootprintModel(models.Model):
 
     class Meta:
         abstract = True
+
 
 class HistoryModel(models.Model):
     snapshot = jsonfield.JSONField(blank=False, null=False)
@@ -146,6 +151,13 @@ class Account(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+
+    uses_credits = models.BooleanField(
+        null=False,
+        blank=False,
+        default=False,
+        verbose_name='Uses credits and budgets accounting'
+    )
 
     objects = QuerySetManager()
     demo_objects = DemoManager()
@@ -1761,6 +1773,16 @@ class PublisherBlacklist(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
+    def get_blacklist_level(self):
+        level = constants.PublisherBlacklistLevel.ADGROUP
+        if self.campaign is not None:
+            level = constants.PublisherBlacklistLevel.CAMPAIGN
+        elif self.account is not None:
+            level = constants.PublisherBlacklistLevel.ACCOUNT
+        elif self.everywhere:
+            level = constants.PublisherBlacklistLevel.GLOBAL
+        return level
+
     class Meta:
         unique_together = (('name', 'everywhere', 'account', 'campaign', 'ad_group', 'source'), )
 
@@ -1877,7 +1899,7 @@ class CreditLineItem(FootprintModel):
             raise ValidationError(
                 'Credit line item amount needs to be larger than the sum of budgets.'
             )
-        
+
     def validate_status(self):
         s = constants.CreditLineItemStatus
         if not self.has_changed('status'):
@@ -1913,6 +1935,7 @@ class CreditLineItem(FootprintModel):
             if self.exclude(status=constants.CreditLineItemStatus.PENDING).count() != 0:
                 raise AssertionError('Some credit items are not pending')
             super(CreditLineItem.QuerySet, self).delete()
+
 
 class BudgetLineItem(FootprintModel):
     campaign = models.ForeignKey(Campaign, related_name='budgets', on_delete=models.PROTECT)
@@ -1962,17 +1985,16 @@ class BudgetLineItem(FootprintModel):
             return constants.BudgetLineItemState.ACTIVE
         return constants.BudgetLineItemState.PENDING
 
-
     def state_text(self, date=None):
         return constants.BudgetLineItemState.get_text(self.state(date=date))
 
-    def get_spend_amount(self): # TODO: implement
+    def get_spend_amount(self):  # TODO: implement
         return Decimal('0')
 
-    def get_media_spend_amount(self): # TODO: implement
+    def get_media_spend_amount(self):  # TODO: implement
         return Decimal('0')
 
-    def get_data_spend_amount(self): # TODO: implement
+    def get_data_spend_amount(self):  # TODO: implement
         return Decimal('0')
 
     def is_editable(self):
@@ -2000,7 +2022,6 @@ class BudgetLineItem(FootprintModel):
             self.validate_amount,
             self.validate_credit,
         )
-
 
     def license_fee(self):
         return self.credit.license_fee
