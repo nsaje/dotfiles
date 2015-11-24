@@ -164,7 +164,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.clearPublisherSelection = function () {
         $scope.rows.forEach(function (row) {
-            row.publisher_selected = false;
+            row.publisherSelected = false;
             row.disabledSelection = !row.can_blacklist_publisher;
         });
     } ;
@@ -174,20 +174,20 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             if (row !== undefined) {
                 row.disabledSelection = !row.can_blacklist_publisher;
                 if (!row.can_blacklist_publisher) {
-                    row.blacklist_info = "This publisher can't be blacklisted because the media source doesn't support publisher blacklisting. ";
-                    row.blacklist_info = row.blacklist_info.concat("Contact your account manager for further details.");
+                    row.blacklistInfo = "This publisher can't be blacklisted because the media source doesn't support publisher blacklisting. ";
+                    row.blacklistInfo = row.blacklistInfo.concat("Contact your account manager for further details.");
                 } else {
-                    row.blacklist_info = null;
+                    row.blacklistInfo = null;
                 }
                 
                 if (row.can_blacklist_publisher) {
                     var row_id = $scope.calculatePublisherHash(row);
                     if ($scope.selectedPublisherStatus[row_id] !== undefined) {
-                        row.publisher_selected = $scope.selectedPublisherStatus[row_id].checked;
+                        row.publisherSelected = $scope.selectedPublisherStatus[row_id].checked;
                     } else if ($scope.selectedAll) {
-                        row.publisher_selected = true;
+                        row.publisherSelected = true;
                     } else {
-                        row.publisher_selected = false;
+                        row.publisherSelected = false;
                     }
                 }
             }
@@ -276,7 +276,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         {
             'name': 'Traffic Acquisition',
             'fields': [
-               'publisher_selected',
+               'publisherSelected',
                'blacklisted',
                'domain',
                'domain_link',
@@ -292,7 +292,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.columns = [{
             name: '',
-            field: 'publisher_selected',
+            field: 'publisherSelected',
             type: 'checkbox',
             showSelectionMenu: true,
             shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
@@ -301,7 +301,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             totalRow: false,
             unselectable: true,
             order: false,
-            popupField: 'blacklist_info',
+            popupField: 'blacklistInfo',
             selectCallback: $scope.selectedPublisherChanged,
             disabled: false,
             selectionMenuConfig: $scope.selectionMenuConfig
