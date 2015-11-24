@@ -853,7 +853,7 @@ class AccountAgency(api_common.BaseApiView):
         account_settings = account.get_current_settings()
 
         response = {
-            'settings': self.get_dict(account_settings, account),
+            'settings': self.get_dict(request, account_settings, account),
             'account_managers': self.get_user_list(account_settings, 'campaign_settings_account_manager'),
             'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(account),
@@ -893,7 +893,7 @@ class AccountAgency(api_common.BaseApiView):
         helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
                                             account=account)
         response = {
-            'settings': self.get_dict(settings, account),
+            'settings': self.get_dict(request, settings, account),
             'history': self.get_history(account),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
@@ -939,7 +939,7 @@ class AccountAgency(api_common.BaseApiView):
         allowed_sources_dict = self.add_unreleased_label_to_names(allowed_sources_dict, all_sources)
         return allowed_sources_dict
 
-    def get_dict(self, settings, account):
+    def get_dict(self, request, settings, account):
         result = {}
 
         if settings:
@@ -954,8 +954,9 @@ class AccountAgency(api_common.BaseApiView):
                     str(settings.default_sales_representative.id)
                     if settings.default_sales_representative is not None else None,
                 'service_fee': helpers.format_decimal_to_percent(settings.service_fee),
-                'allowed_sources': self.get_allowed_sources(settings.allowed_sources)
             }
+            if request.user.has_perm('zemauth.can_modify_allowed_sources'):
+                result['allowed_sources'] = self.get_allowed_sources(settings.allowed_sources)
 
         return result
 
