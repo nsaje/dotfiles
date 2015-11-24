@@ -1534,14 +1534,17 @@ class CampaignSettingsTest(TestCase):
     fixtures = ['test_views.yaml']
 
     def setUp(self):
-        password = 'secret'
-        self.user = User.objects.get(pk=1)
-        self.client.login(username=self.user.email, password=password)
-
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
+    def _login_user(self, user_id):
+        password = 'secret'
+        self.user = User.objects.get(pk=user_id)
+        self.client.login(username=self.user.email, password=password)
+
     def test_get(self):
+        self._login_user(1)
+
         response = self.client.get(
             '/api/campaigns/1/settings/'
         )
@@ -1553,9 +1556,43 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content['data']['settings']['target_devices'], ['mobile'])
         self.assertEqual(content['data']['settings']['target_regions'], ['NC', '501'])
 
+    def test_get_no_campaign_settings_permission(self):
+        self._login_user(2)
+
+        response = self.client.get(
+            '/api/campaigns/1/settings/'
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_no_ad_group_default_settings_permission(self):
+        self._login_user(2)
+        permission = Permission.objects.get(codename='campaign_settings_view')
+        self.user.user_permissions.add(permission)
+
+        response = self.client.get(
+            '/api/campaigns/1/settings/'
+        )
+
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertNotIn('target_devices', content['data']['settings'])
+        self.assertNotIn('target_regions', content['data']['settings'])
+
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_post(self, mock_send_campaign_notification_email, mock_log_useraction):
+    def test_put(self, mock_send_campaign_notification_email, mock_log_useraction):
+        self._login_user(1)
+
+        campaign = models.Campaign.objects.get(pk=1)
+
+        settings = campaign.get_current_settings()
+        self.assertEqual(campaign.name, 'test campaign 1')
+        self.assertNotEqual(settings.goal_quantity, 10)
+        self.assertNotEqual(settings.campaign_goal, 2)
+        self.assertNotEqual(settings.target_devices, ['desktop'])
+        self.assertNotEqual(settings.target_regions, ['CA', '502'])
+
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({
@@ -1564,8 +1601,8 @@ class CampaignSettingsTest(TestCase):
                     'name': 'test campaign 2',
                     'campaign_goal': 2,
                     'goal_quantity': 10,
-                    'target_devices': ['mobile'],
-                    'target_regions': ['NC', '501']
+                    'target_devices': ['desktop'],
+                    'target_regions': ['CA', '502']
                 }
             }),
             content_type='application/json',
@@ -1573,13 +1610,14 @@ class CampaignSettingsTest(TestCase):
         content = json.loads(response.content)
         self.assertTrue(content['success'])
 
-        campaign = models.Campaign.objects.get(pk=1)
         settings = campaign.get_current_settings()
-        self.assertEqual(campaign.name, 'test campaign 2')
+
+        # Check if all fields were updated
+        self.assertEqual(campaign.name, 'test campaign 1')
         self.assertEqual(settings.goal_quantity, 10)
         self.assertEqual(settings.campaign_goal, 2)
-        self.assertEqual(settings.target_devices, ['mobile'])
-        self.assertEqual(settings.target_regions, ['NC', '501'])
+        self.assertEqual(settings.target_devices, ['desktop'])
+        self.assertEqual(settings.target_regions, ['CA', '502'])
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
         mock_log_useraction.assert_called_with(
@@ -1587,7 +1625,57 @@ class CampaignSettingsTest(TestCase):
             constants.UserActionType.SET_CAMPAIGN_SETTINGS,
             campaign=campaign)
 
+    def test_put_no_campaign_settings_permission(self):
+        self._login_user(2)
+
+        response = self.client.put(
+            '/api/campaigns/1/settings/'
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    @patch('dash.views.helpers.log_useraction_if_necessary')
+    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
+    def test_put_no_ad_group_default_settings_permission(self, mock_send_campaign_notification_email, mock_log_useraction):
+        self._login_user(2)
+        permission = Permission.objects.get(codename='campaign_settings_view')
+        self.user.user_permissions.add(permission)
+
+        settings = models.Campaign.objects.get(pk=1).get_current_settings()
+        self.assertNotEqual(settings.goal_quantity, Decimal('10.00'))
+        self.assertEqual(settings.target_devices, ['mobile'])
+        self.assertEqual(settings.target_regions, ['NC', '501'])
+
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 2,
+                    'goal_quantity': 10,
+                    'target_devices': ['desktop'],
+                    'target_regions': ['CA', '502']
+                }
+            }),
+            content_type='application/json',
+        )
+
+        content = json.loads(response.content)
+        self.assertTrue(content['success'])
+        self.assertNotIn('target_devices', content['data']['settings'])
+        self.assertNotIn('target_regions', content['data']['settings'])
+
+        settings = models.Campaign.objects.get(pk=1).get_current_settings()
+
+        # Goal quantity should change, but target info should stay the same
+        self.assertEqual(settings.goal_quantity, Decimal('10.00'))
+        self.assertEqual(settings.target_devices, ['mobile'])
+        self.assertEqual(settings.target_regions, ['NC', '501'])
+
     def test_validation(self):
+        self._login_user(1)
+
         response = self.client.put(
             '/api/campaigns/1/settings/',
             json.dumps({

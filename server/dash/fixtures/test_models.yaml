@@ -126,6 +126,26 @@
     model: dash.adgroupsettings
     pk: 2
 
+# test campaignsettings
+
+-   fields:
+        campaign: 1
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        changes_text: 'changes'
+        name: 'Test campaign 1'
+        account_manager: 1
+        sales_representative: 1
+        service_fee: '0.2000'
+        iab_category: 1
+        campaign_goal: 2
+        goal_quantity: 10
+        archived: false
+        target_devices: ['mobile']
+        target_regions: ['CA', '501']
+    model: dash.campaignsettings
+    pk: 1
+
 # test adgroupsource
 
 -   fields:

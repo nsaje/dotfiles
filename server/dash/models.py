@@ -498,9 +498,12 @@ class CampaignSettings(SettingsBase):
         'sales_representative',
         'service_fee',
         'iab_category',
+        'promotion_goal',
         'campaign_goal',
         'goal_quantity',
-        'archived'
+        'archived',
+        'target_devices',
+        'target_regions'
     ]
 
     id = models.AutoField(primary_key=True)
