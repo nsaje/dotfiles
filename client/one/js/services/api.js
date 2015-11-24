@@ -335,12 +335,13 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
     }
 
     function AdGroupPublishersState() {
-        this.save = function(id, state, startDate, endDate, publishersSelected, publishersNotSelected, selectedAll) {
+        this.save = function(id, state, level, startDate, endDate, publishersSelected, publishersNotSelected, selectedAll) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/publishers/blacklist/';
 
             $http.post(url, {
                     state: state,
+                    level: level,
                     start_date: startDate,
                     end_date: endDate,
                     select_all: selectedAll,
@@ -769,6 +770,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }
 
             addFilteredSources(config.params);
+            addShowBlacklistedPublisher(config.params);
 
             $http.get(url, config).
                 success(function (response, status) {
@@ -850,20 +852,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             };
         }
 
-        function convertAdGroupSourcesFromApi(adGroupSources) {
-            var sources = [];
-            for (var source, i=0; i < adGroupSources.length; i++) {
-                source = adGroupSources[i];
-                sources.push({
-                    id: source.id,
-                    sourceState: source.source_state,
-                    sourceName: source.source_name
-                });
-            }
-
-            return sources;
-        }
-
         function convertToApi(settings) {
             var targetDevices = [];
             settings.targetDevices.forEach(function (item) {
@@ -871,7 +859,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     targetDevices.push(item.value);
                 }
             });
-
             var result = {
                 id: settings.id,
                 name: settings.name,
@@ -885,7 +872,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 tracking_code: settings.trackingCode,
                 enable_ga_tracking: settings.enableGaTracking,
                 enable_adobe_tracking: settings.enableAdobeTracking,
-                adobe_tracking_param: settings.adobeTrackingParam,
+                adobe_tracking_param: settings.adobeTrackingParam
             };
 
             return result;
@@ -908,7 +895,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 callToAction: errors.call_to_action,
                 enableGaTracking: errors.enable_ga_tracking,
                 enableAdobeTracking: errors.enable_adobe_tracking,
-                adobeTrackingParam: errors.adobe_tracking_param,
+                adobeTrackingParam: errors.adobe_tracking_param
             };
 
             return result;
@@ -929,8 +916,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     }
                     deferred.resolve({
                         settings: resource,
-                        actionIsWaiting: data.data.action_is_waiting,
-                        adGroupSources: convertAdGroupSourcesFromApi(data.data.ad_group_sources)
+                        actionIsWaiting: data.data.action_is_waiting
                     });
                 }).
                 error(function(data, status, headers, config) {
@@ -2612,8 +2598,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             },
             dataToApi: function (obj) {
                 return {
-                    start_date: obj.startDate && moment(obj.startDate).format('YYYY-MM-DD'),
-                    end_date: obj.endDate && moment(obj.endDate).format('YYYY-MM-DD'),
+                    start_date: obj.startDate && moment(obj.startDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+                    end_date: obj.endDate && moment(obj.endDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
                     amount: obj.amount,
                     license_fee: obj.licenseFee,
                     comment: obj.comment,
@@ -2682,6 +2668,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     spend: obj.spend,
                     state: obj.state,
                     isEditable: obj.is_editable,
+                    isUpdatable: obj.is_updatable,
                     available: obj.available,
                     comment: obj.comment
                 };
@@ -2690,8 +2677,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 return {
                     credit: obj.credit.id,
                     amount: obj.amount,
-                    start_date: moment(obj.startDate).format('YYYY-MM-DD'),
-                    end_date: moment(obj.endDate).format('YYYY-MM-DD'),
+                    start_date: moment(obj.startDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+                    end_date: moment(obj.endDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
                     comment: obj.comment
                 };
             },

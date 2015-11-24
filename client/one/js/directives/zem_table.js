@@ -86,10 +86,10 @@ oneApp.directive('zemTable', ['config', '$window', function(config, $window) {
             };
 
             // HACK: campaign goals experiment
-            // to be removed by 20. 11. 2015
+            // to be removed when this is ready https://trello.com/c/vUBH4tz1/591-campaign-goals
             $scope.getRowStyle = function(row) {
                 // check user
-                var allowedUsers = [5, 8, 13, 70];
+                var allowedUsers = [5, 8, 13, 70, 283];
                 if (allowedUsers.indexOf(parseInt($scope.$parent.user.id)) === -1) {
                     return;
                 }

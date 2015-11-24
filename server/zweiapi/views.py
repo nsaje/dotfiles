@@ -178,6 +178,10 @@ def _process_zwei_response(action, data, request):
             dash.api.update_ad_group_source_state(ad_group_source, conf)
             actions.extend(actionlog.api.send_delayed_actionlogs([ad_group_source], send=False))
 
+        elif action.action == actionlog.constants.Action.SET_PUBLISHER_BLACKLIST:
+            args = action.payload['args']
+            dash.api.update_publisher_blacklist_state(args)
+
         elif action.action == actionlog.constants.Action.CREATE_CAMPAIGN:
             dash.api.create_campaign_callback(
                 action.ad_group_source,

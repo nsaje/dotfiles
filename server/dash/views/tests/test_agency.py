@@ -263,43 +263,6 @@ class AdGroupSettingsTest(TestCase):
         self.assertFalse(response_dict['success'])
         self.assertIn('target_regions', response_dict['data']['errors'])
 
-    def test_get_ad_group_sources_with_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        ad_group_source = models.AdGroupSource.objects.get(id=1)
-        ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC
-        )
-        ad_group_source.source.source_type.save()
-
-        ad_group_source = models.AdGroupSource.objects.get(id=2)
-        ad_group_source.source.source_type.available_actions.append(
-            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
-        )
-        ad_group_source.source.source_type.save()
-
-        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
-
-        response = self.client.get(
-            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            follow=True
-        )
-
-        response_dict = json.loads(response.content)
-
-        self.assertItemsEqual(response_dict['data']['ad_group_sources'], [{
-            'source_state': 1,
-            'source_name': 'AdsNative',
-            'id': 1
-        }, {
-            'source_state': 2,
-            'source_name': 'Gravity',
-            'id': 2
-        }, {
-            'source_state': 2,
-            'source_name': 'Outbrain',
-            'id': 3
-        }])
-
 
 @patch('dash.views.agency.api.order_ad_group_settings_update')
 @patch('dash.views.agency.actionlog_api')

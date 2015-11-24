@@ -68,12 +68,12 @@ class GetStatsWithConversionsTestCase(test.TestCase):
                 'conversion_count': 5,
             }
         ]
-        defaults = {'slug': [cg.pixel.slug for cg in conversion_goals]}
+        defaults = {'slug': [cg.pixel.slug for cg in conversion_goals], 'account': [cg.pixel.account_id for cg in conversion_goals]}
         if self.use_separate_rows_for_tp_conversions:
             for b in set(breakdown) - set(['slug']):
                 defaults[b] = [9999 for cg in conversion_goals]
 
-        _update_with_defaults(touchpoint_conversion_stats, breakdown,
+        _update_with_defaults(touchpoint_conversion_stats, breakdown + ['slug', 'account'],
                               defaults=defaults)
         return touchpoint_conversion_stats
 
@@ -243,7 +243,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
         self.assertFalse(mock_as_query.called)
         self.assertTrue(mock_ca_query.called)
         self.assertTrue(mock_tp_query.called)
-        self.assertEqual([{
+        self.assertItemsEqual([{
             'ad_group': 1,
             'impressions': 10,
             'clicks': 1,

@@ -339,6 +339,7 @@ urlpatterns += patterns(
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/archive/',
         login_required(dash.views.views.AdGroupArchive.as_view()),
+        name='ad_group_archive',
     ),
     url(
         r'^api/sources/',
@@ -347,6 +348,7 @@ urlpatterns += patterns(
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/restore/',
         login_required(dash.views.views.AdGroupRestore.as_view()),
+        name='ad_group_restore',
     ),
     url(
         r'^api/accounts/export/',
@@ -462,6 +464,15 @@ urlpatterns += patterns(
     )
 )
 
+# Crossvalidation Api
+urlpatterns += patterns(
+    '',
+    url(
+        r'^api/crossvalidation$',
+        reports.views.crossvalidation,
+        name='api.crossvalidation',
+    )
+)
 
 # Conversion Api
 urlpatterns += patterns(

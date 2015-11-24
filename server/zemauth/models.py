@@ -155,6 +155,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('conversion_reports', 'Can see conversions and goals in reports'),
             ('exports_plus', 'Can download reports using new export facilities'),
             ('can_modify_allowed_sources', 'Can modify allowed sources on account level'),
+            ('can_access_global_publisher_blacklist_status', 'Can view or access global/account/campaign publishers blacklist status'),
         )
 
     def get_full_name(self):

@@ -70,17 +70,9 @@ def query_active_publishers(start_date, end_date, breakdown_fields=[], order_fie
     constraints_list = []
     if blacklist:
         # create a base object, then OR onto it
-        rsq = ~redshift.RSQ(
-            domain=blacklist[0]['domain'],
-            exchange=blacklist[0]['exchange'],
-            ad_group=blacklist[0]['adgroup_id']
-        )
+        rsq = ~_map_blacklist_to_rs_queryset(blacklist[0])
         for blacklist_entry in blacklist[1:]:
-            rsq &= ~redshift.RSQ(
-                domain=blacklist_entry['domain'],
-                exchange=blacklist_entry['exchange'],
-                ad_group=blacklist_entry['adgroup_id']
-            )
+            rsq &= ~_map_blacklist_to_rs_queryset(blacklist_entry)
         constraints_list = [rsq]
 
     return query(start_date, end_date,
@@ -97,17 +89,9 @@ def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], orde
     constraints_list = []
     if blacklist:
         # create a base object, then OR onto it
-        rsq = redshift.RSQ(
-            domain=blacklist[0]['domain'],
-            exchange=blacklist[0]['exchange'],
-            ad_group=blacklist[0]['adgroup_id']
-        )
+        rsq = _map_blacklist_to_rs_queryset(blacklist[0])
         for blacklist_entry in blacklist[1:]:
-            rsq |= redshift.RSQ(
-                domain=blacklist_entry ['domain'],
-                exchange=blacklist_entry ['exchange'],
-                ad_group=blacklist_entry ['adgroup_id']
-            )
+            rsq |= _map_blacklist_to_rs_queryset(blacklist_entry)
         constraints_list = [rsq]
     else:
         if breakdown_fields:
@@ -123,6 +107,20 @@ def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], orde
         constraints=constraints,
         constraints_list=constraints_list
     )
+
+
+def _map_blacklist_to_rs_queryset(blacklist):
+    if blacklist.get('adgroup_id') is not None:
+        return redshift.RSQ(
+            domain=blacklist['domain'],
+            exchange=blacklist['exchange'],
+            ad_group=blacklist['adgroup_id']
+        )
+    else:
+        return redshift.RSQ(
+            domain=blacklist['domain'],
+            exchange=blacklist['exchange'],
+        )
 
 
 def query_publisher_list(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}):

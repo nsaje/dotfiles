@@ -10,14 +10,14 @@ SET check_function_bodies = false;
 SET client_min_messages = warning;
 
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner:
 --
 
 CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
 
 --
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
@@ -30,7 +30,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: actionlog_actionlog; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlog; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE actionlog_actionlog (
@@ -43,7 +43,7 @@ CREATE TABLE actionlog_actionlog (
     expiration_dt timestamp with time zone,
     created_dt timestamp with time zone,
     modified_dt timestamp with time zone,
-    ad_group_source_id integer NOT NULL,
+    ad_group_source_id integer,
     created_by_id integer,
     modified_by_id integer,
     order_id integer,
@@ -75,7 +75,7 @@ ALTER SEQUENCE actionlog_actionlog_id_seq OWNED BY actionlog_actionlog.id;
 
 
 --
--- Name: actionlog_actionlogorder; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlogorder; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE actionlog_actionlogorder (
@@ -109,7 +109,7 @@ ALTER SEQUENCE actionlog_actionlogorder_id_seq OWNED BY actionlog_actionlogorder
 
 
 --
--- Name: auth_group; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: auth_group; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE auth_group (
@@ -142,7 +142,7 @@ ALTER SEQUENCE auth_group_id_seq OWNED BY auth_group.id;
 
 
 --
--- Name: auth_group_permissions; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: auth_group_permissions; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE auth_group_permissions (
@@ -176,7 +176,7 @@ ALTER SEQUENCE auth_group_permissions_id_seq OWNED BY auth_group_permissions.id;
 
 
 --
--- Name: auth_permission; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: auth_permission; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE auth_permission (
@@ -211,7 +211,7 @@ ALTER SEQUENCE auth_permission_id_seq OWNED BY auth_permission.id;
 
 
 --
--- Name: automation_autopilotadgroupsourcebidcpclog; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: automation_autopilotadgroupsourcebidcpclog; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE automation_autopilotadgroupsourcebidcpclog (
@@ -253,7 +253,7 @@ ALTER SEQUENCE automation_autopilotadgroupsourcebidcpclog_id_seq OWNED BY automa
 
 
 --
--- Name: automation_campaignbudgetdepletionnotification; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: automation_campaignbudgetdepletionnotification; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE automation_campaignbudgetdepletionnotification (
@@ -291,7 +291,7 @@ ALTER SEQUENCE automation_campaignbudgetdepletionnotification_id_seq OWNED BY au
 
 
 --
--- Name: convapi_gareportlog; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: convapi_gareportlog; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE convapi_gareportlog (
@@ -337,7 +337,7 @@ ALTER SEQUENCE convapi_gareportlog_id_seq OWNED BY convapi_gareportlog.id;
 
 
 --
--- Name: convapi_rawgoalconversionstats; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: convapi_rawgoalconversionstats; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE convapi_rawgoalconversionstats (
@@ -380,7 +380,7 @@ ALTER SEQUENCE convapi_rawgoalconversionstats_id_seq OWNED BY convapi_rawgoalcon
 
 
 --
--- Name: convapi_rawpostclickstats; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: convapi_rawpostclickstats; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE convapi_rawpostclickstats (
@@ -425,7 +425,7 @@ ALTER SEQUENCE convapi_rawpostclickstats_id_seq OWNED BY convapi_rawpostclicksta
 
 
 --
--- Name: convapi_reportlog; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: convapi_reportlog; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE convapi_reportlog (
@@ -467,7 +467,7 @@ ALTER SEQUENCE convapi_reportlog_id_seq OWNED BY convapi_reportlog.id;
 
 
 --
--- Name: dash_account; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_account (
@@ -483,7 +483,7 @@ CREATE TABLE dash_account (
 ALTER TABLE public.dash_account OWNER TO eins;
 
 --
--- Name: dash_account_groups; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_groups; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_account_groups (
@@ -538,7 +538,7 @@ ALTER SEQUENCE dash_account_id_seq OWNED BY dash_account.id;
 
 
 --
--- Name: dash_account_users; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_users; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_account_users (
@@ -572,7 +572,7 @@ ALTER SEQUENCE dash_account_users_id_seq OWNED BY dash_account_users.id;
 
 
 --
--- Name: dash_accountsettings; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_accountsettings; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_accountsettings (
@@ -584,7 +584,8 @@ CREATE TABLE dash_accountsettings (
     created_by_id integer NOT NULL,
     changes_text text,
     default_account_manager_id integer,
-    default_sales_representative_id integer
+    default_sales_representative_id integer,
+    service_fee numeric(5,4) NOT NULL
 );
 
 
@@ -612,7 +613,7 @@ ALTER SEQUENCE dash_accountsettings_id_seq OWNED BY dash_accountsettings.id;
 
 
 --
--- Name: dash_adgroup; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroup; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_adgroup (
@@ -651,7 +652,7 @@ ALTER SEQUENCE dash_adgroup_id_seq OWNED BY dash_adgroup.id;
 
 
 --
--- Name: dash_adgroupsettings; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsettings; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_adgroupsettings (
@@ -704,7 +705,7 @@ ALTER SEQUENCE dash_adgroupsettings_id_seq OWNED BY dash_adgroupsettings.id;
 
 
 --
--- Name: dash_adgroupsource; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsource; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_adgroupsource (
@@ -747,7 +748,7 @@ ALTER SEQUENCE dash_adgroupsource_id_seq OWNED BY dash_adgroupsource.id;
 
 
 --
--- Name: dash_adgroupsourcesettings; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsourcesettings; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_adgroupsourcesettings (
@@ -786,7 +787,7 @@ ALTER SEQUENCE dash_adgroupsourcesettings_id_seq OWNED BY dash_adgroupsourcesett
 
 
 --
--- Name: dash_adgroupsourcestate; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsourcestate; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_adgroupsourcestate (
@@ -823,7 +824,7 @@ ALTER SEQUENCE dash_adgroupsourcestate_id_seq OWNED BY dash_adgroupsourcestate.i
 
 
 --
--- Name: dash_article; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_article; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_article (
@@ -859,7 +860,84 @@ ALTER SEQUENCE dash_article_id_seq OWNED BY dash_article.id;
 
 
 --
--- Name: dash_campaign; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_budgethistory; Type: TABLE; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE TABLE dash_budgethistory (
+    id integer NOT NULL,
+    snapshot text NOT NULL,
+    created_dt timestamp with time zone NOT NULL,
+    budget_id integer NOT NULL,
+    created_by_id integer
+);
+
+
+ALTER TABLE public.dash_budgethistory OWNER TO eins;
+
+--
+-- Name: dash_budgethistory_id_seq; Type: SEQUENCE; Schema: public; Owner: eins
+--
+
+CREATE SEQUENCE dash_budgethistory_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.dash_budgethistory_id_seq OWNER TO eins;
+
+--
+-- Name: dash_budgethistory_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: eins
+--
+
+ALTER SEQUENCE dash_budgethistory_id_seq OWNED BY dash_budgethistory.id;
+
+
+--
+-- Name: dash_budgetlineitem; Type: TABLE; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE TABLE dash_budgetlineitem (
+    id integer NOT NULL,
+    start_date date NOT NULL,
+    end_date date NOT NULL,
+    amount integer NOT NULL,
+    comment character varying(256),
+    created_dt timestamp with time zone NOT NULL,
+    modified_dt timestamp with time zone NOT NULL,
+    campaign_id integer NOT NULL,
+    created_by_id integer,
+    credit_id integer NOT NULL
+);
+
+
+ALTER TABLE public.dash_budgetlineitem OWNER TO eins;
+
+--
+-- Name: dash_budgetlineitem_id_seq; Type: SEQUENCE; Schema: public; Owner: eins
+--
+
+CREATE SEQUENCE dash_budgetlineitem_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.dash_budgetlineitem_id_seq OWNER TO eins;
+
+--
+-- Name: dash_budgetlineitem_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: eins
+--
+
+ALTER SEQUENCE dash_budgetlineitem_id_seq OWNED BY dash_budgetlineitem.id;
+
+
+--
+-- Name: dash_campaign; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_campaign (
@@ -875,7 +953,7 @@ CREATE TABLE dash_campaign (
 ALTER TABLE public.dash_campaign OWNER TO eins;
 
 --
--- Name: dash_campaign_groups; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaign_groups; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_campaign_groups (
@@ -930,7 +1008,7 @@ ALTER SEQUENCE dash_campaign_id_seq OWNED BY dash_campaign.id;
 
 
 --
--- Name: dash_campaign_users; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaign_users; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_campaign_users (
@@ -964,7 +1042,7 @@ ALTER SEQUENCE dash_campaign_users_id_seq OWNED BY dash_campaign_users.id;
 
 
 --
--- Name: dash_campaignbudgetsettings; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaignbudgetsettings; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_campaignbudgetsettings (
@@ -1003,7 +1081,7 @@ ALTER SEQUENCE dash_campaignbudgetsettings_id_seq OWNED BY dash_campaignbudgetse
 
 
 --
--- Name: dash_campaignsettings; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaignsettings; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_campaignsettings (
@@ -1048,7 +1126,7 @@ ALTER SEQUENCE dash_campaignsettings_id_seq OWNED BY dash_campaignsettings.id;
 
 
 --
--- Name: dash_contentad; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_contentad; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_contentad (
@@ -1070,6 +1148,7 @@ CREATE TABLE dash_contentad (
     call_to_action character varying(25) NOT NULL,
     description character varying(140) NOT NULL,
     display_url character varying(25) NOT NULL,
+    crop_areas character varying(128),
     CONSTRAINT dash_contentad_image_height_check CHECK ((image_height >= 0)),
     CONSTRAINT dash_contentad_image_width_check CHECK ((image_width >= 0))
 );
@@ -1099,7 +1178,7 @@ ALTER SEQUENCE dash_contentad_id_seq OWNED BY dash_contentad.id;
 
 
 --
--- Name: dash_contentadsource; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_contentadsource; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_contentadsource (
@@ -1140,7 +1219,7 @@ ALTER SEQUENCE dash_contentadsource_id_seq OWNED BY dash_contentadsource.id;
 
 
 --
--- Name: dash_conversiongoal; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_conversiongoal; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_conversiongoal (
@@ -1181,7 +1260,7 @@ ALTER SEQUENCE dash_conversiongoal_id_seq OWNED BY dash_conversiongoal.id;
 
 
 --
--- Name: dash_conversionpixel; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_conversionpixel; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_conversionpixel (
@@ -1218,7 +1297,85 @@ ALTER SEQUENCE dash_conversionpixel_id_seq OWNED BY dash_conversionpixel.id;
 
 
 --
--- Name: dash_defaultsourcesettings; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_credithistory; Type: TABLE; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE TABLE dash_credithistory (
+    id integer NOT NULL,
+    snapshot text NOT NULL,
+    created_dt timestamp with time zone NOT NULL,
+    created_by_id integer,
+    credit_id integer NOT NULL
+);
+
+
+ALTER TABLE public.dash_credithistory OWNER TO eins;
+
+--
+-- Name: dash_credithistory_id_seq; Type: SEQUENCE; Schema: public; Owner: eins
+--
+
+CREATE SEQUENCE dash_credithistory_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.dash_credithistory_id_seq OWNER TO eins;
+
+--
+-- Name: dash_credithistory_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: eins
+--
+
+ALTER SEQUENCE dash_credithistory_id_seq OWNED BY dash_credithistory.id;
+
+
+--
+-- Name: dash_creditlineitem; Type: TABLE; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE TABLE dash_creditlineitem (
+    id integer NOT NULL,
+    start_date date NOT NULL,
+    end_date date NOT NULL,
+    amount integer NOT NULL,
+    license_fee numeric(5,4) NOT NULL,
+    status integer NOT NULL,
+    comment character varying(256),
+    created_dt timestamp with time zone NOT NULL,
+    modified_dt timestamp with time zone NOT NULL,
+    account_id integer NOT NULL,
+    created_by_id integer
+);
+
+
+ALTER TABLE public.dash_creditlineitem OWNER TO eins;
+
+--
+-- Name: dash_creditlineitem_id_seq; Type: SEQUENCE; Schema: public; Owner: eins
+--
+
+CREATE SEQUENCE dash_creditlineitem_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.dash_creditlineitem_id_seq OWNER TO eins;
+
+--
+-- Name: dash_creditlineitem_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: eins
+--
+
+ALTER SEQUENCE dash_creditlineitem_id_seq OWNED BY dash_creditlineitem.id;
+
+
+--
+-- Name: dash_defaultsourcesettings; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_defaultsourcesettings (
@@ -1257,7 +1414,7 @@ ALTER SEQUENCE dash_defaultsourcesettings_id_seq OWNED BY dash_defaultsourcesett
 
 
 --
--- Name: dash_demoadgrouprealadgroup; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_demoadgrouprealadgroup; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_demoadgrouprealadgroup (
@@ -1292,7 +1449,83 @@ ALTER SEQUENCE dash_demoadgrouprealadgroup_id_seq OWNED BY dash_demoadgroupreala
 
 
 --
--- Name: dash_outbrainaccount; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_exportreport; Type: TABLE; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE TABLE dash_exportreport (
+    id integer NOT NULL,
+    created_dt timestamp with time zone NOT NULL,
+    granularity integer NOT NULL,
+    breakdown_by_day boolean NOT NULL,
+    breakdown_by_source boolean NOT NULL,
+    order_by character varying(20),
+    additional_fields character varying(500),
+    account_id integer,
+    ad_group_id integer,
+    campaign_id integer,
+    created_by_id integer NOT NULL
+);
+
+
+ALTER TABLE public.dash_exportreport OWNER TO eins;
+
+--
+-- Name: dash_exportreport_filtered_sources; Type: TABLE; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE TABLE dash_exportreport_filtered_sources (
+    id integer NOT NULL,
+    exportreport_id integer NOT NULL,
+    source_id integer NOT NULL
+);
+
+
+ALTER TABLE public.dash_exportreport_filtered_sources OWNER TO eins;
+
+--
+-- Name: dash_exportreport_filtered_sources_id_seq; Type: SEQUENCE; Schema: public; Owner: eins
+--
+
+CREATE SEQUENCE dash_exportreport_filtered_sources_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.dash_exportreport_filtered_sources_id_seq OWNER TO eins;
+
+--
+-- Name: dash_exportreport_filtered_sources_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: eins
+--
+
+ALTER SEQUENCE dash_exportreport_filtered_sources_id_seq OWNED BY dash_exportreport_filtered_sources.id;
+
+
+--
+-- Name: dash_exportreport_id_seq; Type: SEQUENCE; Schema: public; Owner: eins
+--
+
+CREATE SEQUENCE dash_exportreport_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.dash_exportreport_id_seq OWNER TO eins;
+
+--
+-- Name: dash_exportreport_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: eins
+--
+
+ALTER SEQUENCE dash_exportreport_id_seq OWNED BY dash_exportreport.id;
+
+
+--
+-- Name: dash_outbrainaccount; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_outbrainaccount (
@@ -1328,7 +1561,119 @@ ALTER SEQUENCE dash_outbrainaccount_id_seq OWNED BY dash_outbrainaccount.id;
 
 
 --
--- Name: dash_source; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_publisherblacklist; Type: TABLE; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE TABLE dash_publisherblacklist (
+    id integer NOT NULL,
+    name character varying(127) NOT NULL,
+    ad_group_id integer,
+    source_id integer NOT NULL,
+    status integer NOT NULL,
+    created_dt timestamp with time zone NOT NULL,
+    account_id integer,
+    campaign_id integer,
+    everywhere boolean NOT NULL
+);
+
+
+ALTER TABLE public.dash_publisherblacklist OWNER TO eins;
+
+--
+-- Name: dash_publisherblacklist_id_seq; Type: SEQUENCE; Schema: public; Owner: eins
+--
+
+CREATE SEQUENCE dash_publisherblacklist_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.dash_publisherblacklist_id_seq OWNER TO eins;
+
+--
+-- Name: dash_publisherblacklist_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: eins
+--
+
+ALTER SEQUENCE dash_publisherblacklist_id_seq OWNED BY dash_publisherblacklist.id;
+
+
+--
+-- Name: dash_scheduledexportreport; Type: TABLE; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE TABLE dash_scheduledexportreport (
+    id integer NOT NULL,
+    name character varying(100),
+    created_dt timestamp with time zone NOT NULL,
+    state integer NOT NULL,
+    sending_frequency integer NOT NULL,
+    created_by_id integer NOT NULL,
+    report_id integer NOT NULL
+);
+
+
+ALTER TABLE public.dash_scheduledexportreport OWNER TO eins;
+
+--
+-- Name: dash_scheduledexportreport_id_seq; Type: SEQUENCE; Schema: public; Owner: eins
+--
+
+CREATE SEQUENCE dash_scheduledexportreport_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.dash_scheduledexportreport_id_seq OWNER TO eins;
+
+--
+-- Name: dash_scheduledexportreport_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: eins
+--
+
+ALTER SEQUENCE dash_scheduledexportreport_id_seq OWNED BY dash_scheduledexportreport.id;
+
+
+--
+-- Name: dash_scheduledexportreportrecipient; Type: TABLE; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE TABLE dash_scheduledexportreportrecipient (
+    id integer NOT NULL,
+    email character varying(254) NOT NULL,
+    scheduled_report_id integer NOT NULL
+);
+
+
+ALTER TABLE public.dash_scheduledexportreportrecipient OWNER TO eins;
+
+--
+-- Name: dash_scheduledexportreportrecipient_id_seq; Type: SEQUENCE; Schema: public; Owner: eins
+--
+
+CREATE SEQUENCE dash_scheduledexportreportrecipient_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.dash_scheduledexportreportrecipient_id_seq OWNER TO eins;
+
+--
+-- Name: dash_scheduledexportreportrecipient_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: eins
+--
+
+ALTER SEQUENCE dash_scheduledexportreportrecipient_id_seq OWNED BY dash_scheduledexportreportrecipient.id;
+
+
+--
+-- Name: dash_source; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_source (
@@ -1369,7 +1714,7 @@ ALTER SEQUENCE dash_source_id_seq OWNED BY dash_source.id;
 
 
 --
--- Name: dash_sourcecredentials; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_sourcecredentials; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_sourcecredentials (
@@ -1406,7 +1751,7 @@ ALTER SEQUENCE dash_sourcecredentials_id_seq OWNED BY dash_sourcecredentials.id;
 
 
 --
--- Name: dash_sourcetype; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_sourcetype; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_sourcetype (
@@ -1447,7 +1792,7 @@ ALTER SEQUENCE dash_sourcetype_id_seq OWNED BY dash_sourcetype.id;
 
 
 --
--- Name: dash_uploadbatch; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_uploadbatch; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE dash_uploadbatch (
@@ -1459,7 +1804,9 @@ CREATE TABLE dash_uploadbatch (
     num_errors integer,
     batch_size integer,
     processed_content_ads integer,
+    inserted_content_ads integer,
     CONSTRAINT dash_uploadbatch_batch_size_check CHECK ((batch_size >= 0)),
+    CONSTRAINT dash_uploadbatch_inserted_content_ads_check CHECK ((inserted_content_ads >= 0)),
     CONSTRAINT dash_uploadbatch_num_errors_check CHECK ((num_errors >= 0)),
     CONSTRAINT dash_uploadbatch_processed_content_ads_check CHECK ((processed_content_ads >= 0))
 );
@@ -1489,7 +1836,49 @@ ALTER SEQUENCE dash_uploadbatch_id_seq OWNED BY dash_uploadbatch.id;
 
 
 --
--- Name: django_admin_log; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_useractionlog; Type: TABLE; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE TABLE dash_useractionlog (
+    id integer NOT NULL,
+    action_type smallint NOT NULL,
+    created_dt timestamp with time zone NOT NULL,
+    account_id integer,
+    account_settings_id integer,
+    ad_group_id integer,
+    ad_group_settings_id integer,
+    campaign_id integer,
+    campaign_settings_id integer,
+    created_by_id integer,
+    CONSTRAINT dash_useractionlog_action_type_check CHECK ((action_type >= 0))
+);
+
+
+ALTER TABLE public.dash_useractionlog OWNER TO eins;
+
+--
+-- Name: dash_useractionlog_id_seq; Type: SEQUENCE; Schema: public; Owner: eins
+--
+
+CREATE SEQUENCE dash_useractionlog_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.dash_useractionlog_id_seq OWNER TO eins;
+
+--
+-- Name: dash_useractionlog_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: eins
+--
+
+ALTER SEQUENCE dash_useractionlog_id_seq OWNED BY dash_useractionlog.id;
+
+
+--
+-- Name: django_admin_log; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE django_admin_log (
@@ -1529,7 +1918,7 @@ ALTER SEQUENCE django_admin_log_id_seq OWNED BY django_admin_log.id;
 
 
 --
--- Name: django_content_type; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: django_content_type; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE django_content_type (
@@ -1563,7 +1952,7 @@ ALTER SEQUENCE django_content_type_id_seq OWNED BY django_content_type.id;
 
 
 --
--- Name: django_migrations; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: django_migrations; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE django_migrations (
@@ -1598,7 +1987,7 @@ ALTER SEQUENCE django_migrations_id_seq OWNED BY django_migrations.id;
 
 
 --
--- Name: django_session; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: django_session; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE django_session (
@@ -1611,7 +2000,7 @@ CREATE TABLE django_session (
 ALTER TABLE public.django_session OWNER TO eins;
 
 --
--- Name: reports_adgroupgoalconversionstats; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_adgroupgoalconversionstats; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE reports_adgroupgoalconversionstats (
@@ -1649,7 +2038,7 @@ ALTER SEQUENCE reports_adgroupgoalconversionstats_id_seq OWNED BY reports_adgrou
 
 
 --
--- Name: reports_adgroupstats; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_adgroupstats; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE reports_adgroupstats (
@@ -1697,7 +2086,7 @@ ALTER SEQUENCE reports_adgroupstats_id_seq OWNED BY reports_adgroupstats.id;
 
 
 --
--- Name: reports_articlestats; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_articlestats; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE reports_articlestats (
@@ -1746,7 +2135,7 @@ ALTER SEQUENCE reports_articlestats_id_seq OWNED BY reports_articlestats.id;
 
 
 --
--- Name: reports_contentadgoalconversionstats; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadgoalconversionstats; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE reports_contentadgoalconversionstats (
@@ -1785,7 +2174,7 @@ ALTER SEQUENCE reports_contentadgoalconversionstats_id_seq OWNED BY reports_cont
 
 
 --
--- Name: reports_contentadpostclickstats; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadpostclickstats; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE reports_contentadpostclickstats (
@@ -1826,7 +2215,7 @@ ALTER SEQUENCE reports_contentadpostclickstats_id_seq OWNED BY reports_contentad
 
 
 --
--- Name: reports_contentadstats; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadstats; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE reports_contentadstats (
@@ -1867,7 +2256,7 @@ ALTER SEQUENCE reports_contentadstats_id_seq OWNED BY reports_contentadstats.id;
 
 
 --
--- Name: reports_goalconversionstats; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_goalconversionstats; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE reports_goalconversionstats (
@@ -1906,7 +2295,7 @@ ALTER SEQUENCE reports_goalconversionstats_id_seq OWNED BY reports_goalconversio
 
 
 --
--- Name: reports_supplyreportrecipient; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_supplyreportrecipient; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE reports_supplyreportrecipient (
@@ -1944,7 +2333,7 @@ ALTER SEQUENCE reports_supplyreportrecipient_id_seq OWNED BY reports_supplyrepor
 
 
 --
--- Name: zemauth_internalgroup; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_internalgroup; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE zemauth_internalgroup (
@@ -1977,7 +2366,7 @@ ALTER SEQUENCE zemauth_internalgroup_id_seq OWNED BY zemauth_internalgroup.id;
 
 
 --
--- Name: zemauth_user; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE zemauth_user (
@@ -1999,7 +2388,7 @@ CREATE TABLE zemauth_user (
 ALTER TABLE public.zemauth_user OWNER TO eins;
 
 --
--- Name: zemauth_user_groups; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user_groups; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE zemauth_user_groups (
@@ -2054,7 +2443,7 @@ ALTER SEQUENCE zemauth_user_id_seq OWNED BY zemauth_user.id;
 
 
 --
--- Name: zemauth_user_user_permissions; Type: TABLE; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user_user_permissions; Type: TABLE; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE TABLE zemauth_user_user_permissions (
@@ -2238,6 +2627,20 @@ ALTER TABLE ONLY dash_article ALTER COLUMN id SET DEFAULT nextval('dash_article_
 -- Name: id; Type: DEFAULT; Schema: public; Owner: eins
 --
 
+ALTER TABLE ONLY dash_budgethistory ALTER COLUMN id SET DEFAULT nextval('dash_budgethistory_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_budgetlineitem ALTER COLUMN id SET DEFAULT nextval('dash_budgetlineitem_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: eins
+--
+
 ALTER TABLE ONLY dash_campaign ALTER COLUMN id SET DEFAULT nextval('dash_campaign_id_seq'::regclass);
 
 
@@ -2301,6 +2704,20 @@ ALTER TABLE ONLY dash_conversionpixel ALTER COLUMN id SET DEFAULT nextval('dash_
 -- Name: id; Type: DEFAULT; Schema: public; Owner: eins
 --
 
+ALTER TABLE ONLY dash_credithistory ALTER COLUMN id SET DEFAULT nextval('dash_credithistory_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_creditlineitem ALTER COLUMN id SET DEFAULT nextval('dash_creditlineitem_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: eins
+--
+
 ALTER TABLE ONLY dash_defaultsourcesettings ALTER COLUMN id SET DEFAULT nextval('dash_defaultsourcesettings_id_seq'::regclass);
 
 
@@ -2315,7 +2732,42 @@ ALTER TABLE ONLY dash_demoadgrouprealadgroup ALTER COLUMN id SET DEFAULT nextval
 -- Name: id; Type: DEFAULT; Schema: public; Owner: eins
 --
 
+ALTER TABLE ONLY dash_exportreport ALTER COLUMN id SET DEFAULT nextval('dash_exportreport_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_exportreport_filtered_sources ALTER COLUMN id SET DEFAULT nextval('dash_exportreport_filtered_sources_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: eins
+--
+
 ALTER TABLE ONLY dash_outbrainaccount ALTER COLUMN id SET DEFAULT nextval('dash_outbrainaccount_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_publisherblacklist ALTER COLUMN id SET DEFAULT nextval('dash_publisherblacklist_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_scheduledexportreport ALTER COLUMN id SET DEFAULT nextval('dash_scheduledexportreport_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_scheduledexportreportrecipient ALTER COLUMN id SET DEFAULT nextval('dash_scheduledexportreportrecipient_id_seq'::regclass);
 
 
 --
@@ -2344,6 +2796,13 @@ ALTER TABLE ONLY dash_sourcetype ALTER COLUMN id SET DEFAULT nextval('dash_sourc
 --
 
 ALTER TABLE ONLY dash_uploadbatch ALTER COLUMN id SET DEFAULT nextval('dash_uploadbatch_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_useractionlog ALTER COLUMN id SET DEFAULT nextval('dash_useractionlog_id_seq'::regclass);
 
 
 --
@@ -2708,6 +3167,41 @@ COPY auth_permission (id, name, content_type_id, codename) FROM stdin;
 190	Can add autopilot ad group source bid cpc log	45	add_autopilotadgroupsourcebidcpclog
 191	Can change autopilot ad group source bid cpc log	45	change_autopilotadgroupsourcebidcpclog
 192	Can delete autopilot ad group source bid cpc log	45	delete_autopilotadgroupsourcebidcpclog
+193	Can add user action log	46	add_useractionlog
+194	Can change user action log	46	change_useractionlog
+195	Can delete user action log	46	delete_useractionlog
+196	Can add publisher blacklist	47	add_publisherblacklist
+197	Can change publisher blacklist	47	change_publisherblacklist
+198	Can delete publisher blacklist	47	delete_publisherblacklist
+199	Can add credit line item	48	add_creditlineitem
+200	Can change credit line item	48	change_creditlineitem
+201	Can delete credit line item	48	delete_creditlineitem
+202	Can add budget line item	49	add_budgetlineitem
+203	Can change budget line item	49	change_budgetlineitem
+204	Can delete budget line item	49	delete_budgetlineitem
+205	Can add credit history	50	add_credithistory
+206	Can change credit history	50	change_credithistory
+207	Can delete credit history	50	delete_credithistory
+208	Can add budget history	51	add_budgethistory
+209	Can change budget history	51	change_budgethistory
+210	Can delete budget history	51	delete_budgethistory
+211	Can add export report	52	add_exportreport
+212	Can change export report	52	change_exportreport
+213	Can delete export report	52	delete_exportreport
+214	Can add scheduled export report	53	add_scheduledexportreport
+215	Can change scheduled export report	53	change_scheduledexportreport
+216	Can delete scheduled export report	53	delete_scheduledexportreport
+217	Can add scheduled export report recipient	54	add_scheduledexportreportrecipient
+218	Can change scheduled export report recipient	54	change_scheduledexportreportrecipient
+219	Can delete scheduled export report recipient	54	delete_scheduledexportreportrecipient
+220	Can view campaign's budget tab.	28	campaign_budget_view
+221	Can view accounts's credit tab.	28	account_credit_view
+222	Can set subdivision targeting	28	can_set_subdivision_targeting
+223	Can see publishers blacklist status	28	can_see_publisher_blacklist_status
+224	Can modify publishers blacklist status	28	can_modify_publisher_blacklist_status
+225	Can see conversions and goals in reports	28	conversion_reports
+226	Can download reports using new export facilities	28	exports_plus
+227	Can view or access global/account/campaign publishers blacklist status	28	can_access_global_publisher_blacklist_status
 \.
 
 
@@ -2715,7 +3209,7 @@ COPY auth_permission (id, name, content_type_id, codename) FROM stdin;
 -- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
 --
 
-SELECT pg_catalog.setval('auth_permission_id_seq', 192, true);
+SELECT pg_catalog.setval('auth_permission_id_seq', 227, true);
 
 
 --
@@ -2857,7 +3351,7 @@ SELECT pg_catalog.setval('dash_account_users_id_seq', 1, false);
 -- Data for Name: dash_accountsettings; Type: TABLE DATA; Schema: public; Owner: eins
 --
 
-COPY dash_accountsettings (id, name, created_dt, archived, account_id, created_by_id, changes_text, default_account_manager_id, default_sales_representative_id) FROM stdin;
+COPY dash_accountsettings (id, name, created_dt, archived, account_id, created_by_id, changes_text, default_account_manager_id, default_sales_representative_id, service_fee) FROM stdin;
 \.
 
 
@@ -2959,6 +3453,36 @@ SELECT pg_catalog.setval('dash_article_id_seq', 1, false);
 
 
 --
+-- Data for Name: dash_budgethistory; Type: TABLE DATA; Schema: public; Owner: eins
+--
+
+COPY dash_budgethistory (id, snapshot, created_dt, budget_id, created_by_id) FROM stdin;
+\.
+
+
+--
+-- Name: dash_budgethistory_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
+--
+
+SELECT pg_catalog.setval('dash_budgethistory_id_seq', 1, false);
+
+
+--
+-- Data for Name: dash_budgetlineitem; Type: TABLE DATA; Schema: public; Owner: eins
+--
+
+COPY dash_budgetlineitem (id, start_date, end_date, amount, comment, created_dt, modified_dt, campaign_id, created_by_id, credit_id) FROM stdin;
+\.
+
+
+--
+-- Name: dash_budgetlineitem_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
+--
+
+SELECT pg_catalog.setval('dash_budgetlineitem_id_seq', 1, false);
+
+
+--
 -- Data for Name: dash_campaign; Type: TABLE DATA; Schema: public; Owner: eins
 --
 
@@ -3037,7 +3561,7 @@ SELECT pg_catalog.setval('dash_campaignsettings_id_seq', 1, false);
 -- Data for Name: dash_contentad; Type: TABLE DATA; Schema: public; Owner: eins
 --
 
-COPY dash_contentad (id, image_id, batch_id, image_height, image_width, ad_group_id, created_dt, title, url, image_hash, state, redirect_id, archived, tracker_urls, brand_name, call_to_action, description, display_url) FROM stdin;
+COPY dash_contentad (id, image_id, batch_id, image_height, image_width, ad_group_id, created_dt, title, url, image_hash, state, redirect_id, archived, tracker_urls, brand_name, call_to_action, description, display_url, crop_areas) FROM stdin;
 \.
 
 
@@ -3094,6 +3618,36 @@ SELECT pg_catalog.setval('dash_conversionpixel_id_seq', 1, false);
 
 
 --
+-- Data for Name: dash_credithistory; Type: TABLE DATA; Schema: public; Owner: eins
+--
+
+COPY dash_credithistory (id, snapshot, created_dt, created_by_id, credit_id) FROM stdin;
+\.
+
+
+--
+-- Name: dash_credithistory_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
+--
+
+SELECT pg_catalog.setval('dash_credithistory_id_seq', 1, false);
+
+
+--
+-- Data for Name: dash_creditlineitem; Type: TABLE DATA; Schema: public; Owner: eins
+--
+
+COPY dash_creditlineitem (id, start_date, end_date, amount, license_fee, status, comment, created_dt, modified_dt, account_id, created_by_id) FROM stdin;
+\.
+
+
+--
+-- Name: dash_creditlineitem_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
+--
+
+SELECT pg_catalog.setval('dash_creditlineitem_id_seq', 1, false);
+
+
+--
 -- Data for Name: dash_defaultsourcesettings; Type: TABLE DATA; Schema: public; Owner: eins
 --
 
@@ -3124,6 +3678,36 @@ SELECT pg_catalog.setval('dash_demoadgrouprealadgroup_id_seq', 1, false);
 
 
 --
+-- Data for Name: dash_exportreport; Type: TABLE DATA; Schema: public; Owner: eins
+--
+
+COPY dash_exportreport (id, created_dt, granularity, breakdown_by_day, breakdown_by_source, order_by, additional_fields, account_id, ad_group_id, campaign_id, created_by_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: dash_exportreport_filtered_sources; Type: TABLE DATA; Schema: public; Owner: eins
+--
+
+COPY dash_exportreport_filtered_sources (id, exportreport_id, source_id) FROM stdin;
+\.
+
+
+--
+-- Name: dash_exportreport_filtered_sources_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
+--
+
+SELECT pg_catalog.setval('dash_exportreport_filtered_sources_id_seq', 1, false);
+
+
+--
+-- Name: dash_exportreport_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
+--
+
+SELECT pg_catalog.setval('dash_exportreport_id_seq', 1, false);
+
+
+--
 -- Data for Name: dash_outbrainaccount; Type: TABLE DATA; Schema: public; Owner: eins
 --
 
@@ -3136,6 +3720,51 @@ COPY dash_outbrainaccount (id, marketer_id, created_dt, modified_dt, used) FROM 
 --
 
 SELECT pg_catalog.setval('dash_outbrainaccount_id_seq', 1, false);
+
+
+--
+-- Data for Name: dash_publisherblacklist; Type: TABLE DATA; Schema: public; Owner: eins
+--
+
+COPY dash_publisherblacklist (id, name, ad_group_id, source_id, status, created_dt, account_id, campaign_id, everywhere) FROM stdin;
+\.
+
+
+--
+-- Name: dash_publisherblacklist_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
+--
+
+SELECT pg_catalog.setval('dash_publisherblacklist_id_seq', 1, false);
+
+
+--
+-- Data for Name: dash_scheduledexportreport; Type: TABLE DATA; Schema: public; Owner: eins
+--
+
+COPY dash_scheduledexportreport (id, name, created_dt, state, sending_frequency, created_by_id, report_id) FROM stdin;
+\.
+
+
+--
+-- Name: dash_scheduledexportreport_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
+--
+
+SELECT pg_catalog.setval('dash_scheduledexportreport_id_seq', 1, false);
+
+
+--
+-- Data for Name: dash_scheduledexportreportrecipient; Type: TABLE DATA; Schema: public; Owner: eins
+--
+
+COPY dash_scheduledexportreportrecipient (id, email, scheduled_report_id) FROM stdin;
+\.
+
+
+--
+-- Name: dash_scheduledexportreportrecipient_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
+--
+
+SELECT pg_catalog.setval('dash_scheduledexportreportrecipient_id_seq', 1, false);
 
 
 --
@@ -3187,7 +3816,7 @@ SELECT pg_catalog.setval('dash_sourcetype_id_seq', 1, false);
 -- Data for Name: dash_uploadbatch; Type: TABLE DATA; Schema: public; Owner: eins
 --
 
-COPY dash_uploadbatch (id, name, created_dt, status, error_report_key, num_errors, batch_size, processed_content_ads) FROM stdin;
+COPY dash_uploadbatch (id, name, created_dt, status, error_report_key, num_errors, batch_size, processed_content_ads, inserted_content_ads) FROM stdin;
 \.
 
 
@@ -3196,6 +3825,21 @@ COPY dash_uploadbatch (id, name, created_dt, status, error_report_key, num_error
 --
 
 SELECT pg_catalog.setval('dash_uploadbatch_id_seq', 1, false);
+
+
+--
+-- Data for Name: dash_useractionlog; Type: TABLE DATA; Schema: public; Owner: eins
+--
+
+COPY dash_useractionlog (id, action_type, created_dt, account_id, account_settings_id, ad_group_id, ad_group_settings_id, campaign_id, campaign_settings_id, created_by_id) FROM stdin;
+\.
+
+
+--
+-- Name: dash_useractionlog_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
+--
+
+SELECT pg_catalog.setval('dash_useractionlog_id_seq', 1, false);
 
 
 --
@@ -3263,6 +3907,15 @@ COPY django_content_type (id, app_label, model) FROM stdin;
 43	convapi	reportlog
 44	automation	campaignbudgetdepletionnotification
 45	automation	autopilotadgroupsourcebidcpclog
+46	dash	useractionlog
+47	dash	publisherblacklist
+48	dash	creditlineitem
+49	dash	budgetlineitem
+50	dash	credithistory
+51	dash	budgethistory
+52	dash	exportreport
+53	dash	scheduledexportreport
+54	dash	scheduledexportreportrecipient
 \.
 
 
@@ -3270,7 +3923,7 @@ COPY django_content_type (id, app_label, model) FROM stdin;
 -- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
 --
 
-SELECT pg_catalog.setval('django_content_type_id_seq', 45, true);
+SELECT pg_catalog.setval('django_content_type_id_seq', 54, true);
 
 
 --
@@ -3494,6 +4147,37 @@ COPY django_migrations (id, app, name, applied) FROM stdin;
 214	zemauth	0056_merge	2015-10-07 09:39:20.266269+00
 215	zemauth	0057_auto_20150925_1513	2015-10-07 09:39:20.390933+00
 216	zemauth	0058_auto_20151001_1429	2015-10-07 09:39:20.518307+00
+217	actionlog	0022_auto_20151103_0957	2015-11-19 15:10:07.599958+00
+218	dash	0077_accountsettings_service_fee	2015-11-19 15:10:08.30106+00
+219	dash	0078_useractionlog	2015-11-19 15:10:09.120051+00
+220	dash	0079_auto_20151028_1341	2015-11-19 15:10:09.388059+00
+221	dash	0079_auto_20151014_1305	2015-11-19 15:10:09.991461+00
+222	dash	0080_merge	2015-11-19 15:10:10.041657+00
+223	dash	0079_uploadbatch_inserted_content_ads	2015-11-19 15:10:10.259837+00
+224	dash	0081_merge	2015-11-19 15:10:10.34057+00
+225	dash	0082_auto_20151103_0959	2015-11-19 15:10:12.309376+00
+226	dash	0083_publisherblacklist_status	2015-11-19 15:10:12.800629+00
+227	dash	0084_publisherblacklist_created_dt	2015-11-19 15:10:13.26046+00
+228	dash	0084_contentad_crop_areas	2015-11-19 15:10:13.478519+00
+229	dash	0083_scheduledreport_scheduledreportrecipient	2015-11-19 15:10:14.331689+00
+230	dash	0084_auto_20151105_1455	2015-11-19 15:10:14.619511+00
+231	dash	0085_merge	2015-11-19 15:10:14.668761+00
+232	dash	0086_auto_20151109_1056	2015-11-19 15:10:15.219646+00
+233	dash	0087_auto_20151111_1557	2015-11-19 15:10:17.601767+00
+234	dash	0082_auto_20151030_1256	2015-11-19 15:10:18.811087+00
+235	dash	0083_merge	2015-11-19 15:10:18.860412+00
+236	dash	0084_merge	2015-11-19 15:10:18.908074+00
+237	dash	0085_auto_20151106_1125	2015-11-19 15:10:19.138526+00
+238	dash	0086_merge	2015-11-19 15:10:19.189844+00
+239	dash	0088_merge	2015-11-19 15:10:19.240469+00
+240	zemauth	0059_auto_20151012_1027	2015-11-19 15:10:19.428731+00
+241	zemauth	0060_auto_20151014_1419	2015-11-19 15:10:19.608434+00
+242	zemauth	0061_auto_20151102_1757	2015-11-19 15:10:19.791399+00
+243	zemauth	0061_auto_20151029_0906	2015-11-19 15:10:20.115694+00
+244	zemauth	0062_merge	2015-11-19 15:10:20.347076+00
+245	zemauth	0063_auto_20151111_1039	2015-11-19 15:10:20.558123+00
+246	zemauth	0064_auto_20151111_1520	2015-11-19 15:10:20.760925+00
+247	zemauth	0065_auto_20151117_0923	2015-11-19 15:10:21.149468+00
 \.
 
 
@@ -3501,7 +4185,7 @@ COPY django_migrations (id, app, name, applied) FROM stdin;
 -- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
 --
 
-SELECT pg_catalog.setval('django_migrations_id_seq', 216, true);
+SELECT pg_catalog.setval('django_migrations_id_seq', 247, true);
 
 
 --
@@ -3509,6 +4193,7 @@ SELECT pg_catalog.setval('django_migrations_id_seq', 216, true);
 --
 
 COPY django_session (session_key, session_data, expire_date) FROM stdin;
+75qbtp9dvxeb7hp9byprkhm85q84mfwk	NGNkN2U0MGQzOWNkMWMwYWJhNTI5ZjA0MjA4ZjBhNWUzZWIzY2NmZTp7Il9hdXRoX3VzZXJfaGFzaCI6IjBjMmY4ZGQyOGE1ZWUxYWNhZjhkNTFiYzQ4OGQ2NWZlZTE0ZGExMjQiLCJfYXV0aF91c2VyX2JhY2tlbmQiOiJ6ZW1hdXRoLmJhY2tlbmRzLkVtYWlsT3JVc2VybmFtZU1vZGVsQmFja2VuZCIsIl9hdXRoX3VzZXJfaWQiOiIxIn0=	2015-12-03 15:10:39.998126+00
 \.
 
 
@@ -3648,14 +4333,6 @@ SELECT pg_catalog.setval('zemauth_internalgroup_id_seq', 1, false);
 
 
 --
--- Data for Name: zemauth_user; Type: TABLE DATA; Schema: public; Owner: eins
---
-
-COPY zemauth_user (id, password, last_login, is_superuser, email, username, first_name, last_name, date_joined, is_staff, is_active, show_onboarding_guidance) FROM stdin;
-\.
-
-
---
 -- Data for Name: zemauth_user_groups; Type: TABLE DATA; Schema: public; Owner: eins
 --
 
@@ -3674,7 +4351,7 @@ SELECT pg_catalog.setval('zemauth_user_groups_id_seq', 1, false);
 -- Name: zemauth_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: eins
 --
 
-SELECT pg_catalog.setval('zemauth_user_id_seq', 1, false);
+SELECT pg_catalog.setval('zemauth_user_id_seq', 1, true);
 
 
 --
@@ -3693,7 +4370,7 @@ SELECT pg_catalog.setval('zemauth_user_user_permissions_id_seq', 1, false);
 
 
 --
--- Name: actionlog_actionlog_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlog_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY actionlog_actionlog
@@ -3701,7 +4378,7 @@ ALTER TABLE ONLY actionlog_actionlog
 
 
 --
--- Name: actionlog_actionlogorder_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlogorder_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY actionlog_actionlogorder
@@ -3709,7 +4386,7 @@ ALTER TABLE ONLY actionlog_actionlogorder
 
 
 --
--- Name: auth_group_name_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: auth_group_name_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY auth_group
@@ -3717,7 +4394,7 @@ ALTER TABLE ONLY auth_group
 
 
 --
--- Name: auth_group_permissions_group_id_permission_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: auth_group_permissions_group_id_permission_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY auth_group_permissions
@@ -3725,7 +4402,7 @@ ALTER TABLE ONLY auth_group_permissions
 
 
 --
--- Name: auth_group_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: auth_group_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY auth_group_permissions
@@ -3733,7 +4410,7 @@ ALTER TABLE ONLY auth_group_permissions
 
 
 --
--- Name: auth_group_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: auth_group_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY auth_group
@@ -3741,7 +4418,7 @@ ALTER TABLE ONLY auth_group
 
 
 --
--- Name: auth_permission_content_type_id_codename_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: auth_permission_content_type_id_codename_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY auth_permission
@@ -3749,7 +4426,7 @@ ALTER TABLE ONLY auth_permission
 
 
 --
--- Name: auth_permission_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: auth_permission_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY auth_permission
@@ -3757,7 +4434,7 @@ ALTER TABLE ONLY auth_permission
 
 
 --
--- Name: automation_autopilotadgroupsourcebidcpclog_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: automation_autopilotadgroupsourcebidcpclog_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY automation_autopilotadgroupsourcebidcpclog
@@ -3765,7 +4442,7 @@ ALTER TABLE ONLY automation_autopilotadgroupsourcebidcpclog
 
 
 --
--- Name: automation_campaignbudgetdepletionnotification_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: automation_campaignbudgetdepletionnotification_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY automation_campaignbudgetdepletionnotification
@@ -3773,7 +4450,7 @@ ALTER TABLE ONLY automation_campaignbudgetdepletionnotification
 
 
 --
--- Name: convapi_gareportlog_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: convapi_gareportlog_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY convapi_gareportlog
@@ -3781,7 +4458,7 @@ ALTER TABLE ONLY convapi_gareportlog
 
 
 --
--- Name: convapi_rawgoalconversionstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: convapi_rawgoalconversionstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY convapi_rawgoalconversionstats
@@ -3789,7 +4466,7 @@ ALTER TABLE ONLY convapi_rawgoalconversionstats
 
 
 --
--- Name: convapi_rawpostclickstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: convapi_rawpostclickstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY convapi_rawpostclickstats
@@ -3797,7 +4474,7 @@ ALTER TABLE ONLY convapi_rawpostclickstats
 
 
 --
--- Name: convapi_reportlog_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: convapi_reportlog_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY convapi_reportlog
@@ -3805,7 +4482,7 @@ ALTER TABLE ONLY convapi_reportlog
 
 
 --
--- Name: dash_account_groups_account_id_group_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_groups_account_id_group_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_account_groups
@@ -3813,7 +4490,7 @@ ALTER TABLE ONLY dash_account_groups
 
 
 --
--- Name: dash_account_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_account_groups
@@ -3821,7 +4498,7 @@ ALTER TABLE ONLY dash_account_groups
 
 
 --
--- Name: dash_account_name_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_name_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_account
@@ -3829,7 +4506,7 @@ ALTER TABLE ONLY dash_account
 
 
 --
--- Name: dash_account_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_account
@@ -3837,7 +4514,7 @@ ALTER TABLE ONLY dash_account
 
 
 --
--- Name: dash_account_users_account_id_user_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_users_account_id_user_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_account_users
@@ -3845,7 +4522,7 @@ ALTER TABLE ONLY dash_account_users
 
 
 --
--- Name: dash_account_users_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_users_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_account_users
@@ -3853,7 +4530,7 @@ ALTER TABLE ONLY dash_account_users
 
 
 --
--- Name: dash_accountsettings_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_accountsettings_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_accountsettings
@@ -3861,7 +4538,7 @@ ALTER TABLE ONLY dash_accountsettings
 
 
 --
--- Name: dash_adgroup_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroup_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_adgroup
@@ -3869,7 +4546,7 @@ ALTER TABLE ONLY dash_adgroup
 
 
 --
--- Name: dash_adgroupsettings_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsettings_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_adgroupsettings
@@ -3877,7 +4554,7 @@ ALTER TABLE ONLY dash_adgroupsettings
 
 
 --
--- Name: dash_adgroupsource_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsource_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_adgroupsource
@@ -3885,7 +4562,7 @@ ALTER TABLE ONLY dash_adgroupsource
 
 
 --
--- Name: dash_adgroupsourcesettings_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsourcesettings_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_adgroupsourcesettings
@@ -3893,7 +4570,7 @@ ALTER TABLE ONLY dash_adgroupsourcesettings
 
 
 --
--- Name: dash_adgroupsourcestate_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsourcestate_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_adgroupsourcestate
@@ -3901,7 +4578,7 @@ ALTER TABLE ONLY dash_adgroupsourcestate
 
 
 --
--- Name: dash_article_ad_group_id_3e67a346ec46475b_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_article_ad_group_id_3e67a346ec46475b_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_article
@@ -3909,7 +4586,7 @@ ALTER TABLE ONLY dash_article
 
 
 --
--- Name: dash_article_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_article_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_article
@@ -3917,7 +4594,23 @@ ALTER TABLE ONLY dash_article
 
 
 --
--- Name: dash_campaign_groups_campaign_id_group_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_budgethistory_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
+--
+
+ALTER TABLE ONLY dash_budgethistory
+    ADD CONSTRAINT dash_budgethistory_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: dash_budgetlineitem_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
+--
+
+ALTER TABLE ONLY dash_budgetlineitem
+    ADD CONSTRAINT dash_budgetlineitem_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: dash_campaign_groups_campaign_id_group_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_campaign_groups
@@ -3925,7 +4618,7 @@ ALTER TABLE ONLY dash_campaign_groups
 
 
 --
--- Name: dash_campaign_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaign_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_campaign_groups
@@ -3933,7 +4626,7 @@ ALTER TABLE ONLY dash_campaign_groups
 
 
 --
--- Name: dash_campaign_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaign_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_campaign
@@ -3941,7 +4634,7 @@ ALTER TABLE ONLY dash_campaign
 
 
 --
--- Name: dash_campaign_users_campaign_id_user_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaign_users_campaign_id_user_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_campaign_users
@@ -3949,7 +4642,7 @@ ALTER TABLE ONLY dash_campaign_users
 
 
 --
--- Name: dash_campaign_users_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaign_users_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_campaign_users
@@ -3957,7 +4650,7 @@ ALTER TABLE ONLY dash_campaign_users
 
 
 --
--- Name: dash_campaignbudgetsettings_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaignbudgetsettings_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_campaignbudgetsettings
@@ -3965,7 +4658,7 @@ ALTER TABLE ONLY dash_campaignbudgetsettings
 
 
 --
--- Name: dash_campaignsettings_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaignsettings_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_campaignsettings
@@ -3973,7 +4666,7 @@ ALTER TABLE ONLY dash_campaignsettings
 
 
 --
--- Name: dash_contentad_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_contentad_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_contentad
@@ -3981,7 +4674,7 @@ ALTER TABLE ONLY dash_contentad
 
 
 --
--- Name: dash_contentadsource_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_contentadsource_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_contentadsource
@@ -3989,7 +4682,7 @@ ALTER TABLE ONLY dash_contentadsource
 
 
 --
--- Name: dash_conversiongoal_campaign_id_2f842d4d685c8de7_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_conversiongoal_campaign_id_2f842d4d685c8de7_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_conversiongoal
@@ -3997,7 +4690,7 @@ ALTER TABLE ONLY dash_conversiongoal
 
 
 --
--- Name: dash_conversiongoal_campaign_id_4de26d291cfe92a0_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_conversiongoal_campaign_id_4de26d291cfe92a0_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_conversiongoal
@@ -4005,7 +4698,7 @@ ALTER TABLE ONLY dash_conversiongoal
 
 
 --
--- Name: dash_conversiongoal_campaign_id_62decd992187eef7_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_conversiongoal_campaign_id_62decd992187eef7_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_conversiongoal
@@ -4013,7 +4706,7 @@ ALTER TABLE ONLY dash_conversiongoal
 
 
 --
--- Name: dash_conversiongoal_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_conversiongoal_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_conversiongoal
@@ -4021,7 +4714,7 @@ ALTER TABLE ONLY dash_conversiongoal
 
 
 --
--- Name: dash_conversionpixel_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_conversionpixel_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_conversionpixel
@@ -4029,7 +4722,7 @@ ALTER TABLE ONLY dash_conversionpixel
 
 
 --
--- Name: dash_conversionpixel_slug_65b87bfffd455d67_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_conversionpixel_slug_65b87bfffd455d67_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_conversionpixel
@@ -4037,7 +4730,23 @@ ALTER TABLE ONLY dash_conversionpixel
 
 
 --
--- Name: dash_defaultsourcesettings_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_credithistory_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
+--
+
+ALTER TABLE ONLY dash_credithistory
+    ADD CONSTRAINT dash_credithistory_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: dash_creditlineitem_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
+--
+
+ALTER TABLE ONLY dash_creditlineitem
+    ADD CONSTRAINT dash_creditlineitem_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: dash_defaultsourcesettings_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_defaultsourcesettings
@@ -4045,7 +4754,7 @@ ALTER TABLE ONLY dash_defaultsourcesettings
 
 
 --
--- Name: dash_defaultsourcesettings_source_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_defaultsourcesettings_source_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_defaultsourcesettings
@@ -4053,7 +4762,7 @@ ALTER TABLE ONLY dash_defaultsourcesettings
 
 
 --
--- Name: dash_demoadgrouprealadgroup_demo_ad_group_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_demoadgrouprealadgroup_demo_ad_group_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_demoadgrouprealadgroup
@@ -4061,7 +4770,7 @@ ALTER TABLE ONLY dash_demoadgrouprealadgroup
 
 
 --
--- Name: dash_demoadgrouprealadgroup_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_demoadgrouprealadgroup_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_demoadgrouprealadgroup
@@ -4069,7 +4778,7 @@ ALTER TABLE ONLY dash_demoadgrouprealadgroup
 
 
 --
--- Name: dash_demoadgrouprealadgroup_real_ad_group_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_demoadgrouprealadgroup_real_ad_group_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_demoadgrouprealadgroup
@@ -4077,7 +4786,31 @@ ALTER TABLE ONLY dash_demoadgrouprealadgroup
 
 
 --
--- Name: dash_outbrainaccount_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_exportreport_filtered_source_exportreport_id_source_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
+--
+
+ALTER TABLE ONLY dash_exportreport_filtered_sources
+    ADD CONSTRAINT dash_exportreport_filtered_source_exportreport_id_source_id_key UNIQUE (exportreport_id, source_id);
+
+
+--
+-- Name: dash_exportreport_filtered_sources_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
+--
+
+ALTER TABLE ONLY dash_exportreport_filtered_sources
+    ADD CONSTRAINT dash_exportreport_filtered_sources_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: dash_exportreport_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
+--
+
+ALTER TABLE ONLY dash_exportreport
+    ADD CONSTRAINT dash_exportreport_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: dash_outbrainaccount_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_outbrainaccount
@@ -4085,7 +4818,47 @@ ALTER TABLE ONLY dash_outbrainaccount
 
 
 --
--- Name: dash_source_bidder_slug_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_publisherblacklist_name_2eec92a070a4cbb8_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
+--
+
+ALTER TABLE ONLY dash_publisherblacklist
+    ADD CONSTRAINT dash_publisherblacklist_name_2eec92a070a4cbb8_uniq UNIQUE (name, everywhere, account_id, campaign_id, ad_group_id, source_id);
+
+
+--
+-- Name: dash_publisherblacklist_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
+--
+
+ALTER TABLE ONLY dash_publisherblacklist
+    ADD CONSTRAINT dash_publisherblacklist_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: dash_scheduledexportr_scheduled_report_id_4d149aaafb5876bc_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
+--
+
+ALTER TABLE ONLY dash_scheduledexportreportrecipient
+    ADD CONSTRAINT dash_scheduledexportr_scheduled_report_id_4d149aaafb5876bc_uniq UNIQUE (scheduled_report_id, email);
+
+
+--
+-- Name: dash_scheduledexportreport_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
+--
+
+ALTER TABLE ONLY dash_scheduledexportreport
+    ADD CONSTRAINT dash_scheduledexportreport_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: dash_scheduledexportreportrecipient_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
+--
+
+ALTER TABLE ONLY dash_scheduledexportreportrecipient
+    ADD CONSTRAINT dash_scheduledexportreportrecipient_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: dash_source_bidder_slug_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_source
@@ -4093,7 +4866,7 @@ ALTER TABLE ONLY dash_source
 
 
 --
--- Name: dash_source_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_source_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_source
@@ -4101,7 +4874,7 @@ ALTER TABLE ONLY dash_source
 
 
 --
--- Name: dash_source_tracking_slug_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_source_tracking_slug_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_source
@@ -4109,7 +4882,7 @@ ALTER TABLE ONLY dash_source
 
 
 --
--- Name: dash_sourcecredentials_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_sourcecredentials_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_sourcecredentials
@@ -4117,7 +4890,7 @@ ALTER TABLE ONLY dash_sourcecredentials
 
 
 --
--- Name: dash_sourcetype_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_sourcetype_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_sourcetype
@@ -4125,7 +4898,7 @@ ALTER TABLE ONLY dash_sourcetype
 
 
 --
--- Name: dash_sourcetype_type_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_sourcetype_type_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_sourcetype
@@ -4133,7 +4906,7 @@ ALTER TABLE ONLY dash_sourcetype
 
 
 --
--- Name: dash_uploadbatch_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_uploadbatch_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY dash_uploadbatch
@@ -4141,7 +4914,15 @@ ALTER TABLE ONLY dash_uploadbatch
 
 
 --
--- Name: django_admin_log_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_useractionlog_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
+--
+
+ALTER TABLE ONLY dash_useractionlog
+    ADD CONSTRAINT dash_useractionlog_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_admin_log_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY django_admin_log
@@ -4149,7 +4930,7 @@ ALTER TABLE ONLY django_admin_log
 
 
 --
--- Name: django_content_type_app_label_45f3b1d93ec8c61c_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: django_content_type_app_label_45f3b1d93ec8c61c_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY django_content_type
@@ -4157,7 +4938,7 @@ ALTER TABLE ONLY django_content_type
 
 
 --
--- Name: django_content_type_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: django_content_type_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY django_content_type
@@ -4165,7 +4946,7 @@ ALTER TABLE ONLY django_content_type
 
 
 --
--- Name: django_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: django_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY django_migrations
@@ -4173,7 +4954,7 @@ ALTER TABLE ONLY django_migrations
 
 
 --
--- Name: django_session_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: django_session_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY django_session
@@ -4181,7 +4962,7 @@ ALTER TABLE ONLY django_session
 
 
 --
--- Name: reports_adgroupgoalconversionsta_datetime_64c6effdb1878da9_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_adgroupgoalconversionsta_datetime_64c6effdb1878da9_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_adgroupgoalconversionstats
@@ -4189,7 +4970,7 @@ ALTER TABLE ONLY reports_adgroupgoalconversionstats
 
 
 --
--- Name: reports_adgroupgoalconversionstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_adgroupgoalconversionstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_adgroupgoalconversionstats
@@ -4197,7 +4978,7 @@ ALTER TABLE ONLY reports_adgroupgoalconversionstats
 
 
 --
--- Name: reports_adgroupstats_datetime_61985984b28519c1_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_adgroupstats_datetime_61985984b28519c1_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_adgroupstats
@@ -4205,7 +4986,7 @@ ALTER TABLE ONLY reports_adgroupstats
 
 
 --
--- Name: reports_adgroupstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_adgroupstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_adgroupstats
@@ -4213,7 +4994,7 @@ ALTER TABLE ONLY reports_adgroupstats
 
 
 --
--- Name: reports_articlestats_datetime_22035dbdd8455a0c_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_articlestats_datetime_22035dbdd8455a0c_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_articlestats
@@ -4221,7 +5002,7 @@ ALTER TABLE ONLY reports_articlestats
 
 
 --
--- Name: reports_articlestats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_articlestats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_articlestats
@@ -4229,7 +5010,7 @@ ALTER TABLE ONLY reports_articlestats
 
 
 --
--- Name: reports_contentadgoalconversionstats_date_2075955a8d03dddc_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadgoalconversionstats_date_2075955a8d03dddc_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_contentadgoalconversionstats
@@ -4237,7 +5018,7 @@ ALTER TABLE ONLY reports_contentadgoalconversionstats
 
 
 --
--- Name: reports_contentadgoalconversionstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadgoalconversionstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_contentadgoalconversionstats
@@ -4245,7 +5026,7 @@ ALTER TABLE ONLY reports_contentadgoalconversionstats
 
 
 --
--- Name: reports_contentadpostclickstats_date_2400403d2fcae43d_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadpostclickstats_date_2400403d2fcae43d_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_contentadpostclickstats
@@ -4253,7 +5034,7 @@ ALTER TABLE ONLY reports_contentadpostclickstats
 
 
 --
--- Name: reports_contentadpostclickstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadpostclickstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_contentadpostclickstats
@@ -4261,7 +5042,7 @@ ALTER TABLE ONLY reports_contentadpostclickstats
 
 
 --
--- Name: reports_contentadstats_date_4bd0def2cd7fded4_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadstats_date_4bd0def2cd7fded4_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_contentadstats
@@ -4269,7 +5050,7 @@ ALTER TABLE ONLY reports_contentadstats
 
 
 --
--- Name: reports_contentadstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_contentadstats
@@ -4277,7 +5058,7 @@ ALTER TABLE ONLY reports_contentadstats
 
 
 --
--- Name: reports_goalconversionstats_datetime_1095ea069adf2ffd_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_goalconversionstats_datetime_1095ea069adf2ffd_uniq; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_goalconversionstats
@@ -4285,7 +5066,7 @@ ALTER TABLE ONLY reports_goalconversionstats
 
 
 --
--- Name: reports_goalconversionstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_goalconversionstats_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_goalconversionstats
@@ -4293,7 +5074,7 @@ ALTER TABLE ONLY reports_goalconversionstats
 
 
 --
--- Name: reports_supplyreportrecipient_email_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_supplyreportrecipient_email_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_supplyreportrecipient
@@ -4301,7 +5082,7 @@ ALTER TABLE ONLY reports_supplyreportrecipient
 
 
 --
--- Name: reports_supplyreportrecipient_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_supplyreportrecipient_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY reports_supplyreportrecipient
@@ -4309,7 +5090,7 @@ ALTER TABLE ONLY reports_supplyreportrecipient
 
 
 --
--- Name: zemauth_internalgroup_group_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_internalgroup_group_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY zemauth_internalgroup
@@ -4317,7 +5098,7 @@ ALTER TABLE ONLY zemauth_internalgroup
 
 
 --
--- Name: zemauth_internalgroup_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_internalgroup_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY zemauth_internalgroup
@@ -4325,7 +5106,7 @@ ALTER TABLE ONLY zemauth_internalgroup
 
 
 --
--- Name: zemauth_user_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY zemauth_user_groups
@@ -4333,7 +5114,7 @@ ALTER TABLE ONLY zemauth_user_groups
 
 
 --
--- Name: zemauth_user_groups_user_id_group_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user_groups_user_id_group_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY zemauth_user_groups
@@ -4341,7 +5122,7 @@ ALTER TABLE ONLY zemauth_user_groups
 
 
 --
--- Name: zemauth_user_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY zemauth_user
@@ -4349,7 +5130,7 @@ ALTER TABLE ONLY zemauth_user
 
 
 --
--- Name: zemauth_user_user_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user_user_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY zemauth_user_user_permissions
@@ -4357,7 +5138,7 @@ ALTER TABLE ONLY zemauth_user_user_permissions
 
 
 --
--- Name: zemauth_user_user_permissions_user_id_permission_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user_user_permissions_user_id_permission_id_key; Type: CONSTRAINT; Schema: public; Owner: eins; Tablespace:
 --
 
 ALTER TABLE ONLY zemauth_user_user_permissions
@@ -4365,693 +5146,896 @@ ALTER TABLE ONLY zemauth_user_user_permissions
 
 
 --
--- Name: actionlog_actionlog_69dfcb07; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlog_69dfcb07; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX actionlog_actionlog_69dfcb07 ON actionlog_actionlog USING btree (order_id);
 
 
 --
--- Name: actionlog_actionlog_87f78d4d; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlog_87f78d4d; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX actionlog_actionlog_87f78d4d ON actionlog_actionlog USING btree (content_ad_source_id);
 
 
 --
--- Name: actionlog_actionlog_a8060d34; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlog_a8060d34; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX actionlog_actionlog_a8060d34 ON actionlog_actionlog USING btree (ad_group_source_id);
 
 
 --
--- Name: actionlog_actionlog_action_1d19c831f66c7e23_uniq; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlog_action_1d19c831f66c7e23_uniq; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX actionlog_actionlog_action_1d19c831f66c7e23_uniq ON actionlog_actionlog USING btree (action);
 
 
 --
--- Name: actionlog_actionlog_action_type_14332263e7c41daf_uniq; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlog_action_type_14332263e7c41daf_uniq; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX actionlog_actionlog_action_type_14332263e7c41daf_uniq ON actionlog_actionlog USING btree (action_type);
 
 
 --
--- Name: actionlog_actionlog_b3da0983; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlog_b3da0983; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX actionlog_actionlog_b3da0983 ON actionlog_actionlog USING btree (modified_by_id);
 
 
 --
--- Name: actionlog_actionlog_created_dt_6b1b33fe68819ec6_uniq; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlog_created_dt_6b1b33fe68819ec6_uniq; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX actionlog_actionlog_created_dt_6b1b33fe68819ec6_uniq ON actionlog_actionlog USING btree (created_dt);
 
 
 --
--- Name: actionlog_actionlog_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlog_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX actionlog_actionlog_e93cb7eb ON actionlog_actionlog USING btree (created_by_id);
 
 
 --
--- Name: actionlog_actionlog_id_15546055dcb172b4_idx; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlog_id_15546055dcb172b4_idx; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX actionlog_actionlog_id_15546055dcb172b4_idx ON actionlog_actionlog USING btree (id, created_dt);
 
 
 --
--- Name: actionlog_actionlog_modified_dt_2d685bcc84371b18_uniq; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlog_modified_dt_2d685bcc84371b18_uniq; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX actionlog_actionlog_modified_dt_2d685bcc84371b18_uniq ON actionlog_actionlog USING btree (modified_dt);
 
 
 --
--- Name: actionlog_actionlog_state_319ee98a8c81bf85_uniq; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: actionlog_actionlog_state_319ee98a8c81bf85_uniq; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX actionlog_actionlog_state_319ee98a8c81bf85_uniq ON actionlog_actionlog USING btree (state);
 
 
 --
--- Name: auth_group_name_253ae2a6331666e8_like; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: auth_group_name_253ae2a6331666e8_like; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX auth_group_name_253ae2a6331666e8_like ON auth_group USING btree (name varchar_pattern_ops);
 
 
 --
--- Name: auth_group_permissions_0e939a4f; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: auth_group_permissions_0e939a4f; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX auth_group_permissions_0e939a4f ON auth_group_permissions USING btree (group_id);
 
 
 --
--- Name: auth_group_permissions_8373b171; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: auth_group_permissions_8373b171; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX auth_group_permissions_8373b171 ON auth_group_permissions USING btree (permission_id);
 
 
 --
--- Name: auth_permission_417f1b1c; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: auth_permission_417f1b1c; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX auth_permission_417f1b1c ON auth_permission USING btree (content_type_id);
 
 
 --
--- Name: automation_autopilotadgroupsourcebidcpclog_0b893638; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: automation_autopilotadgroupsourcebidcpclog_0b893638; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX automation_autopilotadgroupsourcebidcpclog_0b893638 ON automation_autopilotadgroupsourcebidcpclog USING btree (created_dt);
 
 
 --
--- Name: automation_autopilotadgroupsourcebidcpclog_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: automation_autopilotadgroupsourcebidcpclog_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX automation_autopilotadgroupsourcebidcpclog_22ff94c4 ON automation_autopilotadgroupsourcebidcpclog USING btree (ad_group_id);
 
 
 --
--- Name: automation_autopilotadgroupsourcebidcpclog_a8060d34; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: automation_autopilotadgroupsourcebidcpclog_a8060d34; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX automation_autopilotadgroupsourcebidcpclog_a8060d34 ON automation_autopilotadgroupsourcebidcpclog USING btree (ad_group_source_id);
 
 
 --
--- Name: automation_autopilotadgroupsourcebidcpclog_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: automation_autopilotadgroupsourcebidcpclog_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX automation_autopilotadgroupsourcebidcpclog_f14acec3 ON automation_autopilotadgroupsourcebidcpclog USING btree (campaign_id);
 
 
 --
--- Name: automation_campaignbudgetdepletionnotification_0b893638; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: automation_campaignbudgetdepletionnotification_0b893638; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX automation_campaignbudgetdepletionnotification_0b893638 ON automation_campaignbudgetdepletionnotification USING btree (created_dt);
 
 
 --
--- Name: automation_campaignbudgetdepletionnotification_6bc80cbd; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: automation_campaignbudgetdepletionnotification_6bc80cbd; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX automation_campaignbudgetdepletionnotification_6bc80cbd ON automation_campaignbudgetdepletionnotification USING btree (account_manager_id);
 
 
 --
--- Name: automation_campaignbudgetdepletionnotification_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: automation_campaignbudgetdepletionnotification_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX automation_campaignbudgetdepletionnotification_f14acec3 ON automation_campaignbudgetdepletionnotification USING btree (campaign_id);
 
 
 --
--- Name: dash_account_b3da0983; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_b3da0983; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_account_b3da0983 ON dash_account USING btree (modified_by_id);
 
 
 --
--- Name: dash_account_groups_0e939a4f; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_groups_0e939a4f; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_account_groups_0e939a4f ON dash_account_groups USING btree (group_id);
 
 
 --
--- Name: dash_account_groups_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_groups_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_account_groups_8a089c2a ON dash_account_groups USING btree (account_id);
 
 
 --
--- Name: dash_account_name_19b118db2a741bd8_like; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_name_19b118db2a741bd8_like; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_account_name_19b118db2a741bd8_like ON dash_account USING btree (name varchar_pattern_ops);
 
 
 --
--- Name: dash_account_users_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_users_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_account_users_8a089c2a ON dash_account_users USING btree (account_id);
 
 
 --
--- Name: dash_account_users_e8701ad4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_account_users_e8701ad4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_account_users_e8701ad4 ON dash_account_users USING btree (user_id);
 
 
 --
--- Name: dash_accountsettings_49e3f602; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_accountsettings_49e3f602; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_accountsettings_49e3f602 ON dash_accountsettings USING btree (default_account_manager_id);
 
 
 --
--- Name: dash_accountsettings_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_accountsettings_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_accountsettings_8a089c2a ON dash_accountsettings USING btree (account_id);
 
 
 --
--- Name: dash_accountsettings_b6c58ed1; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_accountsettings_b6c58ed1; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_accountsettings_b6c58ed1 ON dash_accountsettings USING btree (default_sales_representative_id);
 
 
 --
--- Name: dash_accountsettings_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_accountsettings_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_accountsettings_e93cb7eb ON dash_accountsettings USING btree (created_by_id);
 
 
 --
--- Name: dash_adgroup_b3da0983; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroup_b3da0983; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_adgroup_b3da0983 ON dash_adgroup USING btree (modified_by_id);
 
 
 --
--- Name: dash_adgroup_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroup_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_adgroup_f14acec3 ON dash_adgroup USING btree (campaign_id);
 
 
 --
--- Name: dash_adgroupsettings_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsettings_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_adgroupsettings_22ff94c4 ON dash_adgroupsettings USING btree (ad_group_id);
 
 
 --
--- Name: dash_adgroupsettings_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsettings_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_adgroupsettings_e93cb7eb ON dash_adgroupsettings USING btree (created_by_id);
 
 
 --
--- Name: dash_adgroupsource_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsource_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_adgroupsource_0afd9202 ON dash_adgroupsource USING btree (source_id);
 
 
 --
--- Name: dash_adgroupsource_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsource_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_adgroupsource_22ff94c4 ON dash_adgroupsource USING btree (ad_group_id);
 
 
 --
--- Name: dash_adgroupsource_709deb08; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsource_709deb08; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_adgroupsource_709deb08 ON dash_adgroupsource USING btree (source_credentials_id);
 
 
 --
--- Name: dash_adgroupsourcesettings_a8060d34; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsourcesettings_a8060d34; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_adgroupsourcesettings_a8060d34 ON dash_adgroupsourcesettings USING btree (ad_group_source_id);
 
 
 --
--- Name: dash_adgroupsourcesettings_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsourcesettings_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_adgroupsourcesettings_e93cb7eb ON dash_adgroupsourcesettings USING btree (created_by_id);
 
 
 --
--- Name: dash_adgroupsourcestate_a8060d34; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_adgroupsourcestate_a8060d34; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_adgroupsourcestate_a8060d34 ON dash_adgroupsourcestate USING btree (ad_group_source_id);
 
 
 --
--- Name: dash_article_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_article_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_article_22ff94c4 ON dash_article USING btree (ad_group_id);
 
 
 --
--- Name: dash_campaign_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_budgethistory_7748a592; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_budgethistory_7748a592 ON dash_budgethistory USING btree (budget_id);
+
+
+--
+-- Name: dash_budgethistory_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_budgethistory_e93cb7eb ON dash_budgethistory USING btree (created_by_id);
+
+
+--
+-- Name: dash_budgetlineitem_5097e6b2; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_budgetlineitem_5097e6b2 ON dash_budgetlineitem USING btree (credit_id);
+
+
+--
+-- Name: dash_budgetlineitem_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_budgetlineitem_e93cb7eb ON dash_budgetlineitem USING btree (created_by_id);
+
+
+--
+-- Name: dash_budgetlineitem_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_budgetlineitem_f14acec3 ON dash_budgetlineitem USING btree (campaign_id);
+
+
+--
+-- Name: dash_campaign_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_campaign_8a089c2a ON dash_campaign USING btree (account_id);
 
 
 --
--- Name: dash_campaign_b3da0983; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaign_b3da0983; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_campaign_b3da0983 ON dash_campaign USING btree (modified_by_id);
 
 
 --
--- Name: dash_campaign_groups_0e939a4f; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaign_groups_0e939a4f; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_campaign_groups_0e939a4f ON dash_campaign_groups USING btree (group_id);
 
 
 --
--- Name: dash_campaign_groups_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaign_groups_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_campaign_groups_f14acec3 ON dash_campaign_groups USING btree (campaign_id);
 
 
 --
--- Name: dash_campaign_users_e8701ad4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaign_users_e8701ad4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_campaign_users_e8701ad4 ON dash_campaign_users USING btree (user_id);
 
 
 --
--- Name: dash_campaign_users_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaign_users_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_campaign_users_f14acec3 ON dash_campaign_users USING btree (campaign_id);
 
 
 --
--- Name: dash_campaignbudgetsettings_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaignbudgetsettings_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_campaignbudgetsettings_e93cb7eb ON dash_campaignbudgetsettings USING btree (created_by_id);
 
 
 --
--- Name: dash_campaignbudgetsettings_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaignbudgetsettings_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_campaignbudgetsettings_f14acec3 ON dash_campaignbudgetsettings USING btree (campaign_id);
 
 
 --
--- Name: dash_campaignsettings_3ddf5938; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaignsettings_3ddf5938; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_campaignsettings_3ddf5938 ON dash_campaignsettings USING btree (sales_representative_id);
 
 
 --
--- Name: dash_campaignsettings_6bc80cbd; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaignsettings_6bc80cbd; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_campaignsettings_6bc80cbd ON dash_campaignsettings USING btree (account_manager_id);
 
 
 --
--- Name: dash_campaignsettings_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaignsettings_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_campaignsettings_e93cb7eb ON dash_campaignsettings USING btree (created_by_id);
 
 
 --
--- Name: dash_campaignsettings_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaignsettings_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_campaignsettings_f14acec3 ON dash_campaignsettings USING btree (campaign_id);
 
 
 --
--- Name: dash_campaignsettings_iab_category_15c36af04da422c5_uniq; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_campaignsettings_iab_category_15c36af04da422c5_uniq; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_campaignsettings_iab_category_15c36af04da422c5_uniq ON dash_campaignsettings USING btree (iab_category);
 
 
 --
--- Name: dash_contentad_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_contentad_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_contentad_22ff94c4 ON dash_contentad USING btree (ad_group_id);
 
 
 --
--- Name: dash_contentad_d4e60137; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_contentad_d4e60137; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_contentad_d4e60137 ON dash_contentad USING btree (batch_id);
 
 
 --
--- Name: dash_contentadsource_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_contentadsource_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_contentadsource_0afd9202 ON dash_contentadsource USING btree (source_id);
 
 
 --
--- Name: dash_contentadsource_abf89b3f; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_contentadsource_abf89b3f; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_contentadsource_abf89b3f ON dash_contentadsource USING btree (content_ad_id);
 
 
 --
--- Name: dash_conversiongoal_ba2eed6c; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_conversiongoal_ba2eed6c; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_conversiongoal_ba2eed6c ON dash_conversiongoal USING btree (pixel_id);
 
 
 --
--- Name: dash_conversiongoal_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_conversiongoal_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_conversiongoal_f14acec3 ON dash_conversiongoal USING btree (campaign_id);
 
 
 --
--- Name: dash_conversionpixel_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_conversionpixel_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_conversionpixel_8a089c2a ON dash_conversionpixel USING btree (account_id);
 
 
 --
--- Name: dash_defaultsourcesettings_9d2c2cd1; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_credithistory_5097e6b2; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_credithistory_5097e6b2 ON dash_credithistory USING btree (credit_id);
+
+
+--
+-- Name: dash_credithistory_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_credithistory_e93cb7eb ON dash_credithistory USING btree (created_by_id);
+
+
+--
+-- Name: dash_creditlineitem_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_creditlineitem_8a089c2a ON dash_creditlineitem USING btree (account_id);
+
+
+--
+-- Name: dash_creditlineitem_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_creditlineitem_e93cb7eb ON dash_creditlineitem USING btree (created_by_id);
+
+
+--
+-- Name: dash_defaultsourcesettings_9d2c2cd1; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_defaultsourcesettings_9d2c2cd1 ON dash_defaultsourcesettings USING btree (credentials_id);
 
 
 --
--- Name: dash_source_ed5cb66b; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_exportreport_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_exportreport_22ff94c4 ON dash_exportreport USING btree (ad_group_id);
+
+
+--
+-- Name: dash_exportreport_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_exportreport_8a089c2a ON dash_exportreport USING btree (account_id);
+
+
+--
+-- Name: dash_exportreport_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_exportreport_e93cb7eb ON dash_exportreport USING btree (created_by_id);
+
+
+--
+-- Name: dash_exportreport_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_exportreport_f14acec3 ON dash_exportreport USING btree (campaign_id);
+
+
+--
+-- Name: dash_exportreport_filtered_sources_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_exportreport_filtered_sources_0afd9202 ON dash_exportreport_filtered_sources USING btree (source_id);
+
+
+--
+-- Name: dash_exportreport_filtered_sources_aa7beb1a; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_exportreport_filtered_sources_aa7beb1a ON dash_exportreport_filtered_sources USING btree (exportreport_id);
+
+
+--
+-- Name: dash_publisherblacklist_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_publisherblacklist_0afd9202 ON dash_publisherblacklist USING btree (source_id);
+
+
+--
+-- Name: dash_publisherblacklist_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_publisherblacklist_22ff94c4 ON dash_publisherblacklist USING btree (ad_group_id);
+
+
+--
+-- Name: dash_publisherblacklist_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_publisherblacklist_8a089c2a ON dash_publisherblacklist USING btree (account_id);
+
+
+--
+-- Name: dash_publisherblacklist_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_publisherblacklist_f14acec3 ON dash_publisherblacklist USING btree (campaign_id);
+
+
+--
+-- Name: dash_scheduledexportreport_6f78b20c; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_scheduledexportreport_6f78b20c ON dash_scheduledexportreport USING btree (report_id);
+
+
+--
+-- Name: dash_scheduledexportreport_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_scheduledexportreport_e93cb7eb ON dash_scheduledexportreport USING btree (created_by_id);
+
+
+--
+-- Name: dash_scheduledexportreportrecipient_4deefed9; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_scheduledexportreportrecipient_4deefed9 ON dash_scheduledexportreportrecipient USING btree (scheduled_report_id);
+
+
+--
+-- Name: dash_source_ed5cb66b; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_source_ed5cb66b ON dash_source USING btree (source_type_id);
 
 
 --
--- Name: dash_sourcecredentials_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_sourcecredentials_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_sourcecredentials_0afd9202 ON dash_sourcecredentials USING btree (source_id);
 
 
 --
--- Name: dash_sourcetype_type_7b056ce1a0b025c4_like; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_sourcetype_type_7b056ce1a0b025c4_like; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX dash_sourcetype_type_7b056ce1a0b025c4_like ON dash_sourcetype USING btree (type varchar_pattern_ops);
 
 
 --
--- Name: django_admin_log_417f1b1c; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: dash_useractionlog_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_useractionlog_22ff94c4 ON dash_useractionlog USING btree (ad_group_id);
+
+
+--
+-- Name: dash_useractionlog_83d504ef; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_useractionlog_83d504ef ON dash_useractionlog USING btree (campaign_settings_id);
+
+
+--
+-- Name: dash_useractionlog_8a089c2a; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_useractionlog_8a089c2a ON dash_useractionlog USING btree (account_id);
+
+
+--
+-- Name: dash_useractionlog_c9776e2a; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_useractionlog_c9776e2a ON dash_useractionlog USING btree (account_settings_id);
+
+
+--
+-- Name: dash_useractionlog_e93cb7eb; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_useractionlog_e93cb7eb ON dash_useractionlog USING btree (created_by_id);
+
+
+--
+-- Name: dash_useractionlog_f14acec3; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_useractionlog_f14acec3 ON dash_useractionlog USING btree (campaign_id);
+
+
+--
+-- Name: dash_useractionlog_f83e08e7; Type: INDEX; Schema: public; Owner: eins; Tablespace:
+--
+
+CREATE INDEX dash_useractionlog_f83e08e7 ON dash_useractionlog USING btree (ad_group_settings_id);
+
+
+--
+-- Name: django_admin_log_417f1b1c; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX django_admin_log_417f1b1c ON django_admin_log USING btree (content_type_id);
 
 
 --
--- Name: django_admin_log_e8701ad4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: django_admin_log_e8701ad4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX django_admin_log_e8701ad4 ON django_admin_log USING btree (user_id);
 
 
 --
--- Name: django_session_de54fa62; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: django_session_de54fa62; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX django_session_de54fa62 ON django_session USING btree (expire_date);
 
 
 --
--- Name: django_session_session_key_461cfeaa630ca218_like; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: django_session_session_key_461cfeaa630ca218_like; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX django_session_session_key_461cfeaa630ca218_like ON django_session USING btree (session_key varchar_pattern_ops);
 
 
 --
--- Name: reports_adgroupgoalconversionstats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_adgroupgoalconversionstats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_adgroupgoalconversionstats_0afd9202 ON reports_adgroupgoalconversionstats USING btree (source_id);
 
 
 --
--- Name: reports_adgroupgoalconversionstats_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_adgroupgoalconversionstats_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_adgroupgoalconversionstats_22ff94c4 ON reports_adgroupgoalconversionstats USING btree (ad_group_id);
 
 
 --
--- Name: reports_adgroupstats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_adgroupstats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_adgroupstats_0afd9202 ON reports_adgroupstats USING btree (source_id);
 
 
 --
--- Name: reports_adgroupstats_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_adgroupstats_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_adgroupstats_22ff94c4 ON reports_adgroupstats USING btree (ad_group_id);
 
 
 --
--- Name: reports_articlestats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_articlestats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_articlestats_0afd9202 ON reports_articlestats USING btree (source_id);
 
 
 --
--- Name: reports_articlestats_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_articlestats_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_articlestats_22ff94c4 ON reports_articlestats USING btree (ad_group_id);
 
 
 --
--- Name: reports_articlestats_a00c1b00; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_articlestats_a00c1b00; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_articlestats_a00c1b00 ON reports_articlestats USING btree (article_id);
 
 
 --
--- Name: reports_articlestats_ad_group_id_23b66c4e28e5d810_idx; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_articlestats_ad_group_id_23b66c4e28e5d810_idx; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_articlestats_ad_group_id_23b66c4e28e5d810_idx ON reports_articlestats USING btree (ad_group_id, datetime);
 
 
 --
--- Name: reports_contentadgoalconversion_goal_type_55f1cce1d23e0872_like; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadgoalconversion_goal_type_55f1cce1d23e0872_like; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_contentadgoalconversion_goal_type_55f1cce1d23e0872_like ON reports_contentadgoalconversionstats USING btree (goal_type varchar_pattern_ops);
 
 
 --
--- Name: reports_contentadgoalconversionstats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadgoalconversionstats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_contentadgoalconversionstats_0afd9202 ON reports_contentadgoalconversionstats USING btree (source_id);
 
 
 --
--- Name: reports_contentadgoalconversionstats_197e2321; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadgoalconversionstats_197e2321; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_contentadgoalconversionstats_197e2321 ON reports_contentadgoalconversionstats USING btree (goal_type);
 
 
 --
--- Name: reports_contentadgoalconversionstats_abf89b3f; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadgoalconversionstats_abf89b3f; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_contentadgoalconversionstats_abf89b3f ON reports_contentadgoalconversionstats USING btree (content_ad_id);
 
 
 --
--- Name: reports_contentadpostclickstats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadpostclickstats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_contentadpostclickstats_0afd9202 ON reports_contentadpostclickstats USING btree (source_id);
 
 
 --
--- Name: reports_contentadpostclickstats_abf89b3f; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadpostclickstats_abf89b3f; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_contentadpostclickstats_abf89b3f ON reports_contentadpostclickstats USING btree (content_ad_id);
 
 
 --
--- Name: reports_contentadstats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadstats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_contentadstats_0afd9202 ON reports_contentadstats USING btree (source_id);
 
 
 --
--- Name: reports_contentadstats_87f78d4d; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadstats_87f78d4d; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_contentadstats_87f78d4d ON reports_contentadstats USING btree (content_ad_source_id);
 
 
 --
--- Name: reports_contentadstats_abf89b3f; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_contentadstats_abf89b3f; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_contentadstats_abf89b3f ON reports_contentadstats USING btree (content_ad_id);
 
 
 --
--- Name: reports_goalconversionstats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_goalconversionstats_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_goalconversionstats_0afd9202 ON reports_goalconversionstats USING btree (source_id);
 
 
 --
--- Name: reports_goalconversionstats_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_goalconversionstats_22ff94c4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_goalconversionstats_22ff94c4 ON reports_goalconversionstats USING btree (ad_group_id);
 
 
 --
--- Name: reports_goalconversionstats_a00c1b00; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_goalconversionstats_a00c1b00; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_goalconversionstats_a00c1b00 ON reports_goalconversionstats USING btree (article_id);
 
 
 --
--- Name: reports_supplyreportrecipient_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_supplyreportrecipient_0afd9202; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_supplyreportrecipient_0afd9202 ON reports_supplyreportrecipient USING btree (source_id);
 
 
 --
--- Name: reports_supplyreportrecipient_email_4176c5f708509f21_like; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: reports_supplyreportrecipient_email_4176c5f708509f21_like; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX reports_supplyreportrecipient_email_4176c5f708509f21_like ON reports_supplyreportrecipient USING btree (email varchar_pattern_ops);
 
 
 --
--- Name: zemauth_user_email_660817d9030478bc_like; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user_email_660817d9030478bc_like; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX zemauth_user_email_660817d9030478bc_like ON zemauth_user USING btree (email varchar_pattern_ops);
 
 
 --
--- Name: zemauth_user_email_idx; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user_email_idx; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE UNIQUE INDEX zemauth_user_email_idx ON zemauth_user USING btree (lower((email)::text));
 
 
 --
--- Name: zemauth_user_groups_0e939a4f; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user_groups_0e939a4f; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX zemauth_user_groups_0e939a4f ON zemauth_user_groups USING btree (group_id);
 
 
 --
--- Name: zemauth_user_groups_e8701ad4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user_groups_e8701ad4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX zemauth_user_groups_e8701ad4 ON zemauth_user_groups USING btree (user_id);
 
 
 --
--- Name: zemauth_user_user_permissions_8373b171; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user_user_permissions_8373b171; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX zemauth_user_user_permissions_8373b171 ON zemauth_user_user_permissions USING btree (permission_id);
 
 
 --
--- Name: zemauth_user_user_permissions_e8701ad4; Type: INDEX; Schema: public; Owner: eins; Tablespace: 
+-- Name: zemauth_user_user_permissions_e8701ad4; Type: INDEX; Schema: public; Owner: eins; Tablespace:
 --
 
 CREATE INDEX zemauth_user_user_permissions_e8701ad4 ON zemauth_user_user_permissions USING btree (user_id);
@@ -5066,11 +6050,43 @@ ALTER TABLE ONLY actionlog_actionlog
 
 
 --
+-- Name: D1f056134358335d812a106bbecb1388; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_useractionlog
+    ADD CONSTRAINT "D1f056134358335d812a106bbecb1388" FOREIGN KEY (campaign_settings_id) REFERENCES dash_campaignsettings(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: D222020c4260fb940f1128384ef4e2a7; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_useractionlog
+    ADD CONSTRAINT "D222020c4260fb940f1128384ef4e2a7" FOREIGN KEY (ad_group_settings_id) REFERENCES dash_adgroupsettings(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: D274f17960266a723e91a879b2938262; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_useractionlog
+    ADD CONSTRAINT "D274f17960266a723e91a879b2938262" FOREIGN KEY (account_settings_id) REFERENCES dash_accountsettings(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
 -- Name: D413a31aad54ed2eab2cb3d0ca1ab26c; Type: FK CONSTRAINT; Schema: public; Owner: eins
 --
 
 ALTER TABLE ONLY reports_contentadstats
     ADD CONSTRAINT "D413a31aad54ed2eab2cb3d0ca1ab26c" FOREIGN KEY (content_ad_source_id) REFERENCES dash_contentadsource(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: D4544a30d85cbe2065bcc9b246c9c634; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_scheduledexportreportrecipient
+    ADD CONSTRAINT "D4544a30d85cbe2065bcc9b246c9c634" FOREIGN KEY (scheduled_report_id) REFERENCES dash_scheduledexportreport(id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
@@ -5338,6 +6354,46 @@ ALTER TABLE ONLY dash_article
 
 
 --
+-- Name: dash_budge_budget_id_60107fc78fed66a7_fk_dash_budgetlineitem_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_budgethistory
+    ADD CONSTRAINT dash_budge_budget_id_60107fc78fed66a7_fk_dash_budgetlineitem_id FOREIGN KEY (budget_id) REFERENCES dash_budgetlineitem(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_budge_credit_id_4c0c4719ea6a6609_fk_dash_creditlineitem_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_budgetlineitem
+    ADD CONSTRAINT dash_budge_credit_id_4c0c4719ea6a6609_fk_dash_creditlineitem_id FOREIGN KEY (credit_id) REFERENCES dash_creditlineitem(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_budgethi_created_by_id_5448d5d41591fb96_fk_zemauth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_budgethistory
+    ADD CONSTRAINT dash_budgethi_created_by_id_5448d5d41591fb96_fk_zemauth_user_id FOREIGN KEY (created_by_id) REFERENCES zemauth_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_budgetli_created_by_id_6360c491f729bc2c_fk_zemauth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_budgetlineitem
+    ADD CONSTRAINT dash_budgetli_created_by_id_6360c491f729bc2c_fk_zemauth_user_id FOREIGN KEY (created_by_id) REFERENCES zemauth_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_budgetlin_campaign_id_174e3ffc36d98c50_fk_dash_campaign_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_budgetlineitem
+    ADD CONSTRAINT dash_budgetlin_campaign_id_174e3ffc36d98c50_fk_dash_campaign_id FOREIGN KEY (campaign_id) REFERENCES dash_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
 -- Name: dash_cam_account_manager_id_362d7afd921ba1e9_fk_zemauth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
 --
 
@@ -5482,6 +6538,38 @@ ALTER TABLE ONLY dash_conversionpixel
 
 
 --
+-- Name: dash_credit_credit_id_6b73a9aec988def_fk_dash_creditlineitem_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_credithistory
+    ADD CONSTRAINT dash_credit_credit_id_6b73a9aec988def_fk_dash_creditlineitem_id FOREIGN KEY (credit_id) REFERENCES dash_creditlineitem(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_credithi_created_by_id_667cab4e545ddbee_fk_zemauth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_credithistory
+    ADD CONSTRAINT dash_credithi_created_by_id_667cab4e545ddbee_fk_zemauth_user_id FOREIGN KEY (created_by_id) REFERENCES zemauth_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_creditli_created_by_id_6e725d0a4c595130_fk_zemauth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_creditlineitem
+    ADD CONSTRAINT dash_creditli_created_by_id_6e725d0a4c595130_fk_zemauth_user_id FOREIGN KEY (created_by_id) REFERENCES zemauth_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_creditlinei_account_id_13334cb7c84c0fac_fk_dash_account_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_creditlineitem
+    ADD CONSTRAINT dash_creditlinei_account_id_13334cb7c84c0fac_fk_dash_account_id FOREIGN KEY (account_id) REFERENCES dash_account(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
 -- Name: dash_defaultsource_source_id_318197d72ec0e837_fk_dash_source_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
 --
 
@@ -5506,6 +6594,102 @@ ALTER TABLE ONLY dash_demoadgrouprealadgroup
 
 
 --
+-- Name: dash_e_exportreport_id_67cc3959ababbad4_fk_dash_exportreport_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_exportreport_filtered_sources
+    ADD CONSTRAINT dash_e_exportreport_id_67cc3959ababbad4_fk_dash_exportreport_id FOREIGN KEY (exportreport_id) REFERENCES dash_exportreport(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_exportre_created_by_id_100829644781b092_fk_zemauth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_exportreport
+    ADD CONSTRAINT dash_exportre_created_by_id_100829644781b092_fk_zemauth_user_id FOREIGN KEY (created_by_id) REFERENCES zemauth_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_exportrepo_ad_group_id_24f2b69d5e01772b_fk_dash_adgroup_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_exportreport
+    ADD CONSTRAINT dash_exportrepo_ad_group_id_24f2b69d5e01772b_fk_dash_adgroup_id FOREIGN KEY (ad_group_id) REFERENCES dash_adgroup(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_exportrepo_campaign_id_273cadee8c0072a_fk_dash_campaign_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_exportreport
+    ADD CONSTRAINT dash_exportrepo_campaign_id_273cadee8c0072a_fk_dash_campaign_id FOREIGN KEY (campaign_id) REFERENCES dash_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_exportrepor_account_id_6b4cc459f095d3fe_fk_dash_account_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_exportreport
+    ADD CONSTRAINT dash_exportrepor_account_id_6b4cc459f095d3fe_fk_dash_account_id FOREIGN KEY (account_id) REFERENCES dash_account(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_exportreport__source_id_429cbee48898cd97_fk_dash_source_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_exportreport_filtered_sources
+    ADD CONSTRAINT dash_exportreport__source_id_429cbee48898cd97_fk_dash_source_id FOREIGN KEY (source_id) REFERENCES dash_source(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_publisher_campaign_id_16a8dc1fe68bbc1d_fk_dash_campaign_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_publisherblacklist
+    ADD CONSTRAINT dash_publisher_campaign_id_16a8dc1fe68bbc1d_fk_dash_campaign_id FOREIGN KEY (campaign_id) REFERENCES dash_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_publisherb_ad_group_id_6412ac4e598a7b58_fk_dash_adgroup_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_publisherblacklist
+    ADD CONSTRAINT dash_publisherb_ad_group_id_6412ac4e598a7b58_fk_dash_adgroup_id FOREIGN KEY (ad_group_id) REFERENCES dash_adgroup(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_publisherbla_account_id_c9b1391ae20870b_fk_dash_account_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_publisherblacklist
+    ADD CONSTRAINT dash_publisherbla_account_id_c9b1391ae20870b_fk_dash_account_id FOREIGN KEY (account_id) REFERENCES dash_account(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_publisherblac_source_id_1149cc9d2d63b122_fk_dash_source_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_publisherblacklist
+    ADD CONSTRAINT dash_publisherblac_source_id_1149cc9d2d63b122_fk_dash_source_id FOREIGN KEY (source_id) REFERENCES dash_source(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_schedul_report_id_37efeaabd2ffe728_fk_dash_exportreport_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_scheduledexportreport
+    ADD CONSTRAINT dash_schedul_report_id_37efeaabd2ffe728_fk_dash_exportreport_id FOREIGN KEY (report_id) REFERENCES dash_exportreport(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_schedule_created_by_id_4991ebc63bf02cf6_fk_zemauth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_scheduledexportreport
+    ADD CONSTRAINT dash_schedule_created_by_id_4991ebc63bf02cf6_fk_zemauth_user_id FOREIGN KEY (created_by_id) REFERENCES zemauth_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
 -- Name: dash_sour_source_type_id_7ca32910aceeb1c0_fk_dash_sourcetype_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
 --
 
@@ -5519,6 +6703,38 @@ ALTER TABLE ONLY dash_source
 
 ALTER TABLE ONLY dash_sourcecredentials
     ADD CONSTRAINT dash_sourcecredent_source_id_1c3729cca986d585_fk_dash_source_id FOREIGN KEY (source_id) REFERENCES dash_source(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_useractio_campaign_id_1e0d96ec4450dbac_fk_dash_campaign_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_useractionlog
+    ADD CONSTRAINT dash_useractio_campaign_id_1e0d96ec4450dbac_fk_dash_campaign_id FOREIGN KEY (campaign_id) REFERENCES dash_campaign(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_useractio_created_by_id_ff030e12e39bcd0_fk_zemauth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_useractionlog
+    ADD CONSTRAINT dash_useractio_created_by_id_ff030e12e39bcd0_fk_zemauth_user_id FOREIGN KEY (created_by_id) REFERENCES zemauth_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_useraction_ad_group_id_4e57f0a40a5bbb49_fk_dash_adgroup_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_useractionlog
+    ADD CONSTRAINT dash_useraction_ad_group_id_4e57f0a40a5bbb49_fk_dash_adgroup_id FOREIGN KEY (ad_group_id) REFERENCES dash_adgroup(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: dash_useractionl_account_id_40e5ee68dafa5dac_fk_dash_account_id; Type: FK CONSTRAINT; Schema: public; Owner: eins
+--
+
+ALTER TABLE ONLY dash_useractionlog
+    ADD CONSTRAINT dash_useractionl_account_id_40e5ee68dafa5dac_fk_dash_account_id FOREIGN KEY (account_id) REFERENCES dash_account(id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --

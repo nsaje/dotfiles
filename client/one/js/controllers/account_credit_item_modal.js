@@ -1,13 +1,16 @@
 /* globals angular,oneApp,defaults,moment */
-oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$timeout', 'api', function($scope, $modalInstance, $timeout, api) {
+oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$timeout', '$window', 'api', function($scope, $modalInstance, $timeout, $window, api) {
     $scope.today = moment().format('M/D/YYYY');
     $scope.isNew = true;
     $scope.startDatePicker = { isOpen: false };
     $scope.endDatePicker = { isOpen: false };
     $scope.isLoadingInProgress = false;
+    $scope.saveRequestInProgress = false;
     $scope.canDelete = false;
     $scope.minDate = $scope.today;
-    $scope.creditItem = {};
+    $scope.creditItem = {
+        startDate: moment().format('MM/DD/YYYY')
+    };
     $scope.errors = {};
 
     $scope.getLicenseFees = function(search) {
@@ -22,30 +25,33 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
         return fees;
     };
 
-    $scope.openDatePicker = function (type) {
-        if (type === 'startDate') {
-            $scope.startDatePicker.isOpen = true;
-        } else if (type === 'endDate') {
-            $scope.endDatePicker.isOpen = true;
-        }
+    $scope.openStartDatePicker = function () {
+        $scope.startDatePicker.isOpen = true;
+    };
+    $scope.openEndDatePicker = function () {
+        $scope.endDatePicker.isOpen = true;
     };
 
     $scope.upsertCreditItem = function () {
-        if ((!$scope.creditItem.isSigned || $scope.isNew) && $scope.isSigned) {
-            $scope.creditItem.isSigned = true;
-        }
+        $scope.saveRequestInProgress = true;
         api.accountCredit[
             $scope.isNew ? 'create' : 'save'
-        ]($scope.account.id, $scope.creditItem).then(closeModal, function (resp) {
+        ]($scope.account.id, $scope.creditItem).then(function () {
+            $scope.saved = true;
+            closeModal();
+        }, function (resp) {
             $scope.errors = api.accountCredit.convert.errors(resp);
+        }).finally(function () {
+            $scope.saveRequestInProgress = false;
         });
     };
 
     $scope.discardCreditItem = function () {
-        $modalInstance.close(null);
+        $scope.discarded = true;
+        closeModal();
     };
     $scope.deleteCreditItem = function () {
-        if (!confirm("Are you sure you want to delete the credit line item?")) { return; }
+        if (!$window.confirm("Are you sure you want to delete the credit line item?")) { return; }
         api.accountCredit.delete($scope.account.id, $scope.selectedCreditItemId).then(function () {
             $modalInstance.close(null);
         });
@@ -54,15 +60,18 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
     $scope.init = function () {
         var itemId = $scope.selectedCreditItemId;
         $scope.isNew = true;
-        $scope.isSigned = false;
+        $scope.wasSigned = false;
         $scope.canDelete = false;
         $scope.minDate = $scope.today;
+        $scope.initStartDate = moment().toDate();
+        $scope.discarded = false;
+        
         if (itemId !== null) {
             $scope.isLoadingInProgress = true;
             $scope.isNew = false;
             api.accountCredit.get($scope.account.id, itemId).then(function (data) {
                 $scope.creditItem = data;
-                $scope.isSigned = data.isSigned;
+                $scope.wasSigned = data.isSigned;
                 $scope.canDelete = !data.isSigned && !data.numOfBudgets;
                 $scope.minDate = data.endDate;
             }).finally(function () {
@@ -73,7 +82,8 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
 
     function closeModal(data) {
         $timeout(function() {
-            $modalInstance.close(data || null);
+            $scope.saveRequestInProgress = false;
+            $modalInstance.close(data);
         }, 1000);
     }
 

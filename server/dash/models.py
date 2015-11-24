@@ -30,6 +30,7 @@ from utils import dates_helper
 
 SHORT_NAME_MAX_LENGTH = 22
 
+
 def validate(*validators):
     errors = {}
     for v in validators:
@@ -55,9 +56,11 @@ class PermissionMixin(object):
 
         return False
 
+
 class QuerySetManager(models.Manager):
     def get_queryset(self):
         return self.model.QuerySet(self.model)
+
 
 class DemoManager(models.Manager):
     def get_queryset(self):
@@ -79,6 +82,7 @@ class DemoManager(models.Manager):
                     id__in=(d2r.demo_ad_group_id for d2r in DemoAdGroupRealAdGroup.objects.all())
                 )
         return queryset
+
 
 class FootprintModel(models.Model):
     def __init__(self, *args, **kwargs):
@@ -111,6 +115,7 @@ class FootprintModel(models.Model):
 
     class Meta:
         abstract = True
+
 
 class HistoryModel(models.Model):
     snapshot = jsonfield.JSONField(blank=False, null=False)
@@ -146,6 +151,13 @@ class Account(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+
+    uses_credits = models.BooleanField(
+        null=False,
+        blank=False,
+        default=False,
+        verbose_name='Uses credits and budgets accounting'
+    )
 
     objects = QuerySetManager()
     demo_objects = DemoManager()
@@ -1749,7 +1761,10 @@ class PublisherBlacklist(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, blank=False, null=False)
-    ad_group = models.ForeignKey(AdGroup, null=False, related_name='ad_group', on_delete=models.PROTECT)
+    everywhere = models.BooleanField(default=False)
+    account = models.ForeignKey(Account, null=True, related_name='account', on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
+    ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
     source = models.ForeignKey(Source, null=False, on_delete=models.PROTECT)
 
     status = models.IntegerField(
@@ -1759,8 +1774,18 @@ class PublisherBlacklist(models.Model):
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
 
+    def get_blacklist_level(self):
+        level = constants.PublisherBlacklistLevel.ADGROUP
+        if self.campaign is not None:
+            level = constants.PublisherBlacklistLevel.CAMPAIGN
+        elif self.account is not None:
+            level = constants.PublisherBlacklistLevel.ACCOUNT
+        elif self.everywhere:
+            level = constants.PublisherBlacklistLevel.GLOBAL
+        return level
+
     class Meta:
-        unique_together = (('name', 'ad_group', 'source'), )
+        unique_together = (('name', 'everywhere', 'account', 'campaign', 'ad_group', 'source'), )
 
 
 class CreditLineItem(FootprintModel):
@@ -1813,6 +1838,8 @@ class CreditLineItem(FootprintModel):
 
     def save(self, request=None, *args, **kwargs):
         self.full_clean()
+        if request and not self.pk:
+            self.created_by = request.user
         super(CreditLineItem, self).save(*args, **kwargs)
         CreditHistory.objects.create(
             created_by=request.user if request else None,
@@ -1834,25 +1861,50 @@ class CreditLineItem(FootprintModel):
     def clean(self):
         has_changed = any((
             self.has_changed('start_date'),
-            self.has_changed('amount'),
             self.has_changed('license_fee'),
         ))
         if has_changed and not self.is_editable():
-            raise ValidationError('Nonpending credit line item cannot change.')
+            raise ValidationError({
+                '__all__': ['Nonpending credit line item cannot change.'],
+            })
 
         validate(
             self.validate_end_date,
             self.validate_license_fee,
             self.validate_status,
+            self.validate_amount,
         )
 
+        if not self.pk or self.previous_value('status') != constants.CreditLineItemStatus.SIGNED:
+            return
+
+        budgets = self.budgets.all()
+        if not budgets:
+            return
+
+        min_end_date = min(b.end_date for b in budgets)
+
+        if self.has_changed('end_date') and self.end_date < min_end_date:
+            raise ValidationError({
+                'end_date': ['End date minimum is depending on budgets.'],
+            })
+
+    def validate_amount(self):
+        if not self.pk or not self.has_changed('amount'):
+            return
+        prev_amount = self.previous_value('amount')
+        budgets = self.budgets.all()
+        if prev_amount < self.amount or not budgets:
+            return
+        if self.amount < sum(b.amount for b in budgets):
+            raise ValidationError(
+                'Credit line item amount needs to be larger than the sum of budgets.'
+            )
 
     def validate_status(self):
         s = constants.CreditLineItemStatus
         if not self.has_changed('status'):
             return
-        if self.status == s.CANCELED and self.budgets.all():
-            raise ValidationError('Credit line item status cannot change when credit has budgets allocated.')
         if self.status == s.PENDING:
             raise ValidationError('Credit line item status cannot change to PENDING.')
 
@@ -1863,7 +1915,7 @@ class CreditLineItem(FootprintModel):
             raise ValidationError('New end date cannot be before than the previous.')
         if self.start_date and self.start_date > self.end_date:
             raise ValidationError('Start date cannot be greater than the end date.')
-        
+
     def validate_license_fee(self):
         if not self.license_fee:
             return
@@ -1885,6 +1937,7 @@ class CreditLineItem(FootprintModel):
                 raise AssertionError('Some credit items are not pending')
             super(CreditLineItem.QuerySet, self).delete()
 
+
 class BudgetLineItem(FootprintModel):
     campaign = models.ForeignKey(Campaign, related_name='budgets', on_delete=models.PROTECT)
     credit = models.ForeignKey(CreditLineItem, related_name='budgets', on_delete=models.PROTECT)
@@ -1901,8 +1954,12 @@ class BudgetLineItem(FootprintModel):
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
 
+    objects = QuerySetManager()
+
     def save(self, request=None, *args, **kwargs):
         self.full_clean()
+        if request and not self.pk:
+            self.created_by = request.user
         super(BudgetLineItem, self).save(*args, **kwargs)
         BudgetHistory.objects.create(
             created_by=request.user if request else None,
@@ -1912,6 +1969,11 @@ class BudgetLineItem(FootprintModel):
 
     def db_state(self, date=None):
         return BudgetLineItem.objects.get(pk=self.pk).state(date=date)
+
+    def delete(self):
+        if self.db_state() != constants.BudgetLineItemState.PENDING:
+            raise AssertionError('Cannot delete nonpending budgets')
+        super(BudgetLineItem, self).delete()
 
     def state(self, date=None):
         if date is None:
@@ -1924,25 +1986,36 @@ class BudgetLineItem(FootprintModel):
             return constants.BudgetLineItemState.ACTIVE
         return constants.BudgetLineItemState.PENDING
 
-
     def state_text(self, date=None):
         return constants.BudgetLineItemState.get_text(self.state(date=date))
 
-    def get_spend_amount(self): # TODO: implement
+    def get_spend_amount(self):  # TODO: implement
         return Decimal('0')
 
-    def get_media_spend_amount(self): # TODO: implement
+    def get_media_spend_amount(self):  # TODO: implement
         return Decimal('0')
 
-    def get_data_spend_amount(self): # TODO: implement
-        return Decimal('0') 
+    def get_data_spend_amount(self):  # TODO: implement
+        return Decimal('0')
 
     def is_editable(self):
         return self.state() == constants.BudgetLineItemState.PENDING
 
+    def is_updatable(self):
+        return self.state() == constants.BudgetLineItemState.ACTIVE
+
     def clean(self):
-        if self.pk and not self.db_state() == constants.BudgetLineItemState.PENDING:
-            raise ValidationError('Only pending and active budgets can change.')
+        if self.pk:
+            have_changed = any([
+                self.has_changed('start_date'),
+                self.has_changed('amount'),
+            ])
+            db_state = self.db_state()
+            if have_changed and not db_state == constants.BudgetLineItemState.PENDING:
+                raise ValidationError('Only pending budgets can change start date and amount.')
+            if db_state not in (constants.BudgetLineItemState.PENDING,
+                                constants.BudgetLineItemState.ACTIVE, ):
+                raise ValidationError('Only pending and active budgets can change.')
 
         validate(
             self.validate_start_date,
@@ -1950,7 +2023,6 @@ class BudgetLineItem(FootprintModel):
             self.validate_amount,
             self.validate_credit,
         )
-
 
     def license_fee(self):
         return self.credit.license_fee
@@ -1974,7 +2046,7 @@ class BudgetLineItem(FootprintModel):
             raise ValidationError('End date cannot be bigger than the credit\'s end date.')
         if self.start_date and self.start_date > self.end_date:
             raise ValidationError('Start date cannot be bigger than the end date.')
-        
+
     def validate_amount(self):
         if not self.amount:
             return
@@ -1985,9 +2057,16 @@ class BudgetLineItem(FootprintModel):
                 'Budget exceeds the total credit amount by ${}.00.'.format(-delta)
             )
 
+    class QuerySet(models.QuerySet):
+        def delete(self):
+            if any(itm.state() != constants.BudgetLineItemState.PENDING for itm in self):
+                raise AssertionError('Some budget items are not pending')
+            super(BudgetLineItem.QuerySet, self).delete()
+
 
 class CreditHistory(HistoryModel):
     credit = models.ForeignKey(CreditLineItem, related_name='history')
+
 
 class BudgetHistory(HistoryModel):
     budget = models.ForeignKey(BudgetLineItem, related_name='history')
