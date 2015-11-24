@@ -127,3 +127,6 @@ client/test/protractor.localconf.json
 
 # Andraz's editor
 DEADJOE
+
+# Tern port file
+.tern-port
