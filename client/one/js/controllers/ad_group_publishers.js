@@ -180,9 +180,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 }
                 
                 if (row.can_blacklist_publisher) {
-                    var row_id = $scope.calculatePublisherHash(row);
-                    if ($scope.selectedPublisherStatus[row_id] !== undefined) {
-                        row.publisherSelected = $scope.selectedPublisherStatus[row_id].checked;
+                    var rowId = $scope.calculatePublisherHash(row);
+                    if ($scope.selectedPublisherStatus[rowId] !== undefined) {
+                        row.publisherSelected = $scope.selectedPublisherStatus[rowId].checked;
                     } else if ($scope.selectedAll) {
                         row.publisherSelected = true;
                     } else {
