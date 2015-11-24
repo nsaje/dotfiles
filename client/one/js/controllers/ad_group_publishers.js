@@ -179,14 +179,16 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 } else {
                     row.blacklist_info = null;
                 }
-            } else {
-                var row_id = $scope.calculatePublisherHash(row);
-                if ($scope.selectedPublisherStatus[row_id] !== undefined) {
-                    row.publisher_selected = $scope.selectedPublisherStatus[row_id].checked;
-                } else if ($scope.selectedAll) {
-                    row.publisher_selected = true;
-                } else {
-                    row.publisher_selected = false;
+                
+                if (row.can_blacklist_publisher) {
+                    var row_id = $scope.calculatePublisherHash(row);
+                    if ($scope.selectedPublisherStatus[row_id] !== undefined) {
+                        row.publisher_selected = $scope.selectedPublisherStatus[row_id].checked;
+                    } else if ($scope.selectedAll) {
+                        row.publisher_selected = true;
+                    } else {
+                        row.publisher_selected = false;
+                    }
                 }
             }
         });
