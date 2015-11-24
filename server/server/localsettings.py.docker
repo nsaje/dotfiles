@@ -1,4 +1,5 @@
 import os
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -76,8 +77,22 @@ GOOGLE_OAUTH_ENABLED = False
 GOOGLE_OAUTH_CLIENT_ID = ''
 GOOGLE_OAUTH_CLIENT_SECRET = ''
 
-# Client static files
-CLIENT_STATIC_URL = ''
+# Static files
+BUILD_NUMBER = None
+
+if os.environ.get('BUILD'):
+    BUILD_NUMBER = os.environ.get('BUILD')
+elif os.path.isfile('build_number.txt'):
+    with open('build_number.txt', 'r') as build_number:
+        BUILD_NUMBER = build_number.read().strip()
+
+if BUILD_NUMBER:
+    ROOT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}'.format(BUILD_NUMBER)
+    SERVER_STATIC_URL = ROOT_STATIC_URL + '/server'
+    CLIENT_STATIC_URL = ROOT_STATIC_URL + '/client'
+else:
+    SERVER_STATIC_URL = '/static'
+    CLIENT_STATIC_URL = 'http://0.0.0.0:9999'
 
 # Eins host
 EINS_HOST = ''
