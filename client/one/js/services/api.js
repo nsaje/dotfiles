@@ -1096,7 +1096,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 name: settings.name,
                 defaultAccountManager: settings.default_account_manager,
                 defaultSalesRepresentative: settings.default_sales_representative,
-                serviceFee: settings.service_fee
+                serviceFee: settings.service_fee,
+                allowedSources: settings.allowed_sources
             };
         }
 
@@ -1106,7 +1107,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 name: settings.name,
                 default_account_manager: settings.defaultAccountManager,
                 default_sales_representative: settings.defaultSalesRepresentative,
-                service_fee: settings.serviceFee
+                service_fee: settings.serviceFee,
+                allowed_sources: settings.allowedSources
             };
         }
 
@@ -1185,6 +1187,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             var data = {
                 'settings': convertSettingsToApi(settings)
             };
+
+         
 
             $http.put(url, data, config).
                 success(function (data, status) {
