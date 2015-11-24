@@ -243,7 +243,7 @@ class GetStatsWithConversionsTestCase(test.TestCase):
         self.assertFalse(mock_as_query.called)
         self.assertTrue(mock_ca_query.called)
         self.assertTrue(mock_tp_query.called)
-        self.assertItemsEqual([{
+        self.assertEqual([{
             'ad_group': 1,
             'impressions': 10,
             'clicks': 1,
