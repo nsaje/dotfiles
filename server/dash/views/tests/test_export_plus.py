@@ -93,7 +93,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         expected_content = '''Start Date,End Date,Account,Campaign,Ad Group,Title,Image URL,URL,Average CPC,Clicks,Visits\r
 2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1,/123456789/200x300.jpg,http://testurl.com,10.230,103,40\r
 2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,Test Article with no content_ad_sources 1,/123456789/200x300.jpg,http://testurl.com,20.230,203,30\r\n'''
-        filename = '{0}_{1}_{2}_report_2014-06-30_2014-07-01.csv'.format(
+        filename = '{0}_{1}_{2}_-_by_content_ad_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
             slugify.slugify(self.campaign),
             slugify.slugify(self.ad_group_name)
@@ -167,7 +167,7 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
 2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,test adgroup 1 \xc4\x8c\xc5\xbe\xc5\xa1,10.230,103,100000\r
 2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,test adgroup 2,20.230,203,200000\r\n'''
 
-        filename = '{0}_{1}_report_2014-06-30_2014-07-01.csv'.format(
+        filename = '{0}_{1}_-_by_ad_group_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name),
             slugify.slugify(self.campaign_name)
         )
@@ -271,7 +271,7 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
 2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,10.230,103,100000\r
 2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,20.230,203,200000\r\n'''
 
-        filename = '{0}_report_2014-06-30_2014-07-01.csv'.format(
+        filename = '{0}_-_by_campaign_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name)
         )
 
@@ -399,7 +399,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
         expected_content = '''Start Date,End Date,Account,Average CPC,Clicks,Impressions\r
 2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,20.230,203,200000\r\n'''
 
-        filename = 'ZemantaOne_report_2014-06-30_2014-07-01.csv'
+        filename = 'ZemantaOne_-_by_account_report_2014-06-30_2014-07-01.csv'
 
         self.assertEqual(
             response['Content-Type'],

@@ -21,6 +21,7 @@ import utils.string_helper
 
 from dash import constants
 from dash import region_targeting_helper
+from dash import views
 import reports.constants
 from utils import encryption_helpers
 from utils import statsd_helper
@@ -485,6 +486,7 @@ class AccountSettings(SettingsBase):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
+    allowed_sources = ArrayField(models.IntegerField(), default=[])
 
     def save(self, request, *args, **kwargs):
         if self.pk is None:
@@ -764,7 +766,7 @@ class Source(models.Model):
     deprecated = models.BooleanField(default=False, null=False)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-
+    released = models.BooleanField(default=True)
     content_ad_submission_type = models.IntegerField(
         default=constants.SourceSubmissionType.DEFAULT,
         choices=constants.SourceSubmissionType.get_choices()
@@ -2099,6 +2101,19 @@ class ExportReport(models.Model):
     additional_fields = models.CharField(max_length=500, null=True, blank=True)
     filtered_sources = models.ManyToManyField(Source)
 
+    def __str__(self):
+        return ' '.join(filter(None, (
+            constants.ScheduledReportLevel.get_text(self.level),
+            '(',
+            (self.account.name if self.account else ''),
+            (self.campaign.name if self.campaign else ''),
+            (self.ad_group.name if self.ad_group else ''),
+            ') - by',
+            constants.ScheduledReportGranularity.get_text(self.granularity),
+            ('by Source' if self.breakdown_by_source else ''),
+            ('by Day' if self.breakdown_by_day else '')
+        )))
+
     @property
     def level(self):
         if self.account:
@@ -2108,6 +2123,15 @@ class ExportReport(models.Model):
         elif self.ad_group:
             return constants.ScheduledReportLevel.AD_GROUP
         return constants.ScheduledReportLevel.ALL_ACCOUNTS
+
+    def get_additional_fields(self):
+        return views.helpers.get_additional_columns(self.additional_fields)
+
+    def get_filtered_sources(self):
+        all_sources = Source.objects.all()
+        if not self.created_by.has_perm('zemauth.filter_sources') or len(self.filtered_sources.all()) == 0:
+            return all_sources
+        return all_sources.filter(id__in=[source.id for source in self.filtered_sources.all()])
 
 
 class ScheduledExportReport(models.Model):
@@ -2134,6 +2158,17 @@ class ScheduledExportReport(models.Model):
         choices=constants.ScheduledReportSendingFrequency.get_choices()
     )
 
+    def __str__(self):
+        return ' '.join(filter(None, (
+            self.name,
+            '(',
+            self.created_by.email,
+            ') - ',
+            constants.ScheduledReportSendingFrequency.get_text(self.sending_frequency),
+            '-',
+            str(self.report)
+        )))
+
     def add_recipient_email(self, email_address):
         validate_email(email_address)
         if self.recipients.filter(email=email_address).count() < 1:
@@ -2157,3 +2192,27 @@ class ScheduledExportReportRecipient(models.Model):
 
     class Meta:
         unique_together = ('scheduled_report', 'email')
+
+
+class ScheduledExportReportLog(models.Model):
+    scheduled_report = models.ForeignKey(ScheduledExportReport)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+
+    start_date = models.DateField(null=True)
+    end_date = models.DateField(null=True)
+    report_filename = models.CharField(max_length=1024, blank=False, null=True)
+    recipient_emails = models.CharField(max_length=1024, blank=False, null=True)
+
+    state = models.IntegerField(
+        default=constants.ScheduledReportSent.FAILED,
+        choices=constants.ScheduledReportSent.get_choices(),
+    )
+
+    errors = models.TextField(blank=False, null=True)
+
+    def add_error(self, error_msg):
+        if self.errors is None:
+            self.errors = error_msg
+        else:
+            self.errors += '\n\n' + error_msg

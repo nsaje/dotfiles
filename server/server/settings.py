@@ -82,14 +82,16 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 
+from celeryconfig import *
+from localsettings import *
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'common_static'),)
-
 STATIC_ROOT = 'static'
+STATIC_URL = SERVER_STATIC_URL + '/'
 
-STATIC_URL = '/static/'
 LOGIN_URL = '/signin'
 LOGIN_REDIRECT_URL = '/'
 
@@ -109,9 +111,6 @@ DEFAULT_FROM_EMAIL = ''
 MAILGUN_API_KEY = ''
 
 DEMO_USERS = tuple()
-
-from celeryconfig import *
-from localsettings import *
 
 LOGGING = {
     'version': 1,

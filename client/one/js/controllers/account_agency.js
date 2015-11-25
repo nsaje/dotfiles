@@ -1,6 +1,7 @@
 /*globals oneApp*/
 oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'zemFilterService', function ($scope, $state, $modal, api, zemFilterService) {
     $scope.settings = {};
+    $scope.settings.allowedSources = {};
     $scope.history = [];
     $scope.conversionPixels = [];
     $scope.canArchive = false;
@@ -22,6 +23,48 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'ze
     $scope.addUserData = {};
     $scope.addUserErrors = null;
     $scope.conversionPixelTagPrefix = '';
+
+    $scope.mediaSourcesOrderByProp = 'name';
+    $scope.selectedMediaSouces = {allowed:[], available:[]};
+
+    $scope.getAllowedMediaSources = function () {
+        var list = [];
+        angular.forEach($scope.settings.allowedSources, function(value, key) {
+            if(value.allowed){
+                value.value = key;
+                this.push(value);
+            }
+        }, list);
+        return list;
+    };
+
+    $scope.getAvailableMediaSources = function () {
+        var list = [];
+        angular.forEach($scope.settings.allowedSources, function(value, key) {
+            if(!value.allowed){
+                value.value = key;
+                this.push(value);
+            }
+        }, list);
+        return list;
+    };
+
+    $scope.addToAllowedMediaSources =  function () {
+        angular.forEach($scope.selectedMediaSouces.available, function (value, _) {
+            $scope.settings.allowedSources[value].allowed = true;
+        });
+        $scope.selectedMediaSouces.allowed.length = 0;
+        $scope.selectedMediaSouces.available.length = 0;
+    };
+
+    $scope.removeFromAllowedMediaSources = function () {
+        angular.forEach($scope.selectedMediaSouces.allowed, function (value, _) {
+            $scope.settings.allowedSources[value].allowed = false;
+        });
+        $scope.selectedMediaSouces.available.length = 0;
+        $scope.selectedMediaSouces.allowed.length = 0;
+    };
+
     $scope.getServiceFees = function(search) {
         // use fresh instance because we modify the collection on the fly
         var fees = ['15', '20', '25'];

@@ -50,6 +50,44 @@ describe('AccountAgencyCtrl', function () {
         });
     });
 
+    describe('allowedMediaSources', function () {
+        beforeEach(function () {
+            $scope.settings.allowedSources = {
+                '1': {name: 'source 1'},
+                '2': {name: 'source 2', allowed: true},
+                '3': {name: 'source 3', allowed: false}
+            };
+            $scope.selectedMediaSouces = {allowed:[], available:[]};
+        });
+
+        it('gets allowed media sources', function () {
+            expect($scope.getAllowedMediaSources()).toEqual([
+                {name: 'source 2', allowed: true, value: '2'}
+            ]);
+        });
+
+        it('gets available media sources', function () {
+            var available = $scope.getAvailableMediaSources();
+
+            expect(available).toContain({name: 'source 1', value: '1'});
+            expect(available).toContain({name: 'source 3', value: '3', allowed: false});
+        });
+
+        it('adds to allowed media sources', function () {
+            $scope.selectedMediaSouces.available = ['1'];
+            $scope.addToAllowedMediaSources();
+            expect($scope.settings.allowedSources['1'].allowed).toBe(true);
+            expect($scope.selectedMediaSouces.available).toEqual([]);
+        });
+
+        it('removes from allowed media sources', function () {
+            $scope.selectedMediaSouces.allowed = ['2'];
+            $scope.removeFromAllowedMediaSources();
+            expect($scope.settings.allowedSources['2'].allowed).toBe(false);
+            expect($scope.selectedMediaSouces.allowed).toEqual([]);
+        });
+    });
+
     describe('addConversionPixel', function(done) {
         it('opens a modal window', function () {
             $scope.addConversionPixel().result

@@ -1223,3 +1223,13 @@ class ScheduledReportLevel(ConstantBase):
         CAMPAIGN: 'Campaign',
         AD_GROUP: 'Ad Group'
     }
+
+
+class ScheduledReportSent(ConstantBase):
+    SUCCESS = 1
+    FAILED = 2
+
+    _VALUES = {
+        SUCCESS: 'Success',
+        FAILED: 'Failed'
+    }

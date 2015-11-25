@@ -156,8 +156,8 @@ class AdGroupSettings(api_common.BaseApiView):
             new_settings.save(request)
 
             actionlogs_to_send.extend(
-                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False,
-                                                   redirects_update=current_settings.pk is None))
+                api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
+            )
 
             if current_settings.state == constants.AdGroupSettingsState.INACTIVE and\
                new_settings.state == constants.AdGroupSettingsState.ACTIVE:
@@ -840,7 +840,7 @@ class AccountAgency(api_common.BaseApiView):
         account_settings = account.get_current_settings()
 
         response = {
-            'settings': self.get_dict(account_settings, account),
+            'settings': self.get_dict(request, account_settings, account),
             'account_managers': self.get_user_list(account_settings, 'campaign_settings_account_manager'),
             'sales_reps': self.get_user_list(account_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(account),
@@ -863,10 +863,15 @@ class AccountAgency(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
+        if 'allowed_sources' in form.cleaned_data \
+        and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+            raise exc.MissingDataError()
+
         self.set_account(account, form.cleaned_data)
 
         settings = models.AccountSettings()
         self.set_settings(settings, account, form.cleaned_data)
+        self.set_allowed_sources(settings, form.cleaned_data.get('allowed_sources'))
 
         with transaction.atomic():
             account.save(request)
@@ -874,9 +879,8 @@ class AccountAgency(api_common.BaseApiView):
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_ACCOUNT_AGENCY_SETTINGS,
                                             account=account)
-
         response = {
-            'settings': self.get_dict(settings, account),
+            'settings': self.get_dict(request, settings, account),
             'history': self.get_history(account),
             'can_archive': account.can_archive(),
             'can_restore': account.can_restore(),
@@ -887,6 +891,16 @@ class AccountAgency(api_common.BaseApiView):
     def set_account(self, account, resource):
         account.name = resource['name']
 
+    def set_allowed_sources(self, settings, allowed_sources_dict):
+        if allowed_sources_dict is None:
+            return
+
+        allowed_sources_ids = []
+        for k, v in allowed_sources_dict.iteritems():
+            if v.get('allowed', False):
+                allowed_sources_ids.append(k)
+        settings.allowed_sources = allowed_sources_ids
+
     def set_settings(self, settings, account, resource):
         settings.account = account
         settings.name = resource['name']
@@ -894,7 +908,25 @@ class AccountAgency(api_common.BaseApiView):
         settings.default_sales_representative = resource['default_sales_representative']
         settings.service_fee = helpers.format_percent_to_decimal(resource['service_fee'])
 
-    def get_dict(self, settings, account):
+    def add_unreleased_label_to_names(self, allowed_sources_dict, all_sources):
+        for source in all_sources:
+            if source.id in allowed_sources_dict and not source.released:
+                name = allowed_sources_dict[source.id]['name'] 
+                allowed_sources_dict[source.id]['name'] = '{} (unreleased)'.format(name)
+        return allowed_sources_dict
+
+    def get_allowed_sources(self, allowed_sources_ids_list):
+        allowed_sources_dict = {}
+        all_sources = list(models.Source.objects.filter(deprecated=False))
+        for source in all_sources:
+            source_settings = {'name': source.name}
+            if source.id in allowed_sources_ids_list:
+                source_settings['allowed'] = True
+            allowed_sources_dict[source.id] = source_settings
+        allowed_sources_dict = self.add_unreleased_label_to_names(allowed_sources_dict, all_sources)
+        return allowed_sources_dict
+
+    def get_dict(self, request, settings, account):
         result = {}
 
         if settings:
@@ -910,6 +942,8 @@ class AccountAgency(api_common.BaseApiView):
                     if settings.default_sales_representative is not None else None,
                 'service_fee': helpers.format_decimal_to_percent(settings.service_fee),
             }
+            if request.user.has_perm('zemauth.can_modify_allowed_sources'):
+                result['allowed_sources'] = self.get_allowed_sources(settings.allowed_sources)
 
         return result
 

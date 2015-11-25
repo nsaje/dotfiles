@@ -7,4 +7,8 @@ then
 	S3_PATH="s3://z1-static/build-$CIRCLE_BUILD_NUM"
 	
 	aws s3 sync --acl public-read client/dist "${S3_PATH}/client"
+	aws s3 sync --acl public-read server/common_static "${S3_PATH}/server"
+	
+	echo $CIRCLE_BUILD_NUM > latest.txt
+	aws s3api put-object --bucket z1-static --key latest.txt --body latest.txt
 fi
