@@ -503,6 +503,12 @@ var constants = {
         AD_GROUP: 'adgroup-csv',
         CONTENT_AD: 'contentad-csv'
     },
+    publisherBlacklistLevel: {
+        ADGROUP: 'adgroup',
+        CAMPAIGN: 'campaign',
+        ACCOUNT: 'account',
+        GLOBAL: 'global'
+    }
 };
 var options = {
     adGroupSettingsStates: [{name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},

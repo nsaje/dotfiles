@@ -246,7 +246,17 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
 
         var publishersSelected = [],
-            publishersNotSelected = [];
+            publishersNotSelected = [],
+            splitAction = action.split('-'),
+            action = splitAction[0],
+            level = splitAction[1],
+            state = null;
+
+        if (level === constants.publisherBlacklistLevel.GLOBAL) {
+            if (!confirm("This action will affect all accounts. Are you sure you want to proceed?")) {
+                return;               
+            }
+        }
 
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
             if ($scope.selectedPublisherStatus[publisherId] !== undefined) {
@@ -257,10 +267,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 }
             }
         });
-        var splitAction = action.split('-'),
-            action = splitAction[0],
-            level = splitAction[1],
-            state = null;
 
         
         if (action == 'enable') {
