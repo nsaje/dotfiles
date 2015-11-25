@@ -1415,6 +1415,64 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                 self.assertFalse(res.get('success'), 'level {} should be inaccessible'.format(level))
 
     @patch('reports.redshift.get_cursor')
+    def test_post_blacklist_permission_campaign_account(self, cursor):
+        self._fake_cursor_data(cursor)
+        accessible_levels = (
+            constants.PublisherBlacklistLevel.ADGROUP,
+            constants.PublisherBlacklistLevel.CAMPAIGN,
+            constants.PublisherBlacklistLevel.ACCOUNT,
+        )
+
+        permissions = Permission.objects.filter(
+            codename__in=(
+                'can_modify_publisher_blacklist_status',
+                'can_access_campaign_account_publisher_blacklist_status',
+            )
+        )
+        user = zemauth.models.User.objects.get(pk=2)
+        for permission in permissions:
+            user.user_permissions.add(permission)
+        user.save()
+
+        for level in constants.PublisherBlacklistLevel.get_keys():
+            payload = self._fake_payload_data(level)
+            res, status = self._post_publisher_blacklist(1, payload, user_id=2, with_status=True)
+            if level in accessible_levels:
+                self.assertTrue(res.get('success'), 'level {} should be accessible'.format(level))
+            else:
+                self.assertFalse(res.get('success'), 'level {} should be inaccessible'.format(level))
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_blacklist_permission_global(self, cursor):
+        self._fake_cursor_data(cursor)
+        accessible_levels = (
+            constants.PublisherBlacklistLevel.ADGROUP,
+            constants.PublisherBlacklistLevel.CAMPAIGN,
+            constants.PublisherBlacklistLevel.ACCOUNT,
+            constants.PublisherBlacklistLevel.GLOBAL,
+        )
+
+        permissions = Permission.objects.filter(
+            codename__in=(
+                'can_modify_publisher_blacklist_status',
+                'can_access_campaign_account_publisher_blacklist_status',
+                'can_access_global_publisher_blacklist_status',
+            )
+        )
+        user = zemauth.models.User.objects.get(pk=2)
+        for permission in permissions:
+            user.user_permissions.add(permission)
+        user.save()
+
+        for level in constants.PublisherBlacklistLevel.get_keys():
+            payload = self._fake_payload_data(level)
+            res, status = self._post_publisher_blacklist(1, payload, user_id=2, with_status=True)
+            if level in accessible_levels:
+                self.assertTrue(res.get('success'), 'level {} should be accessible'.format(level))
+            else:
+                self.assertFalse(res.get('success'), 'level {} should be inaccessible'.format(level))
+
+    @patch('reports.redshift.get_cursor')
     def test_post_blacklist(self, cursor):
         cursor().dictfetchall.return_value = [
         {
