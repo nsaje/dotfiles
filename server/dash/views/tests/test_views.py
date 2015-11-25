@@ -1394,7 +1394,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         for level in (constants.PublisherBlacklistLevel.get_keys()):
             payload = self._fake_payload_data(level)
             res, status = self._post_publisher_blacklist(1, payload, user_id=2, with_status=True)
-            self.assertTrue('sign in' in res['text'].lower())
+            self.assertFalse(res.get('success'), 'No permissions for blacklisting')
 
     @patch('reports.redshift.get_cursor')
     def test_post_blacklist_permission_adgroup(self, cursor):
