@@ -1188,7 +1188,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 'settings': convertSettingsToApi(settings)
             };
 
-         
+
 
             $http.put(url, data, config).
                 success(function (data, status) {

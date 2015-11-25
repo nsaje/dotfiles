@@ -1,7 +1,7 @@
 <div class="page page-account-reports">
 
     <div class="section table-account-reports">
-        <div class="title">Scheduled Reports<zem-help-popover content="Overview of reports scheduled for this account." placement="top"></zem-help-popover></div>
+        <div class="title">Scheduled Reports<zem-help-popover content="Overview of Your reports scheduled for this account." placement="top"></zem-help-popover></div>
         <div class="loader-container">
             <div class="loader" ng-show="history.length && requestInProgress"></div>
             <table class="table table-hover">
@@ -21,8 +21,11 @@
                             <div class="loader"></div>
                         </td>
                     </tr>
-                    <tr ng-show="(!reports || !reports.length) && !requestInProgress">
+                    <tr ng-show="(!reports || !reports.length) && !requestInProgress && !errorMessage">
                         <td class="no-data" colspan="6">No data</td>
+                    </tr>
+                    <tr ng-show="errorMessage">
+                        <td class="no-data" colspan="6">{{ errorMessage }}</td>
                     </tr>
 
                     <tr ng-repeat="item in reports">

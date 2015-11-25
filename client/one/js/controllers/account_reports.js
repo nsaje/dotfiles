@@ -2,6 +2,7 @@
 oneApp.controller('AccountReportsCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.reports = [];
     $scope.requestInProgress = false;
+    $scope.errorMessage = '';
 
     $scope.getReports = function() {
         $scope.requestInProgress = true;
@@ -9,9 +10,11 @@ oneApp.controller('AccountReportsCtrl', ['$scope', '$state', 'api', function ($s
         api.accountReports.get($state.params.id).then(
             function (data) {
                 $scope.reports = data.reports;
+                $scope.errorMessage = '';
             },
             function (data) {
                 // error
+                $scope.errorMessage = 'Error Retrieving Reports';
                 return;
             }
         ).finally(function () {
@@ -24,15 +27,16 @@ oneApp.controller('AccountReportsCtrl', ['$scope', '$state', 'api', function ($s
 
       api.accountReports.removeReport(scheduledReportId).then(
           function (data) {
+              $scope.errorMessage = '';
               $scope.getReports();
           },
           function (data) {
               // error
+              $scope.errorMessage = 'Error Removing Report. Please contact support.';
+              $scope.requestInProgress = false;
               return;
           }
-      ).finally(function () {
-          $scope.requestInProgress = false;
-      });
+      );
     };
 
     $scope.getReports();
