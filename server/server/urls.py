@@ -415,7 +415,7 @@ urlpatterns += patterns(
     ),
     url(
         r'^api/accounts/reports/remove/(?P<scheduled_report_id>\d+)',
-        login_required(dash.views.export_plus.AccountReportsRemove.as_view())
+        login_required(dash.views.export_plus.AccountReports.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/export_plus/',

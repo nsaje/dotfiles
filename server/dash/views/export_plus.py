@@ -203,6 +203,17 @@ class AccountReports(api_common.BaseApiView):
         }
         return self.create_api_response(response)
 
+    @statsd_helper.statsd_timer('dash.api', 'account_scheduled_reports_delete')
+    def delete(self, request, scheduled_report_id):
+        scheduled_report = models.ScheduledExportReport.objects.get(id=scheduled_report_id)
+
+        if not request.user.has_perm('zemauth.exports_plus') or scheduled_report.created_by != request.user:
+            raise exc.ForbiddenError(message='Not allowed')
+
+        scheduled_report.state = constants.ScheduledReportState.REMOVED
+        scheduled_report.save()
+        return self.create_api_response({})
+
     def format_reports(self, reports):
         result = []
         for r in reports:
@@ -229,16 +240,3 @@ class AccountReports(api_common.BaseApiView):
             (Q(report__account=account) | Q(report__campaign__account=account) | Q(report__ad_group__campaign__account=account))
         )
         return reports
-
-
-class AccountReportsRemove(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.api', 'account_scheduled_reports_get')
-    def post(self, request, scheduled_report_id):
-        scheduled_report = models.ScheduledExportReport.objects.get(id=scheduled_report_id)
-
-        if not request.user.has_perm('zemauth.exports_plus') or scheduled_report.created_by != request.user:
-            raise exc.ForbiddenError(message='Not allowed')
-
-        scheduled_report.state = constants.ScheduledReportState.REMOVED
-        scheduled_report.save()
-        return self.create_api_response({})

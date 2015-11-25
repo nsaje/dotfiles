@@ -1017,11 +1017,7 @@ class AccountReportsTest(test.TestCase):
         content = json.loads(response.content)
         self.assertEqual(len(content['data']['reports']), 0)
 
-
-class AccountReportsRemove(test.TestCase):
-    fixtures = ['test_api']
-
-    def test_post(self):
+    def test_delete(self):
         request = http.HttpRequest()
         request.user = models.User.objects.get(pk=1)
         permission = Permission.objects.get(codename='exports_plus')
@@ -1029,24 +1025,24 @@ class AccountReportsRemove(test.TestCase):
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
-        response = export_plus.AccountReportsRemove().post(request, 1)
+        response = export_plus.AccountReports().delete(request, 1)
         content = json.loads(response.content)
         self.assertTrue(content['success'])
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.REMOVED)
 
-    def test_post_no_permission(self):
+    def test_delete_no_permission(self):
         request = http.HttpRequest()
         request.user = models.User.objects.get(pk=2)
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
         with self.assertRaises(exc.ForbiddenError):
-            response = export_plus.AccountReportsRemove().post(request, 1)
+            response = export_plus.AccountReports().delete(request, 1)
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
-    def test_post_user_not_creator(self):
+    def test_delete_user_not_creator(self):
         request = http.HttpRequest()
         request.user = models.User.objects.get(pk=2)
         permission = Permission.objects.get(codename='exports_plus')
@@ -1055,6 +1051,6 @@ class AccountReportsRemove(test.TestCase):
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
         with self.assertRaises(exc.ForbiddenError):
-            response = export_plus.AccountReportsRemove().post(request, 1)
+            response = export_plus.AccountReports().delete(request, 1)
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)

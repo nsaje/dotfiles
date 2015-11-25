@@ -1337,7 +1337,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         this.removeReport = function (scheduledReportId) {
             var deferred = $q.defer();
             var url = '/api/accounts/reports/remove/' + scheduledReportId;
-            $http.post(url).
+            $http.delete(url).
                 success(function (data, status) {
                     if (status != 200) {
                         deferred.reject(data);
