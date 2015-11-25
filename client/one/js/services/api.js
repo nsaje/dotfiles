@@ -1462,7 +1462,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 campaign_goal: settings.campaignGoal,
                 goal_quantity: settings.goalQuantity,
                 target_devices: targetDevices,
-                target_regions: settings.targetRegions,
+                target_regions: settings.targetRegions
             };
         }
 
