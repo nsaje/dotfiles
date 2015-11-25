@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
+from django.core.mail.message import EmailMessage
 
 from utils import pagerduty_helper
 
@@ -323,3 +324,25 @@ def should_send_notification_mail(campaign, user, request):
         return False
 
     return True
+
+
+def send_scheduled_export_report(report_name, email_adresses, report_contents, report_filename):
+    subject = u'Zemanta Scheduled Report: {}'.format(
+        report_name
+    )
+    # TODO: waiting for email copy from product, will replace
+    body = u'''Hi,
+
+Please find attached Your scheduled report {report_name}.
+
+Yours truly,
+Zemanta
+    '''
+    body = body.format(
+        report_name=report_name
+    )
+    if not email_adresses:
+        raise Exception('No recipient emails: ' + report_name)
+    email = EmailMessage(subject, body, 'Zemanta <{}>'.format(settings.FROM_EMAIL), email_adresses)
+    email.attach(report_filename + '.csv', report_contents, 'text/csv')
+    email.send(fail_silently=False)

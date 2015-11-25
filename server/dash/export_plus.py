@@ -1,12 +1,16 @@
 import unicodecsv
 import StringIO
+import slugify
 from collections import OrderedDict
 
 from dash import models
 from dash import stats_helper
 from dash import budget
+from dash import constants
 from dash.views import helpers
 import reports.api_contentads
+
+from utils import exc
 
 from utils.sort_helper import sort_results
 
@@ -35,7 +39,8 @@ FIELDNAMES = {
     'start_date': 'Start Date',
     'title': 'Title',
     'unspent_budget': 'Unspent Budget',
-    'visits': 'Visits'
+    'visits': 'Visits',
+    'date': 'Date'
 }
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
@@ -178,22 +183,27 @@ def get_csv_content(fieldnames, data, title_text=None):
         row = {}
         for key in fieldnames.keys():
             value = item.get(key)
+            formatted_value = value
 
             if not value:
-                value = ''
+                formatted_value = ''
             elif key in FORMAT_DIVIDE_100:
                 value = value / 100
 
             if value and key in FORMAT_1_DECIMAL:
-                value = '{:.1f}'.format(value)
+                formatted_value = '{:.1f}'.format(value)
             elif value and key in FORMAT_2_DECIMALS:
-                value = '{:.2f}'.format(value)
+                formatted_value = '{:.2f}'.format(value)
             elif value and key in FORMAT_3_DECIMALS:
-                value = '{:.3f}'.format(value)
+                formatted_value = '{:.3f}'.format(value)
 
-            row[key] = value
-            if repr(value).find(';') != -1:
-                row[key] = '"' + value + '"'
+            if key == 'date':
+                formatted_value = value.strftime('%Y-%m-%d')
+
+            if ';' in repr(formatted_value):
+                formatted_value = '"' + formatted_value + '"'
+
+            row[key] = formatted_value
 
         writer.writerow(row)
 
@@ -212,8 +222,38 @@ def _get_conversion_goals(user, campaign):
     return []
 
 
+def get_granularity_from_type(export_type):
+    return {
+        'allaccounts-csv': constants.ScheduledReportGranularity.ALL_ACCOUNTS,
+        'account-csv': constants.ScheduledReportGranularity.ACCOUNT,
+        'campaign-csv': constants.ScheduledReportGranularity.CAMPAIGN,
+        'adgroup-csv': constants.ScheduledReportGranularity.AD_GROUP,
+        'contentad-csv': constants.ScheduledReportGranularity.CONTENT_AD
+    }.get(export_type)
+
+
+def get_breakdown_from_granularity(granularity):
+    return {
+        constants.ScheduledReportGranularity.ALL_ACCOUNTS: None,
+        constants.ScheduledReportGranularity.ACCOUNT: 'account',
+        constants.ScheduledReportGranularity.CAMPAIGN: 'campaign',
+        constants.ScheduledReportGranularity.AD_GROUP: 'ad_group',
+        constants.ScheduledReportGranularity.CONTENT_AD: 'content_ad'
+    }.get(granularity)
+
+
+def _include_breakdowns(required_fields, dimensions, by_day, by_source):
+    if by_source:
+        required_fields.append('source')
+        dimensions.append('source')
+    if by_day:
+        required_fields.append('date')
+        dimensions.append('date')
+    return required_fields, dimensions
+
+
 class AllAccountsExport(object):
-    def get_data(self, user, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False):
+    def get_data(self, user, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False, by_day=False):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
         if not user.has_perm('zemauth.view_archived_entities'):
             accounts = accounts.exclude_archived()
@@ -232,9 +272,7 @@ class AllAccountsExport(object):
             dimensions.extend(['account', 'campaign', 'ad_group'])
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
-        if by_source:
-            required_fields.extend(['source'])
-            dimensions.extend(['source'])
+        required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
         include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
@@ -255,7 +293,7 @@ class AllAccountsExport(object):
 
 
 class AccountExport(object):
-    def get_data(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False):
+    def get_data(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False, by_day=False):
         account = helpers.get_account(user, account_id)
 
         dimensions = ['account']
@@ -274,9 +312,7 @@ class AccountExport(object):
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
             dimensions.extend(['campaign', 'ad_group', 'content_ad'])
 
-        if by_source:
-            required_fields.extend(['source'])
-            dimensions.extend(['source'])
+        required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
         include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
@@ -297,7 +333,7 @@ class AccountExport(object):
 
 
 class CampaignExport(object):
-    def get_data(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False):
+    def get_data(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False, by_day=False):
         campaign = helpers.get_campaign(user, campaign_id)
 
         dimensions = ['campaign']
@@ -310,9 +346,7 @@ class CampaignExport(object):
             required_fields.extend(['ad_group', 'title', 'image_url', 'url'])
             dimensions.extend(['ad_group', 'content_ad'])
 
-        if by_source:
-            required_fields.extend(['source'])
-            dimensions.extend(['source'])
+        required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
 
         fieldnames = _get_fieldnames(required_fields, additional_fields)
 
@@ -336,7 +370,7 @@ class CampaignExport(object):
 
 
 class AdGroupExport(object):
-    def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=None):
+    def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False, by_day=False):
 
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
@@ -349,9 +383,7 @@ class AdGroupExport(object):
             required_fields.extend(['title', 'image_url', 'url'])
             dimensions.extend(['content_ad'])
 
-        if by_source:
-            required_fields.extend(['source'])
-            dimensions.extend(['source'])
+        required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
 
         fieldnames = _get_fieldnames(required_fields, additional_fields)
 
@@ -372,3 +404,151 @@ class AdGroupExport(object):
             source=filtered_sources)
 
         return get_csv_content(fieldnames, results)
+
+
+def get_report_from_export_report(export_report, start_date, end_date):
+    return _get_report(
+        export_report.created_by,
+        start_date,
+        end_date,
+        filtered_sources=export_report.get_filtered_sources(),
+        order=export_report.order_by,
+        additional_fields=export_report.get_additional_fields(),
+        granularity=export_report.granularity,
+        breakdown=get_breakdown_from_granularity(export_report.granularity),
+        by_source=export_report.breakdown_by_source,
+        by_day=export_report.breakdown_by_day,
+        ad_group=export_report.ad_group,
+        campaign=export_report.campaign,
+        account=export_report.account
+    )
+
+
+def get_report_from_request(request, account=None, campaign=None, ad_group=None, by_source=False):
+    granularity = get_granularity_from_type(request.GET.get('type'))
+    return _get_report(
+        request.user,
+        helpers.get_stats_start_date(request.GET.get('start_date')),
+        helpers.get_stats_end_date(request.GET.get('end_date')),
+        filtered_sources=helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')),
+        order=request.GET.get('order') or 'name',
+        additional_fields=helpers.get_additional_columns(request.GET.get('additional_fields')),
+        granularity=granularity,
+        breakdown=get_breakdown_from_granularity(granularity),
+        by_source=by_source,
+        by_day=helpers.get_by_day(request.GET.get('by_day')),
+        ad_group=ad_group,
+        campaign=campaign,
+        account=account
+    )
+
+
+def _get_report(
+        user,
+        start_date,
+        end_date,
+        filtered_sources=[],
+        order=None,
+        additional_fields=[],
+        granularity=None,
+        breakdown=None,
+        by_day=False,
+        by_source=False,
+        ad_group=None,
+        campaign=None,
+        account=None):
+    if not user.has_perm('zemauth.exports_plus'):
+        raise exc.ForbiddenError(message='Not allowed')
+    account_name = campaign_name = ad_group_name = None
+    account_id = campaign_id = ad_group_id = None
+    if account:
+        account_name = slugify.slugify(account.name)
+        account_id = account.id
+    elif campaign:
+        account_name = slugify.slugify(campaign.account.name)
+        campaign_name = slugify.slugify(campaign.name)
+        campaign_id = campaign.id
+    elif ad_group:
+        account_name = slugify.slugify(ad_group.campaign.account.name)
+        campaign_name = slugify.slugify(ad_group.campaign.name)
+        ad_group_name = slugify.slugify(ad_group.name)
+        ad_group_id = ad_group.id
+
+    contents = _get_report_contents(
+        user=user,
+        filtered_sources=filtered_sources,
+        start_date=start_date,
+        end_date=end_date,
+        order=order,
+        additional_fields=additional_fields,
+        breakdown=breakdown,
+        by_source=by_source,
+        by_day=by_day,
+        account_id=account_id,
+        campaign_id=campaign_id,
+        ad_group_id=ad_group_id)
+
+    filename = _get_report_filename(
+        granularity=granularity,
+        start_date=start_date,
+        end_date=end_date,
+        account_name=account_name,
+        campaign_name=campaign_name,
+        ad_group_name=ad_group_name,
+        by_source=by_source,
+        by_day=by_day
+    )
+
+    return (contents, filename)
+
+
+def _get_report_contents(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown, by_source, by_day, account_id=None, campaign_id=None, ad_group_id=None):
+    arguments = {
+        'user': user,
+        'filtered_sources': filtered_sources,
+        'start_date': start_date,
+        'end_date': end_date,
+        'order': order,
+        'additional_fields': additional_fields,
+        'breakdown': breakdown,
+        'by_source': by_source,
+        'by_day': by_day
+    }
+
+    if account_id:
+        arguments['account_id'] = account_id
+        return AccountExport().get_data(**arguments)
+    elif campaign_id:
+        arguments['campaign_id'] = campaign_id
+        return CampaignExport().get_data(**arguments)
+    elif ad_group_id:
+        arguments['ad_group_id'] = ad_group_id
+        return AdGroupExport().get_data(**arguments)
+    return AllAccountsExport().get_data(**arguments)
+
+
+def _get_report_filename(granularity, start_date, end_date, account_name='', campaign_name='', ad_group_name='', by_source=False, by_day=False):
+    name = ''
+    all_accounts_name = ''
+    if granularity == constants.ScheduledReportGranularity.ALL_ACCOUNTS or not any([account_name, campaign_name, ad_group_name]):
+        all_accounts_name = 'ZemantaOne'
+    if granularity == constants.ScheduledReportGranularity.ACCOUNT and not account_name:
+        name += '-_by_account'
+    elif granularity == constants.ScheduledReportGranularity.CAMPAIGN and not campaign_name:
+        name += '-_by_campaign'
+    elif granularity == constants.ScheduledReportGranularity.AD_GROUP and not ad_group_name:
+        name += '-_by_ad_group'
+    elif granularity == constants.ScheduledReportGranularity.CONTENT_AD:
+        name += '-_by_content_ad'
+
+    return '_'.join(filter(None, (
+        all_accounts_name,
+        account_name,
+        campaign_name,
+        ad_group_name,
+        name,
+        ('media_source' if by_source else ''),
+        ('by_day' if by_day else ''),
+        'report',
+        str(start_date),
+        str(end_date))))

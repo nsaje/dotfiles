@@ -1,4 +1,5 @@
 from mock import patch
+import mock
 
 import datetime
 from collections import OrderedDict
@@ -7,6 +8,7 @@ from django import test
 
 from dash import export_plus
 from dash import models
+from dash import constants
 import reports.redshift as redshift
 
 from zemauth.models import User
@@ -167,3 +169,126 @@ class ExportPlusTestCase(test.TestCase):
             'impressions': 200000,
             'clicks': 203
         }])
+
+    def test_get_report_filename(self):
+        self.assertEqual(
+            'acc_camp_adg_-_by_content_ad_media_source_report_2014-06-03_2014-06-10',
+            export_plus._get_report_filename(
+                constants.ScheduledReportGranularity.CONTENT_AD,
+                datetime.date(2014, 6, 3),
+                datetime.date(2014, 6, 10),
+                account_name='acc',
+                campaign_name='camp',
+                ad_group_name='adg',
+                by_source=True))
+
+        self.assertEqual(
+            'acc_camp_adg_-_by_content_ad_by_day_report_2014-06-03_2014-06-10',
+            export_plus._get_report_filename(
+                constants.ScheduledReportGranularity.CONTENT_AD,
+                datetime.date(2014, 6, 3),
+                datetime.date(2014, 6, 10),
+                account_name='acc',
+                campaign_name='camp',
+                ad_group_name='adg',
+                by_day=True))
+
+        self.assertEqual(
+            'acc_camp_-_by_ad_group_report_2014-06-03_2014-06-10',
+            export_plus._get_report_filename(
+                constants.ScheduledReportGranularity.AD_GROUP,
+                datetime.date(2014, 6, 3),
+                datetime.date(2014, 6, 10),
+                account_name='acc',
+                campaign_name='camp'))
+
+        self.assertEqual(
+            'ZemantaOne_media_source_report_2014-06-03_2014-06-10',
+            export_plus._get_report_filename(
+                constants.ScheduledReportGranularity.ALL_ACCOUNTS,
+                datetime.date(2014, 6, 3),
+                datetime.date(2014, 6, 10),
+                by_source=True))
+
+        self.assertEqual(
+            'acc_-_by_campaign_report_2014-06-03_2014-06-10',
+            export_plus._get_report_filename(
+                constants.ScheduledReportGranularity.CAMPAIGN,
+                datetime.date(2014, 6, 3),
+                datetime.date(2014, 6, 10),
+                account_name='acc'))
+
+    @mock.patch('dash.export_plus.AdGroupExport.get_data')
+    def test_get_report_contents_ad_group(self, get_data_mock):
+        report_contents = export_plus._get_report_contents(
+            User.objects.get(pk=1),
+            [],
+            datetime.date(2014, 6, 3),
+            datetime.date(2014, 6, 10),
+            'name',
+            ['aa', 'bb'],
+            ['ad_group', 'date'],
+            False,
+            True,
+            ad_group_id=1)
+
+        get_data_mock.assert_called_with(
+            additional_fields=['aa', 'bb'],
+            breakdown=['ad_group', 'date'],
+            filtered_sources=[],
+            ad_group_id=1,
+            end_date=datetime.date(2014, 6, 10),
+            by_day=True,
+            start_date=datetime.date(2014, 6, 3),
+            by_source=False,
+            user=User.objects.get(pk=1),
+            order='name'
+        )
+
+    @mock.patch('dash.export_plus.CampaignExport.get_data')
+    def test_get_report_contents_campaign(self, get_data_mock):
+        report_contents = export_plus._get_report_contents(
+            User.objects.get(pk=1),
+            [],
+            datetime.date(2014, 6, 3),
+            datetime.date(2014, 6, 10),
+            'cost',
+            [],
+            ['campaign', 'source'],
+            True,
+            False,
+            campaign_id=1)
+
+        get_data_mock.assert_called_with(
+            additional_fields=[],
+            breakdown=['campaign', 'source'],
+            filtered_sources=[],
+            end_date=datetime.date(2014, 6, 10),
+            by_day=False, campaign_id=1,
+            start_date=datetime.date(2014, 6, 3),
+            by_source=True, user=User.objects.get(pk=1),
+            order='cost'
+        )
+
+    @mock.patch('dash.export_plus._get_report')
+    def test_get_report_from_export_report(self, mock_get_report):
+        export_report = models.ExportReport.objects.get(id=1)
+        contents = export_plus.get_report_from_export_report(
+            export_report,
+            datetime.date(2014, 6, 3),
+            datetime.date(2014, 6, 10))
+
+        mock_get_report.assert_called_with(
+            User.objects.get(pk=1),
+            datetime.date(2014, 6, 3),
+            datetime.date(2014, 6, 10),
+            breakdown='account',
+            additional_fields=[],
+            account=models.Account.objects.get(id=1),
+            campaign=None,
+            by_day=False,
+            filtered_sources=mock.ANY,
+            by_source=False,
+            ad_group=None,
+            granularity=2,
+            order=None)
