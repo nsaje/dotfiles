@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zemauth', '0066_auto_20151123_1626'),
+        ('zemauth', '0065_auto_20151117_0923'),
     ]
 
     operations = [
