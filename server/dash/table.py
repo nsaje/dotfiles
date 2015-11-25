@@ -1608,9 +1608,12 @@ class PublishersTable(object):
 
         for publisher_data in publishers_data:
             publisher_domain = publisher_data['domain']
-            publisher_source = source_cache_by_slug.get(publisher_data['exchange']) or publisher_data['exchange']
-            publisher_data['source_id'] = publisher_source.id if source_cache_by_slug.get(publisher_data['exchange']) is not None else -1
-            publisher_data['can_blacklist_publisher'] = publisher_source.can_modify_publisher_blacklist_automatically()
+            publisher_source = source_cache_by_slug.get(publisher_data['exchange'].lower()) or publisher_data['exchange']
+
+            known_source = source_cache_by_slug.get(publisher_data['exchange']) is not None
+
+            publisher_data['source_id'] = publisher_source.id if known_source else -1
+            publisher_data['can_blacklist_publisher'] = publisher_source.can_modify_publisher_blacklist_automatically() if known_source else False
 
             if source_cache_by_slug.get(publisher_data['exchange']) is None:
                 continue
