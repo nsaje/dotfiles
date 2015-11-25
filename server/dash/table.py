@@ -377,7 +377,7 @@ class AdGroupSourcesTable(object):
 class AdGroupSourcesTableUpdates(object):
     def get(self, user, last_change_dt, filtered_sources, ad_group_id_=None):
         if not user.has_perm('zemauth.set_ad_group_source_settings'):
-            return exc.ForbiddenError('Not allowed')
+            raise exc.ForbiddenError('Not allowed')
 
         ad_group_sources_table = AdGroupSourcesTable(user, ad_group_id_, filtered_sources)
         ad_group_sources = ad_group_sources_table.active_ad_group_sources

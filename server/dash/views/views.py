@@ -1078,7 +1078,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         if level in (constants.PublisherBlacklistLevel.CAMPAIGN,
                      constants.PublisherBlacklistLevel.ACCOUNT) and\
                 not request.user.has_perm('zemauth.can_access_campaign_account_publisher_blacklist_status'):
-            return exc.AuthorizationError()
+            raise exc.AuthorizationError()
 
         if level == constants.PublisherBlacklistLevel.GLOBAL and\
                 not request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status'):

@@ -976,7 +976,6 @@ class AdGroupPublishersTableTest(TestCase):
             }
         ]
 
-        from pudb import set_trace; set_trace()
         mock_blacklisted.assert_any_call(
             date,
             date,
