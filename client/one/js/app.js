@@ -109,6 +109,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/credit',
             templateUrl: '/partials/account_credit.html',
             controller: 'AccountCreditCtrl'
+        }).state('main.accounts.reports', {
+            url: '/reports',
+            templateUrl: '/partials/account_reports.html',
+            controller: 'AccountReportsCtrl'
         });
 
     $stateProvider
@@ -229,5 +233,5 @@ oneApp.run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService',
            event.stopPropagation();
         }
     }
-    
+
 }]);
