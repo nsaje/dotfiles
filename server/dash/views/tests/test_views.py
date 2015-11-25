@@ -1376,15 +1376,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             "publishers_not_selected": []
         }
 
-    @patch('reports.redshift.get_cursor')
-    def test_post_blacklist_permission_none(self, cursor):
-        for level in (constants.PublisherBlacklistLevel.get_keys()):
-            payload = self._fake_payload_data(level)
-            res, status = self._post_publisher_blacklist(1, payload, user_id=2, with_status=True)
-            self.assertTrue('sign in' in res['text'].lower())
-
-    @patch('reports.redshift.get_cursor')
-    def test_post_blacklist_permission_adgroup(self, cursor):
+    def _fake_cursor_data(self, cursor):
         cursor().dictfetchall.return_value = [
         {
             'domain': u'zemanta.com',
@@ -1397,6 +1389,16 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         },
         ]
 
+    @patch('reports.redshift.get_cursor')
+    def test_post_blacklist_permission_none(self, cursor):
+        for level in (constants.PublisherBlacklistLevel.get_keys()):
+            payload = self._fake_payload_data(level)
+            res, status = self._post_publisher_blacklist(1, payload, user_id=2, with_status=True)
+            self.assertTrue('sign in' in res['text'].lower())
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_blacklist_permission_adgroup(self, cursor):
+        self._fake_cursor_data(cursor)
         accessible_levels = (constants.PublisherBlacklistLevel.ADGROUP,)
 
         permission = Permission.objects.get(codename='can_modify_publisher_blacklist_status')
