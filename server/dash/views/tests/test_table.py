@@ -779,6 +779,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'domain': None,
             u'domain_link': u'',
             u'blacklisted': u'Active',
+            u'can_blacklist_publisher': True,
             u'exchange': 'Adiant',
             u'source_id': 7,
             u'impressions': 10560,
@@ -866,7 +867,19 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
-        self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'AdsNative', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123, u'source_id': 1})
+        self.assertDictEqual(result['data']['rows'][0], {
+            u'domain': u'example.com',
+            u'domain_link': u'http://example.com',
+            u'blacklisted': u'Active',
+            u'can_blacklist_publisher': True,
+            u'ctr': 100.0,
+            u'exchange': u'AdsNative',
+            u'cpc': 1.3,
+            u'cost': 2.4,
+            u'impressions': 10560,
+            u'clicks': 123,
+            u'source_id': 1
+        })
 
     """
     # TODO: Fix this
@@ -1056,7 +1069,19 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
-        self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'Adiant', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123, u'source_id': 7})
+        self.assertDictEqual(result['data']['rows'][0], {
+            u'domain': u'example.com',
+            u'domain_link': u'http://example.com',
+            u'blacklisted': u'Active',
+            u'can_blacklist_publisher': True,
+            u'ctr': 100.0,
+            u'exchange': u'Adiant',
+            u'cpc': 1.3,
+            u'cost': 2.4,
+            u'impressions': 10560,
+            u'clicks': 123,
+            u'source_id': 7
+        })
 
 
 @patch('reports.redshift.get_cursor')
