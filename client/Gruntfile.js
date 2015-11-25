@@ -3,10 +3,10 @@ module.exports = function (grunt) {
 
     function getS3BuildPath() {
         if(grunt.option('build-number') !== undefined) {
-            return "https://s3.amazonaws.com/z1-static/build-" + grunt.option('build-number');
+            return 'https://s3.amazonaws.com/z1-static/build-' + grunt.option('build-number');
         }
 
-        return undefined;
+        return '';
     }
 
     grunt.initConfig({
@@ -173,7 +173,7 @@ module.exports = function (grunt) {
         less: {
             options: {
                 cleancss: true,
-                rootpath: getS3BuildPath() !== undefined ?
+                rootpath: getS3BuildPath() !== "" ?
                     getS3BuildPath() + "/client/one/" :
                     undefined
             },
@@ -247,7 +247,7 @@ module.exports = function (grunt) {
             prod: {
                 constants: {
                     config: {
-                        static_url: getS3BuildPath() + "/client",
+                        static_url: getS3BuildPath() + '/client',
                         debug: false
                     }
                 }
