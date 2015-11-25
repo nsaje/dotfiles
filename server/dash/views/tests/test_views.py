@@ -1342,6 +1342,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
 
     def _post_publisher_blacklist(self, ad_group_id, data, user_id=3, with_status=False):
         user = User.objects.get(pk=user_id)
+        self.client.login(username=user.username, password='secret')
         reversed_url = reverse(
                 'ad_group_publishers_blacklist',
                 kwargs={'ad_group_id': ad_group_id})
