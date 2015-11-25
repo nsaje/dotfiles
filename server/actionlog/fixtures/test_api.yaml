@@ -1047,3 +1047,31 @@
         multiplication_factor: 1
     model: dash.demoadgrouprealadgroup
     pk: 1
+
+# test export report scheduling
+
+-   fields:
+        name: 'Report 1'
+        state: 1  # active
+        sending_frequency: 1 # daily
+        created_by: 1
+        report_id: 1
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.scheduledexportreport
+    pk: 1
+
+-   fields:
+        email: 'test@zemanta.com'
+        scheduled_report: 1
+    model: dash.scheduledexportreportrecipient
+    pk: 1
+
+-   fields:
+        granularity: 2 # account
+        breakdown_by_day: False
+        breakdown_by_source: False
+        created_by: 1
+        account_id: 1
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.exportreport
+    pk: 1

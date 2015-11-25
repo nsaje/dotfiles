@@ -200,7 +200,7 @@ def get_csv_content(fieldnames, data, title_text=None):
             if key == 'date':
                 formatted_value = value.strftime('%Y-%m-%d')
 
-            if repr(formatted_value).find(';') != -1:
+            if ';' in repr(formatted_value):
                 formatted_value = '"' + formatted_value + '"'
 
             row[key] = formatted_value
