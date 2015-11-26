@@ -647,11 +647,6 @@ class CreditLineItemForm(forms.ModelForm):
             raise forms.ValidationError('End date has to be greater or equal to today.')
         return end_date
 
-    def clean_amount(self):
-        if self.cleaned_data['amount'] < 0:
-            raise forms.ValidationError('Amount cannot be negative.')
-        return self.cleaned_data['amount']
-
     class Meta:
         model = models.CreditLineItem
         fields = [
@@ -660,11 +655,6 @@ class CreditLineItemForm(forms.ModelForm):
     
 class BudgetLineItemForm(forms.ModelForm):
     credit = forms.ModelChoiceField(queryset=models.CreditLineItem.objects.all())
-
-    def clean_amount(self):
-        if self.cleaned_data['amount'] <= 0:
-            raise forms.ValidationError('Budget amount cannot be less or equal to zero.')
-        return self.cleaned_data['amount']
 
     def clean_start_date(self):
         start_date = self.cleaned_data['start_date']

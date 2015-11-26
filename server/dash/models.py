@@ -1891,10 +1891,13 @@ class CreditLineItem(FootprintModel):
             })
 
     def validate_amount(self):
+        if self.amount < 0:
+            raise ValidationError('Amount cannot be negative.')
         if not self.pk or not self.has_changed('amount'):
             return
         prev_amount = self.previous_value('amount')
         budgets = self.budgets.all()
+        
         if prev_amount < self.amount or not budgets:
             return
         if self.amount < sum(b.amount for b in budgets):
@@ -2051,6 +2054,9 @@ class BudgetLineItem(FootprintModel):
     def validate_amount(self):
         if not self.amount:
             return
+        if self.amount < 0:
+            raise ValidationError('Amount cannot be negative.')
+
         budgets = self.credit.budgets.exclude(pk=self.pk)
         delta = self.credit.amount - sum(b.amount for b in budgets) - self.amount
         if delta < 0:

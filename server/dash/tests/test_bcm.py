@@ -379,7 +379,7 @@ class BudgetsTestCase(TestCase):
                 end_date=TODAY+datetime.timedelta(11),
                 campaign_id=1,
             )
-        self.assertFalse('amount' in err.exception.error_dict)
+        self.assertTrue('amount' in err.exception.error_dict)
         self.assertTrue('start_date' in err.exception.error_dict)
         self.assertTrue('end_date' in err.exception.error_dict)
         self.assertTrue('credit' in err.exception.error_dict)
