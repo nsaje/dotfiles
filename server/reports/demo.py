@@ -60,14 +60,14 @@ def _copy_content_ads():
                 # We are working with an ad group where demo data
                 # hasn't migrated to the new version yet
                 content_ad_stats_qs = reports.models.ContentAdStats.objects.filter(content_ad__ad_group=demo_ad_group)
-                content_ad_ids = content_ad_stats_qs.values_list('content_ad_id', flat=True)
-
                 content_ad_stats_qs.delete()
+
                 demo_sources.delete()
                 dash.models.ContentAd.objects.filter(
                     ad_group=demo_ad_group
                 ).delete()
-                reports.api_contentads.remove_contentadstats(content_ad_ids)
+
+                reports.api_contentads.remove_contentadstats(ad_group_id=demo_ad_group.id)
                 logger.info('Ads and sources (demo: %d, real: %d ad group) don\'t exists, clearing state and copying ads ... ',
                             demo_ad_group.id,
                             real_ad_group.id)

@@ -1188,7 +1188,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 'settings': convertSettingsToApi(settings)
             };
 
-         
+
 
             $http.put(url, data, config).
                 success(function (data, status) {
@@ -1307,6 +1307,42 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                         deferred.reject(data);
                     }
                     deferred.resolve(data.data);
+                }).
+                error(function(data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function AccountReports() {
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + id + '/reports/';
+            $http.get(url).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve(data.data);
+                }).
+                error(function(data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.removeReport = function (scheduledReportId) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/reports/remove/' + scheduledReportId;
+            $http.delete(url).
+                success(function (data, status) {
+                    if (status != 200) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve();
                 }).
                 error(function(data, status, headers) {
                     deferred.reject(data);
@@ -2617,7 +2653,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 };
             }
         };
-        
+
         this.list = function (accountId) {
             var url = '/api/accounts/' + accountId + '/credit/';
             return $http.get(url).then(processResponse).then(function (data) {
@@ -2634,7 +2670,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             var url = '/api/accounts/' + accountId + '/credit/';
             return $http.put(url, self.convert.dataToApi(item)).then(processResponse);
         };
-        
+
         this.save = function (accountId, item) {
             var url = '/api/accounts/' + accountId + '/credit/' + item.id + '/';
             return $http.post(url, self.convert.dataToApi(item)).then(processResponse);
@@ -2693,7 +2729,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 };
             }
         };
-        
+
         this.list = function (campaignId) {
             var url = '/api/campaigns/' + campaignId + '/budget-plus/';
             return $http.get(url).then(processResponse).then(function (data) {
@@ -2728,7 +2764,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             var url = '/api/campaigns/' + campaignId + '/budget-plus/';
             return $http.put(url, self.convert.dataToApi(budget)).then(processResponse);
         };
-        
+
         this.save = function (campaignId, budget) {
             var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budget.id + '/';
             return $http.post(url, self.convert.dataToApi(budget)).then(processResponse);
@@ -2773,6 +2809,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         accountCampaigns: new AccountCampaigns(),
         accountCampaignsTable: new AccountCampaignsTable(),
         accountBudget: new AccountBudget(),
+        accountReports: new AccountReports(),
         accountSync: new AccountSync(),
         accountArchive: new AccountArchive(),
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),

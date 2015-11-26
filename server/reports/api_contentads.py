@@ -264,14 +264,14 @@ def get_day_cost(day, breakdown=None, **constraints):
     return rs
 
 
-def remove_contentadstats(content_ad_ids):
+def remove_contentadstats(ad_group_id):
     """
-    Completely removes stats for selected content ads
+    Completely removes stats for the selected ad group id
     """
 
-    if not content_ad_ids:
+    if not ad_group_id:
         return
 
     cursor = redshift.get_cursor()
-    RSContentAdStats.execute_delete(cursor, {'content_ad': content_ad_ids})
+    RSContentAdStats.execute_delete(cursor, {'ad_group': ad_group_id})
     cursor.close()

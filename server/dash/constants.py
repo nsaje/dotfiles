@@ -1186,10 +1186,12 @@ class ScheduledReportSendingFrequency(ConstantBase):
 class ScheduledReportState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
+    REMOVED = 3
 
     _VALUES = {
         ACTIVE: 'Enabled',
-        INACTIVE: 'Paused'
+        INACTIVE: 'Paused',
+        REMOVED: 'Removed'
     }
 
 
@@ -1220,4 +1222,14 @@ class ScheduledReportLevel(ConstantBase):
         ACCOUNT: 'Account',
         CAMPAIGN: 'Campaign',
         AD_GROUP: 'Ad Group'
+    }
+
+
+class ScheduledReportSent(ConstantBase):
+    SUCCESS = 1
+    FAILED = 2
+
+    _VALUES = {
+        SUCCESS: 'Success',
+        FAILED: 'Failed'
     }
