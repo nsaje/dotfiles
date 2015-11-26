@@ -256,7 +256,7 @@ def purgecache(**kvargs):
         data = response.read()
         try:
             data = json.loads( data )
-            success = True
+            success = data.get('result', '') != 'error'
         except ValueError:
             print('JSON parse failed.')
         if data['result'] == 'error':
