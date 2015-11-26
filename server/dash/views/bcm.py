@@ -277,6 +277,8 @@ class CampaignBudgetView(api_common.BaseApiView):
         }
         for item in models.CreditLineItem.objects.filter(account=campaign.account):
             allocated = item.get_allocated_amount()
+            if item.status != constants.CreditLineItemStatus.SIGNED:
+                return
             data['current'][item.is_past() and 'past' or 'available'] += Decimal(item.amount)
             if not item.is_past():
                 data['current']['unallocated'] += Decimal(item.amount - allocated)
