@@ -106,7 +106,7 @@ class PublisherBlacklistLevel(ConstantBase):
     ACCOUNT = 'account'
     GLOBAL = 'global'
 
-    INT_MAP = {
+    _INT_MAP = {
         ADGROUP: 1,
         CAMPAIGN: 2,
         ACCOUNT: 3,
@@ -133,7 +133,7 @@ class PublisherBlacklistLevel(ConstantBase):
 
     @classmethod
     def compare(cls, level, other):
-        mapping = cls.INT_MAP
+        mapping = cls._INT_MAP
         return mapping[level].__cmp__(mapping[other])
 
 

@@ -1068,11 +1068,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         end_date = helpers.parse_datetime(body.get('end_date'))
 
         state = int(body.get('state'))
-        if state not in constants.PublisherStatus.get_keys():
+        if state not in constants.PublisherStatus.get_all():
             raise exc.MissingDataError('Invalid state')
 
         level = body.get('level')
-        if level not in constants.PublisherBlacklistLevel.get_keys():
+        if level not in constants.PublisherBlacklistLevel.get_all():
             raise exc.MissingDataError('Invalid level')
 
         if level in (constants.PublisherBlacklistLevel.CAMPAIGN,

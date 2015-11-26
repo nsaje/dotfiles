@@ -16,9 +16,5 @@ class ConstantBase(object):
         return ((cons, cls.get_text(cons)) for cons in cls.get_all())
 
     @classmethod
-    def get_keys(cls):
-        return tuple(cons for cons in cls.get_all() if type(cons) in (str, int))
-
-    @classmethod
     def get_text(cls, cons):
         return cls._VALUES.get(cons)
