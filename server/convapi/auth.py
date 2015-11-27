@@ -22,9 +22,6 @@ class MailGunRequestAuth(object):
     def is_authorised(self):
 
         timestamp = self.request.POST['timestamp']
-        # take only int part
-        timestamp = int(float(timestamp))
-
         signature = self.request.POST['signature']
         token = self.request.POST['token']
 
