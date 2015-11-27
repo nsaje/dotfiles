@@ -108,8 +108,8 @@ MAILGUN_API_KEY = ''
 
 DEMO_USERS = tuple()
 
-from localsettings import *
 from celeryconfig import *
+from localsettings import *
 
 STATIC_URL = SERVER_STATIC_URL + '/'
 
