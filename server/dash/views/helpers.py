@@ -765,7 +765,7 @@ def get_user_full_name_or_email(user):
 
 
 def copy_stats_to_row(stat, row):
-    for key in ['impressions', 'clicks', 'cost', 'cpc', 'ctr',
+    for key in ['impressions', 'clicks', 'cost', 'data_cost', 'cpc', 'ctr',
                 'visits', 'click_discrepancy', 'pageviews',
                 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
         row[key] = stat.get(key)

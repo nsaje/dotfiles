@@ -49,7 +49,7 @@ def filter_by_permissions(result, user):
                     filtered_row[field] = row[field]
         filtered_row = {
             field: value for field, value in filtered_row.iteritems()
-            if field not in FIELD_PERMISSION_MAP or not user.has_perm(FIELD_PERMISSION_MAP[field])
+            if field not in FIELD_PERMISSION_MAP or user.has_perm(FIELD_PERMISSION_MAP[field])
         }
         return filtered_row
     if isinstance(result, dict):
