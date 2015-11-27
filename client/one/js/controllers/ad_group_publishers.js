@@ -378,7 +378,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             field: 'data_cost',
             checked: true,
             type: 'currency',
-            shown: true,
             help: 'Additional targeting/segmenting costs.',
             totalRow: true,
             order: true,
