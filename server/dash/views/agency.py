@@ -867,15 +867,16 @@ class AccountAgency(api_common.BaseApiView):
         and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
             raise exc.MissingDataError()
 
-        old_settings = account.get_current_settings()
 
         self.set_account(account, form.cleaned_data)
 
         settings = models.AccountSettings()
         self.set_settings(settings, account, form.cleaned_data)
-        self.set_allowed_sources(settings, old_settings, form.cleaned_data.get('allowed_sources'))
 
         with transaction.atomic():
+            old_settings = account.get_current_settings()
+            self.set_allowed_sources(settings, old_settings, form.cleaned_data.get('allowed_sources'))
+            
             account.save(request)
             settings.save(request)
 
