@@ -377,7 +377,7 @@ class AdGroupSourcesTable(object):
 class AdGroupSourcesTableUpdates(object):
     def get(self, user, last_change_dt, filtered_sources, ad_group_id_=None):
         if not user.has_perm('zemauth.set_ad_group_source_settings'):
-            return exc.ForbiddenError('Not allowed')
+            raise exc.ForbiddenError('Not allowed')
 
         ad_group_sources_table = AdGroupSourcesTable(user, ad_group_id_, filtered_sources)
         ad_group_sources = ad_group_sources_table.active_ad_group_sources
@@ -1635,6 +1635,7 @@ class PublishersTable(object):
 
         response = {
             'rows': self.get_rows(
+                user,
                 map_exchange_to_source_name,
                 publishers_data=publishers_data,
             ),
@@ -1719,17 +1720,17 @@ class PublishersTable(object):
                    totals_data):
         result = {
             'cost': totals_data.get('cost', 0),
+            'data_cost': totals_data.get('data_cost', 0),
             'cpc': totals_data.get('cpc', 0),
             'clicks': totals_data.get('clicks', 0),
             'impressions': totals_data.get('impressions', 0),
             'ctr': totals_data.get('ctr', 0),
         }
+        if not user.has_perm('zemauth.can_view_data_cost'):
+            del result['data_cost']
         return result
 
-    def get_rows(
-            self,
-            map_exchange_to_source_name,
-            publishers_data):
+    def get_rows(self, user, map_exchange_to_source_name, publishers_data):
 
         rows = []
         for publisher_data in publishers_data:
@@ -1749,11 +1750,16 @@ class PublishersTable(object):
                 'exchange': source_name,
                 'source_id': publisher_data['source_id'],
                 'cost': publisher_data.get('cost', 0),
+                'data_cost': publisher_data.get('data_cost', 0),
                 'cpc': publisher_data.get('cpc', 0),
                 'clicks': publisher_data.get('clicks', None),
                 'impressions': publisher_data.get('impressions', None),
                 'ctr': publisher_data.get('ctr', None),
             }
+
+            
+            if not user.has_perm('zemauth.can_view_data_cost'):
+                del row['data_cost']
 
             if publisher_data.get('blacklisted_level'):
                 row['blacklisted_level'] = publisher_data['blacklisted_level']

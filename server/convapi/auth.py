@@ -20,12 +20,15 @@ class MailGunRequestAuth(object):
         self.request = request
 
     def is_authorised(self):
+
         timestamp = self.request.POST['timestamp']
         signature = self.request.POST['signature']
         token = self.request.POST['token']
+
         expected_signature = hmac.new(
             key=settings.MAILGUN_API_KEY,
             msg='{}{}'.format(timestamp, token),
             digestmod=hashlib.sha256
         ).hexdigest()
+
         return signature == expected_signature

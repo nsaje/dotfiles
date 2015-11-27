@@ -1068,14 +1068,19 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         end_date = helpers.parse_datetime(body.get('end_date'))
 
         state = int(body.get('state'))
-        if state not in constants.PublisherStatus.get_keys():
+        if state not in constants.PublisherStatus.get_all():
             raise exc.MissingDataError('Invalid state')
 
         level = body.get('level')
-        if level not in constants.PublisherBlacklistLevel.get_keys():
+        if level not in constants.PublisherBlacklistLevel.get_all():
             raise exc.MissingDataError('Invalid level')
 
-        if level != constants.PublisherBlacklistLevel.ADGROUP and\
+        if level in (constants.PublisherBlacklistLevel.CAMPAIGN,
+                     constants.PublisherBlacklistLevel.ACCOUNT) and\
+                not request.user.has_perm('zemauth.can_access_campaign_account_publisher_blacklist_status'):
+            raise exc.AuthorizationError()
+
+        if level == constants.PublisherBlacklistLevel.GLOBAL and\
                 not request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status'):
             raise exc.AuthorizationError()
 

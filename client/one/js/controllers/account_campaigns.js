@@ -163,6 +163,18 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             isDefaultOrder: true
         },
         {
+            name: 'Data Cost',
+            field: 'data_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Additional targeting/segmenting costs.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_data_cost'),
+            shown: $scope.hasPermission('zemauth.can_view_data_cost')
+        },
+        {
             name: 'Avg. CPC',
             field: 'cpc',
             checked: true,
@@ -236,8 +248,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         {
             'name': 'Traffic Acquisition',
             'fields': [
-               'cost', 'cpc', 'clicks', 'impressions', 'ctr',
-               'budget', 'available_budget', 'unspent_budget'
+                'cost', 'data_cost', 'cpc', 'clicks', 'impressions', 'ctr',
+                'budget', 'available_budget', 'unspent_budget'
             ]
         },
         {

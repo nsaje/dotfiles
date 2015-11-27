@@ -45,22 +45,22 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         name: 'Blacklist in this campaign',
         value: 'blacklist-campaign',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-            $scope.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
+            $scope.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
     }, {
         name: 'Re-enable in this campaign',
         value: 'enable-campaign',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-            $scope.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
+            $scope.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
     }, {
         name: 'Blacklist in this account',
         value: 'blacklist-account',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-            $scope.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
+            $scope.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
     }, {
         name: 'Re-enable in this account',
         value: 'enable-account',
         hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status') &&
-            $scope.hasPermission('zemauth.can_access_global_publisher_blacklist_status')
+            $scope.hasPermission('zemauth.can_access_campaign_account_publisher_blacklist_status')
     },{
         name: 'Blacklist globally',
         value: 'blacklist-global',
@@ -246,7 +246,17 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
 
         var publishersSelected = [],
-            publishersNotSelected = [];
+            publishersNotSelected = [],
+            splitAction = action.split('-'),
+            action = splitAction[0],
+            level = splitAction[1],
+            state = null;
+
+        if (level === constants.publisherBlacklistLevel.GLOBAL) {
+            if (!confirm("This action will affect all accounts. Are you sure you want to proceed?")) {
+                return;               
+            }
+        }
 
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
             if ($scope.selectedPublisherStatus[publisherId] !== undefined) {
@@ -257,10 +267,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 }
             }
         });
-        var splitAction = action.split('-'),
-            action = splitAction[0],
-            level = splitAction[1],
-            state = null;
 
         
         if (action == 'enable') {
@@ -366,6 +372,18 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             totalRow: true,
             order: true,
             initialOrder: 'desc'
+        },
+        {
+            name: 'Data Cost',
+            field: 'data_cost',
+            checked: true,
+            type: 'currency',
+            help: 'Additional targeting/segmenting costs.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_data_cost'),
+            shown: $scope.hasPermission('zemauth.can_view_data_cost')
         },
         {
             name: 'Avg. CPC',

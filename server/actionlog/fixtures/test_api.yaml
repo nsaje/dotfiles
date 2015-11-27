@@ -12,7 +12,7 @@
         last_name: ''
         password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
         user_permissions: []
-        username: ''
+        username: 'alpha'
     model: zemauth.user
     pk: 1
 
@@ -26,9 +26,9 @@
         is_superuser: false
         last_login: '2014-06-16T12:21:29'
         last_name: ''
-        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        password: pbkdf2_sha256$20000$uBSBDTI89lC9$KIa//Zqrj258fQLcMIhv1GKax3sH5wvXY/5IrON4IWw=
         user_permissions: []
-        username: ''
+        username: 'beta'
     model: zemauth.user
     pk: 2
 
@@ -44,10 +44,11 @@
         last_name: ''
         password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
         user_permissions: []
-        username: ''
+        username: 'gamma'
     model: zemauth.user
     pk: 3
 
+# password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
 # test account
 
 -   fields:

@@ -18,7 +18,7 @@ class ViewsTest(TestCase):
         self.factory = RequestFactory()
 
     def _authorize(self):
-        timestamp = datetime.datetime.now()
+        timestamp = "1448618550.785939"
         signature = hmac.new(
             key=settings.MAILGUN_API_KEY,
             msg='{}{}'.format(timestamp, ""),

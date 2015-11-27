@@ -43,6 +43,7 @@
     impressions: 1264
     clicks: 21
     cost_cc: 11426
+    data_cost_cc: 100
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 1
@@ -55,6 +56,7 @@
     impressions: 178
     clicks: 0
     cost_cc: 0
+    data_cost_cc: 200
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 2
@@ -67,6 +69,7 @@
     impressions: 1859
     clicks: 20
     cost_cc: 10882
+    data_cost_cc: 1000
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 3
@@ -80,6 +83,7 @@
     impressions: 1037
     clicks: 17
     cost_cc: 7617
+    data_cost_cc: 300
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 4
@@ -92,6 +96,7 @@
     impressions: 1216
     clicks: 16
     cost_cc: 5441
+    data_cost_cc: 0
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 5
@@ -104,6 +109,7 @@
     impressions: 443
     clicks: 4
     cost_cc: 2176
+    data_cost_cc: 150
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 6
@@ -117,6 +123,7 @@
     impressions: 4870
     clicks: 67
     cost_cc: 36455
+    data_cost_cc: 2100
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 7
@@ -129,6 +136,7 @@
     impressions: 1640
     clicks: 21
     cost_cc: 11426
+    data_cost_cc: 1100
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 8
@@ -141,6 +149,7 @@
     impressions: 123
     clicks: 1
     cost_cc: 544
+    data_cost_cc: 0
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 9
@@ -154,6 +163,7 @@
     impressions: 1168
     clicks: 13
     cost_cc: 7073
+    data_cost_cc: 100
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 10
@@ -166,6 +176,7 @@
     impressions: 1477
     clicks: 8
     cost_cc: 4352
+    data_cost_cc: 100
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 11
@@ -178,6 +189,7 @@
     impressions: 2175
     clicks: 39
     cost_cc: 21220
+    data_cost_cc: 3000
     created_dt: '2014-06-04T09:58:21'
   model: reports.articlestats
   pk: 12

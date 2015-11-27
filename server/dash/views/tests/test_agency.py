@@ -1737,8 +1737,9 @@ class AccountAgencyTest(TestCase):
 
     def test_set_allowed_sources(self):
         settings = models.AccountSettings()
+        old_settings = models.AccountSettings()
         view = agency.AccountAgency()
-        view.set_allowed_sources(settings, {
+        view.set_allowed_sources(settings, old_settings, {
             1: {'allowed': True},
             2: {'allowed': True},
             3: {}
@@ -1747,9 +1748,10 @@ class AccountAgencyTest(TestCase):
 
     def test_set_allowed_sources_none(self):
         settings = models.AccountSettings()
+        old_settings = models.AccountSettings(allowed_sources=[1,2])
         view = agency.AccountAgency()
-        view.set_allowed_sources(settings, None)
-        self.assertEqual(settings.allowed_sources, [])
+        view.set_allowed_sources(settings, old_settings, None)
+        self.assertEqual(settings.allowed_sources, [1,2])
 
     def test_get_allowed_sources(self):
         view = agency.AccountAgency()
