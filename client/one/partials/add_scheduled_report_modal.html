@@ -1,0 +1,123 @@
+<div class="modal-body">
+    <form id="add-scheduled-report-form" ng-submit="scheduleReport()" class="modal-form add-scheduled-report-form form-horizontal">
+        <div class="title">Export Report</div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.granularity}">
+            <label for="granularity-select" class="col-xs-4 control-label">
+                Report Granularity
+                <zem-help-popover content="Granularity of the report." placement="top"></zem-help-popover>
+            </label>
+
+            <ui-select config
+                id="granularity-select"
+                theme="select2"
+                search-enabled="false"
+                ng-model="export.type"
+                class="col-xs-5"
+                ng-focus="clearErrors('granularity')">
+                <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}" ui-disable-choice="option.disabled">
+                  <div ng-if="option.disabled"
+                       zem-lazy-popover-text="This report is not available for download due to the volume of content. Please contact your account manager for assistance."
+                       zem-lazy-popover-placement="left"
+                       zem-lazy-popover-animation-class="fade"
+                       zem-lazy-popover-append-to-body="true">
+                        {{option.name}}
+                  </div>
+                  <div ng-if="!option.disabled">
+                        {{option.name}}
+                  </div>
+                </ui-select-choices>
+            </ui-select>
+
+            <div class="col-xs-3">
+                <label ng-repeat="error in errors.granularity" class="control-label small error" for="granularity-select">{{ error }}</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+          <label for="by-day-checkbox" class="col-xs-4 control-label">Breakdown by day:</label>
+          <input id="by-day-checkbox" type="checkbox" ng-model="export.byDay" class="checkbox">
+        </div>
+
+        <div class="form-group">
+            <div class="col-xs-4">
+                <button type="button" class="btn btn-default" ng-click="downloadReport()">Download Now</button>
+            </div>
+        </div>
+
+        <div class="title">Schedule report?</div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.report_name}">
+            <label for="report-name-input" class="col-xs-4 control-label">
+                Report name:
+            </label>
+            <div class="col-xs-5">
+                <input type="text"
+                       zem-focus-select
+                       id="report-name-input"
+                       class="form-control"
+                       ng-model="export.report_name"
+                       ng-focus="clearErrors('report_name')"
+                       placeholder="Name of the report" />
+            </div>
+            <div class="col-xs-3">
+                <label ng-repeat="error in errors.report_name" class="control-label small error" for="report-name-input">{{ error }}</label>
+            </div>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.frequency}">
+            <label for="frequency-select" class="col-xs-4 control-label">Scheduling frequency:</label>
+
+            <ui-select
+                    theme="select2"
+                    search-enabled="false"
+                    id="frequency-select"
+                    class="col-xs-5"
+                    ng-model="export.frequency"
+                    ng-focus="clearErrors('frequency')">
+                <ui-select-match placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="freq in exportSchedulingFrequencies">
+                    <div>{{freq.name}}</div>
+                </ui-select-choices>
+            </ui-select>
+
+            <div class="col-xs-3">
+                <label ng-repeat="error in errors.frequency" class="control-label small error" for="frequency-select">{{ error }}</label>
+            </div>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': !!errors.recipient_emails}">
+            <label for="recipient-emails-textarea" class="col-xs-4 control-label" id="recipient-emails-label">
+                Recipient emails:
+                <zem-help-popover content="Comma-separated list of recipient email addresses." placement="top"></zem-help-popover>
+            </label>
+
+            <div class="col-xs-8">
+                <label ng-repeat="error in errors.recipient_emails" class="control-label small error" for="recipient-emails-label">{{ error }}</label>
+            </div>
+
+            <textarea
+                ng-model="export.recipientEmails"
+                id="recipient-emails-textarea"
+                class="form-control recipient-emails"
+                type="text"
+                placeholder="Comma-separated list of recipient email addresses"
+                ng-focus="clearErrors('recipient_emails')">
+            </textarea>
+        </div>
+
+        <div class="form-group">
+            <div class="col-xs-4">
+                <button type="submit" class="btn btn-default">Schedule</button>
+            </div>
+            <div class="col-xs-3">
+                <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
+            </div>
+            <div class="loader" ng-show="addScheduledReportInProgress"></div>
+            <span class="col-xs-5 small error" ng-if="error">
+                An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
+            </span>
+        </div>
+    </form>
+</div>

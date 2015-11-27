@@ -1316,10 +1316,17 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
-    function AccountReports() {
-        this.get = function (id) {
+    function ScheduledReports() {
+        this.get = function (level, id) {
             var deferred = $q.defer();
-            var url = '/api/accounts/' + id + '/reports/';
+            var url;
+            if (level === constants.level.ALL_ACCOUNTS){
+                url = '/api/all_accounts/reports/';
+            } else if (level === constants.level.ACCOUNTS) {
+                url = '/api/accounts/' + id + '/reports/';
+            } else {
+                return;
+            }
             $http.get(url).
                 success(function (data, status) {
                     if (!data || !data.data) {
@@ -1346,6 +1353,48 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 }).
                 error(function(data, status, headers) {
                     deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        function convertValidationErrorsFromApi(errors) {
+            var ret = {};
+
+            if (errors.hasOwnProperty('report_name')) {
+                ret.report_name = errors.report_name;
+            }
+
+            if (errors.hasOwnProperty('granularity')) {
+                ret.granularity = errors.granularity;
+            }
+
+            if (errors.hasOwnProperty('frequency')) {
+                ret.frequency = errors.frequency;
+            }
+
+            if (errors.hasOwnProperty('recipient_emails')) {
+                ret.recipient_emails = errors.recipient_emails;
+            }
+
+            return ret;
+        }
+
+        this.scheduleReport = function (url, data) {
+            var deferred = $q.defer();
+            $http.put(url, data).
+                success(function (data, status) {
+                    if (status != 200) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve();
+                }).
+                error(function(data, status) {
+                  var errors = null;
+                  if(data.data && data.data.errors) {
+                      errors = convertValidationErrorsFromApi(data.data.errors);
+                  }
+                  return deferred.reject(errors);
                 });
 
             return deferred.promise;
@@ -2809,7 +2858,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         accountCampaigns: new AccountCampaigns(),
         accountCampaignsTable: new AccountCampaignsTable(),
         accountBudget: new AccountBudget(),
-        accountReports: new AccountReports(),
+        scheduledReports: new ScheduledReports(),
         accountSync: new AccountSync(),
         accountArchive: new AccountArchive(),
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),

@@ -503,6 +503,11 @@ var constants = {
         AD_GROUP: 'adgroup-csv',
         CONTENT_AD: 'contentad-csv'
     },
+    exportFrequency: {
+        DAILY: 'daily',
+        WEEKLY: 'weekly',
+        MONTHLY: 'monthly'
+    },
 };
 var options = {
     adGroupSettingsStates: [{name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
@@ -972,6 +977,10 @@ var options = {
         {name: '1 day', value: 24},
         {name: '7 days', value: 168},
         {name: '30 days', value: 720}
+    ],
+    exportFrequency: [{name: 'Daily', value: constants.exportFrequency.DAILY},
+        {name: 'Weekly (Monday)', value: constants.exportFrequency.WEEKLY},
+        {name: 'Monthly (1st)', value: constants.exportFrequency.MONTHLY}
     ]
 };
 
