@@ -596,11 +596,11 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         if data['state'] != content_ad_source.content_ad.state:
             logger.info(
-                ('Found inconsistent content ad state on media source %s for content ad %d: source state=%d,'
-                 'z1 state=%d, source submission status=%d, z1 submission status=%d'),
-                content_ad_source.source.name, content_ad_source.content_ad.pk,
-                data.get('state'), content_ad_source.content_ad.state,
-                data.get('submission_status'), content_ad_source.submission_status,
+                ('Found inconsistent content ad state on media source {} for content ad {}: source state={},'
+                 'z1 state={}, source submission status={}, z1 submission status={}').format(
+                     content_ad_source.source.name, content_ad_source.content_ad.pk,
+                     data.get('state'), content_ad_source.content_ad.state,
+                     data.get('submission_status'), content_ad_source.submission_status)
             )
             nr_inconsistent_internal_states += 1
 
