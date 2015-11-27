@@ -79,7 +79,9 @@ def mailgun_gareps(request):
         return HttpResponse(status=406)
     if not MailGunRequestAuth(request).is_authorised():
         logger.warning('ERROR: authenticity of request could not be verified')
-        logger.debug('Authenticity of request could not be verified debug data {}'.format(request.POST['timestamp']))
+        logger.debug('Authenticity of request could not be verified - debug data {}'.format(request.POST['timestamp'],
+                                                                                            request.POST['token'],
+                                                                                            request.POST['signature']))
         statsd_incr('convapi.invalid_request_signature')
         return HttpResponse(status=406)
 
