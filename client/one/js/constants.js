@@ -28,6 +28,7 @@ var constants = {
         IMPRESSIONS: 'impressions',
         CTR: 'ctr',
         COST: 'cost',
+        DATA_COST: 'data_cost',
         CPC: 'cpc',
         VISITS: 'visits',
         PAGEVIEWS: 'pageviews',
@@ -523,6 +524,7 @@ var options = {
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
         {name: 'Spend', value: constants.chartMetric.COST},
+        {name: 'Data Cost', value: constants.chartMetric.DATA_COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC},
     ],
     adGroupAcquisitionChartPostClickMetrics: [
@@ -545,6 +547,7 @@ var options = {
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
         {name: 'Spend', value: constants.chartMetric.COST},
+        {name: 'Data Cost', value: constants.chartMetric.DATA_COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
     ],
     campaignConversionGoalChartMetrics: [
@@ -556,11 +559,13 @@ var options = {
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
         {name: 'Spend', value: constants.chartMetric.COST},
+        {name: 'Data Cost', value: constants.chartMetric.DATA_COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
     ],
     allAccountsChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Spend', value: constants.chartMetric.COST},
+        {name: 'Data Cost', value: constants.chartMetric.DATA_COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
     ],
     iabCategories: [

@@ -40,6 +40,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.65145588874402,
             'cpc': 0.0501,
             'cost': 1.9043,
+            'data_cost': 0.04,
             'date': datetime.date(2014, 6, 4),
             'impressions': 2301,
             'clicks': 38
@@ -47,6 +48,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.14777618364419,
             'cpc': 0.0340,
             'cost': 0.5441,
+            'data_cost': 0.02,
             'date': datetime.date(2014, 6, 5),
             'impressions': 1394,
             'clicks': 16
@@ -54,6 +56,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.04257167680278,
             'cpc': 0.0544,
             'cost': 1.3058,
+            'data_cost': 0.115,
             'date': datetime.date(2014, 6, 6),
             'impressions': 2302,
             'clicks': 24
@@ -86,6 +89,7 @@ class QueryTestCase(test.TestCase):
         expected = {
             'clicks': None,
             'cost': None,
+            'data_cost': None,
             'cpc': None,
             'ctr': None,
             'impressions': None
@@ -104,10 +108,10 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.3006503251625798,
             'cpc': 0.0481,
             'cost': 3.7542,
+            'data_cost': 0.175,
             'impressions': 5997,
             'clicks': 78
         }
-
         result = api.query(start, end, ['source'], ad_group=1)[0]
 
         self.assertTrue(dicts_match_for_keys(result, expected, expected.keys()))
@@ -119,12 +123,14 @@ class QueryTestCase(test.TestCase):
         expected = {
             'impressions': 5997,
             'cost': 3.7542,
+            'data_cost': 0.175,
             'clicks': 78,
             'ctr': 1.3006503251625798,
             'cpc': 0.0481
         }
 
         result = api.query(start, end, [], ad_group=1)
+        
 
         self.assertTrue(dicts_match_for_keys(result, expected, expected.keys()))
 
@@ -136,6 +142,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.66139240506329,
             'cpc': 0.0544,
             'cost': 1.1426,
+            'data_cost': 0.01,
             'impressions': 1264,
             'date': datetime.date(2014, 6, 4),
             'article': 1,
@@ -146,6 +153,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.63934426229508,
             'cpc': 0.0448,
             'cost': 0.7617,
+            'data_cost': 0.03,
             'impressions': 1037,
             'date': datetime.date(2014, 6, 4),
             'article': 2,
@@ -156,6 +164,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 0.0,
             'cpc': None,
             'cost': 0.0,
+            'data_cost': 0.02,
             'impressions': 178,
             'date': datetime.date(2014, 6, 5),
             'article': 1,
@@ -166,6 +175,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.31578947368421,
             'cpc': 0.0340,
             'cost': 0.5441,
+            'data_cost': 0.0,
             'impressions': 1216,
             'date': datetime.date(2014, 6, 5),
             'article': 2,
@@ -186,6 +196,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.24204786428355,
             'cpc': 0.0544,
             'cost': 2.2308,
+            'data_cost': 0.13,
             'impressions': 3301,
             'article': 1,
             'clicks': 41,
@@ -195,6 +206,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.37240356083086,
             'cpc': 0.0412,
             'cost': 1.5234,
+            'data_cost': 0.045,
             'impressions': 2696,
             'article': 2,
             'clicks': 37,
@@ -204,6 +216,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.3417759686416402,
             'cpc': 0.0544,
             'cost': 4.8425,
+            'data_cost': 0.32,
             'impressions': 6633,
             'article': 3,
             'clicks': 89,
@@ -213,6 +226,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.2448132780083,
             'cpc': 0.0544,
             'cost': 3.2645,
+            'data_cost': 0.32,
             'impressions': 4820,
             'article': 4,
             'clicks': 60,
@@ -254,6 +268,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.31578947368421,
             'cpc': 0.0340,
             'cost': 0.5441,
+            'data_cost': 0.0,
             'impressions': 1216,
             'date': datetime.date(2014, 6, 5),
             'article': 2,
@@ -264,6 +279,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.63934426229508,
             'cpc': 0.0448,
             'cost': 0.7617,
+            'data_cost': 0.03,
             'impressions': 1037,
             'date': datetime.date(2014, 6, 4),
             'article': 2,
@@ -274,6 +290,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.66139240506329,
             'cpc': 0.0544,
             'cost': 1.1426,
+            'data_cost': 0.01,
             'impressions': 1264,
             'date': datetime.date(2014, 6, 4),
             'article': 1,
@@ -284,6 +301,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 0.0,
             'cpc': None,
             'cost': 0.0,
+            'data_cost': 0.02,
             'impressions': 178,
             'date': datetime.date(2014, 6, 5),
             'article': 1,
@@ -308,6 +326,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.31578947368421,
             'cpc': 0.0340,
             'cost': 0.5441,
+            'data_cost': 0.0,
             'impressions': 1216,
             'date': datetime.date(2014, 6, 5),
             'article': 2,
@@ -318,6 +337,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.63934426229508,
             'cpc': 0.0448,
             'cost': 0.7617,
+            'data_cost': 0.03,
             'impressions': 1037,
             'date': datetime.date(2014, 6, 4),
             'article': 2,
@@ -333,6 +353,7 @@ class QueryTestCase(test.TestCase):
             order=['cpc'],
             ad_group=1
         ), 1, 2)
+
         rows = result[0]
         self.assertTrue(sequence_of_dicts_match_for_keys(rows, expected, expected[0].keys()))
         self.assertEqual(result[1], 1)
@@ -345,6 +366,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 1.66139240506329,
             'cpc': 0.0544,
             'cost': 1.1426,
+            'data_cost': 0.01,
             'impressions': 1264,
             'date': datetime.date(2014, 6, 4),
             'article': 1,
@@ -355,6 +377,7 @@ class QueryTestCase(test.TestCase):
             'ctr': 0.0,
             'cpc': None,
             'cost': 0.0,
+            'data_cost': 0.02,
             'impressions': 178,
             'date': datetime.date(2014, 6, 5),
             'article': 1,
