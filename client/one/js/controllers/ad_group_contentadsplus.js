@@ -346,6 +346,17 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         order: true,
         initialOrder: 'desc'
     }, {
+        name: 'Data Cost',
+        field: 'data_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Additional targeting/segmenting costs.', 
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_data_cost'),
+        shown: $scope.hasPermission('zemauth.can_view_data_cost')
+    },{
         name: 'Avg. CPC',
         field: 'cpc',
         checked: true,
@@ -404,7 +415,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         'fields': ['ad_selected', 'image_urls', 'titleLink', 'urlLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
     }, {
         'name': 'Traffic Acquisition',
-        'fields': ['cost', 'cpc', 'clicks', 'impressions', 'ctr']
+        'fields': ['cost', 'data_cost', 'cpc', 'clicks', 'impressions', 'ctr']
     }, {
         'name': 'Audience Metrics',
         'fields': ['percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'visits', 'pageviews', 'click_discrepancy']

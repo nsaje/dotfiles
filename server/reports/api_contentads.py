@@ -33,6 +33,7 @@ class RSContentAdStatsModel(redshift.RSModel):
         dict(sql='clicks_sum',      app='clicks',      out=rsh.unchanged,   calc=rsh.sum_agr('clicks')),
         dict(sql='impressions_sum', app='impressions', out=rsh.unchanged,   calc=rsh.sum_agr('impressions')),
         dict(sql='cost_cc_sum',     app='cost',        out=rsh.from_cc,     calc=rsh.sum_agr('cost_cc')),
+        dict(sql='data_cost_cc_sum',app='data_cost',   out=rsh.from_cc,     calc=rsh.sum_agr('data_cost_cc')),        
         dict(sql='ctr',             app='ctr',         out=rsh.to_percent,  calc=rsh.sum_div('clicks', 'impressions')),
         dict(sql='cpc_cc',          app='cpc',         out=rsh.from_cc,     calc=rsh.sum_div('cost_cc', 'clicks')),
     ]

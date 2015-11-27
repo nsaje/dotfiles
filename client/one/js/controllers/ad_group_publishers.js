@@ -374,6 +374,19 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             initialOrder: 'desc'
         },
         {
+            name: 'Data Cost',
+            field: 'data_cost',
+            checked: true,
+            type: 'currency',
+            shown: true,
+            help: 'Additional targeting/segmenting costs.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_data_cost'),
+            shown: $scope.hasPermission('zemauth.can_view_data_cost')
+        },
+        {
             name: 'Avg. CPC',
             field: 'cpc',
             checked: true,

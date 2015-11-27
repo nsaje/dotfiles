@@ -700,6 +700,7 @@ class AdGroupPublishersTableTest(TestCase):
         mock_stats1 = [{
          'clicks': 123,
          'cost': 2.4,
+         'data_cost': 0,
          'cpc': 1.3,
          'ctr': 100.0,
          'impressions': 10560,
@@ -710,6 +711,7 @@ class AdGroupPublishersTableTest(TestCase):
         mock_stats2 = {
          'clicks': 323,
          'cost': 2.1,
+         'data_cost': 1.9,
          'cpc': 1.2,
          'ctr': 99.0,
          'impressions': 1560,
@@ -774,6 +776,7 @@ class AdGroupPublishersTableTest(TestCase):
         expected_row_1 = {
             u'clicks': 123,
             u'cost': 2.4,
+            u'data_cost': 0,
             u'cpc': 1.3,
             u'ctr': 100.0,
             u'domain': None,
@@ -795,6 +798,7 @@ class AdGroupPublishersTableTest(TestCase):
                                                         u'cost': 2.1,
                                                         u'cpc': 1.2,
                                                         u'ctr': 99.0,
+                                                        u'data_cost': 1.9,
                                                         u'impressions': 1560})
 
 
@@ -867,6 +871,7 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
+
         self.assertDictEqual(result['data']['rows'][0], {
             u'domain': u'example.com',
             u'domain_link': u'http://example.com',
@@ -876,6 +881,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'exchange': u'AdsNative',
             u'cpc': 1.3,
             u'cost': 2.4,
+            u'data_cost': 0,
             u'impressions': 10560,
             u'clicks': 123,
             u'source_id': 1
@@ -1068,6 +1074,7 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
+
         self.assertDictEqual(result['data']['rows'][0], {
             u'domain': u'example.com',
             u'domain_link': u'http://example.com',
@@ -1077,6 +1084,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'exchange': u'Adiant',
             u'cpc': 1.3,
             u'cost': 2.4,
+            u'data_cost': 0,
             u'impressions': 10560,
             u'clicks': 123,
             u'source_id': 7
