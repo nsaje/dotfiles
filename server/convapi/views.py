@@ -78,7 +78,7 @@ def mailgun_gareps(request):
         logger.warning('ERROR: only POST is supported')
         return HttpResponse(status=406)
     if not MailGunRequestAuth(request).is_authorised():
-        logger.warning('ERROR: authenticity of request could not be verified')
+        logger.error('ERROR: authenticity of request could not be verified')
         statsd_incr('convapi.invalid_request_signature')
         return HttpResponse(status=406)
 
