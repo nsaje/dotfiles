@@ -1755,8 +1755,15 @@ class AccountAgencyTest(TestCase):
 
     def test_get_allowed_sources(self):
         view = agency.AccountAgency()
-        allowed_sources_dict = view.get_allowed_sources([2])
+        allowed_sources_dict = view.get_allowed_sources(True,[2])
         self.assertEqual(allowed_sources_dict, {
             2: {'name': 'Source 2', 'allowed': True},
             3: {'name': 'Source 3 (unreleased)'}
+            })
+
+    def test_get_allowed_sources_no_released(self):
+        view = agency.AccountAgency()
+        allowed_sources_dict = view.get_allowed_sources(False,[2])
+        self.assertEqual(allowed_sources_dict, {
+            2: {'name': 'Source 2', 'allowed': True},
             })
