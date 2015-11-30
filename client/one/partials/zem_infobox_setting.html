@@ -1,4 +1,28 @@
 <div>
+    <div class="infobox-setting-icon" ng-if="isSet(icon)">
+        <span ng-switch="icon">
+            <span ng-switch-when="happy">
+                <span width=10 height=10 style="background:green">&nbsp;</span>
+            </span>
+            <span ng-switch-when="contempt">
+                <span width=10 height=10 style="background:yellow">&nbsp;</span>
+            </span>
+            <span ng-switch-when="sad">
+                <span width=10 height=10 style="background:red">&nbsp;</span>
+            </span>
+        </span>
+    </div>
     <div class="infobox-setting-label">{{label}}</div>
     <div class="infobox-setting-value">{{value}}</div>
+    <div class="infobox-setting-value" ng-if="isSet(valueDescription)">({{valueDescription}})</div>
+    <zem-help-popover class="infobox-setting-value" ng-if="isSet(tooltip)" content="tooltip" placement="top"></zem-help-popover>
+
+    <div class="infobox-setting-additional-info" ng-if="isSet(detailsLabel) && isSet(detailsContent) && !detailsVisible">
+        (Show {{detailsLabel}})
+    </div>
+
+    <div class="infobox-setting-additional-info-dropped" ng-if="isSet(detailsLabel) && isSet(detailsContent) && detailsVisible">
+        <div ng-show="detailsVisible">{{ detailsContent }}</div>
+        <div ng-show="detailsVisible">Hide {{ detailsLabel }}</div>
+    </div>
 </div>
