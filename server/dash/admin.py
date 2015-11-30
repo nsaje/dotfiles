@@ -909,13 +909,13 @@ class ContentAdGroupSettingsStatusFilter(admin.SimpleListFilter):
         if self.value() is None:
             return queryset
 
-        ad_group_ids = models.AdGroupSettings.objects\
-                                             .filter(state=self.value())\
-                                             .order_by('ad_group_id', '-created_dt')\
-                                             .distinct('ad_group')\
-                                             .values_list('ad_group_id', flat=True)
+        ad_group_settingss = models.AdGroupSettings.objects\
+                                                   .order_by('ad_group_id', '-created_dt')\
+                                                   .distinct('ad_group')
 
-        return queryset.filter(content_ad__ad_group_id__in=ad_group_ids)
+        queried_state = int(self.value())
+        return queryset.filter(
+            content_ad__ad_group_id__in=[x.ad_group_id for x in ad_group_settingss if x.state == queried_state])
 
 
 class ContentAdSourceAdmin(admin.ModelAdmin):

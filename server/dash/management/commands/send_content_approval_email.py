@@ -21,8 +21,14 @@ def get_ad_group_sources(source):
         submission_status=constants.ContentAdSubmissionStatus.PENDING
     ).values('content_ad__ad_group_id').distinct()
 
-    return models.AdGroupSource.objects.filter(ad_group_id__in=ad_group_ids, source=source,
-                                               ad_group__state=constants.AdGroupSettingsState.ACTIVE)
+    ad_group_states = models.AdGroupSettings.objects\
+                                            .order_by('ad_group_id', '-created_dt')\
+                                            .distinct('ad_group')\
+                                            .values('ad_group_id', 'state')
+
+    ad_group_ids = list(set(ad_group_ids) &
+                        set([x['ad_group_id'] for x in ad_group_states if x['state'] == constants.AdGroupSettingsState.ACTIVE]))
+    return models.AdGroupSource.objects.filter(ad_group_id__in=ad_group_ids, source=source)
 
 
 class Command(BaseCommand):
