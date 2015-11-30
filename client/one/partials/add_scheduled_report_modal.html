@@ -1,5 +1,5 @@
 <div class="modal-body">
-    <form id="add-scheduled-report-form" ng-submit="scheduleReport()" class="modal-form add-scheduled-report-form form-horizontal">
+    <form id="add-scheduled-report-form" ng-submit="addScheduledReport()" class="modal-form add-scheduled-report-form form-horizontal">
         <div class="title">Export Report</div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.granularity}">
@@ -13,8 +13,7 @@
                 theme="select2"
                 search-enabled="false"
                 ng-model="export.type"
-                class="col-xs-5"
-                ng-focus="clearErrors('granularity')">
+                class="col-xs-5">
                 <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
                 <ui-select-choices repeat="option in options | filter:{hidden: '!true'}" ui-disable-choice="option.disabled">
                   <div ng-if="option.disabled"
@@ -57,8 +56,7 @@
                        zem-focus-select
                        id="report-name-input"
                        class="form-control"
-                       ng-model="export.report_name"
-                       ng-focus="clearErrors('report_name')"
+                       ng-model="export.reportName"
                        placeholder="Name of the report" />
             </div>
             <div class="col-xs-3">
@@ -74,8 +72,7 @@
                     search-enabled="false"
                     id="frequency-select"
                     class="col-xs-5"
-                    ng-model="export.frequency"
-                    ng-focus="clearErrors('frequency')">
+                    ng-model="export.frequency">
                 <ui-select-match placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
                 <ui-select-choices repeat="freq in exportSchedulingFrequencies">
                     <div>{{freq.name}}</div>
@@ -102,8 +99,7 @@
                 id="recipient-emails-textarea"
                 class="form-control recipient-emails"
                 type="text"
-                placeholder="Comma-separated list of recipient email addresses"
-                ng-focus="clearErrors('recipient_emails')">
+                placeholder="Comma-separated list of recipient email addresses">
             </textarea>
         </div>
 

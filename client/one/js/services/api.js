@@ -1358,29 +1358,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return deferred.promise;
         };
 
-        function convertValidationErrorsFromApi(errors) {
-            var ret = {};
-
-            if (errors.hasOwnProperty('report_name')) {
-                ret.report_name = errors.report_name;
-            }
-
-            if (errors.hasOwnProperty('granularity')) {
-                ret.granularity = errors.granularity;
-            }
-
-            if (errors.hasOwnProperty('frequency')) {
-                ret.frequency = errors.frequency;
-            }
-
-            if (errors.hasOwnProperty('recipient_emails')) {
-                ret.recipient_emails = errors.recipient_emails;
-            }
-
-            return ret;
-        }
-
-        this.scheduleReport = function (url, data) {
+        this.addScheduledReport = function (url, data) {
             var deferred = $q.defer();
             $http.put(url, data).
                 success(function (data, status) {
@@ -1392,7 +1370,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 error(function(data, status) {
                   var errors = null;
                   if(data.data && data.data.errors) {
-                      errors = convertValidationErrorsFromApi(data.data.errors);
+                      errors = data.data.errors;
                   }
                   return deferred.reject(errors);
                 });

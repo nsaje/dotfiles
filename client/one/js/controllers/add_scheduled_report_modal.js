@@ -1,10 +1,10 @@
 /* globals oneApp,options */
 oneApp.controller('AddScheduledReportModalCtrl',
-  ['$scope', '$modalInstance', 'api', 'zemFilterService', '$window',
-  function($scope, $modalInstance, api, zemFilterService, $window) {
+  ['$scope', '$modalInstance', 'api', 'zemFilterService', '$window', '$state',
+  function($scope, $modalInstance, api, zemFilterService, $window, $state) {
     $scope.exportSchedulingFrequencies = options.exportFrequency;
     $scope.addScheduledReportInProgress = false;
-    $scope.error = false;
+    $scope.hasError = false;
 
     $scope.export = {};
     $scope.errors = {};
@@ -39,11 +39,12 @@ oneApp.controller('AddScheduledReportModalCtrl',
         if (zemFilterService.isSourceFilterOn()) {
             url += '&filtered_sources=' + zemFilterService.getFilteredSources().join(',');
         }
-        url += '&additional_fields=' + getAdditionalColumns();
+        url += '&additional_fields=' + $scope.getAdditionalColumns().join(',');
         $window.open(url, '_blank');
     };
 
-    $scope.scheduleReport = function() {
+    $scope.addScheduledReport = function() {
+        $scope.clearErrors();
         $scope.addScheduledReportInProgress = true;
         var url = $scope.baseUrl + 'export_plus/';
         var data = {
@@ -52,18 +53,14 @@ oneApp.controller('AddScheduledReportModalCtrl',
           'end_date': $scope.endDate.format(),
           'order': $scope.order,
           'by_day': $scope.export.byDay,
-          'additional_fields': getAdditionalColumns(),
-          'filtered_sources': '',
+          'additional_fields': $scope.getAdditionalColumns().join(','),
+          'filtered_sources': zemFilterService.isSourceFilterOn() ? zemFilterService.getFilteredSources().join(',') : '',
           'frequency': $scope.export.frequency.value,
           'recipient_emails': $scope.export.recipientEmails,
-          'report_name': $scope.export.report_name
+          'report_name': $scope.export.reportName
         };
 
-        if (zemFilterService.isSourceFilterOn()) {
-            data.filtered_sources = zemFilterService.getFilteredSources().join(',');
-        }
-
-        api.scheduledReports.scheduleReport(url, data).then(
+        api.scheduledReports.addScheduledReport(url, data).then(
             function (data) {
                 $modalInstance.close();
             },
@@ -71,16 +68,15 @@ oneApp.controller('AddScheduledReportModalCtrl',
                 if (errors) {
                     $scope.errors = errors;
                 } else {
-                    $scope.error = true;
+                    $scope.hasError = true;
                 }
-                return;
             }
         ).finally(function() {
             $scope.addScheduledReportInProgress = false;
         });
     };
 
-    function getAdditionalColumns () {
+    $scope.getAdditionalColumns = function() {
         var exportColumns = [];
         for (var i = 0; i < $scope.columns.length; i++) {
           var col = $scope.columns[i];
@@ -88,19 +84,18 @@ oneApp.controller('AddScheduledReportModalCtrl',
             exportColumns.push(col.field);
           }
         }
-        return exportColumns.join(',');
-    }
+        return exportColumns;
+    };
 
     $scope.clearErrors = function(name) {
-        if (!$scope.errors) {
-            return;
-        }
-        delete $scope.errors[name];
+        $scope.hasError = false;
+        $scope.errors = {};
     };
 
     $scope.init = function () {
         $scope.export.frequency = $scope.exportSchedulingFrequencies[0];
         $scope.export.type = $scope.options[0];
+        $scope.setDisabledExportOptions();
     };
     $scope.init();
 
