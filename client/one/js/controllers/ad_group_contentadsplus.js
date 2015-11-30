@@ -11,6 +11,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.totals = null;
     $scope.isIncompletePostclickMetrics = false;
 
+    $scope.infoboxHidden = false;
+
     $scope.chartHidden = false;
     $scope.chartMetric1 = constants.chartMetric.CLICKS;
     $scope.chartMetric2 = constants.chartMetric.IMPRESSIONS;

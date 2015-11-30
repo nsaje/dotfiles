@@ -95,6 +95,8 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
 
             $scope.config = {
                 options: {
+                    chart: {
+                    },
                     title: {
                         text: null
                     },
