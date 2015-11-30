@@ -867,15 +867,16 @@ class AccountAgency(api_common.BaseApiView):
         and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
             raise exc.MissingDataError()
 
-        old_settings = account.get_current_settings()
 
         self.set_account(account, form.cleaned_data)
 
         settings = models.AccountSettings()
         self.set_settings(settings, account, form.cleaned_data)
-        self.set_allowed_sources(settings, old_settings, form.cleaned_data.get('allowed_sources'))
 
         with transaction.atomic():
+            old_settings = account.get_current_settings()
+            self.set_allowed_sources(settings, old_settings, form.cleaned_data.get('allowed_sources'))
+            
             account.save(request)
             settings.save(request)
 
@@ -918,15 +919,22 @@ class AccountAgency(api_common.BaseApiView):
                 allowed_sources_dict[source.id]['name'] = '{} (unreleased)'.format(name)
         return allowed_sources_dict
 
-    def get_allowed_sources(self, allowed_sources_ids_list):
+    def get_allowed_sources(self, include_unreleased_sources, allowed_sources_ids_list):
         allowed_sources_dict = {}
-        all_sources = list(models.Source.objects.filter(deprecated=False))
+        
+        all_sources_queryset = models.Source.objects.filter(deprecated=False)
+        if not include_unreleased_sources:
+            all_sources_queryset = all_sources_queryset.filter(released=True)
+
+        all_sources = list(all_sources_queryset)
+
         for source in all_sources:
             source_settings = {'name': source.name}
             if source.id in allowed_sources_ids_list:
                 source_settings['allowed'] = True
             allowed_sources_dict[source.id] = source_settings
         allowed_sources_dict = self.add_unreleased_label_to_names(allowed_sources_dict, all_sources)
+        
         return allowed_sources_dict
 
     def get_dict(self, request, settings, account):
@@ -946,7 +954,10 @@ class AccountAgency(api_common.BaseApiView):
                 'service_fee': helpers.format_decimal_to_percent(settings.service_fee),
             }
             if request.user.has_perm('zemauth.can_modify_allowed_sources'):
-                result['allowed_sources'] = self.get_allowed_sources(settings.allowed_sources)
+                result['allowed_sources'] = self.get_allowed_sources(
+                    request.user.has_perm('zemauth.can_see_all_available_sources'),
+                    settings.allowed_sources
+                    )
 
         return result
 
