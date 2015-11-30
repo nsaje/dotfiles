@@ -897,11 +897,33 @@ def reject_content_ad_sources(modeladmin, request, queryset):
                                    content ad sources with content ad ids {0} were ignored'.format(ignored))
 reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
 
+
+class ContentAdGroupSettingsStatusFilter(admin.SimpleListFilter):
+    title = 'Ad group status'
+    parameter_name = 'ad_group_settings_status'
+
+    def lookups(self, request, model_admin):
+        return constants.AdGroupSettingsState.get_choices()
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset
+
+        ad_group_ids = models.AdGroupSettings.objects\
+                                             .filter(state=self.value())\
+                                             .order_by('ad_group_id', '-created_dt')\
+                                             .distinct('ad_group')\
+                                             .values_list('ad_group_id', flat=True)
+
+        return queryset.filter(content_ad__ad_group_id__in=ad_group_ids)
+
+
 class ContentAdSourceAdmin(admin.ModelAdmin):
     list_display = (
         'content_ad_id_',
         'source_content_ad_id',
         'ad_group_name',
+        'ad_group_settings_status',
         'source',
         'submission_status_',
         'submission_errors',
@@ -909,7 +931,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         'modified_dt'
     )
 
-    list_filter = ('source', 'submission_status')
+    list_filter = ('source', 'submission_status', ContentAdGroupSettingsStatusFilter)
     actions = [reject_content_ad_sources]
 
     display_submission_status_colors = {
@@ -947,6 +969,11 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
             ad_group_id=str(ad_group.id),
             )
     ad_group_name.allow_tags = True
+
+    def ad_group_settings_status(self, obj):
+        ad_group = obj.content_ad.ad_group
+        ad_group_settings = ad_group.get_current_settings()
+        return constants.AdGroupSettingsState.get_text(ad_group_settings.state)
 
     def save_model(self, request, content_ad_source, form, change):
         current_content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)

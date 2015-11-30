@@ -21,7 +21,8 @@ def get_ad_group_sources(source):
         submission_status=constants.ContentAdSubmissionStatus.PENDING
     ).values('content_ad__ad_group_id').distinct()
 
-    return models.AdGroupSource.objects.filter(ad_group_id__in=ad_group_ids, source=source)
+    return models.AdGroupSource.objects.filter(ad_group_id__in=ad_group_ids, source=source,
+                                               ad_group__state=constants.AdGroupSettingsState.ACTIVE)
 
 
 class Command(BaseCommand):
