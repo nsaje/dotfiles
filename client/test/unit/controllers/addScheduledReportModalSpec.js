@@ -65,7 +65,7 @@ describe('AddScheduledReportModalCtrl', function() {
     }));
 
     describe('addScheduledReport', function() {
-        it('updates errors object on known errors', function() {
+        it('updates validationErrors object on known errors', function() {
             var deferred = $q.defer();
 
             spyOn(api.scheduledReports, 'addScheduledReport').and.callFake(function() {
@@ -95,7 +95,7 @@ describe('AddScheduledReportModalCtrl', function() {
             expect($scope.addScheduledReportInProgress).toBe(true);
             expect($modalInstance.close).not.toHaveBeenCalled();
             expect($scope.hasError).toEqual(false);
-            expect($scope.errors).toEqual({});
+            expect($scope.validationErrors).toEqual({});
 
             deferred.reject({'err': ['Error']});
             $scope.$digest();
@@ -103,7 +103,7 @@ describe('AddScheduledReportModalCtrl', function() {
             expect($scope.addScheduledReportInProgress).toBe(false);
             expect($modalInstance.close).not.toHaveBeenCalled();
             expect($scope.hasError).toEqual(false);
-            expect($scope.errors).toEqual({'err': ['Error']});
+            expect($scope.validationErrors).toEqual({'err': ['Error']});
         });
 
         it('updates error flag on unknown error', function () {
@@ -137,7 +137,7 @@ describe('AddScheduledReportModalCtrl', function() {
             expect($scope.addScheduledReportInProgress).toBe(true);
             expect($modalInstance.close).not.toHaveBeenCalled();
             expect($scope.hasError).toEqual(false);
-            expect($scope.errors).toEqual({});
+            expect($scope.validationErrors).toEqual({});
 
             deferred.reject(null);
             $scope.$digest();
@@ -145,7 +145,7 @@ describe('AddScheduledReportModalCtrl', function() {
             expect($scope.addScheduledReportInProgress).toBe(false);
             expect($modalInstance.close).not.toHaveBeenCalled();
             expect($scope.hasError).toEqual(true);
-            expect($scope.errors).toEqual({});
+            expect($scope.validationErrors).toEqual({});
         });
 
         it('closes the modal window on success', function() {

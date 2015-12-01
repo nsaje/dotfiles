@@ -7,7 +7,7 @@ oneApp.controller('AddScheduledReportModalCtrl',
     $scope.hasError = false;
 
     $scope.export = {};
-    $scope.errors = {};
+    $scope.validationErrors = {};
 
     $scope.setDisabledExportOptions = function() {
         api.exportPlusAllowed.get($state.params.id, $scope.level, $scope.exportSources).then(
@@ -66,7 +66,7 @@ oneApp.controller('AddScheduledReportModalCtrl',
             },
             function (errors) {
                 if (errors) {
-                    $scope.errors = errors;
+                    $scope.validationErrors = errors;
                 } else {
                     $scope.hasError = true;
                 }
@@ -89,7 +89,7 @@ oneApp.controller('AddScheduledReportModalCtrl',
 
     $scope.clearErrors = function(name) {
         $scope.hasError = false;
-        $scope.errors = {};
+        $scope.validationErrors = {};
     };
 
     $scope.init = function () {

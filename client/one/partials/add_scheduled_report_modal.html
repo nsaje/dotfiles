@@ -2,7 +2,7 @@
     <form id="add-scheduled-report-form" ng-submit="addScheduledReport()" class="modal-form add-scheduled-report-form form-horizontal">
         <div class="title">Export Report</div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.granularity}">
+        <div class="form-group" ng-class="{'has-error': !!validationErrors.granularity}">
             <label for="granularity-select" class="col-xs-4 control-label">
                 Report Granularity
                 <zem-help-popover content="Granularity of the report." placement="top"></zem-help-popover>
@@ -30,7 +30,7 @@
             </ui-select>
 
             <div class="col-xs-3">
-                <label ng-repeat="error in errors.granularity" class="control-label small error" for="granularity-select">{{ error }}</label>
+                <label ng-repeat="error in validationErrors.granularity" class="control-label small error" for="granularity-select">{{ error }}</label>
             </div>
         </div>
 
@@ -47,7 +47,7 @@
 
         <div class="title">Schedule report?</div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.report_name}">
+        <div class="form-group" ng-class="{'has-error': !!validationErrors.report_name}">
             <label for="report-name-input" class="col-xs-4 control-label">
                 Report name:
             </label>
@@ -60,11 +60,11 @@
                        placeholder="Name of the report" />
             </div>
             <div class="col-xs-3">
-                <label ng-repeat="error in errors.report_name" class="control-label small error" for="report-name-input">{{ error }}</label>
+                <label ng-repeat="error in validationErrors.report_name" class="control-label small error" for="report-name-input">{{ error }}</label>
             </div>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.frequency}">
+        <div class="form-group" ng-class="{'has-error': !!validationErrors.frequency}">
             <label for="frequency-select" class="col-xs-4 control-label">Scheduling frequency:</label>
 
             <ui-select
@@ -80,18 +80,18 @@
             </ui-select>
 
             <div class="col-xs-3">
-                <label ng-repeat="error in errors.frequency" class="control-label small error" for="frequency-select">{{ error }}</label>
+                <label ng-repeat="error in validationErrors.frequency" class="control-label small error" for="frequency-select">{{ error }}</label>
             </div>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.recipient_emails}">
+        <div class="form-group" ng-class="{'has-error': !!validationErrors.recipient_emails}">
             <label for="recipient-emails-textarea" class="col-xs-4 control-label" id="recipient-emails-label">
                 Recipient emails:
                 <zem-help-popover content="Comma-separated list of recipient email addresses." placement="top"></zem-help-popover>
             </label>
 
             <div class="col-xs-8">
-                <label ng-repeat="error in errors.recipient_emails" class="control-label small error" for="recipient-emails-label">{{ error }}</label>
+                <label ng-repeat="error in validationErrors.recipient_emails" class="control-label small error" for="recipient-emails-label">{{ error }}</label>
             </div>
 
             <textarea
@@ -111,7 +111,7 @@
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
             </div>
             <div class="loader" ng-show="addScheduledReportInProgress"></div>
-            <span class="col-xs-5 small error" ng-if="error">
+            <span class="col-xs-5 small error" ng-if="hasError">
                 An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
             </span>
         </div>
