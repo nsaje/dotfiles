@@ -1041,6 +1041,62 @@ class ScheduledExportReportLogAdmin(admin.ModelAdmin):
     readonly_fields = ['created_dt']
 
 
+class ScheduledExportReportAdmin(admin.ModelAdmin):
+    search_fields = ['name', 'created_by__email']
+    list_display = (
+        'created_dt',
+        'created_by',
+        'name',
+        'report',
+        'report_',
+        'sending_frequency',
+        'get_sources',
+        'get_recipients',
+        'state',
+    )
+    readonly_fields = ['created_dt']
+    list_filter = ('state', 'sending_frequency')
+    ordering = ('state', '-created_dt')
+
+    def get_recipients(self, obj):
+        return ', '.join(obj.get_recipients_emails_list())
+    get_recipients.short_description = 'Recipient Emails'
+
+    def get_sources(self, obj):
+        if len(obj.report.filtered_sources.all()) == 0:
+            return 'All Sources'
+        return ', '.join(source.name for source in obj.report.get_filtered_sources())
+    get_sources.short_description = 'Filtered Sources'
+
+    def report_(self, obj):
+        link = reverse("admin:dash_exportreport_change", args=(obj.report.id,))
+        return u'<a href="%s">%s</a>' % (link, obj.report)
+    report_.allow_tags = True
+
+
+class ExportReportAdmin(admin.ModelAdmin):
+    search_fields = ['created_by__email']
+    list_display = (
+        'created_dt',
+        'created_by',
+        'granularity',
+        'breakdown_by_day',
+        'breakdown_by_source',
+        'order_by',
+        'ad_group',
+        'campaign',
+        'account',
+        'additional_fields',
+        'get_sources'
+    )
+    readonly_fields = ['created_dt']
+
+    def get_sources(self, obj):
+        if len(obj.filtered_sources.all()) == 0:
+            return 'All Sources'
+        return ', '.join(source.name for source in obj.get_filtered_sources())
+    get_sources.short_description = 'Filtered Sources'
+
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)
@@ -1060,3 +1116,5 @@ admin.site.register(models.UserActionLog, UserActionLogAdmin)
 admin.site.register(models.CreditLineItem, CreditLineItemAdmin)
 admin.site.register(models.BudgetLineItem, BudgetLineItemAdmin)
 admin.site.register(models.ScheduledExportReportLog, ScheduledExportReportLogAdmin)
+admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
+admin.site.register(models.ExportReport, ExportReportAdmin)

@@ -1,5 +1,5 @@
 /*globals oneApp,constants,options,moment*/
-oneApp.controller('AccountReportsCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
+oneApp.controller('ScheduledReportsCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.reports = [];
     $scope.requestInProgress = false;
     $scope.errorMessage = '';
@@ -7,7 +7,7 @@ oneApp.controller('AccountReportsCtrl', ['$scope', '$state', 'api', function ($s
     $scope.getReports = function() {
         $scope.requestInProgress = true;
 
-        api.accountReports.get($state.params.id).then(
+        api.scheduledReports.get($scope.level, $state.params.id).then(
             function (data) {
                 $scope.reports = data.reports;
                 $scope.errorMessage = '';
@@ -25,7 +25,7 @@ oneApp.controller('AccountReportsCtrl', ['$scope', '$state', 'api', function ($s
     $scope.removeReport = function(scheduledReportId) {
       $scope.requestInProgress = true;
 
-      api.accountReports.removeReport(scheduledReportId).then(
+      api.scheduledReports.removeReport(scheduledReportId).then(
           function (data) {
               $scope.errorMessage = '';
               $scope.getReports();
