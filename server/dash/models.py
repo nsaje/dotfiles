@@ -2102,7 +2102,7 @@ class ExportReport(models.Model):
     filtered_sources = models.ManyToManyField(Source, blank=True)
 
     def __unicode__(self):
-        return ' '.join(filter(None, (
+        return u' '.join(filter(None, (
             constants.ScheduledReportLevel.get_text(self.level),
             '(',
             (self.account.name if self.account else ''),
@@ -2159,7 +2159,7 @@ class ScheduledExportReport(models.Model):
     )
 
     def __unicode__(self):
-        return ' '.join(filter(None, (
+        return u' '.join(filter(None, (
             self.name,
             '(',
             self.created_by.email,
