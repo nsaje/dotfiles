@@ -20,7 +20,6 @@ class Command(BaseCommand):
         logger.info('Sending Scheduled Export Report Emails')
 
         due_scheduled_reports = scheduled_report.get_due_scheduled_reports()
-        statsd_gauge('dash.scheduled_reports.num_reports_due', len(due_scheduled_reports))
         num_reports_logs_made = num_success_logs = num_failed_logs = 0
         for sr in due_scheduled_reports:
             report_log = models.ScheduledExportReportLog()
@@ -28,13 +27,13 @@ class Command(BaseCommand):
 
             try:
                 start_date, end_date = scheduled_report.get_scheduled_report_date_range(sr.sending_frequency)
-                report_contents, report_filename = export_plus.get_report_from_export_report(sr.report, start_date, end_date)
                 email_adresses = sr.get_recipients_emails_list()
-
                 report_log.start_date = start_date
                 report_log.end_date = end_date
-                report_log.report_filename = report_filename
                 report_log.recipient_emails = ', '.join(email_adresses)
+
+                report_contents, report_filename = export_plus.get_report_from_export_report(sr.report, start_date, end_date)
+                report_log.report_filename = report_filename
 
                 email_helper.send_scheduled_export_report(sr.name, email_adresses, report_contents, report_filename)
                 report_log.state = constants.ScheduledReportSent.SUCCESS
@@ -48,7 +47,12 @@ class Command(BaseCommand):
             report_log.save()
             num_reports_logs_made += 1
 
+        statsd_gauge('dash.scheduled_reports.num_reports_due', len(due_scheduled_reports))
         statsd_gauge('dash.scheduled_reports.num_reports_logs_made', num_reports_logs_made)
         statsd_gauge('dash.scheduled_reports.num_reports_logs_sucessful', num_success_logs)
         statsd_gauge('dash.scheduled_reports.num_reports_logs_failed', num_failed_logs)
-        logger.info('Finished Sending Scheduled Export Report Emails')
+        logger.info('Finished Sending Scheduled Export Report Emails ' +
+                    '- OK: ' + str(num_success_logs) +
+                    ' Fail: ' + str(num_failed_logs) +
+                    ' - Total: ' + str(num_reports_logs_made) +
+                    ' Expected: ' + str(len(due_scheduled_reports)))
