@@ -2270,7 +2270,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                         "data": {
                             "status": 2,
                             "errors": {
-                                "content_ads": ["File too large."]
+                                "content_ads": ["File too large (max 1MB)."]
                             }
                         },
                         "success": false
