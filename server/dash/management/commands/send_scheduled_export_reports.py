@@ -51,8 +51,5 @@ class Command(BaseCommand):
         statsd_gauge('dash.scheduled_reports.num_reports_logs_made', num_reports_logs_made)
         statsd_gauge('dash.scheduled_reports.num_reports_logs_sucessful', num_success_logs)
         statsd_gauge('dash.scheduled_reports.num_reports_logs_failed', num_failed_logs)
-        logger.info('Finished Sending Scheduled Export Report Emails ' +
-                    '- OK: ' + str(num_success_logs) +
-                    ' Fail: ' + str(num_failed_logs) +
-                    ' - Total: ' + str(num_reports_logs_made) +
-                    ' Expected: ' + str(len(due_scheduled_reports)))
+        logger.info('Finished Sending Scheduled Export Report Emails - OK: %s Fail: %s - Total: %s Expected: %s',
+                    num_success_logs, num_failed_logs, num_reports_logs_made, len(due_scheduled_reports))
