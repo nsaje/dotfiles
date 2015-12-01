@@ -555,6 +555,10 @@ def get_content_ad_data_status(ad_group, content_ads):
             if content_ad_source.source.deprecated or content_ad_source.source.maintenance:
                 continue
 
+            # we ignore rejected content ads
+            if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.REJECTED:
+                continue
+
             ad_group_source = None
             for ags in ad_group_sources:
                 if content_ad_source.source.id == ags.source_id:

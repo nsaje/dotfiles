@@ -1754,16 +1754,35 @@ class AccountAgencyTest(TestCase):
         self.assertEqual(settings.allowed_sources, [1,2])
 
     def test_get_allowed_sources(self):
-        view = agency.AccountAgency()
-        allowed_sources_dict = view.get_allowed_sources(True,[2])
-        self.assertEqual(allowed_sources_dict, {
-            2: {'name': 'Source 2', 'allowed': True},
-            3: {'name': 'Source 3 (unreleased)'}
+        client = self._get_client_with_permissions([
+                'account_agency_view',
+                'can_modify_allowed_sources',
+                'can_see_all_available_sources'
+            ])
+
+        response = client.get(
+            reverse('account_agency', kwargs={'account_id': 1}),
+            follow=True
+        )
+        response = json.loads(response.content)
+      
+        self.assertEqual(response['data']['settings']['allowed_sources'], {
+            '2': {'name': 'Source 2', 'allowed': True},
+            '3': {'name': 'Source 3 (unreleased)'}
             })
 
     def test_get_allowed_sources_no_released(self):
-        view = agency.AccountAgency()
-        allowed_sources_dict = view.get_allowed_sources(False,[2])
-        self.assertEqual(allowed_sources_dict, {
-            2: {'name': 'Source 2', 'allowed': True},
+        client = self._get_client_with_permissions([
+                'account_agency_view',
+                'can_modify_allowed_sources',
+            ])
+
+        response = client.get(
+            reverse('account_agency', kwargs={'account_id': 1}),
+            follow=True
+        )
+        response = json.loads(response.content)
+      
+        self.assertEqual(response['data']['settings']['allowed_sources'], {
+            '2': {'name': 'Source 2', 'allowed': True},
             })

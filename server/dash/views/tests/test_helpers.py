@@ -399,6 +399,28 @@ class ViewHelpersTestCase(TestCase):
             },
         }, data_status)
 
+        # set all submission statuses to REJECTED
+        content_ad_sources = models.ContentAdSource.objects.filter(content_ad__in=content_ads)
+        content_ad_sources.update(submission_status=constants.ContentAdSubmissionStatus.REJECTED)
+
+        data_status = helpers.get_content_ad_data_status(ad_group, content_ads)
+
+        # check that the data status is now considered OK
+        self.assertEqual({
+            '1': {
+                'message': 'All data is OK.',
+                'ok': True
+            },
+            '2': {
+                'message': 'All data is OK.',
+                'ok': True
+            },
+            '3': {
+                'message': 'All data is OK.',
+                'ok': True
+            },
+        }, data_status)
+
 
 class GetChangedContentAdsTestCase(TestCase):
     fixtures = ['test_api']

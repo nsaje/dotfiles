@@ -2099,10 +2099,10 @@ class ExportReport(models.Model):
 
     order_by = models.CharField(max_length=20, null=True, blank=True)
     additional_fields = models.CharField(max_length=500, null=True, blank=True)
-    filtered_sources = models.ManyToManyField(Source)
+    filtered_sources = models.ManyToManyField(Source, blank=True)
 
-    def __str__(self):
-        return ' '.join(filter(None, (
+    def __unicode__(self):
+        return u' '.join(filter(None, (
             constants.ScheduledReportLevel.get_text(self.level),
             '(',
             (self.account.name if self.account else ''),
@@ -2158,8 +2158,8 @@ class ScheduledExportReport(models.Model):
         choices=constants.ScheduledReportSendingFrequency.get_choices()
     )
 
-    def __str__(self):
-        return ' '.join(filter(None, (
+    def __unicode__(self):
+        return u' '.join(filter(None, (
             self.name,
             '(',
             self.created_by.email,
