@@ -281,16 +281,17 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         {
             'name': 'Traffic Acquisition',
             'fields': [
-               'publisherSelected',
-               'blacklisted',
-               'domain',
-               'domain_link',
-               'exchange',
-               'cost', 
-               'cpc', 
-               'clicks', 
-               'impressions', 
-               'ctr', 
+                'publisherSelected',
+                'blacklisted',
+                'domain',
+                'domain_link',
+                'exchange',
+                'cost',
+                'data_cost',
+                'cpc', 
+                'clicks', 
+                'impressions', 
+                'ctr', 
             ]
         }
     ];

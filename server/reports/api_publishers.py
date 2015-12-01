@@ -11,7 +11,7 @@ class RSPublishersModel(redshift.RSModel):
     TABLE_NAME = 'joint_publishers_1_1'
 
     # fields that are always returned (app-based naming)
-    DEFAULT_RETURNED_FIELDS_APP = ["clicks", "impressions", "cost", "ctr", "cpc"]
+    DEFAULT_RETURNED_FIELDS_APP = ["clicks", "impressions", "cost", "data_cost", "ctr", "cpc"]
     # fields that are allowed for breakdowns (app-based naming)
     ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'date', ])
 
