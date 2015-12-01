@@ -2101,7 +2101,7 @@ class ExportReport(models.Model):
     additional_fields = models.CharField(max_length=500, null=True, blank=True)
     filtered_sources = models.ManyToManyField(Source, blank=True)
 
-    def __str__(self):
+    def __unicode__(self):
         return ' '.join(filter(None, (
             constants.ScheduledReportLevel.get_text(self.level),
             '(',
@@ -2158,7 +2158,7 @@ class ScheduledExportReport(models.Model):
         choices=constants.ScheduledReportSendingFrequency.get_choices()
     )
 
-    def __str__(self):
+    def __unicode__(self):
         return ' '.join(filter(None, (
             self.name,
             '(',
