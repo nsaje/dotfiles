@@ -2099,7 +2099,7 @@ class ExportReport(models.Model):
 
     order_by = models.CharField(max_length=20, null=True, blank=True)
     additional_fields = models.CharField(max_length=500, null=True, blank=True)
-    filtered_sources = models.ManyToManyField(Source)
+    filtered_sources = models.ManyToManyField(Source, blank=True)
 
     def __str__(self):
         return ' '.join(filter(None, (

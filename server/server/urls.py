@@ -410,12 +410,16 @@ urlpatterns += patterns(
         login_required(dash.views.export_plus.AccountCampaignsExport.as_view())
     ),
     url(
+        r'^api/all_accounts/reports/',
+        login_required(dash.views.export_plus.ScheduledReports.as_view())
+    ),
+    url(
         r'^api/accounts/(?P<account_id>\d+)/reports/',
-        login_required(dash.views.export_plus.AccountReports.as_view())
+        login_required(dash.views.export_plus.ScheduledReports.as_view())
     ),
     url(
         r'^api/accounts/reports/remove/(?P<scheduled_report_id>\d+)',
-        login_required(dash.views.export_plus.AccountReports.as_view())
+        login_required(dash.views.export_plus.ScheduledReports.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/export_plus/',

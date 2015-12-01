@@ -968,7 +968,7 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
         self.assertEqual(response.content, expected_content)
 
 
-class AccountReportsTest(test.TestCase):
+class ScheduledReportsTest(test.TestCase):
     fixtures = ['test_api']
 
     def test_get(self):
@@ -977,14 +977,14 @@ class AccountReportsTest(test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AccountReports().get(request, 1)
+        response = export_plus.ScheduledReports().get(request, 1)
 
         content = json.loads(response.content)
 
         self.assertEqual(content['data']['reports'], [{
             'name': 'Report 1',
             'recipients': 'test@zemanta.com',
-            'level': 'Account',
+            'level': u'Account - test account 1 \u010c\u017e\u0161',
             'scheduled_report_id': 1,
             'frequency': 'Daily',
             'granularity': 'Account'}])
@@ -998,7 +998,7 @@ class AccountReportsTest(test.TestCase):
         request.user.user_permissions.remove(permission)
 
         with self.assertRaises(exc.ForbiddenError):
-            response = export_plus.AccountReports().get(request, 1)
+            response = export_plus.ScheduledReports().get(request, 1)
 
     def test_get_scheduled_reports(self):
         request = http.HttpRequest()
@@ -1006,14 +1006,14 @@ class AccountReportsTest(test.TestCase):
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AccountReports().get(request, 1)
+        response = export_plus.ScheduledReports().get(request, 1)
         content = json.loads(response.content)
         self.assertEqual(len(content['data']['reports']), 1)
 
         request.user = models.User.objects.get(pk=2)
         request.user.user_permissions.add(permission)
 
-        response = export_plus.AccountReports().get(request, 1)
+        response = export_plus.ScheduledReports().get(request, 1)
         content = json.loads(response.content)
         self.assertEqual(len(content['data']['reports']), 0)
 
@@ -1025,7 +1025,7 @@ class AccountReportsTest(test.TestCase):
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
-        response = export_plus.AccountReports().delete(request, 1)
+        response = export_plus.ScheduledReports().delete(request, 1)
         content = json.loads(response.content)
         self.assertTrue(content['success'])
 
@@ -1038,7 +1038,7 @@ class AccountReportsTest(test.TestCase):
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
         with self.assertRaises(exc.ForbiddenError):
-            response = export_plus.AccountReports().delete(request, 1)
+            response = export_plus.ScheduledReports().delete(request, 1)
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
@@ -1051,6 +1051,6 @@ class AccountReportsTest(test.TestCase):
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
 
         with self.assertRaises(exc.ForbiddenError):
-            response = export_plus.AccountReports().delete(request, 1)
+            response = export_plus.ScheduledReports().delete(request, 1)
 
         self.assertEqual(dash.models.ScheduledExportReport.objects.get(id=1).state, constants.ScheduledReportState.ACTIVE)
