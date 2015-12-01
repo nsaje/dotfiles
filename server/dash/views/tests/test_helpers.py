@@ -401,7 +401,7 @@ class ViewHelpersTestCase(TestCase):
 
         # set all submission statuses to REJECTED
         content_ad_sources = models.ContentAdSource.objects.filter(content_ad__in=content_ads)
-        content_ad_sources.update(submission_status = constants.ContentAdSubmissionStatus.REJECTED)
+        content_ad_sources.update(submission_status=constants.ContentAdSubmissionStatus.REJECTED)
 
         data_status = helpers.get_content_ad_data_status(ad_group, content_ads)
 
