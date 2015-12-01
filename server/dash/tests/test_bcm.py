@@ -178,6 +178,7 @@ class CreditsTestCase(TestCase):
     def test_editing_existing(self):
         c = models.CreditLineItem.objects.get(pk=1)
         c.start_date = TODAY
+        c.end_date = TODAY + datetime.timedelta(10)
         c.amount = 1111111
         c.save() # Editing allowed
 

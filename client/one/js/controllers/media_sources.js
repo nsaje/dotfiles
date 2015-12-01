@@ -186,6 +186,18 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             initialOrder: 'desc'
         },
         {
+            name: 'Data Cost',
+            field: 'data_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Additional targeting/segmenting costs.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_data_cost'),
+            shown: $scope.hasPermission('zemauth.can_view_data_cost')
+        },
+        {
             name: 'Avg. CPC',
             field: 'cpc',
             checked: true,
@@ -260,8 +272,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         {
             'name': 'Traffic Acquisition',
             'fields': [
-               'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'cost',
-               'cpc', 'clicks', 'impressions', 'ctr', 'yesterday_cost'
+                'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'cost', 'data_cost', 
+                'cpc', 'clicks', 'impressions', 'ctr', 'yesterday_cost'
             ]
         },
         {

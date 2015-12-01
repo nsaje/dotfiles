@@ -29,6 +29,7 @@ class ExportPlusTestCase(test.TestCase):
                 'account': 1,
                 'date': datetime.date(2014, 7, 1),
                 'cost': 1000.12,
+                'data_cost': 10.10,
                 'cpc': 10.23,
                 'clicks': 103,
                 'impressions': 100000,
@@ -41,6 +42,7 @@ class ExportPlusTestCase(test.TestCase):
                 'account': 1,
                 'date': datetime.date(2014, 7, 1),
                 'cost': 2000.12,
+                'data_cost': 23.10,
                 'cpc': 20.23,
                 'clicks': 203,
                 'impressions': 200000,
@@ -56,13 +58,14 @@ class ExportPlusTestCase(test.TestCase):
         fieldnames = OrderedDict([
             ('date', 'Date'),
             ('cost', 'Cost'),
+            ('data_cost', 'Data Cost'),
             ('clicks', 'Clicks'),
             ('ctr', 'CTR')
         ])
 
         content = export_plus.get_csv_content(fieldnames, self.data)
 
-        expected_content = 'Date,Cost,Clicks,CTR\r\n2014-07-01,1000.12,103,1.03\r\n2014-07-01,2000.12,203,2.03\r\n'
+        expected_content = 'Date,Cost,Data Cost,Clicks,CTR\r\n2014-07-01,1000.12,10.10,103,1.03\r\n2014-07-01,2000.12,23.10,203,2.03\r\n'
 
         self.assertEqual(content, expected_content)
 
@@ -75,6 +78,7 @@ class ExportPlusTestCase(test.TestCase):
             'content_ad': 1,
             'date': datetime.date(2014, 7, 1),
             'cost': 1000.12,
+            'data_cost': 10.10,
             'cpc': 10.23,
             'clicks': 103,
             'impressions': 100000,
@@ -88,6 +92,7 @@ class ExportPlusTestCase(test.TestCase):
             'content_ad': 2,
             'date': datetime.date(2014, 7, 1),
             'cost': 2000.12,
+            'data_cost': 23.10,
             'cpc': 20.23,
             'clicks': 203,
             'impressions': 200000,
@@ -138,6 +143,7 @@ class ExportPlusTestCase(test.TestCase):
             'account': u'test account 1 \u010c\u017e\u0161',
             'content_ad': 1,
             'cost': 1000.12,
+            'data_cost': 10.1,
             'ctr': 1.03,
             'campaign': u'test campaign 1 \u010c\u017e\u0161',
             'title': u'Test Article unicode \u010c\u017e\u0161',
@@ -156,6 +162,7 @@ class ExportPlusTestCase(test.TestCase):
             'account': u'test account 1 \u010c\u017e\u0161',
             'content_ad': 2,
             'cost': 2000.12,
+            'data_cost': 23.1,
             'ctr': 2.03,
             'campaign': u'test campaign 1 \u010c\u017e\u0161',
             'title': u'Test Article with no content_ad_sources 1',

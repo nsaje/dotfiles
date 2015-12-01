@@ -25,6 +25,7 @@ FIELDNAMES = {
     'click_discrepancy': 'Click Discrepancy',
     'clicks': 'Clicks',
     'cost': 'Spend',
+    'data_cost': 'Data Cost',
     'cpc': 'Average CPC',
     'ctr': 'CTR',
     'ctr': 'CTR',
@@ -54,7 +55,7 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
 FORMAT_1_DECIMAL = ['avg_tos']
 
 FORMAT_2_DECIMALS = ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate', 'pv_per_visit',
-                     'avg_tos', 'cost', 'budget', 'available_budget', 'unspent_budget']
+                     'avg_tos', 'cost', 'data_cost', 'budget', 'available_budget', 'unspent_budget']
 
 FORMAT_3_DECIMALS = ['cpc']
 

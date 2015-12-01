@@ -281,16 +281,17 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         {
             'name': 'Traffic Acquisition',
             'fields': [
-               'publisherSelected',
-               'blacklisted',
-               'domain',
-               'domain_link',
-               'exchange',
-               'cost', 
-               'cpc', 
-               'clicks', 
-               'impressions', 
-               'ctr', 
+                'publisherSelected',
+                'blacklisted',
+                'domain',
+                'domain_link',
+                'exchange',
+                'cost',
+                'data_cost',
+                'cpc', 
+                'clicks', 
+                'impressions', 
+                'ctr', 
             ]
         }
     ];
@@ -372,6 +373,18 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             totalRow: true,
             order: true,
             initialOrder: 'desc'
+        },
+        {
+            name: 'Data Cost',
+            field: 'data_cost',
+            checked: true,
+            type: 'currency',
+            help: 'Additional targeting/segmenting costs.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_data_cost'),
+            shown: $scope.hasPermission('zemauth.can_view_data_cost')
         },
         {
             name: 'Avg. CPC',
