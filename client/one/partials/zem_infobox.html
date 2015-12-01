@@ -1,14 +1,23 @@
 <div class="infobox infobox-background">
-    <div>
-        Title<br />
-        Subtitle
+    <div style="display:inline-block; width:100%;">
+        <div class="infobox-status" style="display:inline-block"> </div>
+        <div style="display:inline-block;">
+            <div class="infobox-title">Title</div>
+            <div class="infobox-subtitle">Subtitle</div>
+        </div>
+
+        <a class="btn btn-default pull-right" style="display:inline-block" ng-click="tabClick($event)" zem-in-link="main.adGroups.settings({ id: $state.params.id })">
+            <zem-internal-feature ng-if="tab.internal" popover-placement="bottom"></zem-internal-feature>
+            Edit
+        </a>
+        <!-- <div class="btn btn-default infobox-button" ng-click="toggleInfoboxVisibility()">Edit</div> -->
     </div>
 
     <hr>
 
     <div>
         <zem-infobox-setting label="'a bit nger than usual key'"  value="'value'" value-description="'Test'"></zem-infobox-setting>
-        <zem-infobox-setting label="'a bit longer than usual key'"  value="'value'" value-description="'Test'"></zem-infobox-setting>
+        <zem-infobox-setting label=""  value="'value'" value-description="'Test'"></zem-infobox-setting>
         <zem-infobox-setting label="'key'"  value="'value'" details-label="'Test'" details-content="'Test'"></zem-infobox-setting>
         <zem-infobox-setting label="'key'"  value="'value'" details-label="'Test'" details-content="'Test'"></zem-infobox-setting>
     </div>
