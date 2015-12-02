@@ -23,8 +23,6 @@ import reports.api_publishers
 import reports.constants
 import actionlog.sync
 
-from django.core import urlresolvers
-
 
 def sort_rows_by_order_and_archived(rows, order):
     archived_order = 'archived'
@@ -1047,7 +1045,12 @@ class AdGroupAdsPlusTable(object):
                 status=constants.UploadBatchStatus.DONE,
             ).order_by('-created_dt')
 
-        rows = sort_results(rows, [order])
+        order_list = [order]
+
+        if user.has_perm('zemauth.view_archived_entities'):
+            order_list = [('-' if order.startswith('-') else '') + 'archived'] + order_list
+
+        rows = sort_results(rows, order_list)
         page_rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
             rows, page, size)
 
