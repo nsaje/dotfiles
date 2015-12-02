@@ -211,12 +211,15 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                             $scope.hasData = true;
                         }
 
+                        seriesData = transformDate(seriesData);
+                        seriesData = fillGaps(seriesData);
+
                         seriesName = group.name + ' (' + getMetricName(metricId)  + ')';
                         $scope.config.series.unshift({
                             name: seriesName,
                             color: color[index],
                             yAxis: commonYAxis ? 0 : index,
-                            data: transformDate(seriesData),
+                            data: seriesData,
                             tooltip: {
                                 pointFormat: '<div class="color-box" style="background-color: ' + color[index] + '"></div>' + seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
                             },
@@ -319,11 +322,13 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             };
 
             var transformDate = function (data) {
-                var stats = data.map(function (item) {
+                return data.map(function (item) {
                     item[0] = parseInt(moment.utc(item[0]).format('XSSS'), 10);
                     return item;
                 });
+            };
 
+            var fillGaps = function(stats) {
                 if (stats.length < 2) {
                     return stats;
                 }
