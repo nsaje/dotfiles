@@ -9,7 +9,7 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
             {heading: 'Agency', route: 'main.accounts.agency', active: false, hidden: !$scope.hasPermission('zemauth.account_agency_view'), internal: $scope.isPermissionInternal('zemauth.account_agency_view')},
             {heading: 'Settings', route: 'main.accounts.settings', active: false, hidden: $scope.hasPermission('zemauth.account_agency_view') || !$scope.hasPermission('zemauth.view_archived_entities') || !$scope.account || !$scope.account.archived, internal: false},
             {heading: 'Credit', route: 'main.accounts.credit', active: false, hidden: !$scope.hasPermission('zemauth.account_credit_view') || (!$scope.hasPermission('zemauth.view_archived_entities') && $scope.account && $scope.account.archived), internal: true},
-            {heading: 'Reports', route: 'main.accounts.reports', active: false, hidden: !$scope.hasPermission('zemauth.exports_plus') || (!$scope.hasPermission('zemauth.view_archived_entities') && $scope.account && $scope.account.archived), internal: true},
+            {heading: 'Reports', route: 'main.accounts.scheduled_reports', active: false, hidden: !$scope.hasPermission('zemauth.exports_plus') || (!$scope.hasPermission('zemauth.view_archived_entities') && $scope.account && $scope.account.archived), internal: true},
         ];
     };
     $scope.setActiveTab = function () {
