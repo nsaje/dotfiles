@@ -110,9 +110,11 @@ def _prepare_report_rows(ad_group, source, data_rows):
     stats_rows = []
     for article, data_row in zip(articles, data_rows):
         if 'id' not in data_row:
+            statsd_helper.statsd_incr('reports.update.err_content_ad_no_id')
             raise Exception('\'id\' field not present in data row.')
 
         if data_row['id'] not in content_ad_sources:
+            statsd_helper.statsd_incr('reports.update.err_unknown_content_ad_id')
             raise Exception('Stats for an unknown id. ad group={}. source={}. id={}.'.format(
                 ad_group.id,
                 source.id,
