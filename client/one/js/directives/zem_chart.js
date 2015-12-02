@@ -320,7 +320,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
 
             var transformDate = function (data) {
                 var stats = data.map(function (item) {
-                    item[0] = parseInt(moment.utc(dt).format('XSSS'), 10);
+                    item[0] = parseInt(moment.utc(item[0]).format('XSSS'), 10);
                     return item;
                 });
 
