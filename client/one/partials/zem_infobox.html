@@ -1,6 +1,6 @@
 <div class="infobox infobox-background">
-    <div style="display:inline-block; width:100%;">
-        <div class="infobox-status" style="display:inline-block"> </div>
+    <div class="infobox-header">
+        <div ng-class="[{'active-circle-icon': statusActive, 'infobox-active-circle-icon-gray': !statusActive}, 'infobox-title', 'infobox-status']"></div>
         <div style="display:inline-block;">
             <div class="infobox-title">Title</div>
             <div class="infobox-subtitle">Subtitle</div>
@@ -10,7 +10,6 @@
             <zem-internal-feature ng-if="tab.internal" popover-placement="bottom"></zem-internal-feature>
             Edit
         </a>
-        <!-- <div class="btn btn-default infobox-button" ng-click="toggleInfoboxVisibility()">Edit</div> -->
     </div>
 
     <hr>
@@ -30,9 +29,5 @@
         <zem-infobox-setting label="'a bit longer than usual key'"  value="'value'" value-description="'Test'"></zem-infobox-setting>
         <zem-infobox-setting label="'a bit longer than usual key'"  value="'value'" value-description="'Test'"></zem-infobox-setting>
         <zem-infobox-setting label="'key'"  value="'value'" />
-        <!--
-        <zem-infobox-setting label="'key'"  value="'value'" />
-        <zem-infobox-setting label="'key'"  value="'value'" />
-        -->
     </div>
 </div>

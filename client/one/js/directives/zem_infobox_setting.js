@@ -12,6 +12,7 @@ oneApp.directive('zemInfoboxSetting', ['config', '$window', function(config, $wi
             detailsVisible: '=',
             detailsLabel: '=',
             detailsContent: '=',
+            statusActive: '=',
             tooltip: '=',
             icon: '='
         },
@@ -23,6 +24,7 @@ oneApp.directive('zemInfoboxSetting', ['config', '$window', function(config, $wi
             $scope.detailsLabel = "Kick me";
             $scope.detailsContent = "BAM";
             $scope.tooltip = "Test"
+            $scope.statusActive = false;
 
             $scope.isSet = function (val) {
                 if (typeof val === "undefined") {

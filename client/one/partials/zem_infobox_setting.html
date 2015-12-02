@@ -1,4 +1,7 @@
 <div>
+    <div class="infobox-setting-label">{{label}}</div>
+    
+    <div style="display:inline-block; vertical-align:top;">
     <div class="infobox-setting-icon" ng-if="isSet(icon)">
         <span ng-switch="icon">
             <span ng-switch-when="happy">
@@ -12,7 +15,7 @@
             </span>
         </span>
     </div>
-    <div class="infobox-setting-label">{{label}}</div>
+
     <div class="infobox-setting-value">{{value}}</div>
     <div class="infobox-setting-value-comment" ng-if="isSet(valueDescription)">({{valueDescription}})</div>
     <zem-help-popover class="infobox-setting-value" ng-if="isSet(tooltip)" content="tooltip" placement="top"></zem-help-popover>
@@ -26,5 +29,6 @@
         <div ng-show="detailsVisible">
             <a ng-click="hideDetails()" class="infobox-details-link">Hide {{ detailsLabel }}</a>
         </div>
+    </div>
     </div>
 </div>
