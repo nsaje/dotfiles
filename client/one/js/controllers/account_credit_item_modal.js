@@ -1,5 +1,5 @@
 /* globals angular,oneApp,defaults,moment */
-oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$timeout', '$window', 'api', function($scope, $modalInstance, $timeout, $window, api) {
+oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$timeout', '$window', '$filter', 'api', function($scope, $modalInstance, $timeout, $window, $filter, api) {
     $scope.today = moment().format('M/D/YYYY');
     $scope.isNew = true;
     $scope.startDatePicker = { isOpen: false };
@@ -15,7 +15,7 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
 
     $scope.getLicenseFees = function(search) {
         // use fresh instance because we modify the collection on the fly
-        var fees = ['15%', '20%', '25%'];
+        var fees = ['15.00', '20.00', '25.00'];
 
         // adds the searched for value to the array
         if (search && fees.indexOf(search) === -1) {
@@ -34,6 +34,8 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
 
     $scope.upsertCreditItem = function () {
         $scope.saveRequestInProgress = true;
+
+        cleanInput($scope.creditItem);
         api.accountCredit[
             $scope.isNew ? 'create' : 'save'
         ]($scope.account.id, $scope.creditItem).then(function () {
@@ -85,6 +87,15 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
             $scope.saveRequestInProgress = false;
             $modalInstance.close(data);
         }, 1000);
+    }
+
+    function cleanInput(data) {
+        if (data.licenseFee) {
+            data.licenseFee = $filter('number')(
+                data.licenseFee,
+                2
+            );
+        }
     }
 
     $scope.init();
