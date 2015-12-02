@@ -319,10 +319,40 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             };
 
             var transformDate = function (data) {
-                return data.map(function (item) {
-                    item[0] = parseInt(moment.utc(item[0]).format('XSSS'), 10);
+                var stats = data.map(function (item) {
+                    item[0] = parseInt(moment.utc(dt).format('XSSS'), 10);
                     return item;
                 });
+
+                if (stats.length < 2) {
+                    return stats;
+                }
+
+                var ts, usedDates = {},
+                    startTS = stats[0][0],
+                    endTS = stats[stats.length - 1][0];
+
+                // mark which for which dates do we have data points
+                for (var i = 0; i < stats.length; i++) {
+                    usedDates[stats[i][0]] = stats[i];
+                }
+
+                var previousMissing = false, statsNoGaps = [], msInADay = 24 * 3600 * 1000;
+
+                // fill in the necessary null datapoints, so that the chart does not
+                // contain lines through dates that do not have data
+                for (var d = startTS; d < endTS; d += msInADay) {
+                    if (d in usedDates) {
+                        statsNoGaps.push(usedDates[d]);
+                        previousMissing = false;
+                    } else if (!previousMissing) {
+                        // no need to fill all the missing dates
+                        // fill only one after a non-null datapoint
+                        statsNoGaps.push([d, null]);
+                        previousMissing = true;
+                    }
+                }
+                return statsNoGaps;
             };
 
             var clearUsedColors = function (data) {
