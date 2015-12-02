@@ -24,7 +24,7 @@
                 zem-lazy-popover-placement="right"
                 zem-lazy-popover-animation-class="fade"
                 zem-lazy-popover-append-to-body="true">
-            <a ng-click="setState(value, autopilotEnabledValue)">
+            <a ng-click="!active || setState(enabledValue, autopilotEnabledValue)">
                 <div class="auto-pilot-icon"></div><zem-internal-feature ng-if="autopilotInternal"></zem-internal-feature><span>Auto-Pilot</span>
             </a>
         </li>

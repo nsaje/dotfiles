@@ -31,19 +31,52 @@ describe('zemStateSelector', function() {
 
         spyOn(isolate, 'onChange');
 
+        isolate.value = 1;
+        isolate.autopilotValue = 1;
+        element.find('.enabled a div.auto-pilot-icon').click();
+        expect(isolate.onChange).not.toHaveBeenCalled();
+
+        isolate.value = 2;
+        isolate.autopilotValue = 2;
+        element.find('.enabled a div.pause-icon').click();
+        expect(isolate.onChange).not.toHaveBeenCalled();
+
+        isolate.value = 1;
+        isolate.autopilotValue = 2;
+        element.find('.enabled a div.active-circle-icon').click();
+        expect(isolate.onChange).not.toHaveBeenCalled();
+
+        isolate.value = 1;
+        isolate.autopilotValue = 1;
         element.find('.enabled a div.active-circle-icon').click();
         expect(isolate.onChange).toHaveBeenCalledWith(
-            isolate.id, isolate.enabledValue, isolate.autopilotPausedValue);
+            isolate.id, undefined, isolate.autopilotPausedValue);
 
+        isolate.value = 1;
+        isolate.autopilotValue = 1;
         element.find('.enabled a div.pause-icon').click();
         expect(isolate.onChange).toHaveBeenCalledWith(
             isolate.id, isolate.pausedValue, isolate.autopilotPausedValue);
 
-        isolate.value = 3;
+        isolate.value = 2;
+        isolate.autopilotValue = 2;
+        element.find('.enabled a div.active-circle-icon').click();
+        expect(isolate.onChange).toHaveBeenCalledWith(
+            isolate.id, isolate.enabledValue, undefined);
+
+        isolate.value = 1;
+        isolate.autopilotValue = 2;
+        element.find('.enabled a div.pause-icon').click();
+        expect(isolate.onChange).toHaveBeenCalledWith(
+            isolate.id, isolate.pausedValue, undefined);
+
+        isolate.value = 1;
+        isolate.active = true;
+        isolate.autopilotValue = 2;
         element.find('.enabled a div.auto-pilot-icon').click();
         expect(isolate.onChange).toHaveBeenCalledWith(
-            isolate.id, isolate.value, isolate.autopilotEnabledValue);
+            isolate.id, undefined, isolate.autopilotEnabledValue);
 
-        expect(isolate.onChange.calls.count()).toEqual(3);
+        expect(isolate.onChange.calls.count()).toEqual(5);
     });
 });
