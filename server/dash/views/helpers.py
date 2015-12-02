@@ -938,7 +938,7 @@ def format_decimal_to_percent(num):
 
 
 def format_percent_to_decimal(num):
-    return Decimal(str(num).replace('%', '')) / 100
+    return Decimal(str(num).replace(',', '').replace('%', '')) / 100
 
 
 def log_useraction_if_necessary(request, user_action_type, account=None, campaign=None, ad_group=None):
