@@ -153,20 +153,15 @@ def _process_zwei_response(action, data, request):
 
         return
 
-    if action.action == actionlog.constants.Action.FETCH_REPORTS:
-        # has to be processed outside of transaction
-        action.state = actionlog.constants.ActionState.SUCCESS
-        _fetch_reports_callback(action, data)
-        logger.info('Processing reports action successful. Action: %s', action)
-        action.save()
-        return
-
     actions = []
     with transaction.atomic():
         action.state = actionlog.constants.ActionState.SUCCESS
         action.save()
 
-        if action.action == actionlog.constants.Action.FETCH_REPORTS_BY_PUBLISHER:
+        if action.action == actionlog.constants.Action.FETCH_REPORTS:
+            _fetch_reports_callback(action, data)
+
+        elif action.action == actionlog.constants.Action.FETCH_REPORTS_BY_PUBLISHER:
             _fetch_reports_by_publisher_callback(action, data)
 
         elif action.action == actionlog.constants.Action.FETCH_CAMPAIGN_STATUS:
@@ -345,12 +340,8 @@ def _fetch_reports_callback(action, data):
         rows = _prepare_report_rows(ad_group, source, data['data'])
         article_rows = _remove_content_ad_sources_from_report_rows(rows)
 
-        with transaction.atomic():
-            reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, article_rows)
-            reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
-
-        reports.daily_statements.reprocess_daily_statements(ad_group.campaign)
-        reports.refresh.refresh_contentadstats(date, ad_group, source)
+        reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, article_rows)
+        reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
 
         # set cache only after everything has updated successfully
         _set_reports_cache(data, ad_group, source, date, change_unique_key)
