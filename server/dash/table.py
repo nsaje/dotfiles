@@ -1046,9 +1046,8 @@ class AdGroupAdsPlusTable(object):
             ).order_by('-created_dt')
 
         order_list = [order]
-
-        if user.has_perm('zemauth.view_archived_entities'):
-            order_list = [('-' if order.startswith('-') else '') + 'archived'] + order_list
+        if 'status_setting' in order and user.has_perm('zemauth.view_archived_entities'):
+            order_list = order_list + [('-' if order.startswith('-') else '') + 'archived']
 
         rows = sort_results(rows, order_list)
         page_rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
