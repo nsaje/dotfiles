@@ -6,7 +6,7 @@ import json
 import traceback
 
 from convapi import exc
-from mock import patch
+from mock import patch, MagicMock
 from django.test import TestCase
 
 from convapi import parse_v2
@@ -516,7 +516,6 @@ Segment: All Visits (No Segment),,,,,,,,,,
 
         self.assertFalse(all(entry.is_row_valid() for entry in report.entries.values()))
 
-
         source_specified, source_errors = report.is_media_source_specified()
         cad_specified, cad_errors = report.is_content_ad_specified()
 
@@ -538,6 +537,26 @@ Segment: All Visits (No Segment),,,,,,,,,,
         self.assertEqual(blob, json.loads(source_errors[0]))
         self.assertFalse(cad_specified)
         self.assertEqual(blob, json.loads(cad_errors[0]))
+
+    def test_acceptable_deviation(self):
+        report = parse_v2.OmnitureReport('')
+        # no exeption should be raised
+        report.entries = {1: MagicMock(visits=101)}
+        report._check_session_counts({'Visits': '100'})
+
+        # no exeption should be raised, inside acceptable deviation
+        report.entries = {1: MagicMock(visits=103)}
+        report._check_session_counts({'Visits': '100'})
+
+        # outside of acceptable deviation
+        report.entries = {1: MagicMock(visits=104)}
+        with self.assertRaisesRegexp(exc.IncompleteReportException, r'Number of total sessions'):
+            report._check_session_counts({'Visits': '100'})
+
+        # always raise an exception if sum is less than total
+        report.entries = {1: MagicMock(visits=100)}
+        with self.assertRaisesRegexp(exc.IncompleteReportException, r'Number of total sessions'):
+            report._check_session_counts({'Visits': '101'})
 
     def test_parse(self):
         csv_file = """
