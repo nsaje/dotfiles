@@ -346,7 +346,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
 
                 // fill in the necessary null datapoints, so that the chart does not
                 // contain lines through dates that do not have data
-                for (var d = startTS; d < endTS; d += msInADay) {
+                for (var d = startTS; d < endTS + msInADay; d += msInADay) {
                     if (d in usedDates) {
                         statsNoGaps.push(usedDates[d]);
                         previousMissing = false;
