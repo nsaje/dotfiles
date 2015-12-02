@@ -154,7 +154,12 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_modify_publisher_blacklist_status', 'Can modify publishers blacklist status'),
             ('conversion_reports', 'Can see conversions and goals in reports'),
             ('exports_plus', 'Can download reports using new export facilities'),
-            ('can_access_global_publisher_blacklist_status', 'Can view or access global/account/campaign publishers blacklist status'),
+            ('can_modify_allowed_sources', 'Can modify allowed sources on account level'),
+            ('can_access_global_publisher_blacklist_status', 'Can view or modify global publishers blacklist status'),
+            ('can_access_campaign_account_publisher_blacklist_status', 'Can view or modify account and campaign publishers blacklist status'),
+            ('can_view_data_cost', 'Can view or export data cost'),
+            ('can_see_all_available_sources', 'Can see all available media sources in account settings'),
+            ('can_see_infobox', 'Can see info box') ,
         )
 
     def get_full_name(self):

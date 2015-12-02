@@ -55,6 +55,24 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
         self.assertEqual(Decimal('2400.0'), statements[0].spend)
 
+    def test_first_day_cost_none(self, mock_content_ad_stats, mock_datetime):
+        return_values = {
+            datetime.date(2015, 11, 1): {
+                'cost_cc_sum': None,
+                'data_cost_cc_sum': None,
+            }
+        }
+        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
+
+        daily_statements.reprocess_daily_statements(self.campaign1)
+
+        statements = reports.models.BudgetDailyStatement.objects.all()
+        self.assertEqual(1, len(statements))
+        self.assertEqual(1, statements[0].budget_id)
+        self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
+        self.assertEqual(Decimal('0'), statements[0].spend)
+
     def test_multiple_budgets_attribution_order(self, mock_content_ad_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 20): {

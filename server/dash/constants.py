@@ -106,7 +106,7 @@ class PublisherBlacklistLevel(ConstantBase):
     ACCOUNT = 'account'
     GLOBAL = 'global'
 
-    INT_MAP = {
+    _INT_MAP = {
         ADGROUP: 1,
         CAMPAIGN: 2,
         ACCOUNT: 3,
@@ -121,8 +121,19 @@ class PublisherBlacklistLevel(ConstantBase):
     }
 
     @classmethod
+    def verbose(cls, level):
+        level_verbose = "Blacklisted in this ad group"
+        if level == PublisherBlacklistLevel.CAMPAIGN:
+            level_verbose = "Blacklisted in this campaign"
+        elif level == PublisherBlacklistLevel.ACCOUNT:
+            level_verbose = "Blacklisted in this account"
+        elif level == PublisherBlacklistLevel.GLOBAL:
+            level_verbose = "Blacklisted globally"
+        return level_verbose
+
+    @classmethod
     def compare(cls, level, other):
-        mapping = cls.INT_MAP
+        mapping = cls._INT_MAP
         return mapping[level].__cmp__(mapping[other])
 
 
@@ -1175,10 +1186,12 @@ class ScheduledReportSendingFrequency(ConstantBase):
 class ScheduledReportState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
+    REMOVED = 3
 
     _VALUES = {
         ACTIVE: 'Enabled',
-        INACTIVE: 'Paused'
+        INACTIVE: 'Paused',
+        REMOVED: 'Removed'
     }
 
 
@@ -1209,4 +1222,14 @@ class ScheduledReportLevel(ConstantBase):
         ACCOUNT: 'Account',
         CAMPAIGN: 'Campaign',
         AD_GROUP: 'Ad Group'
+    }
+
+
+class ScheduledReportSent(ConstantBase):
+    SUCCESS = 1
+    FAILED = 2
+
+    _VALUES = {
+        SUCCESS: 'Success',
+        FAILED: 'Failed'
     }

@@ -73,7 +73,8 @@ GOOGLE_OAUTH_ENABLED = False
 GOOGLE_OAUTH_CLIENT_ID = ''
 GOOGLE_OAUTH_CLIENT_SECRET = ''
 
-# Client static files
+# Static files
+SERVER_STATIC_URL = '/static'
 CLIENT_STATIC_URL = 'http://0.0.0.0:9999'
 
 # Eins host

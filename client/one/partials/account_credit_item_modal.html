@@ -39,9 +39,9 @@
             </label>
             <div class="col-xs-4">
                 <ui-select theme="select2" id="license-fee-select" class="form-control" ng-model="creditItem.licenseFee" ng-disabled="creditItem.isSigned">
-                    <ui-select-match>{{$select.selected}}</ui-select-match>
+                    <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
                     <ui-select-choices repeat="fee in getLicenseFees($select.search) | filter: $select.search">
-                        <span ng-bind-html="fee"></span>
+                        <span ng-bind-html="fee"></span>%
                     </ui-select-choices>
                 </ui-select>
             </div>

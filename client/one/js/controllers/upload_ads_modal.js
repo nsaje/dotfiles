@@ -2,6 +2,9 @@
 oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', '$filter', function($scope, $modalInstance, api, $state, $timeout, $filter) {
     $scope.errors = null;
     $scope.formData = {};
+    // initialize to an empty value - just so that we avoid seeing "undefined"
+    // for a moment before the defaults load
+    $scope.formData.callToAction = '';
 
     $scope.callToActionSelect2Config = {
         dropdownCssClass: 'service-fee-select2',

@@ -163,6 +163,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'conversion_goal_1': 0,
             'conversion_goal_2': None,
             'cost': 100,
+            'data_cost': None,
             'cpc': '0.0100',
             'ctr': '12.5000',
             'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
@@ -218,6 +219,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
             'submission_status': [],
             'cost': None,
+            'data_cost': None,
             'batch_name': 'batch 1',
             'batch_id': 1,
             'display_url': 'example.com',
@@ -244,6 +246,7 @@ class AdGroupAdsPlusTableTest(TestCase):
             'conversion_goal_1': 0,
             'conversion_goal_2': None,
             'cost': 200,
+            'data_cost': None,
             'cpc': '0.0200',
             'ctr': '15.5000',
             'impressions': 2000000,
@@ -700,6 +703,7 @@ class AdGroupPublishersTableTest(TestCase):
         mock_stats1 = [{
          'clicks': 123,
          'cost': 2.4,
+         'data_cost': 0,
          'cpc': 1.3,
          'ctr': 100.0,
          'impressions': 10560,
@@ -710,6 +714,7 @@ class AdGroupPublishersTableTest(TestCase):
         mock_stats2 = {
          'clicks': 323,
          'cost': 2.1,
+         'data_cost': 1.9,
          'cpc': 1.2,
          'ctr': 99.0,
          'impressions': 1560,
@@ -774,11 +779,13 @@ class AdGroupPublishersTableTest(TestCase):
         expected_row_1 = {
             u'clicks': 123,
             u'cost': 2.4,
+            u'data_cost': 0,
             u'cpc': 1.3,
             u'ctr': 100.0,
             u'domain': None,
             u'domain_link': u'',
             u'blacklisted': u'Active',
+            u'can_blacklist_publisher': True,
             u'exchange': 'Adiant',
             u'source_id': 7,
             u'impressions': 10560,
@@ -794,6 +801,7 @@ class AdGroupPublishersTableTest(TestCase):
                                                         u'cost': 2.1,
                                                         u'cpc': 1.2,
                                                         u'ctr': 99.0,
+                                                        u'data_cost': 1.9,
                                                         u'impressions': 1560})
 
 
@@ -866,7 +874,21 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
-        self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'AdsNative', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123, u'source_id': 1})
+
+        self.assertDictEqual(result['data']['rows'][0], {
+            u'domain': u'example.com',
+            u'domain_link': u'http://example.com',
+            u'blacklisted': u'Active',
+            u'can_blacklist_publisher': True,
+            u'ctr': 100.0,
+            u'exchange': u'AdsNative',
+            u'cpc': 1.3,
+            u'cost': 2.4,
+            u'data_cost': 0,
+            u'impressions': 10560,
+            u'clicks': 123,
+            u'source_id': 1
+        })
 
     """
     # TODO: Fix this
@@ -963,7 +985,6 @@ class AdGroupPublishersTableTest(TestCase):
             }
         ]
 
-        from pudb import set_trace; set_trace()
         mock_blacklisted.assert_any_call(
             date,
             date,
@@ -1056,7 +1077,21 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('rows', result['data'])
         self.assertEqual(len(result['data']['rows']), 1)
-        self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'Adiant', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123, u'source_id': 7})
+
+        self.assertDictEqual(result['data']['rows'][0], {
+            u'domain': u'example.com',
+            u'domain_link': u'http://example.com',
+            u'blacklisted': u'Active',
+            u'can_blacklist_publisher': True,
+            u'ctr': 100.0,
+            u'exchange': u'Adiant',
+            u'cpc': 1.3,
+            u'cost': 2.4,
+            u'data_cost': 0,
+            u'impressions': 10560,
+            u'clicks': 123,
+            u'source_id': 7
+        })
 
 
 @patch('reports.redshift.get_cursor')

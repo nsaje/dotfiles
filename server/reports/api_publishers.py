@@ -8,10 +8,10 @@ logger = logging.getLogger(__name__)
 
 
 class RSPublishersModel(redshift.RSModel):
-    TABLE_NAME = 'joint_publishers_1'
+    TABLE_NAME = 'joint_publishers_1_1'
 
     # fields that are always returned (app-based naming)
-    DEFAULT_RETURNED_FIELDS_APP = ["clicks", "impressions", "cost", "ctr", "cpc"]
+    DEFAULT_RETURNED_FIELDS_APP = ["clicks", "impressions", "cost", "data_cost", "ctr", "cpc"]
     # fields that are allowed for breakdowns (app-based naming)
     ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'date', ])
 
@@ -22,9 +22,10 @@ class RSPublishersModel(redshift.RSModel):
         dict(sql='domain',          app='domain',      out=lambda v: v),
         dict(sql='exchange',        app='exchange',    out=lambda v: v),
         dict(sql='date',            app='date',        out=lambda v: v),
-        dict(sql='cost_micro_sum',  app='cost',        out=lambda v: from_micro_cpm(v),    calc=sum_agr('cost_micro'),            order="SUM(cost_micro) = 0, cost_micro_sum {direction}"),
-        dict(sql='cpc_micro',       app='cpc',         out=lambda v: from_micro_cpm(v),    calc=sum_div("cost_micro", "clicks"),  order="SUM(clicks) = 0, sum(cost_micro) IS NULL, cpc_micro {direction}"),  # makes sure nulls are last
-        dict(sql='ctr',             app='ctr',         out=lambda v: to_percent(v),        calc=sum_div("clicks", "impressions"), order="sum(impressions) IS NULL, ctr {direction}"),
+        dict(sql='cost_micro_sum',  app='cost',        out=lambda v: from_micro_cpm(v),    calc=sum_agr('cost_micro'),           order="SUM(cost_micro) = 0, cost_micro_sum {direction}"),
+    dict(sql='data_cost_micro_sum', app='data_cost',   out=lambda v: from_micro_cpm(v),    calc=sum_agr('data_cost_micro'),      order="SUM(data_cost_micro) = 0, data_cost_micro_sum {direction}"),
+        dict(sql='cpc_micro',       app='cpc',         out=lambda v: from_micro_cpm(v),    calc=sum_div("cost_micro", "clicks"), order="SUM(clicks) = 0, sum(cost_micro) IS NULL, cpc_micro {direction}"),  # makes sure nulls are last
+        dict(sql='ctr',             app='ctr',         out=lambda v: to_percent(v),        calc=sum_div("clicks", "impressions"),order="sum(impressions) IS NULL, ctr {direction}"),
         dict(sql='adgroup_id',      app='ad_group',    out=lambda v: v),
     ]
 
@@ -70,17 +71,9 @@ def query_active_publishers(start_date, end_date, breakdown_fields=[], order_fie
     constraints_list = []
     if blacklist:
         # create a base object, then OR onto it
-        rsq = ~redshift.RSQ(
-            domain=blacklist[0]['domain'],
-            exchange=blacklist[0]['exchange'],
-            ad_group=blacklist[0]['adgroup_id']
-        )
+        rsq = ~_map_blacklist_to_rs_queryset(blacklist[0])
         for blacklist_entry in blacklist[1:]:
-            rsq &= ~redshift.RSQ(
-                domain=blacklist_entry['domain'],
-                exchange=blacklist_entry['exchange'],
-                ad_group=blacklist_entry['adgroup_id']
-            )
+            rsq &= ~_map_blacklist_to_rs_queryset(blacklist_entry)
         constraints_list = [rsq]
 
     return query(start_date, end_date,

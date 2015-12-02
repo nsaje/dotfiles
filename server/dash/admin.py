@@ -897,11 +897,33 @@ def reject_content_ad_sources(modeladmin, request, queryset):
                                    content ad sources with content ad ids {0} were ignored'.format(ignored))
 reject_content_ad_sources.short_description = 'Mark selected content ad sources as REJECTED'
 
+
+class ContentAdGroupSettingsStatusFilter(admin.SimpleListFilter):
+    title = 'Ad group status'
+    parameter_name = 'ad_group_settings_status'
+
+    def lookups(self, request, model_admin):
+        return constants.AdGroupSettingsState.get_choices()
+
+    def queryset(self, request, queryset):
+        if self.value() is None:
+            return queryset
+
+        ad_group_settingss = models.AdGroupSettings.objects\
+                                                   .order_by('ad_group_id', '-created_dt')\
+                                                   .distinct('ad_group')
+
+        queried_state = int(self.value())
+        return queryset.filter(
+            content_ad__ad_group_id__in=[x.ad_group_id for x in ad_group_settingss if x.state == queried_state])
+
+
 class ContentAdSourceAdmin(admin.ModelAdmin):
     list_display = (
         'content_ad_id_',
         'source_content_ad_id',
         'ad_group_name',
+        'ad_group_settings_status',
         'source',
         'submission_status_',
         'submission_errors',
@@ -909,7 +931,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         'modified_dt'
     )
 
-    list_filter = ('source', 'submission_status')
+    list_filter = ('source', 'submission_status', ContentAdGroupSettingsStatusFilter)
     actions = [reject_content_ad_sources]
 
     display_submission_status_colors = {
@@ -948,6 +970,11 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
             )
     ad_group_name.allow_tags = True
 
+    def ad_group_settings_status(self, obj):
+        ad_group = obj.content_ad.ad_group
+        ad_group_settings = ad_group.get_current_settings()
+        return constants.AdGroupSettingsState.get_text(ad_group_settings.state)
+
     def save_model(self, request, content_ad_source, form, change):
         current_content_ad_source = models.ContentAdSource.objects.get(id=content_ad_source.id)
         content_ad_source.save()
@@ -982,7 +1009,8 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     date_hierarchy = 'start_date'
     list_filter = ['status', 'license_fee', 'created_by']
     readonly_fields = ('created_dt', 'created_by',)
-    
+    form = dash_forms.BudgetLineItemForm
+
 
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
@@ -997,6 +1025,77 @@ class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_filter = ['credit', 'created_by']
     readonly_fields = ('created_dt', 'created_by',)
 
+
+class ScheduledExportReportLogAdmin(admin.ModelAdmin):
+    search_fields = ['scheduled_report']
+    list_display = (
+        'created_dt',
+        'start_date',
+        'end_date',
+        'state',
+        'scheduled_report',
+        'recipient_emails',
+        'report_filename',
+        'errors'
+    )
+    readonly_fields = ['created_dt']
+
+
+class ScheduledExportReportAdmin(admin.ModelAdmin):
+    search_fields = ['name', 'created_by__email']
+    list_display = (
+        'created_dt',
+        'created_by',
+        'name',
+        'report',
+        'report_',
+        'sending_frequency',
+        'get_sources',
+        'get_recipients',
+        'state',
+    )
+    readonly_fields = ['created_dt']
+    list_filter = ('state', 'sending_frequency')
+    ordering = ('state', '-created_dt')
+
+    def get_recipients(self, obj):
+        return ', '.join(obj.get_recipients_emails_list())
+    get_recipients.short_description = 'Recipient Emails'
+
+    def get_sources(self, obj):
+        if len(obj.report.filtered_sources.all()) == 0:
+            return 'All Sources'
+        return ', '.join(source.name for source in obj.report.get_filtered_sources())
+    get_sources.short_description = 'Filtered Sources'
+
+    def report_(self, obj):
+        link = reverse("admin:dash_exportreport_change", args=(obj.report.id,))
+        return u'<a href="%s">%s</a>' % (link, obj.report)
+    report_.allow_tags = True
+
+
+class ExportReportAdmin(admin.ModelAdmin):
+    search_fields = ['created_by__email']
+    list_display = (
+        'created_dt',
+        'created_by',
+        'granularity',
+        'breakdown_by_day',
+        'breakdown_by_source',
+        'order_by',
+        'ad_group',
+        'campaign',
+        'account',
+        'additional_fields',
+        'get_sources'
+    )
+    readonly_fields = ['created_dt']
+
+    def get_sources(self, obj):
+        if len(obj.filtered_sources.all()) == 0:
+            return 'All Sources'
+        return ', '.join(source.name for source in obj.get_filtered_sources())
+    get_sources.short_description = 'Filtered Sources'
 
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -1016,3 +1115,6 @@ admin.site.register(models.ContentAdSource, ContentAdSourceAdmin)
 admin.site.register(models.UserActionLog, UserActionLogAdmin)
 admin.site.register(models.CreditLineItem, CreditLineItemAdmin)
 admin.site.register(models.BudgetLineItem, BudgetLineItemAdmin)
+admin.site.register(models.ScheduledExportReportLog, ScheduledExportReportLogAdmin)
+admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
+admin.site.register(models.ExportReport, ExportReportAdmin)

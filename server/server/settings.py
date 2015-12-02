@@ -86,10 +86,8 @@ TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'common_static'),)
-
 STATIC_ROOT = 'static'
 
-STATIC_URL = '/static/'
 LOGIN_URL = '/signin'
 LOGIN_REDIRECT_URL = '/'
 
@@ -112,6 +110,8 @@ DEMO_USERS = tuple()
 
 from celeryconfig import *
 from localsettings import *
+
+STATIC_URL = SERVER_STATIC_URL + '/'
 
 LOGGING = {
     'version': 1,

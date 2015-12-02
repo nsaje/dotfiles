@@ -89,7 +89,6 @@ def mailgun_gareps(request):
         statsd_incr('convapi.invalid_email_sender')
         return HttpResponse(status=406)
 
-
     statsd_incr('convapi.accepted_emails')
     key = None
 

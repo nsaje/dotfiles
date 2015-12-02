@@ -79,6 +79,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/sources',
             templateUrl: '/partials/media_sources.html',
             controller: 'MediaSourcesCtrl'
+        })
+        .state('main.allAccounts.scheduled_reports', {
+            url: '/reports',
+            templateUrl: '/partials/scheduled_reports.html',
+            controller: 'ScheduledReportsCtrl'
         });
 
     $stateProvider
@@ -109,6 +114,10 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             url: '/credit',
             templateUrl: '/partials/account_credit.html',
             controller: 'AccountCreditCtrl'
+        }).state('main.accounts.scheduled_reports', {
+            url: '/reports',
+            templateUrl: '/partials/scheduled_reports.html',
+            controller: 'ScheduledReportsCtrl'
         });
 
     $stateProvider
@@ -229,5 +238,5 @@ oneApp.run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService',
            event.stopPropagation();
         }
     }
-    
+
 }]);

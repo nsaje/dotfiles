@@ -33,6 +33,7 @@ class RSContentAdStatsModel(redshift.RSModel):
         dict(sql='clicks_sum',      app='clicks',      out=rsh.unchanged,   calc=rsh.sum_agr('clicks')),
         dict(sql='impressions_sum', app='impressions', out=rsh.unchanged,   calc=rsh.sum_agr('impressions')),
         dict(sql='cost_cc_sum',     app='cost',        out=rsh.from_cc,     calc=rsh.sum_agr('cost_cc')),
+        dict(sql='data_cost_cc_sum',app='data_cost',   out=rsh.from_cc,     calc=rsh.sum_agr('data_cost_cc')),        
         dict(sql='ctr',             app='ctr',         out=rsh.to_percent,  calc=rsh.sum_div('clicks', 'impressions')),
         dict(sql='cpc_cc',          app='cpc',         out=rsh.from_cc,     calc=rsh.sum_div('cost_cc', 'clicks')),
     ]
@@ -264,14 +265,14 @@ def get_day_cost(day, breakdown=None, **constraints):
     return rs
 
 
-def remove_contentadstats(content_ad_ids):
+def remove_contentadstats(ad_group_id):
     """
-    Completely removes stats for selected content ads
+    Completely removes stats for the selected ad group id
     """
 
-    if not content_ad_ids:
+    if not ad_group_id:
         return
 
     cursor = redshift.get_cursor()
-    RSContentAdStats.execute_delete(cursor, {'content_ad': content_ad_ids})
+    RSContentAdStats.execute_delete(cursor, {'ad_group': ad_group_id})
     cursor.close()

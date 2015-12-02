@@ -55,6 +55,10 @@ def get_stats_end_date(end_time):
     return date.date()
 
 
+def get_by_day(by_day):
+    return by_day == 'true'
+
+
 def get_filtered_sources(user, sources_filter):
     filtered_sources = models.Source.objects.all()
     if not user.has_perm('zemauth.filter_sources') or not sources_filter:
@@ -542,13 +546,17 @@ def get_content_ad_data_status(ad_group, content_ads):
 
     data_status = {}
     for content_ad in content_ads:
-        in_sync = True
+        out_of_sync = []
         for content_ad_source in content_ad_sources:
             if content_ad_source.content_ad_id != content_ad.id:
                 continue
 
             # we ignore deprecated and in maintenance sources
             if content_ad_source.source.deprecated or content_ad_source.source.maintenance:
+                continue
+
+            # we ignore rejected content ads
+            if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.REJECTED:
                 continue
 
             ad_group_source = None
@@ -565,18 +573,17 @@ def get_content_ad_data_status(ad_group, content_ads):
                     continue
 
             if content_ad_source.state != content_ad_source.source_state:
-                in_sync = False
-                break
+                out_of_sync.append(content_ad_source.source.name)
 
         message = ''
-        if in_sync:
+        if not out_of_sync:
             message = 'All data is OK.'
         else:
-            message = 'The status of this Content Ad differs from the one in the 3rd party dashboard.'
+            message = 'The status of this Content Ad differs on these 3rd party dashboards: {}.'.format(", ".join(out_of_sync))
 
         data_status[str(content_ad.id)] = {
             'message': message,
-            'ok': in_sync,
+            'ok': len(out_of_sync) == 0,
         }
 
     return data_status
@@ -762,7 +769,7 @@ def get_user_full_name_or_email(user):
 
 
 def copy_stats_to_row(stat, row):
-    for key in ['impressions', 'clicks', 'cost', 'cpc', 'ctr',
+    for key in ['impressions', 'clicks', 'cost', 'data_cost', 'cpc', 'ctr',
                 'visits', 'click_discrepancy', 'pageviews',
                 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
         row[key] = stat.get(key)
@@ -935,7 +942,7 @@ def format_decimal_to_percent(num):
 
 
 def format_percent_to_decimal(num):
-    return Decimal(str(num).replace('%', '')) / 100
+    return Decimal(str(num).replace(',', '').strip('%')) / 100
 
 
 def log_useraction_if_necessary(request, user_action_type, account=None, campaign=None, ad_group=None):

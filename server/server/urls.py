@@ -257,6 +257,7 @@ urlpatterns += patterns(
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/',
         login_required(dash.views.views.CampaignAdGroups.as_view()),
+        name='campaign_ad_groups'
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/agency/',
@@ -339,6 +340,7 @@ urlpatterns += patterns(
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/archive/',
         login_required(dash.views.views.AdGroupArchive.as_view()),
+        name='ad_group_archive',
     ),
     url(
         r'^api/sources/',
@@ -347,6 +349,7 @@ urlpatterns += patterns(
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/restore/',
         login_required(dash.views.views.AdGroupRestore.as_view()),
+        name='ad_group_restore',
     ),
     url(
         r'^api/accounts/export/',
@@ -405,6 +408,18 @@ urlpatterns += patterns(
     url(
         r'^api/accounts/(?P<account_id>\d+)/export_plus/',
         login_required(dash.views.export_plus.AccountCampaignsExport.as_view())
+    ),
+    url(
+        r'^api/all_accounts/reports/',
+        login_required(dash.views.export_plus.ScheduledReports.as_view())
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/reports/',
+        login_required(dash.views.export_plus.ScheduledReports.as_view())
+    ),
+    url(
+        r'^api/accounts/reports/remove/(?P<scheduled_report_id>\d+)',
+        login_required(dash.views.export_plus.ScheduledReports.as_view())
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/export_plus/',

@@ -57,6 +57,7 @@ class ApiContentAdsQueryTest(TestCase):
             'SUM("impressions") AS "impressions_sum"',
             'CASE WHEN SUM("impressions") <> 0 THEN SUM(CAST("clicks" AS FLOAT)) / SUM("impressions") ELSE NULL END AS "ctr"',
             'SUM("cost_cc") AS "cost_cc_sum"',
+            'SUM("data_cost_cc") AS "data_cost_cc_sum"',
             'CASE WHEN SUM("clicks") <> 0 THEN SUM(CAST("cost_cc" AS FLOAT)) / SUM("clicks") ELSE NULL END AS "cpc_cc"',
             'SUM("pageviews") AS "pageviews_sum"',
             'SUM("new_visits") AS "new_visits_sum"',
@@ -80,6 +81,7 @@ class ApiContentAdsQueryTest(TestCase):
             'cpc_cc': 1.0,
             'pageviews_sum': 2821,
             'cost_cc_sum': 26638,
+            'data_cost_cc_sum': 1122,
             'click_discrepancy': 0.0,
             'new_visits_sum': 1209,
             'visits_sum': 4030,
@@ -107,6 +109,7 @@ class ApiContentAdsQueryTest(TestCase):
             'click_discrepancy': 0.0,
             'visits': 4030,
             'cost': 2.6638,
+            'data_cost': 0.1122,
             'impressions': 10560,
             'percent_new_users': 100.0,
             'clicks': 2,
@@ -172,9 +175,9 @@ class ApiContentAdsQueryTest(TestCase):
         self.check_aggregations(mock_cursor)
 
     def test_remove_contentadstats(self, mock_cursor):
-        api_contentads.remove_contentadstats([1, 2, 3])
+        api_contentads.remove_contentadstats(ad_group_id=88)
         query = self._get_query(mock_cursor)
-        self.assertEqual(query, 'DELETE FROM "contentadstats" WHERE (content_ad_id IN (%s,%s,%s))')
+        self.assertEqual(query, 'DELETE FROM "contentadstats" WHERE (adgroup_id=%s)')
 
 
 class ApiContentAdsPostclickRedshiftTest(RedshiftTestCase):

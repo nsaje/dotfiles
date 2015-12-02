@@ -1,6 +1,14 @@
 module.exports = function (grunt) {
     'use strict';
 
+    function getS3BuildPath() {
+        if(grunt.option('build-number') !== undefined) {
+            return 'https://s3.amazonaws.com/z1-static/build-' + grunt.option('build-number');
+        }
+
+        return '';
+    }
+
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         html2js: {
@@ -65,6 +73,9 @@ module.exports = function (grunt) {
             actionlog_lib: {
                 dest: 'dist/actionlog/zemanta-one.actionlog.lib.js',
                 cssDest: 'dist/actionlog/zemanta-one.actionlog.lib.css',
+                mainFiles: {
+                    bootstrap: ['dist/css/bootstrap.min.css', 'dist/js/bootstrap.min.js']
+                },
                 include: [
                     'jquery',
                     'bootstrap',
@@ -161,7 +172,10 @@ module.exports = function (grunt) {
         },
         less: {
             options: {
-                cleancss: true
+                cleancss: true,
+                rootpath: getS3BuildPath() !== "" ?
+                    getS3BuildPath() + "/client/one/" :
+                    undefined
             },
             one: {
                 files: {
@@ -233,7 +247,7 @@ module.exports = function (grunt) {
             prod: {
                 constants: {
                     config: {
-                        static_url: '/client',
+                        static_url: getS3BuildPath() + '/client',
                         debug: false
                     }
                 }

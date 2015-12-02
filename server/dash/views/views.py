@@ -358,6 +358,9 @@ class AdGroupRestore(api_common.BaseApiView):
 
         actionlog.sync.AdGroupSync(ad_group).trigger_all(self.request)
 
+        for ad_group_source in ad_group.adgroupsource_set.all():
+            api.refresh_publisher_blacklist(ad_group_source, request)
+
         helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_AD_GROUP,
                                             ad_group=ad_group)
 
@@ -376,10 +379,27 @@ class CampaignAdGroups(api_common.BaseApiView):
             name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
             campaign=campaign
         )
-        ad_group.save(request)
+
+        actionlogs_to_send = []
+        with transaction.atomic():
+            ad_group.save(request)
+
+            # always create settings when creating an ad group
+            # and propagate them to external sources
+            ad_group_settings = ad_group.get_current_settings()
+            ad_group_settings.save(request)
+
+            actionlogs_to_send.extend(
+                api.order_ad_group_settings_update(
+                    ad_group, models.AdGroupSettings(), ad_group_settings, request,
+                    send=False
+                )
+            )
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_AD_GROUP,
                                             ad_group=ad_group, campaign=campaign)
+
+        actionlog.zwei_actions.send(actionlogs_to_send)
 
         response = {
             'name': ad_group.name,
@@ -1048,14 +1068,19 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         end_date = helpers.parse_datetime(body.get('end_date'))
 
         state = int(body.get('state'))
-        if state not in constants.PublisherStatus.get_keys():
+        if state not in constants.PublisherStatus.get_all():
             raise exc.MissingDataError('Invalid state')
 
         level = body.get('level')
-        if level not in constants.PublisherBlacklistLevel.get_keys():
+        if level not in constants.PublisherBlacklistLevel.get_all():
             raise exc.MissingDataError('Invalid level')
 
-        if level != constants.PublisherBlacklistLevel.ADGROUP and\
+        if level in (constants.PublisherBlacklistLevel.CAMPAIGN,
+                     constants.PublisherBlacklistLevel.ACCOUNT) and\
+                not request.user.has_perm('zemauth.can_access_campaign_account_publisher_blacklist_status'):
+            raise exc.AuthorizationError()
+
+        if level == constants.PublisherBlacklistLevel.GLOBAL and\
                 not request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status'):
             raise exc.AuthorizationError()
 

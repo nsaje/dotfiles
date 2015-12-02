@@ -9,6 +9,7 @@ from fabric.contrib.files import exists
 import fabric.colors
 import fabric.utils
 
+import time
 import yaml
 import json
 import urllib
@@ -242,17 +243,33 @@ def cleanup(**kvargs):
 @task
 @runs_once
 def purgecache(**kvargs):
-    req = httplib.HTTPSConnection( 'www.cloudflare.com' )
-    req.request( 'GET', '/api_json.html?a=fpurge_ts&tkn=46f74438514cdd4f68695b9756cc1c2274cf5&email=cloudflare@zemanta.com&z=zemanta.com&v=1')
-    response = req.getresponse()
-    data = response.read()
-    try:
-        data = json.loads( data )
-    except ValueError:
-        raise Exception('JSON parse failed.')
-    if data['result'] == 'error':
-        raise Exception(data['msg'])
-    ok("Cache purged!")
+    success = False
+    iterations = 5
+    current_iteration = 0
+    # sleep for n seconds during attempts
+    interval = 10
+    while not success and current_iteration < iterations:
+        print("attempting to purge cache {count}".format(count=current_iteration))
+        req = httplib.HTTPSConnection( 'www.cloudflare.com' )
+        req.request( 'GET', '/api_json.html?a=fpurge_ts&tkn=46f74438514cdd4f68695b9756cc1c2274cf5&email=cloudflare@zemanta.com&z=zemanta.com&v=1')
+        response = req.getresponse()
+        data = response.read()
+        try:
+            data = json.loads( data )
+            success = data.get('result', '') != 'error'
+        except ValueError:
+            print('JSON parse failed.')
+        if data['result'] == 'error':
+            print(data['msg'])
+
+        current_iteration += 1
+        if not success:
+            time.sleep(interval)
+
+    if success:
+        ok("Cache purged!")
+    else:
+        error('Failed purging cache after {count} attempts'.format(count=iterations))
     return data
 
 # COMMON STUFF

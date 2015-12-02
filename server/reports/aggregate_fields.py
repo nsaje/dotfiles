@@ -7,6 +7,7 @@ from utils import db_aggregates
 CLICKS_SUM = 'clicks_sum'
 IMPRESSIONS_SUM = 'impressions_sum'
 COST_CC_SUM = 'cost_cc_sum'
+DATA_COST_CC_SUM = 'data_cost_cc_sum'
 CTR = 'ctr'
 CPC_CC = 'cpc_cc'
 
@@ -26,6 +27,7 @@ AGGREGATE_FIELDS = dict(
     clicks_sum=Sum('clicks'),
     impressions_sum=Sum('impressions'),
     cost_cc_sum=Sum('cost_cc'),
+    data_cost_cc_sum=Sum('data_cost_cc'),
     ctr=db_aggregates.SumDivision('clicks', 'impressions'),
     cpc_cc=db_aggregates.SumDivision('cost_cc', 'clicks')
 )
@@ -52,6 +54,7 @@ def transform_name(name):
         CLICKS_SUM: 'clicks',
         IMPRESSIONS_SUM: 'impressions',
         COST_CC_SUM: 'cost',
+        DATA_COST_CC_SUM: 'data_cost',
         CPC_CC: 'cpc',
         VISITS_SUM: 'visits',
         NEW_VISITS_SUM: 'new_visits',
@@ -64,7 +67,7 @@ def transform_name(name):
 
 
 def transform_val(name, val):
-    if name in [COST_CC_SUM, CPC_CC, CONVERSIONS_VALUE_CC_SUM]:
+    if name in [DATA_COST_CC_SUM, COST_CC_SUM, CPC_CC, CONVERSIONS_VALUE_CC_SUM]:
         return _transform_cc_to_decimal(val)
 
     if name in [CTR, BOUNCE_RATE, PERCENT_NEW_USERS, CLICK_DISCREPANCY]:

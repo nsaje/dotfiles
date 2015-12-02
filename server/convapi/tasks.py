@@ -100,6 +100,7 @@ def report_aggregate(csvreport, sender, recipient, subject, date, text, report_l
 @transaction.atomic
 def process_ga_report(ga_report_task):
     try:
+        logger.debug('Processing GA report')
         report_log = models.GAReportLog()
         report_log.email_subject = ga_report_task.subject
         report_log.from_address = ga_report_task.from_address

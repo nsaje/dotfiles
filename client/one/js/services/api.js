@@ -770,6 +770,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             }
 
             addFilteredSources(config.params);
+            addShowBlacklistedPublisher(config.params);
 
             $http.get(url, config).
                 success(function (response, status) {
@@ -1095,7 +1096,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 name: settings.name,
                 defaultAccountManager: settings.default_account_manager,
                 defaultSalesRepresentative: settings.default_sales_representative,
-                serviceFee: settings.service_fee
+                serviceFee: settings.service_fee,
+                allowedSources: settings.allowed_sources
             };
         }
 
@@ -1105,7 +1107,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 name: settings.name,
                 default_account_manager: settings.defaultAccountManager,
                 default_sales_representative: settings.defaultSalesRepresentative,
-                service_fee: settings.serviceFee
+                service_fee: settings.serviceFee,
+                allowed_sources: settings.allowedSources
             };
         }
 
@@ -1184,6 +1187,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             var data = {
                 'settings': convertSettingsToApi(settings)
             };
+
+
 
             $http.put(url, data, config).
                 success(function (data, status) {
@@ -1305,6 +1310,69 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 }).
                 error(function(data, status, headers) {
                     deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
+    function ScheduledReports() {
+        this.get = function (level, id) {
+            var deferred = $q.defer();
+            var url;
+            if (level === constants.level.ALL_ACCOUNTS){
+                url = '/api/all_accounts/reports/';
+            } else if (level === constants.level.ACCOUNTS) {
+                url = '/api/accounts/' + id + '/reports/';
+            } else {
+                return;
+            }
+            $http.get(url).
+                success(function (data, status) {
+                    if (!data || !data.data) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve(data.data);
+                }).
+                error(function(data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.removeReport = function (scheduledReportId) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/reports/remove/' + scheduledReportId;
+            $http.delete(url).
+                success(function (data, status) {
+                    if (status != 200) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve();
+                }).
+                error(function(data, status, headers) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.addScheduledReport = function (url, data) {
+            var deferred = $q.defer();
+            $http.put(url, data).
+                success(function (data, status) {
+                    if (status != 200) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve();
+                }).
+                error(function(data, status) {
+                  var errors = null;
+                  if(data.data && data.data.errors) {
+                      errors = data.data.errors;
+                  }
+                  return deferred.reject(errors);
                 });
 
             return deferred.promise;
@@ -2202,7 +2270,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                         "data": {
                             "status": 2,
                             "errors": {
-                                "content_ads": ["File too large."]
+                                "content_ads": ["File too large (max 1MB)."]
                             }
                         },
                         "success": false
@@ -2593,8 +2661,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             },
             dataToApi: function (obj) {
                 return {
-                    start_date: obj.startDate && moment(obj.startDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
-                    end_date: obj.endDate && moment(obj.endDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+                    start_date: obj.startDate && moment(obj.startDate).format('YYYY-MM-DD'),
+                    end_date: obj.endDate && moment(obj.endDate).format('YYYY-MM-DD'),
                     amount: obj.amount,
                     license_fee: obj.licenseFee,
                     comment: obj.comment,
@@ -2612,7 +2680,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 };
             }
         };
-        
+
         this.list = function (accountId) {
             var url = '/api/accounts/' + accountId + '/credit/';
             return $http.get(url).then(processResponse).then(function (data) {
@@ -2629,7 +2697,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             var url = '/api/accounts/' + accountId + '/credit/';
             return $http.put(url, self.convert.dataToApi(item)).then(processResponse);
         };
-        
+
         this.save = function (accountId, item) {
             var url = '/api/accounts/' + accountId + '/credit/' + item.id + '/';
             return $http.post(url, self.convert.dataToApi(item)).then(processResponse);
@@ -2672,8 +2740,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 return {
                     credit: obj.credit.id,
                     amount: obj.amount,
-                    start_date: moment(obj.startDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
-                    end_date: moment(obj.endDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+                    start_date: moment(obj.startDate).format('YYYY-MM-DD'),
+                    end_date: moment(obj.endDate).format('YYYY-MM-DD'),
                     comment: obj.comment
                 };
             },
@@ -2688,7 +2756,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 };
             }
         };
-        
+
         this.list = function (campaignId) {
             var url = '/api/campaigns/' + campaignId + '/budget-plus/';
             return $http.get(url).then(processResponse).then(function (data) {
@@ -2723,7 +2791,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             var url = '/api/campaigns/' + campaignId + '/budget-plus/';
             return $http.put(url, self.convert.dataToApi(budget)).then(processResponse);
         };
-        
+
         this.save = function (campaignId, budget) {
             var url = '/api/campaigns/' + campaignId + '/budget-plus/' + budget.id + '/';
             return $http.post(url, self.convert.dataToApi(budget)).then(processResponse);
@@ -2768,6 +2836,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         accountCampaigns: new AccountCampaigns(),
         accountCampaignsTable: new AccountCampaignsTable(),
         accountBudget: new AccountBudget(),
+        scheduledReports: new ScheduledReports(),
         accountSync: new AccountSync(),
         accountArchive: new AccountArchive(),
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),

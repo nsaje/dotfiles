@@ -112,6 +112,14 @@
                                 <span ng-switch-when="text">
                                     {{ row[col.field] }}
                                 </span>
+                                <span ng-switch-when="textWithPopup">
+                                    <div zem-lazy-popover-text="{{ row[col.popupField] }}"
+                                        zem-lazy-popover-placement="left"
+                                        zem-lazy-popover-animation-class="fade"
+                                        zem-lazy-popover-append-to-body="true">
+                                    {{ row[col.field] }}
+                                    </div>
+                                </span>
                                 <span
                                     ng-switch-when="notification"
                                     zem-lazy-popover-html-unsafe="{{ notifications[row.id].message }}"
@@ -130,8 +138,19 @@
                                         zem-lazy-popover-append-to-body="true">
                                     </span>
                                 </span>
-                                <span ng-switch-when="checkbox" class="checkbox">
-                                    <input type="checkbox" data-ng-model="row[col.field]" ng-disabled="!row[col.field] && col.disabled" data-ng-change="col.selectCallback(row, row[col.field])"/>
+                                <span ng-switch-when="checkbox" class="checkbox"
+                                    zem-lazy-popover-visible="{{ row[col.popupField] }}"
+                                    zem-lazy-popover-text="{{ row[col.popupField] }}"
+                                    zem-lazy-popover-placement="right"
+                                    zem-lazy-popover-animation-class="fade"
+                                    zem-lazy-popover-append-to-body="true"
+                                    >
+                                    <input 
+                                        type="checkbox" 
+                                        data-ng-model="row[col.field]" 
+                                        ng-disabled="!row[col.field] && col.disabled || row['disabledSelection']" 
+                                        data-ng-change="col.selectCallback(row, row[col.field])"
+                                        />
                                 </span>
                                 <span ng-switch-when="state">
                                     <zem-state-selector

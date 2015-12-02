@@ -75,6 +75,7 @@ def get_reports_api_module(user):
 
     return reports.api
 
+
 def get_conversion_pixels_last_sync(conversion_pixels):
     conversion_pixels = conversion_pixels.extra(select={'last_sync_null': 'last_sync_dt IS NULL'},
                                                 order_by=['-last_sync_null', 'last_sync_dt'])
@@ -82,6 +83,7 @@ def get_conversion_pixels_last_sync(conversion_pixels):
         return conversion_pixels[0].last_sync_dt
 
     return datetime.datetime.utcnow()
+
 
 class AllAccountsSourcesTable(object):
     def __init__(self, user, id_, filtered_sources):
@@ -375,7 +377,7 @@ class AdGroupSourcesTable(object):
 class AdGroupSourcesTableUpdates(object):
     def get(self, user, last_change_dt, filtered_sources, ad_group_id_=None):
         if not user.has_perm('zemauth.set_ad_group_source_settings'):
-            return exc.ForbiddenError('Not allowed')
+            raise exc.ForbiddenError('Not allowed')
 
         ad_group_sources_table = AdGroupSourcesTable(user, ad_group_id_, filtered_sources)
         ad_group_sources = ad_group_sources_table.active_ad_group_sources
@@ -1606,8 +1608,12 @@ class PublishersTable(object):
 
         for publisher_data in publishers_data:
             publisher_domain = publisher_data['domain']
-            publisher_source = source_cache_by_slug.get(publisher_data['exchange']) or publisher_data['exchange']
-            publisher_data['source_id'] = publisher_source.id if source_cache_by_slug.get(publisher_data['exchange']) is not None else -1
+            publisher_source = source_cache_by_slug.get(publisher_data['exchange'].lower()) or publisher_data['exchange']
+
+            known_source = source_cache_by_slug.get(publisher_data['exchange']) is not None
+
+            publisher_data['source_id'] = publisher_source.id if known_source else -1
+            publisher_data['can_blacklist_publisher'] = publisher_source.can_modify_publisher_blacklist_automatically() if known_source else False
 
             if source_cache_by_slug.get(publisher_data['exchange']) is None:
                 continue
@@ -1623,9 +1629,13 @@ class PublishersTable(object):
                         publisher_data['blacklisted'] = 'Blacklisted'
                     elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
                         publisher_data['blacklisted'] = 'Pending'
+                    level = blacklisted_pub.get_blacklist_level()
+                    publisher_data['blacklisted_level'] = level
+                    publisher_data['blacklisted_level_description'] = constants.PublisherBlacklistLevel.verbose(level)
 
         response = {
             'rows': self.get_rows(
+                user,
                 map_exchange_to_source_name,
                 publishers_data=publishers_data,
             ),
@@ -1710,17 +1720,17 @@ class PublishersTable(object):
                    totals_data):
         result = {
             'cost': totals_data.get('cost', 0),
+            'data_cost': totals_data.get('data_cost', 0),
             'cpc': totals_data.get('cpc', 0),
             'clicks': totals_data.get('clicks', 0),
             'impressions': totals_data.get('impressions', 0),
             'ctr': totals_data.get('ctr', 0),
         }
+        if not user.has_perm('zemauth.can_view_data_cost'):
+            del result['data_cost']
         return result
 
-    def get_rows(
-            self,
-            map_exchange_to_source_name,
-            publishers_data):
+    def get_rows(self, user, map_exchange_to_source_name, publishers_data):
 
         rows = []
         for publisher_data in publishers_data:
@@ -1733,17 +1743,27 @@ class PublishersTable(object):
                 domain_link = ""
 
             row = {
+                'can_blacklist_publisher': publisher_data['can_blacklist_publisher'],
                 'domain': domain,
                 'domain_link': domain_link,
                 'blacklisted': publisher_data['blacklisted'],
                 'exchange': source_name,
                 'source_id': publisher_data['source_id'],
                 'cost': publisher_data.get('cost', 0),
+                'data_cost': publisher_data.get('data_cost', 0),
                 'cpc': publisher_data.get('cpc', 0),
                 'clicks': publisher_data.get('clicks', None),
                 'impressions': publisher_data.get('impressions', None),
                 'ctr': publisher_data.get('ctr', None),
             }
+
+            
+            if not user.has_perm('zemauth.can_view_data_cost'):
+                del row['data_cost']
+
+            if publisher_data.get('blacklisted_level'):
+                row['blacklisted_level'] = publisher_data['blacklisted_level']
+                row['blacklisted_level_description'] = publisher_data['blacklisted_level_description']
 
             rows.append(row)
 

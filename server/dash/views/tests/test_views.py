@@ -3,11 +3,13 @@
 import json
 from mock import patch
 import datetime
+import httplib
 
 from django.test import TestCase, Client, TransactionTestCase
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth.models import Permission
 
 from zemauth.models import User
 
@@ -18,6 +20,7 @@ from dash import api
 from reports import redshift
 
 import actionlog.models
+import zemauth.models
 
 
 class UserTest(TestCase):
@@ -159,6 +162,31 @@ class AdGroupSourceSettingsTest(TestCase):
             response.wsgi_request,
             constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
             ad_group=ad_group)
+
+
+class CampaignAdGroups(TestCase):
+    fixtures = ['test_models.yaml', 'test_views.yaml', ]
+
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username=User.objects.get(pk=1).email, password='secret')
+
+    @patch('utils.redirector_helper.insert_adgroup')
+    def test_put(self, mock_insert_adgroup):
+        campaign = models.Campaign.objects.get(pk=1)
+
+        response = self.client.put(
+            reverse('campaign_ad_groups', kwargs={'campaign_id': campaign.id}),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(mock_insert_adgroup.called)
+
+        response_dict = json.loads(response.content)
+        self.assertDictContainsSubset({'name': 'New ad group'}, response_dict['data'])
+
+        ad_group = models.AdGroup.objects.get(pk=response_dict['data']['id'])
+        ad_group_settings = ad_group.get_current_settings()
+        self.assertIsNotNone(ad_group_settings.id)
 
 
 class AdGroupContentAdCSVTest(TestCase):
@@ -442,6 +470,131 @@ class AdGroupContentAdStateTest(TestCase):
             settings.changes_text,
             'Content ad(s) 1, 2, 3, 1, 2, 3, 1, 2, 3, 1 and 2 more set to Enabled.'
         )
+
+
+class AdGroupArchiveRestoreTest(TestCase):
+    fixtures = ['test_models.yaml', 'test_views.yaml', ]
+
+    class MockSettingsWriter(object):
+        def __init__(self, init):
+            pass
+
+        def set(self, resource, request):
+            pass
+
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username=User.objects.get(pk=1).email, password='secret')
+
+    def _post_archive_ad_group(self, ad_group_id):
+        return self.client.post(
+            reverse(
+                'ad_group_archive',
+                kwargs={'ad_group_id': ad_group_id}),
+            data=json.dumps({}),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def _post_restore_ad_group(self, ad_group_id):
+        return self.client.post(
+            reverse(
+                'ad_group_restore',
+                kwargs={'ad_group_id': ad_group_id}),
+            data=json.dumps({}),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            follow=True
+        )
+
+    def test_basic_archive_restore(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertFalse(ad_group.is_archived())
+
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
+        ad_group_settings.save(None)
+
+        self._post_archive_ad_group(1)
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertTrue(ad_group.is_archived())
+
+        self._post_restore_ad_group(1)
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertFalse(ad_group.is_archived())
+
+    def test_archive_restore_with_pub_blacklisting(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertFalse(ad_group.is_archived())
+
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
+        ad_group_settings.save(None)
+
+        self._post_archive_ad_group(1)
+
+        adiant = models.Source.objects.get(id=2)
+        adiant.source_type.available_actions = [
+            constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC
+        ]
+        adiant.source_type.save()
+
+        models.PublisherBlacklist.objects.create(
+            name='zemanta.com',
+            campaign=ad_group.campaign,
+            source=adiant,
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+        models.PublisherBlacklist.objects.create(
+            name='google.com',
+            account=ad_group.campaign.account,
+            source=adiant,
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+
+        # do some blacklisting inbetween
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertTrue(ad_group.is_archived())
+
+        self._post_restore_ad_group(1)
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        self.assertFalse(ad_group.is_archived())
+
+        pub_blacklist_actions = actionlog.models.ActionLog.objects.filter(
+            action='set_publisher_blacklist',
+        )
+        self.assertEqual(2, pub_blacklist_actions.count())
+
+        first_al_entry = pub_blacklist_actions[0]
+        self.assertDictEqual({
+            u'key': [1],
+            u'level': u'account',
+            'publishers': [
+                {
+                    u'domain': u'google.com',
+                    u'exchange': u'adiant',
+                }
+            ],
+            'state': 2
+        }, first_al_entry.payload['args'])
+
+        second_al_entry = pub_blacklist_actions[1]
+        self.assertDictEqual({
+            u'key': [1],
+            u'level': u'campaign',
+            'publishers': [
+                {
+                    u'domain': u'zemanta.com',
+                    u'exchange': u'adiant',
+                }
+            ],
+            'state': 2
+        }, second_al_entry.payload['args'])
+
 
 
 class AdGroupContentAdArchive(TestCase):
@@ -1179,6 +1332,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
     fixtures = ['test_api.yaml', 'test_models.yaml']
 
     def setUp(self):
+        self.client = Client()
         redshift.STATS_DB_NAME = 'default'
         for s in models.SourceType.objects.all():
             if s.available_actions == None:
@@ -1186,10 +1340,9 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             s.available_actions.append(constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC )
             s.save()
 
-
-    def _post_publisher_blacklist(self, ad_group_id, data):
-        username = User.objects.get(pk=3).email
-        self.client.login(username=username, password='secret')
+    def _post_publisher_blacklist(self, ad_group_id, data, user_id=3, with_status=False):
+        user = User.objects.get(pk=user_id)
+        self.client.login(username=user.username, password='secret')
         reversed_url = reverse(
                 'ad_group_publishers_blacklist',
                 kwargs={'ad_group_id': ad_group_id})
@@ -1200,7 +1353,124 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             HTTP_X_REQUESTED_WITH='XMLHttpRequest',
             follow=True
         )
-        return json.loads(response.content)
+        if not with_status:
+            return json.loads(response.content)
+        else:
+            json_blob = None
+            try:
+                json_blob = json.loads(response.content)
+            except:
+                json_blob = {'text': response.content}
+            return json_blob, response.status_code
+
+    def _fake_payload_data(self, level):
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        return {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": level,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": []
+        }
+
+    def _fake_cursor_data(self, cursor):
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'ctr': 0.0,
+            'exchange': 'adiant',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_blacklist_permission_none(self, cursor):
+        for level in (constants.PublisherBlacklistLevel.get_all()):
+            payload = self._fake_payload_data(level)
+            res, status = self._post_publisher_blacklist(1, payload, user_id=2, with_status=True)
+            self.assertFalse(res.get('success'), 'No permissions for blacklisting')
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_blacklist_permission_adgroup(self, cursor):
+        self._fake_cursor_data(cursor)
+        accessible_levels = (constants.PublisherBlacklistLevel.ADGROUP,)
+
+        permission = Permission.objects.get(codename='can_modify_publisher_blacklist_status')
+        user = zemauth.models.User.objects.get(pk=2)
+        user.user_permissions.add(permission)
+        user.save()
+
+        for level in constants.PublisherBlacklistLevel.get_all():
+            payload = self._fake_payload_data(level)
+            res, status = self._post_publisher_blacklist(1, payload, user_id=2, with_status=True)
+            if level in accessible_levels:
+                self.assertTrue(res.get('success'), 'level {} should be accessible'.format(level))
+            else:
+                self.assertFalse(res.get('success'), 'level {} should be inaccessible'.format(level))
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_blacklist_permission_campaign_account(self, cursor):
+        self._fake_cursor_data(cursor)
+        accessible_levels = (
+            constants.PublisherBlacklistLevel.ADGROUP,
+            constants.PublisherBlacklistLevel.CAMPAIGN,
+            constants.PublisherBlacklistLevel.ACCOUNT,
+        )
+
+        permissions = Permission.objects.filter(
+            codename__in=(
+                'can_modify_publisher_blacklist_status',
+                'can_access_campaign_account_publisher_blacklist_status',
+            )
+        )
+        user = zemauth.models.User.objects.get(pk=2)
+        for permission in permissions:
+            user.user_permissions.add(permission)
+        user.save()
+
+        for level in constants.PublisherBlacklistLevel.get_all():
+            payload = self._fake_payload_data(level)
+            res, status = self._post_publisher_blacklist(1, payload, user_id=2, with_status=True)
+            if level in accessible_levels:
+                self.assertTrue(res.get('success'), 'level {} should be accessible'.format(level))
+            else:
+                self.assertFalse(res.get('success'), 'level {} should be inaccessible'.format(level))
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_blacklist_permission_global(self, cursor):
+        self._fake_cursor_data(cursor)
+        accessible_levels = (
+            constants.PublisherBlacklistLevel.ADGROUP,
+            constants.PublisherBlacklistLevel.CAMPAIGN,
+            constants.PublisherBlacklistLevel.ACCOUNT,
+            constants.PublisherBlacklistLevel.GLOBAL,
+        )
+
+        permissions = Permission.objects.filter(
+            codename__in=(
+                'can_modify_publisher_blacklist_status',
+                'can_access_campaign_account_publisher_blacklist_status',
+                'can_access_global_publisher_blacklist_status',
+            )
+        )
+        user = zemauth.models.User.objects.get(pk=2)
+        for permission in permissions:
+            user.user_permissions.add(permission)
+        user.save()
+
+        for level in constants.PublisherBlacklistLevel.get_all():
+            payload = self._fake_payload_data(level)
+            res, status = self._post_publisher_blacklist(1, payload, user_id=2, with_status=True)
+            if level in accessible_levels:
+                self.assertTrue(res.get('success'), 'level {} should be accessible'.format(level))
+            else:
+                self.assertFalse(res.get('success'), 'level {} should be inaccessible'.format(level))
 
     @patch('reports.redshift.get_cursor')
     def test_post_blacklist(self, cursor):

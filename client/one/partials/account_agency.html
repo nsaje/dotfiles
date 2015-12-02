@@ -59,6 +59,52 @@
             <label ng-repeat="error in errors.serviceFee" class="control-label error" for="service-fee-select">{{ error }}</label>
         </div>
 
+        <div class="form-group" ng-if="hasPermission('zemauth.can_modify_allowed_sources')">
+            <label for="media-sources-options-choices" class="col-xs-2 control-label">Media Sources <zem-help-popover content="Media sources made available on this account." placement="top"></zem-help-popover></label>
+
+
+            <div class="col-xs-10">
+                    
+                <div class="row media-source-control-row">
+                    <div class="col-xs-2">Available</div>
+                    <div class="col-xs-2">Allowed</div>
+                </div>
+
+
+                <div class="row media-source-control-row">
+
+                    <div class="col-xs-2">
+                        
+                        <select ng-model="selectedMediaSouces.available" multiple="" class="media-source-select">
+                            <option ng-repeat="mediaSource in getAvailableMediaSources() | orderBy:mediaSourcesOrderByProp" value="{{mediaSource.value}}">{{mediaSource.name}}</option>
+                        </select>
+                    </div>
+         
+                    <div class="col-xs-2">
+                        
+                        <select ng-model="selectedMediaSouces.allowed" multiple="" class="media-source-select">
+                            <option ng-repeat="mediaSource in getAllowedMediaSources() | orderBy:mediaSourcesOrderByProp" value="{{mediaSource.value}}">{{mediaSource.name}}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row media-source-control-row">
+                    <div class="col-xs-2">
+                        <div class="btn-group btn-group-justified" role="group">
+                            <a ng-click="addToAllowedMediaSources()" class="btn btn-default"><span class="glyphicon glyphicon-arrow-right"></span></a>
+                        </div>
+
+                    </div>
+                    <div class="col-xs-2">
+                        <div class="btn-group btn-group-justified" role="group">
+                            <a ng-click="removeFromAllowedMediaSources()" class="btn btn-default"><span class="glyphicon glyphicon-arrow-left"></span></a>
+                        </div>                        
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
         <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
         <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
         <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the account\'s campaigns have to be paused in order to archive the account.') || '' }}" ng-click="archiveAccount()">Archive account</button>
@@ -67,6 +113,8 @@
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
         <span ng-show="discarded" class="success">Your updates have been discarded.</span>
     </form>
+
+  
 
     <div class="form-horizontal table-access-permissions" ng-if="hasPermission('zemauth.account_agency_access_permissions')">
         <div class="form-group">

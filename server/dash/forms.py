@@ -239,6 +239,37 @@ class AccountAgencySettingsForm(forms.Form):
 
         return sales_representative
 
+    def _clean_allowed_sources_dict(self, allowed_sources_dict):
+        err = forms.ValidationError('Invalid allowed source.')
+
+        if allowed_sources_dict is  None:
+            return
+
+        if not isinstance(allowed_sources_dict, dict):
+            raise err
+
+        allowed_sources = {}
+        for k, v in allowed_sources_dict.iteritems():
+            if not isinstance(k, basestring):
+                raise err
+            if not isinstance(v, dict):
+                raise err
+
+            try:
+                key = int(k)
+            except:
+                raise err
+
+            allowed = v.get('allowed', False)
+            allowed_sources[key] = {'allowed': allowed, 'name': v['name']}
+
+        self.cleaned_data['allowed_sources'] = allowed_sources
+
+    def clean(self):
+        super(AccountAgencySettingsForm, self).clean()
+        self._clean_allowed_sources_dict(self.data.get('allowed_sources', None))
+
+
 
 def validate_lower_case_only(st):
     if re.search(r'[^a-z]+', st):
@@ -608,7 +639,7 @@ class CreditLineItemForm(forms.ModelForm):
             if start_date < today:
                 raise forms.ValidationError('Start date has to be in the future.')
         return start_date
-    
+
     def clean_end_date(self):
         end_date = self.cleaned_data['end_date']
         today = dates_helper.local_today()
@@ -626,7 +657,7 @@ class CreditLineItemForm(forms.ModelForm):
         fields = [
             'account', 'start_date', 'end_date', 'amount', 'license_fee', 'status', 'comment'
         ]
-    
+
 class BudgetLineItemForm(forms.ModelForm):
     credit = forms.ModelChoiceField(queryset=models.CreditLineItem.objects.all())
 
@@ -650,10 +681,60 @@ class BudgetLineItemForm(forms.ModelForm):
             if end_date <= today:
                 raise forms.ValidationError('End date has to be in the future.')
         return end_date
-    
+
     class Meta:
         model = models.BudgetLineItem
         fields = [
             'campaign', 'credit', 'start_date', 'end_date', 'amount', 'comment'
         ]
 
+
+class MultiEmailField(forms.Field):
+    def to_python(self, value):
+        if not value:
+            return []
+        value = "".join(value.split())
+        return value.split(',')
+
+    def validate(self, value):
+        super(MultiEmailField, self).validate(value)
+        invalid_addresses = []
+        for email in value:
+            try:
+                validators.validate_email(email)
+            except forms.ValidationError:
+                invalid_addresses.append(email)
+
+        if invalid_addresses:
+            raise forms.ValidationError(
+                ', '.join(invalid_addresses) +
+                (' is' if len(invalid_addresses) == 1 else ' are') +
+                ' not valid email address' +
+                ('es' if len(invalid_addresses) > 1 else '') +
+                '.')
+
+
+class ScheduleReportForm(forms.Form):
+    granularity = forms.TypedChoiceField(
+        required=True,
+        choices=constants.ScheduledReportGranularity.get_choices(),
+        coerce=int
+    )
+    report_name = forms.CharField(
+        required=True,
+        max_length=100,
+        error_messages={
+            'max_length': 'Report name is too long (%(show_value)d/%(limit_value)d).'
+        }
+    )
+    frequency = forms.TypedChoiceField(
+        required=True,
+        choices=constants.ScheduledReportSendingFrequency.get_choices(),
+        coerce=int
+    )
+    recipient_emails = MultiEmailField(
+        required=True
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(ScheduleReportForm, self).__init__(*args, **kwargs)

@@ -1,15 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
-import slugify
-
 from collections import OrderedDict
+import json
 
 from django.conf import settings
+from django.db.models import Q
 
 from dash.views import helpers
 from dash import models
 from dash import export_plus
+from dash import constants
+from dash import scheduled_report
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
@@ -38,74 +39,6 @@ class ExportApiView(api_common.BaseApiView):
         ])
 
         content = export_plus.get_csv_content(fieldnames, data)
-        return self.create_csv_response(filename, content=content)
-
-
-class AccountCampaignsExport(api_common.BaseApiView):
-    @statsd_helper.statsd_timer('dash.export_plus', 'accounts_campaigns_export_plus_get')
-    def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.exports_plus'):
-            raise exc.ForbiddenError(message='Not allowed')
-        user = request.user
-        account = helpers.get_account(user, account_id)
-
-        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        export_type = request.GET.get('type')
-        additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
-        order = request.GET.get('order') or 'name'
-
-        if export_type == 'campaign-csv':
-            filename = 'report'
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign')
-        elif export_type == 'adgroup-csv':
-            filename = '-_by_ad_group_report'
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
-        elif export_type == 'contentad-csv':
-            filename = '-_by_content_ad_report'
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
-
-        filename = '{0}_{1}_{2}_{3}'.format(
-            slugify.slugify(account.name),
-            filename,
-            start_date,
-            end_date
-        )
-
-        return self.create_csv_response(filename, content=content)
-
-
-class CampaignAdGroupsExport(ExportApiView):
-    @statsd_helper.statsd_timer('dash.export_plus', 'campaigns_ad_groups_export_plus_get')
-    def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.exports_plus'):
-            raise exc.ForbiddenError(message='Not allowed')
-        user = request.user
-        campaign = helpers.get_campaign(user, campaign_id)
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
-        export_type = request.GET.get('type')
-        additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
-        order = request.GET.get('order') or 'name'
-
-        if export_type == 'adgroup-csv':
-            filename = 'report'
-            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
-        elif export_type == 'contentad-csv':
-            filename = '-_by_content_ad_report'
-            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
-
-        filename = '{0}_{1}_{2}_{3}_{4}'.format(
-            slugify.slugify(campaign.account.name),
-            slugify.slugify(campaign.name),
-            filename,
-            start_date,
-            end_date
-        )
-
         return self.create_csv_response(filename, content=content)
 
 
@@ -201,200 +134,198 @@ class SourcesExportAllowed(api_common.BaseApiView):
         return self.create_api_response({})
 
 
+class AccountCampaignsExport(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.export_plus', 'accounts_campaigns_export_plus_get')
+    def get(self, request, account_id):
+        content, filename = export_plus.get_report_from_request(request, account=helpers.get_account(request.user, account_id))
+        return self.create_csv_response(filename, content=content)
+
+    @statsd_helper.statsd_timer('dash.api', 'accounts_campaigns_scheduled_report_put')
+    def put(self, request, account_id):
+        account = helpers.get_account(request.user, account_id)
+        response = _add_scheduled_report_from_request(request, account=account)
+        return self.create_api_response(response)
+
+
+class CampaignAdGroupsExport(ExportApiView):
+    @statsd_helper.statsd_timer('dash.export_plus', 'campaigns_ad_groups_export_plus_get')
+    def get(self, request, campaign_id):
+        content, filename = export_plus.get_report_from_request(request, campaign=helpers.get_campaign(request.user, campaign_id))
+        return self.create_csv_response(filename, content=content)
+
+    @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_groups_scheduled_report_put')
+    def put(self, request, campaign_id):
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        response = _add_scheduled_report_from_request(request, campaign=campaign)
+        return self.create_api_response(response)
+
+
 class AdGroupAdsPlusExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_ads_plus_export_plus_get')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.exports_plus'):
-            raise exc.ForbiddenError(message='Not allowed')
-        user = request.user
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
-        export_type = request.GET.get('type')
-        additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
-        order = request.GET.get('order') or 'name'
-
-        if export_type == 'contentad-csv':
-            filename = '{0}_{1}_{2}_report_{3}_{4}'.format(
-                slugify.slugify(ad_group.campaign.account.name),
-                slugify.slugify(ad_group.campaign.name),
-                slugify.slugify(ad_group.name),
-                start_date,
-                end_date
-            )
-            content = export_plus.AdGroupExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad')
+        content, filename = export_plus.get_report_from_request(request, ad_group=ad_group)
         return self.create_csv_response(filename, content=content)
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_scheduled_report_put')
+    def put(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        response = _add_scheduled_report_from_request(request, ad_group=ad_group)
+        return self.create_api_response(response)
 
 
 class AllAccountsSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_sources_export_plus_get')
     def get(self, request):
-        if not request.user.has_perm('zemauth.exports_plus'):
-            raise exc.ForbiddenError(message='Not allowed')
-        user = request.user
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
-        additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
-        order = request.GET.get('order') or 'name'
-        export_type = request.GET.get('type')
-
-        if export_type == 'allaccounts-csv':
-            filename = 'ZemantaOne_media_source_report'
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, by_source=True)
-        elif export_type == 'account-csv':
-            filename = 'ZemantaOne_-_by_account_media_source_report'
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='account', by_source=True)
-        elif export_type == 'campaign-csv':
-            filename = 'ZemantaOne_-_by_campaign_media_source_report'
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_source=True)
-        elif export_type == 'adgroup-csv':
-            filename = 'ZemantaOne_-_by_ad_group_media_source_report'
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True)
-
-        filename = '{0}_{1}_{2}'.format(
-            filename,
-            start_date,
-            end_date
-        )
-
+        content, filename = export_plus.get_report_from_request(request, by_source=True)
         return self.create_csv_response(filename, content=content)
+
+    @statsd_helper.statsd_timer('dash.api', 'all_accounts_sources_scheduled_report_put')
+    def put(self, request):
+        response = _add_scheduled_report_from_request(request, by_source=True)
+        return self.create_api_response(response)
 
 
 class AccountSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'account_sources_export_plus_get')
     def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.exports_plus'):
-            raise exc.ForbiddenError(message='Not allowed')
-        user = request.user
-        account = helpers.get_account(user, account_id)
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
-        additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
-        order = request.GET.get('order') or 'name'
-        export_type = request.GET.get('type')
-
-        if export_type == 'account-csv':
-            filename = 'media_source_report'
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, by_source=True)
-        elif export_type == 'campaign-csv':
-            filename = '-_by_campaign_media_source_report'
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_source=True)
-        elif export_type == 'adgroup-csv':
-            filename = '-_by_ad_group_media_source_report'
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True)
-        elif export_type == 'contentad-csv':
-            filename = '-_by_content_ad_media_source_report'
-            content = export_plus.AccountExport().get_data(user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_source=True)
-
-        filename = '{0}_{1}_{2}_{3}'.format(
-            slugify.slugify(account.name),
-            filename,
-            start_date,
-            end_date
-        )
-
+        account = helpers.get_account(request.user, account_id)
+        content, filename = export_plus.get_report_from_request(request, account=account, by_source=True)
         return self.create_csv_response(filename, content=content)
+
+    @statsd_helper.statsd_timer('dash.api', 'account_sources_scheduled_report_put')
+    def put(self, request, account_id):
+        account = helpers.get_account(request.user, account_id)
+        response = _add_scheduled_report_from_request(request, account=account, by_source=True)
+        return self.create_api_response(response)
 
 
 class CampaignSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'campaign_sources_export_plus_get')
     def get(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.exports_plus'):
-            raise exc.ForbiddenError(message='Not allowed')
-        user = request.user
-        campaign = helpers.get_campaign(user, campaign_id)
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
-        additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
-        order = request.GET.get('order') or 'name'
-        export_type = request.GET.get('type')
-
-        if export_type == 'campaign-csv':
-            filename = 'media_source_report'
-            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign', by_source=True)
-        elif export_type == 'adgroup-csv':
-            filename = '-_by_ad_group_media_source_report'
-            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True)
-        elif export_type == 'contentad-csv':
-            filename = '-_by_content_ad_media_source_report'
-            content = export_plus.CampaignExport().get_data(user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_source=True)
-
-        filename = '{0}_{1}_{2}_{3}_{4}'.format(
-            slugify.slugify(campaign.account.name),
-            slugify.slugify(campaign.name),
-            filename,
-            start_date,
-            end_date
-        )
-
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        content, filename = export_plus.get_report_from_request(request, campaign=campaign, by_source=True)
         return self.create_csv_response(filename, content=content)
+
+    @statsd_helper.statsd_timer('dash.api', 'campaign_sources_scheduled_report_put')
+    def put(self, request, campaign_id):
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        response = _add_scheduled_report_from_request(request, campaign=campaign, by_source=True)
+        return self.create_api_response(response)
 
 
 class AdGroupSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_sources_export_plus_get')
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.exports_plus'):
-            raise exc.ForbiddenError(message='Not allowed')
-        user = request.user
-        ad_group = helpers.get_ad_group(user, ad_group_id)
-
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
-        additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
-        order = request.GET.get('order') or 'name'
-        export_type = request.GET.get('type')
-
-        if export_type == 'adgroup-csv':
-            filename = 'media_source_report'
-            content = export_plus.AdGroupExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group', by_source=True)
-        elif export_type == 'contentad-csv':
-            filename = '-_by_content_ad_media_source_report'
-            content = export_plus.AdGroupExport().get_data(user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown='content_ad', by_source=True)
-
-        filename = '{0}_{1}_{2}_{3}_{4}_{5}'.format(
-            slugify.slugify(ad_group.campaign.account.name),
-            slugify.slugify(ad_group.campaign.name),
-            slugify.slugify(ad_group.name),
-            filename,
-            start_date,
-            end_date
-        )
-
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        content, filename = export_plus.get_report_from_request(request, ad_group=ad_group, by_source=True)
         return self.create_csv_response(filename, content=content)
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_scheduled_report_put')
+    def put(self, request, ad_group_id):
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        response = _add_scheduled_report_from_request(request, ad_group=ad_group, by_source=True)
+        return self.create_api_response(response)
 
 
 class AllAccountsExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_export_plus_get')
     def get(self, request):
+        content, filename = export_plus.get_report_from_request(request)
+        return self.create_csv_response(filename, content=content)
+
+    @statsd_helper.statsd_timer('dash.api', 'all_accounts_scheduled_report_put')
+    def put(self, request):
+        response = _add_scheduled_report_from_request(request)
+        return self.create_api_response(response)
+
+
+def _add_scheduled_report_from_request(request, by_source=False, ad_group=None, campaign=None, account=None):
+    try:
+        r = json.loads(request.body)
+    except ValueError:
+        raise exc.ValidationError(message='Invalid json')
+    filtered_sources = []
+    if len(r.get('filtered_sources')) > 0:
+        filtered_sources = helpers.get_filtered_sources(request.user, r.get('filtered_sources'))
+    scheduled_report.add_scheduled_report(
+        request.user,
+        report_name=r.get('report_name'),
+        filtered_sources=filtered_sources,
+        order=r.get('order'),
+        additional_fields=r.get('additional_fields'),
+        granularity=export_plus.get_granularity_from_type(r.get('type')),
+        by_day=r.get('by_day') or False,
+        by_source=by_source,
+        ad_group=ad_group,
+        campaign=campaign,
+        account=account,
+        sending_frequency=scheduled_report.get_sending_frequency(r.get('frequency')),
+        recipient_emails=r.get('recipient_emails'))
+
+
+class ScheduledReports(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'scheduled_reports_get')
+    def get(self, request, account_id=None):
         if not request.user.has_perm('zemauth.exports_plus'):
             raise exc.ForbiddenError(message='Not allowed')
-        user = request.user
+        if account_id:
+            account = helpers.get_account(request.user, account_id)
+            reports = self.get_account_scheduled_reports(request.user, account)
+        else:
+            reports = self.get_all_accounts_scheduled_reports(request.user)
+        response = {
+            'reports': self.format_reports(reports)
+        }
+        return self.create_api_response(response)
 
-        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
-        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
-        filtered_sources = helpers.get_filtered_sources(user, request.GET.get('filtered_sources'))
-        additional_fields = helpers.get_additional_columns(request.GET.get('additional_fields'))
-        order = request.GET.get('order') or 'name'
-        export_type = request.GET.get('type')
+    @statsd_helper.statsd_timer('dash.api', 'scheduled_reports_delete')
+    def delete(self, request, scheduled_report_id):
+        scheduled_report = models.ScheduledExportReport.objects.get(id=scheduled_report_id)
 
-        if export_type == 'account-csv':
-            filename = 'ZemantaOne_report'
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='account')
-        elif export_type == 'campaign-csv':
-            filename = 'ZemantaOne_-_by_campaign_report'
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='campaign')
-        elif export_type == 'adgroup-csv':
-            filename = 'ZemantaOne_-_by_ad_group_report'
-            content = export_plus.AllAccountsExport().get_data(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown='ad_group')
+        if not request.user.has_perm('zemauth.exports_plus') or scheduled_report.created_by != request.user:
+            raise exc.ForbiddenError(message='Not allowed')
 
-        filename = '{0}_{1}_{2}'.format(filename, start_date, end_date)
+        scheduled_report.state = constants.ScheduledReportState.REMOVED
+        scheduled_report.save()
+        return self.create_api_response({})
 
-        return self.create_csv_response(filename, content=content)
+    def format_reports(self, reports):
+        result = []
+        for r in reports:
+            item = {}
+            item['name'] = r.name
+
+            item['level'] = ' - '.join(filter(None, [
+                constants.ScheduledReportLevel.get_text(r.report.level),
+                (r.report.account.name if r.report.account else ''),
+                (r.report.campaign.account.name + ': ' + r.report.campaign.name if r.report.campaign else ''),
+                (r.report.ad_group.campaign.account.name + ': '
+                    + r.report.ad_group.campaign.name + ': '
+                    + r.report.ad_group.name if r.report.ad_group else '')]))
+
+            item['granularity'] = ', '.join(filter(None, [
+                constants.ScheduledReportGranularity.get_text(r.report.granularity),
+                ('by Media Source' if r.report.breakdown_by_source else ''),
+                ('by day' if r.report.breakdown_by_day else '')]))
+
+            item['frequency'] = constants.ScheduledReportSendingFrequency.get_text(r.sending_frequency)
+            item['scheduled_report_id'] = r.id
+            item['recipients'] = ', '.join(r.get_recipients_emails_list())
+            result.append(item)
+        return result
+
+    def get_account_scheduled_reports(self, user, account):
+        reports = models.ScheduledExportReport.objects.select_related('report').filter(
+            ~Q(state=constants.ScheduledReportState.REMOVED),
+            Q(created_by=user),
+            (Q(report__account=account) | Q(report__campaign__account=account) | Q(report__ad_group__campaign__account=account))
+        )
+        return reports
+
+    def get_all_accounts_scheduled_reports(self, user):
+        reports = models.ScheduledExportReport.objects.select_related('report').filter(
+            ~Q(state=constants.ScheduledReportState.REMOVED),
+            Q(created_by=user)
+        )
+        return reports

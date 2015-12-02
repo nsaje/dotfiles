@@ -290,6 +290,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
 
         data = json.loads(response.content)['data']
+
         self.assertEqual(data, {
             "active": [
                 {
@@ -320,7 +321,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             ],
             "totals": {
                 "current": {
-                    "available": "100000",
+                    "available": "0",
                     "past": "0",
                     "unallocated": "0"
                 },
@@ -368,7 +369,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             ],
             "totals": {
                 "current": {
-                    "available": "100000",
+                    "available": "0",
                     "past": "0",
                     "unallocated": "0"
                 },
