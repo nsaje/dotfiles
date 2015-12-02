@@ -5,8 +5,13 @@ oneApp.directive('zemInfobox', ['config', '$window', function(config, $window) {
 
     return {
         restrict: 'E',
-        scope: {},
-        templateUrl: '/partials/zem_infobox.html'
+        scope: {
+            header: '=',
+            settings: '=',
+        },
+        templateUrl: '/partials/zem_infobox.html',
+        controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
+        }]
     };
 
 }]);

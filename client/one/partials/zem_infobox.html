@@ -1,9 +1,9 @@
 <div class="infobox infobox-background">
     <div class="infobox-header">
-        <div ng-class="[{'active-circle-icon': statusActive, 'infobox-active-circle-icon-gray': !statusActive}, 'infobox-title', 'infobox-status']"></div>
+        <div ng-class="[{'active-circle-icon': header.active, 'infobox-active-circle-icon-gray': !header.active}, 'infobox-title', 'infobox-status']"></div>
         <div style="display:inline-block;">
-            <div class="infobox-title">Title</div>
-            <div class="infobox-subtitle">Subtitle</div>
+            <div class="infobox-title">{{header.title}}</div>
+            <div class="infobox-subtitle">{{header.subtitle}}</div>
         </div>
 
         <a class="btn btn-default pull-right" style="display:inline-block" ng-click="tabClick($event)" zem-in-link="main.adGroups.settings({ id: $state.params.id })">
@@ -13,7 +13,16 @@
     </div>
 
     <hr>
-
+    <div ng-repeat="setting in settings">
+        <hr ng-if="setting.type === 'hr'"/>
+        <zem-infobox-setting 
+            ng-if="setting.type == 'setting'"
+            label="(setting.name || '&nbsp;')"  
+            value="setting.value" 
+            value-description="setting.valueDescription">
+        </zem-infobox-setting>
+    </div>
+    <!--
     <div>
         <zem-infobox-setting label="'a bit nger than usual key'"  value="'value'" value-description="'Test'"></zem-infobox-setting>
         <zem-infobox-setting label=""  value="'value'" value-description="'Test'"></zem-infobox-setting>
@@ -30,4 +39,5 @@
         <zem-infobox-setting label="'a bit longer than usual key'"  value="'value'" value-description="'Test'"></zem-infobox-setting>
         <zem-infobox-setting label="'key'"  value="'value'" />
     </div>
+    -->
 </div>
