@@ -200,6 +200,240 @@ class GetStatsWithConversionsTestCase(test.TestCase):
             'conversion_goal_1': 5,
         }], stats)
 
+    def test_preserve_ordering_without_conversion_goals(self, mock_as_query, mock_ca_query, mock_tp_query):
+        mock_ca_query.return_value = [
+            {
+                'ad_group': 1,
+                'date': datetime.date(2015, 12, 1),
+                'impressions': 10,
+                'clicks': 1,
+                'cost': decimal.Decimal('10.00'),
+                'cpc': decimal.Decimal('10.00'),
+                'ctr': 0.1,
+                'visits': 1,
+                'click_discrepancy': 0,
+                'pageviews': 5,
+                'percent_new_users': 100,
+                'bounce_rate': 0,
+                'pv_per_visit': 5,
+                'avg_tos': 0,
+            },
+            {
+                'ad_group': 1,
+                'date': datetime.date(2015, 10, 1),
+                'impressions': 20,
+                'clicks': 2,
+                'cost': decimal.Decimal('10.00'),
+                'cpc': decimal.Decimal('10.00'),
+                'ctr': 0.1,
+                'visits': 2,
+                'click_discrepancy': 0,
+                'pageviews': 10,
+                'percent_new_users': 200,
+                'bounce_rate': 0,
+                'pv_per_visit': 10,
+                'avg_tos': 0,
+            },
+            {
+                'ad_group': 1,
+                'date': datetime.date(2015, 12, 10),
+                'impressions': 30,
+                'clicks': 3,
+                'cost': decimal.Decimal('30.00'),
+                'cpc': decimal.Decimal('30.00'),
+                'ctr': 0.1,
+                'visits': 3,
+                'click_discrepancy': 0,
+                'pageviews': 15,
+                'percent_new_users': 300,
+                'bounce_rate': 0,
+                'pv_per_visit': 15,
+                'avg_tos': 0,
+            },
+            {
+                'ad_group': 1,
+                'date': datetime.date(2015, 11, 15),
+                'impressions': 10,
+                'clicks': 1,
+                'cost': decimal.Decimal('10.00'),
+                'cpc': decimal.Decimal('10.00'),
+                'ctr': 0.1,
+                'visits': 1,
+                'click_discrepancy': 0,
+                'pageviews': 5,
+                'percent_new_users': 100,
+                'bounce_rate': 0,
+                'pv_per_visit': 5,
+                'avg_tos': 0,
+            },
+            {
+                'ad_group': 1,
+                'date': datetime.date(2015, 9, 1),
+                'impressions': 40,
+                'clicks': 1,
+                'cost': decimal.Decimal('40.00'),
+                'cpc': decimal.Decimal('40.00'),
+                'ctr': 0.1,
+                'visits': 4,
+                'click_discrepancy': 0,
+                'pageviews': 20,
+                'percent_new_users': 400,
+                'bounce_rate': 0,
+                'pv_per_visit': 20,
+                'avg_tos': 0,
+            },
+        ]
+
+        stats = stats_helper.get_stats_with_conversions(self.superuser, datetime.date(2015, 11, 30), datetime.date(2015, 12, 1),
+                                                        breakdown=['date', 'ad_group'], order=['date'])
+        self.assertFalse(mock_as_query.called)
+        self.assertTrue(mock_ca_query.called)
+        self.assertFalse(mock_tp_query.called)
+
+        self.assertEqual([
+            {
+                'ad_group': 1,
+                'date': datetime.date(2015, 12, 1),
+                'impressions': 10,
+                'clicks': 1,
+                'cost': decimal.Decimal('10.00'),
+                'cpc': decimal.Decimal('10.00'),
+                'ctr': 0.1,
+                'visits': 1,
+                'click_discrepancy': 0,
+                'pageviews': 5,
+                'percent_new_users': 100,
+                'bounce_rate': 0,
+                'pv_per_visit': 5,
+                'avg_tos': 0,
+            },
+            {
+                'ad_group': 1,
+                'date': datetime.date(2015, 10, 1),
+                'impressions': 20,
+                'clicks': 2,
+                'cost': decimal.Decimal('10.00'),
+                'cpc': decimal.Decimal('10.00'),
+                'ctr': 0.1,
+                'visits': 2,
+                'click_discrepancy': 0,
+                'pageviews': 10,
+                'percent_new_users': 200,
+                'bounce_rate': 0,
+                'pv_per_visit': 10,
+                'avg_tos': 0,
+            },
+            {
+                'ad_group': 1,
+                'date': datetime.date(2015, 12, 10),
+                'impressions': 30,
+                'clicks': 3,
+                'cost': decimal.Decimal('30.00'),
+                'cpc': decimal.Decimal('30.00'),
+                'ctr': 0.1,
+                'visits': 3,
+                'click_discrepancy': 0,
+                'pageviews': 15,
+                'percent_new_users': 300,
+                'bounce_rate': 0,
+                'pv_per_visit': 15,
+                'avg_tos': 0,
+            },
+            {
+                'ad_group': 1,
+                'date': datetime.date(2015, 11, 15),
+                'impressions': 10,
+                'clicks': 1,
+                'cost': decimal.Decimal('10.00'),
+                'cpc': decimal.Decimal('10.00'),
+                'ctr': 0.1,
+                'visits': 1,
+                'click_discrepancy': 0,
+                'pageviews': 5,
+                'percent_new_users': 100,
+                'bounce_rate': 0,
+                'pv_per_visit': 5,
+                'avg_tos': 0,
+            },
+            {
+                'ad_group': 1,
+                'date': datetime.date(2015, 9, 1),
+                'impressions': 40,
+                'clicks': 1,
+                'cost': decimal.Decimal('40.00'),
+                'cpc': decimal.Decimal('40.00'),
+                'ctr': 0.1,
+                'visits': 4,
+                'click_discrepancy': 0,
+                'pageviews': 20,
+                'percent_new_users': 400,
+                'bounce_rate': 0,
+                'pv_per_visit': 20,
+                'avg_tos': 0,
+            },
+        ], stats)
+
+    def test_ordering_with_conversion_goals(self, mock_as_query, mock_ca_query, mock_tp_query):
+        conversion_goals = models.ConversionGoal.objects.filter(pk=1)
+        mock_ca_query.return_value = [
+            {
+                'ad_group': 1,
+                'date': datetime.date(2015, 12, 1),
+                'impressions': 10,
+                'clicks': 1,
+                'cost': decimal.Decimal('10.00'),
+                'cpc': decimal.Decimal('10.00'),
+                'ctr': 0.1,
+                'visits': 1,
+                'click_discrepancy': 0,
+                'pageviews': 5,
+                'percent_new_users': 100,
+                'bounce_rate': 0,
+                'pv_per_visit': 5,
+                'avg_tos': 0,
+            },
+        ]
+        mock_tp_query.return_value = [{
+            'ad_group': 2,
+            'date': datetime.date(2015, 11, 30),
+            'touchpoint_count': 10,
+            'conversion_count': 5,
+            'account': conversion_goals[0].pixel.account_id,
+            'slug': conversion_goals[0].pixel.slug
+        }]
+
+        stats = stats_helper.get_stats_with_conversions(self.superuser, datetime.date(2015, 11, 30), datetime.date(2015, 12, 1),
+                                                        breakdown=['date', 'ad_group'], order=['date'],
+                                                        conversion_goals=conversion_goals)
+        self.assertFalse(mock_as_query.called)
+        self.assertTrue(mock_ca_query.called)
+        self.assertTrue(mock_tp_query.called)
+
+        self.assertEqual([
+            {
+                'ad_group': 2,
+                'conversion_goal_1': 5,
+                'date': datetime.date(2015, 11, 30)
+            },
+            {
+                'ad_group': 1,
+                'date': datetime.date(2015, 12, 1),
+                'impressions': 10,
+                'clicks': 1,
+                'conversion_goal_1': 0,
+                'cost': decimal.Decimal('10.00'),
+                'cpc': decimal.Decimal('10.00'),
+                'ctr': 0.1,
+                'visits': 1,
+                'click_discrepancy': 0,
+                'pageviews': 5,
+                'percent_new_users': 100,
+                'bounce_rate': 0,
+                'pv_per_visit': 5,
+                'avg_tos': 0,
+            },
+        ], stats)
+
     def test_both_conversion_goals(self, mock_as_query, mock_ca_query, mock_tp_query):
         mock_ca_query.side_effect = self._get_content_ad_stats
         mock_tp_query.side_effect = self._get_touchpoint_conversion_stats
