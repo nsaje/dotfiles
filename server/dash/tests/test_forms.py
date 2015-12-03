@@ -96,10 +96,6 @@ class AccountAgencySettingsFormTest(TestCase):
         form = self._gen_allowed_sources_form({'string':{}})
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('allowed_sources'))
-       
-
-        
-
 
 
 class AdGroupSettingsFormTest(TestCase):
