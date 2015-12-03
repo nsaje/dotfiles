@@ -58,4 +58,36 @@ describe('zemChart', function () {
             [1405036800000, 128.5189]
         ]);
     });
+
+    it('should add a null datapoint on the first date without data', function() {
+        scope.startDate = moment('2014-07-01');
+        scope.endDate = moment('2014-07-30');
+        isolate.data = [{
+            id: 'totals',
+            name: 'Totals',
+            seriesData: {
+                cost: [
+                    ['2014-07-10', 205.1312],
+                    ['2014-07-11', 128.5189],
+                    ['2014-07-15', 138.5189],
+                    ['2014-07-17', 148.5189],
+                    ['2014-07-18', 158.5189]
+                ]
+            }
+        }];
+
+        scope.$digest();
+        isolate.$digest();
+
+        var totalsSeries = isolate.config.series[0], msInADay = 24 * 3600 * 1000;
+        expect(totalsSeries.data).toEqual([
+            [1404950400000, 205.1312],
+            [1405036800000, 128.5189],
+            [1405123200000, null],
+            [1405382400000, 138.5189],
+            [1405468800000, null],
+            [1405555200000, 148.5189],
+            [1405641600000, 158.5189]
+        ]);
+    });
 });
