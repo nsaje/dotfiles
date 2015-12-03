@@ -27,6 +27,9 @@ oneApp.directive('zemStateSelector', function () {
             $scope.setState = function (state, autopilotState) {
                 $scope.isOpen = false;
 
+                if ( !$scope.active && autopilotState === $scope.autopilotEnabledValue) {
+                    return;
+                }
                 if (state === $scope.value && autopilotState === $scope.autopilotValue) {
                     return;
                 }
