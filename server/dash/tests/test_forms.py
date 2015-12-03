@@ -80,19 +80,19 @@ class AccountAgencySettingsFormTest(TestCase):
     def test_invalid_allowed_sources(self):
         form = self._gen_allowed_sources_form([])
         self.assertFalse(form.is_valid())
-        self.assertTrue(form.has_error('__all__'))
+        self.assertTrue(form.has_error('allowed_sources'))
 
         form = self._gen_allowed_sources_form({1: {}})
         self.assertFalse(form.is_valid())
-        self.assertTrue(form.has_error('__all__'))
+        self.assertTrue(form.has_error('allowed_sources'))
 
         form = self._gen_allowed_sources_form({'1': []})
         self.assertFalse(form.is_valid())
-        self.assertTrue(form.has_error('__all__'))
+        self.assertTrue(form.has_error('allowed_sources'))
 
         form = self._gen_allowed_sources_form({'string':{}})
         self.assertFalse(form.is_valid())
-        self.assertTrue(form.has_error('__all__'))
+        self.assertTrue(form.has_error('allowed_sources'))
        
 
         
