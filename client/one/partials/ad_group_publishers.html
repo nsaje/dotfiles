@@ -4,16 +4,29 @@
     </div>
 
     <div class="section table-ad-group-sources">
-        <div class="button-bar">
+        <div class="button-bar"  style="display:inline-block">
             <div class="button-bar-item">
                 <div ng-show="hasPermission('zemauth.can_modify_publisher_blacklist_status')" style="display:inline;">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_publisher_blacklist_status')" popover-placement="bottom"></zem-internal-feature>
                     <zem-dropdown
                         zem-placeholder="Manage Blacklist"
                         zem-on-select="executeBulkAction(selected)"
-                        zem-disabled-title="At least one Publisher has to be selected before using Manage Blacklist and all selected publishers need to be either Blacklisted or not blacklisted."
+                        zem-disabled-title="At least one Publisher has to be selected before using Manage Blacklist and all selected publishers need to be enabled."
                         zem-check-disabled="!isAnythingSelected()"
-                        zem-dropdown-options="bulkActions"
+                        zem-dropdown-options="bulkBlacklistActions"
+                        zem-dropdown-css-class="publishers-blacklist-bigdrop"
+                        zem-css-class="show-rows"></zem-dropdown>
+                    </div>
+                </div>
+
+                <div ng-show="hasPermission('zemauth.can_modify_publisher_blacklist_status')" style="display:inline;">
+                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_publisher_blacklist_status')" popover-placement="bottom"></zem-internal-feature>
+                    <zem-dropdown
+                        zem-placeholder="Manage Re-enable"
+                        zem-on-select="executeBulkAction(selected)"
+                        zem-disabled-title="At least one Publisher has to be selected before using Manage Re-enable and all selected publishers need to be blacklisted."
+                        zem-check-disabled="!isAnythingSelected()"
+                        zem-dropdown-options="bulkEnableActions"
                         zem-dropdown-css-class="publishers-blacklist-bigdrop"
                         zem-css-class="show-rows"></zem-dropdown>
                     </div>
