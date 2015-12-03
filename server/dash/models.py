@@ -488,6 +488,8 @@ class AccountSettings(SettingsBase):
     changes_text = models.TextField(blank=True, null=True)
     allowed_sources = ArrayField(models.IntegerField(), default=[])
 
+    objects = QuerySetManager()
+
     def save(self, request, *args, **kwargs):
         if self.pk is None:
             self.created_by = request.user
@@ -496,6 +498,10 @@ class AccountSettings(SettingsBase):
 
     class Meta:
         ordering = ('-created_dt',)
+
+    class QuerySet(models.QuerySet):
+        def group_current_settings(self):
+            return self.order_by('account_id', '-created_dt').distinct('account')
 
 
 class CampaignSettings(SettingsBase):
@@ -560,6 +566,8 @@ class CampaignSettings(SettingsBase):
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
 
+    objects = QuerySetManager()
+
     def save(self, request, *args, **kwargs):
         if self.pk is None:
             self.created_by = request.user
@@ -568,6 +576,10 @@ class CampaignSettings(SettingsBase):
 
     class Meta:
         ordering = ('-created_dt',)
+
+    class QuerySet(models.QuerySet):
+        def group_current_settings(self):
+            return self.order_by('campaign_id', '-created_dt').distinct('campaign')
 
 
 class SourceType(models.Model):
@@ -1207,11 +1219,35 @@ class AdGroupSettings(SettingsBase):
             ("settings_view", "Can view settings in dashboard."),
         )
 
-    def get_running_status(self):
-        if self.state != constants.AdGroupSettingsState.ACTIVE:
+    @classmethod
+    def get_running_status(cls, ad_group_settings, ad_group_source_settings):
+        """
+        Returns the actual running status of ad group settings with selected sources settings.
+        """
+
+        if not ad_group_settings:
             return constants.AdGroupRunningStatus.INACTIVE
+
+        if (ad_group_settings == constants.AdGroupSettingsState.ACTIVE and
+           cls._get_running_status_by_flight_time(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE and
+           cls._get_running_status_by_sources_setting(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE):
+            return constants.AdGroupRunningStatus.ACTIVE
+
+        return constants.AdGroupRunningStatus.INACTIVE
+
+    @classmethod
+    def _get_running_status_by_flight_time(cls, ad_group_settings):
         now = dates_helper.utc_today()
-        if self.start_date <= now and (self.end_date is None or now <= self.end_date):
+        if ad_group_settings.start_date <= now and\
+           (ad_group_settings.end_date is None or now <= ad_group_settings.end_date):
+            return constants.AdGroupRunningStatus.ACTIVE
+        return constants.AdGroupRunningStatus.INACTIVE
+
+    @classmethod
+    def _get_running_status_by_sources_setting(cls, ad_group_souces_settings):
+        if ad_group_souces_settings and\
+           next((x for x in ad_group_souces_settings if x.state == constants.AdGroupSourceSettingsState.ACTIVE),
+                default=None):
             return constants.AdGroupRunningStatus.ACTIVE
         return constants.AdGroupRunningStatus.INACTIVE
 
@@ -1320,6 +1356,8 @@ class AdGroupSettings(SettingsBase):
 
         return value
 
+    objects = QuerySetManager()
+
     def get_tracking_codes(self):
         # Strip the first '?' as we don't want to send it as a part of query string
         return self.tracking_code.lstrip('?')
@@ -1332,6 +1370,10 @@ class AdGroupSettings(SettingsBase):
                 self.created_by = request.user
 
         super(AdGroupSettings, self).save(*args, **kwargs)
+
+    class QuerySet(models.QuerySet):
+        def group_current_settings(self):
+            return self.order_by('ad_group_id', '-created_dt').distinct('ad_group')
 
 
 class AdGroupSourceState(models.Model):
@@ -1412,6 +1454,8 @@ class AdGroupSourceSettings(models.Model):
         choices=constants.AdGroupSourceSettingsAutopilotState.get_choices()
     )
 
+    objects = QuerySetManager()
+
     def save(self, request, *args, **kwargs):
         if self.pk is None and request is not None:
             self.created_by = request.user
@@ -1455,6 +1499,19 @@ class AdGroupSourceSettings(models.Model):
             )
 
         return result
+
+    class QuerySet(models.QuerySet):
+        def group_current_settings(self):
+            return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
+
+        def filter_by_sources(self, sources):
+            if set(sources) == set(Source.objects.all()):
+                return self
+
+            return self.filter(
+                models.Q(id__in=AdGroup.demo_objects.all()) |
+                models.Q(ad_group_source__source__in=sources)
+            ).distinct()
 
 
 class UploadBatch(models.Model):
