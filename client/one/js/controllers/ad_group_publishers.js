@@ -106,19 +106,19 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             countNonBlacklistedSelected = 0,
             countAllSelected = 0,
             maxBlacklistedLevel = null,
-            mixedBlacklistEnabledSelection = false,
             levels = [
-                constants.publisherBlacklist.ADGROUP,
-                constants.publisherBlacklist.CAMPAIGN,
-                constants.publisherBlacklist.ACCOUNT,
-                constants.publisherBlacklist.GLOBAL
+                constants.publisherBlacklistLevel.ADGROUP,
+                constants.publisherBlacklistLevel.CAMPAIGN,
+                constants.publisherBlacklistLevel.ACCOUNT,
+                constants.publisherBlacklistLevel.GLOBAL
             ];
 
         $scope.selectedPublisherStatus[$scope.calculatePublisherHash(row)] = {
             "checked": checked,
             "source_id": row.source_id,
             "domain": row.domain,
-            "blacklisted": row.blacklisted
+            "blacklisted": row.blacklisted,
+            "blacklisted_level": row.blacklisted_level
         };
 
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
@@ -156,13 +156,18 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.setAllBulkAction('blacklist', countAllSelected > 0);
         }
 
-        if (!mixedBlacklistEnabledSelection && (maxBlacklistedLevel !== null)) {
+        if (!$scope.mixedBlacklistEnabledSelection && (maxBlacklistedLevel !== null)) {
             if (countBlacklistedSelected > 0) {
                 levels.forEach(function (level) {
                     // user can only enable blacklist on currently
                     // blacklisted level
                     var enabled = $scope.levelEq(level, maxBlacklistedLevel);
                     $scope.setBulkAction(level, 'enable', enabled);
+
+                    var blacklistedEnabled = $scope.levelGt(level, maxBlacklistedLevel);
+                    // user can always blacklist on higher level
+                    // than currently blacklisted
+                    $scope.setBulkAction(level, 'blacklist', blacklistedEnabled);
                 });
             }
 
@@ -183,10 +188,10 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.compareLevels = function (l1, l2) {
         var map = { };
-        map.set(constants.publisherBlacklistLevel.ADGROUP, 1);
-        map.set(constants.publisherBlacklistLevel.CAMPAIGN, 2);
-        map.set(constants.publisherBlacklistLevel.ACCOUNT, 3);
-        map.set(constants.publisherBlacklistLevel.GLOBAL, 4);
+        map[constants.publisherBlacklistLevel.ADGROUP] = 1;
+        map[constants.publisherBlacklistLevel.CAMPAIGN] = 2;
+        map[constants.publisherBlacklistLevel.ACCOUNT] = 3;
+        map[constants.publisherBlacklistLevel.GLOBAL] = 4;
         if (map[l1] < map[l2]) {
             return -1;
         }
@@ -256,13 +261,12 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             return true;
         }
 
-        if ($scope.selectedPublisherStatus.length > 0) {
-            $scope.selectedPublisherStatus.forEach(function (publisherId) {
-                if ($scope.selectedPublisherStatus.hasOwnProperty(publisherId)
-                        && $scope.selectedPublisherStatus[publisherId].checked) {
-                    return true;
-                }
-            });
+
+        for (var publisherId in $scope.selectedPublisherStatus) {
+            if ($scope.selectedPublisherStatus.hasOwnProperty(publisherId)
+                    && $scope.selectedPublisherStatus[publisherId].checked) {
+                return true;
+            }
         }
 
         return false;

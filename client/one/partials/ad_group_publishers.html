@@ -4,7 +4,7 @@
     </div>
 
     <div class="section table-ad-group-sources">
-        <div class="button-bar"  style="display:inline-block">
+        <div class="button-bar">
             <div class="button-bar-item">
                 <div ng-show="hasPermission('zemauth.can_modify_publisher_blacklist_status')" style="display:inline;">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_publisher_blacklist_status')" popover-placement="bottom"></zem-internal-feature>
@@ -16,9 +16,10 @@
                         zem-dropdown-options="bulkBlacklistActions"
                         zem-dropdown-css-class="publishers-blacklist-bigdrop"
                         zem-css-class="show-rows"></zem-dropdown>
-                    </div>
                 </div>
+            </div>
 
+            <div class="button-bar-item">
                 <div ng-show="hasPermission('zemauth.can_modify_publisher_blacklist_status')" style="display:inline;">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_publisher_blacklist_status')" popover-placement="bottom"></zem-internal-feature>
                     <zem-dropdown
@@ -29,17 +30,16 @@
                         zem-dropdown-options="bulkEnableActions"
                         zem-dropdown-css-class="publishers-blacklist-bigdrop"
                         zem-css-class="show-rows"></zem-dropdown>
-                    </div>
 
                     <span ng-show="isSyncInProgress">
                         <a id="resync-loader" popover="Synchronization of blacklisted publishers is currently in progress, and may take a few minutes. You can continue using the dashboard in the meantime." popover-append-to-body="true" popover-trigger="mouseenter" popover-placement="left"><div class="loader"></div></a>
                     </span>
                 </div>
-
-                <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
-                <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
-                <div class="clearfix"></div>
             </div>
+
+            <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
+            <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
+            <div class="clearfix"></div>
         </div>
 
         <zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-notifications="notifications" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-data-status="dataStatus"></zem-table>
