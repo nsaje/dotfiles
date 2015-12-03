@@ -4,6 +4,7 @@ import urllib
 
 from django.contrib import admin
 from django.contrib import messages
+from django.db import transaction
 from django import forms
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
@@ -1126,7 +1127,31 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
         return actions
 
     def reenable_global(modeladmin, request, queryset):
-        pass
+        global_blacklist = []
+        # currently only support enabling global blacklist
+        filtered_queryset = queryset.filter(
+            everywhere=True,
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+        for publisher_blacklist in filtered_queryset:
+            global_blacklist.append({
+                'domain': publisher_blacklist.name,
+                'source': publisher_blacklist.source,
+            })
+
+        actionlogs_to_send = []
+        with transaction.atomic():
+            actionlogs_to_send.extend(
+                api.create_global_publisher_blacklist_actions(
+                    None,
+                    request,
+                    constants.PublisherStatus.ENABLED,
+                    global_blacklist,
+                    send=False
+                )
+            )
+        actionlog.zwei_actions.send(actionlogs_to_send)
+
     reenable_global.short_description = "Re-enable publishers globally"
 
     actions = [reenable_global]
