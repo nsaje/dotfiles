@@ -77,19 +77,22 @@ class AccountAgencySettingsFormTest(TestCase):
             'allowed_sources': allowed_sources_dict
             })
 
-    def test_invalid_allowed_sources(self):
+    def test_invalid_allowed_sources_list(self):
         form = self._gen_allowed_sources_form([])
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('allowed_sources'))
 
+    def test_invalid_allowed_sources_int_as_key(self):
         form = self._gen_allowed_sources_form({1: {}})
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('allowed_sources'))
 
+    def test_invalid_allowed_sources_list_as_payload(self):
         form = self._gen_allowed_sources_form({'1': []})
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('allowed_sources'))
 
+    def test_invalid_allowed_sources_non_int_string(self):
         form = self._gen_allowed_sources_form({'string':{}})
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('allowed_sources'))
