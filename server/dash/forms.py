@@ -267,8 +267,6 @@ class AccountAgencySettingsForm(forms.Form):
         return allowed_sources
 
 
-
-
 def validate_lower_case_only(st):
     if re.search(r'[^a-z]+', st):
         raise forms.ValidationError(message='Please use only lower case letters for unique identifier.')
