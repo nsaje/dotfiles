@@ -1,12 +1,11 @@
 from collections import OrderedDict
 
 import dash.constants
-
 import reports.api
 import reports.api_helpers
 import reports.api_contentads
 import reports.api_touchpointconversions
-#import utils.sort_helper
+import utils.sort_helper
 
 REPORT_GOAL_TYPES = [dash.constants.ConversionGoalType.GA, dash.constants.ConversionGoalType.OMNITURE]
 PIXEL_GOAL_TYPE = dash.constants.ConversionGoalType.PIXEL
@@ -115,8 +114,6 @@ def _get_stats_with_conversions(
     if not breakdown:
         content_ad_stats = [content_ad_stats]
 
-    # TODO to be fixed
-    #ca_stats_by_breakdown = {tuple(s[b] for b in breakdown): s for s in content_ad_stats}
     ca_stats_by_breakdown = OrderedDict((tuple(s[b] for b in breakdown), s) for s in content_ad_stats)
     for ca_stat in ca_stats_by_breakdown.values():
         for conversion_goal in report_conversion_goals:
@@ -124,7 +121,7 @@ def _get_stats_with_conversions(
             ca_stat[conversion_goal.get_view_key(conversion_goals)] = ca_stat.get('conversions', {}).get(key)
 
         for tp_conversion_goal in touchpoint_conversion_goals:
-            # set the default - if tp_conv_stats result doesn't contain value, assume it's 0
+            # set the default - if tp_conv_stats result won't contain value, assume it's 0
             ca_stat[tp_conversion_goal.get_view_key(conversion_goals)] = 0
 
         if 'conversions' in ca_stat:
@@ -141,7 +138,6 @@ def _get_stats_with_conversions(
     touchpoint_conversion_stats = reports.api_touchpointconversions.query(
         start_date,
         end_date,
-        order=order,
         breakdown=breakdown,
         conversion_goals=touchpoint_conversion_goals,
         constraints=constraints
@@ -162,9 +158,9 @@ def _get_stats_with_conversions(
 
     result = ca_stats_by_breakdown.values()
 
-    # sorting needed since it's a join of data from two tables
-    # TODO fix
-    #result = utils.sort_helper.sort_results(result, order_fields=order)
+    if order:
+        # sorting needed since it's a join of data from two tables
+        result = utils.sort_helper.sort_results(result, order_fields=order)
 
     if breakdown:
         return result
