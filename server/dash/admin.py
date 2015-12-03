@@ -1105,12 +1105,20 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
         'created_dt',
         'name',
         'everywhere',
-        'ad_group_id',
-        'campaign_id',
-        'account_id',
+        'ad_group_',
+        'campaign_',
+        'account_',
         'status'
     )
-    readonly_fields = ['created_dt']
+    readonly_fields = [
+        'created_dt',
+        'name',
+        'everywhere',
+        'ad_group_',
+        'campaign_',
+        'account_',
+        'status'
+    ]
     list_filter = ('everywhere', 'status',)
     ordering = ('-created_dt',)
 
@@ -1119,6 +1127,41 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+    def ad_group_(self, obj):
+        if obj.ad_group is None:
+            return None
+        return u'<a href="{ad_group_url}">{name}</a>'.format(
+            ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group.id,)),
+            name=u'{} ({})'.format(
+                obj.ad_group.name,
+                obj.ad_group.id
+            )
+        )
+    ad_group_.allow_tags = True
+    ad_group_.admin_order_field = 'ad_group'
+
+
+    def account_(self, obj):
+        if obj.account is None:
+            return ""
+        return '<a href="{account_url}">{account}</a>'.format(
+            account_url=reverse('admin:dash_account_change', args=(obj.campaign.account.id,)),
+            account=obj.campaign.account
+        )
+    account_.allow_tags = True
+    account_.admin_order_field = 'campaign__account'
+
+    def campaign_(self, obj):
+        if obj.campaign is None:
+            return ""
+        return '<a href="{campaign_url}">{campaign}</a>'.format(
+            campaign_url=reverse('admin:dash_campaign_change', args=(obj.campaign.id,)),
+            campaign=obj.campaign
+        )
+    campaign_.allow_tags = True
+    campaign_.admin_order_field = 'campaign'
 
     # funky hack that removes site-wide bulk model delete action
     def get_actions(self, request):
