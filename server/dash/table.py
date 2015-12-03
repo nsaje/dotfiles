@@ -1045,11 +1045,11 @@ class AdGroupAdsPlusTable(object):
                 status=constants.UploadBatchStatus.DONE,
             ).order_by('-created_dt')
 
-        order_list = [order]
         if 'status_setting' in order and user.has_perm('zemauth.view_archived_entities'):
-            order_list = order_list + [('-' if order.startswith('-') else '') + 'archived']
+            rows = sort_rows_by_order_and_archived(rows, order)
+        else:
+            rows = sort_results(rows, [order])
 
-        rows = sort_results(rows, order_list)
         page_rows, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
             rows, page, size)
 
