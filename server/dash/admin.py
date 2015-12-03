@@ -1097,6 +1097,41 @@ class ExportReportAdmin(admin.ModelAdmin):
         return ', '.join(source.name for source in obj.get_filtered_sources())
     get_sources.short_description = 'Filtered Sources'
 
+
+class PublisherBlacklistAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+    list_display = (
+        'created_dt',
+        'name',
+        'everywhere',
+        'ad_group_id',
+        'campaign_id',
+        'account_id',
+        'status'
+    )
+    readonly_fields = ['created_dt']
+    list_filter = ('everywhere', 'status',)
+    ordering = ('-created_dt',)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    # funky hack that removes site-wide bulk model delete action
+    def get_actions(self, request):
+        actions = super(PublisherBlacklistAdmin, self).get_actions(request)
+        del actions['delete_selected']
+        return actions
+
+    def reenable_global(modeladmin, request, queryset):
+        pass
+    reenable_global.short_description = "Re-enable publishers globally"
+
+    actions = [reenable_global]
+
+
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)
@@ -1118,3 +1153,4 @@ admin.site.register(models.BudgetLineItem, BudgetLineItemAdmin)
 admin.site.register(models.ScheduledExportReportLog, ScheduledExportReportLogAdmin)
 admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
 admin.site.register(models.ExportReport, ExportReportAdmin)
+admin.site.register(models.PublisherBlacklist, PublisherBlacklistAdmin)
