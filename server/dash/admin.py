@@ -1108,15 +1108,16 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
         'ad_group_',
         'campaign_',
         'account_',
+        'source_id',
         'status'
     )
     readonly_fields = [
         'created_dt',
         'name',
         'everywhere',
-        'ad_group_',
-        'campaign_',
-        'account_',
+        'ad_group_id',
+        'campaign_id',
+        'account_id',
         'status'
     ]
     list_filter = ('everywhere', 'status',)
@@ -1128,6 +1129,8 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    def has_change_permission(self, request, obj=None):
+        return True
 
     def ad_group_(self, obj):
         if obj.ad_group is None:
@@ -1170,6 +1173,12 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
         return actions
 
     def reenable_global(modeladmin, request, queryset):
+        user = request.user
+        if not user.has_perm('zemauth.can_access_global_publisher_blacklist_status'):
+            return
+        if not user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
+            return
+
         global_blacklist = []
         # currently only support enabling global blacklist
         filtered_queryset = queryset.filter(
