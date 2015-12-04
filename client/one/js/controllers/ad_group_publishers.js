@@ -186,27 +186,27 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
     };
 
-    $scope.compareLevels = function (l1, l2) {
+    $scope.compareLevels = function (level1, level2) {
         var map = { };
         map[constants.publisherBlacklistLevel.ADGROUP] = 1;
         map[constants.publisherBlacklistLevel.CAMPAIGN] = 2;
         map[constants.publisherBlacklistLevel.ACCOUNT] = 3;
         map[constants.publisherBlacklistLevel.GLOBAL] = 4;
-        if (map[l1] < map[l2]) {
+        if (map[level1] < map[level2]) {
             return -1;
         }
-        if (map[l1] === map[l2])  {
+        if (map[level1] === map[level2])  {
             return 0;
         }
         return 1;
     };
 
-    $scope.levelEq = function (l1, l2) {
-        return $scope.compareLevels(l1, l2) === 0;
+    $scope.levelEq = function (level1, level2) {
+        return $scope.compareLevels(level1, level2) === 0;
     };
 
-    $scope.levelGt = function (l1, l2) {
-        return $scope.compareLevels(l1, l2) > 0;
+    $scope.levelGt = function (level1, level2) {
+        return $scope.compareLevels(level1, level2) > 0;
     };
 
     $scope.selectionMenuConfig.selectAllCallback = function (selected) {
