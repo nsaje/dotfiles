@@ -12,7 +12,7 @@ from django.contrib import auth
 from django.db import models, transaction
 from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.core.validators import validate_email
 
@@ -267,9 +267,7 @@ class Account(models.Model):
             ).distinct()
 
         def exclude_archived(self):
-            archived_settings = AccountSettings.objects.\
-                distinct('account_id').\
-                order_by('account_id', '-created_dt')
+            archived_settings = AccountSettings.objects.all().group_current_settings()
 
             return self.exclude(pk__in=[s.account_id for s in archived_settings if s.archived])
 
@@ -400,9 +398,7 @@ class Campaign(models.Model, PermissionMixin):
             ).distinct()
 
         def exclude_archived(self):
-            archived_settings = CampaignSettings.objects.\
-                distinct('campaign_id').\
-                order_by('campaign_id', '-created_dt')
+            archived_settings = CampaignSettings.objects.all().group_current_settings()
 
             return self.exclude(pk__in=[s.campaign_id for s in archived_settings if s.archived])
 
@@ -1059,9 +1055,7 @@ class AdGroup(models.Model):
             ).distinct()
 
         def exclude_archived(self):
-            archived_settings = AdGroupSettings.objects.\
-                distinct('ad_group_id').\
-                order_by('ad_group_id', '-created_dt')
+            archived_settings = AdGroupSettings.objects.all().group_current_settings()
 
             return self.exclude(pk__in=[s.ad_group_id for s in archived_settings if s.archived])
 
@@ -1138,6 +1132,19 @@ class AdGroupSource(models.Model):
             name = name.rsplit(None, 1)[0]
 
         return name
+
+    def get_current_settings_or_none(self):
+        if not self.pk:
+            raise exc.BaseError(
+                'Ad group source settings can\'t be fetched because ad group source hasn\'t been saved yet.'
+            )
+
+        try:
+            return AdGroupSourceSettings.objects\
+                                        .filter(ad_group_source_id=self.pk)\
+                                        .latest('created_dt')
+        except ObjectDoesNotExist:
+            return None
 
     def save(self, request=None, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)
@@ -1407,9 +1414,15 @@ class AdGroupSourceState(models.Model):
         verbose_name='Daily budget'
     )
 
+    objects = QuerySetManager()
+
     class Meta:
         get_latest_by = 'created_dt'
         ordering = ('-created_dt',)
+
+    class QuerySet(models.QuerySet):
+        def group_current_states(self):
+            return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
 
 
 class AdGroupSourceSettings(models.Model):

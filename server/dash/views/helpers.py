@@ -714,29 +714,17 @@ def _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_
 
 
 def get_ad_group_sources_states(ad_group_sources):
-    return models.AdGroupSourceState.objects.\
-        distinct('ad_group_source_id').\
-        filter(ad_group_source__in=ad_group_sources).\
-        order_by('ad_group_source_id', '-created_dt').\
-        select_related('ad_group_source')
+    return models.AdGroupSourceState.objects\
+                                    .filter(ad_group_source__in=ad_group_sources)\
+                                    .group_current_states()\
+                                    .select_related('ad_group_source')
 
 
 def get_ad_group_sources_settings(ad_group_sources):
-    return models.AdGroupSourceSettings.objects.\
-        distinct('ad_group_source_id').\
-        filter(ad_group_source__in=ad_group_sources).\
-        order_by('ad_group_source_id', '-created_dt').\
-        select_related('ad_group_source')
-
-
-def get_ad_group_source_settings(ad_group_source):
-    try:
-        return models.AdGroupSourceSettings.objects.\
-            filter(ad_group_source=ad_group_source).\
-            select_related('ad_group_source').\
-            latest('created_dt')
-    except ObjectDoesNotExist:
-        return None
+    return models.AdGroupSourceSettings.objects\
+        .filter(ad_group_source__in=ad_group_sources)\
+        .group_current_settings()\
+        .select_related('ad_group_source')
 
 
 def parse_get_request_content_ad_ids(request_data, param_name):

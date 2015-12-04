@@ -696,7 +696,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             'editable_fields': helpers.get_editable_fields(
                 ad_group_source,
                 ad_group_source.ad_group.get_current_settings(),
-                helpers.get_ad_group_source_settings(ad_group_source),
+                ad_group_source.get_current_settings_or_none(),
                 request.user
             )
         })

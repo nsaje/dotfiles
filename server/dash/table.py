@@ -602,15 +602,16 @@ class SourcesTable(object):
             order=None,
             ad_group_level=False):
         rows = []
+
+        # map settings for quicker access
+        sources_settings_dict = {agss.ad_group_source.source_id: agss for agss in (ad_group_sources_settings or [])}
+
         for i, source in enumerate(sources):
             states = [s for s in sources_states if s.ad_group_source.source_id == source.id]
 
             source_settings = None
-            if ad_group_level and ad_group_sources_settings:
-                for s in ad_group_sources_settings:
-                    if s.ad_group_source.source_id == source.id:
-                        source_settings = s
-                        break
+            if ad_group_level and sources_settings_dict:
+                source_settings = sources_settings_dict.get(source.id)
 
             # get source reports data
             source_data = {}
@@ -728,10 +729,9 @@ class AccountsAccountsTable(object):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
         account_ids = set(acc.id for acc in accounts)
 
-        accounts_settings = models.AccountSettings.objects.\
-            distinct('account_id').\
-            filter(account__in=accounts).\
-            order_by('account_id', '-created_dt')
+        accounts_settings = models.AccountSettings.objects\
+            .filter(account__in=accounts)\
+            .group_current_settings()
 
         size = max(min(int(size or 5), 4294967295), 1)
         if page:
@@ -836,6 +836,9 @@ class AccountsAccountsTable(object):
                  account_total_spend, has_view_archived_permission, show_archived, order=None):
         rows = []
 
+        # map settings for quicker access
+        accounts_settings_dict = {acs.account_id: acs for acs in accounts_settings}
+
         account_state = api.get_state_by_account()
         for account in accounts:
             aid = account.pk
@@ -852,10 +855,9 @@ class AccountsAccountsTable(object):
                     break
 
             archived = False
-            for account_settings in accounts_settings:
-                if account_settings.account.pk == account.pk:
-                    archived = account_settings.archived
-                    break
+            account_settings = accounts_settings_dict.get(account.id)
+            if account_settings:
+                archived = account_settings.archived
 
             if has_view_archived_permission and not show_archived and archived and\
                not reports.api.row_has_traffic_data(account_data) and\
@@ -967,12 +969,12 @@ class AdGroupAdsPlusTableUpdates(object):
         new_last_change_dt = helpers.get_content_ad_last_change_dt(ad_group, filtered_sources, last_change_dt)
         changed_content_ads = helpers.get_changed_content_ads(ad_group, filtered_sources, last_change_dt)
 
-        ad_group_sources_states = models.AdGroupSourceState.objects.distinct('ad_group_source_id')\
+        ad_group_sources_states = models.AdGroupSourceState.objects\
             .filter(
                 ad_group_source__ad_group=ad_group,
                 ad_group_source__source=filtered_sources,
             )\
-            .order_by('ad_group_source_id', '-created_dt')\
+            .group_current_states()\
             .select_related('ad_group_source')
 
         rows = {}
@@ -1188,12 +1190,12 @@ class AdGroupAdsPlusTable(object):
             content_ad_id__in=[row['id'] for row in rows]
         ).select_related('content_ad__ad_group').select_related('source')
 
-        ad_group_sources_states = models.AdGroupSourceState.objects.distinct('ad_group_source_id')\
+        ad_group_sources_states = models.AdGroupSourceState.objects\
             .filter(
                 ad_group_source__ad_group=ad_group,
                 ad_group_source__source=filtered_sources,
             )\
-            .order_by('ad_group_source_id', '-created_dt')\
+            .group_current_states()\
             .select_related('ad_group_source')
 
         for row in rows:
@@ -1240,10 +1242,9 @@ class CampaignAdGroupsTable(object):
         )
 
         ad_groups = campaign.adgroup_set.all().filter_by_sources(filtered_sources)
-        ad_groups_settings = models.AdGroupSettings.objects.\
-            distinct('ad_group_id').\
-            filter(ad_group__campaign=campaign).\
-            order_by('ad_group_id', '-created_dt')
+        ad_groups_settings = models.AdGroupSettings.objects\
+                                                   .filter(ad_group__campaign=campaign)\
+                                                   .group_current_settings()
 
         totals_stats = stats_helper.get_stats_with_conversions(
             user,
@@ -1320,6 +1321,10 @@ class CampaignAdGroupsTable(object):
     def get_rows(self, user, ad_groups, ad_groups_settings, stats, last_actions,
                  order, has_view_archived_permission, show_archived):
         rows = []
+
+        # map settings for quicker access
+        ad_group_settings_dict = {ags.ad_group_id: ags for ags in ad_groups_settings}
+
         for ad_group in ad_groups:
             row = {
                 'name': ad_group.name,
@@ -1334,13 +1339,11 @@ class CampaignAdGroupsTable(object):
 
             state = models.AdGroupSettings.get_default_value('state')
             archived = False
-            for ad_group_settings in ad_groups_settings:
-                if ad_group.pk == ad_group_settings.ad_group_id:
-                    archived = ad_group_settings.archived
-                    if ad_group_settings.state is not None:
-                        state = ad_group_settings.state
-
-                    break
+            ad_group_settings = ad_group_settings_dict.get(ad_group.id)
+            if ad_group_settings:
+                archived = ad_group_settings.archived
+                if ad_group_settings.state is not None:
+                    state = ad_group_settings.state
 
             reports_api = get_reports_api_module(user)
             if has_view_archived_permission and not show_archived and archived and\
@@ -1382,10 +1385,9 @@ class AccountCampaignsTable(object):
         campaigns = models.Campaign.objects.all().filter_by_user(user).\
             filter(account=account_id).filter_by_sources(filtered_sources)
 
-        campaigns_settings = models.CampaignSettings.objects.\
-            distinct('campaign_id').\
-            filter(campaign__in=campaigns).\
-            order_by('campaign_id', '-created_dt')
+        campaigns_settings = models.CampaignSettings.objects\
+            .filter(campaign__in=campaigns)\
+            .group_current_settings()
 
         reports_api = get_reports_api_module(user)
         stats = reports.api_helpers.filter_by_permissions(reports_api.query(
@@ -1411,16 +1413,17 @@ class AccountCampaignsTable(object):
         totals_stats['available_budget'] = totals_stats['budget'] - total_spend
         totals_stats['unspent_budget'] = totals_stats['budget'] - (totals_stats.get('cost') or 0)
 
-        ad_groups_settings = models.AdGroupSettings.objects.\
-            distinct('ad_group_id').\
-            filter(ad_group__campaign__in=campaigns).\
-            order_by('ad_group_id', '-created_dt')
+        ad_groups_settings = models.AdGroupSettings.objects\
+                                                   .filter(ad_group__campaign__in=campaigns)\
+                                                   .group_current_settings()
 
         account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
         last_success_actions = account_sync.get_latest_success_by_child()
 
-        last_pixel_sync = get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False, account_id=account.id))
-        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
+        last_pixel_sync = get_conversion_pixels_last_sync(
+            models.ConversionPixel.objects.filter(archived=False, account_id=account.id))
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(
+            user, last_success_actions, last_pixel_sync)
 
         last_sync = helpers.get_last_sync(last_success_actions_joined.values())
 
@@ -1479,6 +1482,14 @@ class AccountCampaignsTable(object):
     def get_rows(self, user, campaigns, campaigns_settings, ad_groups_settings, stats,
                  last_actions, order, has_view_archived_permission, show_archived):
         rows = []
+
+        # map settings for quicker access
+        campaign_settings_dict = {cs.campaign_id: cs for cs in campaigns_settings}
+        ad_groups_settings_dict = {}
+        for ad_group_settings in ad_groups_settings:
+            campaign_id = ad_group_settings.ad_group.campaign_id
+            ad_groups_settings_dict.setdefault(campaign_id, []).append(ad_group_settings)
+
         for campaign in campaigns:
             # If at least one ad group is active, then the campaign is considered
             # active.
@@ -1494,11 +1505,8 @@ class AccountCampaignsTable(object):
                     campaign_stat = stat
                     break
 
-            archived = False
-            for campaign_settings in campaigns_settings:
-                if campaign_settings.campaign.pk == campaign.pk:
-                    archived = campaign_settings.archived
-                    break
+            campaign_settings = campaign_settings_dict.get(campaign.id, None)
+            archived = campaign_settings.archived if campaign_settings else False
 
             reports_api = get_reports_api_module(user)
             if has_view_archived_permission and not show_archived and archived and\
@@ -1508,11 +1516,9 @@ class AccountCampaignsTable(object):
                 continue
 
             state = constants.AdGroupSettingsState.INACTIVE
-            for ad_group_settings in ad_groups_settings:
-                if ad_group_settings.ad_group.campaign.pk == campaign.pk and \
-                        ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
-                    state = constants.AdGroupSettingsState.ACTIVE
-                    break
+            if next((ags for ags in ad_groups_settings_dict.get(campaign.id, [])
+                     if ags.state == constants.AdGroupSettingsState.ACTIVE), None):
+                state = constants.AdGroupSettingsState.ACTIVE
 
             row['state'] = state
 
