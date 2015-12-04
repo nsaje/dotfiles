@@ -149,10 +149,17 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             unselectable: true,
             help: 'A setting for enabling and pausing media sources.',
             onChange: function (sourceId, value, autopilotValue) {
+                var newSettings = {};
+                if (value) {
+                    newSettings.state = value;
+                }
+                if (autopilotValue) {
+                    newSettings.autopilot_state = autopilotValue;
+                }
                 api.adGroupSourceSettings.save(
                     $state.params.id,
                     sourceId,
-                    {state: value, autopilot_state: autopilotValue}
+                    newSettings
                 ).then(
                     function (data) {
                         $scope.rows.forEach(function (row) {
