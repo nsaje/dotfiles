@@ -417,7 +417,7 @@ class ViewHelpersTestCase(TestCase):
         # check that the data status is now considered not-OK
         self.assertEqual({
             '1': {
-                'message': 'The status of this Content Ad differs on these 3rd party dashboards: AdsNative, Sharethrough.',
+                'message': 'The status of this Content Ad differs on these media sources: AdsNative, Sharethrough.',
                 'ok': False
             },
             '2': {
