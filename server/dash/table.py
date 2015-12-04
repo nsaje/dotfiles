@@ -1,3 +1,4 @@
+import collections
 import datetime
 import pytz
 from slugify import slugify
@@ -771,9 +772,12 @@ class AccountsAccountsTable(object):
 
         last_sync_joined = helpers.get_last_sync(last_success_actions_joined.values())
 
+        accounts_status_dict = self.get_per_account_status_dict(accounts, filtered_sources)
+
         rows = self.get_rows(
             accounts,
             accounts_settings,
+            accounts_status_dict,
             accounts_data,
             last_success_actions_joined,
             account_budget,
@@ -821,6 +825,38 @@ class AccountsAccountsTable(object):
 
         return response
 
+    def get_per_account_status_dict(self, accounts, filtered_sources):
+        """
+        Returns per account status, based on ad group sources settings and ad group settings.
+        """
+        ad_groups_settings = models.AdGroupSettings.objects\
+                                                   .filter(ad_group__campaign__account=accounts)\
+                                                   .group_current_settings()
+
+        ad_groups_sources_settings = models.AdGroupSourceSettings.objects\
+                                           .filter(ad_group_source__ad_group__campaign__account=accounts)\
+                                           .filter_by_sources(filtered_sources)\
+                                           .group_current_settings()\
+                                           .select_related('ad_group_source')
+
+        running_status_per_ag = helpers.map_per_ad_group_source_running_status(
+            ad_groups_settings, ad_groups_sources_settings)
+
+        # map per account
+        status_dict = collections.defaultdict(lambda: constants.AdGroupSettingsState.INACTIVE)
+
+        ad_groups = models.AdGroup.objects.filter(campaign__account_id__in=accounts)\
+                                          .select_related('campaign')\
+                                          .values('id', 'campaign__account_id')
+
+        for ag in ad_groups:
+            ad_group_id = ag['id']
+            account_id = ag['campaign__account_id']
+            if running_status_per_ag[ad_group_id] == constants.AdGroupRunningStatus.ACTIVE:
+                status_dict[account_id] = constants.AdGroupSettingsState.ACTIVE
+
+        return status_dict
+
     def get_data_status(self, user, accounts, last_success_actions, last_pixel_sync):
         last_pixel_sync_message = None
         if user.has_perm('zemauth.conversion_reports'):
@@ -832,14 +868,13 @@ class AccountsAccountsTable(object):
             last_pixel_sync_message=last_pixel_sync_message
         )
 
-    def get_rows(self, accounts, accounts_settings, accounts_data, last_actions, account_budget,
+    def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions, account_budget,
                  account_total_spend, has_view_archived_permission, show_archived, order=None):
         rows = []
 
         # map settings for quicker access
         accounts_settings_dict = {acs.account_id: acs for acs in accounts_settings}
 
-        account_state = api.get_state_by_account()
         for account in accounts:
             aid = account.pk
             row = {
@@ -865,8 +900,7 @@ class AccountsAccountsTable(object):
                not reports.api.row_has_conversion_goal_data(account_data):
                 continue
 
-            state = account_state.get(aid, constants.AdGroupSettingsState.INACTIVE)
-            row['status'] = state
+            row['status'] = accounts_status_dict[account.id]
 
             if has_view_archived_permission:
                 row['archived'] = archived
@@ -1270,11 +1304,14 @@ class CampaignAdGroupsTable(object):
                 filtered_sources
             ) if has_aggregate_postclick_permission(user) else False
 
+        ad_groups_status_dict = self.get_per_ad_group_status_dict(ad_groups, ad_groups_settings, filtered_sources)
+
         response = {
             'rows': self.get_rows(
                 user,
                 ad_groups,
                 ad_groups_settings,
+                ad_groups_status_dict,
                 stats,
                 last_success_actions_joined,
                 order,
@@ -1307,6 +1344,23 @@ class CampaignAdGroupsTable(object):
 
         return response
 
+    def get_per_ad_group_status_dict(self, ad_groups, ad_groups_settings, filtered_sources):
+        ad_groups_sources_settings = models.AdGroupSourceSettings.objects\
+                                           .filter(ad_group_source__ad_group=ad_groups)\
+                                           .filter_by_sources(filtered_sources)\
+                                           .group_current_settings()\
+                                           .select_related('ad_group_source')
+
+        running_status_per_ag = helpers.map_per_ad_group_source_running_status(
+            ad_groups_settings, ad_groups_sources_settings)
+
+        status_dict = collections.defaultdict(lambda: constants.AdGroupSettingsState.INACTIVE)
+
+        for ad_group_id, running_status in running_status_per_ag.iteritems():
+            if running_status_per_ag[ad_group_id] == constants.AdGroupRunningStatus.ACTIVE:
+                status_dict[ad_group_id] = constants.AdGroupSettingsState.ACTIVE
+        return status_dict
+
     def get_data_status(self, user, ad_groups, last_success_actions, last_pixel_sync):
         last_pixel_sync_message = None
         if user.has_perm('zemauth.conversion_reports'):
@@ -1318,7 +1372,7 @@ class CampaignAdGroupsTable(object):
             last_pixel_sync_message=last_pixel_sync_message
         )
 
-    def get_rows(self, user, ad_groups, ad_groups_settings, stats, last_actions,
+    def get_rows(self, user, ad_groups, ad_groups_settings, ad_groups_status_dict, stats, last_actions,
                  order, has_view_archived_permission, show_archived):
         rows = []
 
@@ -1337,13 +1391,8 @@ class CampaignAdGroupsTable(object):
                     ad_group_data = stat
                     break
 
-            state = models.AdGroupSettings.get_default_value('state')
-            archived = False
             ad_group_settings = ad_group_settings_dict.get(ad_group.id)
-            if ad_group_settings:
-                archived = ad_group_settings.archived
-                if ad_group_settings.state is not None:
-                    state = ad_group_settings.state
+            archived = ad_group_settings.archived if ad_group_settings else False
 
             reports_api = get_reports_api_module(user)
             if has_view_archived_permission and not show_archived and archived and\
@@ -1352,7 +1401,7 @@ class CampaignAdGroupsTable(object):
                not reports.api.row_has_conversion_goal_data(ad_group_data):
                 continue
 
-            row['state'] = state
+            row['state'] = ad_groups_status_dict[ad_group.id]
 
             if has_view_archived_permission:
                 row['archived'] = archived
@@ -1413,10 +1462,6 @@ class AccountCampaignsTable(object):
         totals_stats['available_budget'] = totals_stats['budget'] - total_spend
         totals_stats['unspent_budget'] = totals_stats['budget'] - (totals_stats.get('cost') or 0)
 
-        ad_groups_settings = models.AdGroupSettings.objects\
-                                                   .filter(ad_group__campaign__in=campaigns)\
-                                                   .group_current_settings()
-
         account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
         last_success_actions = account_sync.get_latest_success_by_child()
 
@@ -1435,12 +1480,14 @@ class AccountCampaignsTable(object):
                 filtered_sources,
             ) if has_aggregate_postclick_permission(user) else False
 
+        campaign_status_dict = self.get_per_campaign_status_dict(campaigns, filtered_sources)
+
         response = {
             'rows': self.get_rows(
                 user,
                 campaigns,
                 campaigns_settings,
-                ad_groups_settings,
+                campaign_status_dict,
                 stats,
                 last_success_actions_joined,
                 order,
@@ -1468,6 +1515,37 @@ class AccountCampaignsTable(object):
 
         return response
 
+    def get_per_campaign_status_dict(self, campaigns, filtered_sources):
+        """
+        Returns per campaign status, based on ad group sources settings and ad group settings.
+        """
+        ad_groups_settings = models.AdGroupSettings.objects\
+                                                   .filter(ad_group__campaign=campaigns)\
+                                                   .group_current_settings()
+
+        ad_groups_sources_settings = models.AdGroupSourceSettings.objects\
+                                           .filter(ad_group_source__ad_group__campaign=campaigns)\
+                                           .filter_by_sources(filtered_sources)\
+                                           .group_current_settings()\
+                                           .select_related('ad_group_source')
+
+        running_status_per_ag = helpers.map_per_ad_group_source_running_status(
+            ad_groups_settings, ad_groups_sources_settings)
+
+        # map per account
+        status_dict = collections.defaultdict(lambda: constants.AdGroupSettingsState.INACTIVE)
+
+        ad_groups = models.AdGroup.objects.filter(campaign__in=campaigns)\
+                                          .values('id', 'campaign_id')
+
+        for ag in ad_groups:
+            ad_group_id = ag['id']
+            campaign_id = ag['campaign_id']
+            if running_status_per_ag[ad_group_id] == constants.AdGroupRunningStatus.ACTIVE:
+                status_dict[campaign_id] = constants.AdGroupSettingsState.ACTIVE
+
+        return status_dict
+
     def get_data_status(self, user, campaigns, last_success_actions, last_pixel_sync):
         last_pixel_sync_message = None
         if user.has_perm('zemauth.conversion_reports'):
@@ -1479,16 +1557,12 @@ class AccountCampaignsTable(object):
             last_pixel_sync_message=last_pixel_sync_message
         )
 
-    def get_rows(self, user, campaigns, campaigns_settings, ad_groups_settings, stats,
+    def get_rows(self, user, campaigns, campaigns_settings, campaign_status_dict, stats,
                  last_actions, order, has_view_archived_permission, show_archived):
         rows = []
 
         # map settings for quicker access
         campaign_settings_dict = {cs.campaign_id: cs for cs in campaigns_settings}
-        ad_groups_settings_dict = {}
-        for ad_group_settings in ad_groups_settings:
-            campaign_id = ad_group_settings.ad_group.campaign_id
-            ad_groups_settings_dict.setdefault(campaign_id, []).append(ad_group_settings)
 
         for campaign in campaigns:
             # If at least one ad group is active, then the campaign is considered
@@ -1515,12 +1589,7 @@ class AccountCampaignsTable(object):
                not reports.api.row_has_conversion_goal_data(campaign_stat):
                 continue
 
-            state = constants.AdGroupSettingsState.INACTIVE
-            if next((ags for ags in ad_groups_settings_dict.get(campaign.id, [])
-                     if ags.state == constants.AdGroupSettingsState.ACTIVE), None):
-                state = constants.AdGroupSettingsState.ACTIVE
-
-            row['state'] = state
+            row['state'] = campaign_status_dict[campaign.id]
 
             if has_view_archived_permission:
                 row['archived'] = archived

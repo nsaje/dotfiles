@@ -1,3 +1,4 @@
+import collections
 import datetime
 import dateutil.parser
 import pytz
@@ -725,6 +726,23 @@ def get_ad_group_sources_settings(ad_group_sources):
         .filter(ad_group_source__in=ad_group_sources)\
         .group_current_settings()\
         .select_related('ad_group_source')
+
+
+def map_per_ad_group_source_running_status(ad_groups_settings, ad_groups_sources_settings):
+    """
+    Return a dict with ad group ids as keys and running status of its sources as value.
+    """
+
+    running_status_dict = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
+    sources_settings_dict = collections.defaultdict(list)
+    for agss in ad_groups_sources_settings:
+        sources_settings_dict[agss.ad_group_source.ad_group_id].append(agss)
+
+    for ags in ad_groups_settings:
+        running_status_dict[ags.ad_group_id] = models.AdGroupSettings.get_running_status_by_sources_setting(
+            ags, sources_settings_dict[ags.ad_group_id])
+
+    return running_status_dict
 
 
 def parse_get_request_content_ad_ids(request_data, param_name):

@@ -1027,26 +1027,6 @@ def reconcile_articles(ad_group, raw_articles):
     return reconciled_articles
 
 
-def get_state_by_account():
-    qs = models.AdGroupSettings.objects.all()\
-                                       .group_current_settings()\
-                                       .select_related('ad_group__campaign__account')\
-                                       .values('ad_group', 'ad_group__campaign__account', 'state')
-    account_state = {}
-    for row in qs:
-        aid = row['ad_group__campaign__account']
-        if aid not in account_state:
-            account_state[aid] = set()
-        account_state[aid].add(row['state'])
-
-    def _acc_state(ag_states):
-        if constants.AdGroupSettingsState.ACTIVE in ag_states:
-            return constants.AdGroupSettingsState.ACTIVE
-        return constants.AdGroupSettingsState.INACTIVE
-    account_state = {aid: _acc_state(ag_states) for aid, ag_states in account_state.iteritems()}
-    return account_state
-
-
 def _update_content_ad_source_submission_status(content_ad_source, submission_status):
     if content_ad_source.source.source_type.type == constants.SourceType.OUTBRAIN and\
        content_ad_source.submission_status == constants.ContentAdSubmissionStatus.REJECTED and\

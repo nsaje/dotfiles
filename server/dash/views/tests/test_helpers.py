@@ -421,6 +421,22 @@ class ViewHelpersTestCase(TestCase):
             },
         }, data_status)
 
+    def test_map_per_ad_group_source_running_status(self):
+
+        models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group_id=1).update(state=constants.AdGroupSettingsState.ACTIVE)
+        ad_group_sources_settings = models.AdGroupSourceSettings.objects.all().group_current_settings()
+
+        models.AdGroupSettings.objects.filter(ad_group_id=1).group_current_settings().update(state=constants.AdGroupSettingsState.ACTIVE)
+        ad_group_settings = models.AdGroupSettings.objects.filter(ad_group_id__in=[1, 7]).group_current_settings()
+
+        self.assertDictEqual(
+            helpers.map_per_ad_group_source_running_status(ad_group_settings, ad_group_sources_settings),
+            {
+                1: constants.AdGroupRunningStatus.ACTIVE,
+                7: constants.AdGroupRunningStatus.INACTIVE,
+            }
+        )
+
 
 class GetChangedContentAdsTestCase(TestCase):
     fixtures = ['test_api']

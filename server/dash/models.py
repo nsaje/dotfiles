@@ -1236,14 +1236,17 @@ class AdGroupSettings(SettingsBase):
             return constants.AdGroupRunningStatus.INACTIVE
 
         if (ad_group_settings == constants.AdGroupSettingsState.ACTIVE and
-           cls._get_running_status_by_flight_time(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE and
-           cls._get_running_status_by_sources_setting(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE):
+           cls.get_running_status_by_flight_time(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE and
+           cls.get_running_status_by_sources_setting(ad_group_settings, ad_group_source_settings) == constants.AdGroupRunningStatus.ACTIVE):
             return constants.AdGroupRunningStatus.ACTIVE
 
         return constants.AdGroupRunningStatus.INACTIVE
 
     @classmethod
-    def _get_running_status_by_flight_time(cls, ad_group_settings):
+    def get_running_status_by_flight_time(cls, ad_group_settings):
+        if not ad_group_settings or ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
+            return constants.AdGroupRunningStatus.INACTIVE
+
         now = dates_helper.utc_today()
         if ad_group_settings.start_date <= now and\
            (ad_group_settings.end_date is None or now <= ad_group_settings.end_date):
@@ -1251,10 +1254,20 @@ class AdGroupSettings(SettingsBase):
         return constants.AdGroupRunningStatus.INACTIVE
 
     @classmethod
-    def _get_running_status_by_sources_setting(cls, ad_group_souces_settings):
+    def get_running_status_by_sources_setting(cls, ad_group_settings, ad_group_souces_settings):
+        """
+        Returns "running" when all ad group sources settings are enabled and ad group settings are active.
+
+        Mind that by default ad group source settings do not get created when ad group source is added. We assume
+        its defaults. But this does not have an effect on this functions as "active" state of a source is not
+        its default state.
+        """
+        if not ad_group_settings or ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
+            return constants.AdGroupRunningStatus.INACTIVE
+
         if ad_group_souces_settings and\
            next((x for x in ad_group_souces_settings if x.state == constants.AdGroupSourceSettingsState.ACTIVE),
-                default=None):
+                None):
             return constants.AdGroupRunningStatus.ACTIVE
         return constants.AdGroupRunningStatus.INACTIVE
 
