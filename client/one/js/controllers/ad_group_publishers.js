@@ -195,7 +195,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         if (map[level1] < map[level2]) {
             return -1;
         }
-        if (map[level1] === map[level2])  {
+        if (map[level1] === map[level2]) {
             return 0;
         }
         return 1;
@@ -253,6 +253,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     };
 
     $scope.isAnythingSelected = function () {
+        var publisherId = 0;
         if ($scope.mixedBlacklistEnabledSelection) {
             return false;
         }
@@ -261,8 +262,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             return true;
         }
 
-
-        for (var publisherId in $scope.selectedPublisherStatus) {
+        for (publisherId in $scope.selectedPublisherStatus) {
             if ($scope.selectedPublisherStatus.hasOwnProperty(publisherId)
                     && $scope.selectedPublisherStatus[publisherId].checked) {
                 return true;
@@ -272,11 +272,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         return false;
     };
 
-    var pollSyncStatus = function() {
+    var pollSyncStatus = function () {
         if ($scope.isSyncInProgress) {
-            $timeout(function() {
+            $timeout(function () {
                 api.checkPublisherBlacklistSyncProgress.get($state.params.id).then(
-                    function(data) {
+                    function (data) {
                         $scope.isSyncInProgress = data.data.is_sync_in_progress;
                         if ($scope.isSyncInProgress === false) {
                             // we found out that the sync is no longer in progress
@@ -285,11 +285,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                             getDailyStats();
                         }
                     },
-                    function(data) {
+                    function (data) {
                         // error
                         $scope.isSyncInProgress = false;
                     }
-                ).finally(function() {
+                ).finally(function () {
                     pollSyncStatus();
                 });
             }, 10000);
@@ -314,7 +314,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         if (level === constants.publisherBlacklistLevel.GLOBAL) {
             if (!confirm("This action will affect all accounts. Are you sure you want to proceed?")) {
-                return;               
+                return;
             }
         }
 
@@ -328,7 +328,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             }
         });
 
-        
         if (action === 'enable') {
             state = constants.publisherStatus.ENABLED;
         } else {
@@ -348,9 +347,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 'exchange',
                 'cost',
                 'data_cost',
-                'cpc', 
-                'clicks', 
-                'impressions', 
+                'cpc',
+                'clicks',
+                'impressions',
                 'ctr'
             ]
         }
@@ -507,8 +506,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $state.params.id,
             state,
             level,
-            $scope.dateRange.startDate, 
-            $scope.dateRange.endDate, 
+            $scope.dateRange.startDate,
+            $scope.dateRange.endDate,
             publishersSelected,
             publishersNotSelected,
             $scope.selectedAll
@@ -590,7 +589,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 // error
                 return;
             }
-        ); 
+        );
     };
 
     $scope.toggleChart = function () {
@@ -667,11 +666,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
         if (newValue === true && oldValue === false) {
-            pollSyncStatus();            
+            pollSyncStatus();
         }
     }, true);
 
-    $scope.init = function() {
+    $scope.init = function () {
         var data = $scope.adGroupData[$state.params.id];
 
         var page = parseInt($location.search().page);
