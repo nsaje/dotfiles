@@ -378,12 +378,43 @@ class ViewHelpersTestCase(TestCase):
         with self.assertRaises(exc.ValidationError):
             helpers.parse_post_request_content_ad_ids({'ids': ['1', 'a']}, 'ids')
 
-    def test_get_content_ad_data_status(self):
+    def test_get_content_ad_data_status_pending(self):
         ad_group = models.AdGroup.objects.get(id=1)
         content_ads = models.ContentAd.objects.filter(ad_group=ad_group)
 
+        # set all submission statuses to PENDING
+        content_ad_sources = models.ContentAdSource.objects.filter(content_ad__in=content_ads)
+        content_ad_sources.update(submission_status=constants.ContentAdSubmissionStatus.PENDING)
+
         data_status = helpers.get_content_ad_data_status(ad_group, content_ads)
 
+        # check that the data status is now considered OK
+        self.assertEqual({
+            '1': {
+                'message': 'All data is OK.',
+                'ok': True
+            },
+            '2': {
+                'message': 'All data is OK.',
+                'ok': True
+            },
+            '3': {
+                'message': 'All data is OK.',
+                'ok': True
+            },
+        }, data_status)
+
+    def test_get_content_ad_data_status_approved(self):
+        ad_group = models.AdGroup.objects.get(id=1)
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group)
+
+        # set all submission statuses to APPROVED
+        content_ad_sources = models.ContentAdSource.objects.filter(content_ad__in=content_ads)
+        content_ad_sources.update(submission_status=constants.ContentAdSubmissionStatus.APPROVED)
+
+        data_status = helpers.get_content_ad_data_status(ad_group, content_ads)
+
+        # check that the data status is now considered not-OK
         self.assertEqual({
             '1': {
                 'message': 'The status of this Content Ad differs on these 3rd party dashboards: AdsNative, Sharethrough.',
@@ -398,6 +429,10 @@ class ViewHelpersTestCase(TestCase):
                 'ok': True
             },
         }, data_status)
+
+    def test_get_content_ad_data_status_rejected(self):
+        ad_group = models.AdGroup.objects.get(id=1)
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group)
 
         # set all submission statuses to REJECTED
         content_ad_sources = models.ContentAdSource.objects.filter(content_ad__in=content_ads)
