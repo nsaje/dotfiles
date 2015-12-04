@@ -31,19 +31,35 @@ describe('zemStateSelector', function() {
 
         spyOn(isolate, 'onChange');
 
-        element.find('.enabled a div.active-circle-icon').click();
-        expect(isolate.onChange).toHaveBeenCalledWith(
-            isolate.id, isolate.enabledValue, isolate.autopilotPausedValue);
+        var testValues = [
+            [1, 1, '.enabled a div.auto-pilot-icon'],
+            [2, 2, '.enabled a div.pause-icon'],
+            [1, 2, '.enabled a div.active-circle-icon'],
+            [1, 1, '.enabled a div.active-circle-icon', undefined, isolate.autopilotPausedValue],
+            [1, 1, '.enabled a div.pause-icon', isolate.pausedValue, isolate.autopilotPausedValue],
+            [2, 2, '.enabled a div.active-circle-icon', isolate.enabledValue, undefined],
+            [1, 2, '.enabled a div.pause-icon', isolate.pausedValue, undefined]
+        ];
 
-        element.find('.enabled a div.pause-icon').click();
-        expect(isolate.onChange).toHaveBeenCalledWith(
-            isolate.id, isolate.pausedValue, isolate.autopilotPausedValue);
+        testValues.forEach(function(testRow) {
+            isolate.value = testRow[0];
+            isolate.autopilotValue = testRow[1];
+            element.find(testRow[2]).click();
+            if (3 < testRow.length) {
+                expect(isolate.onChange).toHaveBeenCalledWith(
+                    isolate.id, testRow[3], testRow[4]);
+            } else {
+                expect(isolate.onChange).not.toHaveBeenCalled();
+            }
+        });
 
-        isolate.value = 3;
+        isolate.value = 1;
+        isolate.active = true;
+        isolate.autopilotValue = 2;
         element.find('.enabled a div.auto-pilot-icon').click();
         expect(isolate.onChange).toHaveBeenCalledWith(
-            isolate.id, isolate.value, isolate.autopilotEnabledValue);
+            isolate.id, undefined, isolate.autopilotEnabledValue);
 
-        expect(isolate.onChange.calls.count()).toEqual(3);
+        expect(isolate.onChange.calls.count()).toEqual(5);
     });
 });
