@@ -821,10 +821,14 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
             continue
 
         if first_ad_group_source is None:
-            first_ad_group_source = models.AdGroupSource.objects.filter(
-                ad_group=ad_group,
+            first_ad_group_source_qs = models.AdGroupSource.objects.filter(
                 source=publisher['source']
-            ).first()
+            )
+            if ad_group is not None:
+                first_ad_group_source_qs = first_ad_group_source_qs.filter(
+                    ad_group=ad_group
+                )
+            first_ad_group_source = first_ad_group_source_qs.first()
 
         key = None
         level = constants.PublisherBlacklistLevel.GLOBAL
