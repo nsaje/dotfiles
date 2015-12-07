@@ -51,6 +51,7 @@ from dash import forms
 from dash import upload
 
 import reports.api_publishers
+import reports.api
 
 logger = logging.getLogger(__name__)
 
@@ -345,13 +346,13 @@ class OverviewSetting(object):
         self.icon = None
         self.type = 'setting'
 
-    def comment(self, setting, details_label, details_description):
+    def comment(self, details_label, details_description):
         ret = copy.deepcopy(self)
         ret.detailsLabel = details_label
         ret.detailsContent = details_description
         return ret
 
-    def performance(self, setting, ok):
+    def performance(self, ok):
         ret = copy.deepcopy(self)
         ret.icon = 'happy' if ok else 'sad'
         return ret
@@ -371,10 +372,6 @@ class AdGroupOverview(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        campaign_budget = budget.CampaignBudget(campaign)
-
-        budget_change = json.loads(request.body)
 
         # TBD?
         delivering = False
@@ -454,13 +451,82 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(campaign_budget_setting)
 
+
+        tracking_code_settings = OverviewSetting(
+            'Tracking codes',
+            'Yes' if settings.tracking_code else 'No',
+            ''
+        ).comment(
+            'codes',
+            settings.tracking_code
+        )
+
+        settings.append(tracking_code_settings)
+
+        post_click_tracking = []
+        if settings.enable_ga_tracking:
+            post_click_tracking.append('Google Analytics')
+        if settings.enable_adobe_tracking:
+            post_click_tracking.append('Adobe')
+
+        post_click_tracking_setting = OverviewSetting(
+            'Post click tracking',
+            ', '.join(post_click_tracking),
+            '',
+        )
+        settings.append(post_click_tracking_setting)
         return settings
 
-    def _performance_settings(self, ad_group):
+    def _performance_settings(self, ad_group, user, ad_group_settings):
         settings = []
 
+        yesterday_cost = self.get_reports_api_module(user).get_yesterday_cost(ad_group=ad_group)
+
+        percent_daily_cap = None
+        if ad_group_settings.daily_cap > 0:
+            percent_daily_cap = round(100 * float(yesterday_cost) / float(ad_group_settings.daily_cap))
+
+        yesterday_spend_settings = OverviewSetting(
+            'Yesterday spend:',
+            '${.2f}'.format(yesterday_cost),
+            '{}% of daily cap'.format(percent_daily_cap),
+        ).performance(True)
+        settings.append(yesterday_spend_settings.as_dict())
+
+        campaign_pacing_settings = OverviewSetting(
+            'Campaign pacing:',
+            'TODO',
+            'TODO'
+        ).performance(True)
+        settings.append(campaign_pacing_settings.as_dict())
+
+        campaign_settings = ad_group.campaign.get_current_settings()
+        campaign_goals = [(
+            campaign_settings.campaign_goal,
+            campaign_settings.goal_quantity,
+        )]
+        for i, (goal, quantity) in enumerate(campaign_goals):
+            name = 'Campaign goals:' if i == 0 else ''
+            goal_setting = OverviewSetting(
+                name,
+                '{value} {description}'.format(value='', description=''),
+                'x below planned'
+            ).performance(True)
+            settings.append(goal_setting.as_dict())
+
         return settings
 
+    def get_reports_api_module(self, user):
+        if user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
+            return reports.api_contentads
+        return reports.api
+
+    def get_yesterday_cost(self, user, ad_group):
+        yesterday_cost = self.reports_api.get_yesterday_cost(adgroup=ad_group)
+        yesterday_total_cost = None
+        if yesterday_cost:
+            yesterday_total_cost = sum(yesterday_cost.values())
+        return yesterday_cost, yesterday_total_cost
 
 
 class AdGroupArchive(api_common.BaseApiView):
