@@ -2124,6 +2124,15 @@ class ExportReport(models.Model):
             return constants.ScheduledReportLevel.AD_GROUP
         return constants.ScheduledReportLevel.ALL_ACCOUNTS
 
+    def get_exported_entity_name(self):
+        if self.account:
+            return self.account.name
+        elif self.campaign:
+            return self.campaign.name
+        elif self.ad_group:
+            return self.ad_group.name
+        return 'All Accounts'
+
     def get_additional_fields(self):
         return views.helpers.get_additional_columns(self.additional_fields)
 
