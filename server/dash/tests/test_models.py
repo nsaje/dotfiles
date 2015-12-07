@@ -94,6 +94,163 @@ class AdGroupSettingsTest(TestCase):
         self.assertTrue(ad_group_settings.get_utc_start_datetime() < dt)
 
 
+class AdGroupRunningStatusTest(TestCase):
+    fixtures = ['test_models.yaml']
+
+    def test_running_by_flight_time(self):
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.start_date = datetime.date.today() - datetime.timedelta(days=1)
+        ad_group_settings.end_date = datetime.date.today() + datetime.timedelta(days=1)
+        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        self.assertEqual(
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
+            constants.AdGroupRunningStatus.ACTIVE
+        )
+
+    def test_running_by_flight_time_end_today(self):
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.start_date = datetime.date.today() - datetime.timedelta(days=1)
+        ad_group_settings.end_date = datetime.date.today()
+        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        self.assertEqual(
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
+            constants.AdGroupRunningStatus.ACTIVE
+        )
+
+    def test_running_by_flight_time_no_end(self):
+
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.start_date = datetime.date.today() - datetime.timedelta(days=1)
+        ad_group_settings.end_date = None
+        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        self.assertEqual(
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
+            constants.AdGroupRunningStatus.ACTIVE
+        )
+
+    def test_not_running_by_flight_time(self):
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.start_date = datetime.date.today() - datetime.timedelta(days=2)
+        ad_group_settings.end_date = datetime.date.today() - datetime.timedelta(days=1)
+        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        self.assertEqual(
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
+            constants.AdGroupRunningStatus.INACTIVE
+        )
+
+    def test_not_running_by_flight_time_settings_state(self):
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.start_date = datetime.date.today() - datetime.timedelta(days=1)
+        ad_group_settings.end_date = datetime.date.today() + datetime.timedelta(days=1)
+        ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
+
+        self.assertEqual(
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
+            constants.AdGroupRunningStatus.INACTIVE
+        )
+
+    def test_not_running_by_sources_state(self):
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        ad_group_sources_settings = models.AdGroupSourceSettings.objects\
+                                                                .filter(ad_group_source__source_id__in=[3])\
+                                                                .group_current_settings()
+
+        self.assertEqual(
+            models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
+            constants.AdGroupRunningStatus.INACTIVE,
+            msg="All the sources are inactive, running status should be inactive"
+        )
+
+    def test_running_by_sources_state(self):
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        ad_group_sources_settings = models.AdGroupSourceSettings.objects\
+                                                                .filter(ad_group_source__source_id__in=[1, 2, 3])\
+                                                                .group_current_settings()
+        self.assertEqual(
+            models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
+            constants.AdGroupRunningStatus.ACTIVE,
+            msg="Some sources are active, running status should be active")
+
+    def test_no_running_by_sources_state_ag_settings_inactive(self):
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
+        
+        ad_group_sources_settings = models.AdGroupSourceSettings.objects\
+                                                                .filter(ad_group_source__source_id__in=[1, 2, 3])\
+                                                                .group_current_settings()
+        self.assertEqual(
+            models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
+            constants.AdGroupRunningStatus.INACTIVE,
+            msg="Ad group settings are inactive, ad group should not run")
+
+    def test_not_running_by_sources_state_inactive(self):
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        ad_group_sources_settings = models.AdGroupSourceSettings.objects\
+                                                                .filter(ad_group_source__source_id__in=[1, 2, 3])\
+                                                                .group_current_settings()
+        ad_group_sources_settings.update(state=constants.AdGroupSourceSettingsState.INACTIVE)
+
+        self.assertEqual(
+            models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
+            constants.AdGroupRunningStatus.INACTIVE,
+            msg="No sources are active, ad group doesn't run")
+
+
+class CampaignSettingsTest(TestCase):
+    fixtures = ['test_models.yaml']
+
+    def test_settings_fields(self):
+        meta_fields = [
+            'id',
+            'campaign',
+            'campaign_id',
+            'created_dt',
+            'created_by',
+            'created_by_id',
+            'changes_text',
+            'useractionlog',
+            'account_manager_id',
+            'sales_representative_id'
+        ]
+
+        all_fields = set(models.CampaignSettings._settings_fields + meta_fields)
+        model_fields = set(models.CampaignSettings._meta.get_all_field_names())
+
+        self.assertEqual(model_fields, all_fields)
+
+    def test_get_settings_dict(self):
+        settings_dict = {
+            'archived': False,
+            'iab_category': u'1',
+            'name': u'Test campaign 1',
+            'target_devices': [u'mobile'],
+            'account_manager': User.objects.get(pk=1),
+            'promotion_goal': 1,
+            'target_regions': [u'CA', u'501'],
+            'service_fee': Decimal('0.2000'),
+            'sales_representative': User.objects.get(pk=1),
+            'campaign_goal': 2,
+            'goal_quantity': Decimal('10.00')
+        }
+
+        self.assertEqual(
+            models.CampaignSettings.objects.get(id=1).get_settings_dict(),
+            settings_dict,
+        )
+
+
 class AdGroupSourceTest(TestCase):
 
     def test_adgroup_source_save(self):

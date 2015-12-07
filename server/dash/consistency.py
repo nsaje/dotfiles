@@ -12,7 +12,7 @@ class SettingsStateConsistence(object):
         latest_state = self.get_latest_state()
         if latest_state is None:
             return True
-        latest_settings = self.get_latest_settings()
+        latest_settings = self.ad_group_source.get_current_settings_or_none()
         if latest_settings is None:
             return False
         if latest_settings.created_dt < latest_state.created_dt \
@@ -26,7 +26,7 @@ class SettingsStateConsistence(object):
 
     def get_needed_state_updates(self):
         latest_state = self.get_latest_state()
-        latest_settings = self.get_latest_settings()
+        latest_settings = self.ad_group_source.get_current_settings_or_none()
 
         changes = {}
         if not latest_settings:
@@ -49,13 +49,4 @@ class SettingsStateConsistence(object):
                 .latest('created_dt')
             return latest_state
         except models.AdGroupSourceState.DoesNotExist:
-            return None
-
-    def get_latest_settings(self):
-        try:
-            latest_settings = models.AdGroupSourceSettings.objects \
-                .filter(ad_group_source=self.ad_group_source) \
-                .latest('created_dt')
-            return latest_settings
-        except models.AdGroupSourceSettings.DoesNotExist:
             return None

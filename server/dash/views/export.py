@@ -879,10 +879,9 @@ class AllAccountsExport(ExportApiView):
         campaign_names = {campaign.id: campaign.name for campaign in
                           models.Campaign.objects.filter(account=accounts)}
 
-        settings_queryset = models.CampaignSettings.objects.\
-            distinct('campaign').\
-            filter(campaign__account=accounts).\
-            order_by('campaign', '-created_dt')
+        settings_queryset = models.CampaignSettings.objects\
+                                                   .filter(campaign__account=accounts)\
+                                                   .group_current_settings()
 
         campaign_settings = {s.campaign.id: s for s in settings_queryset}
 

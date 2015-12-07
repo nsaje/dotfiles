@@ -45,24 +45,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         return running0 && (running1 || running2) ? 'running' : 'stopped';
     };
 
-    $scope.availableRegions = function() {
-        // In case the full country and dma list is not given to the user
-        // at least show the ones that are selected
-        var avRegions = regions.legacy.slice();
-
-        if ($scope.settings.targetRegions) {
-            for (var locationCode, found, i=0; i < $scope.settings.targetRegions.length; i++) {
-                locationCode = $scope.settings.targetRegions[i];
-                found = avRegions.filter(function(lc) { return lc.code === locationCode;});
-                if (found.length === 0) {
-                    avRegions.push(regions.getByCode(locationCode));
-                }
-            }
-        }
-
-        return avRegions;
-    };
-
     $scope.getSettings = function (id) {
         $scope.loadRequestInProgress = true;
 
@@ -147,12 +129,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
             }
         );
     };
-
-    $scope.$watch('settings.targetRegions', function (newValue, oldValue) {
-        if (newValue && newValue.length) {
-            $scope.settings.targetRegionsMode = 'custom';
-        }
-    }, true);
 
     $scope.$watch('settings.manualStop', function (newValue, oldValue) {
         if (newValue) {
