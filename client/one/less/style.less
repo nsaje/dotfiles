@@ -664,17 +664,27 @@ div[datepicker] {
     overflow: hidden;
 }
 
-.graph-container {
+.graph-container-short {
     display: inline-block;
     width: 70%;
 }
 
-.infobox-container {
+.graph-container-full {
+    display: inline-block;
+    width: 100%;
+}
+
+.infobox-container-full {
     display: inline-block;
     width: 30%;
     position: absolute; 
     height: 100%; 
-    overflow: auto
+    overflow: auto;
+    display: visible;
+}
+
+.infobox-container-short {
+	display: none;
 }
 
 .infobox-button {

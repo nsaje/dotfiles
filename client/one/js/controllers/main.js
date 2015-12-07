@@ -41,8 +41,6 @@ oneApp.controller('MainCtrl',
 
     // TODO: move to localstorage
     $scope.infoboxVisible = true;
-    $scope.graphWidth = 70
-    $scope.infoboxWidth = 100 - $scope.graphWidth;
 
     $scope.remindToAddBudget = $q.defer(); 
 
@@ -82,12 +80,6 @@ oneApp.controller('MainCtrl',
 
     $scope.toggleInfoboxVisibility = function () {
         $scope.infoboxVisible = !$scope.infoboxVisible;
-        if ($scope.infoboxVisible) {
-            $scope.graphWidth = 70
-        } else {
-            $scope.graphWidth = 100;
-        }
-        $scope.infoboxWidth = 100 - $scope.graphWidth;
     }
 
     $scope.getDefaultAllAccountsState = function () {

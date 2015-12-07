@@ -565,7 +565,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }
     };
 
-    $scope.$watch('$parent.graphWidth', function(newValue, oldValue) {
+    $scope.$watch('$parent.infoboxVisible', function(newValue, oldValue) {
         $timeout(function() {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);

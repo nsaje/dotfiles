@@ -5,10 +5,10 @@
         </div>
 
         <div ng-if="hasPermission('zemauth.can_see_infobox')" class="graph-infobox-parent">
-            <div class="graph-container" style="width:{{graphWidth || 100}}%">
+            <div ng-class="{'graph-container-short': infoboxVisible, 'graph-container-full': !infoboxVisible}">
                 <zem-chart ng-class="{'chart-hidden': chartHidden}" zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
             </div>
-            <div class="infobox-container" style="width:{{infoboxWidth || 0}}%">
+            <div ng-class="{'infobox-container-full': infoboxVisible, 'infobox-container-short': !infoboxVisible}">
                 <zem-infobox header="infoboxHeader" settings="infoboxSettings"></zem-infobox>
             </div>
         <div>
