@@ -523,8 +523,7 @@ class GaContentAdReportTest(test.TransactionTestCase):
         )
     ]
 
-    @patch('reports.update.refresh.refresh_contentadstats')
-    def test_correct_row(self, mock_refresh_contentadstats):
+    def test_correct_row(self):
         self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
 
@@ -533,12 +532,7 @@ class GaContentAdReportTest(test.TransactionTestCase):
         self.assertEqual(8, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(5, reports.models.ContentAdGoalConversionStats.objects.count())
 
-        self.assertEqual(mock_refresh_contentadstats.call_count, 2)
-        mock_refresh_contentadstats.assert_any_call(self.date, dash.models.AdGroup.objects.get(pk=1))
-        mock_refresh_contentadstats.assert_any_call(self.date, dash.models.AdGroup.objects.get(pk=2))
-
-    @patch('reports.update.refresh.refresh_contentadstats')
-    def test_double_correct_row(self, mock_refresh_contentadstats):
+    def test_double_correct_row(self):
         self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
 
@@ -547,10 +541,6 @@ class GaContentAdReportTest(test.TransactionTestCase):
 
         self.assertEqual(8, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(5, reports.models.ContentAdGoalConversionStats.objects.count())
-
-        self.assertEqual(mock_refresh_contentadstats.call_count, 4)
-        mock_refresh_contentadstats.assert_any_call(self.date, dash.models.AdGroup.objects.get(pk=1))
-        mock_refresh_contentadstats.assert_any_call(self.date, dash.models.AdGroup.objects.get(pk=2))
 
     def test_invalid_caid(self):
         self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())

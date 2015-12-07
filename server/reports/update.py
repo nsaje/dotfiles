@@ -306,7 +306,6 @@ def process_report(date, parsed_report_rows, report_type):
             bulk_goal_conversion_stats.extend(goal_conversion_stats)
 
         _delete_and_restore_bulk_stats(report_type, bulk_contentad_stats, bulk_goal_conversion_stats)
-        _refresh_contentadstats(date, content_ad_ids)
     except:
         logger.exception('Failed processing report')
         raise
@@ -334,13 +333,6 @@ def _delete_and_restore_bulk_stats(report_type, bulk_contentad_stats, bulk_goal_
 
     for obj in bulk_goal_conversion_stats:
         obj.save()
-
-
-@statsd_timer('reports.update', '_refresh_contentadstats')
-def _refresh_contentadstats(date, content_ad_ids):
-    # refresh aggregation table
-    for ad_group in dash.models.AdGroup.objects.filter(contentad__id__in=content_ad_ids):
-        reports.refresh.refresh_contentadstats(date, ad_group)
 
 
 def _create_contentad_postclick_stats(entry, track_source_map):
