@@ -93,10 +93,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         {
             'name': 'Traffic Acquisition',
             'fields': [
-               'bid_cpc', 'daily_budget', 'cost',
-               'cpc', 'clicks', 'impressions', 'ctr',
-               'yesterday_cost', 'supply_dash_url',
-               'current_bid_cpc', 'current_daily_budget'
+                'bid_cpc', 'daily_budget', 'cost', 'data_cost',
+                'cpc', 'clicks', 'impressions', 'ctr',
+                'yesterday_cost', 'supply_dash_url',
+                'current_bid_cpc', 'current_daily_budget'
             ]
         },
         {
@@ -149,10 +149,17 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             unselectable: true,
             help: 'A setting for enabling and pausing media sources.',
             onChange: function (sourceId, value, autopilotValue) {
+                var newSettings = {};
+                if (value) {
+                    newSettings.state = value;
+                }
+                if (autopilotValue) {
+                    newSettings.autopilot_state = autopilotValue;
+                }
                 api.adGroupSourceSettings.save(
                     $state.params.id,
                     sourceId,
-                    {state: value, autopilot_state: autopilotValue}
+                    newSettings
                 ).then(
                     function (data) {
                         $scope.rows.forEach(function (row) {
@@ -313,6 +320,18 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             totalRow: true,
             order: true,
             initialOrder: 'desc'
+        },
+        {
+            name: 'Data Cost',
+            field: 'data_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Additional targeting/segmenting costs.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_data_cost'),
+            shown: $scope.hasPermission('zemauth.can_view_data_cost')
         },
         {
             name: 'Avg. CPC',

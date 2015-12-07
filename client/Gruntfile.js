@@ -279,6 +279,38 @@ module.exports = function (grunt) {
                 configFile: 'test/protractor.conf-sauce.js'
             }
         },
+        jslint: { // configure the task
+            // lint your project's server code
+            server: {
+                src: [ 
+                    'dist/one/zemanta-one.templates.js',
+                    'dist/build/config.js',
+                    'one/js/constants.js',
+                    'one/js/app.js',
+                    'one/js/constants/*.js',
+                    'one/js/services/**/*.js',
+                    'one/js/directives/**/*.js',
+                    'one/js/services/**/*.js',
+                    'one/js/controllers/**/*.js',
+                    'one/js/filters/**/*.js',
+                    'one/js/demo.js'
+                ],
+                exclude: [],
+                directives: { // example directives
+                    node: true,
+                    todo: true
+                },
+                options: {
+                    edition: 'latest', // specify an edition of jslint or use 'dir/mycustom-jslint.js' for own path
+                    junit: 'out/server-junit.xml', // write the output to a JUnit XML
+                    log: 'out/server-lint.log',
+                    jslintXml: 'out/server-jslint.xml',
+                    errorsOnly: true, // only display errors
+                    failOnError: true, // defaults to true
+                    checkstyle: 'out/server-checkstyle.xml' // write a checkstyle-XML
+                }
+            }
+        },
         build: {
             one: ['html2js:one', 'concat:one', 'uglify:one', 'less:one', 'copy:one'],
             one_lib: ['bower_concat:one_lib', 'uglify:one_lib', 'cssmin:one_lib', 'copy:one_lib'],
@@ -297,4 +329,5 @@ module.exports = function (grunt) {
     grunt.registerTask('test', ['default', 'karma:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
     grunt.registerTask('e2e', ['protractor:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
     grunt.registerTask('dev', ['ngconstant:dev', 'build', 'connect:dev', 'watch']);
+    grunt.registerTask('lint', ['ngconstant:dev', 'jslint']);
 };

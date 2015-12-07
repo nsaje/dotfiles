@@ -1321,10 +1321,17 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
-    function AccountReports() {
-        this.get = function (id) {
+    function ScheduledReports() {
+        this.get = function (level, id) {
             var deferred = $q.defer();
-            var url = '/api/accounts/' + id + '/reports/';
+            var url;
+            if (level === constants.level.ALL_ACCOUNTS){
+                url = '/api/all_accounts/reports/';
+            } else if (level === constants.level.ACCOUNTS) {
+                url = '/api/accounts/' + id + '/reports/';
+            } else {
+                return;
+            }
             $http.get(url).
                 success(function (data, status) {
                     if (!data || !data.data) {
@@ -1351,6 +1358,26 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 }).
                 error(function(data, status, headers) {
                     deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.addScheduledReport = function (url, data) {
+            var deferred = $q.defer();
+            $http.put(url, data).
+                success(function (data, status) {
+                    if (status != 200) {
+                        deferred.reject(data);
+                    }
+                    deferred.resolve();
+                }).
+                error(function(data, status) {
+                  var errors = null;
+                  if(data.data && data.data.errors) {
+                      errors = data.data.errors;
+                  }
+                  return deferred.reject(errors);
                 });
 
             return deferred.promise;
@@ -2253,7 +2280,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                         "data": {
                             "status": 2,
                             "errors": {
-                                "content_ads": ["File too large."]
+                                "content_ads": ["File too large (max 1MB)."]
                             }
                         },
                         "success": false
@@ -2644,8 +2671,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             },
             dataToApi: function (obj) {
                 return {
-                    start_date: obj.startDate && moment(obj.startDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
-                    end_date: obj.endDate && moment(obj.endDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+                    start_date: obj.startDate && moment(obj.startDate).format('YYYY-MM-DD'),
+                    end_date: obj.endDate && moment(obj.endDate).format('YYYY-MM-DD'),
                     amount: obj.amount,
                     license_fee: obj.licenseFee,
                     comment: obj.comment,
@@ -2723,8 +2750,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 return {
                     credit: obj.credit.id,
                     amount: obj.amount,
-                    start_date: moment(obj.startDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
-                    end_date: moment(obj.endDate, 'MM/DD/YYYY').format('YYYY-MM-DD'),
+                    start_date: moment(obj.startDate).format('YYYY-MM-DD'),
+                    end_date: moment(obj.endDate).format('YYYY-MM-DD'),
                     comment: obj.comment
                 };
             },
@@ -2819,7 +2846,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         accountCampaigns: new AccountCampaigns(),
         accountCampaignsTable: new AccountCampaignsTable(),
         accountBudget: new AccountBudget(),
-        accountReports: new AccountReports(),
+        scheduledReports: new ScheduledReports(),
         accountSync: new AccountSync(),
         accountArchive: new AccountArchive(),
         checkAccountsSyncProgress: new CheckAccountsSyncProgress(),

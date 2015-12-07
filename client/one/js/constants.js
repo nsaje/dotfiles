@@ -28,6 +28,7 @@ var constants = {
         IMPRESSIONS: 'impressions',
         CTR: 'ctr',
         COST: 'cost',
+        DATA_COST: 'data_cost',
         CPC: 'cpc',
         VISITS: 'visits',
         PAGEVIEWS: 'pageviews',
@@ -503,6 +504,17 @@ var constants = {
         AD_GROUP: 'adgroup-csv',
         CONTENT_AD: 'contentad-csv'
     },
+    exportFrequency: {
+        DAILY: 'daily',
+        WEEKLY: 'weekly',
+        MONTHLY: 'monthly'
+    },
+    publisherBlacklistLevel: {
+        ADGROUP: 'adgroup',
+        CAMPAIGN: 'campaign',
+        ACCOUNT: 'account',
+        GLOBAL: 'global'
+    }
 };
 var options = {
     adGroupSettingsStates: [{name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
@@ -517,6 +529,7 @@ var options = {
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
         {name: 'Spend', value: constants.chartMetric.COST},
+        {name: 'Data Cost', value: constants.chartMetric.DATA_COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC},
     ],
     adGroupAcquisitionChartPostClickMetrics: [
@@ -539,6 +552,7 @@ var options = {
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
         {name: 'Spend', value: constants.chartMetric.COST},
+        {name: 'Data Cost', value: constants.chartMetric.DATA_COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
     ],
     campaignConversionGoalChartMetrics: [
@@ -550,11 +564,13 @@ var options = {
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
         {name: 'Spend', value: constants.chartMetric.COST},
+        {name: 'Data Cost', value: constants.chartMetric.DATA_COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
     ],
     allAccountsChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Spend', value: constants.chartMetric.COST},
+        {name: 'Data Cost', value: constants.chartMetric.DATA_COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
     ],
     iabCategories: [
@@ -972,6 +988,10 @@ var options = {
         {name: '1 day', value: 24},
         {name: '7 days', value: 168},
         {name: '30 days', value: 720}
+    ],
+    exportFrequency: [{name: 'Daily', value: constants.exportFrequency.DAILY},
+        {name: 'Weekly (Monday)', value: constants.exportFrequency.WEEKLY},
+        {name: 'Monthly (1st)', value: constants.exportFrequency.MONTHLY}
     ]
 };
 

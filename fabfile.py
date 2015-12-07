@@ -249,14 +249,14 @@ def purgecache(**kvargs):
     # sleep for n seconds during attempts
     interval = 10
     while not success and current_iteration < iterations:
-        print("attempting to purge cache (count)".format(count=current_iteration))
+        print("attempting to purge cache {count}".format(count=current_iteration))
         req = httplib.HTTPSConnection( 'www.cloudflare.com' )
         req.request( 'GET', '/api_json.html?a=fpurge_ts&tkn=46f74438514cdd4f68695b9756cc1c2274cf5&email=cloudflare@zemanta.com&z=zemanta.com&v=1')
         response = req.getresponse()
         data = response.read()
         try:
             data = json.loads( data )
-            success = True
+            success = data.get('result', '') != 'error'
         except ValueError:
             print('JSON parse failed.')
         if data['result'] == 'error':

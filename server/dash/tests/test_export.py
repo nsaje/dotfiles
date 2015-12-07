@@ -27,6 +27,7 @@ class ExportTestCase(test.TestCase):
             {
                 'date': datetime.date(2014, 7, 1),
                 'cost': 1000.12,
+                'data_cost': 11.12,
                 'clicks': 103,
                 'impressions': 100000,
                 'ctr': 1.03,
@@ -35,6 +36,7 @@ class ExportTestCase(test.TestCase):
             {
                 'date': datetime.date(2014, 7, 1),
                 'cost': 1034.12,
+                'data_cost': 13.44,
                 'clicks': 133,
                 'impressions': 100308,
                 'ctr': 1.04,
@@ -48,13 +50,14 @@ class ExportTestCase(test.TestCase):
         fieldnames = OrderedDict([
             ('date', 'Date'),
             ('cost', 'Cost'),
+            ('data_cost', 'Data Cost'),
             ('clicks', 'Clicks'),
             ('ctr', 'CTR')
         ])
 
         content = export.get_csv_content(fieldnames, self.data)
 
-        expected_content = 'Date,Cost,Clicks,CTR\r\n2014-07-01,1000.12,103,1.03\r\n2014-07-01,1034.12,133,1.04\r\n'
+        expected_content = 'Date,Cost,Data Cost,Clicks,CTR\r\n2014-07-01,1000.12,11.12,103,1.03\r\n2014-07-01,1034.12,13.44,133,1.04\r\n'
 
         self.assertEqual(content, expected_content)
 
@@ -62,6 +65,7 @@ class ExportTestCase(test.TestCase):
         columns = [
             {'key': 'date', 'name': 'Date', 'format': 'date'},
             {'key': 'cost', 'name': 'Cost', 'format': 'currency'},
+            {'key': 'data_cost', 'name': 'Data Cost', 'format': 'currency'},
             {'key': 'clicks', 'name': 'Clicks'},
             {'key': 'ctr', 'name': 'CTR', 'format': 'percent'},
         ]
@@ -74,8 +78,8 @@ class ExportTestCase(test.TestCase):
         worksheet = workbook.sheet_by_name('Test Report')
         self.assertIsNotNone(worksheet)
 
-        self._assert_row(worksheet, 0, ['Date', 'Cost', 'Clicks', 'CTR'])
-        self._assert_row(worksheet, 1, [41821.0, 1000.12, 103, 0.0103])
+        self._assert_row(worksheet, 0, ['Date', 'Cost', 'Data Cost', 'Clicks', 'CTR'])
+        self._assert_row(worksheet, 1, [41821.0, 1000.12, 11.12, 103, 0.0103])
 
     @patch('dash.export.reports.api.query')
     def test_generate_rows(self, mock_query):

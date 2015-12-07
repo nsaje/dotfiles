@@ -248,9 +248,9 @@ class AccountAgencySettingsForm(forms.Form):
         allowed_sources = {}
         for k, v in allowed_sources_dict.iteritems():
             if not isinstance(k, basestring):
-                raise err 
-            if not isinstance(v, dict): 
-                raise err 
+                raise err
+            if not isinstance(v, dict):
+                raise err
 
             try:
                 key = int(k)
@@ -690,10 +690,60 @@ class BudgetLineItemForm(forms.ModelForm):
             if end_date <= today:
                 raise forms.ValidationError('End date has to be in the future.')
         return end_date
-    
+
     class Meta:
         model = models.BudgetLineItem
         fields = [
             'campaign', 'credit', 'start_date', 'end_date', 'amount', 'comment'
         ]
 
+
+class MultiEmailField(forms.Field):
+    def to_python(self, value):
+        if not value:
+            return []
+        value = "".join(value.split())
+        return value.split(',')
+
+    def validate(self, value):
+        super(MultiEmailField, self).validate(value)
+        invalid_addresses = []
+        for email in value:
+            try:
+                validators.validate_email(email)
+            except forms.ValidationError:
+                invalid_addresses.append(email)
+
+        if invalid_addresses:
+            raise forms.ValidationError(
+                ', '.join(invalid_addresses) +
+                (' is' if len(invalid_addresses) == 1 else ' are') +
+                ' not valid email address' +
+                ('es' if len(invalid_addresses) > 1 else '') +
+                '.')
+
+
+class ScheduleReportForm(forms.Form):
+    granularity = forms.TypedChoiceField(
+        required=True,
+        choices=constants.ScheduledReportGranularity.get_choices(),
+        coerce=int
+    )
+    report_name = forms.CharField(
+        required=True,
+        max_length=100,
+        error_messages={
+            'max_length': 'Report name is too long (%(show_value)d/%(limit_value)d).'
+        }
+    )
+    frequency = forms.TypedChoiceField(
+        required=True,
+        choices=constants.ScheduledReportSendingFrequency.get_choices(),
+        coerce=int
+    )
+    recipient_emails = MultiEmailField(
+        required=True
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(ScheduleReportForm, self).__init__(*args, **kwargs)

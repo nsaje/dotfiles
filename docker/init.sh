@@ -7,7 +7,7 @@ msg() {
 	echo "[zemanta-eins] $@"
 }
 
-msg "fetching build artifact from goven URL"
+msg "fetching build artifact from given URL"
 
 DEST=/app/zemanta-eins
 mkdir -p $DEST/

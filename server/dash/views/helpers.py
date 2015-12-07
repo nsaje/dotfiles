@@ -555,6 +555,14 @@ def get_content_ad_data_status(ad_group, content_ads):
             if content_ad_source.source.deprecated or content_ad_source.source.maintenance:
                 continue
 
+            # we ignore pending content ads
+            if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.PENDING:
+                continue
+
+            # we ignore rejected content ads
+            if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.REJECTED:
+                continue
+
             ad_group_source = None
             for ags in ad_group_sources:
                 if content_ad_source.source.id == ags.source_id:
@@ -575,7 +583,7 @@ def get_content_ad_data_status(ad_group, content_ads):
         if not out_of_sync:
             message = 'All data is OK.'
         else:
-            message = 'The status of this Content Ad differs on these 3rd party dashboards: {}.'.format(", ".join(out_of_sync))
+            message = 'The status of this Content Ad differs on these media sources: {}.'.format(", ".join(out_of_sync))
 
         data_status[str(content_ad.id)] = {
             'message': message,
@@ -765,7 +773,7 @@ def get_user_full_name_or_email(user):
 
 
 def copy_stats_to_row(stat, row):
-    for key in ['impressions', 'clicks', 'cost', 'cpc', 'ctr',
+    for key in ['impressions', 'clicks', 'cost', 'data_cost', 'cpc', 'ctr',
                 'visits', 'click_discrepancy', 'pageviews',
                 'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
         row[key] = stat.get(key)
@@ -938,7 +946,7 @@ def format_decimal_to_percent(num):
 
 
 def format_percent_to_decimal(num):
-    return Decimal(str(num).replace('%', '')) / 100
+    return Decimal(str(num).replace(',', '').strip('%')) / 100
 
 
 def log_useraction_if_necessary(request, user_action_type, account=None, campaign=None, ad_group=None):

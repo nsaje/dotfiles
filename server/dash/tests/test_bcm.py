@@ -9,7 +9,7 @@ from dash import models, constants, forms
 from zemauth.models import User
 from django.http.request import HttpRequest
 
-TODAY = datetime.datetime(2015, 11, 3).date()
+TODAY = datetime.datetime(2015, 12, 1).date()
 YESTERDAY = TODAY - datetime.timedelta(1)
 
 create_credit = models.CreditLineItem.objects.create
@@ -178,6 +178,7 @@ class CreditsTestCase(TestCase):
     def test_editing_existing(self):
         c = models.CreditLineItem.objects.get(pk=1)
         c.start_date = TODAY
+        c.end_date = TODAY + datetime.timedelta(10)
         c.amount = 1111111
         c.save()  # Editing allowed
 
