@@ -25,7 +25,6 @@ import dash.models
 import reports.refresh
 import reports.update
 import reports.api_publishers
-import reports.daily_statements
 from reports.api import get_day_cost
 
 from utils import request_signer

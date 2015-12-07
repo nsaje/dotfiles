@@ -207,12 +207,14 @@ class ContentAdGoalConversionStats(models.Model):
 
 class BudgetDailyStatement(models.Model):
     budget = models.ForeignKey(dash.models.BudgetLineItem)
-    spend = models.DecimalField(
-        decimal_places=6,
-        max_digits=16,
-    )
     date = models.DateField()
-    dirty = models.BooleanField(default=False)
+    media_spend_nano = models.BigIntegerField()
+    data_spend_nano = models.BigIntegerField()
+    license_fee_nano = models.BigIntegerField()
+
+    @property
+    def total_spend_nano(self):
+        return self.media_spend_nano + self.data_spend_nano + self.license_fee_nano
 
     class Meta:
         get_latest_by = 'date'
