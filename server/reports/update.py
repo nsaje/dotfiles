@@ -253,14 +253,11 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
     ).delete()
 
     for row in rows:
-        content_ad_source = row.get('content_ad_source')
+        if 'content_ad_source' not in row:
+            statsd_helper.statsd_incr('reports.update.err_missing_content_ad_data')
+            raise Exception('missing content ad data')
 
-        if content_ad_source is None:
-            logger.info(
-                'Ignoring content ad data with unknown id: {} for ad group id: {} source id: {}, date: {}',
-                row['id'], ad_group.id, source.id, date)
-            continue
-
+        content_ad_source = row['content_ad_source']
         reports.models.ContentAdStats.objects.create(
             date=date,
             content_ad_source=content_ad_source,

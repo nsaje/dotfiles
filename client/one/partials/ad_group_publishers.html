@@ -11,22 +11,35 @@
                     <zem-dropdown
                         zem-placeholder="Manage Blacklist"
                         zem-on-select="executeBulkAction(selected)"
-                        zem-disabled-title="At least one Publisher has to be selected before using Manage Blacklist and all selected publishers need to be either Blacklisted or not blacklisted."
+                        zem-disabled-title="At least one Publisher has to be selected before using Manage Blacklist and all selected publishers need to be enabled."
                         zem-check-disabled="!isAnythingSelected()"
-                        zem-dropdown-options="bulkActions"
+                        zem-dropdown-options="bulkBlacklistActions"
                         zem-dropdown-css-class="publishers-blacklist-bigdrop"
                         zem-css-class="show-rows"></zem-dropdown>
-                    </div>
+                </div>
+            </div>
+
+            <div class="button-bar-item">
+                <div ng-show="hasPermission('zemauth.can_modify_publisher_blacklist_status')" style="display:inline;">
+                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_publisher_blacklist_status')" popover-placement="bottom"></zem-internal-feature>
+                    <zem-dropdown
+                        zem-placeholder="Manage Re-enable"
+                        zem-on-select="executeBulkAction(selected)"
+                        zem-disabled-title="At least one Publisher has to be selected before using Manage Re-enable and all selected publishers need to be blacklisted."
+                        zem-check-disabled="!isAnythingSelected()"
+                        zem-dropdown-options="bulkEnableActions"
+                        zem-dropdown-css-class="publishers-blacklist-bigdrop"
+                        zem-css-class="show-rows"></zem-dropdown>
 
                     <span ng-show="isSyncInProgress">
                         <a id="resync-loader" popover="Synchronization of blacklisted publishers is currently in progress, and may take a few minutes. You can continue using the dashboard in the meantime." popover-append-to-body="true" popover-trigger="mouseenter" popover-placement="left"><div class="loader"></div></a>
                     </span>
                 </div>
-
-                <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
-                <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
-                <div class="clearfix"></div>
             </div>
+
+            <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
+            <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
+            <div class="clearfix"></div>
         </div>
 
         <zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-notifications="notifications" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderTableData(order)" zem-table-data-status="dataStatus"></zem-table>
