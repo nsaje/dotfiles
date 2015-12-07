@@ -1016,16 +1016,11 @@ class AdGroup(models.Model):
             return constants.AdGroupRunningStatus.INACTIVE
 
         if (cls.get_running_status_by_flight_time(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE and
-           cls.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings) == constants.AdGroupRunningStatus.ACTIVE):
+           cls.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings) ==
+           constants.AdGroupRunningStatus.ACTIVE):
             return constants.AdGroupRunningStatus.ACTIVE
 
         return constants.AdGroupRunningStatus.INACTIVE
-
-    @classmethod
-    def is_ad_group_enabled(cls, ad_group_settings):
-        if not ad_group_settings or ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
-            return False
-        return True
 
     @classmethod
     def get_running_status_by_flight_time(cls, ad_group_settings):
@@ -1048,10 +1043,15 @@ class AdGroup(models.Model):
             return constants.AdGroupRunningStatus.INACTIVE
 
         if ad_group_sources_settings and\
-           next((x for x in ad_group_sources_settings if x.state == constants.AdGroupSourceSettingsState.ACTIVE),
-                None):
+           any(x.state == constants.AdGroupSourceSettingsState.ACTIVE for x in ad_group_sources_settings):
             return constants.AdGroupRunningStatus.ACTIVE
         return constants.AdGroupRunningStatus.INACTIVE
+
+    @classmethod
+    def is_ad_group_enabled(cls, ad_group_settings):
+        if not ad_group_settings or ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
+            return False
+        return True
 
     @transaction.atomic
     def archive(self, request):
