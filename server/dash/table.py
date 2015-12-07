@@ -1549,7 +1549,7 @@ class AccountCampaignsTable(object):
                     campaign_stat = stat
                     break
 
-            campaign_settings = campaign_settings_dict.get(campaign.id, None)
+            campaign_settings = campaign_settings_dict.get(campaign.id)
             archived = campaign_settings.archived if campaign_settings else False
 
             reports_api = get_reports_api_module(user)

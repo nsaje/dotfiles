@@ -1178,7 +1178,7 @@ class AdGroupSourceSettingsWriter(object):
 
     def can_trigger_action(self):
         ad_group_settings = self.ad_group_source.ad_group.get_current_settings()
-        return models.AdGroup.is_ad_group_enabled(ad_group_settings)
+        return models.AdGroup.is_ad_group_active(ad_group_settings)
 
     def add_to_history(self, change_obj, old_change_obj, request):
         changes_text_parts = []

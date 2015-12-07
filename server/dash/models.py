@@ -999,7 +999,7 @@ class AdGroup(models.Model):
 
     def can_archive(self):
         current_settings = self.get_current_settings()
-        return not self.is_ad_group_enabled(current_settings)
+        return not self.is_ad_group_active(current_settings)
 
     def can_restore(self):
         if self.campaign.is_archived():
@@ -1017,7 +1017,7 @@ class AdGroup(models.Model):
         Returns the actual running status of ad group settings with selected sources settings.
         """
 
-        if not cls.is_ad_group_enabled(ad_group_settings):
+        if not cls.is_ad_group_active(ad_group_settings):
             return constants.AdGroupRunningStatus.INACTIVE
 
         if (cls.get_running_status_by_flight_time(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE and
@@ -1029,7 +1029,7 @@ class AdGroup(models.Model):
 
     @classmethod
     def get_running_status_by_flight_time(cls, ad_group_settings):
-        if not cls.is_ad_group_enabled(ad_group_settings):
+        if not cls.is_ad_group_active(ad_group_settings):
             return constants.AdGroupRunningStatus.INACTIVE
 
         now = dates_helper.utc_today()
@@ -1044,7 +1044,7 @@ class AdGroup(models.Model):
         Returns "running" when at least one of the ad group sources settings status is
         set to be active.
         """
-        if not cls.is_ad_group_enabled(ad_group_settings):
+        if not cls.is_ad_group_active(ad_group_settings):
             return constants.AdGroupRunningStatus.INACTIVE
 
         if ad_group_sources_settings and\
@@ -1053,7 +1053,7 @@ class AdGroup(models.Model):
         return constants.AdGroupRunningStatus.INACTIVE
 
     @classmethod
-    def is_ad_group_enabled(cls, ad_group_settings):
+    def is_ad_group_active(cls, ad_group_settings):
         if ad_group_settings and ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
             return True
         return False
