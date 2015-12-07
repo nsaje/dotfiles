@@ -726,8 +726,8 @@ def get_ad_group_sources_settings(ad_group_sources):
         .select_related('ad_group_source')
 
 
-def get_grouped_running_status_dict(ad_groups, ad_groups_settings,
-                                    ad_groups_sources_settings, group_by_key):
+def get_ad_group_state_by_sources_running_status(ad_groups, ad_groups_settings,
+                                                 ad_groups_sources_settings, group_by_key):
 
     running_status_per_ag = map_per_ad_group_source_running_status(
         ad_groups_settings, ad_groups_sources_settings)

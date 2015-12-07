@@ -843,7 +843,7 @@ class AccountsAccountsTable(object):
                                            .group_current_settings()\
                                            .select_related('ad_group_source')
 
-        return helpers.get_grouped_running_status_dict(
+        return helpers.get_ad_group_state_by_sources_running_status(
             ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign__account_id')
 
     def get_data_status(self, user, accounts, last_success_actions, last_pixel_sync):
@@ -1340,7 +1340,7 @@ class CampaignAdGroupsTable(object):
                                            .group_current_settings()\
                                            .select_related('ad_group_source')
 
-        return helpers.get_grouped_running_status_dict(
+        return helpers.get_ad_group_state_by_sources_running_status(
             ad_groups, ad_groups_settings, ad_groups_sources_settings, 'id')
 
     def get_data_status(self, user, ad_groups, last_success_actions, last_pixel_sync):
@@ -1513,7 +1513,7 @@ class AccountCampaignsTable(object):
                                            .group_current_settings()\
                                            .select_related('ad_group_source')
 
-        return helpers.get_grouped_running_status_dict(
+        return helpers.get_ad_group_state_by_sources_running_status(
             ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign_id')
 
     def get_data_status(self, user, campaigns, last_success_actions, last_pixel_sync):
