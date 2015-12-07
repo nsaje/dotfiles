@@ -94,6 +94,49 @@ class AdGroupSettingsTest(TestCase):
         self.assertTrue(ad_group_settings.get_utc_start_datetime() < dt)
 
 
+class CampaignSettingsTest(TestCase):
+    fixtures = ['test_models.yaml']
+
+    def test_settings_fields(self):
+        meta_fields = [
+            'id',
+            'campaign',
+            'campaign_id',
+            'created_dt',
+            'created_by',
+            'created_by_id',
+            'changes_text',
+            'useractionlog',
+            'account_manager_id',
+            'sales_representative_id'
+        ]
+
+        all_fields = set(models.CampaignSettings._settings_fields + meta_fields)
+        model_fields = set(models.CampaignSettings._meta.get_all_field_names())
+
+        self.assertEqual(model_fields, all_fields)
+
+    def test_get_settings_dict(self):
+        settings_dict = {
+            'archived': False,
+            'iab_category': u'1',
+            'name': u'Test campaign 1',
+            'target_devices': [u'mobile'],
+            'account_manager': User.objects.get(pk=1),
+            'promotion_goal': 1,
+            'target_regions': [u'CA', u'501'],
+            'service_fee': Decimal('0.2000'),
+            'sales_representative': User.objects.get(pk=1),
+            'campaign_goal': 2,
+            'goal_quantity': Decimal('10.00')
+        }
+
+        self.assertEqual(
+            models.CampaignSettings.objects.get(id=1).get_settings_dict(),
+            settings_dict,
+        )
+
+
 class AdGroupSourceTest(TestCase):
 
     def test_adgroup_source_save(self):

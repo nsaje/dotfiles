@@ -23,6 +23,30 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         }
     }
 
+    function convertTargetDevicesFromApi (targetDevices) {
+        return options.adTargetDevices.map(function (item) {
+            var device = {
+                name: item.name,
+                value: item.value,
+                checked: false
+            };
+
+            if (targetDevices && targetDevices.indexOf(item.value) > -1) {
+                device.checked = true;
+            }
+
+            return device;
+        });
+    }
+
+    function convertTargetDevicesToApi (targetDevices) {
+        return targetDevices.filter(function (item) {
+            return item.checked;
+        }).map(function (item) {
+            return item.value;
+        });
+    }
+
     function NavData() {
         this.list = function () {
             var deferred = $q.defer();
@@ -830,20 +854,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 manualStop: !settings.end_date,
                 cpc: settings.cpc_cc,
                 dailyBudget: settings.daily_budget_cc,
-                targetDevices: options.adTargetDevices.map(function (item) {
-                    var device = {
-                        name: item.name,
-                        value: item.value,
-                        checked: false
-                    };
-
-                    if (settings.target_devices && settings.target_devices.indexOf(item.value) > -1) {
-                        device.checked = true;
-                    }
-
-                    return device;
-                }),
-                targetRegionsMode: settings.target_regions && settings.target_regions.length ? 'custom' : 'worldwide',
+                targetDevices: convertTargetDevicesFromApi(settings.target_devices),
                 targetRegions: settings.target_regions,
                 trackingCode: settings.tracking_code,
                 enableGaTracking: settings.enable_ga_tracking,
@@ -853,12 +864,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         }
 
         function convertToApi(settings) {
-            var targetDevices = [];
-            settings.targetDevices.forEach(function (item) {
-                if (item.checked) {
-                    targetDevices.push(item.value);
-                }
-            });
             var result = {
                 id: settings.id,
                 name: settings.name,
@@ -867,8 +872,8 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 end_date: settings.endDate ? moment(settings.endDate).format('YYYY-MM-DD') : null,
                 cpc_cc: settings.cpc,
                 daily_budget_cc: settings.dailyBudget,
-                target_devices: targetDevices,
-                target_regions: settings.targetRegionsMode === 'worldwide' ? [] : settings.targetRegions,
+                target_devices: convertTargetDevicesToApi(settings.targetDevices),
+                target_regions: settings.targetRegions,
                 tracking_code: settings.trackingCode,
                 enable_ga_tracking: settings.enableGaTracking,
                 enable_adobe_tracking: settings.enableAdobeTracking,
@@ -1479,7 +1484,9 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 id: settings.id,
                 name: settings.name,
                 campaignGoal: settings.campaign_goal,
-                goalQuantity: settings.goal_quantity
+                goalQuantity: settings.goal_quantity,
+                targetDevices: convertTargetDevicesFromApi(settings.target_devices),
+                targetRegions: settings.target_regions,
             };
         }
 
@@ -1488,16 +1495,19 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 id: settings.id,
                 name: settings.name,
                 campaign_goal: settings.campaignGoal,
-                goal_quantity: settings.goalQuantity
+                goal_quantity: settings.goalQuantity,
+                target_devices: convertTargetDevicesToApi(settings.targetDevices),
+                target_regions: settings.targetRegions
             };
         }
 
         function convertValidationErrorFromApi(errors) {
             var result = {
-                id: errors.id,
                 name: errors.name,
                 campaignGoal: errors.campaign_goal,
-                goalQuantity: errors.goal_quantity
+                goalQuantity: errors.goal_quantity,
+                targetDevices: errors.target_devices,
+                targetRegions: errors.target_regions
             };
 
             return result;

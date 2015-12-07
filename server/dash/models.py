@@ -505,9 +505,12 @@ class CampaignSettings(SettingsBase):
         'sales_representative',
         'service_fee',
         'iab_category',
+        'promotion_goal',
         'campaign_goal',
         'goal_quantity',
-        'archived'
+        'archived',
+        'target_devices',
+        'target_regions'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -556,6 +559,8 @@ class CampaignSettings(SettingsBase):
         null=False,
         default=0
     )
+    target_devices = jsonfield.JSONField(blank=True, default=[])
+    target_regions = jsonfield.JSONField(blank=True, default=[])
 
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
