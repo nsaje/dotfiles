@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import copy
 import json
 import decimal
 import logging
@@ -42,6 +43,7 @@ import actionlog.zwei_actions
 import actionlog.models
 import actionlog.constants
 
+from dash import budget
 from dash import models, region_targeting_helper
 from dash import constants
 from dash import api
@@ -332,6 +334,36 @@ class CampaignRestore(api_common.BaseApiView):
         return self.create_api_response({})
 
 
+class OverviewSetting(object):
+
+    def __init__(self, name, value, description, tooltip=None):
+        self.name = name
+        self.value = value
+        self.description = description
+        self.detailsLabel = None
+        self.detailsContent = None
+        self.icon = None
+        self.type = 'setting'
+
+    def comment(self, setting, details_label, details_description):
+        ret = copy.deepcopy(self)
+        ret.detailsLabel = details_label
+        ret.detailsContent = details_description
+        return ret
+
+    def performance(self, setting, ok):
+        ret = copy.deepcopy(self)
+        ret.icon = 'happy' if ok else 'sad'
+        return ret
+
+    def as_dict(self):
+        ret = {}
+        for key, value in self.__dict__.iteritems():
+            if value is not None:
+                ret[key] = value
+        return ret
+
+
 class AdGroupOverview(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_overview')
     def get(self, request, ad_group_id):
@@ -339,8 +371,96 @@ class AdGroupOverview(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        # TODO: Implement
-        return self.create_api_response({})
+
+        campaign_budget = budget.CampaignBudget(campaign)
+
+        budget_change = json.loads(request.body)
+
+        # TBD?
+        delivering = False
+
+        settings = ad_group.get_current_settings()
+        running_status = ad_group.get_running_status()
+        header = {
+            'title': settings.name,
+            'subtitle': 'Delivering' if delivering else 'Not Delivering',
+            'active': running_status == constants.AdGroupRunningStatus.ACTIVE
+        }
+
+        response = {
+            'header': header,
+            'settings': self._basic_settings(ad_group) +\
+                self._performance_settings(ad_group),
+        }
+
+        return self.create_api_response(response)
+
+    def _basic_settings(self, ad_group):
+        settings = []
+
+        flight_time = "{start_date} - {end_date}".format(
+            start_date=settings.start_date,
+            end_date=settings.end_date,
+        )
+        today = datetime.datetime.today()
+        if not settings.send_date:
+            flight_time_left_days = None
+        elif today > settings.end_date:
+            flight_time_left_days = 0
+        else:
+            flight_time_left_days = (settings.end_date - today).days + 1
+
+        flight_time_setting = OverviewSetting(
+            'Flight time',
+            flight_time,
+            flight_time_left_days
+        )
+
+        settings.append(flight_time_setting.as_dict())
+
+
+        targeting_device = OverviewSetting(
+            'Targeting'
+            'Device: ' + ','.join(settings.target_devices),
+            'Differ from campaign default',
+        )
+
+        settings.append(targeting_device.as_dict())
+
+        targeting_region = OverviewSetting(
+            ''
+            'Location:' + ','.join(settings.target_regions),
+            'Differ from campaign default',
+        )
+        settings.append(targeting_region.as_dict())
+
+
+        daily_cap = OverviewSetting(
+            'Daily cap',
+            '${:.2f}'.format(settings.daily_budget_cc)\
+                if settings.daily_budget_cc is not None else '',
+            ''
+        )
+        settings.append(daily_cap.as_dict())
+
+        campaign_budget = budget.CampaignBudget(ad_group.campaign)
+        total = campaign_budget.get_total()
+        spend = campaign_budget.get_spend()
+
+        campaign_budget_setting = OverviewSetting(
+            'Campaign budget:',
+            '${:.2f}'.format(total),
+            '${:.2f}'.format(total - spend),
+        )
+        settings.append(campaign_budget_setting)
+
+        return settings
+
+    def _performance_settings(self, ad_group):
+        settings = []
+
+        return settings
+
 
 
 class AdGroupArchive(api_common.BaseApiView):
