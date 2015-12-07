@@ -7,7 +7,6 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.db.models import Q, Max
-from django.core.exceptions import ObjectDoesNotExist
 
 import actionlog.api
 import actionlog.constants
@@ -15,7 +14,6 @@ import actionlog.models
 from dash import models
 from dash import constants
 from dash import api
-from dash import region_targeting_helper
 from utils import exc
 from utils import statsd_helper
 import automation.autopilot
@@ -726,6 +724,23 @@ def get_ad_group_sources_settings(ad_group_sources):
         .filter(ad_group_source__in=ad_group_sources)\
         .group_current_settings()\
         .select_related('ad_group_source')
+
+
+def get_grouped_running_status_dict(ad_groups, ad_groups_settings,
+                                    ad_groups_sources_settings, group_by_key):
+
+    running_status_per_ag = map_per_ad_group_source_running_status(
+        ad_groups_settings, ad_groups_sources_settings)
+
+    status_dict = collections.defaultdict(lambda: constants.AdGroupSettingsState.INACTIVE)
+
+    for ag in ad_groups.values('id', group_by_key):
+        ad_group_id = ag['id']
+        key = ag[group_by_key]
+        if running_status_per_ag[ad_group_id] == constants.AdGroupRunningStatus.ACTIVE:
+            status_dict[key] = constants.AdGroupSettingsState.ACTIVE
+
+    return status_dict
 
 
 def map_per_ad_group_source_running_status(ad_groups_settings, ad_groups_sources_settings):

@@ -827,35 +827,24 @@ class AccountsAccountsTable(object):
 
     def get_per_account_status_dict(self, accounts, filtered_sources):
         """
-        Returns per account status, based on ad group sources settings and ad group settings.
+        Returns per account running status based on ad group sources state
+        settings and ad group settings state.
         """
+
+        ad_groups = models.AdGroup.objects.filter(campaign__account_id__in=accounts)
         ad_groups_settings = models.AdGroupSettings.objects\
-                                                   .filter(ad_group__campaign__account=accounts)\
+                                                   .filter(ad_group__in=ad_groups)\
                                                    .group_current_settings()
 
-        ad_groups_sources_settings = models.AdGroupSourceSettings.objects\
-                                           .filter(ad_group_source__ad_group__campaign__account=accounts)\
+        ad_groups_sources_settings = models.AdGroupSourceSettings\
+                                           .objects\
+                                           .filter(ad_group_source__ad_group__in=ad_groups)\
                                            .filter_by_sources(filtered_sources)\
                                            .group_current_settings()\
                                            .select_related('ad_group_source')
 
-        running_status_per_ag = helpers.map_per_ad_group_source_running_status(
-            ad_groups_settings, ad_groups_sources_settings)
-
-        # map per account
-        status_dict = collections.defaultdict(lambda: constants.AdGroupSettingsState.INACTIVE)
-
-        ad_groups = models.AdGroup.objects.filter(campaign__account_id__in=accounts)\
-                                          .select_related('campaign')\
-                                          .values('id', 'campaign__account_id')
-
-        for ag in ad_groups:
-            ad_group_id = ag['id']
-            account_id = ag['campaign__account_id']
-            if running_status_per_ag[ad_group_id] == constants.AdGroupRunningStatus.ACTIVE:
-                status_dict[account_id] = constants.AdGroupSettingsState.ACTIVE
-
-        return status_dict
+        return helpers.get_grouped_running_status_dict(
+            ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign__account_id')
 
     def get_data_status(self, user, accounts, last_success_actions, last_pixel_sync):
         last_pixel_sync_message = None
@@ -1351,15 +1340,8 @@ class CampaignAdGroupsTable(object):
                                            .group_current_settings()\
                                            .select_related('ad_group_source')
 
-        running_status_per_ag = helpers.map_per_ad_group_source_running_status(
-            ad_groups_settings, ad_groups_sources_settings)
-
-        status_dict = collections.defaultdict(lambda: constants.AdGroupSettingsState.INACTIVE)
-
-        for ad_group_id, running_status in running_status_per_ag.iteritems():
-            if running_status_per_ag[ad_group_id] == constants.AdGroupRunningStatus.ACTIVE:
-                status_dict[ad_group_id] = constants.AdGroupSettingsState.ACTIVE
-        return status_dict
+        return helpers.get_grouped_running_status_dict(
+            ad_groups, ad_groups_settings, ad_groups_sources_settings, 'id')
 
     def get_data_status(self, user, ad_groups, last_success_actions, last_pixel_sync):
         last_pixel_sync_message = None
@@ -1519,32 +1501,20 @@ class AccountCampaignsTable(object):
         """
         Returns per campaign status, based on ad group sources settings and ad group settings.
         """
+        ad_groups = models.AdGroup.objects.filter(campaign__in=campaigns)
         ad_groups_settings = models.AdGroupSettings.objects\
-                                                   .filter(ad_group__campaign=campaigns)\
+                                                   .filter(ad_group__in=ad_groups)\
                                                    .group_current_settings()
 
-        ad_groups_sources_settings = models.AdGroupSourceSettings.objects\
-                                           .filter(ad_group_source__ad_group__campaign=campaigns)\
+        ad_groups_sources_settings = models.AdGroupSourceSettings\
+                                           .objects\
+                                           .filter(ad_group_source__ad_group__in=ad_groups)\
                                            .filter_by_sources(filtered_sources)\
                                            .group_current_settings()\
                                            .select_related('ad_group_source')
 
-        running_status_per_ag = helpers.map_per_ad_group_source_running_status(
-            ad_groups_settings, ad_groups_sources_settings)
-
-        # map per account
-        status_dict = collections.defaultdict(lambda: constants.AdGroupSettingsState.INACTIVE)
-
-        ad_groups = models.AdGroup.objects.filter(campaign__in=campaigns)\
-                                          .values('id', 'campaign_id')
-
-        for ag in ad_groups:
-            ad_group_id = ag['id']
-            campaign_id = ag['campaign_id']
-            if running_status_per_ag[ad_group_id] == constants.AdGroupRunningStatus.ACTIVE:
-                status_dict[campaign_id] = constants.AdGroupSettingsState.ACTIVE
-
-        return status_dict
+        return helpers.get_grouped_running_status_dict(
+            ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign_id')
 
     def get_data_status(self, user, campaigns, last_success_actions, last_pixel_sync):
         last_pixel_sync_message = None
