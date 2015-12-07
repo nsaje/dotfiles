@@ -181,6 +181,32 @@ class AdGroupRunningStatusTest(TestCase):
             constants.AdGroupRunningStatus.ACTIVE,
             msg="Some sources are active, running status should be active")
 
+    def test_no_running_by_sources_state_ag_settings_inactive(self):
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
+        
+        ad_group_sources_settings = models.AdGroupSourceSettings.objects\
+                                                                .filter(ad_group_source__source_id__in=[1, 2, 3])\
+                                                                .group_current_settings()
+        self.assertEqual(
+            models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
+            constants.AdGroupRunningStatus.INACTIVE,
+            msg="Ad group settings are inactive, ad group should not run")
+
+    def test_not_running_by_sources_state_inactive(self):
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        ad_group_sources_settings = models.AdGroupSourceSettings.objects\
+                                                                .filter(ad_group_source__source_id__in=[1, 2, 3])\
+                                                                .group_current_settings()
+        ad_group_sources_settings.update(state=constants.AdGroupSourceSettingsState.INACTIVE)
+
+        self.assertEqual(
+            models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
+            constants.AdGroupRunningStatus.INACTIVE,
+            msg="No sources are active, ad group doesn't run")
+
 
 class CampaignSettingsTest(TestCase):
     fixtures = ['test_models.yaml']
