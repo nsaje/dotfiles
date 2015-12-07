@@ -525,6 +525,29 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
     }
 
+    function AdGroupOverview() {
+
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/overview/';
+            var config = {
+                params: {}
+            };
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AdGroupSync() {
         this.get = function (id) {
             var deferred = $q.defer();

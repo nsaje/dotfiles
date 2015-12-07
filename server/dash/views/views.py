@@ -332,6 +332,17 @@ class CampaignRestore(api_common.BaseApiView):
         return self.create_api_response({})
 
 
+class AdGroupOverview(api_common.BaseApiView):
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_overview')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_see_infobox'):
+            raise exc.AuthorizationError()
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        # TODO: Implement
+        return self.create_api_response({})
+
+
 class AdGroupArchive(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_archive_post')
     def post(self, request, ad_group_id):
