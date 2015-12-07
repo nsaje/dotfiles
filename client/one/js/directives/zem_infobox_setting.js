@@ -13,19 +13,14 @@ oneApp.directive('zemInfoboxSetting', ['config', '$window', function(config, $wi
             detailsLabel: '=',
             detailsContent: '=',
             statusActive: '=',
-            tooltip: '=',
+            tooltipText: '=',
             icon: '='
         },
         templateUrl: '/partials/zem_infobox_setting.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
         
             $scope.config = config;
-
-            $scope.icon = "happy";
             $scope.detailsVisible = false;
-            $scope.detailsLabel = "Kick me";
-            $scope.detailsContent = "BAM";
-            $scope.tooltip = "Test"
             $scope.statusActive = false;
 
             $scope.isSet = function (val) {

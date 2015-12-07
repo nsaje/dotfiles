@@ -13,7 +13,12 @@
 
         <div class="infobox-setting-value">{{value}}</div>
         <div class="infobox-setting-value-comment" ng-if="isSet(valueDescription)">({{valueDescription}})</div>
-        <zem-help-popover class="infobox-setting-value" ng-if="isSet(tooltip)" content="tooltip" placement="top"></zem-help-popover>
+
+        <zem-help-popover 
+            ng-if="isSet(tooltipText)" 
+            content="{{ tooltipText }}" 
+            placement="top">
+        </zem-help-popover>
 
         <div class="infobox-setting-info" ng-show="isSet(detailsLabel) && isSet(detailsContent) && !detailsVisible">
             <a ng-click="showDetails()" class="infobox-details-link">(Show {{detailsLabel}})</a> 

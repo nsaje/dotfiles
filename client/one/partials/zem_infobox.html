@@ -19,7 +19,9 @@
             ng-if="setting.type == 'setting'"
             label="(setting.name || '&nbsp;')"  
             value="setting.value" 
-            value-description="setting.valueDescription">
+            value-description="setting.valueDescription"
+            icon="(setting.icon || '')"
+            tooltip-text="(setting.tooltip || undefined)">
         </zem-infobox-setting>
     </div>
 </div>
