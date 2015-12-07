@@ -1254,19 +1254,15 @@ class AdGroupSettings(SettingsBase):
         return constants.AdGroupRunningStatus.INACTIVE
 
     @classmethod
-    def get_running_status_by_sources_setting(cls, ad_group_settings, ad_group_souces_settings):
+    def get_running_status_by_sources_setting(cls, ad_group_settings, ad_group_sources_settings):
         """
         Returns "running" when all ad group sources settings are enabled and ad group settings are active.
-
-        Mind that by default ad group source settings do not get created when ad group source is added. We assume
-        its defaults. But this does not have an effect on this functions as "active" state of a source is not
-        its default state.
         """
         if not ad_group_settings or ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
             return constants.AdGroupRunningStatus.INACTIVE
 
-        if ad_group_souces_settings and\
-           next((x for x in ad_group_souces_settings if x.state == constants.AdGroupSourceSettingsState.ACTIVE),
+        if ad_group_sources_settings and\
+           next((x for x in ad_group_sources_settings if x.state == constants.AdGroupSourceSettingsState.ACTIVE),
                 None):
             return constants.AdGroupRunningStatus.ACTIVE
         return constants.AdGroupRunningStatus.INACTIVE
