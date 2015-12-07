@@ -27,8 +27,7 @@ class RefreshDemoTestCase(test.TestCase):
         self.demo_ad_groups = dash.models.AdGroup.demo_objects.all()
         self.real_ad_groups = dash.models.AdGroup.objects.exclude(pk__in=self.demo_ad_groups)
 
-    @mock.patch('reports.refresh.refresh_contentadstats')
-    def test_refresh_demo(self, refresh_contentadstats_mock):
+    def test_refresh_demo(self):
         demo_data_before_refresh = reports.api.query(
             start_date=self.start_date,
             end_date=self.end_date,
@@ -55,4 +54,3 @@ class RefreshDemoTestCase(test.TestCase):
             real_data = reports.api.query(self.start_date, self.end_date, ad_group=real_ad_group_id)
             self.assertEqual(row['clicks'], real_data['clicks'] * multiplication_factor)
             self.assertEqual(row['impressions'], real_data['impressions'] * multiplication_factor)
-            self.assertTrue(refresh_contentadstats_mock.called)
