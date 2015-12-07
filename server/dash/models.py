@@ -1054,9 +1054,9 @@ class AdGroup(models.Model):
 
     @classmethod
     def is_ad_group_enabled(cls, ad_group_settings):
-        if not ad_group_settings or ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
-            return False
-        return True
+        if ad_group_settings and ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
+            return True
+        return False
 
     @transaction.atomic
     def archive(self, request):
