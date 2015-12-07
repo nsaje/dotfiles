@@ -19,6 +19,8 @@ oneApp.directive('zemInfoboxSetting', ['config', '$window', function(config, $wi
         templateUrl: '/partials/zem_infobox_setting.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
         
+            $scope.config = config;
+
             $scope.icon = "happy";
             $scope.detailsVisible = false;
             $scope.detailsLabel = "Kick me";

@@ -1,18 +1,13 @@
-<div>
+<div style="overflow:auto">
     <div class="infobox-setting-label">{{label}}</div>
     
     <div style="display:table; vertical-align:top;">
         <div class="infobox-setting-icon" ng-if="isSet(icon)">
-            <span ng-switch="icon">
-                <span ng-switch-when="happy">
-                    <span width=10 height=10 style="background:green">&nbsp;</span>
-                </span>
-                <span ng-switch-when="contempt">
-                    <span width=10 height=10 style="background:yellow">&nbsp;</span>
-                </span>
-                <span ng-switch-when="sad">
-                    <span width=10 height=10 style="background:red">&nbsp;</span>
-                </span>
+            <span ng-if="icon === 'happy'">
+                <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/happy_face.svg"></img>
+            </span>
+            <span ng-if="icon === 'sad'">
+                <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/sad_face.svg"></img>
             </span>
         </div>
 
