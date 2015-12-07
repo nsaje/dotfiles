@@ -1804,7 +1804,6 @@ class PublishersTable(object):
                 'ctr': publisher_data.get('ctr', None),
             }
 
-            
             if not user.has_perm('zemauth.can_view_data_cost'):
                 del row['data_cost']
 

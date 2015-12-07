@@ -507,9 +507,12 @@ class CampaignSettings(SettingsBase):
         'sales_representative',
         'service_fee',
         'iab_category',
+        'promotion_goal',
         'campaign_goal',
         'goal_quantity',
-        'archived'
+        'archived',
+        'target_devices',
+        'target_regions'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -558,6 +561,8 @@ class CampaignSettings(SettingsBase):
         null=False,
         default=0
     )
+    target_devices = jsonfield.JSONField(blank=True, default=[])
+    target_regions = jsonfield.JSONField(blank=True, default=[])
 
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
@@ -1852,7 +1857,7 @@ class PublisherBlacklist(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, blank=False, null=False)
-    everywhere = models.BooleanField(default=False)
+    everywhere = models.BooleanField(default=False, verbose_name='globally blacklisted')
     account = models.ForeignKey(Account, null=True, related_name='account', on_delete=models.PROTECT)
     campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
     ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)

@@ -554,6 +554,10 @@ def get_content_ad_data_status(ad_group, content_ads):
             if content_ad_source.source.deprecated or content_ad_source.source.maintenance:
                 continue
 
+            # we ignore pending content ads
+            if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.PENDING:
+                continue
+
             # we ignore rejected content ads
             if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.REJECTED:
                 continue
@@ -578,7 +582,7 @@ def get_content_ad_data_status(ad_group, content_ads):
         if not out_of_sync:
             message = 'All data is OK.'
         else:
-            message = 'The status of this Content Ad differs on these 3rd party dashboards: {}.'.format(", ".join(out_of_sync))
+            message = 'The status of this Content Ad differs on these media sources: {}.'.format(", ".join(out_of_sync))
 
         data_status[str(content_ad.id)] = {
             'message': message,
