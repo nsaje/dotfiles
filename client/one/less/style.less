@@ -12,6 +12,9 @@
 
 @updated-color: #dff0d8;
 
+@infobox-black: #414141;
+@infobox-gray: #aaaaaa;
+
 @keyframes show-updated {
     0% { background-color: @updated-color; }
     50% { background-color: @updated-color; }
@@ -685,7 +688,7 @@ div[datepicker] {
 .infobox {
     padding: 5px;
 
-    color: #414141;
+    color: @infobox-black;
     font-weight: 600;
 }
 
@@ -709,7 +712,7 @@ div[datepicker] {
 }
 
 .infobox-title {
-    color: #414141;
+    color: @infobox-black;
     font-size: 18px;
     font-weight: 600;
 }
@@ -720,7 +723,7 @@ div[datepicker] {
 }
 
 .infobox-subtitle {
-    color: #414141;
+    color: @infobox-black;
     font-size: 13px;
     font-weight: 600;
 }
@@ -730,7 +733,7 @@ div[datepicker] {
     max-width: 100px;
     overflow: hidden;
     display: inline-block;
-    color: #aaaaaa;
+    color: @infobox-gray;
     float: left;
 }
 
@@ -743,7 +746,7 @@ div[datepicker] {
 .infobox-setting-value-comment { 
     display: inline;
     vertical-align: top;
-    color: #aaaaaa;
+    color: @infobox-gray;
 }
 
 .infobox-setting-icon {
@@ -767,7 +770,7 @@ div[datepicker] {
 .infobox-setting-info-dropped-content {
     background: white;
     margin: 5px;
-    border: 1px solid #aaaaaa;
+    border: 1px solid @infobox-gray;
 }
 
 .chart-hidden {
