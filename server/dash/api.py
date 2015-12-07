@@ -1108,7 +1108,7 @@ class AdGroupSourceSettingsWriter(object):
         assert type(self.ad_group_source) is models.AdGroupSource
 
     def set(self, settings_obj, request, send_action=True):
-        latest_settings = self.get_latest_settings()
+        latest_settings = self.ad_group_source.get_current_settings()
 
         state = settings_obj.get('state')
         cpc_cc = settings_obj.get('cpc_cc')
@@ -1173,22 +1173,8 @@ class AdGroupSourceSettingsWriter(object):
                 actionlog.api.set_ad_group_source_settings(settings_obj, latest_settings.ad_group_source, request)
 
     def can_trigger_action(self):
-        try:
-            ad_group_settings = models.AdGroupSettings.objects \
-                .filter(ad_group=self.ad_group_source.ad_group) \
-                .latest('created_dt')
-            return ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE
-        except models.AdGroupSettings.DoesNotExist:
-            return False
-
-    def get_latest_settings(self):
-        try:
-            latest_settings = models.AdGroupSourceSettings.objects \
-                .filter(ad_group_source=self.ad_group_source) \
-                .latest('created_dt')
-            return latest_settings
-        except models.AdGroupSourceSettings.DoesNotExist:
-            return models.AdGroupSourceSettings(ad_group_source=self.ad_group_source)
+        ad_group_settings = self.ad_group_source.ad_group.get_current_settings()
+        return models.AdGroup.is_ad_group_enabled(ad_group_settings)
 
     def add_to_history(self, change_obj, old_change_obj, request):
         changes_text_parts = []

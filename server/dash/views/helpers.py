@@ -270,7 +270,7 @@ def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
 
         keys_in_progress = _get_keys_in_progress(ags, waiting_delayed_actions)
 
-        if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE:
+        if not models.AdGroup.is_ad_group_enabled(ad_group_settings):
             if ad_group_source_settings and ad_group_source_settings.state == constants.AdGroupSettingsState.ACTIVE:
                 state_message = 'This media source is enabled but will not run until you enable ad group in Settings tab.'
                 messages.append(state_message)
@@ -754,7 +754,7 @@ def map_per_ad_group_source_running_status(ad_groups_settings, ad_groups_sources
         sources_settings_dict[agss.ad_group_source.ad_group_id].append(agss)
 
     for ags in ad_groups_settings:
-        running_status_dict[ags.ad_group_id] = models.AdGroupSettings.get_running_status_by_sources_setting(
+        running_status_dict[ags.ad_group_id] = models.AdGroup.get_running_status_by_sources_setting(
             ags, sources_settings_dict[ags.ad_group_id])
 
     return running_status_dict

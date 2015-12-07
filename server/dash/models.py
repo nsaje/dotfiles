@@ -994,7 +994,7 @@ class AdGroup(models.Model):
 
     def can_archive(self):
         current_settings = self.get_current_settings()
-        return current_settings.state == constants.AdGroupSettingsState.INACTIVE
+        return not self.is_ad_group_enabled(current_settings)
 
     def can_restore(self):
         if self.campaign.is_archived():
@@ -1005,6 +1005,53 @@ class AdGroup(models.Model):
     def is_archived(self):
         current_settings = self.get_current_settings()
         return current_settings.archived
+
+    @classmethod
+    def get_running_status(cls, ad_group_settings, ad_group_sources_settings):
+        """
+        Returns the actual running status of ad group settings with selected sources settings.
+        """
+
+        if not cls.is_ad_group_enabled(ad_group_settings):
+            return constants.AdGroupRunningStatus.INACTIVE
+
+        if (cls.get_running_status_by_flight_time(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE and
+           cls.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings) == constants.AdGroupRunningStatus.ACTIVE):
+            return constants.AdGroupRunningStatus.ACTIVE
+
+        return constants.AdGroupRunningStatus.INACTIVE
+
+    @classmethod
+    def is_ad_group_enabled(cls, ad_group_settings):
+        if not ad_group_settings or ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
+            return False
+        return True
+
+    @classmethod
+    def get_running_status_by_flight_time(cls, ad_group_settings):
+        if not cls.is_ad_group_enabled(ad_group_settings):
+            return constants.AdGroupRunningStatus.INACTIVE
+
+        now = dates_helper.utc_today()
+        if ad_group_settings.start_date <= now and\
+           (ad_group_settings.end_date is None or now <= ad_group_settings.end_date):
+            return constants.AdGroupRunningStatus.ACTIVE
+        return constants.AdGroupRunningStatus.INACTIVE
+
+    @classmethod
+    def get_running_status_by_sources_setting(cls, ad_group_settings, ad_group_sources_settings):
+        """
+        Returns "running" when at least one of the ad group sources settings status is
+        set to be active.
+        """
+        if not cls.is_ad_group_enabled(ad_group_settings):
+            return constants.AdGroupRunningStatus.INACTIVE
+
+        if ad_group_sources_settings and\
+           next((x for x in ad_group_sources_settings if x.state == constants.AdGroupSourceSettingsState.ACTIVE),
+                None):
+            return constants.AdGroupRunningStatus.ACTIVE
+        return constants.AdGroupRunningStatus.INACTIVE
 
     @transaction.atomic
     def archive(self, request):
@@ -1133,6 +1180,11 @@ class AdGroupSource(models.Model):
 
         return name
 
+    def get_current_settings(self):
+        current_settings = self.get_current_settings_or_none()
+        return current_settings if current_settings else \
+            AdGroupSourceSettings(ad_group_source=self)
+
     def get_current_settings_or_none(self):
         if not self.pk:
             raise exc.BaseError(
@@ -1225,47 +1277,6 @@ class AdGroupSettings(SettingsBase):
         permissions = (
             ("settings_view", "Can view settings in dashboard."),
         )
-
-    @classmethod
-    def get_running_status(cls, ad_group_settings, ad_group_source_settings):
-        """
-        Returns the actual running status of ad group settings with selected sources settings.
-        """
-
-        if not ad_group_settings:
-            return constants.AdGroupRunningStatus.INACTIVE
-
-        if (ad_group_settings == constants.AdGroupSettingsState.ACTIVE and
-           cls.get_running_status_by_flight_time(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE and
-           cls.get_running_status_by_sources_setting(ad_group_settings, ad_group_source_settings) == constants.AdGroupRunningStatus.ACTIVE):
-            return constants.AdGroupRunningStatus.ACTIVE
-
-        return constants.AdGroupRunningStatus.INACTIVE
-
-    @classmethod
-    def get_running_status_by_flight_time(cls, ad_group_settings):
-        if not ad_group_settings or ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
-            return constants.AdGroupRunningStatus.INACTIVE
-
-        now = dates_helper.utc_today()
-        if ad_group_settings.start_date <= now and\
-           (ad_group_settings.end_date is None or now <= ad_group_settings.end_date):
-            return constants.AdGroupRunningStatus.ACTIVE
-        return constants.AdGroupRunningStatus.INACTIVE
-
-    @classmethod
-    def get_running_status_by_sources_setting(cls, ad_group_settings, ad_group_sources_settings):
-        """
-        Returns "running" when all ad group sources settings are enabled and ad group settings are active.
-        """
-        if not ad_group_settings or ad_group_settings.state != constants.AdGroupSettingsState.ACTIVE:
-            return constants.AdGroupRunningStatus.INACTIVE
-
-        if ad_group_sources_settings and\
-           next((x for x in ad_group_sources_settings if x.state == constants.AdGroupSourceSettingsState.ACTIVE),
-                None):
-            return constants.AdGroupRunningStatus.ACTIVE
-        return constants.AdGroupRunningStatus.INACTIVE
 
     def _convert_date_utc_datetime(self, date):
         dt = datetime.datetime(

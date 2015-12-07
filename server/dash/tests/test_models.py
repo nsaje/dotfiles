@@ -94,7 +94,7 @@ class AdGroupSettingsTest(TestCase):
         self.assertTrue(ad_group_settings.get_utc_start_datetime() < dt)
 
 
-class AdGroupSettingsRunningStatusTest(TestCase):
+class AdGroupRunningStatusTest(TestCase):
     fixtures = ['test_models.yaml']
 
     def test_running_by_flight_time(self):
@@ -105,7 +105,7 @@ class AdGroupSettingsRunningStatusTest(TestCase):
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
         self.assertEqual(
-            models.AdGroupSettings.get_running_status_by_flight_time(ad_group_settings),
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
             constants.AdGroupRunningStatus.ACTIVE
         )
 
@@ -117,7 +117,7 @@ class AdGroupSettingsRunningStatusTest(TestCase):
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
         self.assertEqual(
-            models.AdGroupSettings.get_running_status_by_flight_time(ad_group_settings),
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
             constants.AdGroupRunningStatus.ACTIVE
         )
 
@@ -129,7 +129,7 @@ class AdGroupSettingsRunningStatusTest(TestCase):
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
         self.assertEqual(
-            models.AdGroupSettings.get_running_status_by_flight_time(ad_group_settings),
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
             constants.AdGroupRunningStatus.ACTIVE
         )
 
@@ -140,7 +140,7 @@ class AdGroupSettingsRunningStatusTest(TestCase):
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
         self.assertEqual(
-            models.AdGroupSettings.get_running_status_by_flight_time(ad_group_settings),
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
             constants.AdGroupRunningStatus.INACTIVE
         )
 
@@ -151,7 +151,7 @@ class AdGroupSettingsRunningStatusTest(TestCase):
         ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
 
         self.assertEqual(
-            models.AdGroupSettings.get_running_status_by_flight_time(ad_group_settings),
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
             constants.AdGroupRunningStatus.INACTIVE
         )
 
@@ -164,7 +164,7 @@ class AdGroupSettingsRunningStatusTest(TestCase):
                                                                 .group_current_settings()
 
         self.assertEqual(
-            models.AdGroupSettings.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
+            models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
             constants.AdGroupRunningStatus.INACTIVE,
             msg="All the sources are inactive, running status should be inactive"
         )
@@ -177,7 +177,7 @@ class AdGroupSettingsRunningStatusTest(TestCase):
                                                                 .filter(ad_group_source__source_id__in=[1, 2, 3])\
                                                                 .group_current_settings()
         self.assertEqual(
-            models.AdGroupSettings.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
+            models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
             constants.AdGroupRunningStatus.ACTIVE,
             msg="Some sources are active, running status should be active"
         )

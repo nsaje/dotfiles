@@ -231,7 +231,7 @@ class NavigationDataView(api_common.BaseApiView):
                     ).lower()
 
                     ad_group['status'] = constants.AdGroupRunningStatus.get_text(
-                        models.AdGroupSettings.get_running_status(
+                        models.AdGroup.get_running_status(
                             ad_group_settings, sources_settings.get(ad_group['id'])
                         )
                     ).lower()
