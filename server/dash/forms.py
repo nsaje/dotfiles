@@ -90,9 +90,6 @@ class AdGroupSettingsForm(forms.Form):
         end_date = self.cleaned_data.get('end_date')
         start_date = self.cleaned_data.get('start_date')
 
-        # maticz: We deal with UTC dates even if a not-UTC date date was submitted from
-        # user.
-        # Product guys confirmed it.
         if start_date and end_date and end_date < start_date:
             raise forms.ValidationError('End date must not occur before start date.')
 
@@ -399,6 +396,16 @@ class CampaignSettingsForm(forms.Form):
         empty_value=None
     )
     goal_quantity = forms.DecimalField(decimal_places=4)
+    target_devices = forms.MultipleChoiceField(
+        choices=constants.AdTargetDevice.get_choices(),
+        error_messages={
+            'required': 'Please select at least one target device.',
+        }
+    )
+    target_regions = forms.MultipleChoiceField(
+        required=False,
+        choices=constants.AdTargetLocation.get_choices()
+    )
 
 
 class CampaignBudgetForm(forms.Form):
@@ -618,7 +625,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
     # we validate form as a whole after all fields have been validated to see
     # if the fields that are submitted as empty in the form are specified in CSV as columns
     def clean(self):
-        cleaned_data = super(AdGroupAdsPlusUploadForm, self).clean()
+        super(AdGroupAdsPlusUploadForm, self).clean()
 
         if self.errors:
             return
@@ -630,6 +637,7 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             if not self.cleaned_data.get(column_and_field_name): 	# if field is empty in the form
                 if column_and_field_name not in self.csv_column_names:	# and is not present as a CSV column
                     self.add_error(column_and_field_name, forms.ValidationError("{0} has to be present here or as a column in CSV.".format(self.fields[column_and_field_name].label)))
+
 
 class CreditLineItemForm(forms.ModelForm):
     def clean_start_date(self):
@@ -652,6 +660,7 @@ class CreditLineItemForm(forms.ModelForm):
         fields = [
             'account', 'start_date', 'end_date', 'amount', 'license_fee', 'status', 'comment'
         ]
+
 
 class BudgetLineItemForm(forms.ModelForm):
     credit = forms.ModelChoiceField(queryset=models.CreditLineItem.objects.all())

@@ -86,36 +86,10 @@
                 <label ng-repeat="error in errors.targetDevices" class="control-label error">{{ error }}</label>
             </div>
 
-            <div ng-if="!hasPermission('zemauth.can_set_dma_targeting')" class="form-group" ng-class="{'has-error': !!errors.targetRegions}">
+            <div class="form-group" ng-class="{'has-error': !!errors.targetRegions}">
                 <label class="col-xs-2 control-label">
-                    Geographical targeting
-                    <zem-help-popover content="The countries where your content ads should be shown." placement="top"></zem-help-popover>
-                </label>
-                <div class="col">
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="geo-targeting-radio" value='worldwide' ng-model="settings.targetRegionsMode"> Worldwide
-                        </label>
-                    </div>
-                    <div class="geo-targeting-group">
-                        <div class="radio">
-                            <label>
-                                <input type="radio" name="geo-targeting-radio" value='custom'  ng-model="settings.targetRegionsMode"> Custom
-                            </label>
-                        </div>
-                        <select class="form-control" zem-multiselect multiple ng-model="settings.targetRegions"  ng-options="c.code as c.name for c in availableRegions()">
-                        </select>
-                    </div>
-                </div>
-
-                <label ng-repeat="error in errors.targetRegions" class="control-label error">{{ error }}</label>
-            </div>
-
-            <div ng-if="hasPermission('zemauth.can_set_dma_targeting')" class="form-group" ng-class="{'has-error': !!errors.targetRegions}">
-                <label class="col-xs-2 control-label">
-                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_dma_targeting')" popover-placement="right"></zem-internal-feature>
                     Locations
-                    <zem-help-popover content="The countries and DMA regions where your content ads should be shown." placement="top"></zem-help-popover>
+                    <zem-help-popover content="The countries, states and DMA regions where your content ads should be shown." placement="top"></zem-help-popover>
                 </label>
 
                 <div class="col-xs-6 col-md-4">
