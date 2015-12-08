@@ -504,8 +504,15 @@ class AdGroupOverview(api_common.BaseApiView):
 
     def _performance_settings(self, ad_group, user, ad_group_settings):
         settings = []
+        from pudb import set_trace; set_trace()
 
         yesterday_cost = self.get_yesterday_total_cost(user, ad_group)
+        filled_daily_ratio = 0
+        if ad_group_settings.daily_budget_cc > 0:
+            filled_daily_ratio = min(
+                (yesterday_cost - float(ad_group_settings.daily_budget_cc)) / float(ad_group_settings.daily_budget_cc),
+                1)
+
 
         percent_daily_cap = None
         if ad_group_settings.daily_budget_cc > 0:
@@ -514,7 +521,7 @@ class AdGroupOverview(api_common.BaseApiView):
         yesterday_spend_settings = OverviewSetting(
             'Yesterday spend:',
             '${:.2f}'.format(yesterday_cost),
-            '{}% of daily cap'.format(percent_daily_cap),
+            '{:.2f}% of daily cap'.format(filled_daily_ratio * 100),
         ).performance(True)
         settings.append(yesterday_spend_settings.as_dict())
 
@@ -522,8 +529,8 @@ class AdGroupOverview(api_common.BaseApiView):
         ideal_campaign_spend_to_date = self.get_ideal_campaign_spend(user, ad_group)
 
         ratio = 0
-        if ideal_campaign_spend_to_date < 0:
-            ratio = max(
+        if ideal_campaign_spend_to_date > 0:
+            ratio = min(
                 (total_campaign_spend_to_date - ideal_campaign_spend_to_date) / ideal_campaign_spend_to_date,
                 1)
 
@@ -558,6 +565,7 @@ class AdGroupOverview(api_common.BaseApiView):
         return reports.api
 
     def get_ideal_campaign_spend(self, user, ad_group):
+        from pudb import set_trace; set_trace()
         campaign_budget = budget.CampaignBudget(ad_group.campaign)
         return campaign_budget.get_total()
 
