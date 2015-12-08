@@ -7,6 +7,7 @@ from utils.statsd_helper import statsd_incr
 import dash.models
 import reports.api
 import reports.update
+import reports.refresh
 import reports.models
 import reports.api_contentads
 from reports.models import TRAFFIC_METRICS, POSTCLICK_METRICS, CONVERSION_METRICS
@@ -197,6 +198,7 @@ def _refresh_stats_data(start_date, end_date, ad_map, source_map):
 
             # CONTENT ADS
             _copy_content_ad_stats(dt, real_ad_group, multiplication_factor, ad_map, source_map)
+            reports.refresh.notify_campaign_data_change(dt.date(), demo_ad_group.campaign_id)
 
 
 def _refresh_conversion_data(start_date, end_date):

@@ -1,8 +1,7 @@
 import datetime
-import mock
 
 from django import test
-from mock import patch
+from mock import patch, call
 
 import reports.refresh
 import reports.demo
@@ -27,7 +26,8 @@ class RefreshDemoTestCase(test.TestCase):
         self.demo_ad_groups = dash.models.AdGroup.demo_objects.all()
         self.real_ad_groups = dash.models.AdGroup.objects.exclude(pk__in=self.demo_ad_groups)
 
-    def test_refresh_demo(self):
+    @patch('reports.refresh.notify_campaign_data_change')
+    def test_refresh_demo(self, mock_notify_campaign_data_change):
         demo_data_before_refresh = reports.api.query(
             start_date=self.start_date,
             end_date=self.end_date,
@@ -54,3 +54,10 @@ class RefreshDemoTestCase(test.TestCase):
             real_data = reports.api.query(self.start_date, self.end_date, ad_group=real_ad_group_id)
             self.assertEqual(row['clicks'], real_data['clicks'] * multiplication_factor)
             self.assertEqual(row['impressions'], real_data['impressions'] * multiplication_factor)
+
+        campaigns = dash.models.Campaign.demo_objects.all()
+        calls = []
+        for campaign in campaigns:
+            for date in [datetime.date(2014, 6, 4), datetime.date(2014, 6, 5), datetime.date(2014, 6, 6)]:
+                calls.append(call(date, campaign.id))
+        mock_notify_campaign_data_change.assert_has_calls(calls, any_order=True)
