@@ -565,7 +565,6 @@ class AdGroupOverview(api_common.BaseApiView):
         return reports.api
 
     def get_ideal_campaign_spend(self, user, ad_group):
-        from pudb import set_trace; set_trace()
         campaign_budget = budget.CampaignBudget(ad_group.campaign)
         return campaign_budget.get_total()
 
