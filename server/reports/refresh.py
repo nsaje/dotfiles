@@ -9,6 +9,7 @@ import reports.models
 from reports.db_raw_helpers import dictfetchall
 from reports import redshift
 from utils.statsd_helper import statsd_incr
+from utils import sqs_helper
 
 import dash.models
 
@@ -122,6 +123,22 @@ def _get_goals_json(goals):
         result[key] = goal.conversions
 
     return json.dumps(result)
+
+
+def notify_campaign_data_change(date, campaign_id):
+    sqs_helper.write_message_json(
+        settings.CAMPAIGN_CHANGE_QUEUE,
+        {'date': date, 'campaign_id': campaign_id}
+    )
+
+
+def refresh_changed_campaigns_data():
+    messages = sqs_helper.get_all_messages_json(settings.CAMPAIGN_CHANGE_QUEUE)
+    to_refresh = set((el['date'], el['campaign_id']) for el in messages)
+    for date, campaign_id in to_refresh:
+        ad_groups = dash.models.AdGroup.objects.filter(campaign_id=campaign_id).exclude_archived()
+        for ad_group in ad_groups:
+            refresh_contentadstats(date, ad_group)
 
 
 @transaction.atomic(using=settings.STATS_DB_NAME)

@@ -1,9 +1,9 @@
-import mock
-from mock import patch, MagicMock
+from mock import patch
 import datetime
 
 from django import test
 from django.db.models import Sum
+from django.conf import settings
 
 from reports import refresh
 from reports import models
@@ -280,3 +280,38 @@ class RefreshAdGroupStatsTestCase(test.TestCase):
     def test_cannot_refresh_invalid_constraints(self):
         with self.assertRaises(AssertionError):
             refresh.refresh_adgroup_stats(invalid_field='invalid value')
+
+
+class CampaignDataChangeTestCase(test.TestCase):
+
+    @patch('utils.sqs_helper.write_message_json')
+    def test_notify_campaign_data_change(self, mock_sqs_write_message):
+        date = datetime.date(2015, 12, 1)
+        refresh.notify_campaign_data_change(date, 1)
+        mock_sqs_write_message.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, {'date': date, 'campaign_id': 1})
+
+    @patch('reports.refresh.refresh_contentadstats')
+    @patch('utils.sqs_helper.get_all_messages_json')
+    def test_refresh_changed_campaigns_data(self, mock_get_all_messages, mock_refresh_contentadstats):
+        mock_get_all_messages.return_value = [{'date': datetime.date(2015, 12, 1), 'campaign_id': 1},
+                                              {'date': datetime.date(2015, 12, 2), 'campaign_id': 1}]
+
+        refresh.refresh_changed_campaigns_data()
+
+        for ad_group in dash.models.AdGroup.objects.filter(campaign_id=1):
+            mock_refresh_contentadstats.assert_called_once_with(datetime.date(2015, 12, 1), ad_group.id)
+            mock_refresh_contentadstats.assert_called_once_with(datetime.date(2015, 12, 2), ad_group.id)
+
+    @patch('reports.refresh.refresh_contentadstats')
+    @patch('utils.sqs_helper.get_all_messages_json')
+    def test_refresh_changed_campaigns_data_duplicate(self, mock_get_all_messages, mock_refresh_contentadstats):
+        mock_get_all_messages.return_value = [{'date': datetime.date(2015, 12, 1), 'campaign_id': 1},
+                                              {'date': datetime.date(2015, 12, 1), 'campaign_id': 1}]
+
+        refresh.refresh_changed_campaigns_data()
+
+        ad_groups = dash.models.AdGroup.objects.filter(campaign_id=1)
+        self.assertEqual(ad_groups.count(), mock_refresh_contentadstats.call_count)
+
+        for ad_group in ad_groups:
+            mock_refresh_contentadstats.assert_called_once_with(datetime.date(2015, 12, 1), ad_group.id)

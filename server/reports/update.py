@@ -10,7 +10,6 @@ import dash.models
 import reports.api
 import reports.refresh
 import reports.models
-from reports import refresh
 from reports import redshift
 from utils.statsd_helper import statsd_timer
 
