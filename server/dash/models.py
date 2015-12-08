@@ -1997,6 +1997,7 @@ class BudgetLineItem(FootprintModel):
     def yesterday_total_spend_cc(self, date=None): # TODO: implement
         if date is None:
             date = dates_helper.local_today()
+        date -= datetime.timedelta(days=1)
         return 0
 
     def total_spend_cc(self):  # TODO: implement
@@ -2028,8 +2029,7 @@ class BudgetLineItem(FootprintModel):
                 self.freed_cc = max(0, amount_cc - self.total_spend_cc())
         else:
             self.freed_cc = max(
-                amount_cc - self.total_spend_cc() - self.reserve_amount_cc(),
-                0
+                amount_cc - self.total_spend_cc() - self.reserve_amount_cc(), 0
             )
         self.save()
 
