@@ -504,7 +504,6 @@ class AdGroupOverview(api_common.BaseApiView):
 
     def _performance_settings(self, ad_group, user, ad_group_settings):
         settings = []
-        from pudb import set_trace; set_trace()
 
         yesterday_cost = self.get_yesterday_total_cost(user, ad_group)
         filled_daily_ratio = 0
