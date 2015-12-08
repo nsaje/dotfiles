@@ -10,23 +10,44 @@ oneApp.controller('AddScheduledReportModalCtrl',
     $scope.validationErrors = {};
 
     $scope.setDisabledExportOptions = function() {
-        api.exportPlusAllowed.get($state.params.id, $scope.level, $scope.exportSources).then(
+        api.exportPlusAllowed.get($state.params.id, $scope.level, $scope.exportSources, $scope.startDate, $scope.endDate).then(
             function (data) {
                 $scope.options.forEach(function (opt) {
-                    if (opt.value === constants.exportType.VIEW) {
-                        opt.disabled = !data.view;
-                    } else if (opt.value === constants.exportType.CONTENT_AD) {
+                    if (opt.value === constants.exportType.CONTENT_AD) {
                         opt.disabled = !data.content_ad;
+                        opt.disabledByDay = !data.byDay.content_ad;
                     } else if (opt.value === constants.exportType.AD_GROUP) {
                         opt.disabled = !data.ad_group;
+                        opt.disabledByDay = !data.byDay.ad_group;
                     } else if (opt.value === constants.exportType.CAMPAIGN) {
                         opt.disabled = !data.campaign;
+                        opt.disabledByDay = !data.byDay.campaign;
                     } else if (opt.value === constants.exportType.ACCOUNT) {
                         opt.disabled = !data.account;
+                        opt.disabledByDay = !data.byDay.account;
+                    } else if (opt.value === constants.exportType.ALL_ACCOUNTS) {
+                        opt.disabled = !data.all_accounts;
+                        opt.disabledByDay = !data.byDay.all_accounts;
                     }
                 });
             }
-         );
+         ).finally( function () { $scope.checkDownloadAllowed(); });
+    };
+
+    $scope.checkDownloadAllowed = function () {
+        var option = getOptionByValue($scope.export.type.value);
+        $scope.downloadAllowed = true;
+        $scope.downloadNotAllowedMessage = '';
+
+        if ( option.disabledByDay && $scope.export.byDay ) {
+            $scope.downloadNotAllowedMessage = 'Please select shorter date range to download report with breakdown by day.';
+            $scope.downloadAllowed = false;
+        }
+        if ( option.disabled ) {
+            $scope.downloadNotAllowedMessage = 'This report is not available for download due to the volume of content. Please contact your account manager for assistance.';
+            $scope.downloadAllowed = false;
+        }
+
     };
 
     $scope.downloadReport = function() {
@@ -99,5 +120,13 @@ oneApp.controller('AddScheduledReportModalCtrl',
     };
     $scope.init();
 
-
+    function getOptionByValue(value) {
+        var option = null;
+        $scope.options.forEach(function(opt) {
+            if (opt.value === value) {
+                option = opt;
+            }
+        });
+        return option;
+    }
 }]);
