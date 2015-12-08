@@ -712,12 +712,9 @@ class BudgetsTestCase(TestCase):
         self.assertEqual(b.state(datetime.date(2016, 12, 31)),
                          constants.BudgetLineItemState.INACTIVE)
 
-        backup = b.get_spend_amount
-        b.get_spend_amount = lambda: 10000
+        b.is_depleted = True
         self.assertEqual(b.state(),
                          constants.BudgetLineItemState.DEPLETED)
-
-        b.get_spend_amount = backup
 
     def test_credit_cancel(self):
         c = create_credit(

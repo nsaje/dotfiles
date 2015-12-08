@@ -47,16 +47,17 @@ class AccountCreditViewTest(BCMViewTestCase):
         
         
         self.assertEqual(response.status_code, 200)
+
         self.assertEqual(json.loads(response.content)['data'], {
             "active": [
                 {
-                    "available": 0,
+                    "available": "0.0000",
                     "end_date":
                     "2015-11-30",
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
-                    "allocated": 100000,
+                    "allocated": "100000.0000",
                     "total": 100000,
                     "id": 1,
                     "is_signed": False,
@@ -68,8 +69,8 @@ class AccountCreditViewTest(BCMViewTestCase):
             ],
             "past": [],
             "totals": {
-                "available": "0",
-                "allocated": "100000",
+                "available": "0.0000",
+                "allocated": "100000.0000",
                 "total": "100000",
                 "past": "0",
             }
@@ -81,17 +82,18 @@ class AccountCreditViewTest(BCMViewTestCase):
 
         
         self.assertEqual(response.status_code, 200)
+
         self.assertEqual(json.loads(response.content)['data'], {
             "active": [],
             "past": [
                 {
-                    "available": 0,
+                    "available": "0.0000",
                     "end_date":
                     "2015-11-30",
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
-                    "allocated": 100000,
+                    "allocated": "100000.0000",
                     "total": 100000,
                     "id": 1,
                     "is_signed": False,
@@ -209,7 +211,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
                 {
                     "campaign": "test campaign 1",
                     "end_date": "2015-11-30",
-                    "spend": "0",
+                    "spend": "0.0000",
                     "id": 1,
                     "total": 100000,
                     "start_date": "2015-10-01"
@@ -294,14 +296,14 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(data, {
             "active": [
                 {
-                    "available": "100000",
+                    "available": "100000.0000",
                     "is_editable": False,
                     "is_updatable": True,
                     "state": 1,
                     "end_date": "2015-11-30",
                     "license_fee": "20%",
                     "total": 100000,
-                    "spend": "0",
+                    "spend": "0.0000",
                     "id": 1,
                     "comment": "Test case",
                     "start_date": "2015-10-01",
@@ -310,7 +312,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             "past": [],
             "credits": [
                 {
-                    "available": 0,
+                    "available": "0.0000",
                     "end_date": "2015-11-30",
                     "id": 1,
                     "is_available": False,
@@ -321,15 +323,15 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             ],
             "totals": {
                 "current": {
-                    "available": "0",
-                    "past": "0",
-                    "unallocated": "0"
+                    "available": "0.0000",
+                    "past": "0.0000",
+                    "unallocated": "0.0000"
                 },
                 "lifetime": {
-                    "data_spend": "0",
-                    "campaign_spend": "0",
-                    "media_spend": "0",
-                    "license_fee": "0"
+                    "data_spend": "0.0000",
+                    "campaign_spend": "0.0000",
+                    "media_spend": "0.0000",
+                    "license_fee": "0.0000"
                 }
             }
         })
@@ -342,14 +344,14 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(data, {
             "active": [
                 {
-                    "available": "100000",
+                    "available": "100000.0000",
                     "is_editable": True,
                     "is_updatable": False,
                     "state": 2,
                     "end_date": "2015-11-30",
                     "license_fee": "20%",
                     "total": 100000,
-                    "spend": "0",
+                    "spend": "0.0000",
                     "id": 1,
                     "comment": "Test case",
                     "start_date": "2015-10-01",
@@ -358,7 +360,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             "past": [],
             "credits": [
                 {
-                    "available": 0,
+                    "available": "0.0000",
                     "end_date": "2015-11-30",
                     "id": 1,
                     "is_available": False,
@@ -369,15 +371,15 @@ class CampaignBudgetViewTest(BCMViewTestCase):
             ],
             "totals": {
                 "current": {
-                    "available": "0",
-                    "past": "0",
-                    "unallocated": "0"
+                    "available": "0.0000",
+                    "past": "0.0000",
+                    "unallocated": "0.0000"
                 },
                 "lifetime": {
-                    "data_spend": "0",
-                    "campaign_spend": "0",
-                    "media_spend": "0",
-                    "license_fee": "0"
+                    "data_spend": "0.0000",
+                    "campaign_spend": "0.0000",
+                    "media_spend": "0.0000",
+                    "license_fee": "0.0000"
                 }
             }
         })

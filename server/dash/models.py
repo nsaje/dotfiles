@@ -2044,7 +2044,8 @@ class BudgetLineItem(FootprintModel):
     end_date = models.DateField()
 
     amount = models.IntegerField()
-    freed_cc = models.IntegerField()
+    freed_cc = models.BigIntegerField(default=0)
+    is_depleted = models.BooleanField(default=False)
 
     comment = models.CharField(max_length=256, blank=True, null=True)
 
@@ -2076,10 +2077,10 @@ class BudgetLineItem(FootprintModel):
         super(BudgetLineItem, self).delete()
 
     def state(self, date=None):
+        if self.is_depleted:
+            return constants.BudgetLineItemState.DEPLETED
         if date is None:
             date = dates_helper.local_today()
-        if (self.amount - self.get_spend_amount()) <= 0:
-            return constants.BudgetLineItemState.DEPLETED
         if self.end_date and self.end_date < date:
             return constants.BudgetLineItemState.INACTIVE
         if self.start_date and self.start_date <= date:
@@ -2089,44 +2090,11 @@ class BudgetLineItem(FootprintModel):
     def state_text(self, date=None):
         return constants.BudgetLineItemState.get_text(self.state(date=date))
 
-    def yesterday_total_spend_cc(self, date=None): # TODO: implement
-        if date is None:
-            date = dates_helper.local_today()
-        date -= datetime.timedelta(days=1)
-        return 0
-
-    def total_spend_cc(self):  # TODO: implement
-        return 0
-
-    def media_spend_cc(self):  # TODO: implement
-        return 0
-
-    def data_spend_cc(self):  # TODO: implement
-        return 0
-
-    def reserve_amount_cc(self, date=None): 
-        return self.yesterday_total_spend_cc(date=date) * settings.BUDGET_RESERVE_FACTOR
-
     def allocated_amount_cc(self):
         return self.amount * 10000 - self.freed_cc
 
     def allocated_amount(self):
-        return Decimal(self.allocated_amount_cc()) / 10000
-
-    def free_inactive_allocated_assets(self):
-        if self.state() != constants.BudgetLineItemState.INACTIVE:
-            raise AssertionError('Budget has to be inactive to be freed.')
-        amount_cc = self.amount * 10000
-        if self.freed_cc:
-            # After we completed all syncs, free all the assets including reserve
-            free_date = self.end_date - datetime.timedelta(days=settings.LAST_N_DAY_REPORTS)
-            if dates_helper.local_today() > free_date:
-                self.freed_cc = max(0, amount_cc - self.total_spend_cc())
-        else:
-            self.freed_cc = max(
-                amount_cc - self.total_spend_cc() - self.reserve_amount_cc(), 0
-            )
-        self.save()
+        return Decimal(self.allocated_amount_cc()) * Decimal('0.0001')
 
     def is_editable(self):
         return self.state() == constants.BudgetLineItemState.PENDING

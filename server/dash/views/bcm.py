@@ -1,7 +1,7 @@
 from decimal import Decimal
 import json
 
-from dash import models, constants, forms
+from dash import models, constants, forms, bcm_helpers
 from utils import statsd_helper, api_common, exc
 from dash.views import helpers
 
@@ -167,7 +167,7 @@ class AccountCreditItemView(api_common.BaseApiView):
                     'campaign': str(b.campaign),
                     'id': b.pk,
                     'total': b.amount,
-                    'spend': b.get_spend_amount(),
+                    'spend': bcm_helpers.get_spend_data(b)['total'],
                     'start_date': b.start_date,
                     'end_date': b.end_date,
                 }
@@ -206,7 +206,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         return self.create_api_response(item.instance.pk)
 
     def _prepare_item(self, item):
-        spend = item.get_spend_amount()
+        spend = bcm_helpers.get_spend_data(item)['total']
         return {
             'id': item.pk,
             'start_date': item.start_date,
@@ -264,15 +264,15 @@ class CampaignBudgetView(api_common.BaseApiView):
     def _get_budget_totals(self, campaign):
         data = {
             'current': {
-                'available': Decimal('0'),
-                'unallocated': Decimal('0'),
-                'past': Decimal('0'),
+                'available': Decimal('0.0000'),
+                'unallocated': Decimal('0.0000'),
+                'past': Decimal('0.0000'),
             },
             'lifetime': {
-                'campaign_spend': Decimal('0'),
-                'media_spend': Decimal('0'),
-                'data_spend': Decimal('0'),
-                'license_fee': Decimal('0'),
+                'campaign_spend': Decimal('0.0000'),
+                'media_spend': Decimal('0.0000'),
+                'data_spend': Decimal('0.0000'),
+                'license_fee': Decimal('0.0000'),
             }
         }
         for item in models.CreditLineItem.objects.filter(account=campaign.account):
@@ -286,15 +286,12 @@ class CampaignBudgetView(api_common.BaseApiView):
         for item in models.BudgetLineItem.objects.filter(campaign_id=campaign.id):
             if item.state() == constants.BudgetLineItemState.PENDING:
                 continue
-            campaign_spend = item.get_spend_amount()
-            data_spend = item.get_data_spend_amount()
-            media_spend = item.get_media_spend_amount()
+            spend_data = bcm_helpers.get_spend_data(item)
             
-            data['lifetime']['campaign_spend'] += campaign_spend
-            data['lifetime']['media_spend'] += media_spend
-            data['lifetime']['data_spend'] += data_spend
-            data['lifetime']['license_fee'] += campaign_spend - media_spend
-            
+            data['lifetime']['campaign_spend'] += spend_data['total']
+            data['lifetime']['media_spend'] += spend_data['media']
+            data['lifetime']['data_spend'] += spend_data['data']
+            data['lifetime']['license_fee'] += spend_data['license_fee']
         return data
 
 
