@@ -322,10 +322,7 @@ class Campaign(models.Model, PermissionMixin):
         if settings:
             settings = settings[0]
         else:
-            settings = CampaignSettings(
-                campaign=self,
-                name=self.name
-            )
+            settings = CampaignSettings(campaign=self, **CampaignSettings.get_defaults_dict())
 
         return settings
 
@@ -581,6 +578,13 @@ class CampaignSettings(SettingsBase):
     class QuerySet(models.QuerySet):
         def group_current_settings(self):
             return self.order_by('campaign_id', '-created_dt').distinct('campaign')
+
+    @classmethod
+    def get_defaults_dict(cls):
+        return {
+            'target_devices': constants.AdTargetDevice.get_all(),
+            'target_regions': ['US']
+        }
 
 
 class SourceType(models.Model):
