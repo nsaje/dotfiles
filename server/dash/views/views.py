@@ -402,7 +402,7 @@ class AdGroupOverview(api_common.BaseApiView):
         # TBD?
         delivering = False
 
-        settings = ad_group.get_current_settings()
+        ad_group_settings = ad_group.get_current_settings()
         running_status = ad_group.get_running_status()
         header = {
             'title': settings.name,
@@ -412,33 +412,22 @@ class AdGroupOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'settings': self._basic_settings(ad_group) +\
-                self._performance_settings(ad_group),
+            'settings': self._basic_settings(ad_group, ad_group_settings) +
+                self._performance_settings(ad_group, request.user, ad_group_settings),
         }
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, ad_group):
+    def _basic_settings(self, ad_group, ad_group_settings):
         settings = []
 
-        flight_time = "{start_date} - {end_date}".format(
-            start_date=settings.start_date,
-            end_date=settings.end_date,
-        )
-        today = datetime.datetime.today()
-        if not settings.send_date:
-            flight_time_left_days = None
-        elif today > settings.end_date:
-            flight_time_left_days = 0
-        else:
-            flight_time_left_days = (settings.end_date - today).days + 1
-
+        flight_time, flight_time_left_days =\
+            self._calculate_flight_time(ad_group_settings)
         flight_time_setting = OverviewSetting(
             'Flight time',
             flight_time,
             flight_time_left_days
         )
-
         settings.append(flight_time_setting.as_dict())
 
 
@@ -456,7 +445,6 @@ class AdGroupOverview(api_common.BaseApiView):
             'Differ from campaign default',
         )
         settings.append(targeting_region.as_dict())
-
 
         daily_cap = OverviewSetting(
             'Daily cap',
@@ -477,7 +465,6 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(campaign_budget_setting)
 
-
         tracking_code_settings = OverviewSetting(
             'Tracking codes',
             'Yes' if settings.tracking_code else 'No',
@@ -486,7 +473,6 @@ class AdGroupOverview(api_common.BaseApiView):
             'codes',
             settings.tracking_code
         )
-
         settings.append(tracking_code_settings)
 
         post_click_tracking = []
@@ -502,6 +488,20 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(post_click_tracking_setting)
         return settings
+
+    def _calculate_flight_time(self, ad_group_settings):
+        flight_time = "{start_date} - {end_date}".format(
+            start_date=settings.start_date,
+            end_date=settings.end_date,
+        )
+        today = datetime.datetime.today()
+        if not settings.send_date:
+            flight_time_left_days = None
+        elif today > settings.end_date:
+            flight_time_left_days = 0
+        else:
+            flight_time_left_days = (settings.end_date - today).days + 1
+        return flight_time, flight_time_left_days
 
     def _performance_settings(self, ad_group, user, ad_group_settings):
         settings = []
