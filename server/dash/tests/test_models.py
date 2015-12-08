@@ -387,6 +387,28 @@ class CampaignTestCase(TestCase):
 
         self.assertEqual(len(qs), 4)
 
+    def test_get_current_settings(self):
+        campaign = models.Campaign.objects.get(pk=2)
+
+        settings = campaign.get_current_settings()
+
+        self.assertEqual(settings.name, 'test campaign 2')
+        self.assertEqual(settings.iab_category, 'IAB24')
+        self.assertEqual(settings.target_devices, ['mobile'])
+        self.assertEqual(settings.target_regions, ['US'])
+
+    def test_get_current_settings_no_existing_settings(self):
+        campaign = models.Campaign.objects.get(pk=1)
+
+        self.assertEqual(len(models.CampaignSettings.objects.filter(campaign_id=campaign.id)), 0)
+
+        settings = campaign.get_current_settings()
+
+        self.assertEqual(settings.name, '')
+        self.assertEqual(settings.iab_category, 'IAB24')
+        self.assertEqual(settings.target_devices, ['mobile', 'desktop'])
+        self.assertEqual(settings.target_regions, ['US'])
+
 
 class AccountTestCase(TestCase):
     fixtures = ['test_api.yaml']

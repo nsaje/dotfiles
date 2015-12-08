@@ -584,14 +584,12 @@ class AccountCampaigns(api_common.BaseApiView):
         )
         campaign.save(request)
 
-        settings = models.CampaignSettings(
-            name=name,
-            campaign=campaign,
-            account_manager=(account_settings.default_account_manager
-                             if account_settings.default_account_manager else request.user),
-            sales_representative=(account_settings.default_sales_representative
-                                  if account_settings.default_sales_representative else None)
-        )
+        settings = campaign.get_current_settings()  # creates new settings with default values
+        settings.name = name
+        settings.account_manager = (account_settings.default_account_manager
+                                    if account_settings.default_account_manager else request.user)
+        settings.sales_representative = (account_settings.default_sales_representative
+                                         if account_settings.default_sales_representative else None)
         settings.save(request)
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CAMPAIGN,

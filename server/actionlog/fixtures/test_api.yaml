@@ -722,6 +722,8 @@
         account_manager: NULL
         sales_representative: NULL
         iab_category: 'IAB24'
+        target_devices: ['mobile']
+        target_regions: ['US']
         campaign: 2
     model: dash.campaignsettings
     pk: 1
