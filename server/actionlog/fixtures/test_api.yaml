@@ -722,6 +722,8 @@
         account_manager: NULL
         sales_representative: NULL
         iab_category: 'IAB24'
+        campaign_goal: 4
+        goal_quantity: 10
         campaign: 2
     model: dash.campaignsettings
     pk: 1

@@ -505,11 +505,7 @@ class AdGroupOverview(api_common.BaseApiView):
     def _performance_settings(self, ad_group, user, ad_group_settings):
         settings = []
 
-        yesterday_cost = sum(
-            self.get_reports_api_module(user).get_yesterday_cost(
-                ad_group=ad_group
-            ).values()
-        )
+        yesterday_cost = self.get_yesterday_total_cost(user, ad_group)
 
         percent_daily_cap = None
         if ad_group_settings.daily_budget_cc > 0:
@@ -522,26 +518,34 @@ class AdGroupOverview(api_common.BaseApiView):
         ).performance(True)
         settings.append(yesterday_spend_settings.as_dict())
 
-        total_campaign_spend_to_date = 0
-        ideal_campaign_spend_to_date = 0
+        total_campaign_spend_to_date = self.get_total_campaign_spend(user, ad_group)
+        ideal_campaign_spend_to_date = self.get_ideal_campaign_spend(user, ad_group)
+
+        ratio = 0
+        if ideal_campaign_spend_to_date < 0:
+            ratio = max(
+                (total_campaign_spend_to_date - ideal_campaign_spend_to_date) / ideal_campaign_spend_to_date,
+                1)
 
         campaign_pacing_settings = OverviewSetting(
             'Campaign pacing:',
-            "$",
-            'TODO'
-        ).performance(True)
+            '{:.2f}%'.format(ratio * 100),
+            '${:.2f}'.format(total_campaign_spend_to_date)
+        ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
         settings.append(campaign_pacing_settings.as_dict())
 
         campaign_settings = ad_group.campaign.get_current_settings()
         campaign_goals = [(
             campaign_settings.campaign_goal,
             campaign_settings.goal_quantity,
-        )]
+        )
+        ]
         for i, (goal, quantity) in enumerate(campaign_goals):
+            text = constants.CampaignGoal.get_text(goal)
             name = 'Campaign goals:' if i == 0 else ''
             goal_setting = OverviewSetting(
                 name,
-                '{value} {description}'.format(value='', description=''),
+                '{value} {description}'.format(value=text, description=quantity),
                 'x below planned'
             ).performance(True)
             settings.append(goal_setting.as_dict())
@@ -553,12 +557,20 @@ class AdGroupOverview(api_common.BaseApiView):
             return reports.api_contentads
         return reports.api
 
-    def get_yesterday_cost(self, user, ad_group):
-        yesterday_cost = self.reports_api.get_yesterday_cost(adgroup=ad_group)
+    def get_ideal_campaign_spend(self, user, ad_group):
+        campaign_budget = budget.CampaignBudget(ad_group.campaign)
+        return campaign_budget.get_total()
+
+    def get_total_campaign_spend(self, user, ad_group):
+        campaign_budget = budget.CampaignBudget(ad_group.campaign)
+        return campaign_budget.get_spend()
+
+    def get_yesterday_total_cost(self, user, ad_group):
+        yesterday_cost = self.get_reports_api_module(user).get_yesterday_cost(campaign=ad_group.campaign)
         yesterday_total_cost = None
         if yesterday_cost:
             yesterday_total_cost = sum(yesterday_cost.values())
-        return yesterday_cost, yesterday_total_cost
+        return yesterday_total_cost
 
 
 class AdGroupArchive(api_common.BaseApiView):

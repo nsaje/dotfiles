@@ -1979,7 +1979,15 @@ class AdGroupOverviewTest(TestCase):
 
         self.assertTrue(response['success'])
         header = response['data']['header']
-        settings = response['data']['settings']
         self.assertEqual(header['title'], u'AdGroup name')
         self.assertFalse(header['active'])
+
+        settings = response['data']['settings']
+
+        yesterday_spend = [s for s in settings if 'yesterday' in s['name'].lower()][0]
+        self.assertEqual('$0.00', yesterday_spend['value'])
+
+        # TODO: test goals
+        # goal_setting = [s for s in settings if 'goal' in s['name'].lower()][0]
+        # self.assertFalse('sad', goal_setting['icon'])
 
