@@ -36,7 +36,6 @@ class Command(BaseCommand):
                 report_log.report_filename = report_filename
 
                 email_helper.send_scheduled_export_report(
-                    # report_name, frequency, granularity, entity_name, scheduled_by, email_adresses, report_contents, report_filename
                     sr.name,
                     constants.ScheduledReportSendingFrequency.get_text(sr.sending_frequency),
                     constants.ScheduledReportGranularity.get_text(sr.report.granularity),
