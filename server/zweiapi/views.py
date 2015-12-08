@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 # received reports content ad ids exist in z1. Use only after discrepancies were
 # fixed - eg. content ad ids synced, content ads paused/reinserted etc.
 SUPRESS_INVALID_CONTENT_ID_CHECK = {
-    # content that should not exist in Outbrain made some impressions
+    # content that should not exist in Outbrain and made some impressions
     927: {3: datetime.date(2015, 12, 8)}
 }
 
@@ -124,7 +124,7 @@ def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None
             statsd_helper.statsd_incr('reports.update.err_content_ad_no_id')
             raise Exception('\'id\' field not present in data row.')
 
-        if data_row['id'] not in content_ad_sources and supress_invalid_content_ad_check:
+        if data_row['id'] not in content_ad_sources and not supress_invalid_content_ad_check:
             statsd_helper.statsd_incr('reports.update.err_unknown_content_ad_id')
             raise Exception('Stats for an unknown id. ad group={}. source={}. id={}.'.format(
                 ad_group.id,
