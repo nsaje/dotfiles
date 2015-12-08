@@ -93,7 +93,7 @@ def _get_error_message(data):
     return '\n'.join(message)
 
 
-def _prepare_report_rows(ad_group, source, data_rows):
+def _prepare_report_rows(ad_group, ad_group_source, source, data_rows):
     raw_articles = [{'url': row['url'], 'title': row['title']} for row in data_rows]
     articles = dash.api.reconcile_articles(ad_group, raw_articles)
 
@@ -112,7 +112,7 @@ def _prepare_report_rows(ad_group, source, data_rows):
             statsd_helper.statsd_incr('reports.update.err_content_ad_no_id')
             raise Exception('\'id\' field not present in data row.')
 
-        if data_row['id'] not in content_ad_sources:
+        if data_row['id'] not in content_ad_sources and ad_group_source.can_manage_content_ads:
             statsd_helper.statsd_incr('reports.update.err_unknown_content_ad_id')
             raise Exception('Stats for an unknown id. ad group={}. source={}. id={}.'.format(
                 ad_group.id,
@@ -312,6 +312,7 @@ def _get_action(action_id):
 def _fetch_reports_callback(action, data):
     date = action.payload['args']['date']
     ad_group = action.ad_group_source.ad_group
+    ad_group_source = action.ad_group_source
     source = action.ad_group_source.source
 
     logger.info('_fetch_reports_callback: Processing reports callback for adgroup {adgroup_id}  source {source_id}'.format(
@@ -338,7 +339,7 @@ def _fetch_reports_callback(action, data):
         )
 
     if valid_response and _has_changed(data, ad_group, source, date, change_unique_key):
-        rows = _prepare_report_rows(ad_group, source, data['data'])
+        rows = _prepare_report_rows(ad_group, ad_group_source, source, data['data'])
         article_rows = _remove_content_ad_sources_from_report_rows(rows)
 
         reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, article_rows)

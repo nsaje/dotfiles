@@ -588,7 +588,8 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date1,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(ags1.ad_group, ags1.source, rows_ags1_date1))
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags1.ad_group, ags1, ags1.source, rows_ags1_date1))
         )
 
         for row in rows_ags1_date1:
@@ -607,7 +608,8 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date1,
             ad_group=ags2.ad_group,
             source=ags2.source,
-            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(ags2.ad_group, ags2.source, rows_ags2_date1))
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags2.ad_group, ags2, ags2.source, rows_ags2_date1))
         )
         for row in rows_ags2_date1:
             article = dashmodels.Article.objects.get(title=row['title'])
@@ -625,13 +627,15 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date2,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(ags1.ad_group, ags1.source, rows_ags1_date2))
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags1.ad_group, ags1, ags1.source, rows_ags1_date2))
         )
         reports.update.stats_update_adgroup_source_traffic(
             datetime=date2,
             ad_group=ags2.ad_group,
             source=ags2.source,
-            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(ags2.ad_group, ags2.source, rows_ags2_date2))
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags2.ad_group, ags2, ags2.source, rows_ags2_date2))
         )
 
         articles_ags1 = dashmodels.Article.objects.order_by('title')
@@ -716,7 +720,8 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(ags.ad_group, ags.source, rows))
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags.ad_group, ags, ags.source, rows))
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 2)
@@ -737,7 +742,8 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(ags.ad_group, ags.source, rows_new_title))
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags.ad_group, ags, ags.source, rows_new_title))
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 4)
@@ -773,7 +779,8 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(ags.ad_group, ags.source, rows_new_url))
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags.ad_group, ags, ags.source, rows_new_url))
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 6)
@@ -860,7 +867,8 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date1,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(ags1.ad_group, ags1.source, rows))
+            rows=_remove_content_ad_sources_from_report_rows(
+                _prepare_report_rows(ags1.ad_group, ags1, ags1.source, rows))
         )
 
         article = dashmodels.Article.objects.get(title=title, url=url)
@@ -959,8 +967,9 @@ class PrepareReportRowsTestCase(test.TestCase):
 
         ad_group = dashmodels.AdGroup.objects.get(pk=1)
         source = dashmodels.Source.objects.get(pk=1)
+        ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
 
-        report_rows = _prepare_report_rows(ad_group, source, data_rows)
+        report_rows = _prepare_report_rows(ad_group, ad_group_source, source, data_rows)
 
         article1 = dashmodels.Article.objects.get(pk=1)
         article2 = dashmodels.Article.objects.get(pk=2)
