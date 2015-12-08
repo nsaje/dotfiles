@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import json
 from mock import patch
 import datetime
@@ -1975,4 +1976,10 @@ class AdGroupOverviewTest(TestCase):
         }]
 
         response = self._get_ad_group_overview(1)
+
         self.assertTrue(response['success'])
+        header = response['data']['header']
+        settings = response['data']['settings']
+        self.assertEqual(header['title'], u'AdGroup name')
+        self.assertFalse(header['active'])
+

@@ -522,9 +522,12 @@ class AdGroupOverview(api_common.BaseApiView):
         ).performance(True)
         settings.append(yesterday_spend_settings.as_dict())
 
+        total_campaign_spend_to_date = 0
+        ideal_campaign_spend_to_date = 0
+
         campaign_pacing_settings = OverviewSetting(
             'Campaign pacing:',
-            'TODO',
+            "$",
             'TODO'
         ).performance(True)
         settings.append(campaign_pacing_settings.as_dict())
