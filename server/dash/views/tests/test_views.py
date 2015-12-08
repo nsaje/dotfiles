@@ -1941,3 +1941,38 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertTrue(res['success'])
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
+
+
+class AdGroupOverviewTest(TestCase):
+    fixtures = ['test_api.yaml', 'test_models.yaml']
+
+    def setUp(self):
+        self.client = Client()
+        redshift.STATS_DB_NAME = 'default'
+
+        permission = Permission.objects.get(codename='can_see_infobox')
+        user = zemauth.models.User.objects.get(pk=2)
+        user.user_permissions.add(permission)
+        user.save()
+
+    def _get_ad_group_overview(self, ad_group_id, user_id=3, with_status=False):
+        user = User.objects.get(pk=user_id)
+        self.client.login(username=user.username, password='secret')
+        reversed_url = reverse(
+                'ad_group_overview',
+                kwargs={'ad_group_id': ad_group_id})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return json.loads(response.content)
+
+    @patch('reports.redshift.get_cursor')
+    def test_run(self, cursor):
+        cursor().dictfetchall.return_value = [{
+            'source_id': 9,
+            'cost_cc_sum': 0.0
+        }]
+
+        response = self._get_ad_group_overview(1)
+        self.assertTrue(response['success'])

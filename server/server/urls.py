@@ -198,7 +198,7 @@ urlpatterns += patterns(
     ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/overview/',
-        login_required(dash.views.AdGroupOverview.as_view()),
+        login_required(dash.views.views.AdGroupOverview.as_view()),
         name='ad_group_overview'
     ),
     url(

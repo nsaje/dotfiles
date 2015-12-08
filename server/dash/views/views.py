@@ -403,9 +403,9 @@ class AdGroupOverview(api_common.BaseApiView):
         delivering = False
 
         ad_group_settings = ad_group.get_current_settings()
-        running_status = ad_group.get_running_status()
+        running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
         header = {
-            'title': settings.name,
+            'title': ad_group_settings.ad_group_name,
             'subtitle': 'Delivering' if delivering else 'Not Delivering',
             'active': running_status == constants.AdGroupRunningStatus.ACTIVE
         }
@@ -432,24 +432,23 @@ class AdGroupOverview(api_common.BaseApiView):
 
 
         targeting_device = OverviewSetting(
-            'Targeting'
-            'Device: ' + ','.join(settings.target_devices),
+            'Targeting',
+            'Device: ' + ','.join(ad_group_settings.target_devices),
             'Differ from campaign default',
         )
-
         settings.append(targeting_device.as_dict())
 
         targeting_region = OverviewSetting(
-            ''
-            'Location:' + ','.join(settings.target_regions),
+            '',
+            'Location:' + ','.join(ad_group_settings.target_regions),
             'Differ from campaign default',
         )
         settings.append(targeting_region.as_dict())
 
         daily_cap = OverviewSetting(
             'Daily cap',
-            '${:.2f}'.format(settings.daily_budget_cc)\
-                if settings.daily_budget_cc is not None else '',
+            '${:.2f}'.format(ad_group_settings.daily_budget_cc)\
+                if ad_group_settings.daily_budget_cc is not None else '',
             ''
         )
         settings.append(daily_cap.as_dict())
@@ -463,22 +462,22 @@ class AdGroupOverview(api_common.BaseApiView):
             '${:.2f}'.format(total),
             '${:.2f}'.format(total - spend),
         )
-        settings.append(campaign_budget_setting)
+        settings.append(campaign_budget_setting.as_dict())
 
         tracking_code_settings = OverviewSetting(
             'Tracking codes',
-            'Yes' if settings.tracking_code else 'No',
+            'Yes' if ad_group_settings.tracking_code else 'No',
             ''
         ).comment(
             'codes',
-            settings.tracking_code
+            ad_group_settings.tracking_code
         )
-        settings.append(tracking_code_settings)
+        settings.append(tracking_code_settings.as_dict())
 
         post_click_tracking = []
-        if settings.enable_ga_tracking:
+        if ad_group_settings.enable_ga_tracking:
             post_click_tracking.append('Google Analytics')
-        if settings.enable_adobe_tracking:
+        if ad_group_settings.enable_adobe_tracking:
             post_click_tracking.append('Adobe')
 
         post_click_tracking_setting = OverviewSetting(
@@ -486,35 +485,39 @@ class AdGroupOverview(api_common.BaseApiView):
             ', '.join(post_click_tracking),
             '',
         )
-        settings.append(post_click_tracking_setting)
+        settings.append(post_click_tracking_setting.as_dict())
         return settings
 
     def _calculate_flight_time(self, ad_group_settings):
         flight_time = "{start_date} - {end_date}".format(
-            start_date=settings.start_date,
-            end_date=settings.end_date,
+            start_date=ad_group_settings.start_date,
+            end_date=ad_group_settings.end_date,
         )
-        today = datetime.datetime.today()
-        if not settings.send_date:
+        today = datetime.datetime.today().date()
+        if not ad_group_settings.end_date:
             flight_time_left_days = None
-        elif today > settings.end_date:
+        elif today > ad_group_settings.end_date:
             flight_time_left_days = 0
         else:
-            flight_time_left_days = (settings.end_date - today).days + 1
+            flight_time_left_days = (ad_group_settings.end_date - today).days + 1
         return flight_time, flight_time_left_days
 
     def _performance_settings(self, ad_group, user, ad_group_settings):
         settings = []
 
-        yesterday_cost = self.get_reports_api_module(user).get_yesterday_cost(ad_group=ad_group)
+        yesterday_cost = sum(
+            self.get_reports_api_module(user).get_yesterday_cost(
+                ad_group=ad_group
+            ).values()
+        )
 
         percent_daily_cap = None
-        if ad_group_settings.daily_cap > 0:
-            percent_daily_cap = round(100 * float(yesterday_cost) / float(ad_group_settings.daily_cap))
+        if ad_group_settings.daily_budget_cc > 0:
+            percent_daily_cap = round(100 * yesterday_cost / float(ad_group_settings.daily_budget_cc))
 
         yesterday_spend_settings = OverviewSetting(
             'Yesterday spend:',
-            '${.2f}'.format(yesterday_cost),
+            '${:.2f}'.format(yesterday_cost),
             '{}% of daily cap'.format(percent_daily_cap),
         ).performance(True)
         settings.append(yesterday_spend_settings.as_dict())
