@@ -36,7 +36,94 @@ describe('api', function() {
             });
         });
     });
-    
+
+    describe('CampaignSettings', function () {
+        var campaignId = 1;
+        var url = '/api/campaigns/' + campaignId + '/settings/';
+        var serverData = {
+            settings: {
+                id: 1,
+                name: 'Test Campaign',
+                campaign_goal: 3,
+                goal_quantity: '0.04',
+                target_devices: ['mobile'],
+                target_regions: ['NC', '501']
+            }
+        };
+        var settings = {
+            id: 1,
+            name: 'Test Campaign',
+            campaignGoal: 3,
+            goalQuantity: '0.04',
+            targetDevices: [{
+                name: 'Desktop',
+                value: constants.adTargetDevice.DESKTOP,
+                checked: false
+            }, {
+                name: 'Mobile',
+                value: constants.adTargetDevice.MOBILE,
+                checked: true
+            }],
+            targetRegions: ['NC', '501']
+        };
+
+        describe('get', function () {
+            it('gets and converts server data', function () {
+                var result;
+                var data = {data: serverData};
+
+                $httpBackend.expectGET(url).respond(200, data);
+                api.campaignSettings.get(campaignId).then(function(data) {
+                    result = data;
+                });
+                $httpBackend.flush();
+
+                expect(result.settings).toEqual(settings);
+            });
+        });
+
+        describe('save', function () {
+            it('converts and saves data', function () {
+                var result;
+
+                $httpBackend.expectPUT(url, serverData).respond(200, {data: serverData});
+                api.campaignSettings.save(settings).then(function(data) {
+                    result = data;
+                });
+                $httpBackend.flush();
+
+                expect(result.settings).toEqual(settings);
+            });
+
+            it('converts validation errors in case of failure', function () {
+                var result;
+                var errorData = {
+                    error_code: 'ValidationError',
+                    errors: {
+                        name: ['Name is wrong'],
+                        campaign_goal: ['Campaign goal is wrong'],
+                        goal_quantity: ['Goal quantity is wrong'],
+                        target_devices: ['Target devices are wrong'],
+                        target_regions: ['Target regions are wrong']
+                    }
+                };
+
+                $httpBackend.expectPUT(url, serverData).respond(400, {data: errorData});
+                api.campaignSettings.save(settings).then(null, function(data) {
+                    result = data;
+                });
+                $httpBackend.flush();
+
+                expect(result).toEqual({
+                    name: ['Name is wrong'],
+                    campaignGoal: ['Campaign goal is wrong'],
+                    goalQuantity: ['Goal quantity is wrong'],
+                    targetDevices: ['Target devices are wrong'],
+                    targetRegions: ['Target regions are wrong']
+                });
+            });
+        });
+    });
     
     describe('adGroupAdsPlusUpload', function() {
         var adGroupId = 123;

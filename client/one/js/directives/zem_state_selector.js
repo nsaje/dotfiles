@@ -27,14 +27,23 @@ oneApp.directive('zemStateSelector', function () {
             $scope.setState = function (state, autopilotState) {
                 $scope.isOpen = false;
 
-                if (state === $scope.value && autopilotState === $scope.autopilotActive) {
+                // prevent autopilot enabling when media source is paused
+                if ($scope.autopilotEnabledValue && !$scope.active && autopilotState === $scope.autopilotEnabledValue) {
                     return;
                 }
 
+                // do nothing when no change
+                if (state === $scope.value && autopilotState === $scope.autopilotValue) {
+                    return;
+                }
+
+                var newState = ( (state === $scope.value) ? undefined : state );
                 $scope.value = state;
+
+                var newAutopilotState = ( (autopilotState === $scope.autopilotValue) ? undefined : autopilotState );
                 $scope.autopilotValue = autopilotState;
 
-                $scope.onChange($scope.id, state, autopilotState);
+                $scope.onChange($scope.id, newState, newAutopilotState);
             };
             $scope.$watch('value', function(value) {
                 $scope.active = $scope.value === $scope.enabledValue;
