@@ -175,3 +175,6 @@ R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions/result/
 BIDDER_API_SIGN_KEY = ''
 
 SHARETHROUGH_PARAM_SIGN_KEY = ''
+
+# BCM
+BUDGET_RESERVE_FACTOR=0.05
