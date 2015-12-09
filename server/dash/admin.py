@@ -806,12 +806,12 @@ class UserActionLogAdmin(ExportMixin, admin.ModelAdmin):
         settings_link = ''
 
         if obj:
-            obj_link = '<a href="{url}">{name}</a>'.format(
+            obj_link = u'<a href="{url}">{name}</a>'.format(
                 name=obj.name,
                 url=reverse(obj_url_name, args=(obj.pk, )))
 
         if settings_url_name and settings:
-            settings_link = '<a href="{url}">{name}</a>'.format(
+            settings_link = u'<a href="{url}">{name}</a>'.format(
                 name=settings.changes_text or '- no changes description -',
                 url=reverse(settings_url_name, args=(settings.pk, ))
             )
