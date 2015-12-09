@@ -2,6 +2,23 @@
     <form id="add-scheduled-report-form" ng-submit="addScheduledReport()" class="modal-form add-scheduled-report-form form-horizontal">
         <div class="title">Export Report</div>
 
+        <div class="form-group" ng-class="{'has-error': !!validationErrors.report_name}">
+            <label for="report-name-input" class="col-xs-4 control-label">
+                Report name
+            </label>
+            <div class="col-xs-5">
+                <input type="text"
+                       zem-focus-select
+                       id="report-name-input"
+                       class="form-control"
+                       ng-model="export.reportName"
+                       placeholder="Name of the report" />
+            </div>
+            <div class="col-xs-3">
+                <label ng-repeat="error in validationErrors.report_name" class="control-label small error" for="report-name-input">{{ error }}</label>
+            </div>
+        </div>
+        
         <div class="form-group" ng-class="{'has-error': !!validationErrors.granularity}">
             <label for="granularity-select" class="col-xs-4 control-label">
                 Report Granularity
@@ -27,8 +44,12 @@
         </div>
 
         <div class="form-group">
-            <label for="by-day-checkbox" class="col-xs-4 control-label">Breakdown by day:</label>
+          <div class="col-xs-4">
+            <label for="by-day-checkbox" class="control-label">Breakdown by day</label>
+          </div>
+          <div class="col-xs-4">
             <input id="by-day-checkbox" type="checkbox" ng-model="export.byDay" class="checkbox" ng-change="checkDownloadAllowed()">
+          </div>
         </div>
 
         <div class="form-group">
@@ -42,25 +63,11 @@
 
         <div class="title">Schedule report?</div>
 
-        <div class="form-group" ng-class="{'has-error': !!validationErrors.report_name}">
-            <label for="report-name-input" class="col-xs-4 control-label">
-                Report name:
-            </label>
-            <div class="col-xs-5">
-                <input type="text"
-                       zem-focus-select
-                       id="report-name-input"
-                       class="form-control"
-                       ng-model="export.reportName"
-                       placeholder="Name of the report" />
-            </div>
-            <div class="col-xs-3">
-                <label ng-repeat="error in validationErrors.report_name" class="control-label small error" for="report-name-input">{{ error }}</label>
-            </div>
-        </div>
-
         <div class="form-group" ng-class="{'has-error': !!validationErrors.frequency}">
-            <label for="frequency-select" class="col-xs-4 control-label">Scheduling frequency:</label>
+            <label for="frequency-select" class="col-xs-4 control-label">
+                Frequency
+                <zem-help-popover content="Report will be delivered to your inbox every day, week or month at 2AM EST." placement="top"></zem-help-popover>
+            </label>
 
             <ui-select
                     theme="select2"
@@ -81,7 +88,7 @@
 
         <div class="form-group" ng-class="{'has-error': !!validationErrors.recipient_emails}">
             <label for="recipient-emails-textarea" class="col-xs-4 control-label" id="recipient-emails-label">
-                Recipient emails:
+                Recipient emails
                 <zem-help-popover content="Comma-separated list of recipient email addresses." placement="top"></zem-help-popover>
             </label>
 
