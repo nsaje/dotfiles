@@ -40,7 +40,7 @@ oneApp.controller('MainCtrl',
     $scope.showSelectedPublisher = null;
 
     // TODO: move to localstorage
-    $scope.infoboxVisible = true;
+    $scope.infoboxVisible = false;
 
     $scope.remindToAddBudget = $q.defer(); 
 
