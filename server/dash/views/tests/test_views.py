@@ -2044,8 +2044,8 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('$0.00', yesterday_spend['value'])
 
         pacing_setting = [s for s in settings if 'pacing' in s['name'].lower()][0]
-        self.assertEqual('-100.00%', pacing_setting['value'])
-        self.assertEqual('sad', pacing_setting['icon'])
+        self.assertEqual('0.00%', pacing_setting['value'])
+        self.assertEqual('happy', pacing_setting['icon'])
 
         goal_setting = [s for s in settings if 'goal' in s['name'].lower()][0]
         self.assertEqual('0.0 below planned', goal_setting['description'])

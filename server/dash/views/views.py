@@ -521,7 +521,7 @@ class AdGroupOverview(api_common.BaseApiView):
         settings.append(yesterday_spend_settings.as_dict())
 
         total_campaign_spend_to_date = self.get_total_campaign_spend(user, ad_group)
-        ideal_campaign_spend_to_date = self.get_ideal_campaign_spend(user, ad_group)
+        ideal_campaign_spend_to_date = self.get_ideal_campaign_spend(user, ad_group.campaign)
 
         ratio = 0
         if ideal_campaign_spend_to_date > 0:
@@ -567,9 +567,12 @@ class AdGroupOverview(api_common.BaseApiView):
             return reports.api_contentads
         return reports.api
 
-    def get_ideal_campaign_spend(self, user, ad_group):
-        campaign_budget = budget.CampaignBudget(ad_group.campaign)
-        return campaign_budget.get_total()
+    def get_ideal_campaign_spend(self, user, campaign):
+        # I use campaign budget line items here
+        # (which aren't yet in production - 2015/12/09)
+        today = datetime.datetime.today().date()
+        budgets = models.BudgetLineItem.objects.filter(campaign=campaign)
+        return sum( [b.get_ideal_budget_spend(today) for b in budgets] )
 
     def get_total_campaign_spend(self, user, ad_group):
         campaign_budget = budget.CampaignBudget(ad_group.campaign)
