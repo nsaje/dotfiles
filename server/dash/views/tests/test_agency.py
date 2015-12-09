@@ -1733,6 +1733,7 @@ class AccountAgencyTest(TestCase):
 
     def setUp(self):
         account = models.Account.objects.get(pk=1)
+        account.allowed_sources.clear()
         account.allowed_sources.add(1, 2)
 
         with patch('django.utils.timezone.now') as mock_now:
@@ -1842,13 +1843,58 @@ class AccountAgencyTest(TestCase):
         view.set_allowed_sources(account, True, {
             1: {'allowed': True},
             2: {'allowed': False},
-            3: {}
+            3: {'allowed': True}
             })
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
-            set([1,])
+            set([1, 3])
+        )
+    
+    def test_set_allowed_sources_cant_remove_unreleased(self):
+        account = models.Account.objects.get(pk=1)
+        account.allowed_sources.add(3) # add an unreleased source
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([1,2,3])
+        )
+        self.assertFalse(models.Source.objects.get(pk=3).released)
+
+        view = agency.AccountAgency()
+        view.set_allowed_sources(
+            account,
+            False, # no permission to remove unreleased source 3 
+            {
+                1: {'allowed': False},
+                2: {'allowed': False},
+                3: {'allowed': False}
+            })
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([3,])
         )
 
+    def test_set_allowed_sources_cant_add_unreleased(self):
+        account = models.Account.objects.get(pk=1)
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([1,2])
+        )
+        self.assertFalse(models.Source.objects.get(pk=3).released)
+
+        view = agency.AccountAgency()
+        view.set_allowed_sources(
+            account,
+            False, # no permission to add unreleased source 3 
+            {
+                1: {'allowed': False},
+                2: {'allowed': True},
+                3: {'allowed': True}
+            })
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([2,])
+        )
+    
     def test_set_allowed_sources_none(self):
         account = models.Account.objects.get(pk=1)
         self.assertEqual(

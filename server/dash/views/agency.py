@@ -927,14 +927,14 @@ class AccountAgency(api_common.BaseApiView):
     def get_current_allowed_sources_list(self, account, can_see_all_available_sources):  
         queryset = account.allowed_sources.all()
         if not can_see_all_available_sources:
-            queryset.filter(released=True)
+            queryset = queryset.filter(released=True)
 
         return [source.id for source in queryset]
 
     def filter_allowed_sources_list(self, allowed_sources_list, can_see_all_available_sources):
         queryset = models.Source.objects.filter(id__in=allowed_sources_list)
         if not can_see_all_available_sources:
-            queryset.filter(released=True)
+            queryset = queryset.filter(released=True)
 
         return [source.id for source in queryset]     
 
@@ -957,6 +957,7 @@ class AccountAgency(api_common.BaseApiView):
         current_allowed_sources_set = set(current_allowed_sources_list)
 
         to_be_removed = current_allowed_sources_set.difference(new_allowed_sources_set)
+
         to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
 
         account.allowed_sources.add(*list(to_be_added))
