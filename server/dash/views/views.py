@@ -432,6 +432,14 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(flight_time_setting.as_dict())
 
+        campaign_settings = ad_group.campaign.get_current_settings()
+        campaign_target_devices = campaign_settings.target_devices
+
+        if set(campaign_target_devices) == set(ad_group_settings.target_devices):
+            device_comment = ''
+        else:
+            device_comment = 'Differ from campaign default'
+
         targeting_device = OverviewSetting(
             'Targeting',
             'Device: {devices}'.format(
@@ -439,16 +447,22 @@ class AdGroupOverview(api_common.BaseApiView):
                     [w[0].upper() + w[1:] for w in ad_group_settings.target_devices]
                 )
             ),
-            'Differ from campaign default',
+            device_comment,
         )
         settings.append(targeting_device.as_dict())
+
+        campaign_target_regions = campaign_settings.target_regions
+        if set(campaign_target_regions) == set(ad_group_settings.target_regions):
+            region_comment = ''
+        else:
+            region_comment = 'Differ from campaign default'
 
         targeting_region = OverviewSetting(
             '',
             'Location: {regions}'.format(
                 regions=', '.join(ad_group_settings.target_regions)
             ),
-            'Differ from campaign default',
+            region_comment,
         )
         settings.append(targeting_region.as_dict())
 
