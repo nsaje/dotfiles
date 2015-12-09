@@ -2192,11 +2192,18 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 ad_group: data.ad_group,
                 campaign: data.campaign,
                 account: data.account,
-                all_accounts: data.all_accounts
+                all_accounts: data.all_accounts,
+                byDay: {
+                    content_ad: data.by_day.content_ad,
+                    ad_group: data.by_day.ad_group,
+                    campaign: data.by_day.campaign,
+                    account: data.by_day.account,
+                    all_accounts: data.by_day.all_accounts
+                }
             };
         }
 
-        this.get = function (id_, level_, exportSources) {
+        this.get = function (id_, level_, exportSources, startDate, endDate) {
             var deferred = $q.defer();
 
             var urlId = ((level_ == constants.level.ALL_ACCOUNTS)?'':id_+'/');
@@ -2207,6 +2214,12 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             var config = {
                 params: {}
             };
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
 
             $http.get(url, config).
                 success(function (data, status) {

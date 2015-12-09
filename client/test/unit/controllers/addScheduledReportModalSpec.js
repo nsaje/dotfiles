@@ -209,5 +209,40 @@ describe('AddScheduledReportModalCtrl', function() {
             ];
             expect($scope.getAdditionalColumns()).toEqual([]);
         });
+
+        it('tests checkDownloadAllowed', function() {
+            $scope.options = [
+                {value: 'allOk', disabled: false, disabledByDay: false},
+                {value: 'disabledByDay', disabled: false, disabledByDay: true},
+                {value: 'disabledBoth', disabled: true, disabledByDay: true}
+            ];
+
+            $scope.export.type.value = 'allOk';
+            $scope.export.byDay = true;
+            $scope.checkDownloadAllowed();
+            expect($scope.downloadNotAllowedMessage).toEqual('');
+            expect($scope.downloadAllowed).toBe(true);
+            $scope.export.byDay = false;
+            $scope.checkDownloadAllowed();
+            expect($scope.downloadNotAllowedMessage).toEqual('');
+            expect($scope.downloadAllowed).toBe(true);
+
+            $scope.export.type.value = 'disabledByDay';
+            $scope.export.byDay = true;
+            $scope.checkDownloadAllowed();
+            expect($scope.downloadNotAllowedMessage).toEqual('Please select shorter date range to download report with breakdown by day.');
+            expect($scope.downloadAllowed).toBe(false);
+
+            $scope.export.type.value = 'disabledBoth';
+            $scope.export.byDay = true;
+            $scope.checkDownloadAllowed();
+            expect($scope.downloadNotAllowedMessage).toEqual('This report is not available for download due to the volume of content. Please select shorter date range or different granularity.');
+            expect($scope.downloadAllowed).toBe(false);
+
+            $scope.export.byDay = false;
+            $scope.checkDownloadAllowed();
+            expect($scope.downloadNotAllowedMessage).toEqual('This report is not available for download due to the volume of content. Please select shorter date range or different granularity.');
+            expect($scope.downloadAllowed).toBe(false);
+        });
     });
 });

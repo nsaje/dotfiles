@@ -498,7 +498,7 @@ var constants = {
         INACTIVE: 2
     },
     exportType: {
-        VIEW: 'view-csv',
+        ALL_ACCOUNTS: 'allaccounts-csv',
         ACCOUNT: 'account-csv',
         CAMPAIGN: 'campaign-csv',
         AD_GROUP: 'adgroup-csv',
