@@ -105,9 +105,9 @@ def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None
     raw_articles = [{'url': row['url'], 'title': row['title']} for row in data_rows]
     articles = dash.api.reconcile_articles(ad_group, raw_articles)
 
-    supress_invalid_content_ad_check = (not ad_group_source.can_manage_content_ads or
-                                        (date is not None and
-                                         date in SUPRESS_INVALID_CONTENT_ID_CHECK.get(ad_group.id, {}).get(source.id, {})))
+    # in some cases we need to suppress content ad id check due to legacy content still in z1
+    enable_invalid_content_ad_check = ((ad_group_source.can_manage_content_ads and
+                                       date not in SUPRESS_INVALID_CONTENT_ID_CHECK.get(ad_group.id, {}).get(source.id, {})))
 
     if not len(articles) == len(data_rows):
         raise Exception('Not all articles were reconciled')
@@ -124,7 +124,7 @@ def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None
             statsd_helper.statsd_incr('reports.update.err_content_ad_no_id')
             raise Exception('\'id\' field not present in data row.')
 
-        if data_row['id'] not in content_ad_sources and not supress_invalid_content_ad_check:
+        if data_row['id'] not in content_ad_sources and enable_invalid_content_ad_check:
             statsd_helper.statsd_incr('reports.update.err_unknown_content_ad_id')
             raise Exception('Stats for an unknown id. ad group={}. source={}. id={}.'.format(
                 ad_group.id,
@@ -141,7 +141,7 @@ def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None
             'cost_cc': data_row['cost_cc']
         }
 
-        if not supress_invalid_content_ad_check:
+        if ad_group_source.can_manage_content_ads:
             row_dict['content_ad_source'] = content_ad_sources[data_row['id']]
 
         stats_rows.append(row_dict)
