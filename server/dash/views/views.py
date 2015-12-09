@@ -200,16 +200,16 @@ class NavigationDataView(api_common.BaseApiView):
                                                    .group_current_settings()
         ad_group_settingss = {ag_settings.ad_group_id: ag_settings for ag_settings in ad_group_settingss}
 
-        ad_group_sources_settingss = models.AdGroupSourceSettings.objects\
+        """ad_group_sources_settingss = models.AdGroupSourceSettings.objects\
                                                                  .filter(ad_group_source__ad_group_id__in=ad_group_ids)\
                                                                  .filter_by_sources(filtered_sources)\
                                                                  .group_current_settings()\
-                                                                 .select_related('ad_group_source')
-        sources_settings = {}
+                                                                 .select_related('ad_group_source')"""
+        """sources_settings = {}
         for source_settings in ad_group_sources_settingss:
             key = source_settings.ad_group_source.ad_group_id
             sources_settings.setdefault(key, [])
-            sources_settings[key].append(source_settings)
+            sources_settings[key].append(source_settings)"""
 
         for account in data.values():
             account_settings = account_settingss.get(account['id'])
@@ -235,8 +235,8 @@ class NavigationDataView(api_common.BaseApiView):
                     ).lower()
 
                     ad_group['status'] = constants.AdGroupRunningStatus.get_text(
-                        models.AdGroup.get_running_status(
-                            ad_group_settings, sources_settings.get(ad_group['id'])
+                        models.AdGroup.get_running_status_by_flight_time(
+                            ad_group_settings
                         )
                     ).lower()
 
@@ -885,14 +885,12 @@ class AccountCampaigns(api_common.BaseApiView):
         )
         campaign.save(request)
 
-        settings = models.CampaignSettings(
-            name=name,
-            campaign=campaign,
-            account_manager=(account_settings.default_account_manager
-                             if account_settings.default_account_manager else request.user),
-            sales_representative=(account_settings.default_sales_representative
-                                  if account_settings.default_sales_representative else None)
-        )
+        settings = campaign.get_current_settings()  # creates new settings with default values
+        settings.name = name
+        settings.account_manager = (account_settings.default_account_manager
+                                    if account_settings.default_account_manager else request.user)
+        settings.sales_representative = (account_settings.default_sales_representative
+                                         if account_settings.default_sales_representative else None)
         settings.save(request)
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CAMPAIGN,

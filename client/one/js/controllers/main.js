@@ -39,6 +39,9 @@ oneApp.controller('MainCtrl',
     $scope.enablePublisherFilter = false;
     $scope.showSelectedPublisher = null;
 
+    // TODO: move to localstorage
+    $scope.infoboxVisible = false;
+
     $scope.remindToAddBudget = $q.defer(); 
 
     $scope.adGroupData = {};
@@ -74,6 +77,10 @@ oneApp.controller('MainCtrl',
 
         return !$scope.user.permissions[permission];
     };
+
+    $scope.toggleInfoboxVisibility = function () {
+        $scope.infoboxVisible = !$scope.infoboxVisible;
+    }
 
     $scope.getDefaultAllAccountsState = function () {
         // keep the same tab if possible

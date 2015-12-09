@@ -1713,6 +1713,32 @@ class CampaignSettingsTest(TestCase):
         self.assertTrue('campaign_goal' in content['data']['errors'])
         self.assertTrue('target_devices' in content['data']['errors'])
 
+    def test_validation_no_settings_defaults_permission(self):
+        self._login_user(2)
+        permission = Permission.objects.get(codename='campaign_settings_view')
+        self.user.user_permissions.add(permission)
+
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 50,
+                    'goal_quantity': 10,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertFalse(content['success'])
+
+        self.assertIn('campaign_goal', content['data']['errors'])
+
+        # because target devices were copied from the latest settings,
+        # there should be no errors
+        self.assertNotIn('target_devices', content['data']['errors'])
+
 
 class AccountAgencyTest(TestCase):
     fixtures = ['test_views.yaml', 'test_account_agency.yaml']

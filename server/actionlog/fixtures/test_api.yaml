@@ -735,6 +735,8 @@
         iab_category: 'IAB24'
         campaign_goal: 4
         goal_quantity: 10
+        target_devices: ['mobile']
+        target_regions: ['US']
         campaign: 2
     model: dash.campaignsettings
     pk: 1
