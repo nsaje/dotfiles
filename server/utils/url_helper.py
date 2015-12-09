@@ -33,7 +33,7 @@ def get_full_z1_url(partial_url):
     """Returns partial_url prepended with base URL (domain)
 
     Don't use this for generating zwei callback URLS -
-    Use settings.ZWEI_CALLBACK_HOST instead.
+    Use get_zwei_callback_url instead.
     """
     return urlparse.urljoin(settings.BASE_URL, partial_url)
 
