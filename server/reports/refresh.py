@@ -60,30 +60,6 @@ def _get_joined_stats_rows(date, campaign_id):
     return rows_dict.values()
 
 
-def _normalize_join_cols(row):
-    """When doing outer join in Django, columns with same names
-    in both tables can get overriden if one of them is null.
-    As a workaround, we select both of them by giving them different names
-    and then choose the right one."""
-
-    cols = ['date', 'content_ad_id', 'source_id']
-
-    for col in cols:
-        row[col] = row[col + '1'] or row[col + '2']
-        del row[col + '1']
-        del row[col + '2']
-
-    return row
-
-
-def _dictfetchall(cursor):
-    desc = cursor.description
-    return [
-        dict(zip([col[0] for col in desc], row))
-        for row in cursor.fetchall()
-    ]
-
-
 def _get_goals_dict(date, campaign_id):
     goals = reports.models.ContentAdGoalConversionStats.objects.filter(
         date=date,
