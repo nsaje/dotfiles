@@ -36,12 +36,12 @@ class GetURLTest(TestCase):
     def test_get_full_z1_url(self):
         url = url_helper.get_full_z1_url('abcd/123')
 
-        self.assertEqual(url, urlparse.urljoin(settings.BASE_URL, 'abcd/123'))
+        self.assertEqual(url, urlparse.urljoin(settings.BASE_URL, '/abcd/123'))
 
     def test_get_zwei_callback_url(self):
         url = url_helper.get_zwei_callback_url(123)
 
         self.assertEqual(
             url,
-            urlparse.urljoin(settings.ZWEI_CALLBACK_HOST, 'api/zwei_callback/123')
+            urlparse.urljoin(settings.ZWEI_CALLBACK_HOST, '/api/zwei_callback/123')
         )
