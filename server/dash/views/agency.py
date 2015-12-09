@@ -883,7 +883,11 @@ class AccountAgency(api_common.BaseApiView):
 
         with transaction.atomic():
             old_settings = account.get_current_settings()
-            self.set_allowed_sources(settings, old_settings, form.cleaned_data.get('allowed_sources'))
+            self.set_allowed_sources(
+                account,
+                request.user.has_perm('zemauth.can_see_all_available_sources'),
+                form
+            )
             account.save(request)
             settings.save(request)
 
@@ -935,12 +939,18 @@ class AccountAgency(api_common.BaseApiView):
         if not can_see_all_available_sources:
             queryset = queryset.filter(released=True)
 
-        return [source.id for source in queryset]     
+        return [source.id for source in queryset]    
 
-    def set_allowed_sources(self, 
-        account, 
-        can_see_all_available_sources, 
-        allowed_sources_dict):
+    def add_error_to_account_agency_form(self, form):
+        form.add_error(
+            'allowed_sources', 
+            'Media sources {} are still used on this account.'.format(
+                ', '.join(models.Source.objects.filter(id__in=to_be_removed))    
+            )
+        )
+
+    def set_allowed_sources(self, account, can_see_all_available_sources, account_agency_form):
+        allowed_sources_dict = account_agency_form.cleaned_data.get('allowed_sources')
 
         if not allowed_sources_dict:
             return
@@ -956,6 +966,9 @@ class AccountAgency(api_common.BaseApiView):
         current_allowed_sources_set = set(current_allowed_sources_list)
 
         to_be_removed = current_allowed_sources_set.difference(new_allowed_sources_set)
+        #if not self.are_sources_removable(account, to_be_removed):
+        #    self.add_error_to_account_agency_form(account_agency_form)
+        #    raise ValidationError(errors=dict(account_agency_form.errors))
 
         to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
 

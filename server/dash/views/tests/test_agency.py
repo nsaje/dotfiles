@@ -18,6 +18,7 @@ from zemauth.models import User
 from dash import models
 from dash import constants
 from dash.views import agency
+from dash import forms
 
 
 @patch('dash.views.agency.api.order_ad_group_settings_update')
@@ -1752,6 +1753,11 @@ class AccountAgencyTest(TestCase):
         client.login(username=user.email, password=password)
         return client
 
+    def _get_form_with_allowed_sources_dict(self, allowed_sources_dict):
+        form = forms.AccountAgencySettingsForm()
+        form.cleaned_data = {'allowed_sources': allowed_sources_dict}
+        return form
+
     def test_get(self):
         client = self._get_client_with_permissions(['account_agency_view'])
 
@@ -1840,11 +1846,11 @@ class AccountAgencyTest(TestCase):
     def test_set_allowed_sources(self):
         account = models.Account.objects.get(pk=1)
         view = agency.AccountAgency()
-        view.set_allowed_sources(account, True, {
+        view.set_allowed_sources(account, True, self._get_form_with_allowed_sources_dict({
             1: {'allowed': True},
             2: {'allowed': False},
             3: {'allowed': True}
-            })
+            }))
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1, 3])
@@ -1863,11 +1869,11 @@ class AccountAgencyTest(TestCase):
         view.set_allowed_sources(
             account,
             False, # no permission to remove unreleased source 3 
-            {
+            self._get_form_with_allowed_sources_dict({
                 1: {'allowed': False},
                 2: {'allowed': False},
                 3: {'allowed': False}
-            })
+            }))
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([3,])
@@ -1885,11 +1891,11 @@ class AccountAgencyTest(TestCase):
         view.set_allowed_sources(
             account,
             False, # no permission to add unreleased source 3 
-            {
+            self._get_form_with_allowed_sources_dict({
                 1: {'allowed': False},
                 2: {'allowed': True},
                 3: {'allowed': True}
-            })
+            }))
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([2,])
@@ -1902,7 +1908,7 @@ class AccountAgencyTest(TestCase):
             set([1,2])
         )
         view = agency.AccountAgency()
-        view.set_allowed_sources(account, True, None)
+        view.set_allowed_sources(account, True, self._get_form_with_allowed_sources_dict(None))
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1,2])
