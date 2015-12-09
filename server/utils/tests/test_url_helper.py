@@ -38,7 +38,7 @@ class GetURLTest(TestCase):
 
         self.assertEqual(url, urlparse.urljoin(settings.BASE_URL, 'abcd/123'))
 
-    def test_zwei_callback_url(self):
+    def test_get_zwei_callback_url(self):
         url = url_helper.get_zwei_callback_url(123)
 
         self.assertEqual(
