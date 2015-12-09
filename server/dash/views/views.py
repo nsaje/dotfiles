@@ -398,16 +398,15 @@ class AdGroupOverview(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_see_infobox'):
             raise exc.AuthorizationError()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        # this is calculated in _performance_settings
+        self.delivering = False
 
-        # TBD?
-        delivering = False
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         ad_group_settings = ad_group.get_current_settings()
         running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
         header = {
             'title': ad_group_settings.ad_group_name,
-            'subtitle': 'Delivering' if delivering else 'Not Delivering',
             'active': running_status == constants.AdGroupRunningStatus.ACTIVE
         }
 
@@ -416,6 +415,8 @@ class AdGroupOverview(api_common.BaseApiView):
             'settings': self._basic_settings(ad_group, ad_group_settings) +
                 self._performance_settings(ad_group, request.user, ad_group_settings),
         }
+
+        header['subtitle'] = 'Delivering' if self.delivering else 'Not Delivering'
 
         return self.create_api_response(response)
 
@@ -434,14 +435,20 @@ class AdGroupOverview(api_common.BaseApiView):
 
         targeting_device = OverviewSetting(
             'Targeting',
-            'Device: ' + ', '.join(ad_group_settings.target_devices),
+            'Device: {devices}'.format(
+                devices=', '.join(
+                    [w[0].upper() + w[1:] for w in ad_group_settings.target_devices]
+                )
+            ),
             'Differ from campaign default',
         )
         settings.append(targeting_device.as_dict())
 
         targeting_region = OverviewSetting(
             '',
-            'Location:' + ','.join(ad_group_settings.target_regions),
+            'Location: {regions}'.format(
+                regions=', '.join(ad_group_settings.target_regions)
+            ),
             'Differ from campaign default',
         )
         settings.append(targeting_region.as_dict())
@@ -490,9 +497,15 @@ class AdGroupOverview(api_common.BaseApiView):
         return settings
 
     def _calculate_flight_time(self, ad_group_settings):
+        end_date = ad_group_settings.end_date
+        if end_date is not None:
+            end_date_str = end_date.strftime('%m/%d')
+        else:
+            end_date_str = ''
+
         flight_time = "{start_date} - {end_date}".format(
-            start_date=ad_group_settings.start_date,
-            end_date=ad_group_settings.end_date,
+            start_date=ad_group_settings.start_date.strftime('%m/%d'),
+            end_date=end_date_str,
         )
         today = datetime.datetime.today().date()
         if not ad_group_settings.end_date:
@@ -525,6 +538,9 @@ class AdGroupOverview(api_common.BaseApiView):
 
         total_campaign_spend_to_date = self.get_total_campaign_spend(user, ad_group)
         ideal_campaign_spend_to_date = self.get_ideal_campaign_spend(user, ad_group.campaign)
+
+        if ideal_campaign_spend_to_date >= total_campaign_spend_to_date:
+            self.delivering = True
 
         ratio = 0
         if ideal_campaign_spend_to_date > 0:
