@@ -13,19 +13,11 @@
                 theme="select2"
                 search-enabled="false"
                 ng-model="export.type"
-                class="col-xs-5">
+                class="col-xs-5"
+                ng-change="checkDownloadAllowed()">
                 <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}" ui-disable-choice="option.disabled">
-                  <div ng-if="option.disabled"
-                       zem-lazy-popover-text="This report is not available for download due to the volume of content. Please contact your account manager for assistance."
-                       zem-lazy-popover-placement="left"
-                       zem-lazy-popover-animation-class="fade"
-                       zem-lazy-popover-append-to-body="true">
-                        {{option.name}}
-                  </div>
-                  <div ng-if="!option.disabled">
-                        {{option.name}}
-                  </div>
+                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
+                    {{option.name}}
                 </ui-select-choices>
             </ui-select>
 
@@ -35,13 +27,16 @@
         </div>
 
         <div class="form-group">
-          <label for="by-day-checkbox" class="col-xs-4 control-label">Breakdown by day:</label>
-          <input id="by-day-checkbox" type="checkbox" ng-model="export.byDay" class="checkbox">
+            <label for="by-day-checkbox" class="col-xs-4 control-label">Breakdown by day:</label>
+            <input id="by-day-checkbox" type="checkbox" ng-model="export.byDay" class="checkbox" ng-change="checkDownloadAllowed()">
         </div>
 
         <div class="form-group">
             <div class="col-xs-4">
-                <button type="button" class="btn btn-default" ng-click="downloadReport()">Download Now</button>
+                <button type="button" class="btn btn-default" ng-click="downloadReport()" ng-disabled="!downloadAllowed">Download Now</button>
+            </div>
+            <div class="col-xs-8" ng-if="!downloadAllowed">
+                  <span>{{downloadNotAllowedMessage}}</span>
             </div>
         </div>
 

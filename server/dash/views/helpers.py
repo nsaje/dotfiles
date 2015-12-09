@@ -1,3 +1,4 @@
+import collections
 import datetime
 import dateutil.parser
 import pytz
@@ -6,7 +7,6 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.db.models import Q, Max
-from django.core.exceptions import ObjectDoesNotExist
 
 import actionlog.api
 import actionlog.constants
@@ -14,7 +14,6 @@ import actionlog.models
 from dash import models
 from dash import constants
 from dash import api
-from dash import region_targeting_helper
 from utils import exc
 from utils import statsd_helper
 import automation.autopilot
@@ -271,7 +270,7 @@ def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
 
         keys_in_progress = _get_keys_in_progress(ags, waiting_delayed_actions)
 
-        if ad_group_settings.state == constants.AdGroupSettingsState.INACTIVE:
+        if not models.AdGroup.is_ad_group_active(ad_group_settings):
             if ad_group_source_settings and ad_group_source_settings.state == constants.AdGroupSettingsState.ACTIVE:
                 state_message = 'This media source is enabled but will not run until you enable ad group in Settings tab.'
                 messages.append(state_message)
@@ -718,29 +717,61 @@ def _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_
 
 
 def get_ad_group_sources_states(ad_group_sources):
-    return models.AdGroupSourceState.objects.\
-        distinct('ad_group_source_id').\
-        filter(ad_group_source__in=ad_group_sources).\
-        order_by('ad_group_source_id', '-created_dt').\
-        select_related('ad_group_source')
+    return models.AdGroupSourceState.objects\
+                                    .filter(ad_group_source__in=ad_group_sources)\
+                                    .group_current_states()\
+                                    .select_related('ad_group_source')
 
 
 def get_ad_group_sources_settings(ad_group_sources):
-    return models.AdGroupSourceSettings.objects.\
-        distinct('ad_group_source_id').\
-        filter(ad_group_source__in=ad_group_sources).\
-        order_by('ad_group_source_id', '-created_dt').\
-        select_related('ad_group_source')
+    return models.AdGroupSourceSettings.objects\
+        .filter(ad_group_source__in=ad_group_sources)\
+        .group_current_settings()\
+        .select_related('ad_group_source')
 
 
-def get_ad_group_source_settings(ad_group_source):
-    try:
-        return models.AdGroupSourceSettings.objects.\
-            filter(ad_group_source=ad_group_source).\
-            select_related('ad_group_source').\
-            latest('created_dt')
-    except ObjectDoesNotExist:
-        return None
+def get_ad_group_state_by_sources_running_status(ad_groups, ad_groups_settings,
+                                                 ad_groups_sources_settings, group_by_key):
+
+    # TODO: temporary disabled for performance observations - should by running status by source settings
+    running_status_per_ag = map_per_ad_group_flight_running_status(ad_groups_settings)
+
+    status_dict = collections.defaultdict(lambda: constants.AdGroupSettingsState.INACTIVE)
+
+    for ag in ad_groups.values('id', group_by_key):
+        ad_group_id = ag['id']
+        key = ag[group_by_key]
+        if running_status_per_ag[ad_group_id] == constants.AdGroupRunningStatus.ACTIVE:
+            status_dict[key] = constants.AdGroupSettingsState.ACTIVE
+
+    return status_dict
+
+
+def map_per_ad_group_flight_running_status(ad_groups_settings):
+    running_status_dict = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
+    for ags in ad_groups_settings:
+        running_status_dict[ags.ad_group_id] = models.AdGroup.get_running_status_by_flight_time(
+            ags)
+
+    return running_status_dict
+
+
+def map_per_ad_group_source_running_status(ad_groups_settings, ad_groups_sources_settings):
+    """
+    Return a dict with ad group ids as keys and running status of selected ad
+    group sources as values.
+    """
+
+    sources_settings_dict = collections.defaultdict(list)
+    for agss in ad_groups_sources_settings:
+        sources_settings_dict[agss.ad_group_source.ad_group_id].append(agss)
+
+    running_status_dict = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
+    for ags in ad_groups_settings:
+        running_status_dict[ags.ad_group_id] = models.AdGroup.get_running_status_by_sources_setting(
+            ags, sources_settings_dict[ags.ad_group_id])
+
+    return running_status_dict
 
 
 def parse_get_request_content_ad_ids(request_data, param_name):

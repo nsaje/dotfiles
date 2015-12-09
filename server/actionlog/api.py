@@ -27,10 +27,9 @@ logger = logging.getLogger(__name__)
 
 
 def init_enable_ad_group(ad_group, request, order=None, send=True):
-    source_settings_qs = dash.models.AdGroupSourceSettings.objects \
-        .distinct('ad_group_source_id') \
-        .filter(ad_group_source__ad_group=ad_group) \
-        .order_by('ad_group_source_id', '-created_dt')
+    source_settings_qs = dash.models.AdGroupSourceSettings.objects\
+                                                          .filter(ad_group_source__ad_group=ad_group)\
+                                                          .group_current_settings()
 
     new_actionlogs = []
     for source_settings in source_settings_qs:

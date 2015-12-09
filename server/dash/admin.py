@@ -806,12 +806,12 @@ class UserActionLogAdmin(ExportMixin, admin.ModelAdmin):
         settings_link = ''
 
         if obj:
-            obj_link = '<a href="{url}">{name}</a>'.format(
+            obj_link = u'<a href="{url}">{name}</a>'.format(
                 name=obj.name,
                 url=reverse(obj_url_name, args=(obj.pk, )))
 
         if settings_url_name and settings:
-            settings_link = '<a href="{url}">{name}</a>'.format(
+            settings_link = u'<a href="{url}">{name}</a>'.format(
                 name=settings.changes_text or '- no changes description -',
                 url=reverse(settings_url_name, args=(settings.pk, ))
             )
@@ -910,9 +910,7 @@ class ContentAdGroupSettingsStatusFilter(admin.SimpleListFilter):
         if self.value() is None:
             return queryset
 
-        ad_group_settingss = models.AdGroupSettings.objects\
-                                                   .order_by('ad_group_id', '-created_dt')\
-                                                   .distinct('ad_group')
+        ad_group_settingss = models.AdGroupSettings.objects.all().group_current_settings()
 
         queried_state = int(self.value())
         return queryset.filter(

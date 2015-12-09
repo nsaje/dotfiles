@@ -12,6 +12,9 @@
 
 @updated-color: #dff0d8;
 
+@infobox-black: #414141;
+@infobox-gray: #aaaaaa;
+
 @keyframes show-updated {
     0% { background-color: @updated-color; }
     50% { background-color: @updated-color; }
@@ -651,6 +654,133 @@ div[datepicker] {
 
 .select2-chosen {
     color: #454545;
+}
+
+
+.graph-infobox-parent {
+    display: inline-block; 
+    width: 100%; 
+    position: relative; 
+    overflow: hidden;
+}
+
+.graph-container-short {
+    display: inline-block;
+    width: 70%;
+}
+
+.graph-container-full {
+    display: inline-block;
+    width: 100%;
+}
+
+.infobox-container-full {
+    display: inline-block;
+    width: 30%;
+    position: absolute; 
+    height: 100%; 
+    overflow: auto;
+    display: visible;
+}
+
+.infobox-container-short {
+	display: none;
+}
+
+.infobox-button {
+    margin-left: 5px;
+}
+
+.infobox-background {
+    background: #f6f6f6;
+}
+
+.infobox {
+    padding: 5px;
+
+    color: @infobox-black;
+    font-weight: 600;
+}
+
+.infobox-active-circle-icon-gray {
+    .state-icon-placeholder();
+    background-image: url('img/active_circle_icon_gray.svg');
+}
+
+.infobox-status {
+    text-align:right;
+    display: inline-block;
+    min-width: 20px;
+    vertical-align: top;
+    margin-top: 7px;
+    margin-left: 0px;
+}
+
+.infobox-header {
+    display: inline-block; 
+    width: 100%;
+}
+
+.infobox-title {
+    color: @infobox-black;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.infobox-icon {
+    width: 10px;
+    height: 10px;
+}
+
+.infobox-subtitle {
+    color: @infobox-black;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.infobox-setting-label {
+    width: 100px;
+    max-width: 100px;
+    overflow: hidden;
+    display: inline-block;
+    color: @infobox-gray;
+    float: left;
+}
+
+.infobox-setting-value {
+    display: inline;
+    vertical-align: top;
+    color: #454545;
+}
+
+.infobox-setting-value-comment { 
+    display: inline;
+    vertical-align: top;
+    color: @infobox-gray;
+}
+
+.infobox-setting-icon {
+    display: inline-block;
+    vertical-align: top;
+ }
+
+.infobox-details-link {
+    cursor: pointer;
+}
+
+.infobox-setting-info {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.infobox-setting-info-dropped {
+    display: block;
+}
+
+.infobox-setting-info-dropped-content {
+    background: white;
+    margin: 5px;
+    border: 1px solid @infobox-gray;
 }
 
 .chart-hidden {

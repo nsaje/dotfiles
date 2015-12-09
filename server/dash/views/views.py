@@ -159,7 +159,7 @@ class NavigationDataView(api_common.BaseApiView):
         self.fetch_campaigns(data, request.user, filtered_sources)
         self.fetch_accounts(data, request.user, filtered_sources)
 
-        self.add_settings_data(data, include_archived_flag)
+        self.add_settings_data(data, include_archived_flag, filtered_sources)
 
         result = []
         for account in data.values():
@@ -168,24 +168,44 @@ class NavigationDataView(api_common.BaseApiView):
 
         return self.create_api_response(result)
 
-    def add_settings_data(self, data, include_archived_flag):
-        account_settingss = models.AccountSettings.objects.\
-            order_by('account_id', '-created_dt').\
-            distinct('account').\
-            select_related('account')
-        account_settingss = {acc_settings.account.id: acc_settings for acc_settings in account_settingss}
+    def add_settings_data(self, data, include_archived_flag, filtered_sources):
 
-        campaign_settingss = models.CampaignSettings.objects.\
-            order_by('campaign_id', '-created_dt').\
-            distinct('campaign').\
-            select_related('campaign')
-        campaign_settingss = {camp_settings.campaign.id: camp_settings for camp_settings in campaign_settingss}
+        account_ids, campaign_ids, ad_group_ids = [], [], []
 
-        ad_group_settingss = models.AdGroupSettings.objects.\
-            order_by('ad_group_id', '-created_dt').\
-            distinct('ad_group').\
-            select_related('ad_group')
-        ad_group_settingss = {ag_settings.ad_group.id: ag_settings for ag_settings in ad_group_settingss}
+        # collect only relevant ids, so that we don't unnecessarly fetch
+        # the entire set of account/campaign/ad group settings
+        for account in data.values():
+            account_ids.append(account['id'])
+            for campaign in account['campaigns'].values():
+                campaign_ids.append(campaign['id'])
+                for ad_group in campaign['adGroups']:
+                    ad_group_ids.append(ad_group['id'])
+
+        account_settingss = models.AccountSettings.objects\
+                                                  .filter(account_id__in=account_ids)\
+                                                  .group_current_settings()
+        account_settingss = {acc_settings.account_id: acc_settings for acc_settings in account_settingss}
+
+        campaign_settingss = models.CampaignSettings.objects\
+                                                    .filter(campaign_id__in=campaign_ids)\
+                                                    .group_current_settings()
+        campaign_settingss = {camp_settings.campaign_id: camp_settings for camp_settings in campaign_settingss}
+
+        ad_group_settingss = models.AdGroupSettings.objects\
+                                                   .filter(ad_group_id__in=ad_group_ids)\
+                                                   .group_current_settings()
+        ad_group_settingss = {ag_settings.ad_group_id: ag_settings for ag_settings in ad_group_settingss}
+
+        """ad_group_sources_settingss = models.AdGroupSourceSettings.objects\
+                                                                 .filter(ad_group_source__ad_group_id__in=ad_group_ids)\
+                                                                 .filter_by_sources(filtered_sources)\
+                                                                 .group_current_settings()\
+                                                                 .select_related('ad_group_source')"""
+        """sources_settings = {}
+        for source_settings in ad_group_sources_settingss:
+            key = source_settings.ad_group_source.ad_group_id
+            sources_settings.setdefault(key, [])
+            sources_settings[key].append(source_settings)"""
 
         for account in data.values():
             account_settings = account_settingss.get(account['id'])
@@ -204,11 +224,17 @@ class NavigationDataView(api_common.BaseApiView):
 
                     if include_archived_flag:
                         ad_group['archived'] = ad_group_settings.archived if ad_group_settings else False
+
                     ad_group['state'] = constants.AdGroupSettingsState.get_text(
                         ad_group_settings.state if ad_group_settings
                         else constants.AdGroupSettingsState.INACTIVE
                     ).lower()
-                    ad_group['status'] = constants.AdGroupRunningStatus.get_text(ad_group_settings.get_running_status() if ad_group_settings else constants.AdGroupSettingsState.INACTIVE).lower()
+
+                    ad_group['status'] = constants.AdGroupRunningStatus.get_text(
+                        models.AdGroup.get_running_status_by_flight_time(
+                            ad_group_settings
+                        )
+                    ).lower()
 
     def fetch_ad_groups(self, data, user, sources):
         ad_groups = models.AdGroup.objects.all().\
@@ -584,14 +610,12 @@ class AccountCampaigns(api_common.BaseApiView):
         )
         campaign.save(request)
 
-        settings = models.CampaignSettings(
-            name=name,
-            campaign=campaign,
-            account_manager=(account_settings.default_account_manager
-                             if account_settings.default_account_manager else request.user),
-            sales_representative=(account_settings.default_sales_representative
-                                  if account_settings.default_sales_representative else None)
-        )
+        settings = campaign.get_current_settings()  # creates new settings with default values
+        settings.name = name
+        settings.account_manager = (account_settings.default_account_manager
+                                    if account_settings.default_account_manager else request.user)
+        settings.sales_representative = (account_settings.default_sales_representative
+                                         if account_settings.default_sales_representative else None)
         settings.save(request)
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CAMPAIGN,
@@ -670,7 +694,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             'editable_fields': helpers.get_editable_fields(
                 ad_group_source,
                 ad_group_source.ad_group.get_current_settings(),
-                helpers.get_ad_group_source_settings(ad_group_source),
+                ad_group_source.get_current_settings_or_none(),
                 request.user
             )
         })
