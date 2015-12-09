@@ -12,7 +12,7 @@ from django.contrib import auth
 from django.db import models, transaction
 from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.core.validators import validate_email
 
@@ -267,9 +267,7 @@ class Account(models.Model):
             ).distinct()
 
         def exclude_archived(self):
-            archived_settings = AccountSettings.objects.\
-                distinct('account_id').\
-                order_by('account_id', '-created_dt')
+            archived_settings = AccountSettings.objects.all().group_current_settings()
 
             return self.exclude(pk__in=[s.account_id for s in archived_settings if s.archived])
 
@@ -324,10 +322,7 @@ class Campaign(models.Model, PermissionMixin):
         if settings:
             settings = settings[0]
         else:
-            settings = CampaignSettings(
-                campaign=self,
-                name=self.name
-            )
+            settings = CampaignSettings(campaign=self, **CampaignSettings.get_defaults_dict())
 
         return settings
 
@@ -400,9 +395,7 @@ class Campaign(models.Model, PermissionMixin):
             ).distinct()
 
         def exclude_archived(self):
-            archived_settings = CampaignSettings.objects.\
-                distinct('campaign_id').\
-                order_by('campaign_id', '-created_dt')
+            archived_settings = CampaignSettings.objects.all().group_current_settings()
 
             return self.exclude(pk__in=[s.campaign_id for s in archived_settings if s.archived])
 
@@ -488,6 +481,8 @@ class AccountSettings(SettingsBase):
     changes_text = models.TextField(blank=True, null=True)
     allowed_sources = ArrayField(models.IntegerField(), default=[])
 
+    objects = QuerySetManager()
+
     def save(self, request, *args, **kwargs):
         if self.pk is None:
             self.created_by = request.user
@@ -497,6 +492,10 @@ class AccountSettings(SettingsBase):
     class Meta:
         ordering = ('-created_dt',)
 
+    class QuerySet(models.QuerySet):
+        def group_current_settings(self):
+            return self.order_by('account_id', '-created_dt').distinct('account')
+
 
 class CampaignSettings(SettingsBase):
     _settings_fields = [
@@ -505,9 +504,12 @@ class CampaignSettings(SettingsBase):
         'sales_representative',
         'service_fee',
         'iab_category',
+        'promotion_goal',
         'campaign_goal',
         'goal_quantity',
-        'archived'
+        'archived',
+        'target_devices',
+        'target_regions'
     ]
 
     id = models.AutoField(primary_key=True)
@@ -556,9 +558,13 @@ class CampaignSettings(SettingsBase):
         null=False,
         default=0
     )
+    target_devices = jsonfield.JSONField(blank=True, default=[])
+    target_regions = jsonfield.JSONField(blank=True, default=[])
 
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
+
+    objects = QuerySetManager()
 
     def save(self, request, *args, **kwargs):
         if self.pk is None:
@@ -568,6 +574,17 @@ class CampaignSettings(SettingsBase):
 
     class Meta:
         ordering = ('-created_dt',)
+
+    class QuerySet(models.QuerySet):
+        def group_current_settings(self):
+            return self.order_by('campaign_id', '-created_dt').distinct('campaign')
+
+    @classmethod
+    def get_defaults_dict(cls):
+        return {
+            'target_devices': constants.AdTargetDevice.get_all(),
+            'target_regions': ['US']
+        }
 
 
 class SourceType(models.Model):
@@ -986,7 +1003,7 @@ class AdGroup(models.Model):
 
     def can_archive(self):
         current_settings = self.get_current_settings()
-        return current_settings.state == constants.AdGroupSettingsState.INACTIVE
+        return not self.is_ad_group_active(current_settings)
 
     def can_restore(self):
         if self.campaign.is_archived():
@@ -997,6 +1014,53 @@ class AdGroup(models.Model):
     def is_archived(self):
         current_settings = self.get_current_settings()
         return current_settings.archived
+
+    @classmethod
+    def get_running_status(cls, ad_group_settings, ad_group_sources_settings):
+        """
+        Returns the actual running status of ad group settings with selected sources settings.
+        """
+
+        if not cls.is_ad_group_active(ad_group_settings):
+            return constants.AdGroupRunningStatus.INACTIVE
+
+        if (cls.get_running_status_by_flight_time(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE and
+           cls.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings) ==
+           constants.AdGroupRunningStatus.ACTIVE):
+            return constants.AdGroupRunningStatus.ACTIVE
+
+        return constants.AdGroupRunningStatus.INACTIVE
+
+    @classmethod
+    def get_running_status_by_flight_time(cls, ad_group_settings):
+        if not cls.is_ad_group_active(ad_group_settings):
+            return constants.AdGroupRunningStatus.INACTIVE
+
+        now = dates_helper.utc_today()
+        if ad_group_settings.start_date <= now and\
+           (ad_group_settings.end_date is None or now <= ad_group_settings.end_date):
+            return constants.AdGroupRunningStatus.ACTIVE
+        return constants.AdGroupRunningStatus.INACTIVE
+
+    @classmethod
+    def get_running_status_by_sources_setting(cls, ad_group_settings, ad_group_sources_settings):
+        """
+        Returns "running" when at least one of the ad group sources settings status is
+        set to be active.
+        """
+        if not cls.is_ad_group_active(ad_group_settings):
+            return constants.AdGroupRunningStatus.INACTIVE
+
+        if ad_group_sources_settings and\
+           any(x.state == constants.AdGroupSourceSettingsState.ACTIVE for x in ad_group_sources_settings):
+            return constants.AdGroupRunningStatus.ACTIVE
+        return constants.AdGroupRunningStatus.INACTIVE
+
+    @classmethod
+    def is_ad_group_active(cls, ad_group_settings):
+        if ad_group_settings and ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE:
+            return True
+        return False
 
     @transaction.atomic
     def archive(self, request):
@@ -1047,9 +1111,7 @@ class AdGroup(models.Model):
             ).distinct()
 
         def exclude_archived(self):
-            archived_settings = AdGroupSettings.objects.\
-                distinct('ad_group_id').\
-                order_by('ad_group_id', '-created_dt')
+            archived_settings = AdGroupSettings.objects.all().group_current_settings()
 
             return self.exclude(pk__in=[s.ad_group_id for s in archived_settings if s.archived])
 
@@ -1126,6 +1188,24 @@ class AdGroupSource(models.Model):
             name = name.rsplit(None, 1)[0]
 
         return name
+
+    def get_current_settings(self):
+        current_settings = self.get_current_settings_or_none()
+        return current_settings if current_settings else \
+            AdGroupSourceSettings(ad_group_source=self)
+
+    def get_current_settings_or_none(self):
+        if not self.pk:
+            raise exc.BaseError(
+                'Ad group source settings can\'t be fetched because ad group source hasn\'t been saved yet.'
+            )
+
+        try:
+            return AdGroupSourceSettings.objects\
+                                        .filter(ad_group_source_id=self.pk)\
+                                        .latest('created_dt')
+        except ObjectDoesNotExist:
+            return None
 
     def save(self, request=None, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)
@@ -1206,14 +1286,6 @@ class AdGroupSettings(SettingsBase):
         permissions = (
             ("settings_view", "Can view settings in dashboard."),
         )
-
-    def get_running_status(self):
-        if self.state != constants.AdGroupSettingsState.ACTIVE:
-            return constants.AdGroupRunningStatus.INACTIVE
-        now = dates_helper.utc_today()
-        if self.start_date <= now and (self.end_date is None or now <= self.end_date):
-            return constants.AdGroupRunningStatus.ACTIVE
-        return constants.AdGroupRunningStatus.INACTIVE
 
     def _convert_date_utc_datetime(self, date):
         dt = datetime.datetime(
@@ -1320,6 +1392,8 @@ class AdGroupSettings(SettingsBase):
 
         return value
 
+    objects = QuerySetManager()
+
     def get_tracking_codes(self):
         # Strip the first '?' as we don't want to send it as a part of query string
         return self.tracking_code.lstrip('?')
@@ -1332,6 +1406,10 @@ class AdGroupSettings(SettingsBase):
                 self.created_by = request.user
 
         super(AdGroupSettings, self).save(*args, **kwargs)
+
+    class QuerySet(models.QuerySet):
+        def group_current_settings(self):
+            return self.order_by('ad_group_id', '-created_dt').distinct('ad_group')
 
 
 class AdGroupSourceState(models.Model):
@@ -1365,9 +1443,15 @@ class AdGroupSourceState(models.Model):
         verbose_name='Daily budget'
     )
 
+    objects = QuerySetManager()
+
     class Meta:
         get_latest_by = 'created_dt'
         ordering = ('-created_dt',)
+
+    class QuerySet(models.QuerySet):
+        def group_current_states(self):
+            return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
 
 
 class AdGroupSourceSettings(models.Model):
@@ -1412,6 +1496,8 @@ class AdGroupSourceSettings(models.Model):
         choices=constants.AdGroupSourceSettingsAutopilotState.get_choices()
     )
 
+    objects = QuerySetManager()
+
     def save(self, request, *args, **kwargs):
         if self.pk is None and request is not None:
             self.created_by = request.user
@@ -1455,6 +1541,19 @@ class AdGroupSourceSettings(models.Model):
             )
 
         return result
+
+    class QuerySet(models.QuerySet):
+        def group_current_settings(self):
+            return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
+
+        def filter_by_sources(self, sources):
+            if set(sources) == set(Source.objects.all()):
+                return self
+
+            return self.filter(
+                models.Q(id__in=AdGroup.demo_objects.all()) |
+                models.Q(ad_group_source__source__in=sources)
+            ).distinct()
 
 
 class UploadBatch(models.Model):

@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import admin as authadmin, forms
+from django.contrib.auth.models import Permission
 
 import models
 
@@ -48,3 +49,4 @@ class InternalGroupAdmin(admin.ModelAdmin):
 
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.InternalGroup, InternalGroupAdmin)
+admin.site.register(Permission)

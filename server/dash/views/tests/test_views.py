@@ -106,6 +106,55 @@ class UserTest(TestCase):
         })
 
 
+@patch('dash.views.views.helpers.log_useraction_if_necessary')
+class AccountCampaignsTest(TestCase):
+    fixtures = ['test_views.yaml']
+
+    class MockSettingsWriter(object):
+        def __init__(self, init):
+            pass
+
+        def set(self, resource, request):
+            pass
+
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username=User.objects.get(pk=1).email, password='secret')
+
+    def test_put(self, mock_log_useraction):
+        campaign_name = 'New campaign'
+
+        response = self.client.put(
+            reverse('account_campaigns', kwargs={'account_id': '1'}),
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        data = json.loads(response.content)['data']
+        self.assertIn('id', data)
+        self.assertIn('name', data)
+        self.assertEqual(data['name'], campaign_name)
+
+        campaign_id = data['id']
+        campaign = models.Campaign.objects.get(pk=campaign_id)
+
+        self.assertEqual(campaign.name, campaign_name)
+
+        settings = models.CampaignSettings.objects.get(campaign_id=campaign_id)
+
+        self.assertEqual(settings.target_devices, constants.AdTargetDevice.get_all())
+        self.assertEqual(settings.target_regions, ['US'])
+        self.assertEqual(settings.name, campaign_name)
+        self.assertEqual(settings.account_manager.id, 2)
+        self.assertEqual(settings.sales_representative.id, 3)
+
+        mock_log_useraction.assert_called_with(
+            response.wsgi_request,
+            constants.UserActionType.CREATE_CAMPAIGN,
+            campaign=campaign
+        )
+
+
 class AdGroupSourceSettingsTest(TestCase):
     fixtures = ['test_models.yaml', 'test_views.yaml', ]
 

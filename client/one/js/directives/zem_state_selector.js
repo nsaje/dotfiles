@@ -27,9 +27,12 @@ oneApp.directive('zemStateSelector', function () {
             $scope.setState = function (state, autopilotState) {
                 $scope.isOpen = false;
 
-                if ( !$scope.active && autopilotState === $scope.autopilotEnabledValue) {
+                // prevent autopilot enabling when media source is paused
+                if ($scope.autopilotEnabledValue && !$scope.active && autopilotState === $scope.autopilotEnabledValue) {
                     return;
                 }
+
+                // do nothing when no change
                 if (state === $scope.value && autopilotState === $scope.autopilotValue) {
                     return;
                 }

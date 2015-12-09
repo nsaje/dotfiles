@@ -29,6 +29,44 @@
             <label ng-repeat="error in errors.campaignGoal" class="control-label error" for="goal-select">{{ error }}</label>
         </div>
 
+        <div ng-if="hasPermission('zemauth.settings_defaults_on_campaign_level')" class="form-vertical default-settings">
+            <div class="form-group" ng-class="{'has-error': !!errors.targetDevices}">
+                <h3 class="col-xs-3 control-label">
+                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.settings_defaults_on_campaign_level')" popover-placement="right"></zem-internal-feature>
+                    Default settings
+                    <zem-help-popover content="Default targeting settings used for all newly created ad groups." placement="top"></zem-help-popover>
+                </h3>
+            </div>
+            <div class="form-group" ng-class="{'has-error': !!errors.targetDevices}">
+                <label class="col-xs-3 control-label">
+                    Device targeting
+                    <zem-help-popover content="The devices on which your content ads should be shown." placement="top"></zem-help-popover>
+                </label>
+                <div class="col">
+                    <div class="checkbox" ng-repeat='device in settings.targetDevices'>
+                        <label>
+                            <input type="checkbox" ng-model="device.checked"> {{ device.name }}
+                        </label>
+                    </div>
+                </div>
+
+                <label ng-repeat="error in errors.targetDevices" class="control-label error">{{ error }}</label>
+            </div>
+
+            <div class="form-group" ng-class="{'has-error': !!errors.targetRegions}">
+                <label class="col-xs-2 control-label">
+                    Locations
+                    <zem-help-popover content="The countries, states and DMA regions where your content ads should be shown." placement="top"></zem-help-popover>
+                </label>
+
+                <div class="col-xs-6 col-md-4">
+                    <zem-locations zem-selected-location-codes="settings.targetRegions" zem-has-permission="hasPermission"></zem-locations>
+                </div>
+
+                <label ng-repeat="error in errors.targetRegions" class="control-label error">{{ error }}</label>
+            </div>
+        </div>
+
         <button
 			 type="button" class="btn btn-primary" ng-click="saveSettings()"
 			 zem-tutorial-popover-condition-promise="campaignHasFreshSettings()"

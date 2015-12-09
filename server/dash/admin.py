@@ -910,9 +910,7 @@ class ContentAdGroupSettingsStatusFilter(admin.SimpleListFilter):
         if self.value() is None:
             return queryset
 
-        ad_group_settingss = models.AdGroupSettings.objects\
-                                                   .order_by('ad_group_id', '-created_dt')\
-                                                   .distinct('ad_group')
+        ad_group_settingss = models.AdGroupSettings.objects.all().group_current_settings()
 
         queried_state = int(self.value())
         return queryset.filter(

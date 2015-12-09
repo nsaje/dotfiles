@@ -96,7 +96,7 @@ def get_autopilot_ad_group_sources_settings(adgroup):
 
 
 def ad_group_source_is_on_autopilot(ad_group_source):
-    setting = dash.views.helpers.get_ad_group_source_settings(ad_group_source)
+    setting = ad_group_source.get_current_settings_or_none()
     if setting is None:
         return False
     return setting.autopilot_state == constants.AdGroupSourceSettingsAutopilotState.ACTIVE

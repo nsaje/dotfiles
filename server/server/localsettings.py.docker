@@ -92,7 +92,8 @@ if BUILD_NUMBER:
     CLIENT_STATIC_URL = ROOT_STATIC_URL + '/client'
 else:
     SERVER_STATIC_URL = '/static'
-    CLIENT_STATIC_URL = 'http://0.0.0.0:9999'
+    CLIENT_STATIC_URL = 'http://{hostname}:{port}'.format(  hostname=os.environ.get('EINSSTATIC_PORT_9999_TCP_ADDR', 'einsstatic'),
+                                                            port=os.environ.get('EINSSTATIC_PORT_9999_TCP_PORT', '9999'))
 
 # Eins host
 EINS_HOST = ''

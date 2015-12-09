@@ -722,6 +722,8 @@
         account_manager: NULL
         sales_representative: NULL
         iab_category: 'IAB24'
+        target_devices: ['mobile']
+        target_regions: ['US']
         campaign: 2
     model: dash.campaignsettings
     pk: 1
@@ -1010,6 +1012,15 @@
         state: 2
     model: dash.adgroupsourcesettings
     pk: 4
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 11
+        cpc_cc: null
+        daily_budget_cc: null
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 6
 
 # test adgroupsourcestate
 

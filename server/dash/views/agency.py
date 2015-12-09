@@ -581,7 +581,7 @@ class CampaignSettings(api_common.BaseApiView):
         campaign_settings = campaign.get_current_settings()
 
         response = {
-            'settings': self.get_dict(campaign_settings, campaign),
+            'settings': self.get_dict(request, campaign_settings, campaign),
         }
 
         return self.create_api_response(response)
@@ -594,12 +594,20 @@ class CampaignSettings(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         resource = json.loads(request.body)
 
-        form = forms.CampaignSettingsForm(resource.get('settings', {}))
+        settings_dict = resource.get('settings', {})
+
+        settings = campaign.get_current_settings().copy_settings()
+        if not request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
+            # copy properties that can't be set by the user
+            # to pass validation
+            settings_dict['target_devices'] = settings.target_devices
+            settings_dict['target_regions'] = settings.target_regions
+
+        form = forms.CampaignSettingsForm(settings_dict)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        settings = campaign.get_current_settings().copy_settings()
-        self.set_settings(settings, campaign, form.cleaned_data)
+        self.set_settings(request, settings, campaign, form.cleaned_data)
         self.set_campaign(campaign, form.cleaned_data)
 
         CampaignAgency.propagate_and_save(campaign, settings, request)
@@ -607,28 +615,36 @@ class CampaignSettings(api_common.BaseApiView):
         helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_SETTINGS, campaign=campaign)
 
         response = {
-            'settings': self.get_dict(settings, campaign)
+            'settings': self.get_dict(request, settings, campaign)
         }
 
         return self.create_api_response(response)
 
-    def get_dict(self, settings, campaign):
-        result = {}
+    def get_dict(self, request, settings, campaign):
+        if not settings:
+            return {}
 
-        if settings:
-            result = {
-                'id': str(campaign.pk),
-                'name': campaign.name,
-                'campaign_goal': settings.campaign_goal,
-                'goal_quantity': settings.goal_quantity
-            }
+        result = {
+            'id': str(campaign.pk),
+            'name': campaign.name,
+            'campaign_goal': settings.campaign_goal,
+            'goal_quantity': settings.goal_quantity,
+        }
+
+        if request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
+            result['target_devices'] = settings.target_devices
+            result['target_regions'] = settings.target_regions
 
         return result
 
-    def set_settings(self, settings, campaign, resource):
+    def set_settings(self, request, settings, campaign, resource):
         settings.name = resource['name']
         settings.campaign_goal = resource['campaign_goal']
         settings.goal_quantity = resource['goal_quantity']
+
+        if request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
+            settings.target_devices = resource['target_devices']
+            settings.target_regions = resource['target_regions']
 
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']
