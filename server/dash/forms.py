@@ -259,7 +259,7 @@ class AccountAgencySettingsForm(forms.Form):
                 raise err
 
             allowed = v.get('allowed', False)
-            allowed_sources[key] = {'allowed': allowed, 'name': v['name']}
+            allowed_sources[key] = {'allowed': allowed, 'name': v.get('name', '')}
         
         return allowed_sources
 

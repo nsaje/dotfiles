@@ -1794,7 +1794,9 @@ class AccountAgencyTest(TestCase):
                     'default_sales_representative': '1',
                     'default_account_manager': '3',
                     'id': '1',
-                    'allowed_sources': {}
+                    'allowed_sources': {
+                        '1': {'allowed': True}
+                    }
                 }
             }),
             content_type='application/json',
@@ -1805,6 +1807,10 @@ class AccountAgencyTest(TestCase):
 
         account = models.Account.objects.get(pk=1)
         account_settings = account.get_current_settings()
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([1,])
+        )
 
         self.assertDictEqual(account_settings.get_settings_dict(), {
             'archived': False,
