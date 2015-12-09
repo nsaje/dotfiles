@@ -326,20 +326,25 @@ def should_send_notification_mail(campaign, user, request):
     return True
 
 
-def send_scheduled_export_report(report_name, email_adresses, report_contents, report_filename):
+def send_scheduled_export_report(report_name, frequency, granularity, entity_name, scheduled_by, email_adresses, report_contents, report_filename):
     subject = u'Zemanta Scheduled Report: {}'.format(
         report_name
     )
-    # TODO: waiting for email copy from product, will replace
     body = u'''Hi,
 
-Please find attached Your scheduled report {report_name}.
+Please find attached Your {frequency} scheduled report {report_name} for {entity_name} by {granularity}.
+
+Report was scheduled by {scheduled_by}.
 
 Yours truly,
 Zemanta
     '''
     body = body.format(
-        report_name=report_name
+        report_name=report_name,
+        frequency=frequency.lower(),
+        granularity=granularity,
+        entity_name=entity_name,
+        scheduled_by=scheduled_by
     )
     if not email_adresses:
         raise Exception('No recipient emails: ' + report_name)

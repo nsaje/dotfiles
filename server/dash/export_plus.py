@@ -103,7 +103,11 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
                 stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
             stat['account'] = models.Account.objects.get(id=stat['account'])
 
-    ordering = _adjust_ordering_by_name(ordering, dimensions)
+    if 'date' in dimensions:
+        ordering = 'date'
+    else:
+        ordering = _adjust_ordering_by_name(ordering, dimensions)
+
     return sort_results(stats, [ordering])
 
 
