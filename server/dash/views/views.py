@@ -432,7 +432,6 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(flight_time_setting.as_dict())
 
-
         targeting_device = OverviewSetting(
             'Targeting',
             'Device: {devices}'.format(
