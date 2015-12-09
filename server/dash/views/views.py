@@ -513,10 +513,6 @@ class AdGroupOverview(api_common.BaseApiView):
                 (yesterday_cost - float(ad_group_settings.daily_budget_cc)) / float(ad_group_settings.daily_budget_cc),
                 1)
 
-        percent_daily_cap = None
-        if ad_group_settings.daily_budget_cc > 0:
-            percent_daily_cap = round(100 * yesterday_cost / float(ad_group_settings.daily_budget_cc))
-
         yesterday_spend_settings = OverviewSetting(
             'Yesterday spend:',
             '${:.2f}'.format(yesterday_cost),
