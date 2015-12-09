@@ -3,13 +3,16 @@ oneApp.controller('AddScheduledReportModalCtrl',
   ['$scope', '$modalInstance', 'api', 'zemFilterService', '$window', '$state',
   function($scope, $modalInstance, api, zemFilterService, $window, $state) {
     $scope.exportSchedulingFrequencies = options.exportFrequency;
-    $scope.showInProgress = true;
+    $scope.showInProgress = false;
     $scope.hasError = false;
+    $scope.showSchedule = $scope.exportModalType === 'schedule';
+    $scope.breakdownByDayDisabled = false;
 
     $scope.export = {};
     $scope.validationErrors = {};
 
     $scope.setDisabledExportOptions = function() {
+        $scope.showInProgress = true;
         api.exportPlusAllowed.get($state.params.id, $scope.level, $scope.exportSources, $scope.startDate, $scope.endDate).then(
             function (data) {
                 $scope.options.forEach(function (opt) {
@@ -33,7 +36,6 @@ oneApp.controller('AddScheduledReportModalCtrl',
             }
          ).finally( function () {
             $scope.checkDownloadAllowed();
-            $scope.checkBreakdownAvailable();
             $scope.showInProgress = false;
          });
     };
@@ -127,7 +129,11 @@ oneApp.controller('AddScheduledReportModalCtrl',
     $scope.init = function () {
         $scope.export.frequency = $scope.exportSchedulingFrequencies[0];
         $scope.export.type = $scope.options[0];
-        $scope.setDisabledExportOptions();
+        if ( !$scope.showSchedule ) {
+            $scope.setDisabledExportOptions();
+        } else {
+            $scope.checkBreakdownAvailable();
+        }
     };
     $scope.init();
 

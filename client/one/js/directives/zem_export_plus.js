@@ -16,8 +16,16 @@ oneApp.directive('zemExportPlus', function() {
         },
         templateUrl: '/partials/zem_export_plus.html',
         controller: ['$scope', '$modal', function($scope, $modal) {
+            $scope.exportModalTypes = [{
+                name: 'Download',
+                value: 'download'
+            }, {
+              name: 'Schedule',
+              value: 'schedule'
+            }];
 
-            $scope.showAddScheduledReport = function () {
+            $scope.showScheduledReportModal = function (exportModalType) {
+                $scope.exportModalType = exportModalType;
                 var modalInstance = $modal.open({
                     templateUrl: '/partials/add_scheduled_report_modal.html',
                     controller: 'AddScheduledReportModalCtrl',

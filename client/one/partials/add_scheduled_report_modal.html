@@ -2,7 +2,7 @@
     <form id="add-scheduled-report-form" ng-submit="addScheduledReport()" class="modal-form add-scheduled-report-form form-horizontal">
         <div class="title">Export Report</div>
 
-        <div class="form-group" ng-class="{'has-error': !!validationErrors.report_name}">
+        <div ng-if="showSchedule" class="form-group" ng-class="{'has-error': !!validationErrors.report_name}">
             <label for="report-name-input" class="col-xs-4 control-label">
                 Report name
             </label>
@@ -43,32 +43,7 @@
             </div>
         </div>
 
-        <div class="form-group">
-          <div class="col-xs-4">
-            <label for="by-day-checkbox" class="control-label">Breakdown by day</label>
-          </div>
-          <div class="col-xs-4">
-            <input id="by-day-checkbox"
-                type="checkbox"
-                ng-model="export.byDay"
-                class="checkbox"
-                ng-change="checkDownloadAllowed()"
-                ng-disabled="breakdownByDayDisabled">
-          </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-xs-4">
-                <button type="button" class="btn btn-default" ng-click="downloadReport()" ng-disabled="!downloadAllowed">Download Now</button>
-            </div>
-            <div class="col-xs-8" ng-if="!downloadAllowed">
-                  <span>{{downloadNotAllowedMessage}}</span>
-            </div>
-        </div>
-
-        <div class="title">Schedule report?</div>
-
-        <div class="form-group" ng-class="{'has-error': !!validationErrors.frequency}">
+        <div ng-if="showSchedule" class="form-group" ng-class="{'has-error': !!validationErrors.frequency}">
             <label for="frequency-select" class="col-xs-4 control-label">
                 Frequency
                 <zem-help-popover content="Report will be delivered to your inbox every day, week or month at 2AM EST." placement="top"></zem-help-popover>
@@ -92,7 +67,21 @@
             </div>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!validationErrors.recipient_emails}">
+        <div class="form-group">
+          <div class="col-xs-4">
+            <label for="by-day-checkbox" class="control-label">Breakdown by day</label>
+          </div>
+          <div class="col-xs-4">
+            <input id="by-day-checkbox"
+                type="checkbox"
+                ng-model="export.byDay"
+                class="checkbox"
+                ng-change="checkDownloadAllowed()"
+                ng-disabled="breakdownByDayDisabled">
+          </div>
+        </div>
+
+        <div ng-if="showSchedule" class="form-group" ng-class="{'has-error': !!validationErrors.recipient_emails}">
             <label for="recipient-emails-textarea" class="col-xs-4 control-label" id="recipient-emails-label">
                 Recipient emails
                 <zem-help-popover content="Comma-separated list of recipient email addresses." placement="top"></zem-help-popover>
@@ -112,16 +101,25 @@
         </div>
 
         <div class="form-group">
-            <div class="col-xs-4">
+            <div ng-if="showSchedule" class="col-xs-4">
                 <button type="submit" class="btn btn-default">Schedule</button>
+            </div>
+            <div ng-if="!showSchedule" class="col-xs-4">
+                <button type="button" class="btn btn-default" ng-click="downloadReport()" ng-disabled="!downloadAllowed">Download Now</button>
             </div>
             <div class="col-xs-3">
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
             </div>
             <div class="loader" ng-show="showInProgress"></div>
-            <span class="col-xs-5 small error" ng-if="hasError">
-                An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
+        </div>
+
+        <div class="form-group">
+          <span class="col-xs-12 small error">
+            <span ng-if="hasError">
+              An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
             </span>
+            <span ng-if="!downloadAllowed">{{downloadNotAllowedMessage}}</span>
+          </span>
         </div>
     </form>
 </div>
