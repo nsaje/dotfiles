@@ -434,7 +434,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         targeting_device = OverviewSetting(
             'Targeting',
-            'Device: ' + ','.join(ad_group_settings.target_devices),
+            'Device: ' + ', '.join(ad_group_settings.target_devices),
             'Differ from campaign default',
         )
         settings.append(targeting_device.as_dict())
@@ -465,7 +465,6 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(campaign_budget_setting.as_dict())
 
-        from pudb import set_trace; set_trace()
         tracking_code_settings = OverviewSetting(
             'Tracking codes',
             'Yes' if ad_group_settings.tracking_code else 'No',
@@ -608,7 +607,6 @@ class AdGroupOverview(api_common.BaseApiView):
 
         # assuming we will add moar campaign goals in the future
         raise exceptions.NotImplementedError()
-
 
     def get_goal_difference(self, goal_type, target, actual):
         """

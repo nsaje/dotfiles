@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 # -*- coding: utf-8 -*-
 
 import json
@@ -2032,6 +2032,9 @@ class AdGroupOverviewTest(TestCase):
         self.assertFalse(header['active'])
 
         settings = response['data']['settings']
+
+        device_setting = [s for s in settings if 'targeting' in s['name'].lower()][0]
+        self.assertEqual('Device: desktop, mobile', device_setting['value'])
 
         tracking_setting = [s for s in settings if 'tracking' in s['name'].lower()][0]
         self.assertEqual(tracking_setting['value'], 'Yes')
