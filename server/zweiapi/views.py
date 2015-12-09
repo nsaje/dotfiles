@@ -106,8 +106,8 @@ def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None
     articles = dash.api.reconcile_articles(ad_group, raw_articles)
 
     # in some cases we need to suppress content ad id check due to legacy content still in z1
-    enable_invalid_content_ad_check = ((ad_group_source.can_manage_content_ads and
-                                       date not in SUPRESS_INVALID_CONTENT_ID_CHECK.get(ad_group.id, {}).get(source.id, {})))
+    enable_invalid_content_ad_check = (ad_group_source.can_manage_content_ads and
+                                       date not in SUPRESS_INVALID_CONTENT_ID_CHECK.get(ad_group.id, {}).get(source.id, {}))
 
     if not len(articles) == len(data_rows):
         raise Exception('Not all articles were reconciled')
