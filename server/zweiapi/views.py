@@ -33,6 +33,14 @@ from utils import statsd_helper
 logger = logging.getLogger(__name__)
 
 
+# (ad_group_id -> source_id -> date) triplets for which we do not want to check if
+# received reports content ad ids exist in z1. Use only after discrepancies were
+# fixed - eg. content ad ids synced, content ads paused/reinserted etc.
+SUPRESS_INVALID_CONTENT_ID_CHECK = {
+    # content that should not exist in Outbrain and made some impressions
+    927: {3: datetime.date(2015, 12, 8)}
+}
+
 @csrf_exempt
 @statsd_helper.statsd_timer('zweiapi.views', 'zwei_callback')
 def zwei_callback(request, action_id):
@@ -93,9 +101,13 @@ def _get_error_message(data):
     return '\n'.join(message)
 
 
-def _prepare_report_rows(ad_group, source, data_rows):
+def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None):
     raw_articles = [{'url': row['url'], 'title': row['title']} for row in data_rows]
     articles = dash.api.reconcile_articles(ad_group, raw_articles)
+
+    # in some cases we need to suppress content ad id check due to legacy content still in z1
+    enable_invalid_content_ad_check = ((ad_group_source.can_manage_content_ads and
+                                       date not in SUPRESS_INVALID_CONTENT_ID_CHECK.get(ad_group.id, {}).get(source.id, {})))
 
     if not len(articles) == len(data_rows):
         raise Exception('Not all articles were reconciled')
@@ -112,7 +124,7 @@ def _prepare_report_rows(ad_group, source, data_rows):
             statsd_helper.statsd_incr('reports.update.err_content_ad_no_id')
             raise Exception('\'id\' field not present in data row.')
 
-        if data_row['id'] not in content_ad_sources:
+        if data_row['id'] not in content_ad_sources and enable_invalid_content_ad_check:
             statsd_helper.statsd_incr('reports.update.err_unknown_content_ad_id')
             raise Exception('Stats for an unknown id. ad group={}. source={}. id={}.'.format(
                 ad_group.id,
@@ -120,15 +132,19 @@ def _prepare_report_rows(ad_group, source, data_rows):
                 data_row['id']
             ))
 
-        stats_rows.append({
+        row_dict = {
             'id': data_row['id'],
             'article': article,
             'impressions': data_row['impressions'],
             'clicks': data_row['clicks'],
             'data_cost_cc': data_row.get('data_cost_cc') or 0,
-            'cost_cc': data_row['cost_cc'],
-            'content_ad_source': content_ad_sources[data_row['id']],
-        })
+            'cost_cc': data_row['cost_cc']
+        }
+
+        if ad_group_source.can_manage_content_ads:
+            row_dict['content_ad_source'] = content_ad_sources[data_row['id']]
+
+        stats_rows.append(row_dict)
 
     return stats_rows
 
@@ -312,6 +328,7 @@ def _get_action(action_id):
 def _fetch_reports_callback(action, data):
     date = action.payload['args']['date']
     ad_group = action.ad_group_source.ad_group
+    ad_group_source = action.ad_group_source
     source = action.ad_group_source.source
 
     logger.info('_fetch_reports_callback: Processing reports callback for adgroup {adgroup_id}  source {source_id}'.format(
@@ -338,11 +355,13 @@ def _fetch_reports_callback(action, data):
         )
 
     if valid_response and _has_changed(data, ad_group, source, date, change_unique_key):
-        rows = _prepare_report_rows(ad_group, source, data['data'])
+        rows = _prepare_report_rows(ad_group, ad_group_source, source, data['data'], date)
         article_rows = _remove_content_ad_sources_from_report_rows(rows)
 
         reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, article_rows)
-        reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
+
+        if ad_group_source.can_manage_content_ads:
+            reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
 
         # set cache only after everything has updated successfully
         _set_reports_cache(data, ad_group, source, date, change_unique_key)
