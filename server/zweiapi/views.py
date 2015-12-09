@@ -142,7 +142,7 @@ def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None
             'cost_cc': data_row['cost_cc']
         }
 
-        if 'id' in data_row:
+        if data_row['id'] in content_ad_sources:
             row_dict['content_ad_source'] = content_ad_sources[data_row['id']]
 
         stats_rows.append(row_dict)
