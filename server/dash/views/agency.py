@@ -899,11 +899,10 @@ class AccountAgency(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def are_sources_removable(self, account, sources_to_be_removed):
-        for campaign in account.campaign_set.all():
-            if campaign.is_archived():
-                continue
+        for campaign in models.Campaign.objects.filter(account_id=account.id).exclude_archived():
 
             for adgroup in campaign.adgroup_set.filter(is_demo=False):
+                adgroup_settings = adgroup.get_current_settings()
                 if adgroup_settings.state == constants.AdGroupSettingsState.INACTIVE:
                     continue
 
