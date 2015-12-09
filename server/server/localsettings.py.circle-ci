@@ -77,8 +77,8 @@ GOOGLE_OAUTH_CLIENT_SECRET = ''
 SERVER_STATIC_URL = '/static'
 CLIENT_STATIC_URL = 'http://0.0.0.0:9999'
 
-# Eins host
-EINS_HOST = ''
+# Zwei callback host
+ZWEI_CALLBACK_HOST = ''
 
 # Zwei API
 ZWEI_API_TASKS_URL = 'http://127.0.0.1/purcel/tasks/'

@@ -95,8 +95,8 @@ else:
     CLIENT_STATIC_URL = 'http://{hostname}:{port}'.format(  hostname=os.environ.get('EINSSTATIC_PORT_9999_TCP_ADDR', 'einsstatic'),
                                                             port=os.environ.get('EINSSTATIC_PORT_9999_TCP_PORT', '9999'))
 
-# Eins host
-EINS_HOST = ''
+# Zwei callback host
+ZWEI_CALLBACK_HOST = ''
 
 # Zwei API
 ZWEI_API_TASKS_URL = 'http://127.0.0.1/purcel/tasks/'
