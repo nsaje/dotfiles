@@ -884,7 +884,6 @@ class AccountAgency(api_common.BaseApiView):
         with transaction.atomic():
             old_settings = account.get_current_settings()
             self.set_allowed_sources(settings, old_settings, form.cleaned_data.get('allowed_sources'))
-            
             account.save(request)
             settings.save(request)
 
@@ -898,6 +897,21 @@ class AccountAgency(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def are_sources_removable(self, account, sources_to_be_removed):
+        for campaign in account.campaign_set.all():
+            if campaign.is_archived():
+                continue
+
+            for adgroup in campaign.adgroup_set.filter(is_demo=False):
+                if adgroup_settings.state == constants.AdGroupSettingsState.INACTIVE:
+                    continue
+
+                for adgroup_source in adgroup.adgroupsource_set.filter(source__in=sources_to_be_removed):
+                    adgroup_source_settings = adgroup_source.get_current_settings()
+                    if adgroup_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
+                        return False
+        return True
 
     def set_account(self, account, resource):
         account.name = resource['name']
