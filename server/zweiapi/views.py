@@ -132,15 +132,19 @@ def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None
                 data_row['id']
             ))
 
-        stats_rows.append({
+        row_dict = {
             'id': data_row['id'],
             'article': article,
             'impressions': data_row['impressions'],
             'clicks': data_row['clicks'],
             'data_cost_cc': data_row.get('data_cost_cc') or 0,
-            'cost_cc': data_row['cost_cc'],
-            'content_ad_source': content_ad_sources[data_row['id']],
-        })
+            'cost_cc': data_row['cost_cc']
+        }
+
+        if not supress_invalid_content_ad_check:
+            row_dict['content_ad_source'] = content_ad_sources[data_row['id']]
+
+        stats_rows.append(row_dict)
 
     return stats_rows
 
@@ -355,7 +359,9 @@ def _fetch_reports_callback(action, data):
         article_rows = _remove_content_ad_sources_from_report_rows(rows)
 
         reports.update.stats_update_adgroup_source_traffic(date, ad_group, source, article_rows)
-        reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
+
+        if ad_group_source.can_manage_content_ads:
+            reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
 
         # set cache only after everything has updated successfully
         _set_reports_cache(data, ad_group, source, date, change_unique_key)

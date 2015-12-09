@@ -968,6 +968,7 @@ class PrepareReportRowsTestCase(test.TestCase):
         ad_group = dashmodels.AdGroup.objects.get(pk=1)
         source = dashmodels.Source.objects.get(pk=1)
         ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
+        ad_group_source.can_manage_content_ads = True
 
         report_rows = _prepare_report_rows(ad_group, ad_group_source, source, data_rows)
 
