@@ -551,7 +551,7 @@ class AdGroupOverview(api_common.BaseApiView):
             name = 'Campaign goals:' if i == 0 else ''
 
             goal_value = self.get_goal_value(user, ad_group.campaign, campaign_settings, goal)
-            goal_diff, description, success = self.get_goal_diff(
+            goal_diff, description, success = self.get_goal_difference(
                 goal,
                 float(quantity),
                 goal_value
@@ -587,16 +587,12 @@ class AdGroupOverview(api_common.BaseApiView):
         return yesterday_total_cost
 
     def get_goal_value(self, user, campaign, campaign_settings, goal_type):
-        end_date = campaign_settings.end_date
-        if end_date is None:
-            end_date = datetime.datetime.today().date()
-
-
-        # TODO:
+        # we are interested in reaching the goal by today
+        end_date = datetime.datetime.today().date()
 
         totals_stats = reports.api_helpers.filter_by_permissions(
-            reports_api.query(
-                campaign_settings.start_date,
+            self.get_reports_api_module(user).query(
+                campaign.created_dt,
                 end_date,
                 campaign=campaign,
             ), user)
@@ -605,18 +601,17 @@ class AdGroupOverview(api_common.BaseApiView):
             # CPA is still being implemented via Conversion&Goals epic
             raise exceptions.NotImplementedError()
         elif goal_type == constants.CampaignGoal.PERCENT_BOUNCE_RATE:
-            return totals_stats['bounce_rate']
+            return totals_stats.get('bounce_rate', 0) or 0
         elif goal_type == constants.CampaignGoal.NEW_UNIQUE_VISITORS:
-            return totals_stats['new_visits_sum']
+            return totals_stats.get('new_visits_sum', 0) or 0
         elif goal_type == constants.CampaignGoal.SECONDS_TIME_ON_SITE:
-            return totals_stats['avg_tos']
+            return totals_stats.get('avg_tos', 0) or 0
         elif goal_type == constants.Campaigngoal.PAGES_PER_SESSION:
-            return totals_stats['pv_per_visit']
-        else:
-            # assuming we will add moar campaign goals in the future
-            raise exceptions.NotImplementedError()
+            return totals_stats.get('pv_per_visit', 0) or 0
 
-        text = constants.CampaignGoal.get_text(goal)
+        # assuming we will add moar campaign goals in the future
+        raise exceptions.NotImplementedError()
+
 
     def get_goal_difference(self, goal_type, target, actual):
         """
