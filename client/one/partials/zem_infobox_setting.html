@@ -1,0 +1,34 @@
+<div style="overflow:auto">
+    <div class="infobox-setting-label">{{label}}</div>
+    
+    <div style="display:table; vertical-align:top;">
+        <div class="infobox-setting-icon" ng-if="isSet(icon)">
+            <span ng-if="icon === 'happy'">
+                <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/happy_face.svg"></img>
+            </span>
+            <span ng-if="icon === 'sad'">
+                <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/sad_face.svg"></img>
+            </span>
+        </div>
+
+        <div class="infobox-setting-value">{{value}}</div>
+        <div class="infobox-setting-value-comment" ng-if="isSet(valueDescription)">({{valueDescription}})</div>
+
+        <zem-help-popover 
+            ng-if="isSet(tooltipText)" 
+            content="{{ tooltipText }}" 
+            placement="top">
+        </zem-help-popover>
+
+        <div class="infobox-setting-info" ng-show="isSet(detailsLabel) && isSet(detailsContent) && !detailsVisible">
+            <a ng-click="showDetails()" class="infobox-details-link">(Show {{detailsLabel}})</a> 
+        </div>
+
+        <div class="infobox-setting-info-dropped" ng-show="isSet(detailsLabel) && isSet(detailsContent) && detailsVisible">
+            <div class="infobox-setting-info-dropped-content" ng-show="detailsVisible">{{ detailsContent }}</div>
+            <div ng-show="detailsVisible">
+                <a ng-click="hideDetails()" class="infobox-details-link">Hide {{ detailsLabel }}</a>
+            </div>
+        </div>
+    </div>
+</div>
