@@ -36,14 +36,14 @@ class Command(BaseCommand):
                 report_log.report_filename = report_filename
 
                 email_helper.send_scheduled_export_report(
-                    sr.name,
-                    constants.ScheduledReportSendingFrequency.get_text(sr.sending_frequency),
-                    constants.ScheduledReportGranularity.get_text(sr.report.granularity),
-                    sr.report.get_exported_entity_name(),
-                    sr.created_by.email,
-                    email_adresses,
-                    report_contents,
-                    report_filename)
+                    report_name=sr.name,
+                    frequency=constants.ScheduledReportSendingFrequency.get_text(sr.sending_frequency),
+                    granularity=constants.ScheduledReportGranularity.get_text(sr.report.granularity),
+                    entity_name=sr.report.get_exported_entity_name(),
+                    scheduled_by=sr.created_by.email,
+                    email_adresses=email_adresses,
+                    report_contents=report_contents,
+                    report_filename=report_filename)
 
                 report_log.state = constants.ScheduledReportSent.SUCCESS
                 num_success_logs += 1
