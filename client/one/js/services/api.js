@@ -2869,6 +2869,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupAdsPlusTable: new AdGroupAdsPlusTable(),
         adGroupSync: new AdGroupSync(),
         adGroupArchive: new AdGroupArchive(),
+        adGroupOverview: new AdGroupOverview(),
         campaignAdGroups: new CampaignAdGroups(),
         campaignAdGroupsTable: new CampaignAdGroupsTable(),
         campaignSettings: new CampaignSettings(),

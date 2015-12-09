@@ -506,11 +506,14 @@ class AdGroupOverview(api_common.BaseApiView):
     def _performance_settings(self, ad_group, user, ad_group_settings):
         settings = []
 
-        yesterday_cost = self.get_yesterday_total_cost(user, ad_group)
+        yesterday_cost = self.get_yesterday_total_cost(user, ad_group) or 0
         filled_daily_ratio = 0
-        if ad_group_settings.daily_budget_cc > 0:
+
+        ad_group_daily_budget = ad_group_settings.daily_budget_cc or 0
+
+        if ad_group_daily_budget > 0:
             filled_daily_ratio = min(
-                (yesterday_cost - float(ad_group_settings.daily_budget_cc)) / float(ad_group_settings.daily_budget_cc),
+                (yesterday_cost - float(ad_group_daily_budget)) / float(ad_group_daily_budget),
                 1)
 
         yesterday_spend_settings = OverviewSetting(
