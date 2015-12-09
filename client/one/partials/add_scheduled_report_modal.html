@@ -18,7 +18,7 @@
                 <label ng-repeat="error in validationErrors.report_name" class="control-label small error" for="report-name-input">{{ error }}</label>
             </div>
         </div>
-        
+
         <div class="form-group" ng-class="{'has-error': !!validationErrors.granularity}">
             <label for="granularity-select" class="col-xs-4 control-label">
                 Report Granularity
@@ -48,7 +48,12 @@
             <label for="by-day-checkbox" class="control-label">Breakdown by day</label>
           </div>
           <div class="col-xs-4">
-            <input id="by-day-checkbox" type="checkbox" ng-model="export.byDay" class="checkbox" ng-change="checkDownloadAllowed()">
+            <input id="by-day-checkbox"
+                type="checkbox"
+                ng-model="export.byDay"
+                class="checkbox"
+                ng-change="checkDownloadAllowed()"
+                ng-disabled="breakdownByDayDisabled">
           </div>
         </div>
 
@@ -74,7 +79,8 @@
                     search-enabled="false"
                     id="frequency-select"
                     class="col-xs-5"
-                    ng-model="export.frequency">
+                    ng-model="export.frequency"
+                    ng-change="checkBreakdownAvailable()">
                 <ui-select-match placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
                 <ui-select-choices repeat="freq in exportSchedulingFrequencies">
                     <div>{{freq.name}}</div>
@@ -112,7 +118,7 @@
             <div class="col-xs-3">
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
             </div>
-            <div class="loader" ng-show="addScheduledReportInProgress"></div>
+            <div class="loader" ng-show="showInProgress"></div>
             <span class="col-xs-5 small error" ng-if="hasError">
                 An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
             </span>

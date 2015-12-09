@@ -3,7 +3,7 @@ oneApp.controller('AddScheduledReportModalCtrl',
   ['$scope', '$modalInstance', 'api', 'zemFilterService', '$window', '$state',
   function($scope, $modalInstance, api, zemFilterService, $window, $state) {
     $scope.exportSchedulingFrequencies = options.exportFrequency;
-    $scope.addScheduledReportInProgress = false;
+    $scope.showInProgress = true;
     $scope.hasError = false;
 
     $scope.export = {};
@@ -31,7 +31,11 @@ oneApp.controller('AddScheduledReportModalCtrl',
                     }
                 });
             }
-         ).finally( function () { $scope.checkDownloadAllowed(); });
+         ).finally( function () {
+            $scope.checkDownloadAllowed();
+            $scope.checkBreakdownAvailable();
+            $scope.showInProgress = false;
+         });
     };
 
     $scope.checkDownloadAllowed = function () {
@@ -47,7 +51,14 @@ oneApp.controller('AddScheduledReportModalCtrl',
             $scope.downloadNotAllowedMessage = 'This report is not available for download due to the volume of content. Please select shorter date range or different granularity.';
             $scope.downloadAllowed = false;
         }
+    };
 
+    $scope.checkBreakdownAvailable = function () {
+        $scope.breakdownByDayDisabled = false;
+        if ($scope.export.frequency.value === constants.exportFrequency.DAILY) {
+            $scope.breakdownByDayDisabled = true;
+            $scope.export.byDay = false;
+        }
     };
 
     $scope.downloadReport = function() {
@@ -66,7 +77,7 @@ oneApp.controller('AddScheduledReportModalCtrl',
 
     $scope.addScheduledReport = function() {
         $scope.clearErrors();
-        $scope.addScheduledReportInProgress = true;
+        $scope.showInProgress = true;
         var url = $scope.baseUrl + 'export_plus/';
         var data = {
           'type': $scope.export.type.value,
@@ -93,7 +104,7 @@ oneApp.controller('AddScheduledReportModalCtrl',
                 }
             }
         ).finally(function() {
-            $scope.addScheduledReportInProgress = false;
+            $scope.showInProgress = false;
         });
     };
 
