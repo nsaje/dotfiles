@@ -34,13 +34,12 @@ class RefreshContentAdStats(test.TestCase):
         mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
 
         date = datetime.datetime(2015, 2, 1)
-        ad_group = dash.models.AdGroup.objects.get(pk=1)
-        source = dash.models.Source.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
 
-        refresh.refresh_contentadstats(date, ad_group, source)
+        refresh.refresh_contentadstats(date, campaign)
 
         mock_redshift.delete_contentadstats.assert_called_with(
-            date, ad_group.id, source.id)
+            date, campaign.id)
 
         rows = [{
             'conversions': '{"omniture__Transaction 2": 20, "ga__Goal 1": 10}',
@@ -105,12 +104,12 @@ class RefreshContentAdStats(test.TestCase):
 
     def test_refresh_contentadstats_no_source_id(self, mock_redshift):
         date = datetime.datetime(2015, 2, 2)
-        ad_group = dash.models.AdGroup.objects.get(pk=2)
+        campaign = dash.models.Campaign.objects.get(pk=2)
 
-        refresh.refresh_contentadstats(date, ad_group)
+        refresh.refresh_contentadstats(date, campaign)
 
         mock_redshift.delete_contentadstats.assert_called_with(
-            date, ad_group.id, None)
+            date, campaign.id)
 
         rows = [{
             'conversions': '{"omniture__Transaction 2": 30}',
@@ -127,7 +126,7 @@ class RefreshContentAdStats(test.TestCase):
             'impressions': 5000000,
             'data_cost_cc': 550000,
             'adgroup_id': 2,
-            'campaign_id': 1,
+            'campaign_id': 2,
             'account_id': 1
         }, {
             'conversions': '{}',
@@ -144,7 +143,7 @@ class RefreshContentAdStats(test.TestCase):
             'impressions': 6000000,
             'data_cost_cc': 650000,
             'adgroup_id': 2,
-            'campaign_id': 1,
+            'campaign_id': 2,
             'account_id': 1
         }]
 
@@ -152,13 +151,12 @@ class RefreshContentAdStats(test.TestCase):
 
     def test_refresh_contentadstats_missing_contentad_stats(self, mock_redshift):
         date = datetime.datetime(2015, 2, 2)
-        ad_group = dash.models.AdGroup.objects.get(pk=3)
-        source = dash.models.Source.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=3)
 
-        refresh.refresh_contentadstats(date, ad_group, source)
+        refresh.refresh_contentadstats(date, campaign)
 
         mock_redshift.delete_contentadstats.assert_called_with(
-            date, ad_group.id, source.id)
+            date, campaign.id)
 
         rows = [{
             'conversions': '{}',
@@ -175,7 +173,7 @@ class RefreshContentAdStats(test.TestCase):
             'impressions': None,
             'data_cost_cc': None,
             'adgroup_id': 3,
-            'campaign_id': 1,
+            'campaign_id': 3,
             'account_id': 1
         }]
 
