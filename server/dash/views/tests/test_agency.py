@@ -1732,6 +1732,9 @@ class AccountAgencyTest(TestCase):
         user.save()
 
     def setUp(self):
+        account = models.Account.objects.get(pk=1)
+        account.allowed_sources.add(1, 2)
+
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
@@ -1834,22 +1837,30 @@ class AccountAgencyTest(TestCase):
 
 
     def test_set_allowed_sources(self):
-        settings = models.AccountSettings()
-        old_settings = models.AccountSettings()
+        account = models.Account.objects.get(pk=1)
         view = agency.AccountAgency()
-        view.set_allowed_sources(settings, old_settings, {
+        view.set_allowed_sources(account, True, {
             1: {'allowed': True},
-            2: {'allowed': True},
+            2: {'allowed': False},
             3: {}
             })
-        self.assertEqual(set(settings.allowed_sources),set([1,2]))
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([1,])
+        )
 
     def test_set_allowed_sources_none(self):
-        settings = models.AccountSettings()
-        old_settings = models.AccountSettings(allowed_sources=[1,2])
+        account = models.Account.objects.get(pk=1)
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([1,2])
+        )
         view = agency.AccountAgency()
-        view.set_allowed_sources(settings, old_settings, None)
-        self.assertEqual(settings.allowed_sources, [1,2])
+        view.set_allowed_sources(account, True, None)
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([1,2])
+        )
 
     def test_get_allowed_sources(self):
         client = self._get_client_with_permissions([

@@ -916,16 +916,52 @@ class AccountAgency(api_common.BaseApiView):
     def set_account(self, account, resource):
         account.name = resource['name']
 
-    def set_allowed_sources(self, settings, old_settings, allowed_sources_dict):
-        if allowed_sources_dict is None:
-            settings.allowed_sources = old_settings.allowed_sources
-            return
-
+    def get_allowed_sources_list_from_dict(self, allowed_sources_dict):
         allowed_sources_ids = []
         for k, v in allowed_sources_dict.iteritems():
             if v.get('allowed', False):
                 allowed_sources_ids.append(k)
-        settings.allowed_sources = allowed_sources_ids
+
+        return allowed_sources_ids
+
+    def get_current_allowed_sources_list(self, account, can_see_all_available_sources):  
+        queryset = account.allowed_sources.all()
+        if not can_see_all_available_sources:
+            queryset.filter(released=True)
+
+        return [source.id for source in queryset]
+
+    def filter_allowed_sources_list(self, allowed_sources_list, can_see_all_available_sources):
+        queryset = models.Source.objects.filter(id__in=allowed_sources_list)
+        if not can_see_all_available_sources:
+            queryset.filter(released=True)
+
+        return [source.id for source in queryset]     
+
+    def set_allowed_sources(self, 
+        account, 
+        can_see_all_available_sources, 
+        allowed_sources_dict):
+
+        if not allowed_sources_dict:
+            return
+
+        new_allowed_sources_list = self.get_allowed_sources_list_from_dict(allowed_sources_dict)
+        new_allowed_sources_list = self.filter_allowed_sources_list(
+            new_allowed_sources_list, 
+            can_see_all_available_sources
+        )
+        current_allowed_sources_list = self.get_current_allowed_sources_list(account, can_see_all_available_sources)
+        
+        new_allowed_sources_set = set(new_allowed_sources_list)
+        current_allowed_sources_set = set(current_allowed_sources_list)
+
+        to_be_removed = current_allowed_sources_set.difference(new_allowed_sources_set)
+        to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
+
+        account.allowed_sources.add(*list(to_be_added))
+        account.allowed_sources.remove(*list(to_be_removed))
+
 
     def set_settings(self, settings, account, resource):
         settings.account = account
@@ -978,7 +1014,7 @@ class AccountAgency(api_common.BaseApiView):
             if request.user.has_perm('zemauth.can_modify_allowed_sources'):
                 result['allowed_sources'] = self.get_allowed_sources(
                     request.user.has_perm('zemauth.can_see_all_available_sources'),
-                    settings.allowed_sources
+                    [source.id for source in account.allowed_sources.all()]
                     )
 
         return result
