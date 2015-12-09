@@ -1994,7 +1994,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
 
 
 class AdGroupOverviewTest(TestCase):
-    fixtures = ['test_api.yaml', 'test_models.yaml']
+    fixtures = ['test_api.yaml']
 
     def setUp(self):
         self.client = Client()
@@ -2033,15 +2033,17 @@ class AdGroupOverviewTest(TestCase):
 
         settings = response['data']['settings']
 
+        tracking_setting = [s for s in settings if 'tracking' in s['name'].lower()][0]
+        self.assertEqual(tracking_setting['value'], 'Yes')
+        self.assertEqual(tracking_setting['detailsContent'], 'param1=foo&param2=bar')
+
         yesterday_spend = [s for s in settings if 'yesterday' in s['name'].lower()][0]
         self.assertEqual('$0.00', yesterday_spend['value'])
-
 
         pacing_setting = [s for s in settings if 'pacing' in s['name'].lower()][0]
         self.assertEqual('-100.00%', pacing_setting['value'])
         self.assertEqual('sad', pacing_setting['icon'])
 
-        # TODO: test goals
-        # goal_setting = [s for s in settings if 'goal' in s['name'].lower()][0]
-        # self.assertFalse('sad', goal_setting['icon'])
-
+        goal_setting = [s for s in settings if 'goal' in s['name'].lower()][0]
+        self.assertEqual('0.0 below planned', goal_setting['description'])
+        self.assertEqual('happy', goal_setting['icon'])

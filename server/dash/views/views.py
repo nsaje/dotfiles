@@ -465,6 +465,7 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(campaign_budget_setting.as_dict())
 
+        from pudb import set_trace; set_trace()
         tracking_code_settings = OverviewSetting(
             'Tracking codes',
             'Yes' if ad_group_settings.tracking_code else 'No',
