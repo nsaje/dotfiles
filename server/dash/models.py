@@ -31,6 +31,8 @@ from utils import dates_helper
 
 SHORT_NAME_MAX_LENGTH = 22
 
+def nano_to_cc(num):
+    return int(round(num * 0.00001))
 
 def validate(*validators):
     errors = {}
@@ -2045,7 +2047,6 @@ class BudgetLineItem(FootprintModel):
 
     amount = models.IntegerField()
     freed_cc = models.BigIntegerField(default=0)
-    is_depleted = models.BooleanField(default=False)
 
     comment = models.CharField(max_length=256, blank=True, null=True)
 
@@ -2077,10 +2078,11 @@ class BudgetLineItem(FootprintModel):
         super(BudgetLineItem, self).delete()
 
     def state(self, date=None):
-        if self.is_depleted:
-            return constants.BudgetLineItemState.DEPLETED
         if date is None:
             date = dates_helper.local_today()
+        total_spend = self.get_spend_data(date=date, always_return_values=True)['total_cc'] * 0.0001
+        if self.amount <= total_spend:
+            return constants.BudgetLineItemState.DEPLETED
         if self.end_date and self.end_date < date:
             return constants.BudgetLineItemState.INACTIVE
         if self.start_date and self.start_date <= date:
@@ -2102,6 +2104,69 @@ class BudgetLineItem(FootprintModel):
     def is_updatable(self):
         return self.state() == constants.BudgetLineItemState.ACTIVE
 
+    def free_inactive_allocated_assets(self):
+        if self.state() != constants.BudgetLineItemState.INACTIVE:
+            raise AssertionError('Budget has to be inactive to be freed.')
+        amount_cc = self.amount * 10000
+        spend_data = self.get_spend_data()
+        
+        reserve = self.get_reserve_amount_cc()
+        free_date = self.end_date + datetime.timedelta(days=settings.LAST_N_DAY_REPORTS)
+        is_over_sync_time = dates_helper.local_today() > free_date
+    
+        if is_over_sync_time:
+            # After we completed all syncs, free all the assets including reserve
+            self.freed_cc = max(0, amount_cc - spend_data['total_cc'])
+        elif self.freed_cc == 0 and reserve is not None:
+            self.freed_cc = max(
+                0, amount_cc - spend_data['total_cc'] - reserve
+            )
+
+        self.save()
+
+    def get_reserve_amount_cc(self, date=None):
+        try:
+            # try to get previous statement that has more solid data
+            statement = list(self.statements.all().order_by('-date')[:2])[-1]
+        except IndexError:
+            return None
+        total_cc = nano_to_cc( # TODO: should we go with average here?
+            statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
+        )
+        return total_cc * settings.BUDGET_RESERVE_FACTOR
+
+    def get_latest_statement(self):
+        return self.statements.all().order_by('-date')[0]
+
+    def get_spend_data(self, date=None, decimal=False, always_return_values=False):
+        spend_data = {
+            'media_cc': 0,
+            'data_cc': 0,
+            'license_fee_cc': 0,
+            'total_cc': 0,
+        }
+        try:
+            statement = date and self.statements.get(date=date)\
+                        or self.get_latest_statement()
+        except IndexError:
+            pass
+        except ObjectDoesNotExist:
+            if not always_return_values:
+                return None
+        else:
+            spend_data['media_cc'] = nano_to_cc(statement.media_spend_nano)
+            spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano)
+            spend_data['license_fee_cc'] = nano_to_cc(statement.license_fee_nano)
+            spend_data['total_cc'] = nano_to_cc(
+                statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
+            )
+        if not decimal:
+            return spend_data
+        return {
+            key[:-3]: Decimal(spend_data[key]) * Decimal('0.0001')
+            for key in spend_data.keys()
+        }    
+
     def clean(self):
         if self.pk:
             have_changed = any([
@@ -2111,8 +2176,14 @@ class BudgetLineItem(FootprintModel):
             db_state = self.db_state()
             if have_changed and not db_state == constants.BudgetLineItemState.PENDING:
                 raise ValidationError('Only pending budgets can change start date and amount.')
-            if db_state not in (constants.BudgetLineItemState.PENDING,
-                                constants.BudgetLineItemState.ACTIVE, ):
+            is_reserve_update = all([
+                not self.has_changed('start_date'),
+                not self.has_changed('end_date'),
+                not self.has_changed('amount'),
+                not self.has_changed('campaign'),
+            ])
+            if not is_reserve_update and db_state not in (constants.BudgetLineItemState.PENDING,
+                                                          constants.BudgetLineItemState.ACTIVE, ):
                 raise ValidationError('Only pending and active budgets can change.')
 
         validate(

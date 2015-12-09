@@ -8,13 +8,16 @@ from django.core.exceptions import ValidationError
 from dash import models, constants, forms
 from zemauth.models import User
 from django.http.request import HttpRequest
+import reports.models
 
 TODAY = datetime.datetime(2015, 12, 1).date()
 YESTERDAY = TODAY - datetime.timedelta(1)
 
 create_credit = models.CreditLineItem.objects.create
 create_budget = models.BudgetLineItem.objects.create
-
+create_statement = reports.models.BudgetDailyStatement.objects.create
+NANO = 10**9
+CC = 10**4
 
 @patch('dash.forms.dates_helper.local_today', lambda: TODAY)
 class CreditsTestCase(TestCase):
@@ -712,10 +715,6 @@ class BudgetsTestCase(TestCase):
         self.assertEqual(b.state(datetime.date(2016, 12, 31)),
                          constants.BudgetLineItemState.INACTIVE)
 
-        b.is_depleted = True
-        self.assertEqual(b.state(),
-                         constants.BudgetLineItemState.DEPLETED)
-
     def test_credit_cancel(self):
         c = create_credit(
             account_id=2,
@@ -766,3 +765,270 @@ class BudgetsTestCase(TestCase):
                 campaign_id=1,
             )
         self.assertTrue('credit' in err.exception.error_dict)
+
+@patch('dash.forms.dates_helper.local_today', lambda: TODAY)
+class BudgetSpendTestCase(TestCase):
+    fixtures = ['test_io.yaml']
+    def setUp(self):
+        self.start_date = TODAY - datetime.timedelta(2)
+        self.end_date = TODAY + datetime.timedelta(2)
+        self.c = create_credit(
+            account_id=2,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            amount=1000,
+            license_fee=Decimal('0.456'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+
+        self.b = create_budget(
+            credit=self.c,
+            amount=1000,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            campaign_id=1,
+        )
+    
+    def test_missing_daily_statements(self):
+        self.assertEqual(self.b.get_spend_data(), {
+            'media_cc': 0,
+            'data_cc': 0,
+            'license_fee_cc': 0,
+            'total_cc': 0,
+        })
+        self.assertEqual(self.b.get_spend_data(date=self.end_date), None)
+
+    def test_depleted(self):
+        self.assertNotEqual(self.b.state(), constants.BudgetLineItemState.DEPLETED)
+        create_statement(
+            budget=self.b,
+            date=self.end_date,
+            media_spend_nano=10000*NANO,
+            data_spend_nano=10000*NANO,
+            license_fee_nano=1000*NANO,
+        )
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = self.end_date - datetime.timedelta(1)
+            self.assertNotEqual(self.b.state(), constants.BudgetLineItemState.DEPLETED)        
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = self.end_date
+            self.assertEqual(self.b.state(), constants.BudgetLineItemState.DEPLETED)
+            self.assertNotEqual(
+                self.b.state(date=(self.end_date - datetime.timedelta(1))),
+                constants.BudgetLineItemState.DEPLETED)
+
+    def test_fixed_date(self):
+        self.assertEqual(self.b.get_spend_data(date=self.end_date), None)
+
+        create_statement(
+            budget=self.b,
+            date=self.end_date,
+            media_spend_nano=100*NANO,
+            data_spend_nano=101*NANO,
+            license_fee_nano=20100000000,
+        )
+        
+        self.assertEqual(self.b.get_spend_data(date=self.end_date), {
+            'media_cc': 100*CC,
+            'data_cc': 101*CC,
+            'license_fee_cc': 201000,
+            'total_cc': 2211000,
+        })
+        self.assertEqual(self.b.get_spend_data(date=self.end_date, decimal=True), {
+            'media': Decimal('100.0000'),
+            'data': Decimal('101.0000'),
+            'license_fee': Decimal('20.1000'),
+            'total': Decimal('221.1000'),
+        })
+
+    def test_last_statement(self):
+        create_statement(
+            budget=self.b,
+            date=self.end_date - datetime.timedelta(1),
+            media_spend_nano=90*NANO,
+            data_spend_nano=90*NANO,
+            license_fee_nano=9*NANO,
+        )
+        create_statement(
+            budget=self.b,
+            date=self.end_date,
+            media_spend_nano=100*NANO,
+            data_spend_nano=101000000000,
+            license_fee_nano=20100000000,
+        )
+        self.assertEqual(self.b.get_spend_data(), {
+            'media_cc': 100*CC,
+            'data_cc': 1010000,
+            'license_fee_cc': 201000,
+            'total_cc': 2211000,
+        })
+        self.assertEqual(self.b.get_spend_data(decimal=True), {
+            'media': Decimal('100.0000'),
+            'data': Decimal('101.0000'),
+            'license_fee': Decimal('20.1000'),
+            'total': Decimal('221.1000'),
+        })
+
+@patch('dash.forms.dates_helper.local_today', lambda: TODAY)
+class BudgetReserveTestCase(TestCase):
+    fixtures = ['test_io.yaml']
+
+    def setUp(self):
+        self.start_date = TODAY - datetime.timedelta(10)
+        self.end_date = TODAY + datetime.timedelta(10)
+        self.c = create_credit(
+            account_id=2,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            amount=1000,
+            license_fee=Decimal('0.456'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+
+        self.b = create_budget(
+            credit=self.c,
+            amount=1000,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            campaign_id=1,
+        )
+
+    def test_reserve_calculation(self):
+        growth = 1.25
+        prev = create_statement(
+            budget=self.b, date=self.start_date,
+            media_spend_nano=90*NANO,
+            data_spend_nano=110*NANO,
+            license_fee_nano=20*NANO,
+        )
+        def next_statement(g=growth):
+            return create_statement(
+                budget=self.b, date=prev.date + datetime.timedelta(1),
+                media_spend_nano=int(prev.media_spend_nano * g),
+                data_spend_nano=int(prev.data_spend_nano * g),
+                license_fee_nano=int(prev.license_fee_nano * g),
+            )
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = self.start_date
+            self.assertEqual(self.b.get_spend_data(),
+                             { 'license_fee_cc': 200000, 'media_cc': 900000,
+                               'data_cc': 1100000, 'total_cc': 2200000 })
+            self.assertEqual(self.b.get_reserve_amount_cc(self.b), 11 * CC)
+
+        prev = next_statement()
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = self.start_date + datetime.timedelta(1)
+            self.assertEqual(self.b.get_spend_data(),
+                            { 'license_fee_cc': 250000, 'media_cc': 1125000,
+                              'data_cc': 1375000, 'total_cc': 2750000 })
+            # Same reserve because we didn't have yesterday's values for the previous statement
+            self.assertEqual(self.b.get_reserve_amount_cc(self.b), 11 * CC)
+        
+        prev = next_statement()
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = self.start_date + datetime.timedelta(2)
+            self.assertEqual(self.b.get_spend_data(),
+                             { 'license_fee_cc': 312500, 'media_cc': 1406250,
+                               'data_cc': 1718750, 'total_cc': 3437500} )
+            self.assertEqual(self.b.get_reserve_amount_cc(), 13.75 * CC)
+        
+    def test_asset_return(self):
+        today = datetime.date(2015, 11, 11)
+        credit = models.CreditLineItem.objects.create(
+            account_id=1,
+            start_date=datetime.date(2015, 11, 1),
+            end_date=datetime.date(2015, 11, 30),
+            amount=1000,
+            license_fee=Decimal('0.2'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        budget = models.BudgetLineItem.objects.create(
+            credit=credit,
+            amount=1000,
+            start_date=datetime.date(2015, 11, 1),
+            end_date=datetime.date(2015, 11, 10),
+            campaign_id=1,
+        )
+        
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=budget,
+            date=today - datetime.timedelta(1),
+            media_spend_nano=500*NANO,
+            data_spend_nano=0,
+            license_fee_nano=50*NANO,
+        )
+        for num in range(0, 5):
+            reports.models.BudgetDailyStatement.objects.create(
+                budget=budget,
+                date=today + datetime.timedelta(num),
+                media_spend_nano=800*NANO,
+                data_spend_nano=0,
+                license_fee_nano=80*NANO,
+            )
+
+        self.assertEqual(budget.freed_cc, 0)
+            
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            budget.free_inactive_allocated_assets()
+
+        self.assertEqual(budget.freed_cc, 760000)
+            
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 12)
+            budget.free_inactive_allocated_assets()
+
+        self.assertEqual(budget.freed_cc, 760000)
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 13)
+            budget.free_inactive_allocated_assets()
+
+        self.assertEqual(budget.freed_cc, 760000)
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 14)
+            budget.free_inactive_allocated_assets()
+
+        self.assertEqual(budget.freed_cc, 1200000)
+    
+    def test_mayfly_budget(self):
+        c = create_credit(
+            account_id=2,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY - datetime.timedelta(1),
+            amount=1000,
+            license_fee=Decimal('0.1'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        b = create_budget(
+            credit=c,
+            amount=1000,
+            start_date=TODAY - datetime.timedelta(1),
+            end_date=TODAY - datetime.timedelta(1),
+            campaign_id=1,
+        )
+        create_statement(
+            budget=b,
+            date=TODAY - datetime.timedelta(1),
+            media_spend_nano=700*NANO,
+            data_spend_nano=100*NANO,
+            license_fee_nano=80*NANO,
+        ) # Spend = 880, unused = 120, reserve = 44, free = 10
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = TODAY
+            b.free_inactive_allocated_assets()
+        self.assertEqual(b.freed_cc, 76*CC)
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = TODAY + datetime.timedelta(5)
+            b.free_inactive_allocated_assets()
+        self.assertEqual(b.freed_cc, 120*CC)
+        
+        

@@ -3,13 +3,15 @@
 import json
 from mock import patch
 import datetime
+from decimal import Decimal
 
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 
 from zemauth.models import User
-from dash import models
+from dash import models, constants
+from reports.models import BudgetDailyStatement
 
 class BCMViewTestCase(TestCase):
     fixtures = ['test_io.yaml']
@@ -527,3 +529,302 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
             mock_now.return_value = datetime.date(2015, 9, 30)
             response = self.client.delete(url)
         self.assertEqual(response.status_code, 200)
+
+
+class BudgetSpendInViewsTestCase(BCMViewTestCase):
+    def test_active_budget(self):
+        nano = 10**9
+        today = datetime.date(2015, 11, 11)
+        
+        budget = models.BudgetLineItem.objects.get(pk=1)
+        budget.credit.amount = 250000
+        budget.credit.status = constants.CreditLineItemStatus.SIGNED
+        budget.credit.save()        
+        BudgetDailyStatement.objects.create(
+            budget=budget,
+            date=today,
+            media_spend_nano=300*nano,
+            data_spend_nano=200*nano,
+            license_fee_nano=50*nano,
+        )
+        
+        # Another budget with daily statement
+        budget.pk = None
+        budget.total = 50000
+        budget.save()
+        BudgetDailyStatement.objects.create(
+            budget=budget,
+            date=today,
+            media_spend_nano=100*nano,
+            data_spend_nano=100*nano,
+            license_fee_nano=105*(10**8),
+        )
+        
+        url = reverse('campaigns_budget', kwargs={'campaign_id': 1})
+
+        self.add_permission('campaign_budget_view')
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = today
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)['data']
+
+        self.assertEqual(data, {
+            "active": [
+                {
+                    u"available": u"99789.5000",
+                    u"is_editable": False,
+                    u"is_updatable": True,
+                    u"state": 1,
+                    u"end_date": u"2015-11-30",
+                    u"license_fee": u"20%",
+                    u"total": 100000,
+                    u"spend": u"210.5000",
+                    u"id": 2,
+                    u"comment": u"Test case",
+                    u"start_date": u"2015-10-01",
+                },
+                {
+                    u"available": u"99450.0000",
+                    u"is_editable": False,
+                    u"is_updatable": True,
+                    u"state": 1,
+                    u"end_date": u"2015-11-30",
+                    u"license_fee": u"20%",
+                    u"total": 100000,
+                    u"spend": u"550.0000",
+                    u"id": 1,
+                    u"comment": u"Test case",
+                    u"start_date": u"2015-10-01",
+                }
+            ],
+            u"past": [],
+            u"credits": [
+                {
+                    u"available": u"50000.0000",
+                    u"end_date": u"2015-11-30",
+                    u"id": 1,
+                    u"is_available": True,
+                    u"license_fee": u"20",
+                    u"total": 250000,
+                    u"start_date": u"2015-10-01"
+                }
+            ],
+            u"totals": {
+                u"current": {
+                    u"available": u"250000.0000",
+                    u"past": u"0.0000",
+                    u"unallocated": u"50000.0000"
+                },
+                u"lifetime": {
+                    u"data_spend": u"300.0000",
+                    u"campaign_spend": u"760.5000",
+                    u"media_spend": u"400.0000",
+                    u"license_fee": u"60.5000",
+                }
+            }
+        })
+
+class BudgetReserveInViewsTestCase(BCMViewTestCase):
+    def test_credit_view(self):
+        url = reverse('accounts_credit', kwargs={'account_id': 1})
+        nano = 10**9
+        today = datetime.date(2015, 11, 11)
+        
+        self.add_permission('account_credit_view')
+
+        credit = models.CreditLineItem.objects.create(
+            account_id=1,
+            start_date=datetime.date(2015, 11, 1),
+            end_date=datetime.date(2015, 11, 30),
+            amount=1000,
+            license_fee=Decimal('0.2'),
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by_id=1,
+        )
+        budget = models.BudgetLineItem.objects.create(
+            credit=credit,
+            amount=1000,
+            start_date=datetime.date(2015, 11, 1),
+            end_date=datetime.date(2015, 11, 10),
+            campaign_id=1,
+        )
+        
+        BudgetDailyStatement.objects.create(
+            budget=budget,
+            date=today - datetime.timedelta(1),
+            media_spend_nano=500*nano,
+            data_spend_nano=0,
+            license_fee_nano=50*nano,
+        )
+        for num in range(0, 5):
+            BudgetDailyStatement.objects.create(
+                budget=budget,
+                date=today + datetime.timedelta(num),
+                media_spend_nano=800*nano,
+                data_spend_nano=0,
+                license_fee_nano=80*nano,
+            )
+        
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = today
+            response = self.client.get(url)
+        
+        
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(json.loads(response.content)['data'], {
+            "active": [
+                {
+                    "available": "0.0000",
+                    "end_date": "2015-11-30",
+                    "created_on": str(budget.created_dt.date()),
+                    "created_by": "ziga.stopinsek@zemanta.com",
+                    "license_fee": "20%",
+                    "allocated": "1000.0000",
+                    "total": 1000,
+                    "id": 3,
+                    "is_signed": True,
+                    "budgets": [
+                        {"amount": 1000, "id": 2}
+                    ],
+                    "start_date": "2015-11-01"
+                },
+                {
+                    "available": "0.0000",
+                    "end_date":
+                    "2015-11-30",
+                    "created_on": "2014-06-04",
+                    "created_by": "ziga.stopinsek@zemanta.com",
+                    "license_fee": "20%",
+                    "allocated": "100000.0000",
+                    "total": 100000,
+                    "id": 1,
+                    "is_signed": False,
+                    "budgets": [
+                        {"amount": 100000, "id": 1}
+                    ],
+                    "start_date": "2015-10-01"
+                }
+            ],
+            "past": [],
+            "totals": {
+                "available": "0.0000",
+                "allocated": "101000.0000",
+                "total": "101000",
+                "past": "0",
+            }
+        })
+
+        on_reserve_data = {
+            "active": [
+                {
+                    "available": "76.0000",
+                    "end_date": "2015-11-30",
+                    "created_on": str(budget.created_dt.date()),
+                    "created_by": "ziga.stopinsek@zemanta.com",
+                    "license_fee": "20%",
+                    "allocated": "924.0000",
+                    "total": 1000,
+                    "id": 3,
+                    "is_signed": True,
+                    "budgets": [
+                        {"amount": 1000, "id": 2}
+                    ],
+                    "start_date": "2015-11-01"
+                },
+                {
+                    "available": "0.0000",
+                    "end_date":
+                    "2015-11-30",
+                    "created_on": "2014-06-04",
+                    "created_by": "ziga.stopinsek@zemanta.com",
+                    "license_fee": "20%",
+                    "allocated": "100000.0000",
+                    "total": 100000,
+                    "id": 1,
+                    "is_signed": False,
+                    "budgets": [
+                        {"amount": 100000, "id": 1}
+                    ],
+                    "start_date": "2015-10-01"
+                }
+            ],
+            "past": [],
+            "totals": {
+                "available": "76.0000",
+                "allocated": "100924.0000",
+                "total": "101000",
+                "past": "0",
+            }
+        }
+        on_freed_data = {
+            "active": [
+                {
+                    "available": "120.0000",
+                    "end_date": "2015-11-30",
+                    "created_on": str(budget.created_dt.date()),
+                    "created_by": "ziga.stopinsek@zemanta.com",
+                    "license_fee": "20%",
+                    "allocated": "880.0000",
+                    "total": 1000,
+                    "id": 3,
+                    "is_signed": True,
+                    "budgets": [
+                        {"amount": 1000, "id": 2}
+                    ],
+                    "start_date": "2015-11-01"
+                },
+                {
+                    "available": "0.0000",
+                    "end_date":
+                    "2015-11-30",
+                    "created_on": "2014-06-04",
+                    "created_by": "ziga.stopinsek@zemanta.com",
+                    "license_fee": "20%",
+                    "allocated": "100000.0000",
+                    "total": 100000,
+                    "id": 1,
+                    "is_signed": False,
+                    "budgets": [
+                        {"amount": 100000, "id": 1}
+                    ],
+                    "start_date": "2015-10-01"
+                }
+            ],
+            "past": [],
+            "totals": {
+                "available": "120.0000",
+                "allocated": "100880.0000",
+                "total": "101000",
+                "past": "0",
+            }
+        }
+        self.maxDiff = None
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 11)
+            budget.free_inactive_allocated_assets()
+            response = self.client.get(url)
+        self.assertEqual(json.loads(response.content)['data'], on_reserve_data)
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 12)
+            budget.free_inactive_allocated_assets()
+            response = self.client.get(url)
+        self.assertEqual(json.loads(response.content)['data'], on_reserve_data)
+
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 13)
+            budget.free_inactive_allocated_assets()
+            response = self.client.get(url)
+        self.assertEqual(json.loads(response.content)['data'], on_reserve_data)
+
+        # After sync time has passed
+        with patch('utils.dates_helper.local_today') as mock_now:
+            mock_now.return_value = datetime.date(2015, 11, 14)
+            budget.free_inactive_allocated_assets()
+            response = self.client.get(url)
+        self.assertEqual(json.loads(response.content)['data'], on_freed_data)
+        
+        
