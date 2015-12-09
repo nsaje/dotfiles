@@ -107,8 +107,7 @@ def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None
     articles = dash.api.reconcile_articles(ad_group, raw_articles)
 
     # in some cases we need to suppress content ad id check due to legacy content still in z1
-    enable_invalid_content_ad_check = (ad_group_source.can_manage_content_ads and
-                                       date not in SUPRESS_INVALID_CONTENT_ID_CHECK.get(ad_group.id, {}).get(source.id, {}))
+    suppress_invalid_content_ad_check = date in SUPRESS_INVALID_CONTENT_ID_CHECK.get(ad_group.id, {}).get(source.id, {})
 
     if not len(articles) == len(data_rows):
         raise Exception('Not all articles were reconciled')
@@ -125,13 +124,18 @@ def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None
             statsd_helper.statsd_incr('reports.update.err_content_ad_no_id')
             raise Exception('\'id\' field not present in data row.')
 
-        if data_row['id'] not in content_ad_sources and enable_invalid_content_ad_check:
-            statsd_helper.statsd_incr('reports.update.err_unknown_content_ad_id')
-            raise Exception('Stats for an unknown id. ad group={}. source={}. id={}.'.format(
-                ad_group.id,
-                source.id,
-                data_row['id']
-            ))
+        if data_row['id'] not in content_ad_sources and ad_group_source.can_manage_content_ads:
+            if suppress_invalid_content_ad_check:
+                # Stats for an unknown id, but we decided to skip
+                statsd_helper.statsd_incr('reports.update.err_unknown_content_ad_id_skipped')
+                continue
+            else:
+                statsd_helper.statsd_incr('reports.update.err_unknown_content_ad_id')
+                raise Exception('Stats for an unknown id. ad group={}. source={}. id={}.'.format(
+                    ad_group.id,
+                    source.id,
+                    data_row['id']
+                ))
 
         row_dict = {
             'id': data_row['id'],
