@@ -44,7 +44,7 @@ oneApp.controller('AddScheduledReportModalCtrl',
             $scope.downloadAllowed = false;
         }
         if ( option.disabled ) {
-            $scope.downloadNotAllowedMessage = 'This report is not available for download due to the volume of content. Please contact your account manager for assistance.';
+            $scope.downloadNotAllowedMessage = 'This report is not available for download due to the volume of content. Please select shorter date range or different granularity.';
             $scope.downloadAllowed = false;
         }
 
