@@ -1051,6 +1051,29 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function CampaignOverview() {
+
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + id + '/overview/';
+            var config = {
+                params: {}
+            };
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AccountArchive() {
         this.archive = function (id) {
             var deferred = $q.defer();
@@ -2853,6 +2876,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         campaignBudget: new CampaignBudget(),
         campaignSync: new CampaignSync(),
         campaignArchive: new CampaignArchive(),
+        campaignOverview: new CampaignOverview(),
         accountAgency: new AccountAgency(),
         account: new Account(),
         accountAccountsTable: new AccountAccountsTable(),

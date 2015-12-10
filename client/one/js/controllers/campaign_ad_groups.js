@@ -16,6 +16,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.order = '-cost';
     $scope.isIncompletePostclickMetrics = false;
     $scope.localStoragePrefix = 'campaignAdGroups';
+    $scope.infoboxHeader = null;
+    $scope.infoboxSettings = null;
 
     var userSettings = zemUserSettings.getInstance($scope, 'campaignAdGroups');
 
@@ -282,6 +284,22 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         });
     };
 
+    var getInfoboxData = function() {
+        api.campaignOverview.get($state.params.id).then(
+            function(data) {
+                $scope.infoboxHeader = data.header;
+                $scope.infoboxSettings = data.settings;
+            },
+            function(data) {}
+        );
+    };
+
+    $scope.$watch('$parent.infoboxVisible', function(newValue, oldValue) {
+        $timeout(function() {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
+    });
+
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getDailyStats();
@@ -497,6 +515,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         pollSyncStatus();
         getDailyStats();
         setDisabledExportOptions();
+        getInfoboxData();
     };
 
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {

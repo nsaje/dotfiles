@@ -600,7 +600,6 @@ class CampaignOverview(api_common.BaseApiView):
         is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
         return settings, is_delivering
 
-
     def get_campaign_status(self, campaign):
         # TODO: Duplicate from account campaigns view
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)
