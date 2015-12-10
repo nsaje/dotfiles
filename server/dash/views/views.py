@@ -398,9 +398,6 @@ class AdGroupOverview(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_see_infobox'):
             raise exc.AuthorizationError()
 
-        # this is calculated in _performance_settings
-        self.delivering = False
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         ad_group_settings = ad_group.get_current_settings()
@@ -410,13 +407,17 @@ class AdGroupOverview(api_common.BaseApiView):
             'active': running_status == constants.AdGroupRunningStatus.ACTIVE
         }
 
+        performance_settings, is_delivering = self._performance_settings(
+            ad_group, request.user, ad_group_settings
+        )
+
         response = {
             'header': header,
             'settings': self._basic_settings(ad_group, ad_group_settings) +
-                self._performance_settings(ad_group, request.user, ad_group_settings),
+                performance_settings,
         }
 
-        header['subtitle'] = 'Delivering' if self.delivering else 'Not Delivering'
+        header['subtitle'] = 'Delivering' if is_delivering else 'Not Delivering'
 
         return self.create_api_response(response)
 
@@ -552,9 +553,6 @@ class AdGroupOverview(api_common.BaseApiView):
         total_campaign_spend_to_date = self.get_total_campaign_spend(user, ad_group)
         ideal_campaign_spend_to_date = self.get_ideal_campaign_spend(user, ad_group.campaign)
 
-        if ideal_campaign_spend_to_date >= total_campaign_spend_to_date:
-            self.delivering = True
-
         ratio = 0
         if ideal_campaign_spend_to_date > 0:
             ratio = min(
@@ -592,7 +590,8 @@ class AdGroupOverview(api_common.BaseApiView):
             ).performance(success)
             settings.append(goal_setting.as_dict())
 
-        return settings
+        is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
+        return settings, is_delivering
 
     def get_reports_api_module(self, user):
         if user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
