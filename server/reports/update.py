@@ -269,7 +269,7 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
         )
 
     date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-    reports.refresh.notify_campaign_data_change(date, ad_group.campaign_id)
+    reports.refresh.notify_contentadstats_change(date, ad_group.campaign_id)
 
 
 @transaction.atomic(using=settings.STATS_DB_NAME)
@@ -312,7 +312,7 @@ def process_report(date, parsed_report_rows, report_type):
                                                    .distinct('campaign_id')\
                                                    .values_list('campaign_id', flat=True)
         for campaign_id in campaigns_ids:
-            reports.refresh.notify_campaign_data_change(date, campaign_id)
+            reports.refresh.notify_contentadstats_change(date, campaign_id)
     except:
         logger.exception('Failed processing report')
         raise

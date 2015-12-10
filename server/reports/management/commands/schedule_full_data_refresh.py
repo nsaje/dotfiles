@@ -17,4 +17,4 @@ class Command(BaseCommand):
         today = dates_helper.local_today()
         for campaign in dash.models.Campaign.objects.exclude_archived():
             for days in range(settings.LAST_N_DAY_REPORTS):
-                reports.refresh.notify_campaign_data_change(today - datetime.timedelta(days=days), campaign.id)
+                reports.refresh.notify_contentadstats_change(today - datetime.timedelta(days=days), campaign.id)

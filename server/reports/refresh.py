@@ -125,7 +125,7 @@ def _get_goals_json(goals):
     return json.dumps(result)
 
 
-def notify_campaign_data_change(date, campaign_id):
+def notify_contentadstats_change(date, campaign_id):
     sqs_helper.write_message_json(
         settings.CAMPAIGN_CHANGE_QUEUE,
         {'date': date, 'campaign_id': campaign_id}

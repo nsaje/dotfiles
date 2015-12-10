@@ -285,9 +285,9 @@ class RefreshAdGroupStatsTestCase(test.TestCase):
 class CampaignDataChangeTestCase(test.TestCase):
 
     @patch('utils.sqs_helper.write_message_json')
-    def test_notify_campaign_data_change(self, mock_sqs_write_message):
+    def test_notify_contentadstats_change(self, mock_sqs_write_message):
         date = datetime.date(2015, 12, 1)
-        refresh.notify_campaign_data_change(date, 1)
+        refresh.notify_contentadstats_change(date, 1)
         mock_sqs_write_message.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, {'date': date, 'campaign_id': 1})
 
     @patch('reports.refresh.refresh_contentadstats')

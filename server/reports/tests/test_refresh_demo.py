@@ -26,8 +26,8 @@ class RefreshDemoTestCase(test.TestCase):
         self.demo_ad_groups = dash.models.AdGroup.demo_objects.all()
         self.real_ad_groups = dash.models.AdGroup.objects.exclude(pk__in=self.demo_ad_groups)
 
-    @patch('reports.refresh.notify_campaign_data_change')
-    def test_refresh_demo(self, mock_notify_campaign_data_change):
+    @patch('reports.refresh.notify_contentadstats_change')
+    def test_refresh_demo(self, mock_notify_contentadstats_change):
         demo_data_before_refresh = reports.api.query(
             start_date=self.start_date,
             end_date=self.end_date,
@@ -60,4 +60,4 @@ class RefreshDemoTestCase(test.TestCase):
         for campaign in campaigns:
             for date in [datetime.date(2014, 6, 4), datetime.date(2014, 6, 5), datetime.date(2014, 6, 6)]:
                 calls.append(call(date, campaign.id))
-        mock_notify_campaign_data_change.assert_has_calls(calls, any_order=True)
+        mock_notify_contentadstats_change.assert_has_calls(calls, any_order=True)
