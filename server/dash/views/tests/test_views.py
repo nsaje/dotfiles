@@ -2035,9 +2035,6 @@ class AdGroupOverviewTest(TestCase):
         self.assertFalse(header['active'])
 
         settings = response['data']['settings']
-        for s in settings:
-            print s
-
         flight_setting = self._get_setting(settings, 'flight')
         self.assertEqual('03/02 - 04/02', flight_setting['value'])
 
@@ -2069,7 +2066,6 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('0.0 below planned', goal_setting['description'])
         self.assertEqual('happy', goal_setting['icon'])
 
-
     @patch('reports.redshift.get_cursor')
     def test_run_mid(self, cursor):
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
@@ -2085,7 +2081,7 @@ class AdGroupOverviewTest(TestCase):
 
         cursor().dictfetchall.return_value = [{
             'source_id': 9,
-            'cost_cc_sum': 0.0
+            'cost_cc_sum': 500000.0
         }]
 
         response = self._get_ad_group_overview(1)
@@ -2104,3 +2100,10 @@ class AdGroupOverviewTest(TestCase):
             em=end_date.month,
             ed=end_date.day,
         ), flight_setting['value'])
+
+        flight_setting = self._get_setting(settings, 'daily')
+        self.assertEqual('$100.00', flight_setting['value'])
+
+        flight_setting = self._get_setting(settings, 'yesterday')
+        self.assertEqual('$50.00', flight_setting['value'])
+        self.assertEqual('50.00% of daily cap', flight_setting['description'])

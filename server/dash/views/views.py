@@ -545,7 +545,7 @@ class AdGroupOverview(api_common.BaseApiView):
         yesterday_spend_settings = OverviewSetting(
             'Yesterday spend:',
             '${:.2f}'.format(yesterday_cost),
-            '{:.2f}% of daily cap'.format(filled_daily_ratio * 100),
+            '{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100),
         ).performance(True)
         settings.append(yesterday_spend_settings.as_dict())
 
