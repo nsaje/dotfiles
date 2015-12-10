@@ -473,8 +473,47 @@ class CampaignOverview(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_see_infobox'):
             raise exc.AuthorizationError()
 
-        # campaign = helpers.get_campaign(request.user, campaign_id)
-        return self.create_api_response({})
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        campaign_settings = campaign.get_current_settings()
+
+        # TODO
+        print dict(self.get_campaign_status(campaign))
+        running_status = None
+
+        header = {
+            'title': campaign.name,
+            'active': False
+        }
+
+        performance_settings, is_delivering = self._performance_settings(
+            campaign, request.user, campaign_settings
+        )
+
+        response = {
+            'header': header,
+            'settings': self._basic_settings(campaign, campaign_settings) +
+                performance_settings,
+        }
+
+        header['subtitle'] = 'Delivering' if is_delivering else 'Not Delivering'
+
+        return self.create_api_response(response)
+
+    def _basic_settings(self, campaign, campaign_settings):
+        return []
+
+    def _performance_settings(self, campaign, user, campaign_settings):
+        return [], False
+
+    def get_campaign_status(self, campaign):
+        # TODO: Duplicate from account campaigns view
+        ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+        ad_groups_settings = models.AdGroupSettings.objects.filter(
+            ad_group__in=ad_groups
+        ) .group_current_settings()
+
+        return helpers.get_ad_group_state_by_sources_running_status(
+            ad_groups, ad_groups_settings, [], 'campaign_id')
 
 
 class AdGroupState(api_common.BaseApiView):
