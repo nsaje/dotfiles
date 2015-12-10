@@ -16,7 +16,7 @@ STATS_E2E_DB_NAME = 'stats_e2e'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': environ.get('DJANGO_DATABASE', ''),
+        'NAME': os.environ.get('DJANGO_DATABASE', ''),
         'USER': '',
         'PASSWORD': ''
     },
