@@ -11,6 +11,8 @@ from utils import dates_helper
 
 class Command(BaseCommand):
 
+    help = "Marks all non-archived campaigns' Redshift data to be updated in the next batch"
+
     def handle(self, *args, **options):
         today = dates_helper.local_today()
         for campaign in dash.models.Campaign.objects.exclude_archived():
