@@ -2136,9 +2136,10 @@ class BudgetLineItem(FootprintModel):
         return total_cc * settings.BUDGET_RESERVE_FACTOR
 
     def get_latest_statement(self):
-        return self.statements.all().order_by('-date')[0]
+        return self.statements.all().order_by('-date').first()
 
     def get_spend_data(self, date=None, decimal=False, always_return_values=False):
+        statement = None
         spend_data = {
             'media_cc': 0,
             'data_cc': 0,
@@ -2148,12 +2149,10 @@ class BudgetLineItem(FootprintModel):
         try:
             statement = date and self.statements.get(date=date)\
                         or self.get_latest_statement()
-        except IndexError:
-            pass
         except ObjectDoesNotExist:
             if not always_return_values:
                 return None
-        else:
+        if statement:
             spend_data['media_cc'] = nano_to_cc(statement.media_spend_nano)
             spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano)
             spend_data['license_fee_cc'] = nano_to_cc(statement.license_fee_nano)
