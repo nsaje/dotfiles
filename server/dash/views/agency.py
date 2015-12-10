@@ -940,11 +940,12 @@ class AccountAgency(api_common.BaseApiView):
 
         return [source.id for source in queryset]    
 
-    def add_error_to_account_agency_form(self, form):
+    def add_error_to_account_agency_form(self, form, to_be_removed):
+        source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed)]
         form.add_error(
             'allowed_sources', 
             'Media sources {} are still used on this account.'.format(
-                ', '.join(models.Source.objects.filter(id__in=to_be_removed))    
+                ', '.join(source_names)    
             )
         )
 

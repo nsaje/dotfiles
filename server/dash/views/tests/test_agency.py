@@ -1953,3 +1953,15 @@ class AccountAgencyTest(TestCase):
         self.assertEqual(response['data']['settings']['allowed_sources'], {
             '2': {'name': 'Source 2', 'allowed': True},
             })
+
+    def test_add_error_to_account_agency_form(self):
+        view = agency.AccountAgency()
+        form = self._get_form_with_allowed_sources_dict({})
+        view.add_error_to_account_agency_form(form, [1,2])
+        self.assertEqual(
+            dict(form.errors), 
+            {
+                'allowed_sources': 
+                    [u'Media sources Source 1, Source 2 are still used on this account.']
+            }
+        )
