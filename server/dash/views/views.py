@@ -3,6 +3,7 @@ import datetime
 import copy
 import json
 import decimal
+import exceptions
 import logging
 import base64
 import httplib
@@ -43,6 +44,7 @@ import actionlog.zwei_actions
 import actionlog.models
 import actionlog.constants
 
+from dash import budget
 from dash import models, region_targeting_helper
 from dash import constants
 from dash import api
@@ -477,7 +479,6 @@ class CampaignOverview(api_common.BaseApiView):
         campaign_settings = campaign.get_current_settings()
 
         # TODO
-        print dict(self.get_campaign_status(campaign))
         running_status = None
 
         header = {
@@ -500,10 +501,105 @@ class CampaignOverview(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def _basic_settings(self, campaign, campaign_settings):
-        return []
+        settings = []
+        campaign_settings = campaign.get_current_settings()
+
+        targeting_device = OverviewSetting(
+            'Targeting',
+            'Device: {devices}'.format(
+                devices=', '.join(
+                    [w[0].upper() + w[1:] for w in campaign_settings.target_devices]
+                )
+            ),
+            ''
+        )
+        settings.append(targeting_device.as_dict())
+
+        targeting_region = OverviewSetting(
+            '',
+            'Location: {regions}'.format(
+                regions=', '.join(campaign_settings.target_regions)
+            ),
+            '',
+        )
+        settings.append(targeting_region.as_dict())
+
+        # TODO: sum of daily caps from adgroupsources
+        """
+        daily_cap = OverviewSetting(
+            'Daily cap',
+            '${:.2f}'.format(ad_group_settings.daily_budget_cc)\
+                if ad_group_settings.daily_budget_cc is not None else '',
+            ''
+        )
+        settings.append(daily_cap.as_dict())
+        """
+        return settings
 
     def _performance_settings(self, campaign, user, campaign_settings):
-        return [], False
+        settings = []
+
+        """
+        # TODO
+        yesterday_cost = self.get_yesterday_total_cost(user, campaign) or 0
+        filled_daily_ratio = 0
+
+        ad_group_daily_budget = ad_group_settings.daily_budget_cc or 0
+        if ad_group_daily_budget > 0:
+            filled_daily_ratio = min(
+                (yesterday_cost - float(ad_group_daily_budget)) / float(ad_group_daily_budget),
+                1)
+
+        yesterday_spend_settings = OverviewSetting(
+            'Yesterday spend:',
+            '${:.2f}'.format(yesterday_cost),
+            '{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100),
+        ).performance(True)
+        settings.append(yesterday_spend_settings.as_dict())
+        """
+
+        total_campaign_spend_to_date = self.get_total_campaign_spend(user, campaign)
+        ideal_campaign_spend_to_date = self.get_ideal_campaign_spend(user, campaign)
+
+        ratio = 0
+        if ideal_campaign_spend_to_date > 0:
+            ratio = min(
+                (total_campaign_spend_to_date - ideal_campaign_spend_to_date) / ideal_campaign_spend_to_date,
+                1)
+
+        campaign_pacing_settings = OverviewSetting(
+            'Campaign pacing:',
+            '{:.2f}%'.format(ratio * 100),
+            '${:.2f}'.format(total_campaign_spend_to_date)
+        ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
+        settings.append(campaign_pacing_settings.as_dict())
+
+        campaign_goals = [(
+            campaign_settings.campaign_goal,
+            campaign_settings.goal_quantity,
+        )
+        ]
+        for i, (goal, quantity) in enumerate(campaign_goals):
+            text = constants.CampaignGoal.get_text(goal)
+            name = 'Campaign goals:' if i == 0 else ''
+
+            goal_value = self.get_goal_value(user, campaign, campaign_settings, goal)
+            goal_diff, description, success = self.get_goal_difference(
+                goal,
+                float(quantity),
+                goal_value
+            )
+
+            goal_setting = OverviewSetting(
+                name,
+                '{value} {description}'.format(value=text, description=goal_value),
+                description
+            ).performance(success)
+            settings.append(goal_setting.as_dict())
+
+        is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
+        return settings, is_delivering
+
 
     def get_campaign_status(self, campaign):
         # TODO: Duplicate from account campaigns view
@@ -514,6 +610,76 @@ class CampaignOverview(api_common.BaseApiView):
 
         return helpers.get_ad_group_state_by_sources_running_status(
             ad_groups, ad_groups_settings, [], 'campaign_id')
+
+    def get_reports_api_module(self, user):
+        if user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
+            return reports.api_contentads
+        return reports.api
+
+    def get_ideal_campaign_spend(self, user, campaign):
+        # I use campaign budget line items here
+        # (which aren't yet in production - 2015/12/09)
+        today = datetime.datetime.today().date()
+        budgets = models.BudgetLineItem.objects.filter(campaign=campaign)
+        return sum( [b.get_ideal_budget_spend(today) for b in budgets] )
+
+    def get_total_campaign_spend(self, user, campaign):
+        # TODO: this depends on new budget system to come in place
+        # so it's disabled for the moment
+        # today = datetime.datetime.today().date()
+        # budgets = models.BudgetLineItem.objects.filter(campaign=campaign)
+        # return sum( [budget.get_spend() for budget in budgets] )
+        campaign_budget = budget.CampaignBudget(campaign)
+        return campaign_budget.get_spend()
+
+    def get_goal_value(self, user, campaign, campaign_settings, goal_type):
+        # we are interested in reaching the goal by today
+        end_date = datetime.datetime.today().date()
+
+        totals_stats = reports.api_helpers.filter_by_permissions(
+            self.get_reports_api_module(user).query(
+                campaign.created_dt,
+                end_date,
+                campaign=campaign,
+            ), user)
+
+        if goal_type == constants.CampaignGoal.CPA:
+            # CPA is still being implemented via Conversion&Goals epic
+            raise exceptions.NotImplementedError()
+        elif goal_type == constants.CampaignGoal.PERCENT_BOUNCE_RATE:
+            return totals_stats.get('bounce_rate', 0) or 0
+        elif goal_type == constants.CampaignGoal.NEW_UNIQUE_VISITORS:
+            return totals_stats.get('new_visits_sum', 0) or 0
+        elif goal_type == constants.CampaignGoal.SECONDS_TIME_ON_SITE:
+            return totals_stats.get('avg_tos', 0) or 0
+        elif goal_type == constants.Campaigngoal.PAGES_PER_SESSION:
+            return totals_stats.get('pv_per_visit', 0) or 0
+
+        # assuming we will add moar campaign goals in the future
+        raise exceptions.NotImplementedError()
+
+    def get_goal_difference(self, goal_type, target, actual):
+        """
+        Returns difference in value, description and success tuple
+        """
+
+        if goal_type in (constants.CampaignGoal.PERCENT_BOUNCE_RATE,):
+            diff = target - actual
+            rate = diff / target if target > 0 else 0
+            description = '{rate:.2f}% {word} planned'.format(
+                rate=rate,
+                word='above' if rate > 0 else 'below'
+            )
+            success = diff <= 0
+            return diff, description, success
+        else:
+            diff = target - actual
+            description = '{diff} {word} planned'.format(
+                diff=diff,
+                word='above' if diff > 0 else 'below',
+            )
+            success = diff >= 0
+            return diff, description, success
 
 
 class AdGroupState(api_common.BaseApiView):
