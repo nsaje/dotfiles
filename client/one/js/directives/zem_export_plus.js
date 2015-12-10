@@ -34,7 +34,7 @@ oneApp.directive('zemExportPlus', function() {
                 }
                 return exportColumns;
             };
-            
+
             $scope.showScheduledReportModal = function (exportModalType) {
                 var modalInstance;
                 if (exportModalType === 'schedule') {
@@ -44,7 +44,6 @@ oneApp.directive('zemExportPlus', function() {
                         windowClass: 'modal',
                         scope: $scope
                     });
-                    return modalInstance;
                 } else {
                         modalInstance = $modal.open({
                         templateUrl: '/partials/download_export_report_modal.html',
@@ -53,6 +52,7 @@ oneApp.directive('zemExportPlus', function() {
                         scope: $scope
                     });
                 }
+                return modalInstance;
             };
         }]
     };

@@ -61,6 +61,7 @@ oneApp.controller('DownloadExportReportModalCtrl',
         }
         url += '&additional_fields=' + $scope.getAdditionalColumns().join(',');
         $window.open(url, '_blank');
+        $modalInstance.close();
     };
 
     $scope.init = function () {
