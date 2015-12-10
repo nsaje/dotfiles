@@ -199,7 +199,7 @@ def refresh_contentadstats_diff(date, campaign):
 
         for key in metric_keys:
             if row[key] > 0:
-                statsd_incr('reports.refresh.contentadstats_diff_{}'.format(row[key]), row[key])
+                statsd_incr('reports.refresh.contentadstats_diff_{}'.format(key), row[key])
 
         diff_rows.append(row)
 
