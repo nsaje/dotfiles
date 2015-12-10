@@ -132,7 +132,7 @@ def notify_contentadstats_change(date, campaign_id):
     )
 
 
-def refresh_changed_campaigns_data():
+def refresh_changed_contentadstats():
     messages = sqs_helper.get_all_messages_json(settings.CAMPAIGN_CHANGE_QUEUE)
     to_refresh = set((el['date'], el['campaign_id']) for el in messages)
     for date, campaign_id in to_refresh:

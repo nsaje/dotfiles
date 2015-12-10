@@ -292,11 +292,11 @@ class CampaignDataChangeTestCase(test.TestCase):
 
     @patch('reports.refresh.refresh_contentadstats')
     @patch('utils.sqs_helper.get_all_messages_json')
-    def test_refresh_changed_campaigns_data(self, mock_get_all_messages, mock_refresh_contentadstats):
+    def test_refresh_changed_contentadstats(self, mock_get_all_messages, mock_refresh_contentadstats):
         mock_get_all_messages.return_value = [{'date': datetime.date(2015, 12, 1), 'campaign_id': 1},
                                               {'date': datetime.date(2015, 12, 2), 'campaign_id': 1}]
 
-        refresh.refresh_changed_campaigns_data()
+        refresh.refresh_changed_contentadstats()
 
         for ad_group in dash.models.AdGroup.objects.filter(campaign_id=1):
             mock_refresh_contentadstats.assert_called_once_with(datetime.date(2015, 12, 1), ad_group.id)
@@ -304,11 +304,11 @@ class CampaignDataChangeTestCase(test.TestCase):
 
     @patch('reports.refresh.refresh_contentadstats')
     @patch('utils.sqs_helper.get_all_messages_json')
-    def test_refresh_changed_campaigns_data_duplicate(self, mock_get_all_messages, mock_refresh_contentadstats):
+    def test_refresh_changed_contentadstats_duplicate(self, mock_get_all_messages, mock_refresh_contentadstats):
         mock_get_all_messages.return_value = [{'date': datetime.date(2015, 12, 1), 'campaign_id': 1},
                                               {'date': datetime.date(2015, 12, 1), 'campaign_id': 1}]
 
-        refresh.refresh_changed_campaigns_data()
+        refresh.refresh_changed_contentadstats()
 
         ad_groups = dash.models.AdGroup.objects.filter(campaign_id=1)
         self.assertEqual(ad_groups.count(), mock_refresh_contentadstats.call_count)
