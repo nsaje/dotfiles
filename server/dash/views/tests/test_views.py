@@ -2079,6 +2079,24 @@ class AdGroupOverviewTest(TestCase):
         ad_group_settings.end_date = end_date
         ad_group_settings.save(None)
 
+        credit = models.CreditLineItem.objects.create(
+            account=ad_group.campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=User.objects.get(pk=3)
+        )
+
+        budget = models.BudgetLineItem.objects.create(
+            campaign=ad_group.campaign,
+            credit=credit,
+            amount=100,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=User.objects.get(pk=3)
+        )
+
         cursor().dictfetchall.return_value = [{
             'source_id': 9,
             'cost_cc_sum': 500000.0
@@ -2107,3 +2125,8 @@ class AdGroupOverviewTest(TestCase):
         flight_setting = self._get_setting(settings, 'yesterday')
         self.assertEqual('$50.00', flight_setting['value'])
         self.assertEqual('50.00% of daily cap', flight_setting['description'])
+
+        # TODO: Waiting for the new budget system to come in place
+        #pacing_setting = self._get_setting(settings, 'pacing')
+        #self.assertEqual('50.00%', pacing_setting['value'])
+        #self.assertEqual('happy', pacing_setting['icon'])

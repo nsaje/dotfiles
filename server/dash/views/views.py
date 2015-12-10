@@ -607,6 +607,11 @@ class AdGroupOverview(api_common.BaseApiView):
         return sum( [b.get_ideal_budget_spend(today) for b in budgets] )
 
     def get_total_campaign_spend(self, user, ad_group):
+        # TODO: this depends on new budget system to come in place
+        # so it's disabled for the moment
+        # today = datetime.datetime.today().date()
+        # budgets = models.BudgetLineItem.objects.filter(campaign=campaign)
+        # return sum( [budget.get_spend() for budget in budgets] )
         campaign_budget = budget.CampaignBudget(ad_group.campaign)
         return campaign_budget.get_spend()
 
