@@ -2068,3 +2068,39 @@ class AdGroupOverviewTest(TestCase):
         goal_setting = self._get_setting(settings, 'goal')
         self.assertEqual('0.0 below planned', goal_setting['description'])
         self.assertEqual('happy', goal_setting['icon'])
+
+
+    @patch('reports.redshift.get_cursor')
+    def test_run_mid(self, cursor):
+        start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
+        end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
+
+        # check values for adgroup that is in the middle of flight time
+        # and is overperforming
+        ad_group = models.AdGroup.objects.get(pk=1)
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_settings.start_date = start_date
+        ad_group_settings.end_date = end_date
+        ad_group_settings.save(None)
+
+        cursor().dictfetchall.return_value = [{
+            'source_id': 9,
+            'cost_cc_sum': 0.0
+        }]
+
+        response = self._get_ad_group_overview(1)
+
+        self.assertTrue(response['success'])
+        header = response['data']['header']
+        self.assertEqual(header['title'], u'AdGroup name')
+        self.assertFalse(header['active'])
+
+        settings = response['data']['settings']
+
+        flight_setting = self._get_setting(settings, 'flight')
+        self.assertEqual('{sm}/{sd} - {em}/{ed}'.format(
+            sm=start_date.month,
+            sd=start_date.day,
+            em=end_date.month,
+            ed=end_date.day,
+        ), flight_setting['value'])
