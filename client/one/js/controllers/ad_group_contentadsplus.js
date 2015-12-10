@@ -889,6 +889,10 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var getInfoboxData = function() {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+
         api.adGroupOverview.get($state.params.id).then(
             function(data) {
                 console.log(data);

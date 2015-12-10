@@ -200,7 +200,7 @@ oneApp.config(['$provide', function ($provide) {
                 }
             )
         );
-        
+
         $delegate.campaignBudget.save = function demo(id, data) {
             var deferred = $q.defer(),
                 cacheId = '/api/campaigns/' + id + '/budget/',
