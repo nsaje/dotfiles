@@ -1064,7 +1064,7 @@ class ConversionGoalType(ConstantBase):
     _VALUES = {
         PIXEL: 'Conversion Pixel',
         GA: 'Google Analytics',
-        OMNITURE: 'Omniture',
+        OMNITURE: 'Adobe Analytics',
     }
 
 
