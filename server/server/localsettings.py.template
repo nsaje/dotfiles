@@ -16,7 +16,7 @@ STATS_E2E_DB_NAME = 'stats_e2e'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': environ.get('DJANGO_DATABASE', ''),
+        'NAME': os.environ.get('DJANGO_DATABASE', ''),
         'USER': '',
         'PASSWORD': ''
     },
@@ -93,8 +93,8 @@ else:
     SERVER_STATIC_URL = '/static'
     CLIENT_STATIC_URL = 'http://0.0.0.0:9999'
 
-# Eins host
-EINS_HOST = ''
+# Zwei callback base URL
+ZWEI_CALLBACK_BASE_URL = ''
 
 # Zwei API
 ZWEI_API_TASKS_URL = 'http://127.0.0.1/purcel/tasks/'
