@@ -103,14 +103,14 @@ def _get_goals_json(goals):
     return json.dumps(result)
 
 
-def notify_campaign_data_change(date, campaign_id):
+def notify_contentadstats_change(date, campaign_id):
     sqs_helper.write_message_json(
         settings.CAMPAIGN_CHANGE_QUEUE,
         {'date': date, 'campaign_id': campaign_id}
     )
 
 
-def refresh_changed_campaigns_data():
+def refresh_changed_contentadstats():
     messages = sqs_helper.get_all_messages_json(settings.CAMPAIGN_CHANGE_QUEUE)
     to_refresh = set((el['date'], el['campaign_id']) for el in messages)
     for date, campaign_id in to_refresh:

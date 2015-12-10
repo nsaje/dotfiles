@@ -198,7 +198,7 @@ def _refresh_stats_data(start_date, end_date, ad_map, source_map):
 
             # CONTENT ADS
             _copy_content_ad_stats(dt, real_ad_group, multiplication_factor, ad_map, source_map)
-            reports.refresh.notify_campaign_data_change(dt.date(), demo_ad_group.campaign_id)
+            reports.refresh.notify_contentadstats_change(dt.date(), demo_ad_group.campaign_id)
 
 
 def _refresh_conversion_data(start_date, end_date):
