@@ -1,6 +1,7 @@
 import urlparse
 import urllib
 
+from django.core.urlresolvers import reverse
 from django.conf import settings
 
 
@@ -29,4 +30,17 @@ def combine_tracking_codes(*args):
 
 
 def get_full_z1_url(partial_url):
-    return urlparse.urljoin(settings.EINS_HOST, partial_url)
+    """Returns partial_url prepended with base URL (domain)
+
+    Don't use this for generating zwei callback URLS -
+    Use get_zwei_callback_url instead.
+    """
+    return urlparse.urljoin(settings.BASE_URL, partial_url)
+
+
+def get_zwei_callback_url(action_id):
+    """Returns full zwei callback URL"""
+    return urlparse.urljoin(
+        settings.ZWEI_CALLBACK_BASE_URL,
+        reverse('api.zwei_callback', kwargs={'action_id': action_id})
+    )

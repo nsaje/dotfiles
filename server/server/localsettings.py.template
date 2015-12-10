@@ -93,8 +93,8 @@ else:
     SERVER_STATIC_URL = '/static'
     CLIENT_STATIC_URL = 'http://0.0.0.0:9999'
 
-# Eins host
-EINS_HOST = ''
+# Zwei callback base URL
+ZWEI_CALLBACK_BASE_URL = ''
 
 # Zwei API
 ZWEI_API_TASKS_URL = 'http://127.0.0.1/purcel/tasks/'

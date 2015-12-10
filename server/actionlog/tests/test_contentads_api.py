@@ -1,9 +1,7 @@
 import datetime
 import mock
-import urlparse
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.http.request import HttpRequest
 
@@ -62,9 +60,7 @@ class ContentAdsApiTestCase(TestCase):
 
         expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
             strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-        callback = urlparse.urljoin(
-            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-        )
+        callback = url_helper.get_zwei_callback_url(action.id)
 
         ad_group_settings = dash.models.AdGroupSettings.objects.get(pk=1)
         payload = {
@@ -122,9 +118,7 @@ class ContentAdsApiTestCase(TestCase):
 
         expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
             strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-        callback = urlparse.urljoin(
-            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-        )
+        callback = url_helper.get_zwei_callback_url(action.id)
 
         payload = {
             'source': ad_group_source.source.source_type.type,
@@ -183,9 +177,7 @@ class ContentAdsApiTestCase(TestCase):
             batch, content_ad_source.source, request, send=False)
 
         expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES))
-        callback = urlparse.urljoin(
-            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-        )
+        callback = url_helper.get_zwei_callback_url(action.id)
 
         self.assertEqual(action.payload, {
             'source': ad_group_source.source.source_type.type,
@@ -274,9 +266,7 @@ class ContentAdsApiTestCase(TestCase):
 
         expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
             strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-        callback = urlparse.urljoin(
-            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-        )
+        callback = url_helper.get_zwei_callback_url(action.id)
         payload = {
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.UPDATE_CONTENT_AD,
@@ -336,9 +326,7 @@ class ContentAdsApiTestCase(TestCase):
 
         expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
             strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-        callback = urlparse.urljoin(
-            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-        )
+        callback = url_helper.get_zwei_callback_url(action.id)
         payload = {
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.GET_CONTENT_AD_STATUS,
@@ -370,9 +358,7 @@ class ContentAdsApiTestCase(TestCase):
 
         expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
             strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-        callback = urlparse.urljoin(
-            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-        )
+        callback = url_helper.get_zwei_callback_url(action.id)
 
         ad_group_settings = dash.models.AdGroupSettings.objects.get(pk=1)
         payload = {
