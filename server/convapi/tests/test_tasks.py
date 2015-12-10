@@ -88,6 +88,7 @@ Hour Index,Sessions
         with open('convapi/fixtures/omniture_tracking_codes_csv.zip', 'rb') as f:
             return f.read()
 
+    @patch('reports.refresh.notify_contentadstats_change', MagicMock())
     def test_process_ga_report(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
 
@@ -108,6 +109,7 @@ Hour Index,Sessions
         report_logs = models.GAReportLog.objects.first()
         self.assertIsNone(report_logs.errors)
 
+    @patch('reports.refresh.notify_contentadstats_change', MagicMock())
     def test_process_ga_report_hour_index(self, cursor):
         dash.models.Source.objects.create(source_type=None, name='Test source', tracking_slug='lasko', maintenance=False)
 
@@ -128,6 +130,7 @@ Hour Index,Sessions
         report_logs = models.GAReportLog.objects.first()
         self.assertIsNone(report_logs.errors)
 
+    @patch('reports.refresh.notify_contentadstats_change', MagicMock())
     def test_omni_ga_conversion(self, cursor):
         tasks.get_from_s3 = self._fake_get_omni_from_s3
         ga_report_task = views.GAReportTask('GA mail',

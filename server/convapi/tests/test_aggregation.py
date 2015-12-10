@@ -1,7 +1,7 @@
 import datetime
 
 from django.test import TestCase
-from mock import patch
+from mock import patch, MagicMock
 
 import convapi.parse
 import convapi.models
@@ -56,6 +56,7 @@ class GAReportsAggregationTest(TestCase):
         self.assertEqual(['/lasko?_z1_adgid=1&_z1_msid=', '/lasko?_z1_adgid=1&_z1_msid=', '/union?_z1_adgid=1&_z1_msid='],
                          convapi.views.media_source_specified_errors(self.csvreport_errors))
 
+    @patch('reports.refresh.notify_contentadstats_change', MagicMock())
     def test_report_aggregation(self):
         self.assertEqual(reports.models.ArticleStats.objects.filter(datetime=self.report_date).count(), 1)
 
@@ -133,6 +134,7 @@ class GAReportsAggregationKeywordTest(TestCase):
         self.assertEqual((False, ['z1yahoo.com1z']), csvreport.is_ad_group_specified())
         self.assertEqual((False, ['z111z']), csvreport.is_media_source_specified())
 
+    @patch('reports.refresh.notify_contentadstats_change', MagicMock())
     def test_report_aggregation(self):
         report_log = convapi.models.GAReportLog()
 
