@@ -39,6 +39,7 @@
         modified_dt: '2015-09-23T09:57:22'
         uses_credits: false
         modified_by: 1
+        allowed_sources: [2,3]
     model: dash.account
     pk: 111
     

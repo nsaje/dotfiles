@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
 import datetime
-from mock import patch, ANY, Mock, call
 import pytz
 
+from mock import patch, ANY, Mock, call
 from decimal import Decimal
 
 from django.test import TestCase
@@ -19,6 +19,7 @@ from dash import models
 from dash import constants
 from dash.views import agency
 from dash import forms
+from utils import exc
 
 
 @patch('dash.views.agency.api.order_ad_group_settings_update')
@@ -1906,6 +1907,35 @@ class AccountAgencyTest(TestCase):
             set(account.allowed_sources.values_list('id', flat=True)),
             set([2,])
         )
+
+    def test_set_allowed_sources_cant_remove_running_source(self):
+        account = models.Account.objects.get(pk=111)
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([2,3])
+        )
+        view = agency.AccountAgency()
+        form = self._get_form_with_allowed_sources_dict({
+                    2: {'allowed': False},
+                    3: {'allowed': True}
+            })
+        
+        try:
+            view.set_allowed_sources(
+                account,
+                False, # no permission to add unreleased source 3 
+                form
+            )
+            self.fail()
+        except exc.ValidationError:
+            pass
+
+        self.assertEqual(
+            dict(form.errors),
+            {'allowed_sources': [u'Media source Source 2 is still used on this account.']}
+        )
+
+
     
     def test_set_allowed_sources_none(self):
         account = models.Account.objects.get(pk=1)
@@ -1963,6 +1993,18 @@ class AccountAgencyTest(TestCase):
             {
                 'allowed_sources': 
                     [u'Media sources Source 1, Source 2 are still used on this account.']
+            }
+        )
+
+    def test_add_error_to_account_agency_single(self):
+        view = agency.AccountAgency()
+        form = self._get_form_with_allowed_sources_dict({})
+        view.add_error_to_account_agency_form(form, [1])
+        self.assertEqual(
+            dict(form.errors), 
+            {
+                'allowed_sources': 
+                    [u'Media source Source 1 is still used on this account.']
             }
         )
 

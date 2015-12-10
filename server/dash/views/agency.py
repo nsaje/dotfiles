@@ -942,12 +942,15 @@ class AccountAgency(api_common.BaseApiView):
 
     def add_error_to_account_agency_form(self, form, to_be_removed):
         source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed)]
-        form.add_error(
-            'allowed_sources', 
-            'Media sources {} are still used on this account.'.format(
-                ', '.join(source_names)    
-            )
-        )
+        media_sources = ', '.join(source_names)    
+        if len(source_names) > 1:
+            msg = 'Media sources {} are still used on this account.'.format(media_sources)
+        else:
+            msg = 'Media source {} is still used on this account.'.format(media_sources)
+
+            
+
+        form.add_error('allowed_sources', msg)
 
     def set_allowed_sources(self, account, can_see_all_available_sources, account_agency_form):
         allowed_sources_dict = account_agency_form.cleaned_data.get('allowed_sources')
@@ -966,9 +969,9 @@ class AccountAgency(api_common.BaseApiView):
         current_allowed_sources_set = set(current_allowed_sources_list)
 
         to_be_removed = current_allowed_sources_set.difference(new_allowed_sources_set)
-        #if not self.are_sources_removable(account, to_be_removed):
-        #    self.add_error_to_account_agency_form(account_agency_form)
-        #    raise ValidationError(errors=dict(account_agency_form.errors))
+        if not self.are_sources_removable(account, to_be_removed):
+            self.add_error_to_account_agency_form(account_agency_form, to_be_removed)
+            raise exc.ValidationError(errors=dict(account_agency_form.errors))
 
         to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
 
