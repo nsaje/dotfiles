@@ -13,23 +13,11 @@ class RedshiftTest(TestCase):
 
     def test_delete_contentadstats(self, mock_cursor):
         date = datetime.date(2015, 1, 1)
-        ad_group_id = 1
-        source_id = 2
+        campaign_id = 1
 
-        redshift.delete_contentadstats(date, ad_group_id, source_id)
+        redshift.delete_contentadstats(date, campaign_id)
 
-        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND content_ad_id != %s AND source_id = %s'
-        params = ['2015-01-01', 1, -1, 2]
-
-        mock_cursor().execute.assert_called_with(query, params)
-
-    def test_delete_contentadstats_no_source(self, mock_cursor):
-        date = datetime.date(2015, 1, 1)
-        ad_group_id = 1
-
-        redshift.delete_contentadstats(date, ad_group_id, None)
-
-        query = 'DELETE FROM contentadstats WHERE date = %s AND adgroup_id = %s AND content_ad_id != %s'
+        query = 'DELETE FROM contentadstats WHERE date = %s AND campaign_id = %s AND content_ad_id != %s'
         params = ['2015-01-01', 1, -1]
 
         mock_cursor().execute.assert_called_with(query, params)
