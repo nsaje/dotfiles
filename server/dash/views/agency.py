@@ -901,20 +901,6 @@ class AccountAgency(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def are_sources_removable(self, account, sources_to_be_removed):
-        for campaign in models.Campaign.objects.filter(account_id=account.id).exclude_archived():
-
-            for adgroup in campaign.adgroup_set.filter(is_demo=False):
-                adgroup_settings = adgroup.get_current_settings()
-                if adgroup_settings.state == constants.AdGroupSettingsState.INACTIVE:
-                    continue
-
-                for adgroup_source in adgroup.adgroupsource_set.filter(source__in=sources_to_be_removed):
-                    adgroup_source_settings = adgroup_source.get_current_settings()
-                    if adgroup_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
-                        return False
-        return True
-
     def set_account(self, account, resource):
         account.name = resource['name']
 
@@ -939,6 +925,20 @@ class AccountAgency(api_common.BaseApiView):
             queryset = queryset.filter(released=True)
 
         return [source.id for source in queryset]    
+
+    def are_sources_removable(self, account, sources_to_be_removed):
+        for campaign in models.Campaign.objects.filter(account_id=account.id).exclude_archived():
+
+            for adgroup in campaign.adgroup_set.filter(is_demo=False):
+                adgroup_settings = adgroup.get_current_settings()
+                if adgroup_settings.state == constants.AdGroupSettingsState.INACTIVE:
+                    continue
+
+                for adgroup_source in adgroup.adgroupsource_set.filter(source__in=sources_to_be_removed):
+                    adgroup_source_settings = adgroup_source.get_current_settings()
+                    if adgroup_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
+                        return False
+        return True
 
     def add_error_to_account_agency_form(self, form, to_be_removed):
         source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed)]
