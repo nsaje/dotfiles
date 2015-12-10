@@ -305,6 +305,20 @@ oneApp.config(['$provide', function ($provide) {
             };
         }(resetIfErrorWrapper($delegate.campaignAdGroupsTable.get)));
 
+        /* ADGROUP OVERVIEW */
+        $delegate.adGroupOverview.get = resetIfErrorWrapper(
+            defaultGetWrapper(
+                '/api/ad_groups/{id}/overview/';
+                $delegate.adGroupOverview.get,
+                function () {
+                    return function () {
+                        var data = {};
+                        deferred.resolve(data);
+                    };
+                }
+            )
+        );
+
         /* ADGROUP SETTINGS */
         $delegate.adGroupSettings.get = resetIfErrorWrapper(
             defaultGetWrapper('/api/ad_groups/{id}/settings/', $delegate.adGroupSettings.get)
