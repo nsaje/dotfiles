@@ -114,9 +114,8 @@ def refresh_changed_campaigns_data():
     messages = sqs_helper.get_all_messages_json(settings.CAMPAIGN_CHANGE_QUEUE)
     to_refresh = set((el['date'], el['campaign_id']) for el in messages)
     for date, campaign_id in to_refresh:
-        ad_groups = dash.models.AdGroup.objects.filter(campaign_id=campaign_id).exclude_archived()
-        for ad_group in ad_groups:
-            refresh_contentadstats(date, ad_group)
+        campaign = dash.models.Campaign.objects.get(id=campaign_id)
+        refresh_contentadstats(date, campaign)
 
 
 @transaction.atomic(using=settings.STATS_DB_NAME)
