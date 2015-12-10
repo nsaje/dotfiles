@@ -307,16 +307,7 @@ oneApp.config(['$provide', function ($provide) {
 
         /* ADGROUP OVERVIEW */
         $delegate.adGroupOverview.get = resetIfErrorWrapper(
-            defaultGetWrapper(
-                '/api/ad_groups/{id}/overview/',
-                $delegate.adGroupOverview.get,
-                function () {
-                    return function () {
-                        var data = {};
-                        deferred.resolve(data);
-                    };
-                }
-            )
+            defaultGetWrapper('/api/ad_groups/{id}/overview/', $delegate.adGroupOverview.get)
         );
 
         /* ADGROUP SETTINGS */
