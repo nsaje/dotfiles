@@ -2017,8 +2017,11 @@ class AdGroupOverviewTest(TestCase):
         )
         return json.loads(response.content)
 
+    def _get_setting(self, settings, name):
+        return [s for s in settings if name in s['name'].lower()][0]
+
     @patch('reports.redshift.get_cursor')
-    def test_run(self, cursor):
+    def test_run_empty(self, cursor):
         cursor().dictfetchall.return_value = [{
             'source_id': 9,
             'cost_cc_sum': 0.0
@@ -2032,24 +2035,36 @@ class AdGroupOverviewTest(TestCase):
         self.assertFalse(header['active'])
 
         settings = response['data']['settings']
+        for s in settings:
+            print s
 
-        device_setting = [s for s in settings if 'targeting' in s['name'].lower()][0]
+        flight_setting = self._get_setting(settings, 'flight')
+        self.assertEqual('03/02 - 04/02', flight_setting['value'])
+
+        flight_setting = self._get_setting(settings, 'daily')
+        self.assertEqual('$100.00', flight_setting['value'])
+
+        device_setting = self._get_setting(settings, 'targeting')
         self.assertEqual('Device: Desktop, Mobile', device_setting['value'])
 
         region_setting = [s for s in settings if 'location' in s['value'].lower()][0]
         self.assertEqual('Location: UK, US, CA', region_setting['value'])
 
-        tracking_setting = [s for s in settings if 'tracking' in s['name'].lower()][0]
+        tracking_setting = self._get_setting(settings, 'tracking')
         self.assertEqual(tracking_setting['value'], 'Yes')
         self.assertEqual(tracking_setting['detailsContent'], 'param1=foo&param2=bar')
 
-        yesterday_spend = [s for s in settings if 'yesterday' in s['name'].lower()][0]
+        yesterday_spend = self._get_setting(settings, 'yesterday')
         self.assertEqual('$0.00', yesterday_spend['value'])
 
-        pacing_setting = [s for s in settings if 'pacing' in s['name'].lower()][0]
+        budget_setting = self._get_setting(settings, 'budget')
+        self.assertEqual('$100.00', budget_setting['value'])
+
+        pacing_setting = self._get_setting(settings, 'pacing')
         self.assertEqual('0.00%', pacing_setting['value'])
         self.assertEqual('happy', pacing_setting['icon'])
 
         goal_setting = [s for s in settings if 'goal' in s['name'].lower()][0]
+        goal_setting = self._get_setting(settings, 'goal')
         self.assertEqual('0.0 below planned', goal_setting['description'])
         self.assertEqual('happy', goal_setting['icon'])
