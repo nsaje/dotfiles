@@ -43,5 +43,5 @@ class GetURLTest(TestCase):
 
         self.assertEqual(
             url,
-            urlparse.urljoin(settings.ZWEI_CALLBACK_HOST, '/api/zwei_callback/123')
+            urlparse.urljoin(settings.ZWEI_CALLBACK_BASE_URL, '/api/zwei_callback/123')
         )

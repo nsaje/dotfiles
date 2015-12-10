@@ -41,6 +41,6 @@ def get_full_z1_url(partial_url):
 def get_zwei_callback_url(action_id):
     """Returns full zwei callback URL"""
     return urlparse.urljoin(
-        settings.ZWEI_CALLBACK_HOST,
+        settings.ZWEI_CALLBACK_BASE_URL,
         reverse('api.zwei_callback', kwargs={'action_id': action_id})
     )
