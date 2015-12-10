@@ -30,3 +30,140 @@
         modified_dt: '2015-09-23T09:57:22'
     model: dash.Source 
     pk: 3
+
+# test for AccountAgencyView.are_sources_removable
+
+-   fields:
+        name: Account 111
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        uses_credits: false
+        modified_by: 1
+    model: dash.account
+    pk: 111
+    
+
+# this one is archived 
+-   fields: 
+        name: Campaign 111
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1
+        account: 111
+    model: dash.campaign
+    pk: 111
+
+-   fields:
+        name: Camp Settings 111
+        campaign: 111
+        created_dt: '2015-09-23T09:57:22'
+        created_by: 1
+        account_manager: 1
+        sales_representative: 1
+        archived: true
+    model: dash.campaignsettings
+    pk: 111
+
+# not archived
+-   fields: 
+        name: Campaign 1112
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1
+        account: 111
+    model: dash.campaign
+    pk: 1112
+
+-   fields:
+        name: Camp Settings 1112
+        campaign: 1112
+        created_dt: '2015-09-23T09:57:22'
+        created_by: 1
+        account_manager: 1
+        sales_representative: 1
+        archived: false
+    model: dash.campaignsettings
+    pk: 1112
+
+
+# this one is demo
+-   fields:
+        name: Adgroup 1112
+        campaign: 1112
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1
+        is_demo: true
+    model: dash.adgroup
+    pk: 1112
+
+# this one is inactive 
+-   fields:
+        name: Adgroup 11121
+        campaign: 1112
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1
+        is_demo: false
+    model: dash.adgroup
+    pk: 11121
+
+-   fields:
+        ad_group: 11121
+        created_dt: '2015-09-23T09:57:22'
+        created_by: 1
+        state: 2 # inactive
+    model: dash.adgroupsettings
+    pk: 11121
+
+
+# this one is active 
+-   fields:
+        name: Adgroup 11122
+        campaign: 1112
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        modified_by: 1
+        is_demo: false
+    model: dash.adgroup
+    pk: 11122
+
+-   fields:
+        ad_group: 11122
+        created_dt: '2015-09-23T09:57:22'
+        created_by: 1
+        state: 1 # active
+    model: dash.adgroupsettings
+    pk: 11122
+
+
+-   fields:
+        source: 2
+        ad_group: 11122
+
+    model: dash.adgroupsource
+    pk: 11122
+
+-   fields:
+        ad_group_source: 11122
+        created_dt: '2015-09-23T09:57:22'
+        created_by: 1
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 11122
+
+
+-   fields:
+        source: 3
+        ad_group: 11122
+
+    model: dash.adgroupsource
+    pk: 111222
+
+-   fields:
+        ad_group_source: 111222
+        created_dt: '2015-09-23T09:57:22'
+        created_by: 1
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 111222

@@ -1966,4 +1966,68 @@ class AccountAgencyTest(TestCase):
             }
         )
 
-    def test_
+    def test_are_sources_removable_empty(self):
+        account = models.Account.objects.get(pk=111)
+        view = agency.AccountAgency()
+        self.assertTrue(view.are_sources_removable(account, []))
+
+    def test_are_sources_removable_source_not_added(self):
+        account = models.Account.objects.get(pk=111)
+        view = agency.AccountAgency()
+        self.assertTrue(view.are_sources_removable(account, [1]))
+
+    def test_are_sources_removable_source_not_running(self):
+        account = models.Account.objects.get(pk=111)
+        view = agency.AccountAgency()
+        self.assertTrue(view.are_sources_removable(account, [3]))
+
+    def test_are_sources_removable_source_running(self):
+        account = models.Account.objects.get(pk=111)
+        view = agency.AccountAgency()
+        self.assertFalse(view.are_sources_removable(account, [2]))
+
+    def test_are_sources_removable_source_running(self):
+        account = models.Account.objects.get(pk=111)
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=11122)
+        ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
+        ad_group_settings.save(None)
+
+        view = agency.AccountAgency()
+        self.assertTrue(view.are_sources_removable(account, [2]))
+
+        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+        ad_group_settings.save(None)
+
+        self.assertFalse(view.are_sources_removable(account, [2]))
+
+    def test_are_sources_removable_source_demo(self):
+        user = User.objects.get(pk=1)
+        mock_request = Mock()
+        mock_request.user = user
+
+        view = agency.AccountAgency()
+        account = models.Account.objects.get(pk=111)
+        self.assertFalse(view.are_sources_removable(account, [2]))
+
+        ad_group = models.AdGroup.objects.get(pk=11122)
+        ad_group.is_demo = True
+        ad_group.save(mock_request)
+
+        self.assertTrue(view.are_sources_removable(account, [2]))
+
+        ad_group.is_demo = False
+        ad_group.save(mock_request)
+
+    def test_are_sources_removable_archived_campaign(self):
+        view = agency.AccountAgency()
+        account = models.Account.objects.get(pk=111)
+        self.assertFalse(view.are_sources_removable(account, [2]))
+
+        campaign_settings = models.CampaignSettings.objects.get(pk=1112)
+        campaign_settings.archived = True
+        campaign_settings.save(None)
+        self.assertTrue(view.are_sources_removable(account, [2]))
+
+        campaign_settings.archived = False
+        campaign_settings.save(None)
+        
