@@ -20,8 +20,8 @@ describe('DownloadExportReportModalCtrl', function() {
     beforeEach(inject(function($controller, $rootScope, _$q_) {
         $q = _$q_;
         $scope = $rootScope.$new();
-        $scope.startDate = moment('2015-01-12');
-        $scope.endDate = moment('2015-01-19');
+        $scope.startDate = moment.utc('2015-01-12');
+        $scope.endDate = moment.utc('2015-01-19');
         $scope.order = '-cost';
         $scope.baseUrl = 'test/';
         $scope.options = [{value: 'view-csv'}];
@@ -115,7 +115,7 @@ describe('DownloadExportReportModalCtrl', function() {
             $scope.$digest();
 
             expect($window.open).toHaveBeenCalledWith(
-              'test/export_plus/?type=view-csv&start_date=2015-01-12T00:00:00+01:00&end_date=2015-01-19T00:00:00+01:00&order=-cost&by_day=undefined&additional_fields=',
+              'test/export_plus/?type=view-csv&start_date=2015-01-12T00:00:00+00:00&end_date=2015-01-19T00:00:00+00:00&order=-cost&by_day=undefined&additional_fields=',
               '_blank');
         });
     });
