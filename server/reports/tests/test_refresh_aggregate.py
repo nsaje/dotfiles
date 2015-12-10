@@ -280,7 +280,7 @@ class RefreshAdGroupStatsTestCase(test.TestCase):
             refresh.refresh_adgroup_stats(invalid_field='invalid value')
 
 
-class CampaignDataChangeTestCase(test.TestCase):
+class ContentAdStatsDataChangeTestCase(test.TestCase):
 
     fixtures = ['test_reports_base.yaml']
 
