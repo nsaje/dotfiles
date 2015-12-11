@@ -182,10 +182,14 @@ def _update_publisher_blacklist(key, level, publishers):
 
     source_cache = {}
     for publisher in publishers:
-        source_id = publisher['source_id']
-        if source_id not in source_cache:
-            source_cache[source_id] = dash.models.Source.objects.get(id=source_id)
-        source = source_cache[source_id]
+        # this can be None in case of global pub. blacklisting
+        source_id = publisher.get('source_id')
+        if level != constants.PublisherBlacklistLevel.GLOBAL:
+            if source_id not in source_cache:
+                source_cache[source_id] = dash.models.Source.objects.get(id=source_id)
+            source = source_cache[source_id]
+        else:
+            source = None
 
         blacklist_entry = models.PublisherBlacklist(
             name=publisher['domain'],
@@ -836,8 +840,6 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
         filtered_blacklist = list(
             map(lambda pub: {
                     'domain': pub['domain'],
-                    'exchange': pub['source'].bidder_slug,
-                    'source_id': pub['source'].id
                 },
                 filtered_blacklist
             )

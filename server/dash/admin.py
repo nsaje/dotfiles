@@ -1186,7 +1186,6 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
         for publisher_blacklist in filtered_queryset:
             global_blacklist.append({
                 'domain': publisher_blacklist.name,
-                'source': publisher_blacklist.source,
             })
 
         actionlogs_to_send = []
