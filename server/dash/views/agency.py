@@ -880,12 +880,13 @@ class AccountAgency(api_common.BaseApiView):
 
             if 'allowed_sources' in form.cleaned_data:    
                 self.set_allowed_sources(
-                        account,
-                        request.user.has_perm('zemauth.can_see_all_available_sources'),
-                        form
+                    account,
+                    request.user.has_perm('zemauth.can_see_all_available_sources'),
+                    form
                 )
             if not form.is_valid():
-                raise exc.ValidationError(errors=dict(form.errors))
+                data = self.get_validation_error_data(request, account)
+                raise exc.ValidationError(errors=dict(form.errors), data=data)
 
             account.save(request)
             settings.save(request)
@@ -900,6 +901,17 @@ class AccountAgency(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def get_validation_error_data(self, request, account):
+        data = {}
+        if not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+            return data
+
+        data['allowed_sources'] = self.get_allowed_sources(
+            request.user.has_perm('zemauth.can_see_all_available_sources'),
+            [source.id for source in account.allowed_sources.all()]
+        )
+        return data
 
     def set_account(self, account, resource):
         account.name = resource['name']
@@ -969,7 +981,7 @@ class AccountAgency(api_common.BaseApiView):
         to_be_removed = current_allowed_sources_set.difference(new_allowed_sources_set)
         if not self.are_sources_removable(account, to_be_removed):
             self.add_error_to_account_agency_form(account_agency_form, to_be_removed)
-            raise exc.ValidationError(errors=dict(account_agency_form.errors))
+            return
 
         to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
 
