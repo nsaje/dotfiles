@@ -1891,12 +1891,6 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                         u"ad_group_id": 1
                     },
                     {
-                        u'ad_group_id': 10,
-                        u'domain': u'zemanta.com',
-                        u'exchange': u'adiant',
-                        u'source_id': 7
-                    },
-                    {
                         u'ad_group_id': 9,
                         u'domain': u'zemanta.com',
                         u'exchange': u'adiant',

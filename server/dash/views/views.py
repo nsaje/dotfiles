@@ -1219,6 +1219,18 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
         # filter archived
         filtered_ad_groups = [adg for adg in ad_groups_on_level if not adg.is_archived()]
+        supported_ad_groups = []
+        # filter all adgroups that do not have bidder media sources added
+        # (they don't exist on bidder at all)
+        for filtered_ad_group in filtered_ad_groups:
+            supports_blacklist = False
+            for source in filtered_ad_group.sources.all():
+                if source.can_modify_publisher_blacklist_automatically():
+                    supports_blacklist = True
+                    break
+            if supports_blacklist:
+                supported_ad_groups.append(filtered_ad_group)
+        filtered_ad_groups = supported_ad_groups
 
         ret = []
         source_cache = {}
