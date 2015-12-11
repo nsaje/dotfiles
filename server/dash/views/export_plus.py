@@ -46,7 +46,6 @@ class ExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 500000
     MAX_DAYS = 366
     MAX_BREAKDOWN_DAYS = 32
-    ALL_ACCOUNTS_MAX_BREAKDOWN_DAYS = 15
 
     @statsd_helper.statsd_timer('dash.export_plus', 'export_plus_allowed_get')
     def get(self, request, level_, id_=None):
@@ -105,9 +104,9 @@ class ExportAllowed(api_common.BaseApiView):
                 'campaign': campaigns_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
                 'ad_group': ad_groups_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
                 'by_day': {
-                    'ad_group': ad_groups_num * num_days <= self.MAX_ROWS and num_days <= self.ALL_ACCOUNTS_MAX_BREAKDOWN_DAYS,
-                    'campaign': campaigns_num * num_days <= self.MAX_ROWS and num_days <= self.ALL_ACCOUNTS_MAX_BREAKDOWN_DAYS,
-                    'account': accounts_num * num_days <= self.MAX_ROWS and num_days <= self.ALL_ACCOUNTS_MAX_BREAKDOWN_DAYS
+                    'ad_group': ad_groups_num * num_days <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                    'campaign': campaigns_num * num_days <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                    'account': accounts_num * num_days <= self.MAX_ROWS and num_days <= self.MAX_DAYS
                 }
             })
 
@@ -120,7 +119,10 @@ class SourcesExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 500000
     MAX_DAYS = 366
     MAX_BREAKDOWN_DAYS = 32
-    ALL_ACCOUNTS_MAX_BREAKDOWN_DAYS = 15
+
+    ALL_ACCOUNTS_BREAKDOWN_MANY_SOURCES = 10
+    ALL_ACCOUNTS_MAX_BREAKDOWN_DAYS_WHEN_MANY_SOURCES = 15
+
 
     @statsd_helper.statsd_timer('dash.export_plus', 'sources_export_plus_allowed_get')
     def get(self, request, level_, id_=None):
@@ -181,16 +183,18 @@ class SourcesExportAllowed(api_common.BaseApiView):
             accounts_num = models.Account.objects.all().filter_by_user(user).count()
             campaigns_num = models.Campaign.objects.all().filter_by_user(user).count()
             ad_groups_num = models.AdGroup.objects.all().filter_by_user(user).count()
+            max_breakdown_days = (self.MAX_DAYS if filtered_sources_num <= self.ALL_ACCOUNTS_BREAKDOWN_MANY_SOURCES else
+                                  self.ALL_ACCOUNTS_MAX_BREAKDOWN_DAYS_WHEN_MANY_SOURCES)
             return self.create_api_response({
                 'all_accounts': filtered_sources_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
                 'account': accounts_num * filtered_sources_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
                 'campaign': campaigns_num * filtered_sources_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
                 'ad_group': ad_groups_num * filtered_sources_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
                 'by_day': {
-                    'ad_group': ad_groups_num * filtered_sources_num * num_days <= self.MAX_ROWS and num_days <= self.ALL_ACCOUNTS_MAX_BREAKDOWN_DAYS,
-                    'campaign': campaigns_num * filtered_sources_num * num_days <= self.MAX_ROWS and num_days <= self.ALL_ACCOUNTS_MAX_BREAKDOWN_DAYS,
-                    'account': accounts_num * filtered_sources_num * num_days <= self.MAX_ROWS and num_days <= self.ALL_ACCOUNTS_MAX_BREAKDOWN_DAYS,
-                    'all_accounts': filtered_sources_num * num_days <= self.MAX_ROWS and num_days <= self.ALL_ACCOUNTS_MAX_BREAKDOWN_DAYS
+                    'ad_group': ad_groups_num * filtered_sources_num * num_days <= self.MAX_ROWS and num_days <= max_breakdown_days,
+                    'campaign': campaigns_num * filtered_sources_num * num_days <= self.MAX_ROWS and num_days <= max_breakdown_days,
+                    'account': accounts_num * filtered_sources_num * num_days <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                    'all_accounts': filtered_sources_num * num_days <= self.MAX_ROWS and num_days <= self.MAX_DAYS
                 }
             })
 
