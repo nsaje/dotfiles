@@ -132,9 +132,13 @@ def _clean_existing_publisher_blacklist(key, level, publishers):
     for publisher in publishers:
         match_publisher_blacklist = Q(
             name=publisher['domain'],
-            source__id=publisher['source_id'],
             source__deprecated=False,
         )
+
+        if level != constants.PublisherBlacklistLevel.GLOBAL:
+            match_publisher_blacklist &= Q(
+                source__id=publisher['source_id']
+            )
 
         # first delete all associated blacklist entries
         if level == constants.PublisherBlacklistLevel.GLOBAL:
