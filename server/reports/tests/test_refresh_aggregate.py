@@ -1,9 +1,9 @@
-import mock
-from mock import patch, MagicMock
+from mock import patch, call
 import datetime
 
 from django import test
 from django.db.models import Sum
+from django.conf import settings
 
 from reports import refresh
 from reports import models
@@ -34,13 +34,12 @@ class RefreshContentAdStats(test.TestCase):
         mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
 
         date = datetime.datetime(2015, 2, 1)
-        ad_group = dash.models.AdGroup.objects.get(pk=1)
-        source = dash.models.Source.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
 
-        refresh.refresh_contentadstats(date, ad_group, source)
+        refresh.refresh_contentadstats(date, campaign)
 
         mock_redshift.delete_contentadstats.assert_called_with(
-            date, ad_group.id, source.id)
+            date, campaign.id)
 
         rows = [{
             'conversions': '{"omniture__Transaction 2": 20, "ga__Goal 1": 10}',
@@ -105,12 +104,12 @@ class RefreshContentAdStats(test.TestCase):
 
     def test_refresh_contentadstats_no_source_id(self, mock_redshift):
         date = datetime.datetime(2015, 2, 2)
-        ad_group = dash.models.AdGroup.objects.get(pk=2)
+        campaign = dash.models.Campaign.objects.get(pk=2)
 
-        refresh.refresh_contentadstats(date, ad_group)
+        refresh.refresh_contentadstats(date, campaign)
 
         mock_redshift.delete_contentadstats.assert_called_with(
-            date, ad_group.id, None)
+            date, campaign.id)
 
         rows = [{
             'conversions': '{"omniture__Transaction 2": 30}',
@@ -127,7 +126,7 @@ class RefreshContentAdStats(test.TestCase):
             'impressions': 5000000,
             'data_cost_cc': 550000,
             'adgroup_id': 2,
-            'campaign_id': 1,
+            'campaign_id': 2,
             'account_id': 1
         }, {
             'conversions': '{}',
@@ -144,7 +143,7 @@ class RefreshContentAdStats(test.TestCase):
             'impressions': 6000000,
             'data_cost_cc': 650000,
             'adgroup_id': 2,
-            'campaign_id': 1,
+            'campaign_id': 2,
             'account_id': 1
         }]
 
@@ -152,13 +151,12 @@ class RefreshContentAdStats(test.TestCase):
 
     def test_refresh_contentadstats_missing_contentad_stats(self, mock_redshift):
         date = datetime.datetime(2015, 2, 2)
-        ad_group = dash.models.AdGroup.objects.get(pk=3)
-        source = dash.models.Source.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=3)
 
-        refresh.refresh_contentadstats(date, ad_group, source)
+        refresh.refresh_contentadstats(date, campaign)
 
         mock_redshift.delete_contentadstats.assert_called_with(
-            date, ad_group.id, source.id)
+            date, campaign.id)
 
         rows = [{
             'conversions': '{}',
@@ -175,7 +173,7 @@ class RefreshContentAdStats(test.TestCase):
             'impressions': None,
             'data_cost_cc': None,
             'adgroup_id': 3,
-            'campaign_id': 1,
+            'campaign_id': 3,
             'account_id': 1
         }]
 
@@ -280,3 +278,42 @@ class RefreshAdGroupStatsTestCase(test.TestCase):
     def test_cannot_refresh_invalid_constraints(self):
         with self.assertRaises(AssertionError):
             refresh.refresh_adgroup_stats(invalid_field='invalid value')
+
+
+class ContentAdStatsDataChangeTestCase(test.TestCase):
+
+    fixtures = ['test_reports_base.yaml']
+
+    @patch('utils.sqs_helper.write_message_json')
+    def test_notify_contentadstats_change(self, mock_sqs_write_message):
+        date = datetime.date(2015, 12, 1)
+        refresh.notify_contentadstats_change(date, 1)
+        mock_sqs_write_message.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, {'date': date, 'campaign_id': 1})
+
+    @patch('reports.refresh.refresh_contentadstats')
+    @patch('utils.sqs_helper.get_all_messages_json')
+    def test_refresh_changed_contentadstats(self, mock_get_all_messages, mock_refresh_contentadstats):
+        campaign_id = 1
+        mock_get_all_messages.return_value = [{'date': datetime.date(2015, 12, 1), 'campaign_id': campaign_id},
+                                              {'date': datetime.date(2015, 12, 2), 'campaign_id': campaign_id}]
+
+        refresh.refresh_changed_contentadstats()
+
+        campaign = dash.models.Campaign.objects.get(id=campaign_id)
+        calls = [
+            call(datetime.date(2015, 12, 1), campaign),
+            call(datetime.date(2015, 12, 2), campaign)
+        ]
+        mock_refresh_contentadstats.assert_has_calls(calls, any_order=True)
+
+    @patch('reports.refresh.refresh_contentadstats')
+    @patch('utils.sqs_helper.get_all_messages_json')
+    def test_refresh_changed_contentadstats_duplicate(self, mock_get_all_messages, mock_refresh_contentadstats):
+        campaign_id = 1
+        mock_get_all_messages.return_value = [{'date': datetime.date(2015, 12, 1), 'campaign_id': campaign_id},
+                                              {'date': datetime.date(2015, 12, 1), 'campaign_id': campaign_id}]
+
+        refresh.refresh_changed_contentadstats()
+
+        campaign = dash.models.Campaign.objects.get(id=campaign_id)
+        mock_refresh_contentadstats.assert_called_once_with(datetime.date(2015, 12, 1), campaign)
