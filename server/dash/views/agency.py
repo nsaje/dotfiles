@@ -948,8 +948,6 @@ class AccountAgency(api_common.BaseApiView):
         else:
             msg = 'Media source {} is still used on this account.'.format(media_sources)
 
-            
-
         form.add_error('allowed_sources', msg)
 
     def set_allowed_sources(self, account, can_see_all_available_sources, account_agency_form):
