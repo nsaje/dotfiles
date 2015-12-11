@@ -275,12 +275,15 @@ class AllAccountsExport(object):
         elif breakdown == 'ad_group':
             required_fields.extend(['account', 'campaign', 'ad_group'])
             dimensions.extend(['account', 'campaign', 'ad_group'])
+
+        include_budgets = (any([field in additional_fields for field in ['budget', 'available_budget', 'unspent_budget']])
+                           and not by_day and breakdown != 'ad_group')
+        if not include_budgets:
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
-        include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
 
         results = _generate_rows(
             dimensions,
