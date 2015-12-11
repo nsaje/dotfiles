@@ -10,7 +10,6 @@ import dash.models
 import reports.api
 import reports.refresh
 import reports.models
-from reports import refresh
 from reports import redshift
 from utils.statsd_helper import statsd_timer
 
@@ -270,7 +269,7 @@ def update_content_ads_source_traffic_stats(date, ad_group, source, rows):
         )
 
     date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-    reports.refresh.refresh_contentadstats(date, ad_group, source)
+    reports.refresh.notify_contentadstats_change(date, ad_group.campaign_id)
 
 
 @transaction.atomic(using=settings.STATS_DB_NAME)
@@ -307,7 +306,13 @@ def process_report(date, parsed_report_rows, report_type):
             bulk_goal_conversion_stats.extend(goal_conversion_stats)
 
         _delete_and_restore_bulk_stats(report_type, bulk_contentad_stats, bulk_goal_conversion_stats)
-        _refresh_contentadstats(date, content_ad_ids)
+
+        campaigns_ids = dash.models.AdGroup.objects.filter(contentad__id__in=content_ad_ids)\
+                                                   .order_by('campaign_id')\
+                                                   .distinct('campaign_id')\
+                                                   .values_list('campaign_id', flat=True)
+        for campaign_id in campaigns_ids:
+            reports.refresh.notify_contentadstats_change(date, campaign_id)
     except:
         logger.exception('Failed processing report')
         raise
@@ -335,13 +340,6 @@ def _delete_and_restore_bulk_stats(report_type, bulk_contentad_stats, bulk_goal_
 
     for obj in bulk_goal_conversion_stats:
         obj.save()
-
-
-@statsd_timer('reports.update', '_refresh_contentadstats')
-def _refresh_contentadstats(date, content_ad_ids):
-    # refresh aggregation table
-    for ad_group in dash.models.AdGroup.objects.filter(contentad__id__in=content_ad_ids):
-        reports.refresh.refresh_contentadstats(date, ad_group)
 
 
 def _create_contentad_postclick_stats(entry, track_source_map):

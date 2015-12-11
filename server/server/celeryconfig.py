@@ -13,6 +13,6 @@ CELERY_ANNOTATIONS = {'convapi.tasks': {'rate_limit': '10/s'}}
 CELERY_TASK_MAX_RETRIES = 2
 CELERY_TASK_RETRY_DEPLOY = 60
 
-CELERY_QUEUE_PREFIX = 'test'
+SQS_QUEUE_PREFIX = 'test'
 
 # BROKER_BACKEND = 'memory'
