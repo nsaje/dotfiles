@@ -39,6 +39,7 @@ class Command(BaseCommand):
                     report_name=sr.name,
                     frequency=constants.ScheduledReportSendingFrequency.get_text(sr.sending_frequency),
                     granularity=constants.ScheduledReportGranularity.get_text(sr.report.granularity),
+                    entity_level=constants.ScheduledReportLevel.get_text(sr.report.level),
                     entity_name=sr.report.get_exported_entity_name(),
                     scheduled_by=sr.created_by.email,
                     email_adresses=email_adresses,
