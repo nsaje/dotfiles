@@ -867,9 +867,6 @@ class AccountAgency(api_common.BaseApiView):
         resource = json.loads(request.body)
         form = forms.AccountAgencySettingsForm(resource.get('settings', {}))
 
-
-
-
         with transaction.atomic():
             if form.is_valid():
                 self.set_account(account, form.cleaned_data)
