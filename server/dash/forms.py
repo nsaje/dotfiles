@@ -809,7 +809,7 @@ class PublisherBlacklistForm(forms.ModelForm):
                 api.create_global_publisher_blacklist_actions(
                     None,
                     None,
-                    constants.PublisherStatus.ENABLED,
+                    constants.PublisherStatus.BLACKLISTED,
                     global_blacklist,
                     send=False
                 )
