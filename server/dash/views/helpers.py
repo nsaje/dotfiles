@@ -906,7 +906,7 @@ def _get_status_setting_disabled_message_for_target_regions(
         if ad_group_settings.targets_region_type(region_type):
             if not source.source_type.supports_targeting_region_type(region_type):
                 unsupported_targets.append(constants.RegionType.get_text(region_type))
-            elif not source.source_type.can_modify_targeting_for_region_type_automatically(constants.RegionType.DMA):
+            elif not source.source_type.can_modify_targeting_for_region_type_automatically(region_type):
                 manual_targets.append(constants.RegionType.get_text(region_type))
 
     if unsupported_targets:
