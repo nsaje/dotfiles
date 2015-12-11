@@ -1932,7 +1932,7 @@ class AccountAgencyTest(TestCase):
 
         self.assertEqual(
             dict(form.errors),
-            {'allowed_sources': [u'Media source Source 2 is still used on this account.']}
+            {'allowed_sources': [u'Can\' save changes because media source Source 2 is still used on this account.']}
         )
 
 
@@ -1992,7 +1992,7 @@ class AccountAgencyTest(TestCase):
             dict(form.errors), 
             {
                 'allowed_sources': 
-                    [u'Media sources Source 1, Source 2 are still used on this account.']
+                    [u'Can\' save changes because media sources Source 1, Source 2 are still used on this account.']
             }
         )
 
@@ -2004,7 +2004,7 @@ class AccountAgencyTest(TestCase):
             dict(form.errors), 
             {
                 'allowed_sources': 
-                    [u'Media source Source 1 is still used on this account.']
+                    [u'Can\' save changes because media source Source 1 is still used on this account.']
             }
         )
 
