@@ -938,7 +938,9 @@ class AccountAgency(api_common.BaseApiView):
 
         return [source.id for source in queryset]    
 
-    def are_sources_removable(self, account, sources_to_be_removed):
+    def get_non_removable_sources(self, account, sources_to_be_removed):
+        non_removable_source_ids_list = []
+
         for campaign in models.Campaign.objects.filter(account_id=account.id).exclude_archived():
 
             for adgroup in campaign.adgroup_set.filter(is_demo=False):
@@ -949,8 +951,9 @@ class AccountAgency(api_common.BaseApiView):
                 for adgroup_source in adgroup.adgroupsource_set.filter(source__in=sources_to_be_removed):
                     adgroup_source_settings = adgroup_source.get_current_settings()
                     if adgroup_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
-                        return False
-        return True
+                        non_removable_source_ids_list.append(adgroup_source.source_id)
+
+        return non_removable_source_ids_list
 
     def add_error_to_account_agency_form(self, form, to_be_removed):
         source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed)]
@@ -979,8 +982,10 @@ class AccountAgency(api_common.BaseApiView):
         current_allowed_sources_set = set(current_allowed_sources_list)
 
         to_be_removed = current_allowed_sources_set.difference(new_allowed_sources_set)
-        if not self.are_sources_removable(account, to_be_removed):
-            self.add_error_to_account_agency_form(account_agency_form, to_be_removed)
+
+        non_removable_sources = self.get_non_removable_sources(account, to_be_removed)
+        if len(non_removable_sources) > 0:
+            self.add_error_to_account_agency_form(account_agency_form, non_removable_sources)
             return
 
         to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
