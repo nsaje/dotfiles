@@ -288,14 +288,14 @@ class ContentAdStatsDataChangeTestCase(test.TestCase):
     def test_notify_contentadstats_change(self, mock_sqs_write_message):
         date = datetime.date(2015, 12, 1)
         refresh.notify_contentadstats_change(date, 1)
-        mock_sqs_write_message.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, {'date': date, 'campaign_id': 1})
+        mock_sqs_write_message.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, {'date': date.isoformat(), 'campaign_id': 1})
 
     @patch('reports.refresh.refresh_contentadstats')
     @patch('utils.sqs_helper.get_all_messages_json')
     def test_refresh_changed_contentadstats(self, mock_get_all_messages, mock_refresh_contentadstats):
         campaign_id = 1
-        mock_get_all_messages.return_value = [{'date': datetime.date(2015, 12, 1), 'campaign_id': campaign_id},
-                                              {'date': datetime.date(2015, 12, 2), 'campaign_id': campaign_id}]
+        mock_get_all_messages.return_value = [{'date': '2015-12-01', 'campaign_id': campaign_id},
+                                              {'date': '2015-12-02', 'campaign_id': campaign_id}]
 
         refresh.refresh_changed_contentadstats()
 
@@ -310,8 +310,8 @@ class ContentAdStatsDataChangeTestCase(test.TestCase):
     @patch('utils.sqs_helper.get_all_messages_json')
     def test_refresh_changed_contentadstats_duplicate(self, mock_get_all_messages, mock_refresh_contentadstats):
         campaign_id = 1
-        mock_get_all_messages.return_value = [{'date': datetime.date(2015, 12, 1), 'campaign_id': campaign_id},
-                                              {'date': datetime.date(2015, 12, 1), 'campaign_id': campaign_id}]
+        mock_get_all_messages.return_value = [{'date': '2015-12-01', 'campaign_id': campaign_id},
+                                              {'date': '2015-12-01', 'campaign_id': campaign_id}]
 
         refresh.refresh_changed_contentadstats()
 

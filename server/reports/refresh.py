@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 
@@ -106,7 +107,7 @@ def _get_goals_json(goals):
 def notify_contentadstats_change(date, campaign_id):
     sqs_helper.write_message_json(
         settings.CAMPAIGN_CHANGE_QUEUE,
-        {'date': date, 'campaign_id': campaign_id}
+        {'date': date.isoformat(), 'campaign_id': campaign_id}
     )
 
 
@@ -115,7 +116,7 @@ def refresh_changed_contentadstats():
     to_refresh = set((el['date'], el['campaign_id']) for el in messages)
     for date, campaign_id in to_refresh:
         campaign = dash.models.Campaign.objects.get(id=campaign_id)
-        refresh_contentadstats(date, campaign)
+        refresh_contentadstats(datetime.datetime.strptime(date, '%Y-%m-%d').date(), campaign)
 
 
 @transaction.atomic(using=settings.STATS_DB_NAME)
