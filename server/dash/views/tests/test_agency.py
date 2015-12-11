@@ -1916,20 +1916,16 @@ class AccountAgencyTest(TestCase):
         )
         view = agency.AccountAgency()
         form = self._get_form_with_allowed_sources_dict({
-                    2: {'allowed': False},
-                    3: {'allowed': True}
-            })
+            2: {'allowed': False},
+            3: {'allowed': True}
+        })
         
-        try:
-            view.set_allowed_sources(
-                account,
-                False, # no permission to add unreleased source 3 
-                form
-            )
-            self.fail()
-        except exc.ValidationError:
-            pass
-
+        view.set_allowed_sources(
+            account,
+            False, # no permission to add unreleased source 3 
+            form
+        )
+  
         self.assertEqual(
             dict(form.errors),
             {'allowed_sources': [u'Can\'t save changes because media source Source 2 is still used on this account.']}
