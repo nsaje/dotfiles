@@ -864,29 +864,32 @@ class AccountAgency(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
-
         resource = json.loads(request.body)
-
         form = forms.AccountAgencySettingsForm(resource.get('settings', {}))
-        if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
 
 
-        if 'allowed_sources' in form.cleaned_data \
-        and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
-            raise exc.MissingDataError()
 
-        self.set_account(account, form.cleaned_data)
-
-        settings = models.AccountSettings()
-        self.set_settings(settings, account, form.cleaned_data)
 
         with transaction.atomic():
-            self.set_allowed_sources(
-                account,
-                request.user.has_perm('zemauth.can_see_all_available_sources'),
-                form
-            )
+            if form.is_valid():
+                self.set_account(account, form.cleaned_data)
+
+                settings = models.AccountSettings()
+                self.set_settings(settings, account, form.cleaned_data)
+            
+            if 'allowed_sources' in form.cleaned_data \
+                and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+                raise exc.MissingDataError()
+
+            if 'allowed_sources' in form.cleaned_data:    
+                self.set_allowed_sources(
+                        account,
+                        request.user.has_perm('zemauth.can_see_all_available_sources'),
+                        form
+                )
+            if not form.is_valid():
+                raise exc.ValidationError(errors=dict(form.errors))
+
             account.save(request)
             settings.save(request)
 
