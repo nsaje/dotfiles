@@ -1648,10 +1648,15 @@ class PublishersTable(object):
                 ) | Q(
                     Q(ad_group=adgroup) |
                     Q(campaign=adgroup.campaign) |
-                    Q(account=adgroup.campaign.account) |
-                    Q(everywhere=True)
+                    Q(account=adgroup.campaign.account)
                 )
             )
+
+            pub_blacklist_qs |= models.PublisherBlacklist.objects.filter(
+                name=domain,
+                everywhere=True
+            )
+
 
         for publisher_data in publishers_data:
             publisher_domain = publisher_data['domain']
