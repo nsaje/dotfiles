@@ -1098,6 +1098,8 @@ class ExportReportAdmin(admin.ModelAdmin):
 
 
 class PublisherBlacklistAdmin(admin.ModelAdmin):
+    form = dash_forms.PublisherBlacklistForm
+
     search_fields = ['name']
     list_display = (
         'created_dt',
@@ -1111,7 +1113,6 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     )
     readonly_fields = [
         'created_dt',
-        'name',
         'everywhere',
         'ad_group_id',
         'campaign_id',
@@ -1122,13 +1123,13 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     ordering = ('-created_dt',)
 
     def has_add_permission(self, request):
-        return False
+        return request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status')
 
     def has_delete_permission(self, request, obj=None):
         return False
 
     def has_change_permission(self, request, obj=None):
-        return True
+        return request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status')
 
     def ad_group_(self, obj):
         if obj.ad_group is None:
