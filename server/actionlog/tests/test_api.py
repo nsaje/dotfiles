@@ -150,6 +150,7 @@ class ActionLogApiTestCase(TestCase):
         ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
                                                                   source__maintenance=False)[0]
 
+        ad_group.campaign.account.allowed_sources.add(ad_group_source.source_id)
         source_settings = dashmodels.AdGroupSourceSettings(
             ad_group_source=ad_group_source,
             cpc_cc=0.20,
@@ -188,6 +189,9 @@ class ActionLogApiTestCase(TestCase):
         self.assertEqual(models.ActionLog.objects.filter(ad_group_source=ad_group_source).latest('created_dt'),
                          action)
 
+
+
+
     @mock.patch('actionlog.models.datetime', test_helper.MockDateTime)
     def test_init_enable_ad_group_maintenance_source(self):
         utcnow = datetime.datetime.utcnow()
@@ -196,6 +200,8 @@ class ActionLogApiTestCase(TestCase):
         ad_group = dashmodels.AdGroup.objects.get(id=1)
         ad_group_source = dashmodels.AdGroupSource.objects.filter(ad_group=ad_group,
                                                                   source__maintenance=True)[0]
+
+        ad_group.campaign.account.allowed_sources.add(ad_group_source.source_id) 
 
         source_settings = dashmodels.AdGroupSourceSettings(
             ad_group_source=ad_group_source,

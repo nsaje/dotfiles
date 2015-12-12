@@ -28,11 +28,17 @@ logger = logging.getLogger(__name__)
 
 def init_enable_ad_group(ad_group, request, order=None, send=True):
     source_settings_qs = dash.models.AdGroupSourceSettings.objects\
-                                                          .filter(ad_group_source__ad_group=ad_group)\
-                                                          .group_current_settings()
+        .filter(ad_group_source__ad_group=ad_group)\
+        .group_current_settings()
+
+    allowed_sources_ids = ad_group.campaign.account.allowed_sources\
+        .values_list('id', flat = True) 
 
     new_actionlogs = []
     for source_settings in source_settings_qs:
+        if source_settings.ad_group_source.source_id not in allowed_sources_ids:
+            continue
+
         if source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
             changes = {
                 'state': dash.constants.AdGroupSourceSettingsState.ACTIVE,
