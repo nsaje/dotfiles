@@ -1,6 +1,6 @@
 'use strict';
 
-describe('AccountAgencyCtrl', function () {
+describe('zemConversionPixels', function () {
     var $scope, $q, element, isolate;
 
     var mockApiFunc = function() {
