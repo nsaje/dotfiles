@@ -687,6 +687,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             if end_datetime is not None and end_datetime <= datetime.datetime.utcnow():
                 raise exc.ValidationError()
 
+        allowed_sources = {source.id for source in ad_group.campaign.account.allowed_sources.all()}
+
         settings_writer.set(resource, request)
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
@@ -697,7 +699,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ad_group_source,
                 ad_group_source.ad_group.get_current_settings(),
                 ad_group_source.get_current_settings_or_none(),
-                request.user
+                request.user,
+                allowed_sources,
             )
         })
 

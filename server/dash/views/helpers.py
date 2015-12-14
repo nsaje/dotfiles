@@ -814,14 +814,18 @@ def _is_end_date_past(ad_group_settings):
     return end_utc_datetime < datetime.datetime.utcnow()
 
 
-def get_editable_fields(ad_group_source, ad_group_settings, ad_group_source_settings, user):
+def get_editable_fields(ad_group_source, ad_group_settings, ad_group_source_settings, user, allowed_sources):
     editable_fields = {}
 
     if not user.has_perm('zemauth.set_ad_group_source_settings'):
         return editable_fields
 
-    editable_fields['status_setting'] = _get_editable_fields_status_setting(ad_group_source, ad_group_settings,
-                                                                            ad_group_source_settings)
+    editable_fields['status_setting'] = _get_editable_fields_status_setting(
+        ad_group_source,
+        ad_group_settings,
+        ad_group_source_settings,
+        allowed_sources,
+    )
     editable_fields['bid_cpc'] = _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
     editable_fields['daily_budget'] = _get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
 
@@ -860,7 +864,7 @@ def _get_editable_fields_daily_budget(ad_group_source, ad_group_settings):
     }
 
 
-def _get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings):
+def _get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources):
     message = None
 
     if not ad_group_source.source.can_update_state() or (
@@ -870,6 +874,9 @@ def _get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_g
             ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
         message = _get_status_setting_disabled_message_for_target_regions(
             ad_group_source, ad_group_settings, ad_group_source_settings)
+
+    if ad_group_source.source_id not in allowed_sources:
+        message = 'Please contact support to enable this source.'
 
     return {
         'enabled': message is None,
