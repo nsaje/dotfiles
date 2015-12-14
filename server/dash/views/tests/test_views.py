@@ -1708,6 +1708,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             action_type=actionlog.constants.ActionType.AUTOMATIC,
             action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
         )
+
         self.assertEqual(1, publisher_blacklist_action.count())
         self.assertDictEqual(
             {
