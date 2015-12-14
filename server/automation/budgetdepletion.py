@@ -12,7 +12,7 @@ from django.contrib.auth import models as authmodels
 import automation.models
 import automation.settings
 import automation.helpers
-from utils import pagerduty_helper
+from utils import pagerduty_helper, url_helper
 from utils.statsd_helper import statsd_timer
 
 logger = logging.getLogger(__name__)
@@ -44,7 +44,8 @@ def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays
     if sales_rep is not None:
         emails.append(sales_rep.email)
     total_daily_budget = automation.helpers.get_total_daily_budget_amount(campaign)
-    campaign_url = settings.BASE_URL + '/campaigns/{}/budget'.format(campaign.pk)
+    campaign_url = url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk))
+
     _send_depleting_budget_notification_email(
         campaign.name,
         campaign_url,
@@ -215,7 +216,7 @@ def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterd
     if sales_rep is not None:
         emails.append(sales_rep.email)
 
-    campaign_url = settings.BASE_URL + '/campaigns/{}/budget'.format(campaign.pk)
+    campaign_url = url_helper.get_full_z1_url('/campaigns/{}/budget'.format(campaign.pk))
     _send_campaign_stopped_notification_email(
         campaign.name,
         campaign_url,

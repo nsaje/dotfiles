@@ -94,7 +94,7 @@ class PublisherStatus(ConstantBase):
 
     _VALUES = {
         ENABLED: 'Enabled',
-        BLACKLISTED: 'Blcklisted',
+        BLACKLISTED: 'Blacklisted',
         PENDING: 'Pending'
     }
 
@@ -1064,7 +1064,7 @@ class ConversionGoalType(ConstantBase):
     _VALUES = {
         PIXEL: 'Conversion Pixel',
         GA: 'Google Analytics',
-        OMNITURE: 'Omniture',
+        OMNITURE: 'Adobe Analytics',
     }
 
 

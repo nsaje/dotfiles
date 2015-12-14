@@ -15,7 +15,7 @@ import automation.settings
 import automation.constants
 from dash import constants
 import reports
-from utils import pagerduty_helper
+from utils import pagerduty_helper, url_helper
 from utils.statsd_helper import statsd_timer
 from utils.statsd_helper import statsd_gauge
 
@@ -96,7 +96,7 @@ def get_autopilot_ad_group_sources_settings(adgroup):
 
 
 def ad_group_source_is_on_autopilot(ad_group_source):
-    setting = dash.views.helpers.get_ad_group_source_settings(ad_group_source)
+    setting = ad_group_source.get_current_settings_or_none()
     if setting is None:
         return False
     return setting.autopilot_state == constants.AdGroupSourceSettingsAutopilotState.ACTIVE
@@ -215,7 +215,7 @@ Zemanta
     body = body.format(
         camp=campaign_name,
         account=account_name,
-        camp_url=settings.BASE_URL + '/campaigns/{}/'.format(campaign_id),
+        camp_url=url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign_id)),
         changes=''.join(changesText)
     )
     try:
@@ -250,8 +250,8 @@ def _get_email_adgroup_text(adgroup):
 
 AdGroup: {adg_name} ({adg_url}):'''.format(
         adg_name=adgroup[0],
-        adg_url=settings.BASE_URL + '/ad_groups/{}/sources/'.format(adgroup[1])
-        )
+        adg_url=url_helper.get_full_z1_url('/ad_groups/{}/sources/'.format(adgroup[1])),
+    )
 
 
 def _get_email_source_changes_text(change):

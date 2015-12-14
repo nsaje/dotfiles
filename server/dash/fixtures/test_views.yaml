@@ -73,6 +73,22 @@
     model: dash.accountsettings
     pk: 1
 
+# tet campaignsettings
+
+-   fields:
+        campaign: 1
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        archived: False
+        account_manager: 2
+        sales_representative: 3
+        campaign_goal: 3
+        goal_quantity: 0
+        target_devices: ['mobile']
+        target_regions: ['NC', '501']
+    model: dash.campaignsettings
+    pk: 1
+
 # test campaign
 
 -   fields:

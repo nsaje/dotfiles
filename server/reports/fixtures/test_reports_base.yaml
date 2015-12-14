@@ -248,3 +248,27 @@
         modified_dt: '2015-02-23T00:00:00'
     model: dash.contentadsource
     pk: 3
+
+-   fields:
+        source: 2
+        content_ad: 1
+        submission_status: 2
+        state: 1
+        source_state: 1
+        source_content_ad_id: 's4'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 4
+
+-   fields:
+        source: 2
+        content_ad: 2
+        submission_status: 2
+        state: 1
+        source_state: 1
+        source_content_ad_id: 's5'
+        created_dt: '2015-02-23T00:00:00'
+        modified_dt: '2015-02-23T00:00:00'
+    model: dash.contentadsource
+    pk: 5

@@ -378,15 +378,46 @@ class ViewHelpersTestCase(TestCase):
         with self.assertRaises(exc.ValidationError):
             helpers.parse_post_request_content_ad_ids({'ids': ['1', 'a']}, 'ids')
 
-    def test_get_content_ad_data_status(self):
+    def test_get_content_ad_data_status_pending(self):
         ad_group = models.AdGroup.objects.get(id=1)
         content_ads = models.ContentAd.objects.filter(ad_group=ad_group)
 
+        # set all submission statuses to PENDING
+        content_ad_sources = models.ContentAdSource.objects.filter(content_ad__in=content_ads)
+        content_ad_sources.update(submission_status=constants.ContentAdSubmissionStatus.PENDING)
+
         data_status = helpers.get_content_ad_data_status(ad_group, content_ads)
 
+        # check that the data status is now considered OK
         self.assertEqual({
             '1': {
-                'message': 'The status of this Content Ad differs on these 3rd party dashboards: AdsNative, Sharethrough.',
+                'message': 'All data is OK.',
+                'ok': True
+            },
+            '2': {
+                'message': 'All data is OK.',
+                'ok': True
+            },
+            '3': {
+                'message': 'All data is OK.',
+                'ok': True
+            },
+        }, data_status)
+
+    def test_get_content_ad_data_status_approved(self):
+        ad_group = models.AdGroup.objects.get(id=1)
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group)
+
+        # set all submission statuses to APPROVED
+        content_ad_sources = models.ContentAdSource.objects.filter(content_ad__in=content_ads)
+        content_ad_sources.update(submission_status=constants.ContentAdSubmissionStatus.APPROVED)
+
+        data_status = helpers.get_content_ad_data_status(ad_group, content_ads)
+
+        # check that the data status is now considered not-OK
+        self.assertEqual({
+            '1': {
+                'message': 'The status of this Content Ad differs on these media sources: AdsNative, Sharethrough.',
                 'ok': False
             },
             '2': {
@@ -398,6 +429,10 @@ class ViewHelpersTestCase(TestCase):
                 'ok': True
             },
         }, data_status)
+
+    def test_get_content_ad_data_status_rejected(self):
+        ad_group = models.AdGroup.objects.get(id=1)
+        content_ads = models.ContentAd.objects.filter(ad_group=ad_group)
 
         # set all submission statuses to REJECTED
         content_ad_sources = models.ContentAdSource.objects.filter(content_ad__in=content_ads)
@@ -420,6 +455,82 @@ class ViewHelpersTestCase(TestCase):
                 'ok': True
             },
         }, data_status)
+
+
+class RunningStateHelpersTestCase(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.ad_groups = models.AdGroup.objects.filter(pk__in=[1, 3, 6, 7])
+
+        for ag in self.ad_groups:
+            ags = ag.get_current_settings()
+            ags.state = constants.AdGroupSettingsState.ACTIVE
+            ags.save(None)
+
+        self.ad_groups_settings = models.AdGroupSettings.objects\
+                                                        .filter(ad_group__in=self.ad_groups)\
+                                                        .group_current_settings()
+
+        models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group_id__in=[1, 3]).update(
+            state=constants.AdGroupSettingsState.ACTIVE)
+
+        # ad group 7 has no ad group source settings, that is why it is counted as inactive
+
+        self.ad_group_sources_settings = models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group__in=self.ad_groups).group_current_settings()
+
+    def test_map_per_ad_group_source_running_status(self):
+
+        self.assertDictEqual(
+            helpers.map_per_ad_group_source_running_status(
+                self.ad_groups_settings, self.ad_group_sources_settings),
+            {
+                1: constants.AdGroupRunningStatus.ACTIVE,
+                3: constants.AdGroupRunningStatus.ACTIVE,
+                6: constants.AdGroupRunningStatus.INACTIVE,
+                7: constants.AdGroupRunningStatus.INACTIVE,
+            }
+        )
+
+    """    def test_get_ad_group_state_by_sources_running_status_group_by_campaign(self):
+
+        status_dict = helpers.get_ad_group_state_by_sources_running_status(
+            self.ad_groups, self.ad_groups_settings, self.ad_group_sources_settings, 'campaign_id')
+
+        self.assertDictEqual(status_dict, {
+            1: constants.AdGroupSettingsState.ACTIVE,
+            3: constants.AdGroupSettingsState.ACTIVE
+        })
+
+        ad_groups = models.AdGroup.objects.filter(id__in=[6, 7])
+        self.assertTrue(all(status_dict[ag.campaign_id] == constants.AdGroupSettingsState.INACTIVE for ag in ad_groups))
+
+    def test_get_ad_group_state_by_sources_running_status_group_by_account(self):
+
+        status_dict = helpers.get_ad_group_state_by_sources_running_status(
+            self.ad_groups, self.ad_groups_settings, self.ad_group_sources_settings, 'campaign__account_id')
+
+        self.assertDictEqual(status_dict, {
+            1: constants.AdGroupSettingsState.ACTIVE,
+            2: constants.AdGroupSettingsState.ACTIVE
+        })
+
+        ad_groups = models.AdGroup.objects.filter(id__in=[6, 7])
+        self.assertTrue(all(status_dict[ag.campaign.account_id] == constants.AdGroupSettingsState.INACTIVE for ag in ad_groups))
+
+    def test_get_ad_group_state_by_sources_running_status_group_by_ad_group(self):
+
+        status_dict = helpers.get_ad_group_state_by_sources_running_status(
+            self.ad_groups, self.ad_groups_settings, self.ad_group_sources_settings, 'id')
+
+        self.assertDictEqual(status_dict, {
+            1: constants.AdGroupSettingsState.ACTIVE,
+            3: constants.AdGroupSettingsState.ACTIVE
+        })
+
+        ad_groups = models.AdGroup.objects.filter(id__in=[6, 7])
+        self.assertTrue(all(status_dict[ag.id] == constants.AdGroupSettingsState.INACTIVE for ag in ad_groups))"""
 
 
 class GetChangedContentAdsTestCase(TestCase):

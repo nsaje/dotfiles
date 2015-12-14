@@ -123,13 +123,13 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.handlers.WatchedFileHandler',
             'filename': LOG_FILE,
             'formatter': 'standard'
         },
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler'
         },
         'db_handler': {
@@ -147,17 +147,17 @@ LOGGING = {
     'loggers': {
         'django.db.backends': {
             'handlers': ['db_handler'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False
         },
         'django.request': {
             'handlers': ['file', 'console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True
         },
         '': {
             'handlers': ['file', 'console', 'sentry'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True
         }
     }

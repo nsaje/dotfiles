@@ -282,6 +282,7 @@ urlpatterns += patterns(
     url(
         r'^api/accounts/(?P<account_id>\d+)/campaigns/',
         login_required(dash.views.views.AccountCampaigns.as_view()),
+        name='account_campaigns'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/agency/',

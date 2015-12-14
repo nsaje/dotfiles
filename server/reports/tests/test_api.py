@@ -508,76 +508,76 @@ class UpsertReportsTestCase(test.TestCase):
         ags1 = dashmodels.AdGroupSource.objects.get(id=1)
         rows_ags1_date1 = [
             {
+                'id': 's1',
                 'title': 'Test Article 1',
                 'url': 'http://example.com/',
                 'impressions': 50,
                 'clicks': 2,
                 'cost_cc': 2800,
-                'cpc_cc': None
             },
             {
+                'id': 's2',
                 'title': 'Test Article 2',
                 'url': 'http://example.com/',
                 'impressions': 40,
                 'clicks': 1,
                 'cost_cc': 900,
-                'cpc_cc': None
             },
         ]
         rows_ags2_date1 = [
             {
-                'title': 'Test Article 1',
-                'url': 'http://example.com/',
-                'impressions': 50,
-                'clicks': 2,
-                'cost_cc': None,
-                'cpc_cc': 1400
-            },
-            {
-                'title': 'Test Article 2',
-                'url': 'http://example.com/',
-                'impressions': 40,
-                'clicks': 1,
-                'cost_cc': None,
-                'cpc_cc': 900
-            },
-        ]
-
-        ags2 = dashmodels.AdGroupSource.objects.get(id=1)
-        rows_ags1_date2 = [
-            {
+                'id': 's4',
                 'title': 'Test Article 1',
                 'url': 'http://example.com/',
                 'impressions': 50,
                 'clicks': 2,
                 'cost_cc': 2800,
-                'cpc_cc': None
             },
             {
+                'id': 's5',
                 'title': 'Test Article 2',
                 'url': 'http://example.com/',
                 'impressions': 40,
                 'clicks': 1,
                 'cost_cc': 900,
-                'cpc_cc': None
             },
         ]
-        rows_ags2_date2 = [
+
+        ags2 = dashmodels.AdGroupSource.objects.get(id=2)
+        rows_ags1_date2 = [
             {
+                'id': 's1',
                 'title': 'Test Article 1',
                 'url': 'http://example.com/',
                 'impressions': 50,
                 'clicks': 2,
-                'cost_cc': None,
-                'cpc_cc': 1400
+                'cost_cc': 2800,
             },
             {
+                'id': 's2',
                 'title': 'Test Article 2',
                 'url': 'http://example.com/',
                 'impressions': 40,
                 'clicks': 1,
-                'cost_cc': None,
-                'cpc_cc': 900
+                'cost_cc': 900,
+            },
+        ]
+        rows_ags2_date2 = [
+            {
+                'id': 's4',
+                'title': 'Test Article 1',
+                'url': 'http://example.com/',
+                'impressions': 50,
+                'clicks': 2,
+                'cost_cc': 2800,
+            },
+            {
+                'id': 's5',
+                'title': 'Test Article 2',
+                'url': 'http://example.com/',
+                'impressions': 40,
+                'clicks': 1,
+                'cost_cc': 1800,
             },
         ]
 
@@ -588,7 +588,8 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date1,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=_prepare_report_rows(ags1.ad_group, ags1.source, rows_ags1_date1)
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags1.ad_group, ags1, ags1.source, rows_ags1_date1))
         )
 
         for row in rows_ags1_date1:
@@ -607,7 +608,8 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date1,
             ad_group=ags2.ad_group,
             source=ags2.source,
-            rows=_prepare_report_rows(ags2.ad_group, ags1.source, rows_ags2_date1)
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags2.ad_group, ags2, ags2.source, rows_ags2_date1))
         )
         for row in rows_ags2_date1:
             article = dashmodels.Article.objects.get(title=row['title'])
@@ -619,19 +621,21 @@ class UpsertReportsTestCase(test.TestCase):
             )
             self.assertEqual(stats.impressions, row['impressions'])
             self.assertEqual(stats.clicks, row['clicks'])
-            self.assertEqual(stats.cost_cc, row['cpc_cc'] * row['clicks'])
+            self.assertEqual(stats.cost_cc, row['cost_cc'])
 
         reports.update.stats_update_adgroup_source_traffic(
             datetime=date2,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=_prepare_report_rows(ags1.ad_group, ags1.source, rows_ags1_date2)
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags1.ad_group, ags1, ags1.source, rows_ags1_date2))
         )
         reports.update.stats_update_adgroup_source_traffic(
             datetime=date2,
             ad_group=ags2.ad_group,
             source=ags2.source,
-            rows=_prepare_report_rows(ags2.ad_group, ags1.source, rows_ags2_date2)
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags2.ad_group, ags2, ags2.source, rows_ags2_date2))
         )
 
         articles_ags1 = dashmodels.Article.objects.order_by('title')
@@ -646,14 +650,15 @@ class UpsertReportsTestCase(test.TestCase):
     def test_save_reports_reinsert(self):
         rows = [
             {
+                'id': 's1',
                 'title': 'Test Article 1',
                 'url': 'http://example.com/',
                 'impressions': 50,
                 'clicks': 2,
                 'cost_cc': 2800,
-                'cpc_cc': None
             },
             {
+                'id': 's2',
                 'title': 'Test Article 2',
                 'url': 'http://example.com/',
                 'impressions': 40,
@@ -665,6 +670,7 @@ class UpsertReportsTestCase(test.TestCase):
 
         rows_new_title = [
             {
+                'id': 's1',
                 'title': 'Test Article 1 New',
                 'url': 'http://example.com/',
                 'impressions': 100,
@@ -673,6 +679,7 @@ class UpsertReportsTestCase(test.TestCase):
                 'cpc_cc': None
             },
             {
+                'id': 's2',
                 'title': 'Test Article 2 New',
                 'url': 'http://example.com/',
                 'impressions': 80,
@@ -684,6 +691,7 @@ class UpsertReportsTestCase(test.TestCase):
 
         rows_new_url = [
             {
+                'id': 's1',
                 'title': 'Test Article 1 New',
                 'url': 'http://example.com/new',
                 'impressions': 200,
@@ -692,6 +700,7 @@ class UpsertReportsTestCase(test.TestCase):
                 'cpc_cc': None
             },
             {
+                'id': 's2',
                 'title': 'Test Article 2 New',
                 'url': 'http://example.com/new',
                 'impressions': 160,
@@ -711,7 +720,8 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=_prepare_report_rows(ags.ad_group, ags.source, rows)
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags.ad_group, ags, ags.source, rows))
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 2)
@@ -732,7 +742,8 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=_prepare_report_rows(ags.ad_group, ags.source, rows_new_title)
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags.ad_group, ags, ags.source, rows_new_title))
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 4)
@@ -768,7 +779,8 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date,
             ad_group=ags.ad_group,
             source=ags.source,
-            rows=_prepare_report_rows(ags.ad_group, ags.source, rows_new_url)
+            rows=_remove_content_ad_sources_from_report_rows(_prepare_report_rows(
+                ags.ad_group, ags, ags.source, rows_new_url))
         )
         stats = models.ArticleStats.objects.filter(ad_group=ags.ad_group, source=ags.source, datetime=date)
         self.assertEqual(len(stats), 6)
@@ -809,6 +821,7 @@ class UpsertReportsTestCase(test.TestCase):
 
         rows_duplicate = [
             {
+                'id': 's1',
                 'title': title,
                 'url': url,
                 'impressions': 50,
@@ -817,6 +830,7 @@ class UpsertReportsTestCase(test.TestCase):
                 'cpc_cc': None
             },
             {
+                'id': 's1',
                 'title': title,
                 'url': url,
                 'impressions': 30,
@@ -825,6 +839,7 @@ class UpsertReportsTestCase(test.TestCase):
                 'cpc_cc': None
             },
             {
+                'id': 's1',
                 'title': title,
                 'url': url,
                 'impressions': 40,
@@ -836,6 +851,7 @@ class UpsertReportsTestCase(test.TestCase):
 
         rows_other = [
             {
+                'id': 's2',
                 'title': title_other,
                 'url': url_other,
                 'impressions': 100,
@@ -851,7 +867,8 @@ class UpsertReportsTestCase(test.TestCase):
             datetime=date1,
             ad_group=ags1.ad_group,
             source=ags1.source,
-            rows=_prepare_report_rows(ags1.ad_group, ags1.source, rows)
+            rows=_remove_content_ad_sources_from_report_rows(
+                _prepare_report_rows(ags1.ad_group, ags1, ags1.source, rows))
         )
 
         article = dashmodels.Article.objects.get(title=title, url=url)
@@ -950,8 +967,10 @@ class PrepareReportRowsTestCase(test.TestCase):
 
         ad_group = dashmodels.AdGroup.objects.get(pk=1)
         source = dashmodels.Source.objects.get(pk=1)
+        ad_group_source = dashmodels.AdGroupSource.objects.get(pk=1)
+        ad_group_source.can_manage_content_ads = True
 
-        report_rows = _prepare_report_rows(ad_group, source, data_rows, True)
+        report_rows = _prepare_report_rows(ad_group, ad_group_source, source, data_rows)
 
         article1 = dashmodels.Article.objects.get(pk=1)
         article2 = dashmodels.Article.objects.get(pk=2)
@@ -989,45 +1008,4 @@ class PrepareReportRowsTestCase(test.TestCase):
             'clicks': 1,
             'cost_cc': 900,
             'data_cost_cc': 0,
-        }])
-
-    def test_skip_content_ad_sources(self):
-        data_rows = [
-            {
-                'title': 'Test Article 1',
-                'url': 'http://test1.com',
-                'impressions': 50,
-                'clicks': 2,
-                'cost_cc': 2800,
-                'cpc_cc': None,
-                'id': 's1'
-            },
-            {
-                'title': 'Test Article 2',
-                'url': 'http://test2.com',
-                'impressions': 40,
-                'clicks': 1,
-                'cost_cc': 900,
-                'cpc_cc': None,
-                'id': 's2'
-            },
-        ]
-
-        ad_group = dashmodels.AdGroup.objects.get(pk=1)
-        source = dashmodels.Source.objects.get(pk=1)
-
-        report_rows = _prepare_report_rows(ad_group, source, data_rows)
-
-        self.assertItemsEqual(report_rows, [{
-            'article': dashmodels.Article.objects.get(pk=1),
-            'clicks': 2,
-            'data_cost_cc': 0,
-            'impressions': 50,
-            'cost_cc': 2800,
-        }, {
-            'article': dashmodels.Article.objects.get(pk=2),
-            'clicks': 1,
-            'data_cost_cc': 0,
-            'impressions': 40,
-            'cost_cc': 900,
         }])

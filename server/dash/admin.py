@@ -4,6 +4,7 @@ import urllib
 
 from django.contrib import admin
 from django.contrib import messages
+from django.db import transaction
 from django import forms
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
@@ -805,12 +806,12 @@ class UserActionLogAdmin(ExportMixin, admin.ModelAdmin):
         settings_link = ''
 
         if obj:
-            obj_link = '<a href="{url}">{name}</a>'.format(
+            obj_link = u'<a href="{url}">{name}</a>'.format(
                 name=obj.name,
                 url=reverse(obj_url_name, args=(obj.pk, )))
 
         if settings_url_name and settings:
-            settings_link = '<a href="{url}">{name}</a>'.format(
+            settings_link = u'<a href="{url}">{name}</a>'.format(
                 name=settings.changes_text or '- no changes description -',
                 url=reverse(settings_url_name, args=(settings.pk, ))
             )
@@ -909,9 +910,7 @@ class ContentAdGroupSettingsStatusFilter(admin.SimpleListFilter):
         if self.value() is None:
             return queryset
 
-        ad_group_settingss = models.AdGroupSettings.objects\
-                                                   .order_by('ad_group_id', '-created_dt')\
-                                                   .distinct('ad_group')
+        ad_group_settingss = models.AdGroupSettings.objects.all().group_current_settings()
 
         queried_state = int(self.value())
         return queryset.filter(
@@ -1098,8 +1097,131 @@ class ExportReportAdmin(admin.ModelAdmin):
     get_sources.short_description = 'Filtered Sources'
 
 
+class PublisherBlacklistAdmin(admin.ModelAdmin):
+    form = dash_forms.PublisherBlacklistForm
+
+    search_fields = ['name']
+    list_display = (
+        'created_dt',
+        'name',
+        'everywhere',
+        'ad_group_',
+        'campaign_',
+        'account_',
+        'source_id',
+        'status'
+    )
+    readonly_fields = [
+        'created_dt',
+        'everywhere',
+        'ad_group_id',
+        'campaign_id',
+        'account_id',
+        'status'
+    ]
+    list_filter = ('everywhere', 'status',)
+    ordering = ('-created_dt',)
+
+    def has_add_permission(self, request):
+        return request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status')
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status')
+
+    def ad_group_(self, obj):
+        if obj.ad_group is None:
+            return None
+        return u'<a href="{ad_group_url}">{name}</a>'.format(
+            ad_group_url=reverse('admin:dash_adgroup_change', args=(obj.ad_group.id,)),
+            name=u'{} ({})'.format(
+                obj.ad_group.name,
+                obj.ad_group.id
+            )
+        )
+    ad_group_.allow_tags = True
+    ad_group_.admin_order_field = 'ad_group'
+
+
+    def account_(self, obj):
+        if obj.account is None:
+            return ""
+        return '<a href="{account_url}">{account}</a>'.format(
+            account_url=reverse('admin:dash_account_change', args=(obj.campaign.account.id,)),
+            account=obj.campaign.account
+        )
+    account_.allow_tags = True
+    account_.admin_order_field = 'campaign__account'
+
+    def campaign_(self, obj):
+        if obj.campaign is None:
+            return ""
+        return '<a href="{campaign_url}">{campaign}</a>'.format(
+            campaign_url=reverse('admin:dash_campaign_change', args=(obj.campaign.id,)),
+            campaign=obj.campaign
+        )
+    campaign_.allow_tags = True
+    campaign_.admin_order_field = 'campaign'
+
+    # funky hack that removes site-wide bulk model delete action
+    def get_actions(self, request):
+        actions = super(PublisherBlacklistAdmin, self).get_actions(request)
+        del actions['delete_selected']
+        return actions
+
+    def reenable_global(modeladmin, request, queryset):
+        user = request.user
+        if not user.has_perm('zemauth.can_access_global_publisher_blacklist_status'):
+            return
+        if not user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
+            return
+
+        global_blacklist = []
+        # currently only support enabling global blacklist
+        filtered_queryset = queryset.filter(
+            everywhere=True,
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+
+        # currently only support enabling global blacklist
+        matching_sources = models.Source.objects.filter(
+            deprecated=False
+        )
+        candidate_source = None
+        for source in matching_sources:
+            if source.can_modify_publisher_blacklist_automatically():
+                candidate_source = source
+                break
+
+        for publisher_blacklist in filtered_queryset:
+            global_blacklist.append({
+                'domain': publisher_blacklist.name,
+                'source': candidate_source,
+            })
+
+        actionlogs_to_send = []
+        with transaction.atomic():
+            actionlogs_to_send.extend(
+                api.create_global_publisher_blacklist_actions(
+                    None,
+                    request,
+                    constants.PublisherStatus.ENABLED,
+                    global_blacklist,
+                    send=False
+                )
+            )
+        actionlog.zwei_actions.send(actionlogs_to_send)
+
+    reenable_global.short_description = "Re-enable publishers globally"
+
+    actions = [reenable_global]
+
+
 class GAAnalyticsAccount(admin.ModelAdmin):
     pass
+
 
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
@@ -1122,4 +1244,5 @@ admin.site.register(models.BudgetLineItem, BudgetLineItemAdmin)
 admin.site.register(models.ScheduledExportReportLog, ScheduledExportReportLogAdmin)
 admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
 admin.site.register(models.ExportReport, ExportReportAdmin)
+admin.site.register(models.PublisherBlacklist, PublisherBlacklistAdmin)
 admin.site.register(models.GAAnalyticsAccount, GAAnalyticsAccount)

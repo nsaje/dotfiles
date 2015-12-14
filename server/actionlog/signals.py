@@ -1,7 +1,6 @@
 from django.db.models.signals import pre_save
 from django.core import urlresolvers
-from django.conf import settings as s
-from utils import pagerduty_helper
+from utils import pagerduty_helper, url_helper
 
 from actionlog import constants
 from actionlog import models
@@ -20,7 +19,7 @@ def trigger_alert_pre_save_signal_handler(sender, instance, **kwargs):
 
 
 def _trigger_stop_campaign_alert(action_log_id, event_type):
-    admin_url = s.BASE_URL + '{0}'.format(
+    admin_url = url_helper.get_full_z1_url(
         urlresolvers.reverse('admin:actionlog_actionlog_change',
                              args=(action_log_id,)))
 

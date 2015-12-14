@@ -132,9 +132,13 @@ def _clean_existing_publisher_blacklist(key, level, publishers):
     for publisher in publishers:
         match_publisher_blacklist = Q(
             name=publisher['domain'],
-            source__id=publisher['source_id'],
-            source__deprecated=False,
         )
+
+        if level != constants.PublisherBlacklistLevel.GLOBAL:
+            match_publisher_blacklist &= Q(
+                source__id=publisher['source_id'],
+                source__deprecated=False
+            )
 
         # first delete all associated blacklist entries
         if level == constants.PublisherBlacklistLevel.GLOBAL:
@@ -182,10 +186,14 @@ def _update_publisher_blacklist(key, level, publishers):
 
     source_cache = {}
     for publisher in publishers:
-        source_id = publisher['source_id']
-        if source_id not in source_cache:
-            source_cache[source_id] = dash.models.Source.objects.get(id=source_id)
-        source = source_cache[source_id]
+        # this can be None in case of global pub. blacklisting
+        source_id = publisher.get('source_id')
+        if level != constants.PublisherBlacklistLevel.GLOBAL:
+            if source_id not in source_cache:
+                source_cache[source_id] = dash.models.Source.objects.get(id=source_id)
+            source = source_cache[source_id]
+        else:
+            source = None
 
         blacklist_entry = models.PublisherBlacklist(
             name=publisher['domain'],
@@ -821,10 +829,14 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
             continue
 
         if first_ad_group_source is None:
-            first_ad_group_source = models.AdGroupSource.objects.filter(
-                ad_group=ad_group,
+            first_ad_group_source_qs = models.AdGroupSource.objects.filter(
                 source=publisher['source']
-            ).first()
+            )
+            if ad_group is not None:
+                first_ad_group_source_qs = first_ad_group_source_qs.filter(
+                    ad_group=ad_group
+                )
+            first_ad_group_source = first_ad_group_source_qs.first()
 
         key = None
         level = constants.PublisherBlacklistLevel.GLOBAL
@@ -832,8 +844,6 @@ def create_global_publisher_blacklist_actions(ad_group, request, state, publishe
         filtered_blacklist = list(
             map(lambda pub: {
                     'domain': pub['domain'],
-                    'exchange': pub['source'].bidder_slug,
-                    'source_id': pub['source'].id
                 },
                 filtered_blacklist
             )
@@ -1027,25 +1037,6 @@ def reconcile_articles(ad_group, raw_articles):
     return reconciled_articles
 
 
-def get_state_by_account():
-    qs = models.AdGroupSettings.objects.select_related('ad_group__campaign__account') \
-        .distinct('ad_group_id').order_by('ad_group_id', '-created_dt') \
-        .values('ad_group', 'ad_group__campaign__account', 'state')
-    account_state = {}
-    for row in qs:
-        aid = row['ad_group__campaign__account']
-        if aid not in account_state:
-            account_state[aid] = set()
-        account_state[aid].add(row['state'])
-
-    def _acc_state(ag_states):
-        if constants.AdGroupSettingsState.ACTIVE in ag_states:
-            return constants.AdGroupSettingsState.ACTIVE
-        return constants.AdGroupSettingsState.INACTIVE
-    account_state = {aid: _acc_state(ag_states) for aid, ag_states in account_state.iteritems()}
-    return account_state
-
-
 def _update_content_ad_source_submission_status(content_ad_source, submission_status):
     if content_ad_source.source.source_type.type == constants.SourceType.OUTBRAIN and\
        content_ad_source.submission_status == constants.ContentAdSubmissionStatus.REJECTED and\
@@ -1127,7 +1118,7 @@ class AdGroupSourceSettingsWriter(object):
         assert type(self.ad_group_source) is models.AdGroupSource
 
     def set(self, settings_obj, request, send_action=True):
-        latest_settings = self.get_latest_settings()
+        latest_settings = self.ad_group_source.get_current_settings()
 
         state = settings_obj.get('state')
         cpc_cc = settings_obj.get('cpc_cc')
@@ -1192,22 +1183,8 @@ class AdGroupSourceSettingsWriter(object):
                 actionlog.api.set_ad_group_source_settings(settings_obj, latest_settings.ad_group_source, request)
 
     def can_trigger_action(self):
-        try:
-            ad_group_settings = models.AdGroupSettings.objects \
-                .filter(ad_group=self.ad_group_source.ad_group) \
-                .latest('created_dt')
-            return ad_group_settings.state == constants.AdGroupSettingsState.ACTIVE
-        except models.AdGroupSettings.DoesNotExist:
-            return False
-
-    def get_latest_settings(self):
-        try:
-            latest_settings = models.AdGroupSourceSettings.objects \
-                .filter(ad_group_source=self.ad_group_source) \
-                .latest('created_dt')
-            return latest_settings
-        except models.AdGroupSourceSettings.DoesNotExist:
-            return models.AdGroupSourceSettings(ad_group_source=self.ad_group_source)
+        ad_group_settings = self.ad_group_source.ad_group.get_current_settings()
+        return models.AdGroup.is_ad_group_active(ad_group_settings)
 
     def add_to_history(self, change_obj, old_change_obj, request):
         changes_text_parts = []

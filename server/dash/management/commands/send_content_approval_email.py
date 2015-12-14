@@ -22,8 +22,8 @@ def get_ad_group_sources(source):
     ).values('content_ad__ad_group_id').distinct()
 
     ad_group_states = models.AdGroupSettings.objects\
-                                            .order_by('ad_group_id', '-created_dt')\
-                                            .distinct('ad_group')\
+                                            .all()\
+                                            .group_current_settings()\
                                             .values('ad_group_id', 'state')
 
     ad_group_ids = list(set([x['content_ad__ad_group_id'] for x in ad_group_ids]) &

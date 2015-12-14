@@ -140,7 +140,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_toggle_ga_performance_tracking', 'Can toggle Google Analytics performance tracking.'),
             ('can_toggle_adobe_performance_tracking', 'Can toggle Adobe Analytics performance tracking.'),
             ('can_see_media_source_status_on_submission_popover', 'Can see media source status on submission status popover'),
-            ('can_set_dma_targeting', 'Can set DMA targeting'),
             ('can_set_subdivision_targeting', 'Can set subdivision targeting'),
             ('can_set_media_source_to_auto_pilot', 'Can set media source to auto-pilot'),
             ('manage_conversion_pixels', 'Can manage conversion pixels'),
@@ -155,11 +154,13 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('conversion_reports', 'Can see conversions and goals in reports'),
             ('exports_plus', 'Can download reports using new export facilities'),
             ('can_modify_allowed_sources', 'Can modify allowed sources on account level'),
+            ('settings_defaults_on_campaign_level', 'Can view ad group settings defaults on campaign level'),
             ('can_access_global_publisher_blacklist_status', 'Can view or modify global publishers blacklist status'),
             ('can_access_campaign_account_publisher_blacklist_status', 'Can view or modify account and campaign publishers blacklist status'),
             ('can_view_data_cost', 'Can view or export data cost'),
             ('can_see_all_available_sources', 'Can see all available media sources in account settings'),
-            ('can_see_infobox', 'Can see info box') ,
+            ('can_see_infobox', 'Can see info box'),
+            ('account_account_view', "Can view account's Account tab."),
         )
 
     def get_full_name(self):

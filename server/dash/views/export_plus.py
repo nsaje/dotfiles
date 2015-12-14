@@ -43,43 +43,71 @@ class ExportApiView(api_common.BaseApiView):
 
 
 class ExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 200000
+    MAX_ROWS = 500000
+    MAX_DAYS = 366
+    MAX_BREAKDOWN_DAYS = 32
 
     @statsd_helper.statsd_timer('dash.export_plus', 'export_plus_allowed_get')
     def get(self, request, level_, id_=None):
         if not request.user.has_perm('zemauth.exports_plus'):
             raise exc.ForbiddenError(message='Not allowed')
         user = request.user
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        num_days = (end_date - start_date).days + 1
 
         if level_ == 'ad_groups':
             ad_group = helpers.get_ad_group(user, id_)
+            content_ad_rows = models.ContentAd.objects.filter(ad_group=ad_group).count()
             return self.create_api_response({
-                'content_ad': models.ContentAd.objects.filter(ad_group=ad_group).count() <= self.MAX_ROWS
+                'content_ad': content_ad_rows <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'by_day': {
+                    'content_ad': content_ad_rows * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS
+                }
             })
         elif level_ == 'campaigns':
             campaign = helpers.get_campaign(user, id_)
             ad_groups = models.AdGroup.objects.filter(campaign=campaign).exclude_archived()
+            ad_group_rows = ad_groups.count()
+            content_ad_rows = models.ContentAd.objects.filter(ad_group=ad_groups).count()
             return self.create_api_response({
-                'ad_group': ad_groups.count() <= self.MAX_ROWS,
-                'content_ad': models.ContentAd.objects.filter(ad_group=ad_groups).count() <= self.MAX_ROWS
+                'ad_group': ad_group_rows <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'content_ad': content_ad_rows <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'by_day': {
+                    'ad_group': ad_group_rows * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS,
+                    'content_ad': content_ad_rows * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS
+                }
             })
         elif level_ == 'accounts':
             account = helpers.get_account(user, id_)
             campaigns = models.Campaign.objects.filter(account=account).exclude_archived()
             ad_groups = models.AdGroup.objects.filter(campaign=campaigns).exclude_archived()
+            campaign_rows = campaigns.count()
+            ad_group_rows = ad_groups.count()
+            content_ad_rows = models.ContentAd.objects.filter(ad_group=ad_groups).count()
             return self.create_api_response({
-                'campaign': campaigns.count() <= self.MAX_ROWS,
-                'ad_group': ad_groups.count() <= self.MAX_ROWS,
-                'content_ad': models.ContentAd.objects.filter(ad_group=ad_groups).count() <= self.MAX_ROWS
+                'campaign': campaign_rows <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'ad_group': ad_group_rows <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'content_ad': content_ad_rows <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'by_day': {
+                    'ad_group': ad_group_rows * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS,
+                    'content_ad': content_ad_rows * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS,
+                    'campaign': campaign_rows * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS
+                }
             })
         elif level_ == 'all_accounts':
             accounts_num = models.Account.objects.all().filter_by_user(user).exclude_archived().count()
             campaigns_num = models.Campaign.objects.all().filter_by_user(user).exclude_archived().count()
             ad_groups_num = models.AdGroup.objects.all().filter_by_user(user).exclude_archived().count()
             return self.create_api_response({
-                'account': accounts_num <= self.MAX_ROWS,
-                'campaign': campaigns_num <= self.MAX_ROWS,
-                'ad_group': ad_groups_num <= self.MAX_ROWS
+                'account': accounts_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'campaign': campaigns_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'ad_group': ad_groups_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'by_day': {
+                    'ad_group': ad_groups_num * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS,
+                    'campaign': campaigns_num * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS,
+                    'account': accounts_num * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS
+                }
             })
 
         return self.create_api_response({
@@ -88,7 +116,13 @@ class ExportAllowed(api_common.BaseApiView):
 
 
 class SourcesExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 200000
+    MAX_ROWS = 500000
+    MAX_DAYS = 366
+    MAX_BREAKDOWN_DAYS = 32
+
+    ALL_ACCOUNTS_BREAKDOWN_MANY_SOURCES = 3
+    ALL_ACCOUNTS_MAX_BREAKDOWN_DAYS_WHEN_MANY_SOURCES = 15
+
 
     @statsd_helper.statsd_timer('dash.export_plus', 'sources_export_plus_allowed_get')
     def get(self, request, level_, id_=None):
@@ -96,39 +130,72 @@ class SourcesExportAllowed(api_common.BaseApiView):
             raise exc.ForbiddenError(message='Not allowed')
         user = request.user
         filtered_sources_num = len(helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')))
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+        num_days = (end_date - start_date).days + 1
+
         if level_ == 'ad_groups':
             ad_group = helpers.get_ad_group(user, id_)
+            content_ad_rows = models.ContentAd.objects.filter(ad_group=ad_group).count() * filtered_sources_num
             return self.create_api_response({
-                'ad_group': filtered_sources_num <= self.MAX_ROWS,
-                'content_ad': models.ContentAd.objects.filter(ad_group=ad_group).count() * filtered_sources_num <= self.MAX_ROWS
+                'ad_group': filtered_sources_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'content_ad': content_ad_rows <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'by_day': {
+                    'ad_group': filtered_sources_num * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS,
+                    'content_ad': content_ad_rows * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS
+                }
             })
         elif level_ == 'campaigns':
             campaign = helpers.get_campaign(user, id_)
             ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+            ad_group_rows = ad_groups.count() * filtered_sources_num
+            content_ad_rows = models.ContentAd.objects.filter(ad_group__in=ad_groups).count() * filtered_sources_num
             return self.create_api_response({
-                'campaign': filtered_sources_num <= self.MAX_ROWS,
-                'ad_group': ad_groups.count() * filtered_sources_num <= self.MAX_ROWS,
-                'content_ad': models.ContentAd.objects.filter(ad_group__in=ad_groups).count() * filtered_sources_num <= self.MAX_ROWS
+                'campaign': filtered_sources_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'ad_group': ad_group_rows <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'content_ad': content_ad_rows <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'by_day': {
+                    'ad_group': ad_group_rows * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS,
+                    'content_ad': content_ad_rows * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS,
+                    'campaign': filtered_sources_num * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS
+                }
             })
         elif level_ == 'accounts':
             account = helpers.get_account(user, id_)
             campaigns = models.Campaign.objects.filter(account=account)
             ad_groups = models.AdGroup.objects.filter(campaign=campaigns)
+            ad_group_rows = ad_groups.count() * filtered_sources_num
+            campaign_rows = campaigns.count() * filtered_sources_num
+            content_ad_rows = models.ContentAd.objects.filter(ad_group__in=ad_groups).count() * filtered_sources_num
             return self.create_api_response({
-                'account': filtered_sources_num <= self.MAX_ROWS,
-                'campaign': campaigns.count() * filtered_sources_num <= self.MAX_ROWS,
-                'ad_group': ad_groups.count() * filtered_sources_num <= self.MAX_ROWS,
-                'content_ad': models.ContentAd.objects.filter(ad_group__in=ad_groups).count() * filtered_sources_num <= self.MAX_ROWS
+                'account': filtered_sources_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'campaign': campaign_rows <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'ad_group': ad_group_rows <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'content_ad': content_ad_rows <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'by_day': {
+                    'ad_group': ad_group_rows * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS,
+                    'content_ad': content_ad_rows * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS,
+                    'campaign': campaign_rows * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS,
+                    'account': filtered_sources_num * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS
+                }
             })
         elif level_ == 'all_accounts':
             accounts_num = models.Account.objects.all().filter_by_user(user).count()
             campaigns_num = models.Campaign.objects.all().filter_by_user(user).count()
             ad_groups_num = models.AdGroup.objects.all().filter_by_user(user).count()
+            max_breakdown_days = (self.MAX_BREAKDOWN_DAYS if filtered_sources_num <= self.ALL_ACCOUNTS_BREAKDOWN_MANY_SOURCES else
+                                  self.ALL_ACCOUNTS_MAX_BREAKDOWN_DAYS_WHEN_MANY_SOURCES)
             return self.create_api_response({
-                'add_accounts': filtered_sources_num <= self.MAX_ROWS,
-                'account': accounts_num * filtered_sources_num <= self.MAX_ROWS,
-                'campaign': campaigns_num * filtered_sources_num <= self.MAX_ROWS,
-                'ad_group': ad_groups_num * filtered_sources_num <= self.MAX_ROWS
+                'all_accounts': filtered_sources_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'account': accounts_num * filtered_sources_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'campaign': campaigns_num * filtered_sources_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'ad_group': ad_groups_num * filtered_sources_num <= self.MAX_ROWS and num_days <= self.MAX_DAYS,
+                'by_day': {
+                    'ad_group': num_days <= max_breakdown_days,
+                    'campaign': num_days <= max_breakdown_days,
+                    'account': accounts_num * filtered_sources_num * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS,
+                    'all_accounts': filtered_sources_num * num_days <= self.MAX_ROWS and num_days <= self.MAX_BREAKDOWN_DAYS
+                }
             })
 
         return self.create_api_response({})

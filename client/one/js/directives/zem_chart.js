@@ -95,6 +95,8 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
 
             $scope.config = {
                 options: {
+                    chart: {
+                    },
                     title: {
                         text: null
                     },
@@ -211,12 +213,15 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                             $scope.hasData = true;
                         }
 
+                        seriesData = transformDate(seriesData);
+                        seriesData = fillGaps(seriesData);
+
                         seriesName = group.name + ' (' + getMetricName(metricId)  + ')';
                         $scope.config.series.unshift({
                             name: seriesName,
                             color: color[index],
                             yAxis: commonYAxis ? 0 : index,
-                            data: transformDate(seriesData),
+                            data: seriesData,
                             tooltip: {
                                 pointFormat: '<div class="color-box" style="background-color: ' + color[index] + '"></div>' + seriesName + ': <b>' + getPointFormat(metricId) + '</b></br>'
                             },
@@ -323,6 +328,38 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                     item[0] = parseInt(moment.utc(item[0]).format('XSSS'), 10);
                     return item;
                 });
+            };
+
+            var fillGaps = function(stats) {
+                if (stats.length < 2) {
+                    return stats;
+                }
+
+                var ts, usedDates = {},
+                    startTS = stats[0][0],
+                    endTS = stats[stats.length - 1][0];
+
+                // mark which for which dates do we have data points
+                for (var i = 0; i < stats.length; i++) {
+                    usedDates[stats[i][0]] = stats[i];
+                }
+
+                var previousMissing = false, statsNoGaps = [], msInADay = 24 * 3600 * 1000;
+
+                // fill in the necessary null datapoints, so that the chart does not
+                // contain lines through dates that do not have data
+                for (var d = startTS; d < endTS + msInADay; d += msInADay) {
+                    if (d in usedDates) {
+                        statsNoGaps.push(usedDates[d]);
+                        previousMissing = false;
+                    } else if (!previousMissing) {
+                        // no need to fill all the missing dates
+                        // fill only one after a non-null datapoint
+                        statsNoGaps.push([d, null]);
+                        previousMissing = true;
+                    }
+                }
+                return statsNoGaps;
             };
 
             var clearUsedColors = function (data) {
