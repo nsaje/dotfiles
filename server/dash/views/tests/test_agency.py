@@ -734,8 +734,10 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual(404, response.status_code)
 
     def test_put_with_permissions(self):
-        permission = Permission.objects.get(codename='manage_conversion_pixels')
         user = User.objects.get(pk=2)
+        permission = Permission.objects.get(codename='manage_conversion_pixels')
+        user.user_permissions.add(permission)
+        permission = Permission.objects.get(codename='archive_restore_entity')
         user.user_permissions.add(permission)
 
         self.client.login(username=user.email, password='secret')
