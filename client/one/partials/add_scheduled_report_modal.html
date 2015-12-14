@@ -1,50 +1,10 @@
 <div class="modal-body">
     <form id="add-scheduled-report-form" ng-submit="addScheduledReport()" class="modal-form add-scheduled-report-form form-horizontal">
-        <div class="title">Export Report</div>
-
-        <div class="form-group" ng-class="{'has-error': !!validationErrors.granularity}">
-            <label for="granularity-select" class="col-xs-4 control-label">
-                Report Granularity
-                <zem-help-popover content="Granularity of the report." placement="top"></zem-help-popover>
-            </label>
-
-            <ui-select config
-                id="granularity-select"
-                theme="select2"
-                search-enabled="false"
-                ng-model="export.type"
-                class="col-xs-5"
-                ng-change="checkDownloadAllowed()">
-                <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
-                    {{option.name}}
-                </ui-select-choices>
-            </ui-select>
-
-            <div class="col-xs-3">
-                <label ng-repeat="error in validationErrors.granularity" class="control-label small error" for="granularity-select">{{ error }}</label>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="by-day-checkbox" class="col-xs-4 control-label">Breakdown by day:</label>
-            <input id="by-day-checkbox" type="checkbox" ng-model="export.byDay" class="checkbox" ng-change="checkDownloadAllowed()">
-        </div>
-
-        <div class="form-group">
-            <div class="col-xs-4">
-                <button type="button" class="btn btn-default" ng-click="downloadReport()" ng-disabled="!downloadAllowed">Download Now</button>
-            </div>
-            <div class="col-xs-8" ng-if="!downloadAllowed">
-                  <span>{{downloadNotAllowedMessage}}</span>
-            </div>
-        </div>
-
-        <div class="title">Schedule report?</div>
+        <div class="title">Schedule Report</div>
 
         <div class="form-group" ng-class="{'has-error': !!validationErrors.report_name}">
             <label for="report-name-input" class="col-xs-4 control-label">
-                Report name:
+                Report name
             </label>
             <div class="col-xs-5">
                 <input type="text"
@@ -59,15 +19,42 @@
             </div>
         </div>
 
+        <div class="form-group" ng-class="{'has-error': !!validationErrors.granularity}">
+            <label for="granularity-select" class="col-xs-4 control-label">
+                Report Granularity
+                <zem-help-popover content="Granularity of the report." placement="top"></zem-help-popover>
+            </label>
+
+            <ui-select config
+                id="granularity-select"
+                theme="select2"
+                search-enabled="false"
+                ng-model="export.type"
+                class="col-xs-5">
+                <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
+                    {{option.name}}
+                </ui-select-choices>
+            </ui-select>
+
+            <div class="col-xs-3">
+                <label ng-repeat="error in validationErrors.granularity" class="control-label small error" for="granularity-select">{{ error }}</label>
+            </div>
+        </div>
+
         <div class="form-group" ng-class="{'has-error': !!validationErrors.frequency}">
-            <label for="frequency-select" class="col-xs-4 control-label">Scheduling frequency:</label>
+            <label for="frequency-select" class="col-xs-4 control-label">
+                Frequency
+                <zem-help-popover content="Report will be delivered to your inbox every day, week or month at 2AM EST." placement="top"></zem-help-popover>
+            </label>
 
             <ui-select
                     theme="select2"
                     search-enabled="false"
                     id="frequency-select"
                     class="col-xs-5"
-                    ng-model="export.frequency">
+                    ng-model="export.frequency"
+                    ng-change="checkBreakdownAvailable()">
                 <ui-select-match placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
                 <ui-select-choices repeat="freq in exportSchedulingFrequencies">
                     <div>{{freq.name}}</div>
@@ -79,9 +66,22 @@
             </div>
         </div>
 
+        <div class="form-group">
+          <div class="col-xs-4">
+            <label for="by-day-checkbox" class="control-label">Breakdown by day</label>
+          </div>
+          <div class="col-xs-4">
+            <input id="by-day-checkbox"
+                type="checkbox"
+                ng-model="export.byDay"
+                class="checkbox"
+                ng-disabled="breakdownByDayDisabled">
+          </div>
+        </div>
+
         <div class="form-group" ng-class="{'has-error': !!validationErrors.recipient_emails}">
             <label for="recipient-emails-textarea" class="col-xs-4 control-label" id="recipient-emails-label">
-                Recipient emails:
+                Recipient emails
                 <zem-help-popover content="Comma-separated list of recipient email addresses." placement="top"></zem-help-popover>
             </label>
 
@@ -105,10 +105,12 @@
             <div class="col-xs-3">
                 <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
             </div>
-            <div class="loader" ng-show="addScheduledReportInProgress"></div>
-            <span class="col-xs-5 small error" ng-if="hasError">
+            <div class="loader" ng-show="showInProgress"></div>
+            <div class="col-xs-5 small error">
+              <span ng-if="hasError">
                 An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
-            </span>
+              </span>
+            </div>
         </div>
     </form>
 </div>
