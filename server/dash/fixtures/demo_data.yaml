@@ -378,6 +378,7 @@
     modified_dt: 2015-05-24 08:29:37.052548
     name: Top 4 Mobile Carrier
     outbrain_marketer_id: 00ded94bde02b680a7a362ee1c6f02f8ef
+    allowed_sources: [25,20,3,4,5,34,35,36,26,37,21,32,22,39,2]
     users:
     - [protractor@zemanta.com]
     - [test.account@zemanta.si]
