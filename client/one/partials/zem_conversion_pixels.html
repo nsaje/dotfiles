@@ -1,0 +1,65 @@
+<div class="section-conversion-pixels" ng-if="hasPermission('zemauth.manage_conversion_pixels')">
+    <div class="title">
+        Set Up Conversion Pixels
+        <zem-help-popover content="A conversion is an action that a person makes while consuming your content such as downloading an eBook, subscribing to a newsletter, adding an item to the shopping, or viewing a particular page." placement="right"></zem-help-popover>
+        <div class="loader" ng-show="listInProgress"></div>
+    </div>
+    <div class="loader-container" ng-if="conversionPixels.length">
+        <div class="loader" ng-show="conversionPixels.length && listInProgress"></div>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th class="arrow" ng-class="{ordered: orderField === 'slug' && !orderReverse, 'ordered-reverse': orderField === 'slug' && orderReverse}">
+                        <a href class="order" ng-click="orderField = 'slug'; orderReverse = !orderReverse">Slug</a>
+                        <zem-help-popover content="Conversion pixel's unique identifier" placement="top"></zem-help-popover>
+                    </th>
+                    <th class="arrow" ng-class="{ordered: orderField === 'status' && !orderReverse, 'ordered-reverse': orderField === 'status' && orderReverse}">
+                        <a href class="order" ng-click="orderField = 'status'; orderReverse = !orderReverse">Status</a>
+                        <zem-help-popover content="<em>Active</em> if conversion has been recorded in the past 7 days, <em>Inactive</em> otherwise, and <em>No activity yet</em> if the conversion pixel has not been triggered yet." placement="top"></zem-help-popover>
+                    </th>
+                    <th class="arrow" ng-class="{ordered: orderField === 'lastVerifiedDt' && !orderReverse, 'ordered-reverse': orderField === 'lastVerifiedDt' && orderReverse}">
+                        <a href class="order" ng-click="orderField = 'lastVerifiedDt'; orderReverse = !orderReverse">Last verified</a>
+                        <zem-help-popover content="The last time when the conversion pixel was triggered." placement="top"></zem-help-popover>
+                    </th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-class="{'archived': item.archived}" ng-repeat="item in conversionPixels | orderBy:orderField:orderReverse | filter: filterConversionPixels">
+                    <td class="pixel-slug">
+                        {{ item.slug }}
+                        <span class="loader" ng-if="item.requestInProgress"></span>
+                    </td>
+                    <td class="pixel-status">{{ item.status }}</td>
+                    <td class="no-wrap pixel-last-verified">{{ (item.lastVerifiedDt | date:'M/d/yyyy h:mm a') || 'N/A' }}</td>
+                    <td>
+                        <div class="dropdown" dropdown aria-haspopup="true">
+                            <a href class="btn btn-default btn-big dropdown-toggle" ng-class="{'disabled': item.requestInProgress}" dropdown-toggle>Actions&nbsp;<span class="caret" /></a>
+                            <ul class="dropdown-menu dropdown-menu-activation" role="menu">
+                                <li ng-if="hasPermission('zemauth.archive_restore_entity') && !item.archived">
+                                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="left"></zem-internal-feature>
+                                    <a tabindex="-1" ng-click="archiveConversionPixel(item)" href="#">Archive</a>
+                                </li>
+                                <li ng-if="hasPermission('zemauth.archive_restore_entity') && !!item.archived">
+                                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="left"></zem-internal-feature>
+                                    <a tabindex="-1" ng-click="restoreConversionPixel(item)" href="#">Restore</a>
+                                </li>
+                                <li ng-if="!item.archived"><a tabindex="-1" ng-click="copyConversionPixelTag(item)" href="#">Copy tag</a></li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <span ng-if="!!item.error" class="error">
+                            An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <button type="button" class="btn btn-default" ng-class="{'disabled': !!listInProgress || !!listError}" ng-click="addConversionPixel()">Add Pixel</button>
+    <span ng-if="!!listError" class="error">
+        An error has occured while loading conversion pixels. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
+    </span>
+</div>
