@@ -21,13 +21,13 @@ describe('zemConversionGoals', function () {
         }
     };
 
-    angular.module('apiMock', []);
-    angular.module('apiMock').service('api', function () {
+    angular.module('conversionGoalsApiMock', []);
+    angular.module('conversionGoalsApiMock').service('api', function () {
         return api;
     });
 
     beforeEach(module('one'));
-    beforeEach(module('apiMock'));
+    beforeEach(module('conversionGoalsApiMock'));
 
     beforeEach(inject(function ($compile, $rootScope, _$q_) {
         $q =  _$q_;

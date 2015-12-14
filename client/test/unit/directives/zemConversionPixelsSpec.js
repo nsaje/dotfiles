@@ -22,13 +22,13 @@ describe('zemConversionPixels', function () {
         }
     };
 
-    angular.module('apiMock', []);
-    angular.module('apiMock').service('api', function () {
+    angular.module('conversionPixelsApiMock', []);
+    angular.module('conversionPixelsApiMock').service('api', function () {
         return api;
     });
 
     beforeEach(module('one'));
-    beforeEach(module('apiMock'));
+    beforeEach(module('conversionPixelsApiMock'));
 
     beforeEach(inject(function ($compile, $rootScope, _$q_) {
         $q =  _$q_;
