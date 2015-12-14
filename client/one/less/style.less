@@ -2005,65 +2005,71 @@ div[datepicker] {
     form#form-account-agency {
         margin-bottom: 45px;
     }
+}
 
-    .section.table-conversion-pixels {
-        margin-bottom: 20px;
+.section-conversion-pixels {
+    margin-bottom: 20px;
 
-        table {
-            border-bottom: 1px solid #e3e3e3;
-            margin-bottom: 10px;
+    .title {
+        padding: 3px 0;
+        font-weight: 600;
+        font-size: 15px;
+    }
 
-            &> tbody > tr {
-                &.archived {
-                    .error {
-                        a,
-                        a:hover,
-                        a:active,
-                        a:visited {
-                            color: @default-color;
-                        }
-                    }
+    table {
+        border-bottom: 1px solid #e3e3e3;
+        margin-bottom: 10px;
 
-                    .dropdown {
-                        & a.dropdown-toggle:not(.disabled),
-                        & a.dropdown-toggle:not(.disabled):hover,
-                        & a.dropdown-toggle:not(.disabled):active,
-                        & a.dropdown-toggle:not(.disabled):visited {
-                            color: @default-color;
-                        }
-
-                        .dropdown-menu li {
-                            a {
-                                color: @default-color;
-                            }
-
-                            a:hover {
-                                color: white;
-                            }
-                        }
+        &> tbody > tr {
+            &.archived {
+                .error {
+                    a,
+                    a:hover,
+                    a:active,
+                    a:visited {
+                        color: @default-color;
                     }
                 }
 
-                &> td {
-                    vertical-align: middle;
-                    padding-top: 4px;
-                    padding-bottom: 4px;
-
-                    &.pixel-slug {
-                        width: 200px;
+                .dropdown {
+                    & a.dropdown-toggle:not(.disabled),
+                    & a.dropdown-toggle:not(.disabled):hover,
+                    & a.dropdown-toggle:not(.disabled):active,
+                    & a.dropdown-toggle:not(.disabled):visited {
+                        color: @default-color;
                     }
 
-                    &.pixel-status {
-                        width: 90px;
-                    }
+                    .dropdown-menu li {
+                        a {
+                            color: @default-color;
+                        }
 
-                    &.pixel-last-verified {
-                        width: 240px;
+                        a:hover {
+                            color: white;
+                        }
                     }
+                }
+            }
 
-                    .loader {
-                        margin-left: 5px;
-                    }
+            &> td {
+                vertical-align: middle;
+                padding-top: 4px;
+                padding-bottom: 4px;
+
+                &.pixel-slug {
+                    width: 200px;
+                }
+
+                &.pixel-status {
+                    width: 90px;
+                }
+
+                &.pixel-last-verified {
+                    width: 240px;
+                }
+
+                .loader {
+                    margin-left: 5px;
                 }
             }
         }
@@ -2078,7 +2084,6 @@ div[datepicker] {
     .section.table-campaign-agency,
     .section.table-campaign-budget,
     .section.table-account-agency,
-    .section.table-conversion-pixels,
     .table-access-permissions {
         margin-top: 30px;
 
