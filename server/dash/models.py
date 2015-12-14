@@ -30,6 +30,9 @@ from utils import dates_helper
 
 
 SHORT_NAME_MAX_LENGTH = 22
+CC_TO_DEC_MULTIPLIER = Decimal('0.0001')
+TO_CC_MULTIPLIER = 10**4
+TO_NANO_MULTIPLIER = 10**9
 
 def nano_to_cc(num):
     return int(round(num * 0.00001))
@@ -2093,10 +2096,10 @@ class BudgetLineItem(FootprintModel):
         return constants.BudgetLineItemState.get_text(self.state(date=date))
 
     def allocated_amount_cc(self):
-        return self.amount * 10000 - self.freed_cc
+        return self.amount * TO_CC_MULTIPLIER - self.freed_cc
 
     def allocated_amount(self):
-        return Decimal(self.allocated_amount_cc()) * Decimal('0.0001')
+        return Decimal(self.allocated_amount_cc()) * CC_TO_DEC_MULTIPLIER
 
     def is_editable(self):
         return self.state() == constants.BudgetLineItemState.PENDING
@@ -2107,7 +2110,7 @@ class BudgetLineItem(FootprintModel):
     def free_inactive_allocated_assets(self):
         if self.state() != constants.BudgetLineItemState.INACTIVE:
             raise AssertionError('Budget has to be inactive to be freed.')
-        amount_cc = self.amount * 10000
+        amount_cc = self.amount * TO_CC_MULTIPLIER
         spend_data = self.get_spend_data()
         
         reserve = self.get_reserve_amount_cc()
@@ -2138,7 +2141,6 @@ class BudgetLineItem(FootprintModel):
     def get_latest_statement(self):
         return self.statements.all().order_by('-date').first()
 
-
     def get_spend_data(self, date=None, decimal=False):
         spend_data = {
             'media_cc': 0,
@@ -2159,25 +2161,21 @@ class BudgetLineItem(FootprintModel):
         if not decimal:
             return spend_data
         return {
-            key[:-3]: Decimal(spend_data[key]) * Decimal('0.0001')
+            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
             for key in spend_data.keys()
         }
-            
     
     def get_daily_spend(self, date, decimal=False):
-        statement = None
         spend_data = {
-            'media_cc': 0,
-            'data_cc': 0,
-            'license_fee_cc': 0,
-            'total_cc': 0,
+            'media_cc': 0, 'data_cc': 0,
+            'license_fee_cc': 0, 'total_cc': 0,
         }
         try:
             statement = date and self.statements.get(date=date)\
                         or self.get_latest_statement()
         except ObjectDoesNotExist:
             pass
-        if statement:
+        else:
             spend_data['media_cc'] = nano_to_cc(statement.media_spend_nano)
             spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano )
             spend_data['license_fee_cc'] = nano_to_cc(statement.license_fee_nano)
@@ -2187,7 +2185,7 @@ class BudgetLineItem(FootprintModel):
         if not decimal:
             return spend_data
         return {
-            key[:-3]: Decimal(spend_data[key]) * Decimal('0.0001')
+            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
             for key in spend_data.keys()
         }
 
@@ -2207,7 +2205,7 @@ class BudgetLineItem(FootprintModel):
                 not self.has_changed('campaign'),
             ])
             if not is_reserve_update and db_state not in (constants.BudgetLineItemState.PENDING,
-                                                          constants.BudgetLineItemState.ACTIVE, ):
+                                                          constants.BudgetLineItemState.ACTIVE,):
                 raise ValidationError('Only pending and active budgets can change.')
 
         validate(
@@ -2247,10 +2245,12 @@ class BudgetLineItem(FootprintModel):
             raise ValidationError('Amount cannot be negative.')
 
         budgets = self.credit.budgets.exclude(pk=self.pk)
-        delta = self.credit.amount - sum(b.amount for b in budgets) - self.amount
+        delta = Decimal(self.credit.amount - sum(b.allocated_amount() for b in budgets) - self.amount)
         if delta < 0:
             raise ValidationError(
-                'Budget exceeds the total credit amount by ${}.00.'.format(-delta)
+                'Budget exceeds the total credit amount by ${}.'.format(
+                    -delta.quantize(Decimal('1.00'))
+                )
             )
 
     class QuerySet(models.QuerySet):

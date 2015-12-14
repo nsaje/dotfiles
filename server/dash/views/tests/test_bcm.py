@@ -533,7 +533,6 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
 
 class BudgetSpendInViewsTestCase(BCMViewTestCase):
     def test_active_budget(self):
-        nano = 10**9
         today = datetime.date(2015, 11, 11)
         
         budget = models.BudgetLineItem.objects.get(pk=1)
@@ -543,9 +542,9 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         BudgetDailyStatement.objects.create(
             budget=budget,
             date=today,
-            media_spend_nano=300*nano,
-            data_spend_nano=200*nano,
-            license_fee_nano=50*nano,
+            media_spend_nano=300*models.TO_NANO_MULTIPLIER,
+            data_spend_nano=200*models.TO_NANO_MULTIPLIER,
+            license_fee_nano=50*models.TO_NANO_MULTIPLIER,
         )
         
         # Another budget with daily statement
@@ -555,8 +554,8 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         BudgetDailyStatement.objects.create(
             budget=budget,
             date=today,
-            media_spend_nano=100*nano,
-            data_spend_nano=100*nano,
+            media_spend_nano=100*models.TO_NANO_MULTIPLIER,
+            data_spend_nano=100*models.TO_NANO_MULTIPLIER,
             license_fee_nano=105*(10**8),
         )
         
@@ -628,7 +627,6 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
 class BudgetReserveInViewsTestCase(BCMViewTestCase):
     def test_credit_view(self):
         url = reverse('accounts_credit', kwargs={'account_id': 1})
-        nano = 10**9
         today = datetime.date(2015, 11, 11)
         
         self.add_permission('account_credit_view')
@@ -653,18 +651,18 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
         BudgetDailyStatement.objects.create(
             budget=budget,
             date=today - datetime.timedelta(1),
-            media_spend_nano=500*nano,
+            media_spend_nano=500*models.TO_NANO_MULTIPLIER,
             data_spend_nano=0,
-            license_fee_nano=50*nano,
+            license_fee_nano=50*models.TO_NANO_MULTIPLIER,
         )
         self.maxDiff = None
         for num in range(0, 5):
             BudgetDailyStatement.objects.create(
                 budget=budget,
                 date=today + datetime.timedelta(num),
-                media_spend_nano=800*nano,
+                media_spend_nano=800*models.TO_NANO_MULTIPLIER,
                 data_spend_nano=0,
-                license_fee_nano=80*nano,
+                license_fee_nano=80*models.TO_NANO_MULTIPLIER,
             )
         
         with patch('utils.dates_helper.local_today') as mock_now:
