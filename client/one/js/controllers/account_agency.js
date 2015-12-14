@@ -1,5 +1,5 @@
 /*globals oneApp*/
-oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'zemFilterService', function ($scope, $state, $modal, api, zemFilterService) {
+oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.settings = {};
     $scope.settings.allowedSources = {};
     $scope.history = [];
