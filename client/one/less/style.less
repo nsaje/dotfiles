@@ -2084,7 +2084,6 @@ div[datepicker] {
     .section.table-campaign-agency,
     .section.table-campaign-budget,
     .section.table-account-agency,
-    .section.conversion-goals,
     .table-access-permissions {
         margin-top: 30px;
 
@@ -2702,52 +2701,57 @@ div[datepicker] {
     }
 }
 
-.page-campaign-agency {
-    .section.conversion-goals {
-        margin-left: -15px;
-        margin-bottom: 30px;
-        padding-right: 0px;
+.zem-conversion-goals {
+    margin-left: -15px;
+    margin-bottom: 30px;
+    padding-right: 0px;
+    float: none;
 
-        .conversion-goal-entry {
-            background-color: #F7F7F7;
-            border: 1px solid @default-color;
-            .border-radius(2px);
-            margin-bottom: 15px;
+    .title {
+        padding: 3px 0;
+        font-weight: 600;
+        font-size: 15px;
+    }
 
-            padding-top: 10px;
-            padding-right: 15px;
-            padding-left: 15px;
-            padding-bottom: 12px;
+    .conversion-goal-entry {
+        background-color: #F7F7F7;
+        border: 1px solid @default-color;
+        .border-radius(2px);
+        margin-bottom: 15px;
 
-            .row {
-                .row-link {
-                    margin-left: 15px;
-                }
+        padding-top: 10px;
+        padding-right: 15px;
+        padding-left: 15px;
+        padding-bottom: 12px;
+
+        .row {
+            .row-link {
+                margin-left: 15px;
             }
+        }
 
-            .small {
-                font-size: 12px;
-                font-weight: 400;
-            }
+        .small {
+            font-size: 12px;
+            font-weight: 400;
+        }
 
-            .instructions-label {
-                display: inline-block;
-                margin-top: 15px;
-            }
+        .instructions-label {
+            display: inline-block;
+            margin-top: 15px;
+        }
 
-            .remove-btn {
-                position: absolute;
-                top: 20px;
-                right: 15px;
-            }
+        .remove-btn {
+            position: absolute;
+            top: 20px;
+            right: 15px;
+        }
 
-            &:first-child {
-                margin-top: 10px;
-            }
+        &:first-child {
+            margin-top: 10px;
+        }
 
-            .row:not(:last-child) {
-                margin-bottom: 5px;
-            }
+        .row:not(:last-child) {
+            margin-bottom: 5px;
         }
     }
 }
@@ -3282,13 +3286,21 @@ select.media-source-select {
     width: 100%;
 }
 
-.page-campaign-agency .default-settings {
-    h3 {
-        margin-top: 0;
+.page-campaign-agency {
+
+    form {
+        margin-bottom: 30px;
     }
-    padding: 0 15px 1px 15px;
-    background-color: #f7f7f7;
-    margin-bottom: 20px;
+
+    .default-settings {
+        h3 {
+            margin-top: 0;
+        }
+
+        padding: 0 15px 1px 15px;
+        background-color: #f7f7f7;
+        margin-bottom: 20px;
+    }
 }
 
 .selected-locations {
