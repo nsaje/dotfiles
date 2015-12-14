@@ -347,10 +347,6 @@ oneApp.controller('MainCtrl',
         return zemFilterService.getShowArchived();
     };
 
-    $scope.getConversionPixelTag = function (url) {
-        return '<img src="' + url + '" height="1" width="1" border="0" alt="" />';
-    };
-
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         if (angular.equals(newValue, oldValue)) {
             return;
