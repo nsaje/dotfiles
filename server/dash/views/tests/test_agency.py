@@ -715,6 +715,24 @@ class ConversionPixelTestCase(TestCase):
 
         self.assertEqual(404, response.status_code)
 
+    def test_put_archive_no_permissions(self):
+        user = User.objects.get(pk=2)
+
+        permission = Permission.objects.get(codename='manage_conversion_pixels')
+        user.user_permissions.add(permission)
+        permission = Permission.objects.get(codename='archive_restore_entity')
+        user.user_permissions.remove(permission)
+
+        self.client.login(username=user.email, password='secret')
+        response = self.client.put(
+            reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
+            json.dumps({'archived': True}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(404, response.status_code)
+
     def test_put_with_permissions(self):
         permission = Permission.objects.get(codename='manage_conversion_pixels')
         user = User.objects.get(pk=2)
