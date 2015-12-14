@@ -756,24 +756,6 @@ class ScheduleReportForm(forms.Form):
 
 class PublisherBlacklistForm(forms.ModelForm):
 
-    """
-
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=127, blank=False, null=False)
-    everywhere = models.BooleanField(default=False, verbose_name='globally blacklisted')
-    account = models.ForeignKey(Account, null=True, related_name='account', on_delete=models.PROTECT)
-    campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
-    ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
-    source = models.ForeignKey(Source, null=True, on_delete=models.PROTECT)
-
-    status = models.IntegerField(
-        default=constants.PublisherStatus.BLACKLISTED,
-        choices=constants.PublisherStatus.get_choices()
-    )
-
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    """
-
     def save(self, commit=True):
         instance = super(PublisherBlacklistForm, self).save(commit=False)
 

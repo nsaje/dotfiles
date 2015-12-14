@@ -1184,9 +1184,21 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
             everywhere=True,
             status=constants.PublisherStatus.BLACKLISTED
         )
+
+        # currently only support enabling global blacklist
+        matching_sources = models.Source.objects.filter(
+            deprecated=False
+        )
+        candidate_source = None
+        for source in matching_sources:
+            if source.can_modify_publisher_blacklist_automatically():
+                candidate_source = source
+                break
+
         for publisher_blacklist in filtered_queryset:
             global_blacklist.append({
                 'domain': publisher_blacklist.name,
+                'source': candidate_source,
             })
 
         actionlogs_to_send = []
