@@ -37,10 +37,12 @@
                         <div class="dropdown" dropdown aria-haspopup="true">
                             <a href class="btn btn-default btn-big dropdown-toggle" ng-class="{'disabled': item.requestInProgress}" dropdown-toggle>Actions&nbsp;<span class="caret" /></a>
                             <ul class="dropdown-menu dropdown-menu-activation" role="menu">
-                                <li ng-if="!item.archived">
-                                        <a tabindex="-1" ng-click="archiveConversionPixel(item)" href="#">Archive</a>
+                                <li ng-if="hasPermission('zemauth.archive_restore_entity') && !item.archived">
+                                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="left"></zem-internal-feature>
+                                    <a tabindex="-1" ng-click="archiveConversionPixel(item)" href="#">Archive</a>
                                 </li>
-                                <li ng-if="!!item.archived">
+                                <li ng-if="hasPermission('zemauth.archive_restore_entity') && !!item.archived">
+                                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="left"></zem-internal-feature>
                                     <a tabindex="-1" ng-click="restoreConversionPixel(item)" href="#">Restore</a>
                                 </li>
                                 <li ng-if="!item.archived"><a tabindex="-1" ng-click="copyConversionPixelTag(item)" href="#">Copy tag</a></li>
