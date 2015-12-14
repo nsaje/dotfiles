@@ -1912,6 +1912,23 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertEqual('zemanta.com', publisher_blacklist.name)
 
 
+        adg1 = models.AdGroup.objects.get(pk=1)
+        settings1 = adg1.get_current_settings()
+
+        self.assertEqual(
+            'Blacklisted the following publishers zemanta.com on Adiant.',
+            settings1.changes_text
+        )
+
+        adg9 = models.AdGroup.objects.get(pk=9)
+        settings9 = adg9.get_current_settings()
+
+        self.assertEqual(
+            'Blacklisted the following publishers zemanta.com on Adiant.',
+            settings9.changes_text
+        )
+
+
     @patch('reports.redshift.get_cursor')
     def test_post_campaign_all_but_blacklist_1(self, cursor):
         cursor().dictfetchall.return_value = [

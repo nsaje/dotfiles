@@ -1211,7 +1211,12 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                     )
                 )
             actionlog.zwei_actions.send(actionlogs_to_send)
-            self._add_adgroup_log_to_history(request, publisher_blacklist, ad_group, state)
+            self._add_adgroup_log_to_history(
+                request,
+                publisher_blacklist + related_publisher_blacklist,
+                ad_group,
+                state
+            )
 
     def _create_campaign_and_account_blacklist(self, ad_group, level, publishers):
         if level not in (constants.PublisherBlacklistLevel.CAMPAIGN,
@@ -1455,6 +1460,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                     for pub_bl in adg_publishers)
                 )
             )
+
             ad_group = models.AdGroup.objects.get(pk=adgid)
             settings = ad_group.get_current_settings().copy_settings()
             settings.changes_text = changes_text
