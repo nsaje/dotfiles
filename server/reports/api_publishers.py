@@ -120,7 +120,6 @@ def _map_blacklist_to_rs_queryset(blacklist):
     else:
         return redshift.RSQ(
             domain=blacklist['domain'],
-            exchange=blacklist['exchange'],
         )
 
 
