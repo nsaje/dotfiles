@@ -1097,6 +1097,10 @@ class ExportReportAdmin(admin.ModelAdmin):
         return ', '.join(source.name for source in obj.get_filtered_sources())
     get_sources.short_description = 'Filtered Sources'
 
+
+class GAAnalyticsAccount(admin.ModelAdmin):
+    pass
+
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)
@@ -1118,3 +1122,4 @@ admin.site.register(models.BudgetLineItem, BudgetLineItemAdmin)
 admin.site.register(models.ScheduledExportReportLog, ScheduledExportReportLogAdmin)
 admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
 admin.site.register(models.ExportReport, ExportReportAdmin)
+admin.site.register(models.GAAnalyticsAccount, GAAnalyticsAccount)
