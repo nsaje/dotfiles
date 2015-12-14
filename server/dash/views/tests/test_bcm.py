@@ -637,14 +637,14 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             account_id=1,
             start_date=datetime.date(2015, 11, 1),
             end_date=datetime.date(2015, 11, 30),
-            amount=1000,
+            amount=10000,
             license_fee=Decimal('0.2'),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
         )
         budget = models.BudgetLineItem.objects.create(
             credit=credit,
-            amount=1000,
+            amount=10000,
             start_date=datetime.date(2015, 11, 1),
             end_date=datetime.date(2015, 11, 10),
             campaign_id=1,
@@ -657,6 +657,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             data_spend_nano=0,
             license_fee_nano=50*nano,
         )
+        self.maxDiff = None
         for num in range(0, 5):
             BudgetDailyStatement.objects.create(
                 budget=budget,
@@ -681,12 +682,12 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": str(budget.created_dt.date()),
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
-                    "allocated": "1000.0000",
-                    "total": 1000,
+                    "allocated": "10000.0000",
+                    "total": 10000,
                     "id": 3,
                     "is_signed": True,
                     "budgets": [
-                        {"amount": 1000, "id": 2}
+                        {"amount": 10000, "id": 2}
                     ],
                     "start_date": "2015-11-01"
                 },
@@ -710,8 +711,8 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             "past": [],
             "totals": {
                 "available": "0.0000",
-                "allocated": "101000.0000",
-                "total": "101000",
+                "allocated": "110000.0000",
+                "total": "110000",
                 "past": "0",
             }
         })
@@ -719,17 +720,17 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
         on_reserve_data = {
             "active": [
                 {
-                    "available": "76.0000",
+                    "available": "5006.0000",
                     "end_date": "2015-11-30",
                     "created_on": str(budget.created_dt.date()),
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
-                    "allocated": "924.0000",
-                    "total": 1000,
+                    "allocated": "4994.0000",
+                    "total": 10000,
                     "id": 3,
                     "is_signed": True,
                     "budgets": [
-                        {"amount": 1000, "id": 2}
+                        {"amount": 10000, "id": 2}
                     ],
                     "start_date": "2015-11-01"
                 },
@@ -752,26 +753,26 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             ],
             "past": [],
             "totals": {
-                "available": "76.0000",
-                "allocated": "100924.0000",
-                "total": "101000",
+                "available": "5006.0000",
+                "allocated": "104994.0000",
+                "total": "110000",
                 "past": "0",
             }
         }
         on_freed_data = {
             "active": [
                 {
-                    "available": "120.0000",
+                    "available": "5050.0000",
                     "end_date": "2015-11-30",
                     "created_on": str(budget.created_dt.date()),
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
-                    "allocated": "880.0000",
-                    "total": 1000,
+                    "allocated": "4950.0000",
+                    "total": 10000,
                     "id": 3,
                     "is_signed": True,
                     "budgets": [
-                        {"amount": 1000, "id": 2}
+                        {"amount": 10000, "id": 2}
                     ],
                     "start_date": "2015-11-01"
                 },
@@ -794,13 +795,12 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             ],
             "past": [],
             "totals": {
-                "available": "120.0000",
-                "allocated": "100880.0000",
-                "total": "101000",
+                "available": "5050.0000",
+                "allocated": "104950.0000",
+                "total": "110000",
                 "past": "0",
             }
         }
-        self.maxDiff = None
 
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 11)

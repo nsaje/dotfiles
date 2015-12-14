@@ -797,7 +797,12 @@ class BudgetSpendTestCase(TestCase):
             'license_fee_cc': 0,
             'total_cc': 0,
         })
-        self.assertEqual(self.b.get_spend_data(date=self.end_date), None)
+        self.assertEqual(self.b.get_spend_data(date=self.end_date), {
+            'media_cc': 0,
+            'data_cc': 0,
+            'license_fee_cc': 0,
+            'total_cc': 0,
+        })
 
     def test_depleted(self):
         self.assertNotEqual(self.b.state(), constants.BudgetLineItemState.DEPLETED)
@@ -819,7 +824,9 @@ class BudgetSpendTestCase(TestCase):
                 constants.BudgetLineItemState.DEPLETED)
 
     def test_fixed_date(self):
-        self.assertEqual(self.b.get_spend_data(date=self.end_date), None)
+        self.assertEqual(self.b.get_spend_data(date=self.end_date), {
+            (key + '_cc'): 0 for key in ('media', 'data', 'license_fee', 'total')
+        })
 
         create_statement(
             budget=self.b,
@@ -854,21 +861,64 @@ class BudgetSpendTestCase(TestCase):
             budget=self.b,
             date=self.end_date,
             media_spend_nano=100*NANO,
-            data_spend_nano=101000000000,
+            data_spend_nano=101*NANO,
             license_fee_nano=20100000000,
         )
         self.assertEqual(self.b.get_spend_data(), {
-            'media_cc': 100*CC,
-            'data_cc': 1010000,
-            'license_fee_cc': 201000,
-            'total_cc': 2211000,
+            'media_cc': 190*CC,
+            'data_cc': 191*CC,
+            'license_fee_cc': 291000,
+            'total_cc': 4101000,
         })
         self.assertEqual(self.b.get_spend_data(decimal=True), {
-            'media': Decimal('100.0000'),
-            'data': Decimal('101.0000'),
-            'license_fee': Decimal('20.1000'),
-            'total': Decimal('221.1000'),
+            'media': Decimal('190.0000'),
+            'data': Decimal('191.0000'),
+            'license_fee': Decimal('29.1000'),
+            'total': Decimal('410.1000'),
         })
+
+    def test_get_daily_spend(self):
+        create_statement(
+            budget=self.b,
+            date=self.end_date - datetime.timedelta(1),
+            media_spend_nano=90*NANO,
+            data_spend_nano=90*NANO,
+            license_fee_nano=9*NANO,
+        )
+        create_statement(
+            budget=self.b,
+            date=self.end_date,
+            media_spend_nano=100*NANO,
+            data_spend_nano=101*NANO,
+            license_fee_nano=20100000000,
+        )
+        self.assertEqual(
+            self.b.get_daily_spend(self.end_date - datetime.timedelta(2)),
+            {
+                'media_cc': 0,
+                'data_cc': 0,
+                'license_fee_cc': 0,
+                'total_cc': 0,
+            }
+        )
+        self.assertEqual(
+            self.b.get_daily_spend(self.end_date - datetime.timedelta(1)),
+            {
+                'media_cc': 90*CC,
+                'data_cc': 90*CC,
+                'license_fee_cc': 9*CC,
+                'total_cc': 189*CC,
+            }
+        )
+        self.assertEqual(
+            self.b.get_daily_spend(self.end_date),
+            {
+                'media_cc': 100*CC,
+                'data_cc': 101*CC,
+                'license_fee_cc': 201000,
+                'total_cc': 2211000,
+            }
+        )
 
 @patch('dash.forms.dates_helper.local_today', lambda: TODAY)
 class BudgetReserveTestCase(TestCase):
@@ -896,46 +946,51 @@ class BudgetReserveTestCase(TestCase):
         )
 
     def test_reserve_calculation(self):
-        growth = 1.25
-        prev = create_statement(
-            budget=self.b, date=self.start_date,
-            media_spend_nano=90*NANO,
-            data_spend_nano=110*NANO,
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=self.b,
+            date=self.start_date + datetime.timedelta(0),
+            media_spend_nano=100*NANO,
+            data_spend_nano=0,
             license_fee_nano=20*NANO,
         )
-        def next_statement(g=growth):
-            return create_statement(
-                budget=self.b, date=prev.date + datetime.timedelta(1),
-                media_spend_nano=int(prev.media_spend_nano * g),
-                data_spend_nano=int(prev.data_spend_nano * g),
-                license_fee_nano=int(prev.license_fee_nano * g),
-            )
 
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = self.start_date
             self.assertEqual(self.b.get_spend_data(),
-                             { 'license_fee_cc': 200000, 'media_cc': 900000,
-                               'data_cc': 1100000, 'total_cc': 2200000 })
-            self.assertEqual(self.b.get_reserve_amount_cc(self.b), 11 * CC)
-
-        prev = next_statement()
+                             { 'license_fee_cc': 20*CC, 'media_cc': 100*CC,
+                               'data_cc': 0*CC, 'total_cc': 120*CC })
+            self.assertEqual(self.b.get_reserve_amount_cc(), 6 * CC)
+            
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=self.b,
+            date=self.start_date + datetime.timedelta(1),
+            media_spend_nano=80*NANO,
+            data_spend_nano=10*NANO,
+            license_fee_nano=20*NANO,
+        )
 
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = self.start_date + datetime.timedelta(1)
             self.assertEqual(self.b.get_spend_data(),
-                            { 'license_fee_cc': 250000, 'media_cc': 1125000,
-                              'data_cc': 1375000, 'total_cc': 2750000 })
+                            { 'license_fee_cc': 40*CC, 'media_cc': 180*CC,
+                              'data_cc': 10*CC, 'total_cc': 230*CC })
             # Same reserve because we didn't have yesterday's values for the previous statement
-            self.assertEqual(self.b.get_reserve_amount_cc(self.b), 11 * CC)
+            self.assertEqual(self.b.get_reserve_amount_cc(), 6 * CC)
         
-        prev = next_statement()
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=self.b,
+            date=self.start_date + datetime.timedelta(2),
+            media_spend_nano=100*NANO,
+            data_spend_nano=0,
+            license_fee_nano=20*NANO,
+        )
 
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = self.start_date + datetime.timedelta(2)
             self.assertEqual(self.b.get_spend_data(),
-                             { 'license_fee_cc': 312500, 'media_cc': 1406250,
-                               'data_cc': 1718750, 'total_cc': 3437500} )
-            self.assertEqual(self.b.get_reserve_amount_cc(), 13.75 * CC)
+                             { 'license_fee_cc': 60*CC, 'media_cc': 280*CC,
+                               'data_cc': 10*CC, 'total_cc': 350*CC} )
+            self.assertEqual(self.b.get_reserve_amount_cc(), 55000)
         
     def test_asset_return(self):
         today = datetime.date(2015, 11, 11)
@@ -959,17 +1014,17 @@ class BudgetReserveTestCase(TestCase):
         reports.models.BudgetDailyStatement.objects.create(
             budget=budget,
             date=today - datetime.timedelta(1),
-            media_spend_nano=500*NANO,
+            media_spend_nano=100*NANO,
             data_spend_nano=0,
-            license_fee_nano=50*NANO,
+            license_fee_nano=20*NANO,
         )
         for num in range(0, 5):
             reports.models.BudgetDailyStatement.objects.create(
                 budget=budget,
                 date=today + datetime.timedelta(num),
-                media_spend_nano=800*NANO,
+                media_spend_nano=100*NANO,
                 data_spend_nano=0,
-                license_fee_nano=80*NANO,
+                license_fee_nano=20*NANO,
             )
 
         self.assertEqual(budget.freed_cc, 0)
@@ -978,25 +1033,25 @@ class BudgetReserveTestCase(TestCase):
             mock_now.return_value = datetime.date(2015, 11, 11)
             budget.free_inactive_allocated_assets()
 
-        self.assertEqual(budget.freed_cc, 760000)
+        self.assertEqual(budget.freed_cc, 274*CC)
             
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 12)
             budget.free_inactive_allocated_assets()
 
-        self.assertEqual(budget.freed_cc, 760000)
+        self.assertEqual(budget.freed_cc, 274*CC)
 
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 13)
             budget.free_inactive_allocated_assets()
 
-        self.assertEqual(budget.freed_cc, 760000)
+        self.assertEqual(budget.freed_cc, 274*CC)
 
         with patch('utils.dates_helper.local_today') as mock_now:
             mock_now.return_value = datetime.date(2015, 11, 14)
             budget.free_inactive_allocated_assets()
 
-        self.assertEqual(budget.freed_cc, 1200000)
+        self.assertEqual(budget.freed_cc, 280*CC)
     
     def test_mayfly_budget(self):
         c = create_credit(

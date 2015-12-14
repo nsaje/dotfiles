@@ -2080,7 +2080,7 @@ class BudgetLineItem(FootprintModel):
     def state(self, date=None):
         if date is None:
             date = dates_helper.local_today()
-        total_spend = self.get_spend_data(date=date, always_return_values=True)['total_cc'] * 0.0001
+        total_spend = self.get_spend_data(date=date)['total_cc'] * 0.0001
         if self.amount <= total_spend:
             return constants.BudgetLineItemState.DEPLETED
         if self.end_date and self.end_date < date:
@@ -2124,13 +2124,13 @@ class BudgetLineItem(FootprintModel):
 
         self.save()
 
-    def get_reserve_amount_cc(self, date=None):
+    def get_reserve_amount_cc(self):
         try:
             # try to get previous statement that has more solid data
             statement = list(self.statements.all().order_by('-date')[:2])[-1]
         except IndexError:
             return None
-        total_cc = nano_to_cc( # TODO: should we go with average here?
+        total_cc = nano_to_cc(
             statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
         )
         return total_cc * settings.BUDGET_RESERVE_FACTOR
@@ -2138,7 +2138,33 @@ class BudgetLineItem(FootprintModel):
     def get_latest_statement(self):
         return self.statements.all().order_by('-date').first()
 
-    def get_spend_data(self, date=None, decimal=False, always_return_values=False):
+
+    def get_spend_data(self, date=None, decimal=False):
+        spend_data = {
+            'media_cc': 0,
+            'data_cc': 0,
+            'license_fee_cc': 0,
+            'total_cc': 0,
+        }
+        statements = self.statements.filter(date__lte=date) if date else self.statements.all()
+        spend_data = {
+            (key + '_cc'): nano_to_cc(spend or 0)
+            for key, spend in statements.aggregate(
+                media=models.Sum('media_spend_nano'),
+                data=models.Sum('data_spend_nano'),
+                license_fee=models.Sum('license_fee_nano'),
+            ).iteritems()
+        }
+        spend_data['total_cc'] = sum(spend_data.values())
+        if not decimal:
+            return spend_data
+        return {
+            key[:-3]: Decimal(spend_data[key]) * Decimal('0.0001')
+            for key in spend_data.keys()
+        }
+            
+    
+    def get_daily_spend(self, date, decimal=False):
         statement = None
         spend_data = {
             'media_cc': 0,
@@ -2150,11 +2176,10 @@ class BudgetLineItem(FootprintModel):
             statement = date and self.statements.get(date=date)\
                         or self.get_latest_statement()
         except ObjectDoesNotExist:
-            if not always_return_values:
-                return None
+            pass
         if statement:
             spend_data['media_cc'] = nano_to_cc(statement.media_spend_nano)
-            spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano)
+            spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano )
             spend_data['license_fee_cc'] = nano_to_cc(statement.license_fee_nano)
             spend_data['total_cc'] = nano_to_cc(
                 statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
@@ -2164,7 +2189,7 @@ class BudgetLineItem(FootprintModel):
         return {
             key[:-3]: Decimal(spend_data[key]) * Decimal('0.0001')
             for key in spend_data.keys()
-        }    
+        }
 
     def clean(self):
         if self.pk:
