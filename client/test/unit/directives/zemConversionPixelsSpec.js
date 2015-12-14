@@ -108,10 +108,7 @@ describe('zemConversionPixels', function () {
             expect(isolate.listInProgress).toBe(false);
             expect(api.conversionPixel.list).toHaveBeenCalled();
 
-            var expectedRows = [{id: 1, slug: 'abc', archived: false, status: 1, lastVerifiedDt: null}];
-            for (var i = 0; i < isolate.conversionPixels.lenfth; i++) {
-                expect(isolate.conversionPixels[i]).to.contain(expectedRows[i]);
-            };
+            expect(angular.equals(isolate.conversionPixels, [{id: 1, slug: 'abc', archived: false, status: 1, lastVerifiedDt: null}])).toEqual(true);
             expect(isolate.tagPrefix).toEqual('test');
         });
     });
