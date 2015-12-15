@@ -40,6 +40,7 @@ oneApp.controller('MainCtrl',
     $scope.showSelectedPublisher = null;
 
     // TODO: move to localstorage
+    $scope.infoboxEnabled = false;
     $scope.infoboxVisible = false;
 
     $scope.remindToAddBudget = $q.defer(); 
@@ -76,6 +77,10 @@ oneApp.controller('MainCtrl',
         }
 
         return !$scope.user.permissions[permission];
+    };
+
+    $scope.setInfoboxEnabled = function (value) {
+        $scope.infoboxEnabled = value;  
     };
 
     $scope.toggleInfoboxVisibility = function () {
@@ -272,6 +277,8 @@ oneApp.controller('MainCtrl',
     $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
+        // reset infobox button visibility
+        $scope.setInfoboxEnabled(false);
 
         // Redirect from default state
         var state = null;

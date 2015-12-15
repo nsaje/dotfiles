@@ -49,7 +49,7 @@
             </div>
         </div>
         <div class="content" ng-show="accounts.length">
-            <div class="btn btn-default infobox-button pull-right" ng-show="hasPermission('zemauth.can_see_infobox')" ng-click="toggleInfoboxVisibility()">I</div>
+            <div class="btn btn-default infobox-button pull-right" ng-show="hasPermission('zemauth.can_see_infobox') && infoboxEnabled" ng-click="toggleInfoboxVisibility()">I</div>
             <form id="datepicker" class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.*.agency') || $state.includes('*.*.settings') || $state.includes('*.*.budget')">
                 <div class="input-group calendar">
                     <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/calendar.svg"></i>
