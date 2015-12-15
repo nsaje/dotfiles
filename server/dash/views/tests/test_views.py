@@ -1069,14 +1069,16 @@ class AdGroupAdsPlusUploadTest(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content),
                     {
-                        "data": {
+                        'data': {
                         "message": None,
+                        "data": None,
                         "errors": {
                             "display_url": ["This field is required."],
                             "call_to_action": ["This field is required."],
                             "brand_name": ["This field is required."],
                             "description": ["This field is required."],
                             },
+
                         "error_code": "ValidationError"
                         },
                         "success": False
