@@ -24,7 +24,7 @@ def default_allowed_sources_take_2(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0097_auto_20151209_1334'),
+        ('dash', '0002_auto_20151215_1353'),
     ]
 
     operations = [
