@@ -197,6 +197,11 @@ urlpatterns += patterns(
         name='ad_group_content_ad_restore'
     ),
     url(
+        r'^api/ad_groups/(?P<ad_group_id>\d+)/overview/',
+        login_required(dash.views.views.AdGroupOverview.as_view()),
+        name='ad_group_overview'
+    ),
+    url(
         r'^api/accounts/table/',
         login_required(dash.views.table.AccountsAccountsTable.as_view()),
     ),
@@ -282,6 +287,7 @@ urlpatterns += patterns(
     url(
         r'^api/accounts/(?P<account_id>\d+)/campaigns/',
         login_required(dash.views.views.AccountCampaigns.as_view()),
+        name='account_campaigns'
     ),
     url(
         r'^api/accounts/(?P<account_id>\d+)/agency/',

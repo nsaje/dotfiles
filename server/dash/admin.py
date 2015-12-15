@@ -806,12 +806,12 @@ class UserActionLogAdmin(ExportMixin, admin.ModelAdmin):
         settings_link = ''
 
         if obj:
-            obj_link = '<a href="{url}">{name}</a>'.format(
+            obj_link = u'<a href="{url}">{name}</a>'.format(
                 name=obj.name,
                 url=reverse(obj_url_name, args=(obj.pk, )))
 
         if settings_url_name and settings:
-            settings_link = '<a href="{url}">{name}</a>'.format(
+            settings_link = u'<a href="{url}">{name}</a>'.format(
                 name=settings.changes_text or '- no changes description -',
                 url=reverse(settings_url_name, args=(settings.pk, ))
             )
@@ -1098,6 +1098,8 @@ class ExportReportAdmin(admin.ModelAdmin):
 
 
 class PublisherBlacklistAdmin(admin.ModelAdmin):
+    form = dash_forms.PublisherBlacklistForm
+
     search_fields = ['name']
     list_display = (
         'created_dt',
@@ -1111,7 +1113,6 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     )
     readonly_fields = [
         'created_dt',
-        'name',
         'everywhere',
         'ad_group_id',
         'campaign_id',
@@ -1122,13 +1123,13 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     ordering = ('-created_dt',)
 
     def has_add_permission(self, request):
-        return False
+        return request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status')
 
     def has_delete_permission(self, request, obj=None):
         return False
 
     def has_change_permission(self, request, obj=None):
-        return True
+        return request.user.has_perm('zemauth.can_access_global_publisher_blacklist_status')
 
     def ad_group_(self, obj):
         if obj.ad_group is None:
@@ -1170,6 +1171,11 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
         del actions['delete_selected']
         return actions
 
+    def get_form(self, request, obj=None, **kwargs):
+         form = super(PublisherBlacklistAdmin, self).get_form(request, **kwargs)
+         form.request = request
+         return form
+
     def reenable_global(modeladmin, request, queryset):
         user = request.user
         if not user.has_perm('zemauth.can_access_global_publisher_blacklist_status'):
@@ -1183,10 +1189,21 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
             everywhere=True,
             status=constants.PublisherStatus.BLACKLISTED
         )
+
+        # currently only support enabling global blacklist
+        matching_sources = models.Source.objects.filter(
+            deprecated=False
+        )
+        candidate_source = None
+        for source in matching_sources:
+            if source.can_modify_publisher_blacklist_automatically():
+                candidate_source = source
+                break
+
         for publisher_blacklist in filtered_queryset:
             global_blacklist.append({
                 'domain': publisher_blacklist.name,
-                'source': publisher_blacklist.source,
+                'source': candidate_source,
             })
 
         actionlogs_to_send = []

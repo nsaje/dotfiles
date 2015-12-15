@@ -17,6 +17,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.chartData = undefined;
     $scope.chartMetricOptions = options.adGroupChartMetrics;
     $scope.localStoragePrefix = 'adGroupContentAdsPlus';
+    $scope.infoboxHeader = null;
+    $scope.infoboxSettings = null;
 
     $scope.lastSyncDate = null;
     $scope.isSyncRecent = true;
@@ -563,6 +565,12 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }
     };
 
+    $scope.$watch('$parent.infoboxVisible', function(newValue, oldValue) {
+        $timeout(function() {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
+    });
+
     $scope.$watch('size', function(newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.loadPage();
@@ -779,6 +787,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }
         getTableData();
         getDailyStats();
+        getInfoboxData();
+
         $scope.getAdGroupState();
         initColumns();
 
@@ -875,6 +885,20 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 // error
                 return;
             }
+        );
+    };
+
+    var getInfoboxData = function() {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+
+        api.adGroupOverview.get($state.params.id).then(
+            function(data) {
+                $scope.infoboxHeader = data.header;
+                $scope.infoboxSettings = data.settings;
+            },
+            function(data) {}
         );
     };
 

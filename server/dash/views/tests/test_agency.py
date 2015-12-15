@@ -28,7 +28,6 @@ class AdGroupSettingsTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
     def setUp(self):
-        self.maxDiff = None
         self.settings_dict = {
             'settings': {
                 'state': 1,
@@ -355,7 +354,6 @@ class AdGroupAgencyTest(TestCase):
         self.user = User.objects.get(pk=1)
         self.client.login(username=self.user.email, password=password)
 
-        self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
@@ -717,9 +715,29 @@ class ConversionPixelTestCase(TestCase):
 
         self.assertEqual(404, response.status_code)
 
-    def test_put_with_permissions(self):
-        permission = Permission.objects.get(codename='manage_conversion_pixels')
+    def test_put_archive_no_permissions(self):
         user = User.objects.get(pk=2)
+
+        permission = Permission.objects.get(codename='manage_conversion_pixels')
+        user.user_permissions.add(permission)
+        permission = Permission.objects.get(codename='archive_restore_entity')
+        user.user_permissions.remove(permission)
+
+        self.client.login(username=user.email, password='secret')
+        response = self.client.put(
+            reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
+            json.dumps({'archived': True}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(404, response.status_code)
+
+    def test_put_with_permissions(self):
+        user = User.objects.get(pk=2)
+        permission = Permission.objects.get(codename='manage_conversion_pixels')
+        user.user_permissions.add(permission)
+        permission = Permission.objects.get(codename='archive_restore_entity')
         user.user_permissions.add(permission)
 
         self.client.login(username=user.email, password='secret')
@@ -812,7 +830,10 @@ class CampaignConversionGoalsTestCase(TestCase):
                     },
                 },
             ],
-            'available_pixels': []
+            'available_pixels': [{
+                'id': 1,
+                'slug': 'test'
+            }]
         }, decoded_response['data'])
 
     def test_get_no_permissions(self):
@@ -891,6 +912,9 @@ class CampaignConversionGoalsTestCase(TestCase):
                 },
             ],
             'available_pixels': [{
+                'id': 1,
+                'slug': 'test',
+            }, {
                 'id': new_pixel.id,
                 'slug': 'new',
             }]
@@ -1160,36 +1184,6 @@ class CampaignConversionGoalsTestCase(TestCase):
 
         decoded_response = json.loads(response.content)
         self.assertEqual('Invalid conversion pixel', decoded_response['data']['message'])
-
-    def test_post_pixel_not_unique_goal_id(self):
-        response = self.client.post(
-            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
-            json.dumps({
-                'name': 'conversion goal',
-                'type': 1,
-                'conversion_window': 168,
-                'goal_id': '1'
-            }),
-            content_type='application/json',
-            follow=True
-        )
-        self.assertEqual(200, response.status_code)
-
-        response = self.client.post(
-            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
-            json.dumps({
-                'name': 'conversion goal 2',
-                'type': 1,
-                'conversion_window': 168,
-                'goal_id': '1'
-            }),
-            content_type='application/json',
-            follow=True
-        )
-        self.assertEqual(400, response.status_code)
-
-        decoded_response = json.loads(response.content)
-        self.assertEqual({'goal_id': ['This field has to be unique.']}, decoded_response['data']['errors'])
 
     def test_post_pixel_invalid_account(self):
         models.Account.objects.get(id=2).users.add(User.objects.get(id=1))
@@ -1715,6 +1709,32 @@ class CampaignSettingsTest(TestCase):
         self.assertTrue('campaign_goal' in content['data']['errors'])
         self.assertTrue('target_devices' in content['data']['errors'])
 
+    def test_validation_no_settings_defaults_permission(self):
+        self._login_user(2)
+        permission = Permission.objects.get(codename='campaign_settings_view')
+        self.user.user_permissions.add(permission)
+
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 50,
+                    'goal_quantity': 10,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertFalse(content['success'])
+
+        self.assertIn('campaign_goal', content['data']['errors'])
+
+        # because target devices were copied from the latest settings,
+        # there should be no errors
+        self.assertNotIn('target_devices', content['data']['errors'])
+
 
 class AccountAgencyTest(TestCase):
     fixtures = ['test_views.yaml', 'test_account_agency.yaml']
@@ -2066,4 +2086,3 @@ class AccountAgencyTest(TestCase):
 
         campaign_settings.archived = False
         campaign_settings.save(None)
-        

@@ -1,7 +1,6 @@
 import logging
 import sys
 import traceback
-import urlparse
 import collections
 from operator import attrgetter
 import newrelic.agent
@@ -9,7 +8,6 @@ import newrelic.agent
 from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
@@ -142,9 +140,7 @@ def set_publisher_blacklist(key, level, state, publishers, request, source_type,
 
     try:
         with transaction.atomic():
-            callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-            )
+            callback = utils.url_helper.get_zwei_callback_url(action.id)
 
             args = {
                 'key': key,
@@ -537,9 +533,7 @@ def _init_set_ad_group_source_settings(ad_group_source, conf, request, order=Non
 
     try:
         with transaction.atomic():
-            callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-            )
+            callback = utils.url_helper.get_zwei_callback_url(action.id)
 
             payload = {
                 'action': action.action,
@@ -580,9 +574,7 @@ def _init_fetch_status(ad_group_source, order, request=None):
 
     try:
         with transaction.atomic():
-            callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-            )
+            callback = utils.url_helper.get_zwei_callback_url(action.id)
 
             payload = {
                 'action': action.action,
@@ -624,9 +616,7 @@ def _init_fetch_reports(ad_group_source, date, order, request=None):
 
     try:
         with transaction.atomic():
-            callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-            )
+            callback = utils.url_helper.get_zwei_callback_url(action.id)
 
             payload = {
                 'action': action.action,
@@ -674,9 +664,7 @@ def _init_fetch_reports_by_publisher(ad_group_source, date, order, request=None)
 
     try:
         with transaction.atomic():
-            callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-            )
+            callback = utils.url_helper.get_zwei_callback_url(action.id)
 
             payload = {
                 'action': action.action,
@@ -737,9 +725,7 @@ def _init_create_campaign(ad_group_source, name, request):
 
     try:
         with transaction.atomic():
-            callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-            )
+            callback = utils.url_helper.get_zwei_callback_url(action.id)
 
             payload = {
                 'action': action.action,

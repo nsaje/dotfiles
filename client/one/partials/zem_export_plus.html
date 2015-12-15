@@ -1,1 +1,10 @@
-<button type="button" class="btn btn-default" ng-click="showAddScheduledReport()">Export Report</button>
+<ui-select
+        theme="select2"
+        search-enabled="false"
+        ng-model="exportPlus"
+        class="export-select">
+    <ui-select-match placeholder="Export">Export</ui-select-match>
+    <ui-select-choices repeat="op in exportModalTypes">
+        <div ng-click="showScheduledReportModal(op.value)">{{op.name}}</div>
+    </ui-select-choices>
+</ui-select>

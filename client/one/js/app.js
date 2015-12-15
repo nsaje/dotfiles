@@ -107,6 +107,11 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/account_agency.html',
             controller: 'AccountAgencyCtrl'
         })
+        .state('main.accounts.account', {
+            url: '/account',
+            templateUrl: '/partials/account_account.html',
+            controller: 'AccountAccountCtrl'
+        })
         .state('main.accounts.settings', {
             url: '/settings',
             templateUrl: '/partials/account_settings.html'

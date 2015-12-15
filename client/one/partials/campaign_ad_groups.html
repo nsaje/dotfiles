@@ -18,19 +18,7 @@
                 </zem-export>
             </div>
 
-            <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
-
-            <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
-
-            <span ng-switch="isSyncInProgress">
-                <span ng-switch-when="false">
-                    <a ng-click="triggerSync()" id="resync-btn" class="btn btn-default pull-right" title="Sync reporting metrics"><img ng-src="{{ config.static_url }}/one/img/refresh.svg"></a>
-                </span>
-                <span ng-switch-when="true">
-                    <a id="resync-loader" class="btn btn-default pull-right" popover="Synchronization of reporting data is currently in progress, and may take a few minutes. You can continue using the dashboard in the meantime." popover-append-to-body="true" popover-trigger="mouseenter" popover-placement="left"><div class="loader"></div></a>
-                </span>
-            </span>
-            <div ng-if="hasPermission('zemauth.exports_plus')" class="export-container button-bar-item pull-right">
+            <div ng-if="hasPermission('zemauth.exports_plus')" class="button-bar-item pull-right">
               <zem-internal-feature ng-if="isPermissionInternal('zemauth.exports_plus')" popover-placement="bottom"></zem-internal-feature>
                 <zem-export-plus
                     start-date="dateRange.startDate"
@@ -43,6 +31,21 @@
                     export-sources="false">
                 </zem-export-plus>
             </div>
+
+            <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
+
+            <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
+
+            <!--
+            <span ng-switch="isSyncInProgress">
+                <span ng-switch-when="false">
+                    <a ng-click="triggerSync()" id="resync-btn" class="btn btn-default pull-right" title="Sync reporting metrics"><img ng-src="{{ config.static_url }}/one/img/refresh.svg"></a>
+                </span>
+                <span ng-switch-when="true">
+                    <a id="resync-loader" class="btn btn-default pull-right" popover="Synchronization of reporting data is currently in progress, and may take a few minutes. You can continue using the dashboard in the meantime." popover-append-to-body="true" popover-trigger="mouseenter" popover-placement="left"><div class="loader"></div></a>
+                </span>
+            </span>
+            -->
             <div class="clearfix"></div>
         </div>
 

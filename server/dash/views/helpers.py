@@ -733,8 +733,8 @@ def get_ad_group_sources_settings(ad_group_sources):
 def get_ad_group_state_by_sources_running_status(ad_groups, ad_groups_settings,
                                                  ad_groups_sources_settings, group_by_key):
 
-    running_status_per_ag = map_per_ad_group_source_running_status(
-        ad_groups_settings, ad_groups_sources_settings)
+    # TODO: temporary disabled for performance observations - should by running status by source settings
+    running_status_per_ag = map_per_ad_group_flight_running_status(ad_groups_settings)
 
     status_dict = collections.defaultdict(lambda: constants.AdGroupSettingsState.INACTIVE)
 
@@ -745,6 +745,15 @@ def get_ad_group_state_by_sources_running_status(ad_groups, ad_groups_settings,
             status_dict[key] = constants.AdGroupSettingsState.ACTIVE
 
     return status_dict
+
+
+def map_per_ad_group_flight_running_status(ad_groups_settings):
+    running_status_dict = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
+    for ags in ad_groups_settings:
+        running_status_dict[ags.ad_group_id] = models.AdGroup.get_running_status_by_flight_time(
+            ags)
+
+    return running_status_dict
 
 
 def map_per_ad_group_source_running_status(ad_groups_settings, ad_groups_sources_settings):
@@ -904,7 +913,7 @@ def _get_status_setting_disabled_message_for_target_regions(
         if ad_group_settings.targets_region_type(region_type):
             if not source.source_type.supports_targeting_region_type(region_type):
                 unsupported_targets.append(constants.RegionType.get_text(region_type))
-            elif not source.source_type.can_modify_targeting_for_region_type_automatically(constants.RegionType.DMA):
+            elif not source.source_type.can_modify_targeting_for_region_type_automatically(region_type):
                 manual_targets.append(constants.RegionType.get_text(region_type))
 
     if unsupported_targets:

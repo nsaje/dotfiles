@@ -39,6 +39,10 @@ oneApp.controller('MainCtrl',
     $scope.enablePublisherFilter = false;
     $scope.showSelectedPublisher = null;
 
+    // TODO: move to localstorage
+    $scope.infoboxEnabled = false;
+    $scope.infoboxVisible = false;
+
     $scope.remindToAddBudget = $q.defer(); 
 
     $scope.adGroupData = {};
@@ -74,6 +78,10 @@ oneApp.controller('MainCtrl',
 
         return !$scope.user.permissions[permission];
     };
+
+    $scope.toggleInfoboxVisibility = function () {
+        $scope.infoboxVisible = !$scope.infoboxVisible;
+    }
 
     $scope.getDefaultAllAccountsState = function () {
         // keep the same tab if possible
@@ -266,10 +274,17 @@ oneApp.controller('MainCtrl',
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
 
+        // infobox will be visible only on certain views and 
+        // is entirely housed within main atm
+        if ($state.is('main.adGroups.adsPlus')) {
+            $scope.infoboxEnabled = true;  
+        } else {
+            $scope.infoboxEnabled = false;  
+        }
+
         // Redirect from default state
         var state = null;
         var id = $state.params.id;
-
 
         if ($state.is('main.allAccounts')) { 
             state = $scope.getDefaultAllAccountsState();
@@ -338,10 +353,6 @@ oneApp.controller('MainCtrl',
 
     $scope.getShowArchived = function () {
         return zemFilterService.getShowArchived();
-    };
-
-    $scope.getConversionPixelTag = function (url) {
-        return '<img src="' + url + '" height="1" width="1" border="0" alt="" />';
     };
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {

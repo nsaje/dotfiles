@@ -9,8 +9,10 @@ import datetime
 from collections import Counter
 
 from django import forms
+from django.db import transaction
 from django.core import validators
 
+from dash import api
 from dash import constants
 from dash import models
 from dash import regions
@@ -18,6 +20,9 @@ from dash import validation_helpers
 from utils import dates_helper
 
 from zemauth.models import User as ZemUser
+
+import actionlog.api_contentads
+import actionlog.zwei_actions
 
 
 class BaseApiForm(forms.Form):
@@ -330,10 +335,11 @@ class ConversionGoalForm(forms.Form):
             pass
 
         try:
-            models.ConversionGoal.objects.get(campaign_id=self.campaign_id,
-                                              type=cleaned_data.get('type'),
-                                              goal_id=cleaned_data.get('goal_id'))
-            self.add_error('goal_id', 'This field has to be unique.')
+            if cleaned_data.get('type') != constants.ConversionGoalType.PIXEL:
+                models.ConversionGoal.objects.get(campaign_id=self.campaign_id,
+                                                  type=cleaned_data.get('type'),
+                                                  goal_id=cleaned_data.get('goal_id'))
+                self.add_error('goal_id', 'This field has to be unique.')
         except models.ConversionGoal.DoesNotExist:
             pass
 
@@ -743,3 +749,52 @@ class ScheduleReportForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(ScheduleReportForm, self).__init__(*args, **kwargs)
+
+
+class PublisherBlacklistForm(forms.ModelForm):
+
+    def save(self, commit=True):
+        instance = super(PublisherBlacklistForm, self).save(commit=False)
+
+        instance.status = constants.PublisherStatus.PENDING
+        instance.everywhere = True
+
+        self._reenable_global(instance.name)
+
+        if commit:
+            instance.save()
+        return instance
+
+    def _reenable_global(self, name):
+        global_blacklist = []
+        # currently only support enabling global blacklist
+        matching_sources = models.Source.objects.filter(
+            deprecated=False
+        )
+        candidate_source = None
+        for source in matching_sources:
+            if source.can_modify_publisher_blacklist_automatically():
+                candidate_source = source
+                break
+
+        global_blacklist.append({
+            'domain': name,
+            'source': candidate_source,
+        })
+
+        actionlogs_to_send = []
+        with transaction.atomic():
+            actionlogs_to_send.extend(
+                api.create_global_publisher_blacklist_actions(
+                    None,
+                    self.request,
+                    constants.PublisherStatus.BLACKLISTED,
+                    global_blacklist,
+                    send=False
+                )
+            )
+        actionlog.zwei_actions.send(actionlogs_to_send)
+
+    class Meta:
+        model = models.PublisherBlacklist
+        exclude = ['everywhere', 'account', 'campaign', 'ad_group', 'source', 'status']
