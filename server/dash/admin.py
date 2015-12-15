@@ -1171,6 +1171,11 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
         del actions['delete_selected']
         return actions
 
+    def get_form(self, request, obj=None, **kwargs):
+         form = super(PublisherBlacklistAdmin, self).get_form(request, **kwargs)
+         form.request = request
+         return form
+
     def reenable_global(modeladmin, request, queryset):
         user = request.user
         if not user.has_perm('zemauth.can_access_global_publisher_blacklist_status'):

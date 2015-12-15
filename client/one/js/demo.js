@@ -200,7 +200,7 @@ oneApp.config(['$provide', function ($provide) {
                 }
             )
         );
-        
+
         $delegate.campaignBudget.save = function demo(id, data) {
             var deferred = $q.defer(),
                 cacheId = '/api/campaigns/' + id + '/budget/',
@@ -304,6 +304,11 @@ oneApp.config(['$provide', function ($provide) {
                 return deferred.promise;
             };
         }(resetIfErrorWrapper($delegate.campaignAdGroupsTable.get)));
+
+        /* ADGROUP OVERVIEW */
+        $delegate.adGroupOverview.get = resetIfErrorWrapper(
+            defaultGetWrapper('/api/ad_groups/{id}/overview/', $delegate.adGroupOverview.get)
+        );
 
         /* ADGROUP SETTINGS */
         $delegate.adGroupSettings.get = resetIfErrorWrapper(

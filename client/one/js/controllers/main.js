@@ -40,6 +40,7 @@ oneApp.controller('MainCtrl',
     $scope.showSelectedPublisher = null;
 
     // TODO: move to localstorage
+    $scope.infoboxEnabled = false;
     $scope.infoboxVisible = false;
 
     $scope.remindToAddBudget = $q.defer(); 
@@ -273,10 +274,17 @@ oneApp.controller('MainCtrl',
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
 
+        // infobox will be visible only on certain views and 
+        // is entirely housed within main atm
+        if ($state.is('main.adGroups.adsPlus')) {
+            $scope.infoboxEnabled = true;  
+        } else {
+            $scope.infoboxEnabled = false;  
+        }
+
         // Redirect from default state
         var state = null;
         var id = $state.params.id;
-
 
         if ($state.is('main.allAccounts')) { 
             state = $scope.getDefaultAllAccountsState();
