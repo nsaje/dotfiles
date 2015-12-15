@@ -497,7 +497,7 @@ class FetchReportsTestCase(TestCase):
         self.cursor_mock = cursor_patcher.start()
         self.addCleanup(cursor_patcher.stop)
 
-    @mock.patch('reports.refresh.refresh_contentadstats', mock.MagicMock())
+    @patch('reports.refresh.notify_contentadstats_change', mock.MagicMock())
     def test_fetch_reports(self):
         article_row = {
             'id': '987654321',
@@ -522,7 +522,7 @@ class FetchReportsTestCase(TestCase):
         self._assert_article_stats(ad_group_source, article_row)
 
     @override_settings(USE_HASH_CACHE=True)
-    @mock.patch('reports.refresh.refresh_contentadstats', mock.MagicMock())
+    @patch('reports.refresh.notify_contentadstats_change', mock.MagicMock())
     def test_fetch_reports_hash_cache(self):
         zweiapi.views.cache.clear()
 
@@ -557,7 +557,7 @@ class FetchReportsTestCase(TestCase):
         )
 
     @override_settings(USE_HASH_CACHE=True)
-    @mock.patch('reports.refresh.refresh_contentadstats', mock.MagicMock())
+    @patch('reports.refresh.notify_contentadstats_change', mock.MagicMock())
     def test_fetch_reports_hash_cache_changed_data(self):
         zweiapi.views.cache.clear()
         zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link', '7a97d7b612f435a2dba269614e90e3ac')
@@ -592,7 +592,6 @@ class FetchReportsTestCase(TestCase):
         )
 
     @override_settings(USE_HASH_CACHE=True)
-    @mock.patch('reports.refresh.refresh_contentadstats', mock.MagicMock())
     def test_fetch_reports_hash_cache_no_change(self):
         zweiapi.views.cache.clear()
         zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link', '79753a5d1f7184c4df217733679ce89a')
@@ -628,7 +627,6 @@ class FetchReportsTestCase(TestCase):
 
     @override_settings(USE_HASH_CACHE=True)
     @mock.patch('reports.update.stats_update_adgroup_source_traffic')
-    @mock.patch('reports.refresh.refresh_contentadstats', mock.MagicMock())
     def test_cache_not_set_on_adgroup_stats_exception(self, mock_stats_update_adgroup_source_traffic):
         mock_stats_update_adgroup_source_traffic.side_effect = Exception()
         zweiapi.views.cache.clear()
@@ -661,7 +659,6 @@ class FetchReportsTestCase(TestCase):
 
     @override_settings(USE_HASH_CACHE=True)
     @mock.patch('reports.update.update_content_ads_source_traffic_stats')
-    @mock.patch('reports.refresh.refresh_contentadstats', mock.MagicMock())
     def test_cache_not_set_on_content_ads_stats_exception(self, mock_update_content_ads_source_traffic_stats):
         mock_update_content_ads_source_traffic_stats.side_effect = Exception()
         zweiapi.views.cache.clear()
@@ -696,7 +693,6 @@ class FetchReportsTestCase(TestCase):
         )
 
     @override_settings(USE_HASH_CACHE=False)
-    @mock.patch('reports.refresh.refresh_contentadstats', mock.MagicMock())
     def test_fetch_reports_invalid_empty_rows(self):
         zwei_response_data = {
             'status': 'success',
@@ -719,7 +715,7 @@ class FetchReportsTestCase(TestCase):
         )
 
     @override_settings(USE_HASH_CACHE=False)
-    @mock.patch('reports.refresh.refresh_contentadstats', mock.MagicMock())
+    @patch('reports.refresh.notify_contentadstats_change', mock.MagicMock())
     def test_fetch_reports_delete_empty_rows(self):
         zwei_response_data = {
             'status': 'success',
@@ -743,7 +739,6 @@ class FetchReportsTestCase(TestCase):
         )
 
     @override_settings(USE_HASH_CACHE=True)
-    @mock.patch('reports.refresh.refresh_contentadstats', mock.MagicMock())
     def test_fetch_reports_invalid_empty_rows_with_cache(self):
         zweiapi.views.cache.clear()
         zweiapi.views.cache.set('fetch_reports_response_hash_1_1_2014-07-01_reports_by_link', '7a97d7b612f435a2dba269614e90e3ac')

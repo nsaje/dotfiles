@@ -1,0 +1,54 @@
+<div class="modal-body">
+    <form id="download-export-report-form" ng-submit="downloadReport()" class="modal-form add-scheduled-report-form form-horizontal">
+        <div class="title">Export Report</div>
+
+        <div class="form-group">
+            <label for="granularity-select" class="col-xs-4 control-label">
+                Report Granularity
+                <zem-help-popover content="Granularity of the report." placement="top"></zem-help-popover>
+            </label>
+
+            <ui-select config
+                id="granularity-select"
+                theme="select2"
+                search-enabled="false"
+                ng-model="export.type"
+                class="col-xs-5"
+                ng-change="checkDownloadAllowed()">
+                <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
+                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
+                    {{option.name}}
+                </ui-select-choices>
+            </ui-select>
+        </div>
+
+        <div class="form-group">
+          <div class="col-xs-4">
+            <label for="by-day-checkbox" class="control-label">Breakdown by day</label>
+          </div>
+          <div class="col-xs-4">
+            <input id="by-day-checkbox"
+                type="checkbox"
+                ng-model="export.byDay"
+                class="checkbox"
+                ng-change="checkDownloadAllowed()">
+          </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-xs-4">
+                <button type="submit" class="btn btn-default" ng-disabled="!downloadAllowed">Download Now</button>
+            </div>
+            <div class="col-xs-3">
+                <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
+            </div>
+            <div class="loader" ng-show="showInProgress"></div>
+        </div>
+
+        <div class="form-group">
+          <span class="col-xs-12 small error">
+            <span ng-if="!downloadAllowed">{{downloadNotAllowedMessage}}</span>
+          </span>
+        </div>
+    </form>
+</div>

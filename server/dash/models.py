@@ -1860,12 +1860,12 @@ class UserActionLog(models.Model):
 class PublisherBlacklist(models.Model):
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=127, blank=False, null=False)
+    name = models.CharField(max_length=127, blank=False, null=False, verbose_name='Publisher name')
     everywhere = models.BooleanField(default=False, verbose_name='globally blacklisted')
     account = models.ForeignKey(Account, null=True, related_name='account', on_delete=models.PROTECT)
     campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
     ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
-    source = models.ForeignKey(Source, null=False, on_delete=models.PROTECT)
+    source = models.ForeignKey(Source, null=True, on_delete=models.PROTECT)
 
     status = models.IntegerField(
         default=constants.PublisherStatus.BLACKLISTED,

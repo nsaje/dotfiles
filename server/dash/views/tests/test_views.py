@@ -1664,8 +1664,6 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                 u"level": u"global",
                 u"publishers": [{
                     u"domain": u"zemanta.com",
-                    u"exchange": u"adiant",
-                    u"source_id": 7,
                 }]
             }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])
@@ -1711,6 +1709,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             action_type=actionlog.constants.ActionType.AUTOMATIC,
             action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
         )
+
         self.assertEqual(1, publisher_blacklist_action.count())
         self.assertDictEqual(
             {
@@ -1719,8 +1718,6 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                 u"level": u"global",
                 u"publishers": [{
                     u"domain": u"zemanta.com",
-                    u"exchange": u"adiant",
-                    u"source_id": 7,
                 }]
             }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])
@@ -1896,12 +1893,6 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                         u"ad_group_id": 1
                     },
                     {
-                        u'ad_group_id': 10,
-                        u'domain': u'zemanta.com',
-                        u'exchange': u'adiant',
-                        u'source_id': 7
-                    },
-                    {
                         u'ad_group_id': 9,
                         u'domain': u'zemanta.com',
                         u'exchange': u'adiant',
@@ -1920,6 +1911,23 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertEqual(1, publisher_blacklist.campaign.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual('zemanta.com', publisher_blacklist.name)
+
+
+        adg1 = models.AdGroup.objects.get(pk=1)
+        settings1 = adg1.get_current_settings()
+
+        self.assertEqual(
+            'Blacklisted the following publishers zemanta.com on Adiant.',
+            settings1.changes_text
+        )
+
+        adg9 = models.AdGroup.objects.get(pk=9)
+        settings9 = adg9.get_current_settings()
+
+        self.assertEqual(
+            'Blacklisted the following publishers zemanta.com on Adiant.',
+            settings9.changes_text
+        )
 
 
     @patch('reports.redshift.get_cursor')

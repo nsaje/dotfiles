@@ -823,6 +823,9 @@ class ConversionPixel(api_common.BaseApiView):
             raise exc.ValidationError()
 
         if 'archived' in data:
+            if not request.user.has_perm('zemauth.archive_restore_entity'):
+                raise exc.MissingDataError()
+
             if not isinstance(data['archived'], bool):
                 raise exc.ValidationError(message='Invalid value')
 
