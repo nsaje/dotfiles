@@ -1008,7 +1008,6 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     date_hierarchy = 'start_date'
     list_filter = ['status', 'license_fee', 'created_by']
     readonly_fields = ('created_dt', 'created_by',)
-    form = dash_forms.BudgetLineItemForm
 
 
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
