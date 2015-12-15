@@ -132,6 +132,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
             },
             function (data) {
                 $scope.errors = data;
+                $scope.settings.allowedSources = data.allowedSourcesData;
                 $scope.saved = false;
             }
         ).finally(function () {

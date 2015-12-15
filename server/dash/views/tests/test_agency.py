@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
 import datetime
-from mock import patch, ANY, Mock, call
 import pytz
 
+from mock import patch, ANY, Mock, call
 from decimal import Decimal
 
 from django.test import TestCase
@@ -18,6 +18,8 @@ from zemauth.models import User
 from dash import models
 from dash import constants
 from dash.views import agency
+from dash import forms
+from utils import exc
 
 
 @patch('dash.views.agency.api.order_ad_group_settings_update')
@@ -1778,6 +1780,10 @@ class AccountAgencyTest(TestCase):
         user.save()
 
     def setUp(self):
+        account = models.Account.objects.get(pk=1)
+        account.allowed_sources.clear()
+        account.allowed_sources.add(1, 2)
+
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
@@ -1793,6 +1799,11 @@ class AccountAgencyTest(TestCase):
         client = Client()
         client.login(username=user.email, password=password)
         return client
+
+    def _get_form_with_allowed_sources_dict(self, allowed_sources_dict):
+        form = forms.AccountAgencySettingsForm()
+        form.cleaned_data = {'allowed_sources': allowed_sources_dict}
+        return form
 
     def test_get(self):
         client = self._get_client_with_permissions(['account_agency_view'])
@@ -1830,7 +1841,9 @@ class AccountAgencyTest(TestCase):
                     'default_sales_representative': '1',
                     'default_account_manager': '3',
                     'id': '1',
-                    'allowed_sources': {}
+                    'allowed_sources': {
+                        '1': {'allowed': True}
+                    }
                 }
             }),
             content_type='application/json',
@@ -1841,6 +1854,10 @@ class AccountAgencyTest(TestCase):
 
         account = models.Account.objects.get(pk=1)
         account_settings = account.get_current_settings()
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([1,])
+        )
 
         self.assertDictEqual(account_settings.get_settings_dict(), {
             'archived': False,
@@ -1880,22 +1897,98 @@ class AccountAgencyTest(TestCase):
 
 
     def test_set_allowed_sources(self):
-        settings = models.AccountSettings()
-        old_settings = models.AccountSettings()
+        account = models.Account.objects.get(pk=1)
         view = agency.AccountAgency()
-        view.set_allowed_sources(settings, old_settings, {
+        view.set_allowed_sources(account, True, self._get_form_with_allowed_sources_dict({
             1: {'allowed': True},
-            2: {'allowed': True},
-            3: {}
-            })
-        self.assertEqual(set(settings.allowed_sources),set([1,2]))
+            2: {'allowed': False},
+            3: {'allowed': True}
+            }))
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([1, 3])
+        )
+    
+    def test_set_allowed_sources_cant_remove_unreleased(self):
+        account = models.Account.objects.get(pk=1)
+        account.allowed_sources.add(3) # add an unreleased source
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([1,2,3])
+        )
+        self.assertFalse(models.Source.objects.get(pk=3).released)
+
+        view = agency.AccountAgency()
+        view.set_allowed_sources(
+            account,
+            False, # no permission to remove unreleased source 3 
+            self._get_form_with_allowed_sources_dict({
+                1: {'allowed': False},
+                2: {'allowed': False},
+                3: {'allowed': False}
+            }))
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([3,])
+        )
+
+    def test_set_allowed_sources_cant_add_unreleased(self):
+        account = models.Account.objects.get(pk=1)
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([1,2])
+        )
+        self.assertFalse(models.Source.objects.get(pk=3).released)
+
+        view = agency.AccountAgency()
+        view.set_allowed_sources(
+            account,
+            False, # no permission to add unreleased source 3 
+            self._get_form_with_allowed_sources_dict({
+                1: {'allowed': False},
+                2: {'allowed': True},
+                3: {'allowed': True}
+            }))
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([2,])
+        )
+
+    def test_set_allowed_sources_cant_remove_running_source(self):
+        account = models.Account.objects.get(pk=111)
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([2,3])
+        )
+        view = agency.AccountAgency()
+        form = self._get_form_with_allowed_sources_dict({
+            2: {'allowed': False},
+            3: {'allowed': True}
+        })
+        
+        view.set_allowed_sources(
+            account,
+            False, # no permission to add unreleased source 3 
+            form
+        )
+  
+        self.assertEqual(
+            dict(form.errors),
+            {'allowed_sources': [u'Can\'t save changes because media source Source 2 is still used on this account.']}
+        )
 
     def test_set_allowed_sources_none(self):
-        settings = models.AccountSettings()
-        old_settings = models.AccountSettings(allowed_sources=[1,2])
+        account = models.Account.objects.get(pk=1)
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([1,2])
+        )
         view = agency.AccountAgency()
-        view.set_allowed_sources(settings, old_settings, None)
-        self.assertEqual(settings.allowed_sources, [1,2])
+        view.set_allowed_sources(account, True, self._get_form_with_allowed_sources_dict(None))
+        self.assertEqual(
+            set(account.allowed_sources.values_list('id', flat=True)),
+            set([1,2])
+        )
 
     def test_get_allowed_sources(self):
         client = self._get_client_with_permissions([
@@ -1930,3 +2023,93 @@ class AccountAgencyTest(TestCase):
         self.assertEqual(response['data']['settings']['allowed_sources'], {
             '2': {'name': 'Source 2', 'allowed': True},
             })
+
+    def test_add_error_to_account_agency_form(self):
+        view = agency.AccountAgency()
+        form = self._get_form_with_allowed_sources_dict({})
+        view.add_error_to_account_agency_form(form, [1,2])
+        self.assertEqual(
+            dict(form.errors), 
+            {
+                'allowed_sources': 
+                    [u'Can\'t save changes because media sources Source 1, Source 2 are still used on this account.']
+            }
+        )
+
+    def test_add_error_to_account_agency_single(self):
+        view = agency.AccountAgency()
+        form = self._get_form_with_allowed_sources_dict({})
+        view.add_error_to_account_agency_form(form, [1])
+        self.assertEqual(
+            dict(form.errors), 
+            {
+                'allowed_sources': 
+                    [u'Can\'t save changes because media source Source 1 is still used on this account.']
+            }
+        )
+
+    def test_get_non_removable_sources_empty(self):
+        account = models.Account.objects.get(pk=111)
+        view = agency.AccountAgency()
+        self.assertEqual(view.get_non_removable_sources(account, []), [])
+
+    def test_get_non_removable_sources_source_not_added(self):
+        account = models.Account.objects.get(pk=111)
+        view = agency.AccountAgency()
+        self.assertEqual(view.get_non_removable_sources(account, [1]), [])
+
+    def test_get_non_removable_sources_source_not_running(self):
+        account = models.Account.objects.get(pk=111)
+        view = agency.AccountAgency()
+        self.assertEqual(view.get_non_removable_sources(account, [3]), [])
+
+    def test_get_non_removable_sources_source_running(self):
+        account = models.Account.objects.get(pk=111)
+        view = agency.AccountAgency()
+        self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
+
+    def test_get_non_removable_sources_source_running(self):
+        account = models.Account.objects.get(pk=111)
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=11122)
+        ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
+        ad_group_settings.save(None)
+
+        view = agency.AccountAgency()
+        self.assertEqual(view.get_non_removable_sources(account, [2]), [])
+
+        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+        ad_group_settings.save(None)
+
+        self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
+
+    def test_get_non_removable_sources_source_demo(self):
+        user = User.objects.get(pk=1)
+        mock_request = Mock()
+        mock_request.user = user
+
+        view = agency.AccountAgency()
+        account = models.Account.objects.get(pk=111)
+        self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
+
+        ad_group = models.AdGroup.objects.get(pk=11122)
+        ad_group.is_demo = True
+        ad_group.save(mock_request)
+
+        self.assertEqual(view.get_non_removable_sources(account, [2]), [])
+
+        ad_group.is_demo = False
+        ad_group.save(mock_request)
+
+    def test_get_non_removable_sources_archived_campaign(self):
+        view = agency.AccountAgency()
+        account = models.Account.objects.get(pk=111)
+        self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
+
+        campaign_settings = models.CampaignSettings.objects.get(pk=1112)
+        campaign_settings.archived = True
+        campaign_settings.save(None)
+        self.assertEqual(view.get_non_removable_sources(account, [2]), [])
+
+        campaign_settings.archived = False
+        campaign_settings.save(None)
+        
