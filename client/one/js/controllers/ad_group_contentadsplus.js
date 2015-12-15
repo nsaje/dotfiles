@@ -895,7 +895,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         api.adGroupOverview.get($state.params.id).then(
             function(data) {
-                console.log(data);
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxSettings = data.settings;
             },
