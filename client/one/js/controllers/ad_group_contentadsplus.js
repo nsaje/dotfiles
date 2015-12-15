@@ -791,7 +791,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
 
         $scope.getAdGroupState();
         initColumns();
-        $scope.setInfoboxEnabled(true);
 
         pollSyncStatus();
         setDisabledExportOptions();

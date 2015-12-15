@@ -79,10 +79,6 @@ oneApp.controller('MainCtrl',
         return !$scope.user.permissions[permission];
     };
 
-    $scope.setInfoboxEnabled = function (value) {
-        $scope.infoboxEnabled = value;  
-    };
-
     $scope.toggleInfoboxVisibility = function () {
         $scope.infoboxVisible = !$scope.infoboxVisible;
     }
@@ -277,13 +273,18 @@ oneApp.controller('MainCtrl',
     $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
-        // reset infobox button visibility
-        $scope.setInfoboxEnabled(false);
+
+        // infobox will be visible only on certain views and 
+        // is entirely housed within main atm
+        if ($state.is('main.adGroups.adsPlus')) {
+            $scope.infoboxEnabled = true;  
+        } else {
+            $scope.infoboxEnabled = false;  
+        }
 
         // Redirect from default state
         var state = null;
         var id = $state.params.id;
-
 
         if ($state.is('main.allAccounts')) { 
             state = $scope.getDefaultAllAccountsState();
