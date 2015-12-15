@@ -81,4 +81,10 @@
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
         <span ng-show="discarded" class="success">Your updates have been discarded.</span>
     </form>
+
+    <zem-conversion-goals
+        zem-has-permission="hasPermission"
+        zem-is-permission-internal="isPermissionInternal"
+        zem-campaign="campaign">
+    </zem-conversion-goals>
 </div>

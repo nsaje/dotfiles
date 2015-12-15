@@ -7,5 +7,5 @@ class ReportType(ConstantBase):
 
     _VALUES = {
         GOOGLE_ANALYTICS: 'Google Analytics',
-        OMNITURE: 'Omniture'
+        OMNITURE: 'Adobe Analytics'
     }

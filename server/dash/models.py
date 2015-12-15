@@ -327,10 +327,7 @@ class Campaign(models.Model, PermissionMixin):
         if settings:
             settings = settings[0]
         else:
-            settings = CampaignSettings(
-                campaign=self,
-                name=self.name
-            )
+            settings = CampaignSettings(campaign=self, **CampaignSettings.get_defaults_dict())
 
         return settings
 
@@ -586,6 +583,13 @@ class CampaignSettings(SettingsBase):
     class QuerySet(models.QuerySet):
         def group_current_settings(self):
             return self.order_by('campaign_id', '-created_dt').distinct('campaign')
+
+    @classmethod
+    def get_defaults_dict(cls):
+        return {
+            'target_devices': constants.AdTargetDevice.get_all(),
+            'target_regions': ['US']
+        }
 
 
 class SourceType(models.Model):
@@ -1861,12 +1865,12 @@ class UserActionLog(models.Model):
 class PublisherBlacklist(models.Model):
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=127, blank=False, null=False)
+    name = models.CharField(max_length=127, blank=False, null=False, verbose_name='Publisher name')
     everywhere = models.BooleanField(default=False, verbose_name='globally blacklisted')
     account = models.ForeignKey(Account, null=True, related_name='account', on_delete=models.PROTECT)
     campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
     ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
-    source = models.ForeignKey(Source, null=False, on_delete=models.PROTECT)
+    source = models.ForeignKey(Source, null=True, on_delete=models.PROTECT)
 
     status = models.IntegerField(
         default=constants.PublisherStatus.BLACKLISTED,
@@ -2318,6 +2322,15 @@ class ExportReport(models.Model):
         elif self.ad_group:
             return constants.ScheduledReportLevel.AD_GROUP
         return constants.ScheduledReportLevel.ALL_ACCOUNTS
+
+    def get_exported_entity_name(self):
+        if self.account:
+            return self.account.name
+        elif self.campaign:
+            return self.campaign.name
+        elif self.ad_group:
+            return self.ad_group.name
+        return 'All Accounts'
 
     def get_additional_fields(self):
         return views.helpers.get_additional_columns(self.additional_fields)

@@ -160,6 +160,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_view_data_cost', 'Can view or export data cost'),
             ('can_see_all_available_sources', 'Can see all available media sources in account settings'),
             ('can_see_infobox', 'Can see info box'),
+            ('account_account_view', "Can view account's Account tab."),
         )
 
     def get_full_name(self):

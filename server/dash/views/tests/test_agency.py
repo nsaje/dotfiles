@@ -715,9 +715,29 @@ class ConversionPixelTestCase(TestCase):
 
         self.assertEqual(404, response.status_code)
 
-    def test_put_with_permissions(self):
-        permission = Permission.objects.get(codename='manage_conversion_pixels')
+    def test_put_archive_no_permissions(self):
         user = User.objects.get(pk=2)
+
+        permission = Permission.objects.get(codename='manage_conversion_pixels')
+        user.user_permissions.add(permission)
+        permission = Permission.objects.get(codename='archive_restore_entity')
+        user.user_permissions.remove(permission)
+
+        self.client.login(username=user.email, password='secret')
+        response = self.client.put(
+            reverse('conversion_pixel', kwargs={'conversion_pixel_id': 1}),
+            json.dumps({'archived': True}),
+            content_type='application/json',
+            follow=True,
+        )
+
+        self.assertEqual(404, response.status_code)
+
+    def test_put_with_permissions(self):
+        user = User.objects.get(pk=2)
+        permission = Permission.objects.get(codename='manage_conversion_pixels')
+        user.user_permissions.add(permission)
+        permission = Permission.objects.get(codename='archive_restore_entity')
         user.user_permissions.add(permission)
 
         self.client.login(username=user.email, password='secret')
@@ -1712,6 +1732,32 @@ class CampaignSettingsTest(TestCase):
         self.assertFalse(content['success'])
         self.assertTrue('campaign_goal' in content['data']['errors'])
         self.assertTrue('target_devices' in content['data']['errors'])
+
+    def test_validation_no_settings_defaults_permission(self):
+        self._login_user(2)
+        permission = Permission.objects.get(codename='campaign_settings_view')
+        self.user.user_permissions.add(permission)
+
+        response = self.client.put(
+            '/api/campaigns/1/settings/',
+            json.dumps({
+                'settings': {
+                    'id': 1,
+                    'name': 'test campaign 2',
+                    'campaign_goal': 50,
+                    'goal_quantity': 10,
+                }
+            }),
+            content_type='application/json',
+        )
+        content = json.loads(response.content)
+        self.assertFalse(content['success'])
+
+        self.assertIn('campaign_goal', content['data']['errors'])
+
+        # because target devices were copied from the latest settings,
+        # there should be no errors
+        self.assertNotIn('target_devices', content['data']['errors'])
 
 
 class AccountAgencyTest(TestCase):
