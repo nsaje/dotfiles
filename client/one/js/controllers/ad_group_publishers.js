@@ -20,9 +20,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.pagination = {
         currentPage: 1
     };
-    // this will be set to true whenever blacklisted and not blacklisted
-    // publishers have been manually selected
-    $scope.mixedBlacklistEnabledSelection = false;
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
@@ -101,17 +98,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     };
 
     $scope.selectedPublisherChanged = function (row, checked) {
-        var numNotSelected = 0,
-            countBlacklistedSelected = 0,
-            countNonBlacklistedSelected = 0,
-            countAllSelected = 0,
-            maxBlacklistedLevel = null,
-            levels = [
-                constants.publisherBlacklistLevel.ADGROUP,
-                constants.publisherBlacklistLevel.CAMPAIGN,
-                constants.publisherBlacklistLevel.ACCOUNT,
-                constants.publisherBlacklistLevel.GLOBAL
-            ];
+        var numNotSelected = 0;
 
         $scope.selectedPublisherStatus[$scope.calculatePublisherHash(row)] = {
             "checked": checked,
@@ -127,6 +114,25 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             }
         });
 
+        $scope.updatePublisherBlacklistCombo();
+
+        if ($scope.selectedAll) {
+            $scope.selectionMenuConfig.partialSelection = numNotSelected > 0;
+        }
+    };
+
+    $scope.updatePublisherBlacklistCombo = function () {
+        var countBlacklistedSelected = 0,
+            countNonBlacklistedSelected = 0,
+            countAllSelected = 0,
+            maxBlacklistedLevel = null,
+            levels = [
+                constants.publisherBlacklistLevel.ADGROUP,
+                constants.publisherBlacklistLevel.CAMPAIGN,
+                constants.publisherBlacklistLevel.ACCOUNT,
+                constants.publisherBlacklistLevel.GLOBAL
+            ];
+
         Object.keys($scope.selectedPublisherStatus).forEach(function (key) {
             var entry = $scope.selectedPublisherStatus[key];
             if (entry.checked) {
@@ -140,24 +146,24 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 }
             }
         });
-        countAllSelected = countBlacklistedSelected + countNonBlacklistedSelected;
 
-        if (countBlacklistedSelected > 0 && countNonBlacklistedSelected > 0) {
-            $scope.mixedBlacklistEnabledSelection = true;
-            $scope.setAllBulkAction('enable', false);
-            $scope.setAllBulkAction('blacklist', false);
-        } else if (countBlacklistedSelected > 0 || countNonBlacklistedSelected > 0) {
-            $scope.mixedBlacklistEnabledSelection = false;
-            $scope.setAllBulkAction('enable', countBlacklistedSelected > 0);
-            $scope.setAllBulkAction('blacklist', countNonBlacklistedSelected > 0);
-        } else {
-            $scope.mixedBlacklistEnabledSelection = false;
-            $scope.setAllBulkAction('enable', countAllSelected > 0);
-            $scope.setAllBulkAction('blacklist', countAllSelected > 0);
+        if ($scope.selectedAll) {
+            $scope.rows.forEach(function (row) {
+                if (row.blacklisted === 'Blacklisted') {
+                    countBlacklistedSelected += 1;
+                    if (maxBlacklistedLevel === null || $scope.levelGt(row.blacklisted_level, maxBlacklistedLevel)) {
+                        maxBlacklistedLevel = row.blacklisted_level;
+                    }
+                }
+                else if (row.blacklisted === 'Active') {
+                    countNonBlacklistedSelected += 1;
+                }
+            });
         }
 
-        if (!$scope.mixedBlacklistEnabledSelection && (maxBlacklistedLevel !== null)) {
-            if (countBlacklistedSelected > 0) {
+        countAllSelected = countBlacklistedSelected + countNonBlacklistedSelected;
+        if (maxBlacklistedLevel !== null) {
+            if (countBlacklistedSelected > 0 || $scope.selectedAll) {
                 levels.forEach(function (level) {
                     // user can only enable blacklist on currently
                     // blacklisted level
@@ -170,19 +176,15 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                     $scope.setBulkAction(level, 'blacklist', blacklistedEnabled);
                 });
             }
-
-            if (countNonBlacklistedSelected > 0) {
-                levels.forEach(function (level) {
-                    var enabled = $scope.levelGt(level, maxBlacklistedLevel);
-                    // user can always blacklist on higher level
-                    // than currently blacklisted
-                    $scope.setBulkAction(level, 'blacklist', enabled);
-                });
-            }
         }
 
-        if ($scope.selectedAll) {
-            $scope.selectionMenuConfig.partialSelection = numNotSelected > 0;
+        if (countNonBlacklistedSelected > 0) {
+            levels.forEach(function (level) {
+                var enabled = $scope.levelGt(level, maxBlacklistedLevel);
+                // user can always blacklist on higher level
+                // than currently blacklisted
+                $scope.setBulkAction(level, 'blacklist', enabled);
+            });
         }
     };
 
@@ -219,6 +221,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         } else {
             $scope.clearPublisherSelection();
         }
+
+        $scope.updatePublisherBlacklistCombo();
     };
 
     $scope.clearPublisherSelection = function () {
@@ -254,9 +258,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.isAnythingSelected = function () {
         var publisherId = 0;
-        if ($scope.mixedBlacklistEnabledSelection) {
-            return false;
-        }
 
         if ($scope.selectedAll) {
             return true;

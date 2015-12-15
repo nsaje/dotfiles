@@ -1,5 +1,6 @@
-#!/usr/bin/env python
+
 # -*- coding: utf-8 -*-
+
 import json
 from mock import patch
 import datetime
@@ -1663,8 +1664,6 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                 u"level": u"global",
                 u"publishers": [{
                     u"domain": u"zemanta.com",
-                    u"exchange": u"adiant",
-                    u"source_id": 7,
                 }]
             }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])
@@ -1710,6 +1709,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             action_type=actionlog.constants.ActionType.AUTOMATIC,
             action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
         )
+
         self.assertEqual(1, publisher_blacklist_action.count())
         self.assertDictEqual(
             {
@@ -1718,8 +1718,6 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                 u"level": u"global",
                 u"publishers": [{
                     u"domain": u"zemanta.com",
-                    u"exchange": u"adiant",
-                    u"source_id": 7,
                 }]
             }, publisher_blacklist_action.first().payload['args'])
         self.assertTrue(res['success'])
@@ -1895,12 +1893,6 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                         u"ad_group_id": 1
                     },
                     {
-                        u'ad_group_id': 10,
-                        u'domain': u'zemanta.com',
-                        u'exchange': u'adiant',
-                        u'source_id': 7
-                    },
-                    {
                         u'ad_group_id': 9,
                         u'domain': u'zemanta.com',
                         u'exchange': u'adiant',
@@ -1919,6 +1911,23 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertEqual(1, publisher_blacklist.campaign.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
         self.assertEqual('zemanta.com', publisher_blacklist.name)
+
+
+        adg1 = models.AdGroup.objects.get(pk=1)
+        settings1 = adg1.get_current_settings()
+
+        self.assertEqual(
+            'Blacklisted the following publishers zemanta.com on Adiant.',
+            settings1.changes_text
+        )
+
+        adg9 = models.AdGroup.objects.get(pk=9)
+        settings9 = adg9.get_current_settings()
+
+        self.assertEqual(
+            'Blacklisted the following publishers zemanta.com on Adiant.',
+            settings9.changes_text
+        )
 
 
     @patch('reports.redshift.get_cursor')
@@ -1990,6 +1999,119 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertTrue(res['success'])
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
+
+
+class AdGroupOverviewTest(TestCase):
+    def _get_ad_group_overview(self, ad_group_id, user_id=3, with_status=False):
+        user = User.objects.get(pk=user_id)
+        self.client.login(username=user.username, password='secret')
+        reversed_url = reverse(
+                'ad_group_overview',
+                kwargs={'ad_group_id': ad_group_id})
+
+        response = self._get_ad_group_overview(1)
+
+        self.assertTrue(response['success'])
+        header = response['data']['header']
+        self.assertEqual(header['title'], u'AdGroup name')
+        self.assertFalse(header['active'])
+
+        settings = response['data']['settings']
+        flight_setting = self._get_setting(settings, 'flight')
+        self.assertEqual('03/02 - 04/02', flight_setting['value'])
+
+        flight_setting = self._get_setting(settings, 'daily')
+        self.assertEqual('$100.00', flight_setting['value'])
+
+        device_setting = self._get_setting(settings, 'targeting')
+        self.assertEqual('Device: Desktop, Mobile', device_setting['value'])
+
+        region_setting = [s for s in settings if 'location' in s['value'].lower()][0]
+        self.assertEqual('Location: UK, US, CA', region_setting['value'])
+
+        tracking_setting = self._get_setting(settings, 'tracking')
+        self.assertEqual(tracking_setting['value'], 'Yes')
+        self.assertEqual(tracking_setting['detailsContent'], 'param1=foo&param2=bar')
+
+        yesterday_spend = self._get_setting(settings, 'yesterday')
+        self.assertEqual('$0.00', yesterday_spend['value'])
+
+        budget_setting = self._get_setting(settings, 'budget')
+        self.assertEqual('$100.00', budget_setting['value'])
+
+        pacing_setting = self._get_setting(settings, 'pacing')
+        self.assertEqual('0.00%', pacing_setting['value'])
+        self.assertEqual('happy', pacing_setting['icon'])
+
+        goal_setting = [s for s in settings if 'goal' in s['name'].lower()][0]
+        goal_setting = self._get_setting(settings, 'goal')
+        self.assertEqual('0.0 below planned', goal_setting['description'])
+        self.assertEqual('happy', goal_setting['icon'])
+
+    @patch('reports.redshift.get_cursor')
+    def test_run_mid(self, cursor):
+        start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
+        end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
+
+        # check values for adgroup that is in the middle of flight time
+        # and is overperforming
+        ad_group = models.AdGroup.objects.get(pk=1)
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_settings.start_date = start_date
+        ad_group_settings.end_date = end_date
+        ad_group_settings.save(None)
+
+        credit = models.CreditLineItem.objects.create(
+            account=ad_group.campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=User.objects.get(pk=3)
+        )
+
+        budget = models.BudgetLineItem.objects.create(
+            campaign=ad_group.campaign,
+            credit=credit,
+            amount=100,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=User.objects.get(pk=3)
+        )
+
+        cursor().dictfetchall.return_value = [{
+            'source_id': 9,
+            'cost_cc_sum': 500000.0
+        }]
+
+        response = self._get_ad_group_overview(1)
+
+        self.assertTrue(response['success'])
+        header = response['data']['header']
+        self.assertEqual(header['title'], u'AdGroup name')
+        self.assertFalse(header['active'])
+
+        settings = response['data']['settings']
+
+        flight_setting = self._get_setting(settings, 'flight')
+        self.assertEqual('{sm}/{sd} - {em}/{ed}'.format(
+            sm=start_date.month,
+            sd=start_date.day,
+            em=end_date.month,
+            ed=end_date.day,
+        ), flight_setting['value'])
+
+        flight_setting = self._get_setting(settings, 'daily')
+        self.assertEqual('$100.00', flight_setting['value'])
+
+        flight_setting = self._get_setting(settings, 'yesterday')
+        self.assertEqual('$50.00', flight_setting['value'])
+        self.assertEqual('50.00% of daily cap', flight_setting['description'])
+
+        # TODO: Waiting for the new budget system to come in place
+        #pacing_setting = self._get_setting(settings, 'pacing')
+        #self.assertEqual('50.00%', pacing_setting['value'])
+        #self.assertEqual('happy', pacing_setting['icon'])
 
 
 class CampaignOverviewTest(TestCase):
