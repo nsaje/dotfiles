@@ -594,11 +594,19 @@ class CampaignSettings(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         resource = json.loads(request.body)
 
-        form = forms.CampaignSettingsForm(resource.get('settings', {}))
+        settings_dict = resource.get('settings', {})
+
+        settings = campaign.get_current_settings().copy_settings()
+        if not request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
+            # copy properties that can't be set by the user
+            # to pass validation
+            settings_dict['target_devices'] = settings.target_devices
+            settings_dict['target_regions'] = settings.target_regions
+
+        form = forms.CampaignSettingsForm(settings_dict)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        settings = campaign.get_current_settings().copy_settings()
         self.set_settings(request, settings, campaign, form.cleaned_data)
         self.set_campaign(campaign, form.cleaned_data)
 
@@ -815,6 +823,9 @@ class ConversionPixel(api_common.BaseApiView):
             raise exc.ValidationError()
 
         if 'archived' in data:
+            if not request.user.has_perm('zemauth.archive_restore_entity'):
+                raise exc.MissingDataError()
+
             if not isinstance(data['archived'], bool):
                 raise exc.ValidationError(message='Invalid value')
 

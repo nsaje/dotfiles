@@ -1318,9 +1318,7 @@ class PublisherCallbackTest(TransactionTestCase):
             'level': dash.constants.PublisherBlacklistLevel.GLOBAL,
             'state': dash.constants.PublisherStatus.BLACKLISTED,
             'publishers': [{
-                'domain': 'zemanta.com',
-                'exchange': 'adiant',
-                'source_id': 7
+                'domain': 'zemanta.com'
             }]
         }
 
@@ -1331,6 +1329,7 @@ class PublisherCallbackTest(TransactionTestCase):
         self.assertIsNone(allblacklist[0].campaign)
         self.assertIsNone(allblacklist[0].account)
         self.assertTrue(allblacklist[0].everywhere)
+        self.assertIsNone(allblacklist[0].source)
 
     def test_refresh_publisher_blacklist_rtb(self):
         # blacklisting on higher level overrides lower level blacklist

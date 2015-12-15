@@ -836,15 +836,15 @@ class AccountsAccountsTable(object):
                                                    .filter(ad_group__in=ad_groups)\
                                                    .group_current_settings()
 
-        ad_groups_sources_settings = models.AdGroupSourceSettings\
+        """ad_groups_sources_settings = models.AdGroupSourceSettings\
                                            .objects\
                                            .filter(ad_group_source__ad_group__in=ad_groups)\
                                            .filter_by_sources(filtered_sources)\
                                            .group_current_settings()\
-                                           .select_related('ad_group_source')
+                                           .select_related('ad_group_source')"""
 
         return helpers.get_ad_group_state_by_sources_running_status(
-            ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign__account_id')
+            ad_groups, ad_groups_settings, [], 'campaign__account_id')
 
     def get_data_status(self, user, accounts, last_success_actions, last_pixel_sync):
         last_pixel_sync_message = None
@@ -1334,14 +1334,14 @@ class CampaignAdGroupsTable(object):
         return response
 
     def get_per_ad_group_status_dict(self, ad_groups, ad_groups_settings, filtered_sources):
-        ad_groups_sources_settings = models.AdGroupSourceSettings.objects\
+        """ad_groups_sources_settings = models.AdGroupSourceSettings.objects\
                                            .filter(ad_group_source__ad_group=ad_groups)\
                                            .filter_by_sources(filtered_sources)\
                                            .group_current_settings()\
-                                           .select_related('ad_group_source')
+                                           .select_related('ad_group_source')"""
 
         return helpers.get_ad_group_state_by_sources_running_status(
-            ad_groups, ad_groups_settings, ad_groups_sources_settings, 'id')
+            ad_groups, ad_groups_settings, [], 'id')
 
     def get_data_status(self, user, ad_groups, last_success_actions, last_pixel_sync):
         last_pixel_sync_message = None
@@ -1506,15 +1506,15 @@ class AccountCampaignsTable(object):
                                                    .filter(ad_group__in=ad_groups)\
                                                    .group_current_settings()
 
-        ad_groups_sources_settings = models.AdGroupSourceSettings\
+        """ad_groups_sources_settings = models.AdGroupSourceSettings\
                                            .objects\
                                            .filter(ad_group_source__ad_group__in=ad_groups)\
                                            .filter_by_sources(filtered_sources)\
                                            .group_current_settings()\
-                                           .select_related('ad_group_source')
+                                           .select_related('ad_group_source')"""
 
         return helpers.get_ad_group_state_by_sources_running_status(
-            ad_groups, ad_groups_settings, ad_groups_sources_settings, 'campaign_id')
+            ad_groups, ad_groups_settings, [], 'campaign_id')
 
     def get_data_status(self, user, campaigns, last_success_actions, last_pixel_sync):
         last_pixel_sync_message = None
@@ -1648,10 +1648,15 @@ class PublishersTable(object):
                 ) | Q(
                     Q(ad_group=adgroup) |
                     Q(campaign=adgroup.campaign) |
-                    Q(account=adgroup.campaign.account) |
-                    Q(everywhere=True)
+                    Q(account=adgroup.campaign.account)
                 )
             )
+
+            pub_blacklist_qs |= models.PublisherBlacklist.objects.filter(
+                name=domain,
+                everywhere=True
+            )
+
 
         for publisher_data in publishers_data:
             publisher_domain = publisher_data['domain']
@@ -1666,12 +1671,15 @@ class PublishersTable(object):
                 continue
 
             for blacklisted_pub in pub_blacklist_qs:
+                globally_blacklisted = publisher_domain == blacklisted_pub.name and\
+                    blacklisted_pub.everywhere
+
                 if publisher_domain == blacklisted_pub.name and\
                         publisher_source == blacklisted_pub.source and\
-                        (blacklisted_pub.everywhere or
-                         blacklisted_pub.account == adgroup.campaign.account or
+                        (blacklisted_pub.account == adgroup.campaign.account or
                          blacklisted_pub.campaign == adgroup.campaign or
-                         blacklisted_pub.ad_group == adgroup):
+                         blacklisted_pub.ad_group == adgroup) or\
+                        globally_blacklisted:
                     if blacklisted_pub.status == constants.PublisherStatus.BLACKLISTED:
                         publisher_data['blacklisted'] = 'Blacklisted'
                     elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
@@ -1738,7 +1746,6 @@ class PublishersTable(object):
             )
             adg_blacklisted_publishers.extend(map(lambda pub_bl: {
                     'domain': pub_bl.name,
-                    'exchange': pub_bl.source.tracking_slug.replace('b1_', ''),
                 }, global_pub_blacklist_qs)
             )
 

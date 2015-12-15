@@ -16,41 +16,41 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
 
     option_list = BaseCommand.option_list + (
-        make_option('--adgroups', help='Comma separated list of adgroup ids.'),
+        make_option('--campaigns', help='Comma separated list of campaign ids.'),
         make_option('--from', help='Date from iso format'),
         make_option('--to', help='Date to iso format'),
         make_option('--verbose', help='Write out as much information as possible.', action='store_true'),
     )
 
     def handle(self, *args, **options):
-        adgroup_ids = parse_id_list(options, 'adgroups') if options['adgroups'] is not None else []
-        if not adgroup_ids:
-            logging.exception('No ad group specified. Specify at least one ad group.')
+        campaign_ids = parse_id_list(options, 'campaigns') if options['campaigns'] is not None else []
+        if not campaign_ids:
+            logging.exception('No campaign specified. Specify at least one campaign.')
             sys.exit(1)
 
         today = datetime.date.today()
         date_from = parse_date(options, 'from') or today
         date_to = parse_date(options, 'to') or today
 
-        logger.info('Refreshing reports from {} to {} for selected ad groups.'.format(date_from, date_to))
+        logger.info('Refreshing reports from {} to {} for selected campaings.'.format(date_from, date_to))
 
         verbose = bool(options.get('verbose', False))
 
         nr_days = int((date_to - date_from).days)
         daterange = rrule.rrule(rrule.DAILY, dtstart=date_from, until=date_to)
-        for i, agid in enumerate(adgroup_ids):
+        for i, cid in enumerate(campaign_ids):
             for j, report_date in enumerate(daterange):
                 if verbose:
-                    logger.info('Refreshing {i}/{n}({day}/{nr_day})\t{agid}\t{date}\t'.format(
+                    logger.info('Refreshing {i}/{n}({day}/{nr_day})\t{cid}\t{date}\t'.format(
                         i=i,
-                        n=len(adgroup_ids),
+                        n=len(campaign_ids),
                         day=j + 1,
                         nr_day=nr_days,
-                        agid=agid,
+                        cid=cid,
                         date=report_date.date()
                     ))
 
                 refresh.refresh_contentadstats(
                     report_date,
-                    models.AdGroup.objects.get(id=agid)
+                    models.Campaign.objects.get(id=cid)
                 )

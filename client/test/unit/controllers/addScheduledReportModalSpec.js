@@ -38,7 +38,7 @@ describe('AddScheduledReportModalCtrl', function() {
             close: function(){},
             opened: openedDeferred.promise
         };
-
+        $scope.getAdditionalColumns = function () { return []; };
         var mockApiFunc = function() {
             return {
                 then: function() {
@@ -84,15 +84,15 @@ describe('AddScheduledReportModalCtrl', function() {
                     start_date : moment('2015-01-12').format(),
                     end_date : moment('2015-01-19').format(),
                     order: '-cost',
-                    by_day: undefined,
-                    additional_fields: 'cost,impressions',
+                    by_day: false,
+                    additional_fields: '',
                     filtered_sources: '',
                     frequency: 'daily',
                     recipient_emails: undefined,
                     report_name: undefined
                 }
             );
-            expect($scope.addScheduledReportInProgress).toBe(true);
+            expect($scope.showInProgress).toBe(true);
             expect($modalInstance.close).not.toHaveBeenCalled();
             expect($scope.hasError).toEqual(false);
             expect($scope.validationErrors).toEqual({});
@@ -100,7 +100,7 @@ describe('AddScheduledReportModalCtrl', function() {
             deferred.reject({'err': ['Error']});
             $scope.$digest();
 
-            expect($scope.addScheduledReportInProgress).toBe(false);
+            expect($scope.showInProgress).toBe(false);
             expect($modalInstance.close).not.toHaveBeenCalled();
             expect($scope.hasError).toEqual(false);
             expect($scope.validationErrors).toEqual({'err': ['Error']});
@@ -126,15 +126,15 @@ describe('AddScheduledReportModalCtrl', function() {
                   start_date : moment('2015-01-12').format(),
                   end_date : moment('2015-01-19').format(),
                   order: '-cost',
-                  by_day: undefined,
-                  additional_fields: 'cost,impressions',
+                  by_day: false,
+                  additional_fields: '',
                   filtered_sources: '',
                   frequency: 'daily',
                   recipient_emails: undefined,
                   report_name: undefined
               }
             );
-            expect($scope.addScheduledReportInProgress).toBe(true);
+            expect($scope.showInProgress).toBe(true);
             expect($modalInstance.close).not.toHaveBeenCalled();
             expect($scope.hasError).toEqual(false);
             expect($scope.validationErrors).toEqual({});
@@ -142,7 +142,7 @@ describe('AddScheduledReportModalCtrl', function() {
             deferred.reject(null);
             $scope.$digest();
 
-            expect($scope.addScheduledReportInProgress).toBe(false);
+            expect($scope.showInProgress).toBe(false);
             expect($modalInstance.close).not.toHaveBeenCalled();
             expect($scope.hasError).toEqual(true);
             expect($scope.validationErrors).toEqual({});
@@ -168,8 +168,8 @@ describe('AddScheduledReportModalCtrl', function() {
                   start_date : moment('2015-01-12').format(),
                   end_date : moment('2015-01-19').format(),
                   order: '-cost',
-                  by_day: undefined,
-                  additional_fields: 'cost,impressions',
+                  by_day: false,
+                  additional_fields: '',
                   filtered_sources: '',
                   frequency: 'daily',
                   recipient_emails: undefined,
@@ -177,37 +177,14 @@ describe('AddScheduledReportModalCtrl', function() {
               }
 
             );
-            expect($scope.addScheduledReportInProgress).toBe(true);
+            expect($scope.showInProgress).toBe(true);
             expect($modalInstance.close).not.toHaveBeenCalled();
 
             deferred.resolve();
             $scope.$digest();
 
-            expect($scope.addScheduledReportInProgress).toBe(false);
+            expect($scope.showInProgress).toBe(false);
             expect($modalInstance.close).toHaveBeenCalled();
-        });
-
-        it('tests getAdditionalColumns', function() {
-
-            expect($scope.getAdditionalColumns()).toEqual(['cost', 'impressions']);
-
-            $scope.columns = [
-                { field: 'cost', shown: false, checked: true, unselectable: false },
-                { field: 'impressions', shown: true, checked: true, unselectable: false }
-            ];
-            expect($scope.getAdditionalColumns()).toEqual(['impressions']);
-
-            $scope.columns = [
-                { field: 'cost', shown: true, checked: false, unselectable: false },
-                { field: 'impressions', shown: true, checked: true, unselectable: false }
-            ];
-            expect($scope.getAdditionalColumns()).toEqual(['impressions']);
-
-            $scope.columns = [
-                { field: 'cost', shown: false, checked: true, unselectable: false },
-                { field: 'impressions', shown: false, checked: true, unselectable: false }
-            ];
-            expect($scope.getAdditionalColumns()).toEqual([]);
         });
     });
 });

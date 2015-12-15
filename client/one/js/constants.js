@@ -465,7 +465,7 @@ var constants = {
     conversionGoalTypeText: {
         1: 'Conversion Pixel',
         2: 'Google Analytics',
-        3: 'Omniture Event'
+        3: 'Adobe Analytics'
     },
     conversionWindowText: {
         24: '1 day',
@@ -498,7 +498,7 @@ var constants = {
         INACTIVE: 2
     },
     exportType: {
-        VIEW: 'view-csv',
+        ALL_ACCOUNTS: 'allaccounts-csv',
         ACCOUNT: 'account-csv',
         CAMPAIGN: 'campaign-csv',
         AD_GROUP: 'adgroup-csv',
@@ -982,7 +982,7 @@ var options = {
     conversionGoalTypes: [
         {name: 'Conversion Pixel', value: constants.conversionGoalType.PIXEL},
         {name: 'Google Analytics', value: constants.conversionGoalType.GA},
-        {name: 'Omniture', value: constants.conversionGoalType.OMNITURE}
+        {name: 'Adobe Analytics', value: constants.conversionGoalType.OMNITURE}
     ],
     conversionWindows: [
         {name: '1 day', value: 24},

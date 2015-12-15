@@ -2,15 +2,12 @@
 
 import datetime
 import mock
-import urlparse
-import urllib2
 
 from django.test import TestCase
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 
-from actionlog import api, constants, models, sync, exceptions
+from actionlog import api, constants, models, sync
 from dash import models as dashmodels
 from dash import constants as dashconstants
 from utils import test_helper, url_helper
@@ -75,11 +72,7 @@ class ActionLogApiTestCase(TestCase):
         expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).strftime(
             '%Y-%m-%dT%H:%M:%S.%f')[:-3]
 
-        callback = urlparse.urljoin(
-            settings.EINS_HOST, reverse(
-                'api.zwei_callback',
-                kwargs={'action_id': action.id})
-        )
+        callback = url_helper.get_zwei_callback_url(action.id)
 
         payload = {
             'source': ad_group_source.source.source_type.type,
@@ -438,9 +431,7 @@ class ActionLogApiTestCase(TestCase):
 
             expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
                 strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-            callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-            )
+            callback = url_helper.get_zwei_callback_url(action.id)
             payload = {
                 'source': ad_group_source.source.source_type.type,
                 'action': constants.Action.FETCH_CAMPAIGN_STATUS,
@@ -477,9 +468,7 @@ class ActionLogApiTestCase(TestCase):
 
             expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
                 strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-            callback = urlparse.urljoin(
-                settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-            )
+            callback = url_helper.get_zwei_callback_url(action.id)
             payload = {
                 'source': ad_group_source.source.source_type.type,
                 'action': constants.Action.FETCH_REPORTS,
@@ -616,9 +605,7 @@ class ActionLogApiTestCase(TestCase):
 
         expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
             strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-        callback = urlparse.urljoin(
-            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-        )
+        callback = url_helper.get_zwei_callback_url(action.id)
         payload = {
             'source': ad_group_source.source.source_type.type,
             'action': constants.Action.CREATE_CAMPAIGN,
@@ -654,9 +641,7 @@ class ActionLogApiTestCase(TestCase):
 
         expiration_dt = (utcnow + datetime.timedelta(minutes=models.ACTION_TIMEOUT_MINUTES)).\
             strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-        callback = urlparse.urljoin(
-            settings.EINS_HOST, reverse('api.zwei_callback', kwargs={'action_id': action.id})
-        )
+        callback = url_helper.get_zwei_callback_url(action.id)
         payload = {
             'source': ad_group_source_extra.source.source_type.type,
             'action': constants.Action.CREATE_CAMPAIGN,
