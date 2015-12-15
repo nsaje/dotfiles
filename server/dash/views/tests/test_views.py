@@ -627,6 +627,8 @@ class AdGroupArchiveRestoreTest(TestCase):
                 {
                     u'domain': u'google.com',
                     u'exchange': u'adiant',
+                    u'source_id': 2,
+                    u'ad_group_id': 1,
                 }
             ],
             'state': 2
@@ -640,11 +642,12 @@ class AdGroupArchiveRestoreTest(TestCase):
                 {
                     u'domain': u'zemanta.com',
                     u'exchange': u'adiant',
+                    u'source_id': 2,
+                    u'ad_group_id': 1,
                 }
             ],
             'state': 2
         }, second_al_entry.payload['args'])
-
 
 
 class AdGroupContentAdArchive(TestCase):
