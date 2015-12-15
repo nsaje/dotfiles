@@ -780,7 +780,7 @@ class PublisherBlacklistForm(forms.ModelForm):
             actionlogs_to_send.extend(
                 api.create_global_publisher_blacklist_actions(
                     None,
-                    None,
+                    self.request,
                     constants.PublisherStatus.BLACKLISTED,
                     global_blacklist,
                     send=False

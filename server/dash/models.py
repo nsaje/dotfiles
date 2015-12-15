@@ -2193,6 +2193,17 @@ class BudgetLineItem(FootprintModel):
             for key in spend_data.keys()
         }
 
+    def get_ideal_budget_spend(self, date):
+        if date < self.start_date:
+            return 0
+        elif date >= self.end_date:
+            return self.amount
+
+        date_start_diff = (date - self.start_date).days
+        date_total_diff = (self.end_date - self.start_date).days
+
+        return self.amount * float(date_start_diff) / float(date_total_diff)
+
     def clean(self):
         if self.pk:
             have_changed = any([

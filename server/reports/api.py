@@ -232,6 +232,12 @@ def _collect_results(result):
         return [collect_row(row) for row in result]
 
 
+def get_cost_from(start_date, **constraints):
+    rs = get_day_cost(start_date, breakdown=['source'], **constraints)
+    result = {row['source']: row['cost'] for row in rs}
+    return result
+
+
 def get_yesterday_cost(**constraints):
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
     today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)

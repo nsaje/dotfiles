@@ -11,7 +11,7 @@ oneApp.directive('zemConversionGoals', ['config', '$window', function(config, $w
             campaign: '=zemCampaign'
         },
         templateUrl: '/partials/zem_conversion_goals.html',
-        controller: ['$scope', '$element', '$modal', 'api', 'zemFilterService', function ($scope, $element, $modal, api, zemFilterService) {
+        controller: ['$scope', '$modal', 'api', function ($scope, $modal, api) {
             $scope.requestInProgress = false;
             $scope.error = false;
             $scope.conversionGoals = [];
@@ -68,6 +68,7 @@ oneApp.directive('zemConversionGoals', ['config', '$window', function(config, $w
                     function (data) {
                         $scope.conversionGoals = data.rows.map(constructConversionGoalRow);
                         $scope.availablePixels = data.availablePixels;
+                        $scope.error = false;
                     },
                     function () {
                         $scope.error = true;
@@ -103,6 +104,7 @@ oneApp.directive('zemConversionGoals', ['config', '$window', function(config, $w
 
                             return true;
                         });
+                        $scope.error = false;
                     },
                     function () {
                         $scope.error = true;
