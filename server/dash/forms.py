@@ -335,10 +335,11 @@ class ConversionGoalForm(forms.Form):
             pass
 
         try:
-            models.ConversionGoal.objects.get(campaign_id=self.campaign_id,
-                                              type=cleaned_data.get('type'),
-                                              goal_id=cleaned_data.get('goal_id'))
-            self.add_error('goal_id', 'This field has to be unique.')
+            if cleaned_data.get('type') != constants.ConversionGoalType.PIXEL:
+                models.ConversionGoal.objects.get(campaign_id=self.campaign_id,
+                                                  type=cleaned_data.get('type'),
+                                                  goal_id=cleaned_data.get('goal_id'))
+                self.add_error('goal_id', 'This field has to be unique.')
         except models.ConversionGoal.DoesNotExist:
             pass
 

@@ -450,7 +450,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         rows = []
-        pixel_ids_already_added = []
         for conversion_goal in campaign.conversiongoal_set.select_related('pixel').order_by('created_dt').all():
             row = {
                 'id': conversion_goal.id,
@@ -461,7 +460,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
             }
 
             if conversion_goal.type == constants.ConversionGoalType.PIXEL:
-                pixel_ids_already_added.append(conversion_goal.pixel.id)
                 row['pixel'] = {
                     'id': conversion_goal.pixel.id,
                     'slug': conversion_goal.pixel.slug,
@@ -473,9 +471,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
         available_pixels = []
         for conversion_pixel in campaign.account.conversionpixel_set.filter(archived=False):
-            if conversion_pixel.id in pixel_ids_already_added:
-                continue
-
             available_pixels.append({
                 'id': conversion_pixel.id,
                 'slug': conversion_pixel.slug,
