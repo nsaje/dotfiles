@@ -31,7 +31,7 @@ class Command(BaseCommand):
         no_stats_after = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         processed = 0
 
-        sample = self.random_blacklist_sample(blacklisted_before)
+        sample = self.random_blacklist_sample(blacklisted_before, no_stats_after)
         for blacklist_entry in sample:
             if blacklist_entry.ad_group is None:
                 continue
@@ -97,7 +97,7 @@ class Command(BaseCommand):
         ).count()
         statsd_helper.statsd_gauge('dash.blacklisted_publisher.blacklisted', count_blacklisted)
 
-    def random_blacklist_sample(self, date_from, sample_size=1000):
+    def random_blacklist_sample(self, date_from, date_to, sample_size=1000):
         first_blacklist_entry = dash.models.PublisherBlacklist.objects.filter(
             created_dt__gte=date_from,
             status=dash.constants.PublisherStatus.BLACKLISTED
@@ -105,6 +105,7 @@ class Command(BaseCommand):
 
         last_blacklist_entry = dash.models.PublisherBlacklist.objects.filter(
             created_dt__gte=date_from,
+            created_dt__lte=date_to,
             status=dash.constants.PublisherStatus.BLACKLISTED
         ).order_by("-id")[0]
 
