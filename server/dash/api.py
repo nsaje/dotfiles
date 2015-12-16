@@ -252,6 +252,7 @@ def refresh_publisher_blacklist(ad_group_source, request):
     actions = []
 
     campaign = ad_group_source.ad_group.campaign
+    source = ad_group_source.source
     if ad_group_source.source.source_type != dash.constants.SourceType.OUTBRAIN:
         currentCampaignBlacklist = dash.models.PublisherBlacklist.objects.filter(
             source=ad_group_source.source,
@@ -267,7 +268,9 @@ def refresh_publisher_blacklist(ad_group_source, request):
             # create and send blacklist actions
             campaign_blacklisted_publishers.append({
                 'domain': blacklistEntry.name,
-                'exchange': ad_group_source.source.tracking_slug.replace('b1_', ''),
+                'exchange': source.tracking_slug.replace('b1_', ''),
+                'source_id': source.id,
+                'ad_group_id': ad_group_source.ad_group.id
             })
 
         key = [campaign.id]
@@ -300,7 +303,9 @@ def refresh_publisher_blacklist(ad_group_source, request):
         # create and send blacklist actions
         accountBlacklistedPublishers.append({
             'domain': blacklistEntry.name,
-            'exchange': ad_group_source.source.tracking_slug.replace('b1_', ''),
+            'exchange': source.tracking_slug.replace('b1_', ''),
+            'source_id': source.id,
+            'ad_group_id': ad_group_source.ad_group.id
         })
 
     key = [ad_group_source.ad_group.campaign.account.id]

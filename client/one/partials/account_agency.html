@@ -59,15 +59,15 @@
             <label ng-repeat="error in errors.serviceFee" class="control-label error" for="service-fee-select">{{ error }}</label>
         </div>
 
-        <div class="form-group" ng-if="hasPermission('zemauth.can_modify_allowed_sources')">
-            <label for="media-sources-options-choices" class="col-xs-2 control-label">Media Sources <zem-help-popover content="Media sources made available on this account." placement="top"></zem-help-popover></label>
+        <div class="form-group" ng-class="{'has-error': !!errors.allowedSources}" ng-if="hasPermission('zemauth.can_modify_allowed_sources')">
+            <label for="media-sources-options-choices" class="col-xs-2 control-label"><zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_allowed_sources')" popover-placement="right"></zem-internal-feature> Media Sources <zem-help-popover content="Media sources made available on this account." placement="top"></zem-help-popover></label>
 
 
             <div class="col-xs-10">
                     
                 <div class="row media-source-control-row">
-                    <div class="col-xs-2">Available</div>
-                    <div class="col-xs-2">Allowed</div>
+                    <div class="col-xs-2"><span class="control-label">Available</span></div>
+                    <div class="col-xs-2"><span class="control-label">Allowed</span></div>
                 </div>
 
 
@@ -85,6 +85,10 @@
                         <select ng-model="selectedMediaSouces.allowed" multiple="" class="media-source-select">
                             <option ng-repeat="mediaSource in getAllowedMediaSources() | orderBy:mediaSourcesOrderByProp" value="{{mediaSource.value}}">{{mediaSource.name}}</option>
                         </select>
+                    </div>
+
+                    <div class="col-xs-3">
+                        <label ng-repeat="error in errors.allowedSources" class="control-label error feedback-text" for="service-fee-select">{{ error }}</label>
                     </div>
                 </div>
 
@@ -109,9 +113,9 @@
         <button type="button" class="btn btn-default" ng-click="getSettings(true)">Discard</button>
         <button type="button" class="btn btn-default pull-right" ng-class="{'disabled': !canArchive}" title="{{ (!canArchive && 'All of the account\'s campaigns have to be paused in order to archive the account.') || '' }}" ng-click="archiveAccount()">Archive account</button>
         <div class="loader" ng-show="requestInProgress"></div>
-        <span ng-show="saved" class="success">Your updates have been saved.</span>
-        <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
-        <span ng-show="discarded" class="success">Your updates have been discarded.</span>
+        <span ng-show="saved" class="success feedback-text">Your updates have been saved.</span>
+        <span ng-show="saved === false" class="error feedback-text">An error occurred while saving. Please correct the marked fields and save again.</span>
+        <span ng-show="discarded" class="success feedback-text">Your updates have been discarded.</span>
     </form>
 
   

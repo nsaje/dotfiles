@@ -167,6 +167,7 @@ class Account(models.Model):
 
     objects = QuerySetManager()
     demo_objects = DemoManager()
+    allowed_sources = models.ManyToManyField('Source')
 
     outbrain_marketer_id = models.CharField(null=True, blank=True, max_length=255)
 
@@ -484,8 +485,7 @@ class AccountSettings(SettingsBase):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
-    allowed_sources = ArrayField(models.IntegerField(), default=[])
-
+    
     objects = QuerySetManager()
 
     def save(self, request, *args, **kwargs):

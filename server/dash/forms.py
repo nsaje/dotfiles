@@ -209,6 +209,8 @@ class AccountAgencySettingsForm(forms.Form):
         max_value=100,
         decimal_places=2,
     )
+    # this is a dict with custom validation
+    allowed_sources = forms.Field(required=False) 
 
     def clean_default_account_manager(self):
         account_manager_id = self.cleaned_data.get('default_account_manager')
@@ -241,11 +243,10 @@ class AccountAgencySettingsForm(forms.Form):
 
         return sales_representative
 
-    def _clean_allowed_sources_dict(self, allowed_sources_dict):
+    def clean_allowed_sources(self):
         err = forms.ValidationError('Invalid allowed source.')
 
-        if allowed_sources_dict is  None:
-            return
+        allowed_sources_dict = self.cleaned_data['allowed_sources']
 
         if not isinstance(allowed_sources_dict, dict):
             raise err
@@ -263,14 +264,9 @@ class AccountAgencySettingsForm(forms.Form):
                 raise err
 
             allowed = v.get('allowed', False)
-            allowed_sources[key] = {'allowed': allowed, 'name': v['name']}
-
-        self.cleaned_data['allowed_sources'] = allowed_sources
-
-    def clean(self):
-        super(AccountAgencySettingsForm, self).clean()
-        self._clean_allowed_sources_dict(self.data.get('allowed_sources', None))
-
+            allowed_sources[key] = {'allowed': allowed, 'name': v.get('name', '')}
+        
+        return allowed_sources
 
 
 def validate_lower_case_only(st):
@@ -339,10 +335,11 @@ class ConversionGoalForm(forms.Form):
             pass
 
         try:
-            models.ConversionGoal.objects.get(campaign_id=self.campaign_id,
-                                              type=cleaned_data.get('type'),
-                                              goal_id=cleaned_data.get('goal_id'))
-            self.add_error('goal_id', 'This field has to be unique.')
+            if cleaned_data.get('type') != constants.ConversionGoalType.PIXEL:
+                models.ConversionGoal.objects.get(campaign_id=self.campaign_id,
+                                                  type=cleaned_data.get('type'),
+                                                  goal_id=cleaned_data.get('goal_id'))
+                self.add_error('goal_id', 'This field has to be unique.')
         except models.ConversionGoal.DoesNotExist:
             pass
 
