@@ -153,7 +153,9 @@ LOGGING = {
         'django.request': {
             'handlers': ['file', 'console'],
             'level': 'INFO',
-            'propagate': True
+        },
+        'newrelic.core.data_collector': {
+            'level': 'ERROR',
         },
         'celery.worker': {
             'handlers': ['file', 'console'],
@@ -168,7 +170,6 @@ LOGGING = {
         '': {
             'handlers': ['file', 'console', 'sentry'],
             'level': 'INFO',
-            'propagate': True
         }
     }
 }

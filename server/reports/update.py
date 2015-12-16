@@ -34,7 +34,7 @@ def stats_update_adgroup_source_traffic(datetime, ad_group, source, rows):
     ).select_related('article')
 
     if len(rows) == 0 and stats.count() > 0:
-        logger.warning(
+        logger.debug(
             'Deleting stats for ad group id: %d, source id: %d, datetime: %s; clicks: %s, '
             'impressions: %s, cost_cc: %s, data_cost_cc: %s, avg has_traffic_metrics: %s',
             ad_group.id,
@@ -98,7 +98,7 @@ def stats_update_adgroup_postclick(datetime, ad_group, rows):
     '''
 
     if len(rows) == 0:
-        logger.warning('Update of adgroup postclick for adgroup %d, datetime %s skipped, due to empty rows.',
+        logger.debug('Update of adgroup postclick for adgroup %d, datetime %s skipped, due to empty rows.',
                        ad_group.id, datetime)
         return
 
@@ -145,7 +145,7 @@ def stats_update_adgroup_all(datetime, ad_group, rows):
     '''
 
     if len(rows) == 0:
-        logger.warning('Update of adgroup all stats for adgroup %d, datetime %s skipped, due to empty rows.',
+        logger.debug('Update of adgroup all stats for adgroup %d, datetime %s skipped, due to empty rows.',
                        ad_group.id, datetime)
         return
 
@@ -194,7 +194,7 @@ def goals_update_adgroup(datetime, ad_group, rows):
     '''
 
     if len(rows) == 0:
-        logger.warning('Update of adgroup goals for adgroup %d, datetime %s skipped, due to empty rows.',
+        logger.debug('Update of adgroup goals for adgroup %d, datetime %s skipped, due to empty rows.',
                        ad_group.id, datetime)
         return
 
