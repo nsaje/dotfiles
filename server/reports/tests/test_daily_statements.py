@@ -54,7 +54,9 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(1, len(statements))
         self.assertEqual(1, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
-        self.assertEqual(Decimal('2400.0'), statements[0].spend)
+        self.assertEqual(1500000000000, statements[0].media_spend_nano)
+        self.assertEqual(500000000000, statements[0].data_spend_nano)
+        self.assertEqual(400000000000, statements[0].license_fee_nano)
 
     def test_first_day_cost_none(self, mock_content_ad_stats, mock_datetime):
         return_values = {
@@ -73,7 +75,9 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(1, len(statements))
         self.assertEqual(1, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
-        self.assertEqual(Decimal('0'), statements[0].spend)
+        self.assertEqual(Decimal('0'), statements[0].media_spend_nano)
+        self.assertEqual(Decimal('0'), statements[0].data_spend_nano)
+        self.assertEqual(Decimal('0'), statements[0].license_fee_nano)
 
     def test_multiple_budgets_attribution_order(self, mock_content_ad_stats, mock_datetime):
         return_values = {
@@ -91,16 +95,24 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(32, len(statements))
         for statement in statements[:29]:
             self.assertGreater(datetime.date(2015, 11, 20), statement.date)
-            self.assertEqual(0, statement.spend)
+            self.assertEqual(0, statement.media_spend_nano)
+            self.assertEqual(0, statement.data_spend_nano)
+            self.assertEqual(0, statement.license_fee_nano)
         self.assertEqual(1, statements[29].budget_id)
         self.assertEqual(datetime.date(2015, 11, 20), statements[29].date)
-        self.assertEqual(Decimal('3000'), statements[29].spend)
+        self.assertEqual(2500000000000, statements[29].media_spend_nano)
+        self.assertEqual(0, statements[29].data_spend_nano)
+        self.assertEqual(500000000000, statements[29].license_fee_nano)
         self.assertEqual(2, statements[30].budget_id)
         self.assertEqual(datetime.date(2015, 11, 20), statements[30].date)
-        self.assertEqual(Decimal('1800'), statements[30].spend)
+        self.assertEqual(1000000000000, statements[30].media_spend_nano)
+        self.assertEqual(500000000000, statements[30].data_spend_nano)
+        self.assertEqual(300000000000, statements[30].license_fee_nano)
         self.assertEqual(3, statements[31].budget_id)
         self.assertEqual(datetime.date(2015, 11, 20), statements[31].date)
-        self.assertEqual(Decimal('0'), statements[31].spend)
+        self.assertEqual(0, statements[31].media_spend_nano)
+        self.assertEqual(0, statements[31].data_spend_nano)
+        self.assertEqual(0, statements[31].license_fee_nano)
 
     def test_overspend(self, mock_content_ad_stats, mock_datetime):
         return_values = {
@@ -118,7 +130,9 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(1, len(statements))
         self.assertEqual(1, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
-        self.assertEqual(Decimal('3000.0'), statements[0].spend)
+        self.assertEqual(2500000000000, statements[0].media_spend_nano)
+        self.assertEqual(0, statements[0].data_spend_nano)
+        self.assertEqual(500000000000, statements[0].license_fee_nano)
 
     def test_different_fees(self, mock_content_ad_stats, mock_datetime):
         return_values = {
@@ -136,10 +150,14 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(2, len(statements))
         self.assertEqual(4, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
-        self.assertEqual(Decimal('5100.0'), statements[0].spend)
+        self.assertEqual(4250000000000, statements[0].media_spend_nano)
+        self.assertEqual(0, statements[0].data_spend_nano)
+        self.assertEqual(850000000000, statements[0].license_fee_nano)
         self.assertEqual(5, statements[1].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[1].date)
-        self.assertEqual(Decimal('1000.0'), statements[1].spend)
+        self.assertEqual(0, statements[1].media_spend_nano)
+        self.assertEqual(500000000000, statements[1].data_spend_nano)
+        self.assertEqual(500000000000, statements[1].license_fee_nano)
 
     def test_different_days(self, mock_content_ad_stats, mock_datetime):
         return_values = {
@@ -160,23 +178,33 @@ class DailyStatementsTestCase(TestCase):
         statements = reports.models.BudgetDailyStatement.objects.all().order_by('date', 'budget_id')
         self.assertEqual(13, len(statements))
         for statement in statements[:9]:
-            self.assertEqual(0, statement.spend)
+            self.assertEqual(0, statement.media_spend_nano)
+            self.assertEqual(0, statement.data_spend_nano)
+            self.assertEqual(0, statement.license_fee_nano)
             self.assertGreater(datetime.date(2015, 11, 11), statement.date)
         self.assertEqual(1, statements[9].budget_id)
         self.assertEqual(datetime.date(2015, 11, 10), statements[9].date)
-        self.assertEqual(Decimal('3000.0'), statements[9].spend)
+        self.assertEqual(2500000000000, statements[9].media_spend_nano)
+        self.assertEqual(0, statements[9].data_spend_nano)
+        self.assertEqual(500000000000, statements[9].license_fee_nano)
         self.assertEqual(2, statements[10].budget_id)
         self.assertEqual(datetime.date(2015, 11, 10), statements[10].date)
-        self.assertEqual(Decimal('600.0'), statements[10].spend)
+        self.assertEqual(0, statements[10].media_spend_nano)
+        self.assertEqual(500000000000, statements[10].data_spend_nano)
+        self.assertEqual(100000000000, statements[10].license_fee_nano)
         self.assertEqual(1, statements[11].budget_id)
         self.assertEqual(datetime.date(2015, 11, 11), statements[11].date)
-        self.assertEqual(Decimal('0'), statements[11].spend)
+        self.assertEqual(0, statements[11].media_spend_nano)
+        self.assertEqual(0, statements[11].data_spend_nano)
+        self.assertEqual(0, statements[11].license_fee_nano)
         self.assertEqual(2, statements[12].budget_id)
         self.assertEqual(datetime.date(2015, 11, 11), statements[12].date)
-        self.assertEqual(Decimal('1200.0'), statements[12].spend)
+        self.assertEqual(1000000000000, statements[12].media_spend_nano)
+        self.assertEqual(0, statements[12].data_spend_nano)
+        self.assertEqual(200000000000, statements[12].license_fee_nano)
 
-    @patch('reports.daily_statements._generate_statement')
-    def test_daily_statements_already_exist(self, mock_generate_statement, mock_content_ad_stats, mock_datetime):
+    @patch('reports.daily_statements._generate_statements')
+    def test_daily_statements_already_exist(self, mock_generate_statements, mock_content_ad_stats, mock_datetime):
         return_values = {}
         self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 30, 12))
@@ -187,7 +215,9 @@ class DailyStatementsTestCase(TestCase):
                     reports.models.BudgetDailyStatement.objects.create(
                         budget_id=budget.id,
                         date=date,
-                        spend=0
+                        media_spend_nano=0,
+                        data_spend_nano=0,
+                        license_fee_nano=0
                     )
 
         update_from = datetime.date(2015, 11, 30)
@@ -195,10 +225,10 @@ class DailyStatementsTestCase(TestCase):
         self.assertItemsEqual([datetime.date(2015, 11, 30)], dates)
 
         daily_statements.reprocess_daily_statements(update_from, self.campaign1)
-        mock_generate_statement.assert_called_once_with(datetime.date(2015, 11, 30), self.campaign1)
+        mock_generate_statements.assert_called_once_with(datetime.date(2015, 11, 30), self.campaign1)
 
-    @patch('reports.daily_statements._generate_statement')
-    def test_daily_statements_dont_exist(self, mock_generate_statement, mock_content_ad_stats, mock_datetime):
+    @patch('reports.daily_statements._generate_statements')
+    def test_daily_statements_dont_exist(self, mock_generate_statements, mock_content_ad_stats, mock_datetime):
         return_values = {}
         self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 30, 12))
@@ -210,4 +240,4 @@ class DailyStatementsTestCase(TestCase):
 
         daily_statements.reprocess_daily_statements(update_from, self.campaign1)
         expected_calls = [call(x, y) for x, y in itertools.product(expected_dates, [self.campaign1])]
-        mock_generate_statement.assert_has_calls(expected_calls)
+        mock_generate_statements.assert_has_calls(expected_calls)
