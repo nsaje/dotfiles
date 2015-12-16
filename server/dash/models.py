@@ -1809,7 +1809,7 @@ class ConversionGoal(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
 
     class Meta:
-        unique_together = (('campaign', 'name'), ('campaign', 'pixel'), ('campaign', 'type', 'goal_id'))
+        unique_together = (('campaign', 'name'), ('campaign', 'type', 'goal_id'))
 
     def get_stats_key(self):
         # map conversion goal to the key under which they are stored in stats database
