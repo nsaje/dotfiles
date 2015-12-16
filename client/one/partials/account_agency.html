@@ -60,7 +60,7 @@
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.allowedSources}" ng-if="hasPermission('zemauth.can_modify_allowed_sources')">
-            <label for="media-sources-options-choices" class="col-xs-2 control-label">Media Sources <zem-help-popover content="Media sources made available on this account." placement="top"></zem-help-popover></label>
+            <label for="media-sources-options-choices" class="col-xs-2 control-label"><zem-internal-feature ng-if="isPermissionInternal('zemauth.can_modify_allowed_sources')" popover-placement="right"></zem-internal-feature> Media Sources <zem-help-popover content="Media sources made available on this account." placement="top"></zem-help-popover></label>
 
 
             <div class="col-xs-10">

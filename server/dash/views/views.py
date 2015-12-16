@@ -576,16 +576,18 @@ class AdGroupOverview(api_common.BaseApiView):
             text = constants.CampaignGoal.get_text(goal)
             name = 'Campaign goals:' if i == 0 else ''
 
-            goal_value = self.get_goal_value(user, ad_group.campaign, campaign_settings, goal)
+            try:
+                goal_value = self.get_goal_value(user, ad_group.campaign, campaign_settings, goal)
+            except NotImplementedError:
+                goal_value = None
             goal_diff, description, success = self.get_goal_difference(
                 goal,
                 float(quantity),
                 goal_value
             )
-
             goal_setting = OverviewSetting(
                 name,
-                '{value} {description}'.format(value=text, description=goal_value),
+                '{value} {description}'.format(value=text, description=goal_value or 'N/A'),
                 description
             ).performance(success)
             settings.append(goal_setting.as_dict())
@@ -651,6 +653,8 @@ class AdGroupOverview(api_common.BaseApiView):
         """
         Returns difference in value, description and success tuple
         """
+        if actual is None:
+            return 0, "N/A", False
 
         if goal_type in (constants.CampaignGoal.PERCENT_BOUNCE_RATE,):
             diff = target - actual
@@ -1240,6 +1244,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             if end_datetime is not None and end_datetime <= datetime.datetime.utcnow():
                 raise exc.ValidationError()
 
+        allowed_sources = {source.id for source in ad_group.campaign.account.allowed_sources.all()}
+
         settings_writer.set(resource, request)
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
@@ -1250,7 +1256,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 ad_group_source,
                 ad_group_source.ad_group.get_current_settings(),
                 ad_group_source.get_current_settings_or_none(),
-                request.user
+                request.user,
+                allowed_sources,
             )
         })
 

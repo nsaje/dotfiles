@@ -2127,10 +2127,10 @@ class AdGroupOverviewTest(TestCase):
 
         flight_setting = self._get_setting(settings, 'flight')
         self.assertEqual('{sm}/{sd} - {em}/{ed}'.format(
-            sm=start_date.month,
-            sd=start_date.day,
-            em=end_date.month,
-            ed=end_date.day,
+            sm="{:02d}".format(start_date.month),
+            sd="{:02d}".format(start_date.day),
+            em="{:02d}".format(end_date.month),
+            ed="{:02d}".format(end_date.day),
         ), flight_setting['value'])
 
         flight_setting = self._get_setting(settings, 'daily')

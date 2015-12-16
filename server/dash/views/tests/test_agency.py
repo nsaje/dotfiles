@@ -28,7 +28,6 @@ class AdGroupSettingsTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
     def setUp(self):
-        self.maxDiff = None
         self.settings_dict = {
             'settings': {
                 'state': 1,
@@ -355,7 +354,6 @@ class AdGroupAgencyTest(TestCase):
         self.user = User.objects.get(pk=1)
         self.client.login(username=self.user.email, password=password)
 
-        self.maxDiff = None
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
@@ -832,7 +830,10 @@ class CampaignConversionGoalsTestCase(TestCase):
                     },
                 },
             ],
-            'available_pixels': []
+            'available_pixels': [{
+                'id': 1,
+                'slug': 'test'
+            }]
         }, decoded_response['data'])
 
     def test_get_no_permissions(self):
@@ -911,6 +912,9 @@ class CampaignConversionGoalsTestCase(TestCase):
                 },
             ],
             'available_pixels': [{
+                'id': 1,
+                'slug': 'test',
+            }, {
                 'id': new_pixel.id,
                 'slug': 'new',
             }]
@@ -1180,36 +1184,6 @@ class CampaignConversionGoalsTestCase(TestCase):
 
         decoded_response = json.loads(response.content)
         self.assertEqual('Invalid conversion pixel', decoded_response['data']['message'])
-
-    def test_post_pixel_not_unique_goal_id(self):
-        response = self.client.post(
-            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
-            json.dumps({
-                'name': 'conversion goal',
-                'type': 1,
-                'conversion_window': 168,
-                'goal_id': '1'
-            }),
-            content_type='application/json',
-            follow=True
-        )
-        self.assertEqual(200, response.status_code)
-
-        response = self.client.post(
-            reverse('campaign_conversion_goals', kwargs={'campaign_id': 2}),
-            json.dumps({
-                'name': 'conversion goal 2',
-                'type': 1,
-                'conversion_window': 168,
-                'goal_id': '1'
-            }),
-            content_type='application/json',
-            follow=True
-        )
-        self.assertEqual(400, response.status_code)
-
-        decoded_response = json.loads(response.content)
-        self.assertEqual({'goal_id': ['This field has to be unique.']}, decoded_response['data']['errors'])
 
     def test_post_pixel_invalid_account(self):
         models.Account.objects.get(id=2).users.add(User.objects.get(id=1))
@@ -2112,4 +2086,3 @@ class AccountAgencyTest(TestCase):
 
         campaign_settings.archived = False
         campaign_settings.save(None)
-        
