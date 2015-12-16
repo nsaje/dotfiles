@@ -24,18 +24,19 @@
                 Report Granularity
                 <zem-help-popover content="Granularity of the report." placement="top"></zem-help-popover>
             </label>
-
-            <ui-select config
-                id="granularity-select"
-                theme="select2"
-                search-enabled="false"
-                ng-model="export.type"
-                class="col-xs-5">
-                <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
-                    {{option.name}}
-                </ui-select-choices>
-            </ui-select>
+            <div class="col-xs-5">
+              <ui-select config
+                  id="granularity-select"
+                  theme="select2"
+                  search-enabled="false"
+                  ng-model="export.type"
+                  class="form-control">
+                  <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
+                  <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
+                      {{option.name}}
+                  </ui-select-choices>
+              </ui-select>
+            </div>
 
             <div class="col-xs-3">
                 <label ng-repeat="error in validationErrors.granularity" class="control-label small error" for="granularity-select">{{ error }}</label>
@@ -47,19 +48,20 @@
                 Frequency
                 <zem-help-popover content="Report will be delivered to your inbox every day, week or month at 2AM EST." placement="top"></zem-help-popover>
             </label>
-
-            <ui-select
-                    theme="select2"
-                    search-enabled="false"
-                    id="frequency-select"
-                    class="col-xs-5"
-                    ng-model="export.frequency"
-                    ng-change="checkBreakdownAvailable()">
-                <ui-select-match placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="freq in exportSchedulingFrequencies">
-                    <div>{{freq.name}}</div>
-                </ui-select-choices>
-            </ui-select>
+            <div class="col-xs-5">
+              <ui-select
+                      theme="select2"
+                      search-enabled="false"
+                      id="frequency-select"
+                      class="form-control"
+                      ng-model="export.frequency"
+                      ng-change="checkBreakdownAvailable()">
+                  <ui-select-match placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
+                  <ui-select-choices repeat="freq in exportSchedulingFrequencies">
+                      <div>{{freq.name}}</div>
+                  </ui-select-choices>
+              </ui-select>
+            </div>
 
             <div class="col-xs-3">
                 <label ng-repeat="error in validationErrors.frequency" class="control-label small error" for="frequency-select">{{ error }}</label>

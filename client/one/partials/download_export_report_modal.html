@@ -7,19 +7,20 @@
                 Report Granularity
                 <zem-help-popover content="Granularity of the report." placement="top"></zem-help-popover>
             </label>
-
-            <ui-select config
-                id="granularity-select"
-                theme="select2"
-                search-enabled="false"
-                ng-model="export.type"
-                class="col-xs-5"
-                ng-change="checkDownloadAllowed()">
-                <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
-                    {{option.name}}
-                </ui-select-choices>
-            </ui-select>
+            <div class="col-xs-5">
+              <ui-select config
+                  id="granularity-select"
+                  theme="select2"
+                  search-enabled="false"
+                  ng-model="export.type"
+                  class="form-control"
+                  ng-change="checkDownloadAllowed()">
+                  <ui-select-match placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
+                  <ui-select-choices repeat="option in options | filter:{hidden: '!true'}">
+                      {{option.name}}
+                  </ui-select-choices>
+              </ui-select>
+            </div>
         </div>
 
         <div class="form-group">
