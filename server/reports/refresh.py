@@ -113,12 +113,14 @@ def notify_contentadstats_change(date, campaign_id):
 
 @statsd_helper.statsd_timer('reports.refresh', 'refresh_changed_contentadstats_timer')
 def refresh_changed_contentadstats():
-    messages = sqs_helper.get_all_messages_json(settings.CAMPAIGN_CHANGE_QUEUE)
-    to_refresh = set((el['date'], el['campaign_id']) for el in messages)
+    messages = sqs_helper.get_all_messages(settings.CAMPAIGN_CHANGE_QUEUE)
+    to_refresh = [json.loads(message.get_body()) for message in messages]
+    to_refresh = set((el['date'], el['campaign_id']) for el in to_refresh)
     for date, campaign_id in to_refresh:
         campaign = dash.models.Campaign.objects.get(id=campaign_id)
         refresh_contentadstats(datetime.datetime.strptime(date, '%Y-%m-%d').date(), campaign)
 
+    sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, messages)
     statsd_helper.statsd_gauge('reports.refresh.refresh_changed_contentadstats_num', len(to_refresh))
 
 
