@@ -510,7 +510,7 @@ class CampaignConversionGoals(api_common.BaseApiView):
             raise exc.ValidationError(message='Max conversion goals per campaign exceeded')
 
         conversion_goal = models.ConversionGoal(campaign_id=campaign.id, type=form.cleaned_data['type'],
-                                                name=form.cleaned_data['name'], goal_id=form.cleaned_data['goal_id'])
+                                                name=form.cleaned_data['name'])
         if form.cleaned_data['type'] == constants.ConversionGoalType.PIXEL:
             try:
                 pixel = models.ConversionPixel.objects.get(id=form.cleaned_data['goal_id'],
@@ -523,6 +523,8 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
             conversion_goal.pixel = pixel
             conversion_goal.conversion_window = form.cleaned_data['conversion_window']
+        else:
+            conversion_goal.goal_id = form.cleaned_data['goal_id']
 
         with transaction.atomic():
             conversion_goal.save()
