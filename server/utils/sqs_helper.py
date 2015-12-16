@@ -13,20 +13,32 @@ def _get_connection():
     )
 
 
+def _get_queue(connection, queue_name):
+    queue = connection.lookup(queue_name)
+    if queue is not None:
+        return queue
+
+    return connection.create_queue(queue_name, settings.SQS_VISIBILITY_TIMEOUT)
+
+
 def write_message_json(queue_name, body):
-    conn = _get_connection()
-    queue = conn.create_queue(queue_name, settings.SQS_VISIBILITY_TIMEOUT)
+    queue = _get_queue(_get_connection(), queue_name)
     message = Message()
     message.set_body(json.dumps(body))
     queue.write(message)
 
 
-def get_all_messages_json(queue_name):
-    conn = _get_connection()
-    queue = conn.create_queue(queue_name, settings.SQS_VISIBILITY_TIMEOUT)
+def get_all_messages(queue_name):
+    queue = _get_queue(_get_connection(), queue_name)
     rs = queue.get_messages(10)
     messages = []
     while len(rs) > 0:
-        messages.extend([json.loads(message.get_body()) for message in rs])
+        messages.extend(rs)
         rs = queue.get_messages(10)
     return messages
+
+
+def delete_messages(queue_name, messages):
+    connection = _get_connection()
+    queue = _get_queue(connection, queue_name)
+    connection.delete_message_batch(queue, messages)
