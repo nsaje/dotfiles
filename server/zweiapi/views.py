@@ -163,11 +163,11 @@ def _process_zwei_response(action, data, request):
     logger.info('Processing Action Response: %s', action)
 
     if action.state != actionlog.constants.ActionState.WAITING:
-        logger.warning('Action not waiting for a response. Action: %s, response: %s', action, data)
+        logger.debug('Action not waiting for a response. Action: %s, response: %s', action, data)
         return
 
     if data['status'] != 'success':
-        logger.warning('Action failed. Action: %s, response: %s', action, data)
+        logger.debug('Action failed. Action: %s, response: %s', action, data)
 
         action.state = actionlog.constants.ActionState.FAILED
         action.message = _get_error_message(data)
@@ -379,10 +379,10 @@ def _fetch_reports_callback(action, data):
         action.message = msg % (ad_group.id, source.id, date)
         action.save()
 
-        logger.warning(msg, ad_group.id, source.id, date)
+        logger.debug(msg, ad_group.id, source.id, date)
 
     if empty_response:
-        logger.warning(
+        logger.debug(
             'Empty report received for adgroup %d, source %d, datetime %s',
             ad_group.id,
             source.id,
@@ -429,10 +429,10 @@ def _fetch_reports_by_publisher_callback(action, data):
         action.message = msg % (ad_group.id, source.id, date)
         action.save()
 
-        logger.warning(msg, ad_group.id, source.id, date)
+        logger.debug(msg, ad_group.id, source.id, date)
 
     if empty_response:
-        logger.warning(
+        logger.debug(
             'Empty report received for adgroup %d, source %d, datetime %s',
             ad_group.id,
             source.id,
