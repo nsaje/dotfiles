@@ -285,6 +285,10 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     var getInfoboxData = function() {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+
         api.campaignOverview.get($state.params.id).then(
             function(data) {
                 $scope.infoboxHeader = data.header;

@@ -74,6 +74,9 @@ describe('AdGroupAdsPlusCtrl', function() {
             },
             adGroupOverview: {
                 get: mockApiFunc
+            },
+            campaignOverview: {
+                get: mockApiFunc
             }
         };
 
