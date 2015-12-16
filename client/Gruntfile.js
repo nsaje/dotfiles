@@ -271,6 +271,13 @@ module.exports = function (grunt) {
             }
         },
         protractor: {
+            debug: {
+                options: {
+                    debug: true
+                },
+                configFile: 'test/protractor.conf.js',
+                chromeDriver: 'node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update'
+            },
             local: {
                 configFile: 'test/protractor.conf.js',
                 chromeDriver: 'node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update'
@@ -328,6 +335,7 @@ module.exports = function (grunt) {
     grunt.registerTask('default', ['ngconstant:prod', 'build']);
     grunt.registerTask('test', ['default', 'karma:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
     grunt.registerTask('e2e', ['protractor:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
+    grunt.registerTask('e2e_debug', ['protractor:' + 'debug']);
     grunt.registerTask('dev', ['ngconstant:dev', 'build', 'connect:dev', 'watch']);
     grunt.registerTask('lint', ['ngconstant:dev', 'jslint']);
 };
