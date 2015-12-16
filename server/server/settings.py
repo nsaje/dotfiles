@@ -155,6 +155,16 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True
         },
+        'celery.worker': {
+            'handlers': ['file', 'console'],
+            'level': 'WARNING',
+            'propagate': True
+        },
+        'requests.packages.urllib3': {
+            'handlers': ['file', 'console'],
+            'level': 'WARNING',
+            'propagate': True
+        },
         '': {
             'handlers': ['file', 'console', 'sentry'],
             'level': 'INFO',
