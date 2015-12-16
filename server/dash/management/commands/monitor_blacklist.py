@@ -1,5 +1,6 @@
 import datetime
 import logging
+import random
 
 from django.core.management.base import BaseCommand
 
@@ -16,6 +17,8 @@ class Command(BaseCommand):
 
     @statsd_helper.statsd_timer('dash.commands', 'monitor_blacklist')
     def handle(self, *args, **options):
+        random.seed()
+
         logger.info('Monitor publisher blacklisting.')
 
         impressions, clicks = 0, 0
@@ -28,9 +31,8 @@ class Command(BaseCommand):
         no_stats_after = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         processed = 0
 
-        for blacklist_entry in dash.models.PublisherBlacklist.objects.filter(
-            created_dt__lte=blacklisted_before,
-            status=dash.constants.PublisherStatus.BLACKLISTED):
+        sample = self.random_blacklist_sample(blacklisted_before)
+        for blacklist_entry in sample:
             if blacklist_entry.ad_group is None:
                 continue
             # fetch blacklisted status from db
@@ -94,3 +96,41 @@ class Command(BaseCommand):
             status=dash.constants.PublisherStatus.BLACKLISTED
         ).count()
         statsd_helper.statsd_gauge('dash.blacklisted_publisher.blacklisted', count_blacklisted)
+
+    def random_blacklist_sample(self, date_from, sample_size=1000):
+        first_blacklist_entry = dash.models.PublisherBlacklist.objects.filter(
+            created_dt__gte=date_from,
+            status=dash.constants.PublisherStatus.BLACKLISTED
+        ).first()
+
+        last_blacklist_entry = dash.models.PublisherBlacklist.objects.filter(
+            created_dt__gte=date_from,
+            status=dash.constants.PublisherStatus.BLACKLISTED
+        ).order_by("-id")[0]
+
+        if first_blacklist_entry is None or last_blacklist_entry is None:
+            return []
+
+        low = first_blacklist_entry.id
+        high = last_blacklist_entry.id
+
+        count_between = dash.models.PublisherBlacklist.objects.filter(
+            id__range=(low, high),
+            status=dash.constants.PublisherStatus.BLACKLISTED
+        ).count()
+        if count_between < sample_size:
+            return dash.models.PublisherBlacklist.objects.filter(
+                id__range=(low, high),
+                status=dash.constants.PublisherStatus.BLACKLISTED
+            )
+
+        ret = []
+        for i in xrange(sample_size):
+            potential_id = random.randint(low, high)
+
+            random_blacklist = dash.models.PublisherBlacklist.objects.filter(
+                id=potential_id
+            ).first()
+            if random_blacklist is not None:
+                ret.append(random_blacklist)
+        return ret
