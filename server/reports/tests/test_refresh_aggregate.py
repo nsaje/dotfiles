@@ -313,7 +313,12 @@ class ContentAdStatsDataChangeTestCase(test.TestCase):
             call(datetime.date(2015, 12, 2), campaign)
         ]
         mock_refresh_contentadstats.assert_has_calls(calls, any_order=True)
-        mock_delete_messages.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, [message1, message2])
+
+        delete_calls = [
+            call(settings.CAMPAIGN_CHANGE_QUEUE, [message1]),
+            call(settings.CAMPAIGN_CHANGE_QUEUE, [message2])
+        ]
+        mock_delete_messages.assert_has_calls(delete_calls, any_order=True)
 
     @patch('reports.refresh.refresh_contentadstats')
     @patch('utils.sqs_helper.get_all_messages')
