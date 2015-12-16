@@ -4,6 +4,8 @@ import boto.sqs
 from boto.sqs.message import Message
 from django.conf import settings
 
+MAX_MESSAGES_PER_BATCH = 10
+
 
 def _get_connection():
     return boto.sqs.connect_to_region(
@@ -30,15 +32,17 @@ def write_message_json(queue_name, body):
 
 def get_all_messages(queue_name):
     queue = _get_queue(_get_connection(), queue_name)
-    rs = queue.get_messages(10)
+    rs = queue.get_messages(MAX_MESSAGES_PER_BATCH)
     messages = []
     while len(rs) > 0:
         messages.extend(rs)
-        rs = queue.get_messages(10)
+        rs = queue.get_messages(MAX_MESSAGES_PER_BATCH)
     return messages
 
 
 def delete_messages(queue_name, messages):
     connection = _get_connection()
     queue = _get_queue(connection, queue_name)
-    connection.delete_message_batch(queue, messages)
+    for i in range(0, len(messages), MAX_MESSAGES_PER_BATCH):
+        connection.delete_message_batch(
+            queue, messages[i:i+MAX_MESSAGES_PER_BATCH])
