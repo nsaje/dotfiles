@@ -576,16 +576,18 @@ class AdGroupOverview(api_common.BaseApiView):
             text = constants.CampaignGoal.get_text(goal)
             name = 'Campaign goals:' if i == 0 else ''
 
-            goal_value = self.get_goal_value(user, ad_group.campaign, campaign_settings, goal)
+            try:
+                goal_value = self.get_goal_value(user, ad_group.campaign, campaign_settings, goal)
+            except NotImplementedError:
+                goal_value = "N/A"
             goal_diff, description, success = self.get_goal_difference(
                 goal,
                 float(quantity),
                 goal_value
             )
-
             goal_setting = OverviewSetting(
                 name,
-                '{value} {description}'.format(value=text, description=goal_value),
+                '{value} {description}'.format(value=text, description=goal_value or 'N/A'),
                 description
             ).performance(success)
             settings.append(goal_setting.as_dict())
@@ -651,6 +653,8 @@ class AdGroupOverview(api_common.BaseApiView):
         """
         Returns difference in value, description and success tuple
         """
+        if actual is None:
+            return 0, "N/A", False
 
         if goal_type in (constants.CampaignGoal.PERCENT_BOUNCE_RATE,):
             diff = target - actual
