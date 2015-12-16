@@ -1,24 +1,24 @@
 # -- We removed cron.yaml and moved to more straightforward solution.
 # -- This is plain crontab formatted file. Please note you should be careful with syntax
 
-0 * * * *       docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py fetch_all_order > /dev/null  2>&1
-15,45 * * * *   docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py refresh_actionlog > /dev/null  2>&1
-10 * * * *      docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_ga_reports > /dev/null  2>&1
-20,50 * * * *   docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_aggregate_discrepancy > /dev/null  2>&1
-20,50 * * * *   docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_redshift_discrepancy > /dev/null  2>&1
-20,50 * * * *   docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_blacklist > /dev/null  2>&1
-30 * * * *      docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_recent_demo_data > /dev/null  2>&1
-15,45 * * * *   docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_conversion_pixels > /dev/null  2>&1
-0 11 * * *      docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py refresh_demo_stats > /dev/null  2>&1
-15,45 * * * *   docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_content_ads > /dev/null  2>&1
-30 16 * * *     docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py send_supply_report_emails > /dev/null  2>&1
-*/50 * * * *    docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py notify_depleted_budget_campaigns > /dev/null  2>&1
-0 11 * * *      docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py vacuum_stats_db > /dev/null  2>&1
-45 * * * *      docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py update_touchpoint_conversions_full > /dev/null  2>&1
-10 9 * * *      docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py autopilot_adjust_media_source_bid_cpcs > /dev/null  2>&1
-0 5,7,9 * * *   docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py fetch_reports_by_publisher > /dev/null  2>&1
-0 9 * * *       docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py send_content_approval_email > /dev/null  2>&1
-40 * * * *      docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py monitor_adgroup_propagation > /dev/null  2>&1
-0 7 * * *       docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py send_scheduled_export_reports > /dev/null  2>&1
-*/5 * * * *     docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py refresh_changed_contentadstats > /dev/null  2>&1
-44 * * * *      docker run --rm -h $(hostname) -w /app/zemanta-eins -e "ZWEI_CALLBACK_BASE_URL=https://one-cb.zemanta.com" --link=statsd --link=memcached --entrypoint=python z1-bundle:current manage.py schedule_full_data_refresh > /dev/null  2>&1
+0 * * * *       /home/ubuntu/docker-manage-py.sh fetch_all_order
+15,45 * * * *   /home/ubuntu/docker-manage-py.sh refresh_actionlog
+10 * * * *      /home/ubuntu/docker-manage-py.sh monitor_ga_reports
+20,50 * * * *   /home/ubuntu/docker-manage-py.sh monitor_aggregate_discrepancy
+20,50 * * * *   /home/ubuntu/docker-manage-py.sh monitor_redshift_discrepancy
+20,50 * * * *   /home/ubuntu/docker-manage-py.sh monitor_blacklist
+30 * * * *      /home/ubuntu/docker-manage-py.sh monitor_recent_demo_data
+15,45 * * * *   /home/ubuntu/docker-manage-py.sh monitor_conversion_pixels
+0 11 * * *      /home/ubuntu/docker-manage-py.sh refresh_demo_stats
+15,45 * * * *   /home/ubuntu/docker-manage-py.sh monitor_content_ads
+30 16 * * *     /home/ubuntu/docker-manage-py.sh send_supply_report_emails
+*/50 * * * *    /home/ubuntu/docker-manage-py.sh notify_depleted_budget_campaigns
+0 11 * * *      /home/ubuntu/docker-manage-py.sh vacuum_stats_db
+45 * * * *      /home/ubuntu/docker-manage-py.sh update_touchpoint_conversions_full
+10 9 * * *      /home/ubuntu/docker-manage-py.sh autopilot_adjust_media_source_bid_cpcs
+0 5,7,9 * * *   /home/ubuntu/docker-manage-py.sh fetch_reports_by_publisher
+0 9 * * *       /home/ubuntu/docker-manage-py.sh send_content_approval_email
+40 * * * *      /home/ubuntu/docker-manage-py.sh monitor_adgroup_propagation
+0 7 * * *       /home/ubuntu/docker-manage-py.sh send_scheduled_export_reports
+*/5 * * * *     /home/ubuntu/docker-manage-py.sh refresh_changed_contentadstats
+44 * * * *      /home/ubuntu/docker-manage-py.sh schedule_full_data_refresh
