@@ -579,7 +579,7 @@ class AdGroupOverview(api_common.BaseApiView):
             try:
                 goal_value = self.get_goal_value(user, ad_group.campaign, campaign_settings, goal)
             except NotImplementedError:
-                goal_value = "N/A"
+                goal_value = None
             goal_diff, description, success = self.get_goal_difference(
                 goal,
                 float(quantity),
