@@ -176,7 +176,7 @@ LOGGING = {
 CELERYD_LOG_FORMAT = LOGGING['formatters']['standard']['format']
 
 if TESTING:
-    LOGGING = None
+    #LOGGING = None
     GOOGLE_OAUTH_ENABLED = False
     PAGER_DUTY_ENABLED = False
     USE_HASH_CACHE = False

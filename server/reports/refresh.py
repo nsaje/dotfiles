@@ -1,4 +1,5 @@
 from collections import defaultdict
+from decimal import Decimal
 import datetime
 import json
 import logging
@@ -116,16 +117,18 @@ def _add_effective_spend(campaign, date, rows):
             license_fee_nano=Sum('license_fee_nano')
         )
     attributed_spend_nano = (attributed_spends['media_nano'] or 0) + (attributed_spends['data_nano'] or 0)
-    actual_spend_nano = sum(row['cost_cc'] or 0 for row in rows) * CC_TO_NANO
+    actual_media_spend_nano = sum(row['cost_cc'] or 0 for row in rows) * CC_TO_NANO
+    actual_data_spend_nano = sum(row['data_cost_cc'] or 0 for row in rows) * CC_TO_NANO
+    actual_spend_nano = actual_media_spend_nano + actual_data_spend_nano
     license_fee_nano = attributed_spends['license_fee_nano'] or 0
 
     percent_attributed_spend = 0
     if actual_spend_nano > 0:
-        percent_attributed_spend = attributed_spend_nano / actual_spend_nano
+        percent_attributed_spend = min(1, attributed_spend_nano / Decimal(actual_spend_nano))
 
     percent_license_fee = 0
     if attributed_spend_nano > 0:
-        percent_license_fee = license_fee_nano / attributed_spend_nano
+        percent_license_fee = min(1, license_fee_nano / Decimal(attributed_spend_nano))
 
     for row in rows:
         row['effective_media_spend_nano'] = int(percent_attributed_spend * (row['cost_cc'] or 0) * CC_TO_NANO)
@@ -235,6 +238,15 @@ def refresh_contentadstats_diff(date, campaign):
                        'visits', 'new_visits', 'bounced_visits', 'pageviews', 'total_time_on_site')
 
         if all(row[key] == 0 for key in metric_keys):
+            continue
+
+        if any(row[key] < 0 for key in metric_keys):
+            logger.error(
+                'ad group stats data missing. skipping it in refreshing diffs. ad group id: {} source id: {}'.format(
+                    adgroup_stats.ad_group.id,
+                    adgroup_stats.source.id
+                )
+            )
             continue
 
         for key in metric_keys:
