@@ -1,17 +1,13 @@
 <div class="page page-ad-group-ads-plus">
     <div class="section">
-        <div ng-if="!hasPermission('zemauth.can_see_infobox')" class="graph-infobox-parent">
-            <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
-        </div>
-
-        <div ng-if="hasPermission('zemauth.can_see_infobox')" class="graph-infobox-parent">
-            <div ng-class="{'graph-container-short': infoboxVisible, 'graph-container-full': !infoboxVisible}">
-                <zem-chart ng-class="{'chart-hidden': chartHidden}" zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
+        <div class="graph-infobox-parent">
+            <div ng-class="{'graph-container-short': infoboxVisible && hasPermission('zemauth.can_see_infobox'), 'graph-container-full': !infoboxVisible && hasPermission('zemauth.can_see_infobox'), 'graph-infobox-parent': !hasPermission('zemauth.can_see_inbofox')}">
+                <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
             </div>
             <div ng-class="{'infobox-container-full': infoboxVisible, 'infobox-container-short': !infoboxVisible}">
                 <zem-infobox header="infoboxHeader" settings="infoboxSettings"></zem-infobox>
             </div>
-        <div>
+        <div> 
     </div>
     <div class="section table-ad-group-ads-plus">
         <div class="button-bar">
