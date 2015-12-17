@@ -119,18 +119,18 @@ def _add_effective_spend(campaign, date, rows):
     actual_spend_nano = sum(row['cost_cc'] or 0 for row in rows) * CC_TO_NANO
     license_fee_nano = attributed_spends['license_fee_nano'] or 0
 
-    percent_attributed_spend = attributed_spend_nano / actual_spend_nano if actual_spend_nano > 0 else 0
-    percent_license_fee = license_fee_nano / attributed_spend_nano if attributed_spend_nano > 0 else 0
+    percent_attributed_spend = 0
+    if actual_spend_nano > 0:
+        percent_attributed_spend = attributed_spend_nano / actual_spend_nano
+
+    percent_license_fee = 0
+    if attributed_spend_nano > 0:
+        percent_license_fee = license_fee_nano / attributed_spend_nano
 
     for row in rows:
-        cost_nano = (row['cost_cc'] or 0) * CC_TO_NANO
-        data_cost_nano = (row['data_cost_cc'] or 0) * CC_TO_NANO
-        effective_media_spend_nano = int(percent_attributed_spend * cost_nano)
-        effective_data_spend_nano = int(percent_attributed_spend * data_cost_nano)
-        effective_spend_nano = effective_media_spend_nano + effective_data_spend_nano
-        row['effective_media_spend_nano'] = effective_media_spend_nano
-        row['effective_data_spend_nano'] = effective_data_spend_nano
-        row['license_fee_nano'] = int(percent_license_fee * (effective_spend_nano))
+        row['effective_media_spend_nano'] = int(percent_attributed_spend * (row['cost_cc'] or 0) * CC_TO_NANO)
+        row['effective_data_spend_nano'] = int(percent_attributed_spend * (row['data_cost_cc'] or 0) * CC_TO_NANO)
+        row['license_fee_nano'] = int(percent_license_fee * (row['effective_media_spend_nano'] + row['effective_data_spend_nano']))
 
 
 def notify_contentadstats_change(date, campaign_id):
