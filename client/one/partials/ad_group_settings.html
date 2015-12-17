@@ -71,6 +71,7 @@
                 <label class="col-xs-2 control-label">
                     Device targeting
                     <zem-help-popover content="The devices on which your content ads should be shown." placement="top"></zem-help-popover>
+                    <span class="sidenote" ng-if="!isDefaultTargetDevices()">* different than campaign default</span>
                 </label>
                 <div class="col"
                     zem-tutorial-popover-condition-promise="adGroupHasFreshSettings()"
@@ -90,6 +91,7 @@
                 <label class="col-xs-2 control-label">
                     Locations
                     <zem-help-popover content="The countries, states and DMA regions where your content ads should be shown." placement="top"></zem-help-popover>
+                    <span class="sidenote" ng-if="!isDefaultTargetRegions()">* different than campaign default</span>
                 </label>
 
                 <div class="col-xs-6 col-md-4">
