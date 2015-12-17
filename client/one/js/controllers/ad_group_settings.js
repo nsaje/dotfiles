@@ -149,9 +149,9 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         var isDefault = true;
         var item, defaultItem;
 
-        options.adTargetDevices.forEach(function (item) {
-            item = getDeviceItemByValue($scope.settings.targetDevices, item.value);
-            defaultItem = getDeviceItemByValue($scope.defaultSettings.targetDevices, item.value);
+        options.adTargetDevices.forEach(function (option) {
+            item = getDeviceItemByValue($scope.settings.targetDevices, option.value);
+            defaultItem = getDeviceItemByValue($scope.defaultSettings.targetDevices, option.value);
 
             if (item.checked !== defaultItem.checked) {
                 isDefault = false;
