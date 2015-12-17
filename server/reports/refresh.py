@@ -17,6 +17,8 @@ import dash.models
 
 logger = logging.getLogger(__name__)
 
+CC_TO_NANO = 1000000
+
 
 def _get_joined_stats_rows(date, campaign_id):
     query_1 = '''SELECT castats.source_id, castats.content_ad_id, castats.date, castats.cost_cc,
@@ -103,6 +105,30 @@ def _get_goals_json(goals):
         result[key] = goal.conversions
 
     return json.dumps(result)
+
+
+def _add_effective_spend(campaign, date, rows):
+    attributed_spends = reports.models.BudgetDailyStatement.objects.\
+        filter(budget__campaign=campaign, date=date).\
+        aggregate(
+            media_nano=Sum('media_spend_nano'),
+            data_nano=Sum('data_spend_nano'),
+            licesense_fee_nano=Sum('license_fee_nano')
+        )
+    attributed_spend_nano = (attributed_spends['media'] or 0) + (attributed_spends['data'] or 0)
+    actual_spend_nano = sum(row['cost_cc'] for row in rows) * CC_TO_NANO
+    license_fee_nano = attributed_spends['license_fee_nano'] or 0
+
+    percent_attributed_spend = attributed_spend_nano / actual_spend_nano
+    percent_license_fee = license_fee_nano / attributed_spend_nano
+
+    for row in rows:
+        effective_media_spend_nano = int(percent_attributed_spend * row['cost_cc'] * CC_TO_NANO)
+        effective_data_spend_nano = int(percent_attributed_spend * row['data_cost_cc'] * CC_TO_NANO)
+        effective_spend_nano = effective_media_spend_nano + effective_data_spend_nano
+        row['effective_media_spend_nano'] = effective_media_spend_nano
+        row['effective_data_spend_nano'] = effective_data_spend_nano
+        row['license_fee_nano'] = int(percent_license_fee * (effective_spend_nano) * CC_TO_NANO)
 
 
 def notify_contentadstats_change(date, campaign_id):
