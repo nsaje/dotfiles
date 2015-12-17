@@ -128,7 +128,10 @@ class RefreshContentAdStats(test.TestCase):
             'data_cost_cc': 550000,
             'adgroup_id': 2,
             'campaign_id': 2,
-            'account_id': 1
+            'account_id': 1,
+            'effective_media_spend_nano': 0,
+            'effective_data_spend_nano': 0,
+            'license_fee_nano': 0
         }, {
             'conversions': '{}',
             'cost_cc': 650000,
@@ -145,7 +148,10 @@ class RefreshContentAdStats(test.TestCase):
             'data_cost_cc': 650000,
             'adgroup_id': 2,
             'campaign_id': 2,
-            'account_id': 1
+            'account_id': 1,
+            'effective_media_spend_nano': 0,
+            'effective_data_spend_nano': 0,
+            'license_fee_nano': 0
         }]
 
         mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
@@ -175,7 +181,10 @@ class RefreshContentAdStats(test.TestCase):
             'data_cost_cc': None,
             'adgroup_id': 3,
             'campaign_id': 3,
-            'account_id': 1
+            'account_id': 1,
+            'effective_media_spend_nano': 0,
+            'effective_data_spend_nano': 0,
+            'license_fee_nano': 0
         }]
 
         mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
