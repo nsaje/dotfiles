@@ -753,36 +753,6 @@ class CampaignAdGroups(api_common.BaseApiView):
         return self.create_api_response(response)
 
 
-class OverviewSetting(object):
-
-    def __init__(self, name, value, description, tooltip=None):
-        self.name = name
-        self.value = value
-        self.description = description
-        self.detailsLabel = None
-        self.detailsContent = None
-        self.icon = None
-        self.type = 'setting'
-
-    def comment(self, details_label, details_description):
-        ret = copy.deepcopy(self)
-        ret.detailsLabel = details_label
-        ret.detailsContent = details_description
-        return ret
-
-    def performance(self, ok):
-        ret = copy.deepcopy(self)
-        ret.icon = 'happy' if ok else 'sad'
-        return ret
-
-    def as_dict(self):
-        ret = {}
-        for key, value in self.__dict__.iteritems():
-            if value is not None:
-                ret[key] = value
-        return ret
-
-
 class CampaignOverview(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_overview')
     def get(self, request, campaign_id):
