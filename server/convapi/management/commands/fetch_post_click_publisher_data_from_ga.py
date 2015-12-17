@@ -50,10 +50,9 @@ class Command(BaseCommand):
 
     def _get_ga_service(self):
         logger.debug('Getting Google Analytics service.')
-        ga_auth_data = settings.GOOGLE_ANALYTICS_AUTH
         credentials = SignedJwtAssertionCredentials(
-            ga_auth_data['client_email'],
-            ga_auth_data['private_key'],
+            settings.GA_CLIENT_EMAIL,
+            settings.GA_PRIVATE_KEY,
             GA_SCOPE
         )
         http = credentials.authorize(httplib2.Http())
