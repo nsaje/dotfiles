@@ -279,7 +279,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             allocated = item.get_allocated_amount()
             if item.status != constants.CreditLineItemStatus.SIGNED:
                 continue
-            data['current'][item.is_past() and 'past' or 'available'] += Decimal(item.amount)
+            data['current'][item.is_past() and 'past' or 'available'] += Decimal(allocated)
             if not item.is_past():
                 data['current']['unallocated'] += Decimal(item.amount - allocated)
             

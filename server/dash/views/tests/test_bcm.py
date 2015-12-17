@@ -613,7 +613,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
             ],
             u"totals": {
                 u"current": {
-                    u"available": u"249239.5000",
+                    u"available": u"199239.5000",
                     u"past": u"0.0000",
                     u"unallocated": u"50000.0000"
                 },
