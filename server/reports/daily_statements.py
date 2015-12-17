@@ -1,88 +1,110 @@
-# TODO: to be fixed
-#
-# from collections import defaultdict
-# import datetime
-# from decimal import Decimal
+from collections import defaultdict
+import datetime
 
-# from dateutil import rrule
-# from django.db import transaction
-# from django.db.models import Sum
+from dateutil import rrule
+from django.db import transaction
+from django.db.models import Sum
 
-# import dash.models
-# import reports.models
-# from utils import dates_helper
+import dash.models
+import reports.models
+from utils import dates_helper
 
 
-# def _generate_statement(campaign, date):
-#     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id,
-#                                                         start_date__lte=date,
-#                                                         end_date__gte=date)
-#     existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
-#     existing_statements.filter(date=date).delete()
+def _generate_statements(date, campaign):
+    budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id,
+                                                        start_date__lte=date,
+                                                        end_date__gte=date)
+    existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
+    existing_statements.filter(date=date).delete()
 
-#     stats = reports.models.ContentAdStats.objects\
-#                                          .filter(content_ad__ad_group__campaign_id=campaign.id, date=date)\
-#                                          .aggregate(cost_cc_sum=Sum('cost_cc'),
-#                                                     data_cost_cc_sum=Sum('data_cost_cc'))
+    stats = reports.models.ContentAdStats.objects\
+                                         .filter(content_ad__ad_group__campaign_id=campaign.id, date=date)\
+                                         .aggregate(cost_cc_sum=Sum('cost_cc'),
+                                                    data_cost_cc_sum=Sum('data_cost_cc'))
 
-#     per_budget_spend = defaultdict(Decimal)
-#     for existing_statement in existing_statements:
-#         per_budget_spend[existing_statement.budget_id] += existing_statement.spend
+    per_budget_spend_nano = defaultdict(lambda: defaultdict(int))
+    for existing_statement in existing_statements:
+        per_budget_spend_nano[existing_statement.budget_id]['media'] += existing_statement.media_spend_nano
+        per_budget_spend_nano[existing_statement.budget_id]['data'] += existing_statement.data_spend_nano
+        per_budget_spend_nano[existing_statement.budget_id]['license_fee'] += existing_statement.license_fee_nano
 
-#     cost_cc_sum = stats['cost_cc_sum'] if stats['cost_cc_sum'] is not None else 0
-#     data_cost_cc_sum = stats['data_cost_cc_sum'] if stats['data_cost_cc_sum'] is not None else 0
+    total_media_nano = (stats['cost_cc_sum'] if stats['cost_cc_sum'] is not None else 0) * 100000
+    total_data_nano = (stats['data_cost_cc_sum'] if stats['data_cost_cc_sum'] is not None else 0) * 100000
 
-#     total_spend = (Decimal(cost_cc_sum) / 10000) + (Decimal(data_cost_cc_sum) / 10000)
-#     for budget in budgets.order_by('created_dt'):
-#         attributed_amount = 0
-#         fee_amount = 0
-#         if total_spend > 0 and per_budget_spend[budget.id] < budget.amount:
-#             available_budget = (budget.amount - per_budget_spend[budget.id]) / (1 + budget.credit.license_fee)
-#             attributed_amount = total_spend
-#             if total_spend > available_budget:
-#                 attributed_amount = available_budget
-#             fee_amount = attributed_amount * budget.credit.license_fee
+    for budget in budgets.order_by('created_dt'):
+        budget_amount_nano = budget.amount * (10**9)
+        attributed_media_nano = 0
+        attributed_data_nano = 0
+        license_fee_nano = 0
 
-#         per_budget_spend[budget.id] += attributed_amount + fee_amount
-#         total_spend -= attributed_amount
-#         reports.models.BudgetDailyStatement.objects.create(budget_id=budget.id, date=date,
-#                                                            spend=attributed_amount + fee_amount)
+        total_spend_nano = total_media_nano + total_data_nano
+        budget_spend_total_nano = per_budget_spend_nano[budget.id]['media'] +\
+            per_budget_spend_nano[budget.id]['data'] +\
+            per_budget_spend_nano[budget.id]['license_fee']
+        if total_spend_nano > 0 and budget_spend_total_nano < budget_amount_nano:
+            available_budget_nano = (budget_amount_nano - budget_spend_total_nano) / (1 + budget.credit.license_fee)
+            if total_media_nano + total_data_nano > available_budget_nano:
+                if total_media_nano >= available_budget_nano:
+                    attributed_media_nano = available_budget_nano
+                    attributed_data_nano = 0
+                else:
+                    attributed_media_nano = total_media_nano
+                    attributed_data_nano = available_budget_nano - total_media_nano
+            else:
+                attributed_media_nano = total_media_nano
+                attributed_data_nano = total_data_nano
 
-#     if total_spend > 0:
-#         # TODO: over spend
-#         pass
+            license_fee_nano = (attributed_media_nano + attributed_data_nano) * budget.credit.license_fee
 
+        per_budget_spend_nano[budget.id]['media'] += attributed_media_nano
+        per_budget_spend_nano[budget.id]['data'] += attributed_data_nano
+        per_budget_spend_nano[budget.id]['license_fee'] += license_fee_nano
 
-# def _get_dates(campaign):
-#     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id)
-#     existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
+        total_media_nano -= attributed_media_nano
+        total_data_nano -= attributed_data_nano
+        reports.models.BudgetDailyStatement.objects.create(
+            budget_id=budget.id,
+            date=date,
+            media_spend_nano=attributed_media_nano,
+            data_spend_nano=attributed_data_nano,
+            license_fee_nano=license_fee_nano
+        )
 
-#     if not budgets:
-#         return []
-
-#     by_date = defaultdict(dict)
-#     for existing_statement in existing_statements:
-#         by_date[existing_statement.date][existing_statement.budget_id] = existing_statement
-
-#     from_date = min(budget.start_date for budget in budgets)
-#     today = dates_helper.utc_datetime_to_local_date(datetime.datetime.utcnow())
-#     while True:
-#         found = False
-#         for budget in budgets:
-#             if budget.start_date <= from_date <= budget.end_date and\
-#                (budget.id not in by_date[from_date] or by_date[from_date][budget.id].dirty):
-#                 found = True
-
-#         if found or from_date == today:
-#             break
-
-#         from_date += datetime.timedelta(days=1)
-
-#     return [dt.date() for dt in rrule.rrule(rrule.DAILY, dtstart=from_date, until=today)]
+    if total_media_nano + total_data_nano > 0:
+        # TODO: over spend
+        pass
 
 
-# @transaction.atomic
-# def reprocess_daily_statements(campaign):
-#     dates = _get_dates(campaign)
-#     for date in dates:
-#         _generate_statement(campaign, date)
+def _get_dates(date, campaign):
+    budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id)
+    existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
+
+    if budgets.count() == 0:
+        return []
+
+    by_date = defaultdict(dict)
+    for existing_statement in existing_statements:
+        by_date[existing_statement.date][existing_statement.budget_id] = existing_statement
+
+    today = dates_helper.utc_datetime_to_local_date(datetime.datetime.utcnow())
+    from_date = min(budget.start_date for budget in budgets)
+    to_date = min(max(budget.end_date for budget in budgets), today)
+    while True:
+        found = False
+        for budget in budgets:
+            if budget.start_date <= from_date <= budget.end_date and budget.id not in by_date[from_date]:
+                found = True
+
+        if found or from_date == date or from_date == to_date:
+            break
+
+        from_date += datetime.timedelta(days=1)
+
+    return [dt.date() for dt in rrule.rrule(rrule.DAILY, dtstart=from_date, until=to_date)]
+
+
+@transaction.atomic
+def reprocess_daily_statements(date, campaign):
+    dates = _get_dates(date, campaign)
+    for date in dates:
+        _generate_statements(date, campaign)
