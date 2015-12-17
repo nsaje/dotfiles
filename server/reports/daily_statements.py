@@ -70,7 +70,7 @@ def _generate_statements(date, campaign):
             license_fee_nano=license_fee_nano
         )
 
-    if total_spend_nano > 0:
+    if total_media_nano + total_data_nano > 0:
         # TODO: over spend
         pass
 
@@ -79,7 +79,7 @@ def _get_dates(date, campaign):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id)
     existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
 
-    if budgets.count() == 0 or all(budget.start_date > date or budget.end_date < date for budget in budgets):
+    if budgets.count() == 0:
         return []
 
     by_date = defaultdict(dict)
