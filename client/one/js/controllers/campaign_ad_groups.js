@@ -528,7 +528,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     });
 
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
-        if(newValue === true && oldValue === false){
+        if (newValue === true && oldValue === false) {
             pollSyncStatus();
         }
     });
