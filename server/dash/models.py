@@ -162,6 +162,7 @@ class Account(models.Model):
 
     objects = QuerySetManager()
     demo_objects = DemoManager()
+    allowed_sources = models.ManyToManyField('Source')
 
     outbrain_marketer_id = models.CharField(null=True, blank=True, max_length=255)
 
@@ -479,8 +480,7 @@ class AccountSettings(SettingsBase):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
-    allowed_sources = ArrayField(models.IntegerField(), default=[])
-
+    
     objects = QuerySetManager()
 
     def save(self, request, *args, **kwargs):
@@ -1817,7 +1817,7 @@ class ConversionGoal(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created on')
 
     class Meta:
-        unique_together = (('campaign', 'name'), ('campaign', 'pixel'), ('campaign', 'type', 'goal_id'))
+        unique_together = (('campaign', 'name'), ('campaign', 'type', 'goal_id'))
 
     def get_stats_key(self):
         # map conversion goal to the key under which they are stored in stats database
@@ -2111,6 +2111,17 @@ class BudgetLineItem(FootprintModel):
 
     def is_updatable(self):
         return self.state() == constants.BudgetLineItemState.ACTIVE
+
+    def get_ideal_budget_spend(self, date):
+        if date < self.start_date:
+            return 0
+        elif date >= self.end_date:
+            return self.amount
+
+        date_start_diff = (date - self.start_date).days
+        date_total_diff = (self.end_date - self.start_date).days
+
+        return self.amount * float(date_start_diff) / float(date_total_diff)
 
     def clean(self):
         if self.pk:

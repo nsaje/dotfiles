@@ -73,24 +73,25 @@ class BaseApiView(View):
         )
 
     def get_exception_response(self, request, exception):
-        error = {}
+        error_data = {}
         if type(exception) in exc.custom_errors:
-            error["error_code"] = exception.error_code
-            error["message"] = exception.pretty_message or exception.message
+            error_data["error_code"] = exception.error_code
+            error_data["message"] = exception.pretty_message or exception.message
 
             if isinstance(exception, exc.ValidationError):
-                error['errors'] = exception.errors
+                error_data['errors'] = exception.errors
+                error_data['data'] = exception.data
 
             status_code = exception.http_status_code
         else:
             self.log_error(request)
 
-            error["error_code"] = "ServerError"
-            error["message"] = "An error occurred."
+            error_data["error_code"] = "ServerError"
+            error_data["message"] = "An error occurred."
 
             status_code = 500
 
-        return self.create_api_response(error, success=False, status_code=status_code)
+        return self.create_api_response(error_data, success=False, status_code=status_code)
 
     def dispatch(self, request, *args, **kwargs):
         try:

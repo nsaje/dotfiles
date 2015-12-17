@@ -69,7 +69,6 @@
         default_account_manager: 2
         default_sales_representative: 3
         service_fee: 0.13
-        allowed_sources: [1, 2]
     model: dash.accountsettings
     pk: 1
 

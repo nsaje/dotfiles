@@ -450,7 +450,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
 
         rows = []
-        pixel_ids_already_added = []
         for conversion_goal in campaign.conversiongoal_set.select_related('pixel').order_by('created_dt').all():
             row = {
                 'id': conversion_goal.id,
@@ -461,7 +460,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
             }
 
             if conversion_goal.type == constants.ConversionGoalType.PIXEL:
-                pixel_ids_already_added.append(conversion_goal.pixel.id)
                 row['pixel'] = {
                     'id': conversion_goal.pixel.id,
                     'slug': conversion_goal.pixel.slug,
@@ -473,9 +471,6 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
         available_pixels = []
         for conversion_pixel in campaign.account.conversionpixel_set.filter(archived=False):
-            if conversion_pixel.id in pixel_ids_already_added:
-                continue
-
             available_pixels.append({
                 'id': conversion_pixel.id,
                 'slug': conversion_pixel.slug,
@@ -515,7 +510,7 @@ class CampaignConversionGoals(api_common.BaseApiView):
             raise exc.ValidationError(message='Max conversion goals per campaign exceeded')
 
         conversion_goal = models.ConversionGoal(campaign_id=campaign.id, type=form.cleaned_data['type'],
-                                                name=form.cleaned_data['name'], goal_id=form.cleaned_data['goal_id'])
+                                                name=form.cleaned_data['name'])
         if form.cleaned_data['type'] == constants.ConversionGoalType.PIXEL:
             try:
                 pixel = models.ConversionPixel.objects.get(id=form.cleaned_data['goal_id'],
@@ -528,6 +523,8 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
             conversion_goal.pixel = pixel
             conversion_goal.conversion_window = form.cleaned_data['conversion_window']
+        else:
+            conversion_goal.goal_id = form.cleaned_data['goal_id']
 
         with transaction.atomic():
             conversion_goal.save()
@@ -823,6 +820,9 @@ class ConversionPixel(api_common.BaseApiView):
             raise exc.ValidationError()
 
         if 'archived' in data:
+            if not request.user.has_perm('zemauth.archive_restore_entity'):
+                raise exc.MissingDataError()
+
             if not isinstance(data['archived'], bool):
                 raise exc.ValidationError(message='Invalid value')
 
@@ -872,27 +872,30 @@ class AccountAgency(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
-
         resource = json.loads(request.body)
-
         form = forms.AccountAgencySettingsForm(resource.get('settings', {}))
-        if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
-
-        if 'allowed_sources' in form.cleaned_data \
-        and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
-            raise exc.MissingDataError()
-
-
-        self.set_account(account, form.cleaned_data)
-
-        settings = models.AccountSettings()
-        self.set_settings(settings, account, form.cleaned_data)
 
         with transaction.atomic():
-            old_settings = account.get_current_settings()
-            self.set_allowed_sources(settings, old_settings, form.cleaned_data.get('allowed_sources'))
+            if form.is_valid():
+                self.set_account(account, form.cleaned_data)
+
+                settings = models.AccountSettings()
+                self.set_settings(settings, account, form.cleaned_data)
             
+            if 'allowed_sources' in form.cleaned_data \
+                and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+                raise exc.MissingDataError()
+
+            if 'allowed_sources' in form.cleaned_data:    
+                self.set_allowed_sources(
+                    account,
+                    request.user.has_perm('zemauth.can_see_all_available_sources'),
+                    form
+                )
+            if not form.is_valid():
+                data = self.get_validation_error_data(request, account)
+                raise exc.ValidationError(errors=dict(form.errors), data=data)
+
             account.save(request)
             settings.save(request)
 
@@ -907,19 +910,97 @@ class AccountAgency(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
+    def get_validation_error_data(self, request, account):
+        data = {}
+        if not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+            return data
+
+        data['allowed_sources'] = self.get_allowed_sources(
+            request.user.has_perm('zemauth.can_see_all_available_sources'),
+            [source.id for source in account.allowed_sources.all()]
+        )
+        return data
+
     def set_account(self, account, resource):
         account.name = resource['name']
 
-    def set_allowed_sources(self, settings, old_settings, allowed_sources_dict):
-        if allowed_sources_dict is None:
-            settings.allowed_sources = old_settings.allowed_sources
-            return
-
+    def get_allowed_sources_list_from_dict(self, allowed_sources_dict):
         allowed_sources_ids = []
         for k, v in allowed_sources_dict.iteritems():
             if v.get('allowed', False):
                 allowed_sources_ids.append(k)
-        settings.allowed_sources = allowed_sources_ids
+
+        return allowed_sources_ids
+
+    def get_current_allowed_sources_list(self, account, can_see_all_available_sources):  
+        queryset = account.allowed_sources.all()
+        if not can_see_all_available_sources:
+            queryset = queryset.filter(released=True)
+
+        return [source.id for source in queryset]
+
+    def filter_allowed_sources_list(self, allowed_sources_list, can_see_all_available_sources):
+        queryset = models.Source.objects.filter(id__in=allowed_sources_list)
+        if not can_see_all_available_sources:
+            queryset = queryset.filter(released=True)
+
+        return [source.id for source in queryset]    
+
+    def get_non_removable_sources(self, account, sources_to_be_removed):
+        non_removable_source_ids_list = []
+
+        for campaign in models.Campaign.objects.filter(account_id=account.id).exclude_archived():
+
+            for adgroup in campaign.adgroup_set.filter(is_demo=False):
+                adgroup_settings = adgroup.get_current_settings()
+                if adgroup_settings.state == constants.AdGroupSettingsState.INACTIVE:
+                    continue
+
+                for adgroup_source in adgroup.adgroupsource_set.filter(source__in=sources_to_be_removed):
+                    adgroup_source_settings = adgroup_source.get_current_settings()
+                    if adgroup_source_settings.state == constants.AdGroupSourceSettingsState.ACTIVE:
+                        non_removable_source_ids_list.append(adgroup_source.source_id)
+
+        return non_removable_source_ids_list
+
+    def add_error_to_account_agency_form(self, form, to_be_removed):
+        source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed)]
+        media_sources = ', '.join(source_names)    
+        if len(source_names) > 1:
+            msg = 'Can\'t save changes because media sources {} are still used on this account.'.format(media_sources)
+        else:
+            msg = 'Can\'t save changes because media source {} is still used on this account.'.format(media_sources)
+
+        form.add_error('allowed_sources', msg)
+
+    def set_allowed_sources(self, account, can_see_all_available_sources, account_agency_form):
+        allowed_sources_dict = account_agency_form.cleaned_data.get('allowed_sources')
+
+        if not allowed_sources_dict:
+            return
+
+        new_allowed_sources_list = self.get_allowed_sources_list_from_dict(allowed_sources_dict)
+        new_allowed_sources_list = self.filter_allowed_sources_list(
+            new_allowed_sources_list, 
+            can_see_all_available_sources
+        )
+        current_allowed_sources_list = self.get_current_allowed_sources_list(account, can_see_all_available_sources)
+        
+        new_allowed_sources_set = set(new_allowed_sources_list)
+        current_allowed_sources_set = set(current_allowed_sources_list)
+
+        to_be_removed = current_allowed_sources_set.difference(new_allowed_sources_set)
+
+        non_removable_sources = self.get_non_removable_sources(account, to_be_removed)
+        if len(non_removable_sources) > 0:
+            self.add_error_to_account_agency_form(account_agency_form, non_removable_sources)
+            return
+
+        to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
+
+        account.allowed_sources.add(*list(to_be_added))
+        account.allowed_sources.remove(*list(to_be_removed))
+
 
     def set_settings(self, settings, account, resource):
         settings.account = account
@@ -972,7 +1053,7 @@ class AccountAgency(api_common.BaseApiView):
             if request.user.has_perm('zemauth.can_modify_allowed_sources'):
                 result['allowed_sources'] = self.get_allowed_sources(
                     request.user.has_perm('zemauth.can_see_all_available_sources'),
-                    settings.allowed_sources
+                    [source.id for source in account.allowed_sources.all()]
                     )
 
         return result

@@ -607,6 +607,10 @@ class SourcesTable(object):
         # map settings for quicker access
         sources_settings_dict = {agss.ad_group_source.source_id: agss for agss in (ad_group_sources_settings or [])}
 
+        allowed_sources = None
+        if ad_group_level:
+            allowed_sources = {source.id for source in level_sources_table.ad_group.campaign.account.allowed_sources.all()}
+
         for i, source in enumerate(sources):
             states = [s for s in sources_states if s.ad_group_source.source_id == source.id]
 
@@ -661,8 +665,13 @@ class SourcesTable(object):
 
                 ad_group_settings = level_sources_table.ad_group_settings
 
-                row['editable_fields'] = helpers.get_editable_fields(ad_group_source, ad_group_settings,
-                                                                     source_settings, user)
+                row['editable_fields'] = helpers.get_editable_fields(
+                    ad_group_source, 
+                    ad_group_settings,
+                    source_settings, 
+                    user,
+                    allowed_sources,
+                )
 
                 if user.has_perm('zemauth.set_ad_group_source_settings')\
                    and source_settings is not None \
@@ -1746,7 +1755,6 @@ class PublishersTable(object):
             )
             adg_blacklisted_publishers.extend(map(lambda pub_bl: {
                     'domain': pub_bl.name,
-                    'exchange': pub_bl.source.tracking_slug.replace('b1_', ''),
                 }, global_pub_blacklist_qs)
             )
 

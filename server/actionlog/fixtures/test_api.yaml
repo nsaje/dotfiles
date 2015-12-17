@@ -288,6 +288,8 @@
         brand_name: 'Example'
         description: 'Example description'
         call_to_action: 'Call to action'
+        daily_budget_cc: 100
+        ad_group_name: 'AdGroup name'
         start_date: '2015-03-02'
         end_date: '2015-04-02'
     model: dash.adgroupsettings
@@ -342,6 +344,17 @@
     model: dash.adgroupsettings
     pk: 6
 
+# test campaignbudgetsettings
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        created_by_id: 1
+        campaign: 1
+        allocate: 100
+        revoke: 0
+        total: 100
+    model: dash.campaignbudgetsettings
+    pk: 1
 
 # test adgroup
 
@@ -722,6 +735,8 @@
         account_manager: NULL
         sales_representative: NULL
         iab_category: 'IAB24'
+        campaign_goal: 4
+        goal_quantity: 10
         target_devices: ['mobile']
         target_regions: ['US']
         campaign: 2

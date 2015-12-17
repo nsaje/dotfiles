@@ -889,100 +889,17 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
     var getInfoboxData = function() {
-        // TODO: Return data from backend
-        var data = {
-            header: {
-                title: 'Pre-launch (desktop)',
-                subtitle: 'Delivering',
-                active: true
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+
+        api.adGroupOverview.get($state.params.id).then(
+            function(data) {
+                $scope.infoboxHeader = data.header;
+                $scope.infoboxSettings = data.settings;
             },
-            settings: [
-                {
-                    type: 'setting',
-                    name: 'Flight time',
-                    value: '9/1 - 9-19',
-                    valueDescription: '10 days left'
-                },
-                {
-                    type: 'setting',
-                    name: 'Targeting',
-                    value: 'Device: Mobile'
-                },
-                {
-                    type: 'setting',
-                    name: null,
-                    value: 'Location: New York',
-                    valueDescription: 'differ from campaign default'
-                },
-                {
-                    type: 'setting',
-                    name: null,
-                    value: 'Location: New York',
-                    valueDescription: 'differ from campaign default'
-                },
-                {
-                    type: 'setting',
-                    name: 'Daily cap',
-                    value: '$1000'
-                },
-                {
-                    type: 'setting',
-                    name: 'Campaign budget',
-                    value: '$10.000',
-                    valueDescription: '$8,900 remaining'
-                },
-                {
-                    type: 'setting',
-                    name: 'Tracking codes',
-                    value: 'Yes',
-                    detailsLabel: 'codes',
-                    detailsContent: '&utm_medium=email&utm_source=email+body'
-                },
-                {
-                    type: 'setting',
-                    name: 'Post click tracking',
-                    value: 'Google analytics, Adobe',
-                    detailsLabel: 'codes',
-                    detailsContent: 'TBD'
-                },
-                {
-                    type: 'hr'
-                },
-                {
-                    type: 'setting',
-                    name: 'Yesterday spent',
-                    value: '$687.59',
-                    valueDescription: '31,24%',
-                    tooltip: 'test',
-                    icon: 'sad'
-                },
-                {
-                    type: 'setting',
-                    name: 'Campaign pacing',
-                    value: '-22.74%',
-                    valueDescription: '$202.41',
-                    tooltip: 'test',
-                    icon: 'sad'
-                },
-                {
-                    type: 'setting',
-                    name: null,
-                    value: '-22.74% bounce rate',
-                    valueDescription: '100% below planned',
-                    tooltip: 'test',
-                    icon: 'happy'
-                },
-                {
-                    type: 'setting',
-                    value: '-4.85% CTR',
-                    valueDescription: 'planned 5%',
-                    tooltip: 'test',
-                    icon: 'sad'
-                }
-            ]
-        };
-        $scope.infoboxHeader = data.header;
-        $scope.infoboxSettings = data.settings;
+            function(data) {}
+        );
     };
 
     var setChartOptions = function () {

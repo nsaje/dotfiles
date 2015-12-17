@@ -549,6 +549,29 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
     }
 
+    function AdGroupOverview() {
+
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + id + '/overview/';
+            var config = {
+                params: {}
+            };
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AdGroupSync() {
         this.get = function (id) {
             var deferred = $q.defer();
@@ -1117,13 +1140,15 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             };
         }
 
-        function convertValidationErrorFromApi(errors) {
+        function convertValidationErrorFromApi(data) {
             return {
-                id: errors.id,
-                name: errors.name,
-                defaultAccountManager: errors.default_account_manager,
-                defaultSalesRepresentative: errors.default_sales_representative,
-                serviceFee: errors.service_fee
+                id: data.errors.id,
+                name: data.errors.name,
+                defaultAccountManager: data.errors.default_account_manager,
+                defaultSalesRepresentative: data.errors.default_sales_representative,
+                serviceFee: data.errors.service_fee,
+                allowedSources: data.errors.allowed_sources,
+                allowedSourcesData: data.data.allowed_sources
             };
         }
 
@@ -1193,8 +1218,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 'settings': convertSettingsToApi(settings)
             };
 
-
-
             $http.put(url, data, config).
                 success(function (data, status) {
                     if (!data || !data.data) {
@@ -1210,7 +1233,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                 error(function(data, status, headers, config) {
                     var resource;
                     if (status === 400 && data && data.data.error_code === 'ValidationError') {
-                        resource = convertValidationErrorFromApi(data.data.errors);
+                        resource = convertValidationErrorFromApi(data.data);
                     }
                     deferred.reject(resource);
                 });
@@ -2846,6 +2869,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         adGroupAdsPlusTable: new AdGroupAdsPlusTable(),
         adGroupSync: new AdGroupSync(),
         adGroupArchive: new AdGroupArchive(),
+        adGroupOverview: new AdGroupOverview(),
         campaignAdGroups: new CampaignAdGroups(),
         campaignAdGroupsTable: new CampaignAdGroupsTable(),
         campaignSettings: new CampaignSettings(),
