@@ -165,7 +165,7 @@ def init_get_content_ad_status_action(ad_group_source, order, request, send=True
     msg = "get_content_ad_status action created: ad_group_source.id: {}".format(
         ad_group_source.id,
     )
-    logger.info(msg)
+    logger.debug(msg)
 
     if send:
         actionlog.zwei_actions.send(action)

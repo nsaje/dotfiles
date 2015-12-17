@@ -76,7 +76,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
     if 'content_ad' in dimensions:
         content_ad_data = _prefetch_content_ad_data(constraints)
 
-    if include_budgets and 'account' in dimensions:
+    if include_budgets and dimensions == ['account']:
         all_accounts_budget = budget.GlobalBudget().get_total_by_account()
         all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
 

@@ -980,8 +980,6 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
         self.request.user.user_permissions.add(permission)
 
     @patch('dash.views.export_plus.ExportAllowed.MAX_ROWS', 10000)
-    @patch('dash.views.export_plus.ExportAllowed.MAX_DAYS', 10000)
-    @patch('dash.views.export_plus.ExportAllowed.MAX_BREAKDOWN_DAYS', 10000)
     def test_get_all_ok(self):
         with patch('dash.models.ContentAd') as p:
             p.objects.filter.return_value.count.return_value = 1
@@ -995,8 +993,6 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
         self.assertEqual(json.loads(response.content)['data'], expected)
 
     @patch('dash.views.export_plus.ExportAllowed.MAX_ROWS', 1)
-    @patch('dash.views.export_plus.ExportAllowed.MAX_DAYS', 10000)
-    @patch('dash.views.export_plus.ExportAllowed.MAX_BREAKDOWN_DAYS', 10000)
     def test_get_too_many_rows(self):
         with patch('dash.models.ContentAd') as p:
             p.objects.filter.return_value.count.return_value = 1000
@@ -1010,31 +1006,19 @@ class ExportAllowedTestCase(AssertRowMixin, test.TestCase):
         self.assertEqual(json.loads(response.content)['data'], expected)
 
     @patch('dash.views.export_plus.ExportAllowed.MAX_ROWS', 10000)
-    @patch('dash.views.export_plus.ExportAllowed.MAX_DAYS', 1)
-    @patch('dash.views.export_plus.ExportAllowed.MAX_BREAKDOWN_DAYS', 10000)
-    def test_get_too_many_days(self):
-        with patch('dash.models.ContentAd') as p:
-            p.objects.filter.return_value.count.return_value = 1
-            response = export_plus.ExportAllowed().get(self.request, 'ad_groups', id_=1)
-        expected = {
-            'content_ad': False,
-            'by_day': {
-                'content_ad': True
-            }
-        }
-        self.assertEqual(json.loads(response.content)['data'], expected)
-
-    @patch('dash.views.export_plus.ExportAllowed.MAX_ROWS', 10000)
-    @patch('dash.views.export_plus.ExportAllowed.MAX_DAYS', 10000)
-    @patch('dash.views.export_plus.ExportAllowed.MAX_BREAKDOWN_DAYS', 1)
+    @patch('dash.views.export_plus.ExportAllowed.ALL_ACC_BD_ADG_MAX_DAYS', 1)
     def test_get_too_many_days_breakdown(self):
         with patch('dash.models.ContentAd') as p:
             p.objects.filter.return_value.count.return_value = 1
-            response = export_plus.ExportAllowed().get(self.request, 'ad_groups', id_=1)
+            response = export_plus.ExportAllowed().get(self.request, 'all_accounts')
         expected = {
-            'content_ad': True,
+            'account': True,
+            'campaign': True,
+            'ad_group': True,
             'by_day': {
-                'content_ad': False
+                'ad_group': False,
+                'campaign': True,
+                'account': True
             }
         }
         self.assertEqual(json.loads(response.content)['data'], expected)
@@ -1052,8 +1036,6 @@ class SourcesExportAllowedTestCase(AssertRowMixin, test.TestCase):
         self.request.user.user_permissions.add(permission)
 
     @patch('dash.views.export_plus.SourcesExportAllowed.MAX_ROWS', 10000)
-    @patch('dash.views.export_plus.SourcesExportAllowed.MAX_DAYS', 10000)
-    @patch('dash.views.export_plus.SourcesExportAllowed.MAX_BREAKDOWN_DAYS', 10000)
     def test_get_all_ok(self):
         with patch('dash.models.ContentAd') as p:
             p.objects.filter.return_value.count.return_value = 1
@@ -1069,8 +1051,6 @@ class SourcesExportAllowedTestCase(AssertRowMixin, test.TestCase):
         self.assertEqual(json.loads(response.content)['data'], expected)
 
     @patch('dash.views.export_plus.SourcesExportAllowed.MAX_ROWS', 1)
-    @patch('dash.views.export_plus.SourcesExportAllowed.MAX_DAYS', 10000)
-    @patch('dash.views.export_plus.SourcesExportAllowed.MAX_BREAKDOWN_DAYS', 10000)
     def test_get_too_many_rows(self):
         with patch('dash.models.ContentAd') as p:
             p.objects.filter.return_value.count.return_value = 1000
@@ -1086,35 +1066,21 @@ class SourcesExportAllowedTestCase(AssertRowMixin, test.TestCase):
         self.assertEqual(json.loads(response.content)['data'], expected)
 
     @patch('dash.views.export_plus.SourcesExportAllowed.MAX_ROWS', 10000)
-    @patch('dash.views.export_plus.SourcesExportAllowed.MAX_DAYS', 1)
-    @patch('dash.views.export_plus.SourcesExportAllowed.MAX_BREAKDOWN_DAYS', 10000)
-    def test_get_too_many_days(self):
-        with patch('dash.models.ContentAd') as p:
-            p.objects.filter.return_value.count.return_value = 1
-            response = export_plus.SourcesExportAllowed().get(self.request, 'ad_groups', id_=1)
-        expected = {
-            'content_ad': False,
-            'ad_group': False,
-            'by_day': {
-                'content_ad': True,
-                'ad_group': True
-            }
-        }
-        self.assertEqual(json.loads(response.content)['data'], expected)
-
-    @patch('dash.views.export_plus.SourcesExportAllowed.MAX_ROWS', 10000)
-    @patch('dash.views.export_plus.SourcesExportAllowed.MAX_DAYS', 10000)
-    @patch('dash.views.export_plus.SourcesExportAllowed.MAX_BREAKDOWN_DAYS', 1)
+    @patch('dash.views.export_plus.SourcesExportAllowed.ALL_ACC_BD_ADG_MAX_DAYS', 1)
     def test_get_too_many_days_breakdown(self):
         with patch('dash.models.ContentAd') as p:
             p.objects.filter.return_value.count.return_value = 1
-            response = export_plus.SourcesExportAllowed().get(self.request, 'ad_groups', id_=1)
+            response = export_plus.SourcesExportAllowed().get(self.request, 'all_accounts')
         expected = {
-            'content_ad': True,
+            'all_accounts': True,
+            'account': True,
+            'campaign': True,
             'ad_group': True,
             'by_day': {
-                'content_ad': False,
                 'ad_group': False,
+                'campaign': True,
+                'account': True,
+                'all_accounts': True
             }
         }
         self.assertEqual(json.loads(response.content)['data'], expected)
