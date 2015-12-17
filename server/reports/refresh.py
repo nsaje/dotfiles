@@ -162,6 +162,7 @@ def refresh_contentadstats(date, campaign):
     rows = _get_joined_stats_rows(date, campaign.id)
     goals_dict = _get_goals_dict(date, campaign.id)
 
+    _add_effective_spend(campaign, date, rows)
     rows = [_add_goals(row, goals_dict) for row in rows]
     rows = [_add_ids(row, campaign) for row in rows]
 
