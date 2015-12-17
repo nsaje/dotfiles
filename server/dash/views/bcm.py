@@ -284,9 +284,15 @@ class CampaignBudgetView(api_common.BaseApiView):
                 data['current']['unallocated'] += Decimal(item.amount - allocated)
             
         for item in models.BudgetLineItem.objects.filter(campaign_id=campaign.id):
+            spend_data = item.get_spend_data(use_decimal=True)
+            if item.state() in (constants.BudgetLineItemState.ACTIVE,
+                                constants.BudgetLineItemState.PENDING):
+                data['current']['available'] -= Decimal(spend_data['total'])
+            else:
+                data['current']['past'] -= Decimal(spend_data['total'])
             if item.state() == constants.BudgetLineItemState.PENDING:
                 continue
-            spend_data = item.get_spend_data(use_decimal=True)
+            
             data['lifetime']['campaign_spend'] += spend_data['total']
             data['lifetime']['media_spend'] += spend_data['media']
             data['lifetime']['data_spend'] += spend_data['data']

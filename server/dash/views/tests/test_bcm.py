@@ -568,6 +568,8 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)['data']
 
+        self.maxDiff = None
+        
         self.assertEqual(data, {
             "active": [
                 {
@@ -611,7 +613,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
             ],
             u"totals": {
                 u"current": {
-                    u"available": u"250000.0000",
+                    u"available": u"249239.5000",
                     u"past": u"0.0000",
                     u"unallocated": u"50000.0000"
                 },
