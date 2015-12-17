@@ -840,7 +840,7 @@ class BudgetSpendTestCase(TestCase):
             'license_fee_cc': 201000,
             'total_cc': 2211000,
         })
-        self.assertEqual(self.b.get_spend_data(date=self.end_date, decimal=True), {
+        self.assertEqual(self.b.get_spend_data(date=self.end_date, use_decimal=True), {
             'media': Decimal('100.0000'),
             'data': Decimal('101.0000'),
             'license_fee': Decimal('20.1000'),
@@ -868,7 +868,7 @@ class BudgetSpendTestCase(TestCase):
             'license_fee_cc': 291000,
             'total_cc': 4101000,
         })
-        self.assertEqual(self.b.get_spend_data(decimal=True), {
+        self.assertEqual(self.b.get_spend_data(use_decimal=True), {
             'media': Decimal('190.0000'),
             'data': Decimal('191.0000'),
             'license_fee': Decimal('29.1000'),

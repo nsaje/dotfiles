@@ -167,7 +167,7 @@ class AccountCreditItemView(api_common.BaseApiView):
                     'campaign': str(b.campaign),
                     'id': b.pk,
                     'total': b.amount,
-                    'spend': b.get_spend_data(decimal=True)['total'],
+                    'spend': b.get_spend_data(use_decimal=True)['total'],
                     'start_date': b.start_date,
                     'end_date': b.end_date,
                 }
@@ -206,7 +206,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         return self.create_api_response(item.instance.pk)
 
     def _prepare_item(self, item):
-        spend = item.get_spend_data(decimal=True)['total']
+        spend = item.get_spend_data(use_decimal=True)['total']
         return {
             'id': item.pk,
             'start_date': item.start_date,
@@ -286,7 +286,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         for item in models.BudgetLineItem.objects.filter(campaign_id=campaign.id):
             if item.state() == constants.BudgetLineItemState.PENDING:
                 continue
-            spend_data = item.get_spend_data(decimal=True)
+            spend_data = item.get_spend_data(use_decimal=True)
             data['lifetime']['campaign_spend'] += spend_data['total']
             data['lifetime']['media_spend'] += spend_data['media']
             data['lifetime']['data_spend'] += spend_data['data']

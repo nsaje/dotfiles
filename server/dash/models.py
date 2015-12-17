@@ -2145,7 +2145,7 @@ class BudgetLineItem(FootprintModel):
     def get_latest_statement(self):
         return self.statements.all().order_by('-date').first()
 
-    def get_spend_data(self, date=None, decimal=False):
+    def get_spend_data(self, date=None, use_decimal=False):
         spend_data = {
             'media_cc': 0,
             'data_cc': 0,
@@ -2162,14 +2162,14 @@ class BudgetLineItem(FootprintModel):
             ).iteritems()
         }
         spend_data['total_cc'] = sum(spend_data.values())
-        if not decimal:
+        if not use_decimal:
             return spend_data
         return {
             key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
             for key in spend_data.keys()
         }
     
-    def get_daily_spend(self, date, decimal=False):
+    def get_daily_spend(self, date, use_decimal=False):
         spend_data = {
             'media_cc': 0, 'data_cc': 0,
             'license_fee_cc': 0, 'total_cc': 0,
@@ -2186,7 +2186,7 @@ class BudgetLineItem(FootprintModel):
             spend_data['total_cc'] = nano_to_cc(
                 statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
             )
-        if not decimal:
+        if not use_decimal:
             return spend_data
         return {
             key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
