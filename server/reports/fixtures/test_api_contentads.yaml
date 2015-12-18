@@ -244,6 +244,18 @@
     model: dash.creditlineitem
     pk: 1
 
+-   fields:
+        account: 1
+        start_date: '2015-02-01'
+        end_date: '2015-02-10'
+        amount: 5000
+        license_fee: '1.0'
+        status: 1
+        created_dt: '2015-11-01 00:00:01'
+        modified_dt: '2015-11-01 00:00:01'
+        created_by: 1
+    model: dash.creditlineitem
+    pk: 2
 
 # test budget line items
 
@@ -258,6 +270,18 @@
         created_by: 1
     model: dash.budgetlineitem
     pk: 1
+
+-   fields:
+        campaign: 1
+        credit: 2
+        start_date: '2015-02-01'
+        end_date: '2015-02-10'
+        amount: 5000
+        created_dt: '2015-11-01 00:00:01'
+        modified_dt: '2015-11-01 00:00:01'
+        created_by: 1
+    model: dash.budgetlineitem
+    pk: 2
 
 # test adgroupstats
 
