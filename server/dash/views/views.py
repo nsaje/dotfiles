@@ -680,7 +680,7 @@ class CampaignOverview(api_common.BaseApiView):
 
             ad_group_settings = ad_group.get_current_settings()
 
-            daily_cap_cc += ad_group_settings.daily_budget_cc
+            daily_cap_cc += float(ad_group_settings.daily_budget_cc or 0)
 
             adg_start_date = ad_group_settings.start_date
             adg_end_date = ad_group_settings.end_date
@@ -688,13 +688,14 @@ class CampaignOverview(api_common.BaseApiView):
                 start_date = adg_start_date
             else:
                 start_date = min(start_date, adg_start_date)
+
             if adg_end_date is None:
                 never_finishes = True
 
             if end_date is None:
                 end_date = adg_end_date
             else:
-                end_date = max(end_date, adg_end_date)
+                end_date = max(end_date, adg_end_date or end_date)
 
         if never_finishes:
             end_date = None
