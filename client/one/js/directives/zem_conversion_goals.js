@@ -8,7 +8,8 @@ oneApp.directive('zemConversionGoals', ['config', '$window', function(config, $w
         scope: {
             hasPermission: '=zemHasPermission',
             isPermissionInternal: '=zemIsPermissionInternal',
-            campaign: '=zemCampaign'
+            campaign: '=zemCampaign',
+            account: '=zemAccount'
         },
         templateUrl: '/partials/zem_conversion_goals.html',
         controller: ['$scope', '$modal', 'api', function ($scope, $modal, api) {

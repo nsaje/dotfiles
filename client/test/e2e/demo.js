@@ -96,7 +96,6 @@ describe('Campaign management', function () {
 
     function addAdGroup() {
         element(by.cssContainingText('.btn-add', '+ Ad group')).click();
-
         expect(browser.getLocationAbsUrl()).toMatch(/ad_groups\/[0-9]+\/settings/);
         expect(
             element(by.cssContainingText('.ad-group-item.list-group-item span',

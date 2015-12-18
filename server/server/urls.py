@@ -344,6 +344,11 @@ urlpatterns += patterns(
         login_required(dash.views.views.CampaignRestore.as_view()),
     ),
     url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/overview/',
+        login_required(dash.views.views.CampaignOverview.as_view()),
+        name='campaign_overview'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/archive/',
         login_required(dash.views.views.AdGroupArchive.as_view()),
         name='ad_group_archive',
@@ -480,6 +485,16 @@ urlpatterns += patterns(
         r'^api/zwei_callback/(?P<action_id>\d+)$',
         zweiapi.views.zwei_callback,
         name='api.zwei_callback',
+    )
+)
+
+# B1 effective spend API
+urlpatterns += patterns(
+    '',
+    url(
+        r'^api/ad_group_spend_pcts/$',
+        reports.views.ad_group_spend_pcts,
+        name='api.ad_group_spend_pcts'
     )
 )
 

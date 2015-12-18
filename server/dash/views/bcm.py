@@ -167,7 +167,7 @@ class AccountCreditItemView(api_common.BaseApiView):
                     'campaign': str(b.campaign),
                     'id': b.pk,
                     'total': b.amount,
-                    'spend': b.get_spend_amount(),
+                    'spend': b.get_spend_data(use_decimal=True)['total'],
                     'start_date': b.start_date,
                     'end_date': b.end_date,
                 }
@@ -206,7 +206,7 @@ class CampaignBudgetView(api_common.BaseApiView):
         return self.create_api_response(item.instance.pk)
 
     def _prepare_item(self, item):
-        spend = item.get_spend_amount()
+        spend = item.get_spend_data(use_decimal=True)['total']
         return {
             'id': item.pk,
             'start_date': item.start_date,
@@ -264,37 +264,39 @@ class CampaignBudgetView(api_common.BaseApiView):
     def _get_budget_totals(self, campaign):
         data = {
             'current': {
-                'available': Decimal('0'),
-                'unallocated': Decimal('0'),
-                'past': Decimal('0'),
+                'available': Decimal('0.0000'),
+                'unallocated': Decimal('0.0000'),
+                'past': Decimal('0.0000'),
             },
             'lifetime': {
-                'campaign_spend': Decimal('0'),
-                'media_spend': Decimal('0'),
-                'data_spend': Decimal('0'),
-                'license_fee': Decimal('0'),
+                'campaign_spend': Decimal('0.0000'),
+                'media_spend': Decimal('0.0000'),
+                'data_spend': Decimal('0.0000'),
+                'license_fee': Decimal('0.0000'),
             }
         }
         for item in models.CreditLineItem.objects.filter(account=campaign.account):
             allocated = item.get_allocated_amount()
             if item.status != constants.CreditLineItemStatus.SIGNED:
                 continue
-            data['current'][item.is_past() and 'past' or 'available'] += Decimal(item.amount)
+            data['current'][item.is_past() and 'past' or 'available'] += Decimal(allocated)
             if not item.is_past():
                 data['current']['unallocated'] += Decimal(item.amount - allocated)
             
         for item in models.BudgetLineItem.objects.filter(campaign_id=campaign.id):
+            spend_data = item.get_spend_data(use_decimal=True)
+            if item.state() in (constants.BudgetLineItemState.ACTIVE,
+                                constants.BudgetLineItemState.PENDING):
+                data['current']['available'] -= Decimal(spend_data['total'])
+            else:
+                data['current']['past'] -= Decimal(spend_data['total'])
             if item.state() == constants.BudgetLineItemState.PENDING:
                 continue
-            campaign_spend = item.get_spend_amount()
-            data_spend = item.get_data_spend_amount()
-            media_spend = item.get_media_spend_amount()
             
-            data['lifetime']['campaign_spend'] += campaign_spend
-            data['lifetime']['media_spend'] += media_spend
-            data['lifetime']['data_spend'] += data_spend
-            data['lifetime']['license_fee'] += campaign_spend - media_spend
-            
+            data['lifetime']['campaign_spend'] += spend_data['total']
+            data['lifetime']['media_spend'] += spend_data['media']
+            data['lifetime']['data_spend'] += spend_data['data']
+            data['lifetime']['license_fee'] += spend_data['license_fee']
         return data
 
 

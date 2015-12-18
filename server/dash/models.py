@@ -30,7 +30,12 @@ from utils import dates_helper
 
 
 SHORT_NAME_MAX_LENGTH = 22
+CC_TO_DEC_MULTIPLIER = Decimal('0.0001')
+TO_CC_MULTIPLIER = 10**4
+TO_NANO_MULTIPLIER = 10**9
 
+def nano_to_cc(num):
+    return int(round(num * 0.00001))
 
 def validate(*validators):
     errors = {}
@@ -1930,10 +1935,10 @@ class CreditLineItem(FootprintModel):
     def is_past(self, date=None):
         if date is None:
             date = dates_helper.local_today()
-        return self.end_date <= date
+        return self.end_date < date
 
     def get_allocated_amount(self):
-        return sum(b.amount for b in self.budgets.all())
+        return sum(b.allocated_amount() for b in self.budgets.all())
 
     def cancel(self):
         self.status = constants.CreditLineItemStatus.CANCELED
@@ -1998,10 +2003,13 @@ class CreditLineItem(FootprintModel):
             })
 
     def validate_amount(self):
+        if self.amount < 0:
+            raise ValidationError('Amount cannot be negative.')
         if not self.pk or not self.has_changed('amount'):
             return
         prev_amount = self.previous_value('amount')
         budgets = self.budgets.all()
+        
         if prev_amount < self.amount or not budgets:
             return
         if self.amount < sum(b.amount for b in budgets):
@@ -2053,6 +2061,7 @@ class BudgetLineItem(FootprintModel):
     end_date = models.DateField()
 
     amount = models.IntegerField()
+    freed_cc = models.BigIntegerField(default=0)
 
     comment = models.CharField(max_length=256, blank=True, null=True)
 
@@ -2086,7 +2095,8 @@ class BudgetLineItem(FootprintModel):
     def state(self, date=None):
         if date is None:
             date = dates_helper.local_today()
-        if (self.amount - self.get_spend_amount()) <= 0:
+        total_spend = self.get_spend_data(date=date)['total_cc'] * 0.0001
+        if self.amount <= total_spend:
             return constants.BudgetLineItemState.DEPLETED
         if self.end_date and self.end_date < date:
             return constants.BudgetLineItemState.INACTIVE
@@ -2097,20 +2107,99 @@ class BudgetLineItem(FootprintModel):
     def state_text(self, date=None):
         return constants.BudgetLineItemState.get_text(self.state(date=date))
 
-    def get_spend_amount(self):  # TODO: implement
-        return Decimal('0')
+    def allocated_amount_cc(self):
+        return self.amount * TO_CC_MULTIPLIER - self.freed_cc
 
-    def get_media_spend_amount(self):  # TODO: implement
-        return Decimal('0')
-
-    def get_data_spend_amount(self):  # TODO: implement
-        return Decimal('0')
+    def allocated_amount(self):
+        return Decimal(self.allocated_amount_cc()) * CC_TO_DEC_MULTIPLIER
 
     def is_editable(self):
         return self.state() == constants.BudgetLineItemState.PENDING
 
     def is_updatable(self):
         return self.state() == constants.BudgetLineItemState.ACTIVE
+
+    def free_inactive_allocated_assets(self):
+        if self.state() != constants.BudgetLineItemState.INACTIVE:
+            raise AssertionError('Budget has to be inactive to be freed.')
+        amount_cc = self.amount * TO_CC_MULTIPLIER
+        spend_data = self.get_spend_data()
+        
+        reserve = self.get_reserve_amount_cc()
+        free_date = self.end_date + datetime.timedelta(days=settings.LAST_N_DAY_REPORTS)
+        is_over_sync_time = dates_helper.local_today() > free_date
+    
+        if is_over_sync_time:
+            # After we completed all syncs, free all the assets including reserve
+            self.freed_cc = max(0, amount_cc - spend_data['total_cc'])
+        elif self.freed_cc == 0 and reserve is not None:
+            self.freed_cc = max(
+                0, amount_cc - spend_data['total_cc'] - reserve
+            )
+
+        self.save()
+
+    def get_reserve_amount_cc(self):
+        try:
+            # try to get previous statement that has more solid data
+            statement = list(self.statements.all().order_by('-date')[:2])[-1]
+        except IndexError:
+            return None
+        total_cc = nano_to_cc(
+            statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
+        )
+        return total_cc * settings.BUDGET_RESERVE_FACTOR
+
+    def get_latest_statement(self):
+        return self.statements.all().order_by('-date').first()
+
+    def get_spend_data(self, date=None, use_decimal=False):
+        spend_data = {
+            'media_cc': 0,
+            'data_cc': 0,
+            'license_fee_cc': 0,
+            'total_cc': 0,
+        }
+        statements = self.statements.filter(date__lte=date) if date else self.statements.all()
+        spend_data = {
+            (key + '_cc'): nano_to_cc(spend or 0)
+            for key, spend in statements.aggregate(
+                media=models.Sum('media_spend_nano'),
+                data=models.Sum('data_spend_nano'),
+                license_fee=models.Sum('license_fee_nano'),
+            ).iteritems()
+        }
+        spend_data['total_cc'] = sum(spend_data.values())
+        if not use_decimal:
+            return spend_data
+        return {
+            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
+            for key in spend_data.keys()
+        }
+    
+    def get_daily_spend(self, date, use_decimal=False):
+        spend_data = {
+            'media_cc': 0, 'data_cc': 0,
+            'license_fee_cc': 0, 'total_cc': 0,
+        }
+        try:
+            statement = date and self.statements.get(date=date)\
+                        or self.get_latest_statement()
+        except ObjectDoesNotExist:
+            pass
+        else:
+            spend_data['media_cc'] = nano_to_cc(statement.media_spend_nano)
+            spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano )
+            spend_data['license_fee_cc'] = nano_to_cc(statement.license_fee_nano)
+            spend_data['total_cc'] = nano_to_cc(
+                statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
+            )
+        if not use_decimal:
+            return spend_data
+        return {
+            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
+            for key in spend_data.keys()
+        }
 
     def get_ideal_budget_spend(self, date):
         if date < self.start_date:
@@ -2132,8 +2221,14 @@ class BudgetLineItem(FootprintModel):
             db_state = self.db_state()
             if have_changed and not db_state == constants.BudgetLineItemState.PENDING:
                 raise ValidationError('Only pending budgets can change start date and amount.')
-            if db_state not in (constants.BudgetLineItemState.PENDING,
-                                constants.BudgetLineItemState.ACTIVE, ):
+            is_reserve_update = all([
+                not self.has_changed('start_date'),
+                not self.has_changed('end_date'),
+                not self.has_changed('amount'),
+                not self.has_changed('campaign'),
+            ])
+            if not is_reserve_update and db_state not in (constants.BudgetLineItemState.PENDING,
+                                                          constants.BudgetLineItemState.ACTIVE,):
                 raise ValidationError('Only pending and active budgets can change.')
 
         validate(
@@ -2169,11 +2264,16 @@ class BudgetLineItem(FootprintModel):
     def validate_amount(self):
         if not self.amount:
             return
+        if self.amount < 0:
+            raise ValidationError('Amount cannot be negative.')
+
         budgets = self.credit.budgets.exclude(pk=self.pk)
-        delta = self.credit.amount - sum(b.amount for b in budgets) - self.amount
+        delta = Decimal(self.credit.amount - sum(b.allocated_amount() for b in budgets) - self.amount)
         if delta < 0:
             raise ValidationError(
-                'Budget exceeds the total credit amount by ${}.00.'.format(-delta)
+                'Budget exceeds the total credit amount by ${}.'.format(
+                    -delta.quantize(Decimal('1.00'))
+                )
             )
 
     class QuerySet(models.QuerySet):

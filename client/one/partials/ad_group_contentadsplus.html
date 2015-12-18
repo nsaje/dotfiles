@@ -1,18 +1,13 @@
 <div class="page page-ad-group-ads-plus">
     <div class="section">
-        <div ng-if="!hasPermission('zemauth.can_see_infobox')" class="graph-infobox-parent">
-            <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
-        </div>
-
-        <div ng-if="hasPermission('zemauth.can_see_infobox')" class="graph-infobox-parent">
-            <div ng-class="{'graph-container-short': infoboxVisible, 'graph-container-full': !infoboxVisible}">
-                <zem-chart ng-class="{'chart-hidden': chartHidden}" zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
+        <div class="graph-infobox-parent">
+            <div ng-class="{'graph-container-short': infoboxVisible && hasPermission('zemauth.can_see_infobox'), 'graph-container-full': !infoboxVisible && hasPermission('zemauth.can_see_infobox'), 'graph-infobox-parent': !hasPermission('zemauth.can_see_inbofox')}">
+                <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
             </div>
-            <div ng-class="{'infobox-container-full': infoboxVisible, 'infobox-container-short': !infoboxVisible}">
-                <zem-infobox header="infoboxHeader" settings="infoboxSettings"></zem-infobox>
+            <div ng-if="hasPermission('zemauth.can_see_infobox')" ng-class="{'infobox-container-full': infoboxVisible, 'infobox-container-short': !infoboxVisible}">
+                <zem-infobox header="infoboxHeader" settings="infoboxSettings" link-to="'main.adGroups.settings'" element-id="$state.params.id"></zem-infobox>
             </div>
-        <div>
-    </div>
+        <div> 
     </div>
     <div class="section table-ad-group-ads-plus">
         <div class="button-bar">
@@ -62,16 +57,6 @@
             </div>
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
             <a id="chart-btn" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
-            <!--
-            <span ng-switch="isSyncInProgress">
-                <span ng-switch-when="false">
-                    <a ng-click="triggerSync()" id="resync-btn" class="btn btn-default pull-right" title="Sync reporting metrics"><img ng-src="{{ config.static_url }}/one/img/refresh.svg"></a>
-                </span>
-                <span ng-switch-when="true">
-                    <a id="resync-loader" class="btn btn-default pull-right" popover="Synchronization of reporting data is currently in progress, and may take a few minutes. You can continue using the dashboard in the meantime." popover-append-to-body="true" popover-trigger="mouseenter" popover-placement="left"><div class="loader"></div></a>
-                </span>
-            </span>
-            -->
         </div>
 
         <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
