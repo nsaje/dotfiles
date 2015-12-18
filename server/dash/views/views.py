@@ -465,10 +465,12 @@ class AdGroupOverview(api_common.BaseApiView):
             'Tracking codes',
             'Yes' if ad_group_settings.tracking_code else 'No',
             ''
-        ).comment(
-            'codes',
-            ad_group_settings.tracking_code
         )
+        if ad_group_settings.tracking_code:
+            tracking_code_settings = tracking_code_settings.comment(
+                'codes',
+                ad_group_settings.tracking_code
+            )
         settings.append(tracking_code_settings.as_dict())
 
         post_click_tracking = []
@@ -476,6 +478,9 @@ class AdGroupOverview(api_common.BaseApiView):
             post_click_tracking.append('Google Analytics')
         if ad_group_settings.enable_adobe_tracking:
             post_click_tracking.append('Adobe')
+
+        if post_click_tracking == []:
+            post_click_tracking.append("N/A")
 
         post_click_tracking_setting = infobox_helpers.OverviewSetting(
             'Post click tracking',
@@ -660,7 +665,7 @@ class CampaignOverview(api_common.BaseApiView):
                 performance_settings,
         }
 
-        header['subtitle'] = 'Delivering' if is_delivering else 'Not Delivering'
+        header['subtitle'] = ''  # 'Delivering' if is_delivering else 'Not Delivering'
 
         return self.create_api_response(response)
 
