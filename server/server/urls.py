@@ -483,6 +483,16 @@ urlpatterns += patterns(
     )
 )
 
+# B1 effective spend API
+urlpatterns += patterns(
+    '',
+    url(
+        r'^api/ad_group_spend_pcts/$',
+        reports.views.ad_group_spend_pcts,
+        name='api.ad_group_spend_pcts'
+    )
+)
+
 # Crossvalidation Api
 urlpatterns += patterns(
     '',
