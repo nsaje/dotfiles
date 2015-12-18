@@ -1,3 +1,4 @@
+from collections import defaultdict
 import datetime
 import logging
 
@@ -26,21 +27,24 @@ def ad_group_spend_pcts(request):
         return _error_response('Invalid signature.', status=401)
 
     try:
-        date = datetime.datetime.strptime(request.GET['date'], '%Y-%m-%d').date()
+        start_date = datetime.datetime.strptime(request.GET['start_date'], '%Y-%m-%d').date()
+        end_date = datetime.datetime.strptime(request.GET['end_date'], '%Y-%m-%d').date()
     except Exception as e:
         logger.exception('Invalid input parameters')
         return _error_response(str(e), status=400)
 
-    result = {}
+    result = defaultdict(dict)
 
     campaigns = dash.models.Campaign.objects.all()
-    for campaign in campaigns:
-        pct_actual_spend, pct_license_fee = reports.daily_statements.get_effective_spend_pcts(date, campaign)
-        for ad_group in campaign.adgroup_set.all():
-            result[ad_group.id] = {
-                'pct_actual_spend': str(pct_actual_spend),
-                'pct_license_fee': str(pct_license_fee)
-            }
+    while start_date <= end_date:
+        for campaign in campaigns:
+            pct_actual_spend, pct_license_fee = reports.daily_statements.get_effective_spend_pcts(start_date, campaign)
+            for ad_group in campaign.adgroup_set.all():
+                result[start_date.isoformat()][ad_group.id] = {
+                    'pct_actual_spend': str(pct_actual_spend),
+                    'pct_license_fee': str(pct_license_fee)
+                }
+        start_date += datetime.timedelta(days=1)
 
     response_data = {
         'status': 'OK',
