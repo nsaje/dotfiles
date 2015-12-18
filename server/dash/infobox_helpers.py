@@ -1,3 +1,4 @@
+import copy
 import datetime
 import exceptions
 
@@ -7,6 +8,41 @@ import dash.constants
 import dash.budget
 import dash.models
 import reports.api_contentads
+
+
+class OverviewSetting(object):
+
+    def __init__(self, name, value, description, tooltip=None, setting_type='setting'):
+        self.name = name
+        self.value = value
+        self.description = description
+        self.detailsLabel = None
+        self.detailsContent = None
+        self.icon = None
+        self.type = setting_type
+
+    def comment(self, details_label, details_description):
+        ret = copy.deepcopy(self)
+        ret.detailsLabel = details_label
+        ret.detailsContent = details_description
+        return ret
+
+    def performance(self, ok):
+        ret = copy.deepcopy(self)
+        ret.icon = 'happy' if ok else 'sad'
+        return ret
+
+    def as_dict(self):
+        ret = {}
+        for key, value in self.__dict__.iteritems():
+            if value is not None:
+                ret[key] = value
+        return ret
+
+
+class OverviewSeparator(OverviewSetting):
+    def __init__(self):
+        super(OverviewSeparator, self).__init__('', '', '', setting_type='hr')
 
 
 def get_reports_api_module(user):
