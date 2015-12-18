@@ -111,9 +111,9 @@ def _get_goals_json(goals):
 def _add_effective_spend(date, campaign, rows):
     pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)
     for row in rows:
-        row['effective_media_spend_nano'] = int(pct_actual_spend * (row['cost_cc'] or 0) * CC_TO_NANO)
-        row['effective_data_spend_nano'] = int(pct_actual_spend * (row['data_cost_cc'] or 0) * CC_TO_NANO)
-        row['license_fee_nano'] = int(pct_license_fee * (row['effective_media_spend_nano'] + row['effective_data_spend_nano']))
+        row['effective_cost_nano'] = int(pct_actual_spend * (row['cost_cc'] or 0) * CC_TO_NANO)
+        row['effective_data_cost_nano'] = int(pct_actual_spend * (row['data_cost_cc'] or 0) * CC_TO_NANO)
+        row['license_fee_nano'] = int(pct_license_fee * (row['effective_cost_nano'] + row['effective_data_cost_nano']))
 
 
 def notify_contentadstats_change(date, campaign_id):
