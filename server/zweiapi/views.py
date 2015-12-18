@@ -368,7 +368,7 @@ def _fetch_reports_callback(action, data):
 
         if ad_group_source.can_manage_content_ads:
             reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
-            reports.daily_statements.reprocess_daily_statements(date, ad_group.campaign)
+            # reports.daily_statements.reprocess_daily_statements(date, ad_group.campaign)
 
         # set cache only after everything has updated successfully
         _set_reports_cache(data, ad_group, source, date, change_unique_key)
