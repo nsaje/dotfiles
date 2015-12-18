@@ -828,6 +828,53 @@ class CampaignOverview(api_common.BaseApiView):
             ad_groups, ad_groups_settings, [], 'campaign_id')
 
 
+class AccountOverview(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'account_overview')
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.can_see_infobox'):
+            raise exc.AuthorizationError()
+
+        account = helpers.get_account(request.user, account_id)
+
+        header = {
+            'title': account.name,
+            'active': False
+        }
+
+        basic_settings = []  # self._basic_settings(campaign, campaign_settings)
+
+        performance_settings = []  #
+
+#         self._performance_settings(
+#             campaign,
+#             request.user,
+#             campaigl_settings,
+#             daily_cap_cc
+#         )
+
+        response = {
+            'header': header,
+            'settings':  basic_settings +
+                [infobox_helpers.OverviewSeparator().as_dict()] +
+                performance_settings,
+        }
+
+        header['subtitle'] = 'TODO: With x account n campaigns'
+
+        return self.create_api_response(response)
+
+    def _basic_settings(self, campaign, campaign_settings):
+        settings = []
+
+        return settings
+
+    def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc):
+        setting = []
+
+        return settings
+
+
 class AdGroupState(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'ad_group_state_get')
     def get(self, request, ad_group_id):

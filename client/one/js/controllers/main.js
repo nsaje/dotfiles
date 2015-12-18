@@ -277,7 +277,8 @@ oneApp.controller('MainCtrl',
         // infobox will be visible only on certain views and 
         // is entirely housed within main atm
         if ($state.is('main.adGroups.adsPlus') ||
-            $state.is('main.campaigns.ad_groups')) {
+            $state.is('main.campaigns.ad_groups') ||
+            $state.is('main.accounts.campaigns')) {
             $scope.infoboxEnabled = true;  
         } else {
             $scope.infoboxEnabled = false;  

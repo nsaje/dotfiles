@@ -1347,6 +1347,29 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         };
     }
 
+    function AccountOverview() {
+
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + id + '/overview/';
+            var config = {
+                params: {}
+            };
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function(data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AllAccountsBudget() {
         this.get = function () {
             var deferred = $q.defer();
@@ -2907,6 +2930,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         accountCampaigns: new AccountCampaigns(),
         accountCampaignsTable: new AccountCampaignsTable(),
         accountBudget: new AccountBudget(),
+        accountOverview: new AccountOverview(),
         scheduledReports: new ScheduledReports(),
         accountSync: new AccountSync(),
         accountArchive: new AccountArchive(),
