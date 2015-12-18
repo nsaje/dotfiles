@@ -1927,7 +1927,7 @@ class CreditLineItem(FootprintModel):
     def is_past(self, date=None):
         if date is None:
             date = dates_helper.local_today()
-        return self.end_date <= date
+        return self.end_date < date
 
     def get_allocated_amount(self):
         return sum(b.allocated_amount() for b in self.budgets.all())
