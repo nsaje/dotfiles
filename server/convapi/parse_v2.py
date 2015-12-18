@@ -296,6 +296,14 @@ class Report(object):
                 content_ad_not_specified.add(str(entry))
         return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
 
+    def _parse_z11z_keyword(self, keyword):
+        result = Z11Z_RE.match(keyword)
+        if not result:
+            return None, ''
+        else:
+            content_ad_id, source_param = result.group(1), result.group(2)
+        return int(content_ad_id), source_param
+
 
 class GAReport(Report):
     def _parse_landing_page(self, raw_url):
@@ -329,14 +337,6 @@ class GAReport(Report):
             )
             return None, ''
         return content_ad_id, source_param
-
-    def _parse_z11z_keyword(self, keyword):
-        result = Z11Z_RE.match(keyword)
-        if not result:
-            return None, ''
-        else:
-            content_ad_id, source_param = result.group(1), result.group(2)
-        return int(content_ad_id), source_param
 
 
 class GAReportFromCSV(GAReport):
