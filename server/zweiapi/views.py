@@ -22,6 +22,7 @@ import actionlog.zwei_actions
 
 import dash.api
 import dash.models
+import reports.daily_statements
 import reports.refresh
 import reports.update
 import reports.api_publishers
@@ -367,7 +368,6 @@ def _fetch_reports_callback(action, data):
 
         if ad_group_source.can_manage_content_ads:
             reports.update.update_content_ads_source_traffic_stats(date, ad_group, source, rows)
-            reports.daily_statements.reprocess_for_date(date, ad_group.campaign)
 
         # set cache only after everything has updated successfully
         _set_reports_cache(data, ad_group, source, date, change_unique_key)

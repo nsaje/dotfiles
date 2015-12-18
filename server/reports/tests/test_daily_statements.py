@@ -204,6 +204,19 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(0, statements[12].data_spend_nano)
         self.assertEqual(200000000000, statements[12].license_fee_nano)
 
+    def test_max_dates_till_today(self, mock_content_ad_stats, mock_datetime):
+        # check that there's no endless loop when update_from is less than all budget start dates
+        return_values = {}
+        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 10, 31, 12))
+
+        self.assertTrue(datetime.date(2015, 11, 1),
+                        min(budget.start_date for budget in dash.models.BudgetLineItem.objects.all()))
+
+        update_from = datetime.date(2015, 10, 31)
+        dates = daily_statements._get_dates(update_from, self.campaign1)
+        self.assertItemsEqual([], dates)
+
     @patch('reports.daily_statements._generate_statements')
     def test_daily_statements_already_exist(self, mock_generate_statements, mock_content_ad_stats, mock_datetime):
         return_values = {}

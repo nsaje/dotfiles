@@ -134,8 +134,10 @@ def refresh_changed_contentadstats():
         to_refresh[key].append(message)
 
     for key, val in to_refresh.iteritems():
+        date = datetime.datetime.strptime(key[0], '%Y-%m-%d').date()
         campaign = dash.models.Campaign.objects.get(id=key[1])
-        refresh_contentadstats(datetime.datetime.strptime(key[0], '%Y-%m-%d').date(), campaign)
+        daily_statements.reprocess_daily_statements(date, campaign)
+        refresh_contentadstats(date, campaign)
         sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, val)
 
     statsd_helper.statsd_gauge('reports.refresh.refresh_changed_contentadstats_num', len(to_refresh))

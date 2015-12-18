@@ -206,7 +206,7 @@ class ContentAdGoalConversionStats(models.Model):
 
 
 class BudgetDailyStatement(models.Model):
-    budget = models.ForeignKey(dash.models.BudgetLineItem)
+    budget = models.ForeignKey(dash.models.BudgetLineItem, related_name='statements')
     date = models.DateField()
     media_spend_nano = models.BigIntegerField()
     data_spend_nano = models.BigIntegerField()

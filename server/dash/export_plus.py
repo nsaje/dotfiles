@@ -1,6 +1,7 @@
 import unicodecsv
 import StringIO
 import slugify
+import collections
 from collections import OrderedDict
 
 from dash import models
@@ -73,13 +74,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         constraints=constraints
     )
 
-    if 'content_ad' in dimensions:
-        content_ad_data = _prefetch_content_ad_data(constraints)
-
-    if include_budgets and dimensions == ['account']:
-        all_accounts_budget = budget.GlobalBudget().get_total_by_account()
-        all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
-
+    prefetched_data, budgets = _prefetch_rows_data(dimensions, constraints, stats, include_budgets)
     if 'source' in dimensions:
         source_names = {source.id: source.name for source in models.Source.objects.all()}
 
@@ -91,17 +86,17 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
             stat['source'] = source_names[stat['source']]
 
         if 'content_ad' in dimensions:
-            stat = _populate_content_ad_stat(stat, content_ad_data[stat['content_ad']])
+            stat = _populate_content_ad_stat(stat, prefetched_data[stat['content_ad']])
         elif 'ad_group' in dimensions:
-            stat = _populate_ad_group_stat(stat, stat['ad_group'])
+            stat = _populate_ad_group_stat(stat, prefetched_data.get(id=stat['ad_group']))
         elif 'campaign' in dimensions:
-            stat = _populate_campaign_stat(stat, stat['campaign'], include_budgets)
+            stat = _populate_campaign_stat(stat, prefetched_data.get(id=stat['campaign']), budgets)
         elif 'account' in dimensions:
             if include_budgets:
-                stat['budget'] = all_accounts_budget.get(stat['account'], 0)
-                stat['available_budget'] = stat['budget'] - all_accounts_total_spend.get(stat['account'], 0)
+                stat['budget'] = budgets[stat['account']].get('budget')
+                stat['available_budget'] = stat['budget'] - budgets[stat['account']].get('spent_budget')
                 stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
-            stat['account'] = models.Account.objects.get(id=stat['account'])
+            stat['account'] = prefetched_data.get(stat['account'])
 
     if 'date' in dimensions:
         ordering = 'date'
@@ -109,6 +104,35 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         ordering = _adjust_ordering_by_name(ordering, dimensions)
 
     return sort_results(stats, [ordering])
+
+
+def _prefetch_rows_data(dimensions, constraints, stats, include_budgets):
+    data = None
+    budgets = None
+    if 'content_ad' in dimensions:
+        data = _prefetch_content_ad_data(constraints)
+    elif 'ad_group' in dimensions:
+        distinct_ad_groups = set(adg for adg in (stat['ad_group'] for stat in stats))
+        data = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
+    elif 'campaign' in dimensions:
+        distinct_campaigns = set(camp for camp in (stat['campaign'] for stat in stats))
+        data = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
+        if include_budgets:
+            budgets = {camp.id:
+                       {'budget': budget.CampaignBudget(camp).get_total(),
+                        'spent_budget': budget.CampaignBudget(camp).get_spend()}
+                       for camp in data}
+    elif 'account' in dimensions:
+        accounts = constraints['account'] if isinstance(constraints['account'], collections.Iterable) else [constraints['account']]
+        data = {account.id: account.name for account in accounts}
+        if include_budgets:
+            all_accounts_budget = budget.GlobalBudget().get_total_by_account()
+            all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
+            budgets = {acc.id:
+                       {'budget': all_accounts_budget.get(acc.id, 0),
+                        'spent_budget': all_accounts_total_spend.get(acc.id, 0)}
+                       for acc in accounts}
+    return data, budgets
 
 
 def _populate_content_ad_stat(stat, content_ad):
@@ -122,21 +146,19 @@ def _populate_content_ad_stat(stat, content_ad):
     return stat
 
 
-def _populate_ad_group_stat(stat, ad_group_id):
-    ad_group = models.AdGroup.objects.select_related('campaign__account').get(id=ad_group_id)
+def _populate_ad_group_stat(stat, ad_group):
     stat['ad_group'] = ad_group.name
     stat['campaign'] = ad_group.campaign.name
     stat['account'] = ad_group.campaign.account.name
     return stat
 
 
-def _populate_campaign_stat(stat, campaign_id, include_budgets):
-    campaign = models.Campaign.objects.select_related('account').get(id=campaign_id)
+def _populate_campaign_stat(stat, campaign, budgets=None):
     stat['campaign'] = campaign
     stat['account'] = campaign.account.name
-    if include_budgets:
-        stat['budget'] = budget.CampaignBudget(campaign).get_total()
-        stat['available_budget'] = stat['budget'] - budget.CampaignBudget(campaign).get_spend()
+    if budgets:
+        stat['budget'] = budgets[campaign.id].get('budget')
+        stat['available_budget'] = stat['budget'] - budgets[campaign.id].get('spent_budget')
         stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
     return stat
 
@@ -307,23 +329,25 @@ class AccountExport(object):
         dimensions = ['account']
         required_fields = ['start_date', 'end_date', 'account']
         exclude_fields = []
-
+        exclude_budgets = False
         if breakdown == 'campaign':
             required_fields.extend(['campaign'])
             dimensions.extend(['campaign'])
         elif breakdown == 'ad_group':
             required_fields.extend(['campaign', 'ad_group'])
-            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
             dimensions.extend(['campaign', 'ad_group'])
+            exclude_budgets = True
         elif breakdown == 'content_ad':
             required_fields.extend(['campaign', 'ad_group', 'title', 'image_url', 'url'])
-            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
             dimensions.extend(['campaign', 'ad_group', 'content_ad'])
+            exclude_budgets = True
+        if exclude_budgets or by_day:
+            exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
-        include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']])
+        include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']]) and not by_day
 
         results = _generate_rows(
             dimensions,

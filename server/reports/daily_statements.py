@@ -73,7 +73,7 @@ def _generate_statements(date, campaign):
             license_fee_nano=license_fee_nano
         )
 
-    if total_spend_nano > 0:
+    if total_media_nano + total_data_nano > 0:
         # TODO: over spend
         pass
 
@@ -82,27 +82,28 @@ def _get_dates(date, campaign):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id)
     existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
 
-    if budgets.count() == 0 or all(budget.start_date > date or budget.end_date < date for budget in budgets):
+    if budgets.count() == 0:
         return []
 
     by_date = defaultdict(dict)
     for existing_statement in existing_statements:
         by_date[existing_statement.date][existing_statement.budget_id] = existing_statement
 
+    today = dates_helper.utc_datetime_to_local_date(datetime.datetime.utcnow())
     from_date = min(budget.start_date for budget in budgets)
+    to_date = min(max(budget.end_date for budget in budgets), today)
     while True:
         found = False
         for budget in budgets:
             if budget.start_date <= from_date <= budget.end_date and budget.id not in by_date[from_date]:
                 found = True
 
-        if found or from_date == date:
+        if found or from_date == date or from_date == to_date:
             break
 
         from_date += datetime.timedelta(days=1)
 
-    today = dates_helper.utc_datetime_to_local_date(datetime.datetime.utcnow())
-    return [dt.date() for dt in rrule.rrule(rrule.DAILY, dtstart=from_date, until=today)]
+    return [dt.date() for dt in rrule.rrule(rrule.DAILY, dtstart=from_date, until=to_date)]
 
 
 def get_effective_spend_pcts(date, campaign):
