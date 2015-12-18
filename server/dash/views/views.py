@@ -847,7 +847,7 @@ class AccountOverview(api_common.BaseApiView):
             'active': False
         }
 
-        basic_settings = []  # self._basic_settings(campaign, campaign_settings)
+        basic_settings = self._basic_settings(account)
 
         performance_settings = []  #
 
@@ -869,9 +869,67 @@ class AccountOverview(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, campaign, campaign_settings):
+    def _username(self, user):
+        if not user:
+            return 'N/A'
+        return "{first} {last}".format(
+            first=user.first_name.encode('utf-8'),
+            last=user.last_name.encode('utf-8')
+        )
+
+    def _basic_settings(self, account):
         settings = []
 
+        account_settings = account.get_current_settings()
+        account_manager_setting = infobox_helpers.OverviewSetting(
+            'Account Manager:',
+            self._username(account_settings.default_account_manager),
+            ''
+        )
+        settings.append(account_manager_setting.as_dict())
+
+        sales_manager_setting = infobox_helpers.OverviewSetting(
+            'Sales Manager:',
+            self._username(account_settings.default_sales_representative),
+            ''
+        )
+        settings.append(sales_manager_setting.as_dict())
+
+        for i, user in enumerate(account.users.all()):
+            user_one_setting = infobox_helpers.OverviewSetting(
+                'Users:' if i == 0 else '',
+                self._username(user),
+                ''
+            )
+            settings.append(user_one_setting.as_dict())
+
+        platform_fee_setting = infobox_helpers.OverviewSetting(
+            'Platform fee:',
+            "{:.2f}%".format(account_settings.service_fee * 100),
+            ''
+        )
+        settings.append(platform_fee_setting.as_dict())
+
+        pixels = models.ConversionPixel.objects.filter(account=account)
+        conversion_pixel_setting = infobox_helpers.OverviewSetting(
+            'Conversion pixel:',
+            'Yes' if pixels.count() > 0 else 'No',
+            ''
+        )
+        if pixels.count() > 0:
+            slugs = [pixel.slug for pixel in pixels]
+            conversion_pixel_setting = conversion_pixel_setting.comment(
+                'more',
+                ', '.join(slugs),
+            )
+        settings.append(conversion_pixel_setting.as_dict())
+
+        account_type_setting = infobox_helpers.OverviewSetting(
+            'Account type:',
+            'N/A',
+            ''
+        )
+        settings.append(account_type_setting.as_dict())
         return settings
 
     def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc):
