@@ -1,5 +1,4 @@
 from collections import defaultdict
-from decimal import Decimal
 import datetime
 import json
 import logging
@@ -11,6 +10,7 @@ from django.conf import settings
 import reports.models
 from reports.db_raw_helpers import dictfetchall
 from reports import redshift
+from reports import daily_statements
 from utils import statsd_helper
 from utils import sqs_helper
 
@@ -108,32 +108,12 @@ def _get_goals_json(goals):
     return json.dumps(result)
 
 
-def _add_effective_spend(campaign, date, rows):
-    attributed_spends = reports.models.BudgetDailyStatement.objects.\
-        filter(budget__campaign=campaign, date=date).\
-        aggregate(
-            media_nano=Sum('media_spend_nano'),
-            data_nano=Sum('data_spend_nano'),
-            license_fee_nano=Sum('license_fee_nano')
-        )
-    attributed_spend_nano = (attributed_spends['media_nano'] or 0) + (attributed_spends['data_nano'] or 0)
-    actual_media_spend_nano = sum(row['cost_cc'] or 0 for row in rows) * CC_TO_NANO
-    actual_data_spend_nano = sum(row['data_cost_cc'] or 0 for row in rows) * CC_TO_NANO
-    actual_spend_nano = actual_media_spend_nano + actual_data_spend_nano
-    license_fee_nano = attributed_spends['license_fee_nano'] or 0
-
-    percent_attributed_spend = 0
-    if actual_spend_nano > 0:
-        percent_attributed_spend = min(1, attributed_spend_nano / Decimal(actual_spend_nano))
-
-    percent_license_fee = 0
-    if attributed_spend_nano > 0:
-        percent_license_fee = min(1, license_fee_nano / Decimal(attributed_spend_nano))
-
+def _add_effective_spend(date, campaign, rows):
+    pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)
     for row in rows:
-        row['effective_media_spend_nano'] = int(percent_attributed_spend * (row['cost_cc'] or 0) * CC_TO_NANO)
-        row['effective_data_spend_nano'] = int(percent_attributed_spend * (row['data_cost_cc'] or 0) * CC_TO_NANO)
-        row['license_fee_nano'] = int(percent_license_fee * (row['effective_media_spend_nano'] + row['effective_data_spend_nano']))
+        row['effective_media_spend_nano'] = int(pct_actual_spend * (row['cost_cc'] or 0) * CC_TO_NANO)
+        row['effective_data_spend_nano'] = int(pct_actual_spend * (row['data_cost_cc'] or 0) * CC_TO_NANO)
+        row['license_fee_nano'] = int(pct_license_fee * (row['effective_media_spend_nano'] + row['effective_data_spend_nano']))
 
 
 def notify_contentadstats_change(date, campaign_id):
@@ -167,7 +147,7 @@ def refresh_contentadstats(date, campaign):
     rows = _get_joined_stats_rows(date, campaign.id)
     goals_dict = _get_goals_dict(date, campaign.id)
 
-    _add_effective_spend(campaign, date, rows)
+    _add_effective_spend(date, campaign, rows)
     rows = [_add_goals(row, goals_dict) for row in rows]
     rows = [_add_ids(row, campaign) for row in rows]
 

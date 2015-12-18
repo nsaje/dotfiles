@@ -245,9 +245,9 @@ class RefreshContentAdStats(test.TestCase):
         models.BudgetDailyStatement.objects.create(
             budget_id=1,
             date=date,
-            media_spend_nano=80000000000,
-            data_spend_nano=80000000000,
-            license_fee_nano=16000000000,
+            media_spend_nano=8000000000,
+            data_spend_nano=8000000000,
+            license_fee_nano=1600000000,
         )
 
         refresh.refresh_contentadstats(date, campaign)
