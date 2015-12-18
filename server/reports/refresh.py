@@ -10,6 +10,7 @@ from django.conf import settings
 import reports.models
 from reports.db_raw_helpers import dictfetchall
 from reports import redshift
+from reports import daily_statements
 from utils import statsd_helper
 from utils import sqs_helper
 
@@ -123,8 +124,10 @@ def refresh_changed_contentadstats():
         to_refresh[key].append(message)
 
     for key, val in to_refresh.iteritems():
+        date = datetime.datetime.strptime(key[0], '%Y-%m-%d').date()
         campaign = dash.models.Campaign.objects.get(id=key[1])
-        refresh_contentadstats(datetime.datetime.strptime(key[0], '%Y-%m-%d').date(), campaign)
+        daily_statements.reprocess_daily_statements(date, campaign)
+        refresh_contentadstats(date, campaign)
         sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, val)
 
     statsd_helper.statsd_gauge('reports.refresh.refresh_changed_contentadstats_num', len(to_refresh))
