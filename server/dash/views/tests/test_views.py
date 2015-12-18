@@ -2024,6 +2024,7 @@ class AdGroupOverviewTest(TestCase):
         reversed_url = reverse(
                 'ad_group_overview',
                 kwargs={'ad_group_id': ad_group_id})
+
         response = self.client.get(
             reversed_url,
             follow=True
@@ -2143,3 +2144,40 @@ class AdGroupOverviewTest(TestCase):
         #pacing_setting = self._get_setting(settings, 'pacing')
         #self.assertEqual('50.00%', pacing_setting['value'])
         #self.assertEqual('happy', pacing_setting['icon'])
+
+
+class CampaignOverviewTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.client = Client()
+        redshift.STATS_DB_NAME = 'default'
+
+        permission = Permission.objects.get(codename='can_see_infobox')
+        user = zemauth.models.User.objects.get(pk=2)
+        user.user_permissions.add(permission)
+        user.save()
+
+    def _get_campaign_overview(self, campaign_id, user_id=3, with_status=False):
+        user = User.objects.get(pk=user_id)
+        self.client.login(username=user.username, password='secret')
+        reversed_url = reverse(
+                'campaign_overview',
+                kwargs={'campaign_id': campaign_id})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return json.loads(response.content)
+
+    def _get_setting(self, settings, name):
+        return [s for s in settings if name in s['name'].lower()][0]
+
+    @patch('reports.redshift.get_cursor')
+    def test_run_empty(self, cursor):
+        cursor().dictfetchall.return_value = [{
+            'source_id': 9,
+            'cost_cc_sum': 0.0
+        }]
+        response = self._get_campaign_overview(1)
+        self.assertTrue(response['success'])

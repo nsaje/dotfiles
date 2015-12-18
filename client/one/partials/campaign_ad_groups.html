@@ -1,6 +1,13 @@
 <div class="page page-campaign-ad-groups">
     <div class="section" ng-class="{'chart-hidden': chartHidden}">
-        <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedAdGroupRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
+        <div class="graph-infobox-parent">
+            <div ng-class="{'graph-container-short': infoboxVisible && hasPermission('zemauth.can_see_infobox'), 'graph-container-full': !infoboxVisible && hasPermission('zemauth.can_see_infobox'), 'graph-infobox-parent': !hasPermission('zemauth.can_see_inbofox')}">
+                <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
+            </div>
+            <div ng-if="hasPermission('zemauth.can_see_infobox')" ng-class="{'infobox-container-full': infoboxVisible, 'infobox-container-short': !infoboxVisible}">
+                <zem-infobox header="infoboxHeader" settings="infoboxSettings" link-to="'main.campaigns.settings'" element-id="$state.params.id"></zem-infobox>
+            </div>
+        <div> 
     </div>
     <div class="section table-ad-group-ads">
         <div class="button-bar">
@@ -36,16 +43,6 @@
 
             <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
 
-            <!--
-            <span ng-switch="isSyncInProgress">
-                <span ng-switch-when="false">
-                    <a ng-click="triggerSync()" id="resync-btn" class="btn btn-default pull-right" title="Sync reporting metrics"><img ng-src="{{ config.static_url }}/one/img/refresh.svg"></a>
-                </span>
-                <span ng-switch-when="true">
-                    <a id="resync-loader" class="btn btn-default pull-right" popover="Synchronization of reporting data is currently in progress, and may take a few minutes. You can continue using the dashboard in the meantime." popover-append-to-body="true" popover-trigger="mouseenter" popover-placement="left"><div class="loader"></div></a>
-                </span>
-            </span>
-            -->
             <div class="clearfix"></div>
         </div>
 

@@ -16,6 +16,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.order = '-cost';
     $scope.isIncompletePostclickMetrics = false;
     $scope.localStoragePrefix = 'campaignAdGroups';
+    $scope.infoboxHeader = null;
+    $scope.infoboxSettings = null;
 
     var userSettings = zemUserSettings.getInstance($scope, 'campaignAdGroups');
 
@@ -282,6 +284,26 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         });
     };
 
+    $scope.getInfoboxData = function() {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+
+        api.campaignOverview.get($state.params.id).then(
+            function(data) {
+                $scope.infoboxHeader = data.header;
+                $scope.infoboxSettings = data.settings;
+            },
+            function(data) {}
+        );
+    };
+
+    $scope.$watch('$parent.infoboxVisible', function(newValue, oldValue) {
+        $timeout(function() {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
+    });
+
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             getDailyStats();
@@ -426,22 +448,22 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         });
     };
 
-    $scope.orderTableData = function(order) {
+    $scope.orderTableData = function (order) {
         $scope.order = order;
 
         getTableData();
     };
 
-    $scope.triggerSync = function() {
+    $scope.triggerSync = function () {
         $scope.isSyncInProgress = true;
         api.campaignSync.get($state.params.id, null);
     };
 
-    var pollSyncStatus = function() {
+    var pollSyncStatus = function () {
         if ($scope.isSyncInProgress){
-            $timeout(function() {
+            $timeout(function () {
                 api.checkCampaignSyncProgress.get($state.params.id).then(
-                    function(data) {
+                    function (data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
                         if (!$scope.isSyncInProgress){
@@ -451,7 +473,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                             getDailyStats();
                         }
                     },
-                    function(data) {
+                    function (data) {
                         // error
                         $scope.isSyncInProgress = false;
                     }
@@ -471,7 +493,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         }, 0);
     };
 
-    $scope.init = function() {
+    $scope.init = function () {
         var adGroupIds = $location.search().ad_group_ids;
         var adGroupTotals = $location.search().ad_group_totals;
 
@@ -497,15 +519,16 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         pollSyncStatus();
         getDailyStats();
         setDisabledExportOptions();
+        $scope.getInfoboxData();
     };
 
-    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+    $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         $location.search('ad_group_ids', null);
         $location.search('ad_group_totals', null);
     });
 
     $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
-        if(newValue === true && oldValue === false){
+        if (newValue === true && oldValue === false) {
             pollSyncStatus();
         }
     });
@@ -536,7 +559,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         getTableData();
     });
 
-    var setDisabledExportOptions = function() {
+    var setDisabledExportOptions = function () {
         api.campaignAdGroupsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
                 var option = null;

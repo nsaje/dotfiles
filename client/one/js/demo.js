@@ -310,6 +310,11 @@ oneApp.config(['$provide', function ($provide) {
             defaultGetWrapper('/api/ad_groups/{id}/overview/', $delegate.adGroupOverview.get)
         );
 
+        /* ADGROUP OVERVIEW */
+        $delegate.campaignOverview.get = resetIfErrorWrapper(
+            defaultGetWrapper('/api/campaigns/{id}/overview/', $delegate.campaignOverview.get)
+        );
+
         /* ADGROUP SETTINGS */
         $delegate.adGroupSettings.get = resetIfErrorWrapper(
             defaultGetWrapper('/api/ad_groups/{id}/settings/', $delegate.adGroupSettings.get)
