@@ -693,12 +693,17 @@ class CampaignOverview(api_common.BaseApiView):
         end_date = None
         never_finishes = False
 
+        daily_cap_cc = 0
+
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)
         for ad_group in ad_groups:
             if ad_group.is_archived():
                 continue
 
             ad_group_settings = ad_group.get_current_settings()
+
+            daily_cap_cc += ad_group_settings.daily_budget_cc
+
             adg_start_date = ad_group_settings.start_date
             adg_end_date = ad_group_settings.end_date
             if start_date is None:
@@ -748,16 +753,27 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(targeting_region.as_dict())
 
-        # TODO: sum of daily caps from adgroupsources
-        """
+        # take the num
+
         daily_cap = OverviewSetting(
             'Daily cap',
-            '${:.2f}'.format(ad_group_settings.daily_budget_cc)\
-                if ad_group_settings.daily_budget_cc is not None else '',
+            '${:.2f}'.format(daily_cap_cc)\
+                if daily_cap_cc > 0 else 'N/A',
             ''
         )
         settings.append(daily_cap.as_dict())
-        """
+
+        campaign_budget = budget.CampaignBudget(campaign)
+        total = campaign_budget.get_total()
+        spend = campaign_budget.get_spend()
+
+        campaign_budget_setting = OverviewSetting(
+            'Campaign budget:',
+            '${:.2f}'.format(total),
+            '${:.2f}'.format(total - spend),
+        )
+        settings.append(campaign_budget_setting.as_dict())
+
         return settings
 
     def _performance_settings(self, campaign, user, campaign_settings):
