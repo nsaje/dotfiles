@@ -342,22 +342,88 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         field: 'cost',
         checked: true,
         type: 'currency',
-        shown: true,
         help: "The amount spent per content ad.",
         totalRow: true,
         order: true,
-        initialOrder: 'desc'
+        initialOrder: 'desc',
+        shown: !$scope.hasPermission('zemauth.can_view_effective_costs') && !$scope.hasPermission('zemauth.can_view_actual_costs')
     }, {
-        name: 'Data Cost',
+        name: 'Actual Media Spend',
+        field: 'media_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Amount spent per media source, including overspend.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+    }, {
+        name: 'Media Spend',
+        field: 'e_media_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Amouont spent per media source.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+    }, {
+        name: 'Actual Data Cost',
         field: 'data_cost',
         checked: false,
         type: 'currency',
         totalRow: true,
-        help: 'Additional targeting/segmenting costs.', 
+        help: 'Additional targeting/segmenting costs, including overspend.',
         order: true,
         initialOrder: 'desc',
-        internal: $scope.isPermissionInternal('zemauth.can_view_data_cost'),
-        shown: $scope.hasPermission('zemauth.can_view_data_cost')
+        internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+    }, {
+        name: 'Data Cost',
+        field: 'e_data_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Additional targeting/segmenting costs.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+    }, {
+        name: 'Actual Total Spend',
+        field: 'total_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Sum of media spend, data cost and license fee, including overspend.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+    }, {
+        name: 'Total Spend',
+        field: 'billing_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Sum of media spend, data cost and license fee.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+    }, {
+        name: 'License Fee',
+        field: 'license_fee',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Zemanta One platform usage cost.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
     },{
         name: 'Avg. CPC',
         field: 'cpc',
@@ -417,7 +483,9 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         'fields': ['ad_selected', 'image_urls', 'titleLink', 'urlLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
     }, {
         'name': 'Traffic Acquisition',
-        'fields': ['cost', 'data_cost', 'cpc', 'clicks', 'impressions', 'ctr']
+        'fields': ['cost', 'data_cost', 'cpc', 'clicks', 'impressions', 'ctr',
+                   'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
+                   'license_fee']
     }, {
         'name': 'Audience Metrics',
         'fields': ['percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'visits', 'pageviews', 'click_discrepancy']

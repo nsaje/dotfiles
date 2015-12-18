@@ -126,6 +126,14 @@ class AllAccountsSourcesTable(object):
 
         return yesterday_cost, yesterday_total_cost
 
+    def get_actual_yesterday_cost(self):
+        yesterday_cost = self.reports_api.get_actual_yesterday_cost(account=self.accounts)
+        yesterday_total_cost = None
+        if yesterday_cost:
+            yesterday_total_cost = sum(yesterday_cost.values())
+
+        return yesterday_cost, yesterday_total_cost
+
     def get_last_success_actions(self):
         if not hasattr(self, '_last_success_actions'):
             self._last_success_actions = actionlog.sync.GlobalSync(
@@ -187,6 +195,14 @@ class AccountSourcesTable(object):
 
     def get_yesterday_cost(self):
         yesterday_cost = reports.api.get_yesterday_cost(account=self.account)
+        yesterday_total_cost = None
+        if yesterday_cost:
+            yesterday_total_cost = sum(yesterday_cost.values())
+
+        return yesterday_cost, yesterday_total_cost
+
+    def get_actual_yesterday_cost(self):
+        yesterday_cost = self.reports_api.get_actual_yesterday_cost(account=self.account)
         yesterday_total_cost = None
         if yesterday_cost:
             yesterday_total_cost = sum(yesterday_cost.values())
@@ -264,6 +280,14 @@ class CampaignSourcesTable(object):
 
         return yesterday_cost, yesterday_total_cost
 
+    def get_actual_yesterday_cost(self):
+        yesterday_cost = self.reports_api.get_actual_yesterday_cost(campaign=self.campaign)
+        yesterday_total_cost = None
+        if yesterday_cost:
+            yesterday_total_cost = sum(yesterday_cost.values())
+
+        return yesterday_cost, yesterday_total_cost
+
     def get_last_success_actions(self):
         if not hasattr(self, '_last_success_actions'):
             self._last_success_actions = actionlog.sync.CampaignSync(
@@ -331,6 +355,14 @@ class AdGroupSourcesTable(object):
 
     def get_yesterday_cost(self):
         yesterday_cost = self.reports_api.get_yesterday_cost(ad_group=self.ad_group)
+        yesterday_total_cost = None
+        if yesterday_cost:
+            yesterday_total_cost = sum(yesterday_cost.values())
+
+        return yesterday_cost, yesterday_total_cost
+
+    def get_actual_yesterday_cost(self):
+        yesterday_cost = self.reports_api.get_actual_yesterday_cost(ad_group=self.ad_group)
         yesterday_total_cost = None
         if yesterday_cost:
             yesterday_total_cost = sum(yesterday_cost.values())
@@ -482,7 +514,8 @@ class SourcesTable(object):
         if ad_group_level:
             ad_group_sources_settings = level_sources_table.ad_group_sources_settings
 
-        yesterday_cost, yesterday_total_cost = level_sources_table.get_yesterday_cost()
+        e_yesterday_cost, e_yesterday_total_cost = level_sources_table.get_yesterday_cost()
+        yesterday_cost, yesterday_total_cost = level_sources_table.get_actual_yesterday_cost()
 
         operational_sources = [source.id for source in sources.filter(maintenance=False, deprecated=False)]
         last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
@@ -508,6 +541,7 @@ class SourcesTable(object):
                 sources_states,
                 ad_group_sources_settings,
                 last_success_actions_joined,
+                e_yesterday_cost,
                 yesterday_cost,
                 order=order,
                 ad_group_level=ad_group_level,
@@ -519,6 +553,7 @@ class SourcesTable(object):
                 totals_data,
                 sources_states,
                 ad_group_sources_settings,
+                e_yesterday_total_cost,
                 yesterday_total_cost
             ),
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
@@ -560,10 +595,17 @@ class SourcesTable(object):
                    totals_data,
                    sources_states,
                    sources_settings,
+                   e_yesterday_cost,
                    yesterday_cost):
         result = {}
         helpers.copy_stats_to_row(totals_data, result)
         result['yesterday_cost'] = yesterday_cost
+
+        if user.has_perm('zemauth.can_view_effective_costs'):
+            result['e_yesterday_cost'] = e_yesterday_cost
+        if user.has_perm('zemauth.can_view_effective_costs') and not user.has_perm('zemauth.can_view_actual_costs'):
+            del result['yesterday_cost']
+        
         if ad_group_level and user.has_perm('zemauth.set_ad_group_source_settings'):
             result['daily_budget'] = get_daily_budget_total(ad_group_sources, sources_states, sources_settings)
             result['current_daily_budget'] = get_current_daily_budget_total(sources_states)
@@ -599,6 +641,7 @@ class SourcesTable(object):
             sources_states,
             ad_group_sources_settings,
             last_actions,
+            e_yesterday_cost,
             yesterday_cost,
             order=None,
             ad_group_level=False):
@@ -645,9 +688,16 @@ class SourcesTable(object):
                 'status': self.get_state(states),
                 'last_sync': last_sync,
                 'yesterday_cost': yesterday_cost.get(source.id),
+#                'e_yesterday_cost': yesterday_cost.get(source.id),
                 'maintenance': source.maintenance,
                 'archived': source.deprecated,
             }
+            if user.has_perm('zemauth.can_view_effective_costs'):
+                row['e_yesterday_cost'] = e_yesterday_cost.get(source.id)
+            if user.has_perm('zemauth.can_view_effective_costs') and not user.has_perm('zemauth.can_view_actual_costs'):
+                del row['yesterday_cost']
+                
+                
 
             helpers.copy_stats_to_row(source_data, row)
 
@@ -1784,12 +1834,25 @@ class PublishersTable(object):
         result = {
             'cost': totals_data.get('cost', 0),
             'data_cost': totals_data.get('data_cost', 0),
+            'media_cost': totals_data.get('media_cost', 0),
+            'e_data_cost': totals_data.get('e_data_cost', 0),
+            'e_media_cost': totals_data.get('e_media_cost', 0),
+            'license_fee': totals_data.get('license_fee', 0),
+            'total_cost': totals_data.get('total_cost', 0),
+            'billing_cost': totals_data.get('billing_cost', 0),
             'cpc': totals_data.get('cpc', 0),
             'clicks': totals_data.get('clicks', 0),
             'impressions': totals_data.get('impressions', 0),
             'ctr': totals_data.get('ctr', 0),
         }
-        if not user.has_perm('zemauth.can_view_data_cost'):
+        if not user.has_perm('zemauth.can_view_effective_costs'):
+            del result['e_data_cost']
+            del result['e_media_cost']
+            del result['billing_cost']
+            del result['license_fee']
+        if not user.has_perm('zemauth.can_view_actual_costs'):
+            del result['total_cost']
+            del result['media_cost']
             del result['data_cost']
         return result
 
@@ -1812,16 +1875,32 @@ class PublishersTable(object):
                 'blacklisted': publisher_data['blacklisted'],
                 'exchange': source_name,
                 'source_id': publisher_data['source_id'],
+
                 'cost': publisher_data.get('cost', 0),
+                'media_cost': publisher_data.get('media_cost', 0),
                 'data_cost': publisher_data.get('data_cost', 0),
+                'license_fee': publisher_data.get('license_fee', 0),
+                'e_data_cost': publisher_data.get('e_data_cost', 0),
+                'e_media_cost': publisher_data.get('e_media_cost', 0),
+                'total_cost': publisher_data.get('total_cost', 0),
+                'billing_cost': publisher_data.get('billing_cost', 0),
+                
                 'cpc': publisher_data.get('cpc', 0),
                 'clicks': publisher_data.get('clicks', None),
                 'impressions': publisher_data.get('impressions', None),
                 'ctr': publisher_data.get('ctr', None),
             }
 
-            if not user.has_perm('zemauth.can_view_data_cost'):
+            if not user.has_perm('zemauth.can_view_effective_costs'):
+                del row['e_data_cost']
+                del row['e_media_cost']
+                del row['billing_cost']
+                del row['license_fee']
+            if not user.has_perm('zemauth.can_view_actual_costs'):
+                del row['total_cost']
+                del row['media_cost']
                 del row['data_cost']
+                
 
             if publisher_data.get('blacklisted_level'):
                 row['blacklisted_level'] = publisher_data['blacklisted_level']

@@ -25,8 +25,13 @@ FIELDNAMES = {
     'campaign': 'Campaign',
     'click_discrepancy': 'Click Discrepancy',
     'clicks': 'Clicks',
-    'cost': 'Spend',
-    'data_cost': 'Data Cost',
+    'cost': 'Media Spend',
+    'media_cost': 'Actual Media Spend',
+    'data_cost': 'Actual Data Spend',
+    'e_data_cost': 'Data Cost',
+    'e_media_cost': 'Media Spend',
+    'billing_cost': 'Total Spend',
+    'total_cost': 'Actual Total Spend',
     'cpc': 'Average CPC',
     'ctr': 'CTR',
     'ctr': 'CTR',
@@ -56,7 +61,8 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
 FORMAT_1_DECIMAL = ['avg_tos']
 
 FORMAT_2_DECIMALS = ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate', 'pv_per_visit',
-                     'avg_tos', 'cost', 'data_cost', 'budget', 'available_budget', 'unspent_budget']
+                     'avg_tos', 'cost', 'data_cost', 'media_cost', 'e_media_cost', 'e_data_cost',
+                     'total_cost', 'billing_cost', 'budget', 'available_budget', 'unspent_budget']
 
 FORMAT_3_DECIMALS = ['cpc']
 

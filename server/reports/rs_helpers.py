@@ -4,7 +4,6 @@ import decimal
 def unchanged(val):
     return val
 
-
 def from_micro_cpm(num):
     if num is None:
         return None
@@ -12,13 +11,17 @@ def from_micro_cpm(num):
         # we divide first by a million (since we use fixed point) and then by additional thousand (cpm)
         return num * 1.0 / 1000000000
 
-
 def from_cc(num):
     if num is None:
         return None
 
     return float(decimal.Decimal(round(num)) / decimal.Decimal(10000))
 
+def from_nano(num):
+    if num is None:
+        return None
+
+    return float(decimal.Decimal(round(num)) / decimal.Decimal(10**9))
 
 def to_percent(num):
     if num is None:
@@ -84,3 +87,20 @@ def ranked(field_name, order_field):
     if order_field.startswith('-'):
         order_field = order_field[1:] + ' DESC'
     return "RANK() OVER (PARTITION BY {} ORDER BY {})".format(field_name, order_field)
+
+def expand(name, divisors):
+    return [
+        '{}_{}'.format(name, d) for d in divisors
+    ]
+
+def expand_sum_div(name, expr, divisors, out=unchanged):
+    out = []
+    for d in divisors:
+        field_name = '{}_{}'.format(name, d)
+        out.append(dict(
+            sql=field_name,
+            app=field_name,
+            out=out,
+            calc=sum_div(expr, d)
+        ))
+    return out
