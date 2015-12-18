@@ -4,6 +4,7 @@ from mock import patch, MagicMock, call
 import itertools
 
 from django.test import TestCase
+from django.db.models import Sum
 
 import dash.models
 from reports import daily_statements
@@ -254,3 +255,113 @@ class DailyStatementsTestCase(TestCase):
         daily_statements.reprocess_daily_statements(update_from, self.campaign1)
         expected_calls = [call(x, y) for x, y in itertools.product(expected_dates, [self.campaign1])]
         mock_generate_statements.assert_has_calls(expected_calls)
+
+
+class EffectiveSpendPctsTestCase(TestCase):
+
+    fixtures = ['test_api_contentads.yaml']
+
+    def test_spend_ptcs(self):
+        campaign = dash.models.Campaign.objects.get(id=1)
+        budget = dash.models.BudgetLineItem.objects.get(id=1)
+        date = datetime.date(2015, 2, 1)
+
+        ca_spends = reports.models.ContentAdStats.objects.filter(content_ad__ad_group__campaign_id=1, date=date).\
+            aggregate(media_cc=Sum('cost_cc'), data_cc=Sum('data_cost_cc'))
+
+        reports.models.BudgetDailyStatement.objects.create(
+            budget_id=budget.id,
+            date=date,
+            media_spend_nano=ca_spends['media_cc'] * 100000,
+            data_spend_nano=ca_spends['data_cc'] * 100000,
+            license_fee_nano=(ca_spends['media_cc'] + ca_spends['data_cc']) * 100000 * budget.credit.license_fee
+        )
+
+        pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)
+        self.assertEqual(Decimal('1'), pct_actual_spend)
+        self.assertEqual(Decimal('0.2'), pct_license_fee)
+
+    def test_overspend_pcts(self):
+        campaign = dash.models.Campaign.objects.get(id=1)
+        budget = dash.models.BudgetLineItem.objects.get(id=1)
+        date = datetime.date(2015, 2, 1)
+
+        ca_spends = reports.models.ContentAdStats.objects.filter(content_ad__ad_group__campaign_id=1, date=date).\
+            aggregate(media_cc=Sum('cost_cc'), data_cc=Sum('data_cost_cc'))
+
+        attributed_media_spend_nano = (ca_spends['media_cc'] * 100000) * Decimal('0.8')
+        attributed_data_spend_nano = (ca_spends['data_cc'] * 100000) * Decimal('0.8')
+        license_fee_nano = (attributed_media_spend_nano + attributed_data_spend_nano) * budget.credit.license_fee
+
+        reports.models.BudgetDailyStatement.objects.create(
+            budget_id=budget.id,
+            date=date,
+            media_spend_nano=attributed_media_spend_nano,
+            data_spend_nano=attributed_data_spend_nano,
+            license_fee_nano=license_fee_nano
+        )
+
+        pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)
+        self.assertEqual(Decimal('0.8'), pct_actual_spend)
+        self.assertEqual(Decimal('0.2'), pct_license_fee)
+
+    def test_different_license_fees(self):
+        campaign = dash.models.Campaign.objects.get(id=1)
+        budget1 = dash.models.BudgetLineItem.objects.get(id=1)
+        budget2 = dash.models.BudgetLineItem.objects.get(id=2)
+        date = datetime.date(2015, 2, 1)
+
+        ca_spends = reports.models.ContentAdStats.objects.filter(content_ad__ad_group__campaign_id=1, date=date).\
+            aggregate(media_cc=Sum('cost_cc'), data_cc=Sum('data_cost_cc'))
+
+        attributed_media_spend_nano = (ca_spends['media_cc'] * 100000) * Decimal('0.5')
+        attributed_data_spend_nano = (ca_spends['data_cc'] * 100000) * Decimal('0.5')
+
+        reports.models.BudgetDailyStatement.objects.create(
+            budget_id=budget1.id,
+            date=date,
+            media_spend_nano=attributed_media_spend_nano,
+            data_spend_nano=attributed_data_spend_nano,
+            license_fee_nano=(attributed_media_spend_nano + attributed_data_spend_nano) * budget1.credit.license_fee
+        )
+
+        reports.models.BudgetDailyStatement.objects.create(
+            budget_id=budget2.id,
+            date=date,
+            media_spend_nano=attributed_media_spend_nano,
+            data_spend_nano=attributed_data_spend_nano,
+            license_fee_nano=(attributed_media_spend_nano + attributed_data_spend_nano) * budget2.credit.license_fee
+        )
+
+        pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)
+        self.assertEqual(Decimal('1'), pct_actual_spend)
+        self.assertEqual(Decimal('0.6'), pct_license_fee)
+
+    def test_spend_missing(self):
+        campaign = dash.models.Campaign.objects.get(id=1)
+        budget = dash.models.BudgetLineItem.objects.get(id=1)
+        date = datetime.date(2015, 2, 1)
+
+        reports.models.ContentAdStats.objects.all().delete()
+
+        reports.models.BudgetDailyStatement.objects.create(
+            budget_id=budget.id,
+            date=date,
+            media_spend_nano=40000000000,
+            data_spend_nano=40000000000,
+            license_fee_nano=16000000000
+        )
+
+        pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)
+        self.assertEqual(Decimal('0'), pct_actual_spend)
+        self.assertEqual(Decimal('0.2'), pct_license_fee)
+
+    def test_budgets_missing(self):
+        campaign = dash.models.Campaign.objects.get(id=1)
+        date = datetime.date(2015, 2, 1)
+
+        reports.models.ContentAdStats.objects.all().delete()
+
+        pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)
+        self.assertEqual(Decimal('0'), pct_actual_spend)
+        self.assertEqual(Decimal('0'), pct_license_fee)
