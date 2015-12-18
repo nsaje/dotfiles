@@ -50,6 +50,7 @@ from dash import constants
 from dash import api
 from dash import forms
 from dash import upload
+from dash import infobox_helpers
 
 import reports.api_publishers
 import reports.api
@@ -425,7 +426,10 @@ class AdGroupOverview(api_common.BaseApiView):
         settings = []
 
         flight_time, flight_time_left_days =\
-            self._calculate_flight_time(ad_group_settings)
+            infobox_helpers.calculate_flight_time(
+                ad_group_settings.start_date,
+                ad_group_settings.end_date
+            )
         flight_time_setting = OverviewSetting(
             'Flight time',
             flight_time,
@@ -509,26 +513,6 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(post_click_tracking_setting.as_dict())
         return settings
-
-    def _calculate_flight_time(self, ad_group_settings):
-        end_date = ad_group_settings.end_date
-        if end_date is not None:
-            end_date_str = end_date.strftime('%m/%d')
-        else:
-            end_date_str = ''
-
-        flight_time = "{start_date} - {end_date}".format(
-            start_date=ad_group_settings.start_date.strftime('%m/%d'),
-            end_date=end_date_str,
-        )
-        today = datetime.datetime.today().date()
-        if not ad_group_settings.end_date:
-            flight_time_left_days = None
-        elif today > ad_group_settings.end_date:
-            flight_time_left_days = 0
-        else:
-            flight_time_left_days = (ad_group_settings.end_date - today).days + 1
-        return flight_time, flight_time_left_days
 
     def _performance_settings(self, ad_group, user, ad_group_settings):
         settings = []
@@ -762,9 +746,6 @@ class CampaignOverview(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
-        # TODO
-        running_status = None
-
         header = {
             'title': campaign.name,
             'active': False
@@ -786,10 +767,50 @@ class CampaignOverview(api_common.BaseApiView):
 
     def _basic_settings(self, campaign, campaign_settings):
         settings = []
-        campaign_settings = campaign.get_current_settings()
+
+        start_date = None
+        end_date = None
+        never_finishes = False
+
+        ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+        for ad_group in ad_groups:
+            if ad_group.is_archived():
+                continue
+
+            ad_group_settings = ad_group.get_current_settings()
+            adg_start_date = ad_group_settings.start_date
+            adg_end_date = ad_group_settings.end_date
+            if start_date is None:
+                start_date = adg_start_date
+            else:
+                start_date = min(start_date, adg_start_date)
+            if adg_end_date is None:
+                never_finishes = True
+
+            if end_date is None:
+                end_date = adg_end_date
+            else:
+                end_date = max(end_date, adg_end_date)
+
+        if never_finishes:
+            end_date = None
+
+        flight_time, flight_time_left_days =\
+            infobox_helpers.calculate_flight_time(
+                start_date,
+                end_date
+            )
+
+        flight_time_setting = OverviewSetting(
+            'Flight time',
+            flight_time,
+            flight_time_left_days
+        )
+        settings.append(flight_time_setting.as_dict())
+
 
         targeting_device = OverviewSetting(
-            'Targeting',
+            'Targeting defaults:',
             'Device: {devices}'.format(
                 devices=', '.join(
                     [w[0].upper() + w[1:] for w in campaign_settings.target_devices]
