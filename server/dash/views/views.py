@@ -849,14 +849,7 @@ class AccountOverview(api_common.BaseApiView):
 
         basic_settings = self._basic_settings(account)
 
-        performance_settings = []  #
-
-#         self._performance_settings(
-#             campaign,
-#             request.user,
-#             campaigl_settings,
-#             daily_cap_cc
-#         )
+        performance_settings = self._performance_settings(account, request.user)
 
         response = {
             'header': header,
@@ -932,8 +925,29 @@ class AccountOverview(api_common.BaseApiView):
         settings.append(account_type_setting.as_dict())
         return settings
 
-    def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc):
-        setting = []
+    def _performance_settings(self, account, user):
+        settings = []
+
+        available_credit_setting = infobox_helpers.OverviewSetting(
+            'Available credit:',
+            'N/A',
+            ''
+        )
+        settings.append(available_credit_setting.as_dict())
+
+        spend_credit_setting = infobox_helpers.OverviewSetting(
+            'Spend credit:',
+            'N/A',
+            ''
+        )
+        settings.append(spend_credit_setting.as_dict())
+
+        yesterday_spent_setting = infobox_helpers.OverviewSetting(
+            'Yesterday spent:',
+            'N/A',
+            ''
+        )
+        settings.append(yesterday_spent_setting.as_dict())
 
         return settings
 
