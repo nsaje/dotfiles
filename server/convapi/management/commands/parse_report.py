@@ -65,7 +65,7 @@ class Command(BaseCommand):
 
                     elif parser_version == 'v2':
                         if report_type == 'ga':
-                            report = parse_v2.GAReport(content)
+                            report = parse_v2.GAReportFromCSV(content)
                         elif report_type == 'omniture':
                             if filename.endswith('.csv'):
                                 content = convert_to_xls(content)
