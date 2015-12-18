@@ -224,10 +224,10 @@ def refresh_contentadstats_diff(date, campaign):
 
         if any(row[key] < 0 for key in metric_keys):
             logger.error(
-                'ad group stats data missing. skipping it in refreshing diffs. ad group id: {} source id: {}'.format(
-                    adgroup_stats.ad_group.id,
-                    adgroup_stats.source.id
-                )
+                'ad group stats data missing. skipping it in refreshing diffs. ad group id: %s source id: %s date: %s',
+                adgroup_stats.ad_group.id,
+                adgroup_stats.source.id,
+                date
             )
             continue
 
