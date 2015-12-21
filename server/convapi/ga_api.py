@@ -142,38 +142,28 @@ class GAApiReport(GAReport):
 
     def _download_goal_conversion_stats(self, profiles):
         profile = profiles['items'][0]
-        goals_raw = self.ga_service.management().goals().list(accountId=profile['accountId'],
+        goal_metadata = self.ga_service.management().goals().list(accountId=profile['accountId'],
                                                               webPropertyId=profile['webPropertyId'],
                                                               profileId=profile['id']).execute()
-        goals_dict = {}
-        for sub_goals_raw in list_chunker(goals_raw['items'], MAX_METRICS_PER_GA_REQUEST / NUM_METRICS_PER_GOAL):
-            ga_metrics = self._generate_ga_metrics(sub_goals_raw)
+        goals = {}
+        for sub_goal_metadata in list_chunker(goal_metadata['items'], MAX_METRICS_PER_GA_REQUEST / NUM_METRICS_PER_GOAL):
+            ga_metrics = self._generate_ga_metrics(sub_goal_metadata)
             has_more = True
             start_index = 1
             while has_more:
-                data = self._download_stats_from_ga(profile['id'], ga_metrics, start_index)
-                if data is None:
+                ga_stats = self._download_stats_from_ga(profile['id'], ga_metrics, start_index)
+                if ga_stats is None:
                     logger.debug('No goal conversion data was found.')
                     return
-                rows = data.get('rows')
+                rows = ga_stats.get('rows')
                 for row in rows:
                     logger.debug('Processing GA conversion goal data row: %s', row)
-                    content_ad_id, media_source_tracking_slug = self._parse_keyword_or_url(row)
-                    sub_goals = {}
-                    for i, sub_goal in enumerate(sub_goals_raw):
-                        goal_name = sub_goal['name']
-                        sub_goals[goal_name] = int(row[3 + i * NUM_METRICS_PER_GOAL])
-                    key = (self.start_date, content_ad_id, media_source_tracking_slug)
-                    existing_goal = goals_dict.get(key)
-                    if existing_goal is None:
-                        goals_dict[key] = sub_goals
-                    else:
-                        goals_dict[key].update(sub_goals)
-                    start_index += data['itemsPerPage']
-                    has_more = (start_index < data['totalResults'])
-        for key, goals in goals_dict.iteritems():
+                    self._update_goals(goals, row, sub_goal_metadata)
+                start_index += ga_stats['itemsPerPage']
+                has_more = (start_index < ga_stats['totalResults'])
+        for key, value in goals.iteritems():
             report_entry = GAApiReportRow(key[0], key[1], key[2])
-            report_entry.set_conversion_goal_stats_with(goals)
+            report_entry.set_conversion_goal_stats_with(value)
             self._update_report_entry_goal_conversion_stats(report_entry)
 
     def _generate_ga_metrics(self, goals):
@@ -189,3 +179,16 @@ class GAApiReport(GAReport):
             self.entries[report_entry.key()] = report_entry
         else:
             existing_entry.merge_conversion_goal_stats_with(report_entry)
+
+    def _update_goals(self, goals, row, sub_goal_metadata):
+        content_ad_id, media_source_tracking_slug = self._parse_keyword_or_url(row)
+        sub_goals = {}
+        for i, metadata in enumerate(sub_goal_metadata):
+            sub_goal_name = metadata['name']
+            sub_goals[sub_goal_name] = int(row[3 + i * NUM_METRICS_PER_GOAL])
+        key = (self.start_date, content_ad_id, media_source_tracking_slug)
+        existing_goal = goals.get(key)
+        if existing_goal is None:
+            goals[key] = sub_goals
+        else:
+            goals[key].update(sub_goals)
