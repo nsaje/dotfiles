@@ -1543,6 +1543,26 @@ class CampaignAgencyTest(TestCase):
         self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
         self.assertEqual(content['data']['settings']['iab_category'], 'IAB24')
 
+        self.assertEqual(content['data']['history'], [{
+            'datetime': '2014-06-04T05:58:21',
+            'changed_by': 'superuser@test.com',
+            'settings': [
+                {'name': 'Name', 'value': ''},
+                {'name': 'Account Manager', 'value': 'user@test.com'},
+                {'name': 'Sales Representative', 'value': 'john@test.com'},
+                {'name': 'IAB Category', 'value': 'Uncategorized'},
+                {'name': 'Campaign goal', 'value': 'new unique visitors'},
+                {'name': 'Goal quantity', 'value': '0.00'},
+                {'name': 'Service Fee', 'value': '20%'},
+                {'name': 'Promotion Goal', 'value': 'Brand Building'},
+                {'name': 'Archived', 'value': 'False'},
+                {'name': 'Target Devices', 'value': 'Mobile'},
+                {'name': 'Target Devices', 'value': 'New Caledonia, 501 New York, NY'}
+            ],
+            'show_old_settings': False,
+            'changes_text': 'Created settings'
+        }])
+
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.email_helper.send_campaign_notification_email')

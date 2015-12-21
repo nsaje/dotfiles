@@ -382,6 +382,14 @@ class CampaignAgency(api_common.BaseApiView):
                 'name': 'Archived',
                 'value': str(new_settings.archived)
             }),
+            ('target_devices', {
+                'name': 'Target Devices',
+                'value': ', '.join(constants.AdTargetDevice.get_text(x) for x in new_settings.target_devices)
+            }),
+            ('target_regions', {
+                'name': 'Target Devices',
+                'value': helpers.get_target_regions_string(new_settings.target_regions)
+            })
         ])
 
         if old_settings is not None:
