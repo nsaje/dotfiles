@@ -464,7 +464,7 @@ class CampaignBudgetItemViewTest(BCMViewTestCase):
                 "credit": {
                     "license_fee": "0.2000",
                     "id": 1,
-                    "name": "test account 1 - $100000 - from 2015-10-01 to 2015-11-30",
+                    "name": "1 - test account 1 - $100000 - from 2015-10-01 to 2015-11-30",
                 },
                 "start_date": "2015-10-01",
                 "created_by": "ziga.stopinsek@zemanta.com"
