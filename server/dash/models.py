@@ -993,7 +993,7 @@ class AdGroup(models.Model):
     def get_current_settings(self):
         if not self.pk:
             raise exc.BaseError(
-                'Ad group setting couln\'t be fetched because ad group hasn\'t been saved yet.'
+                'Ad group setting couldn\'t be fetched because ad group hasn\'t been saved yet.'
             )
 
         settings = AdGroupSettings.objects.\
