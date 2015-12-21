@@ -51,6 +51,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         api.adGroupSettings.get(id).then(
             function (data) {
                 $scope.settings = data.settings;
+                $scope.defaultSettings = data.defaultSettings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
                 freshSettings.resolve(data.settings.name == 'New ad group');
@@ -73,6 +74,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         api.adGroupSettings.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
+                $scope.defaultSettings = data.defaultSettings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.saveRequestInProgress = false;
                 $scope.discarded = true;
@@ -104,6 +106,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                     adGroupToEdit.state = data.settings.state === stateActive ? 'enabled' : 'paused';
                 } else {
                     $scope.settings = data.settings;
+                    $scope.defaultSettings = data.defaultSettings;
                     $scope.actionIsWaiting = data.actionIsWaiting;
                     
                     $scope.updateAccounts(data.settings.name, data.settings.state, status);
@@ -128,6 +131,50 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.saved = false;
             }
         );
+    };
+
+    function getDeviceItemByValue (devices, value) {
+        var result;
+
+        devices.forEach(function (item) {
+            if (item.value === value) {
+                result = item;
+            }
+        });
+
+        return result;
+    }
+
+    $scope.isDefaultTargetDevices = function () {
+        var isDefault = true;
+        var item, defaultItem;
+
+        options.adTargetDevices.forEach(function (option) {
+            item = getDeviceItemByValue($scope.settings.targetDevices, option.value);
+            defaultItem = getDeviceItemByValue($scope.defaultSettings.targetDevices, option.value);
+
+            if (item.checked !== defaultItem.checked) {
+                isDefault = false;
+            }
+        });
+
+        return isDefault;
+    };
+
+    $scope.isDefaultTargetRegions = function () {
+        var result = true;
+
+        if ($scope.settings.targetRegions.length !== $scope.defaultSettings.targetRegions.length) {
+            return false;
+        }
+
+        $scope.settings.targetRegions.forEach(function (region) {
+            if ($scope.defaultSettings.targetRegions.indexOf(region) === -1) {
+                result = false;
+            }
+        });
+
+        return result;
     };
 
     $scope.$watch('settings.manualStop', function (newValue, oldValue) {
