@@ -7,7 +7,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import HttpMockSequence
 
 from convapi import ga_api
-from convapi.ga_api import GAApiReport
+from convapi.ga_api import GAApiReport, GAApiReportRow
 from dash.models import GAAnalyticsAccount
 
 
@@ -28,6 +28,10 @@ class TestGAApiReport(TestCase):
         ga_account.ga_web_property_id = 'UA-1234567-12'
         ga_reports.download(ga_account)
         self.assertTrue(len(ga_reports.entries) == 1)
+        expected_key = ('2015-12-07', 42001, 'b1_pubmatic')
+        self.assertTrue(expected_key in ga_reports.entries)
+        self.assertEqual(ga_reports.entries[expected_key].raw_row,
+                         '["/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood", "(not set)", "1", "0", "100.0", "1", "0.0"]')
 
     def _profile_list_response_mock(self):
         return json.dumps(
@@ -48,7 +52,7 @@ class TestGAApiReport(TestCase):
 
     def _postclick_response_mock(self):
         return json.dumps({'kind': 'analytics#gaData', 'rows': [
-            ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood', 'mobile',
+            ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood', '(not set)',
              '1', '0', '100.0', '1', '0.0']], 'containsSampledData': False,
                            'profileInfo': {'webPropertyId': 'UA-2175716-35', 'internalWebPropertyId': '95912016',
                                            'tableId': 'ga:100021248', 'profileId': '100021248',
@@ -91,7 +95,7 @@ class TestGAApiReport(TestCase):
 
     def _conversion_goals_response_mock(self):
         return json.dumps({'kind': 'analytics#gaData', 'rows': [
-            ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood', 'mobile',
+            ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood', '(not set)',
              '0.0', '0']], 'containsSampledData': False,
                            'profileInfo': {'webPropertyId': 'UA-2175716-35', 'internalWebPropertyId': '95912016',
                                            'tableId': 'ga:100021248', 'profileId': '100021248',

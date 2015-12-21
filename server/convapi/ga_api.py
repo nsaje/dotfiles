@@ -1,6 +1,5 @@
 import json
 import logging
-import re
 import httplib2
 import googleapiclient.discovery
 from oauth2client.client import SignedJwtAssertionCredentials
@@ -98,66 +97,68 @@ class GAApiReport(GAReport):
         has_more = True
         start_index = 1
         while has_more:
-            data = self.ga_service.data().ga().get(
-                    ids='ga:' + profiles['items'][0]['id'],
-                    start_date=self.start_date.strftime('%Y-%m-%d'),
-                    end_date=self.start_date.strftime('%Y-%m-%d'),
-                    metrics='ga:sessions,ga:newUsers,ga:bounceRate,ga:pageviews,ga:timeonsite',
-                    dimensions='ga:landingPagePath,ga:deviceCategory',
-                    filters='ga:landingPagePath=@_z1_',
-                    start_index=start_index
-            ).execute()
-            if data['totalResults'] == 0:
+            ga_stats = self._download_stats_from_ga(profiles['items'][0]['id'],
+                                                    'ga:sessions,ga:newUsers,ga:bounceRate,ga:pageviews,ga:timeonsite',
+                                                    start_index)
+            if ga_stats is None:
                 logger.debug('No postclick data was found.')
                 break
-            rows = data.get('rows')
+            rows = ga_stats.get('rows')
             for row in rows:
                 logger.debug('Processing GA postclick data row: %s', row)
-                content_ad_id, media_source_tracking_slug = self._parse_keyword_or_url(row[0])
+                content_ad_id, media_source_tracking_slug = self._parse_keyword_or_url(row)
                 report_entry = GAApiReportRow(self.start_date, content_ad_id, media_source_tracking_slug)
                 report_entry.set_postclick_stats(row)
-                existing_entry = self.entries.get(report_entry.key())
-                if existing_entry is None:
-                    self.entries[report_entry.key()] = report_entry
-                else:
-                    existing_entry.merge_postclick_stats_with(report_entry)
+                self._update_report_entry_postclick_stats(report_entry)
+            start_index += ga_stats['itemsPerPage']
+            has_more = (start_index < ga_stats['totalResults'])
 
-            has_more = ((start_index + data['itemsPerPage']) < data['totalResults'])
-            start_index += data['itemsPerPage']
+    def _download_stats_from_ga(self, profile_id, metrics, start_index):
+        ga_stats = self.ga_service.data().ga().get(
+                ids='ga:' + profile_id,
+                start_date=self.start_date.strftime('%Y-%m-%d'),
+                end_date=self.start_date.strftime('%Y-%m-%d'),
+                metrics=metrics,
+                dimensions='ga:landingPagePath,ga:keyword',
+                filters='ga:landingPagePath=@_z1_,ga:keyword=~.*z1[0-9]+[a-zA-Z].+?1z.*',
+                start_index=start_index
+        ).execute()
+        if start_index == 1 and ga_stats['totalResults'] == 0:
+            ga_stats = None
+        return ga_stats
 
-    def _parse_keyword_or_url(self, data):
-        content_ad_id, source_param = self._parse_z11z_keyword(data)
+    def _parse_keyword_or_url(self, row):
+        content_ad_id, source_param = self._parse_z11z_keyword(row[1])
         if content_ad_id is None:
-            content_ad_id, source_param = self._parse_landing_page(data)
+            content_ad_id, source_param = self._parse_landing_page(row[0])
         return content_ad_id, source_param
+
+    def _update_report_entry_postclick_stats(self, report_entry):
+        existing_entry = self.entries.get(report_entry.key())
+        if existing_entry is None:
+            self.entries[report_entry.key()] = report_entry
+        else:
+            existing_entry.merge_postclick_stats_with(report_entry)
 
     def _download_goal_conversion_stats(self, profiles):
         profile = profiles['items'][0]
         goals_raw = self.ga_service.management().goals().list(accountId=profile['accountId'],
-                                                          webPropertyId=profile['webPropertyId'],
-                                                          profileId=profile['id']).execute()
+                                                              webPropertyId=profile['webPropertyId'],
+                                                              profileId=profile['id']).execute()
         goals_dict = {}
         for sub_goals_raw in list_chunker(goals_raw['items'], MAX_METRICS_PER_GA_REQUEST / NUM_METRICS_PER_GOAL):
             ga_metrics = self._generate_ga_metrics(sub_goals_raw)
             has_more = True
             start_index = 1
             while has_more:
-                data = self.ga_service.data().ga().get(
-                        ids='ga:' + profile['id'],
-                        start_date=self.start_date.strftime('%Y-%m-%d'),
-                        end_date=self.start_date.strftime('%Y-%m-%d'),
-                        metrics=ga_metrics,
-                        dimensions='ga:landingPagePath,ga:deviceCategory',
-                        filters='ga:landingPagePath=@_z1_',
-                        start_index=start_index
-                ).execute()
-                if data['totalResults'] == 0:
+                data = self._download_stats_from_ga(profile['id'], ga_metrics, start_index)
+                if data is None:
                     logger.debug('No goal conversion data was found.')
                     return
                 rows = data.get('rows')
                 for row in rows:
                     logger.debug('Processing GA conversion goal data row: %s', row)
-                    content_ad_id, media_source_tracking_slug = self._parse_keyword_or_url(row[0])
+                    content_ad_id, media_source_tracking_slug = self._parse_keyword_or_url(row)
                     sub_goals = {}
                     for i, sub_goal in enumerate(sub_goals_raw):
                         goal_name = sub_goal['name']
@@ -168,16 +169,12 @@ class GAApiReport(GAReport):
                         goals_dict[key] = sub_goals
                     else:
                         goals_dict[key].update(sub_goals)
-                    has_more = ((start_index + data['itemsPerPage']) < data['totalResults'])
                     start_index += data['itemsPerPage']
+                    has_more = (start_index < data['totalResults'])
         for key, goals in goals_dict.iteritems():
             report_entry = GAApiReportRow(key[0], key[1], key[2])
             report_entry.set_conversion_goal_stats_with(goals)
-            existing_entry = self.entries.get(report_entry.key())
-            if existing_entry is None:
-                self.entries[report_entry.key()] = report_entry
-            else:
-                existing_entry.merge_conversion_goal_stats_with(report_entry)
+            self._update_report_entry_goal_conversion_stats(report_entry)
 
     def _generate_ga_metrics(self, goals):
         # we have to split the Google Analytics' metrics into chunks, because Google Analytics
@@ -185,3 +182,10 @@ class GAApiReport(GAReport):
         goal_ids = [goal['id'] for goal in goals]
         ga_metrics = ['ga:goal{0}ConversionRate,ga:goal{0}Completions'.format(goal_id) for goal_id in goal_ids]
         return ','.join(ga_metrics)
+
+    def _update_report_entry_goal_conversion_stats(self, report_entry):
+        existing_entry = self.entries.get(report_entry.key())
+        if existing_entry is None:
+            self.entries[report_entry.key()] = report_entry
+        else:
+            existing_entry.merge_conversion_goal_stats_with(report_entry)

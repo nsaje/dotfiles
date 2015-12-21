@@ -6,10 +6,12 @@ import sys
 from django.core.management.base import BaseCommand
 
 from convapi import ga_api
-from dash.models import GAAnalyticsAccount, Account, AdGroupSettings
+from dash.models import GAAnalyticsAccount, Account, AdGroupSettings, ContentAd
 from dash.constants import GATrackingType
 
 from convapi.ga_api import GAApiReport
+from reports import update
+from reports.constants import ReportType
 
 logger = logging.getLogger(__name__)
 
@@ -38,13 +40,24 @@ class Command(BaseCommand):
         ga_service = ga_api.get_ga_service()
         ga_reports = GAApiReport(ga_service, ga_date)
         accounts = Account.objects.filter(campaign__adgroup__settings__enable_ga_tracking=True,
-                                          campaign__adgroup__settings__ga_tracking_type=GATrackingType.API)
+                                          campaign__adgroup__settings__ga_tracking_type=GATrackingType.API).distinct()
         for account in accounts:
-            ga_api_adgroup_settings = AdGroupSettings.objects.filter(ad_group__campaign__account=account) \
+            adgroup_settings_ga_api_enabled = AdGroupSettings.objects.filter(ad_group__campaign__account=account) \
                 .group_current_settings() \
                 .filter(enable_ga_tracking=True, ga_tracking_type=GATrackingType.API)
-            ga_api_adgroup_ids = {setting.ad_group_id for setting in ga_api_adgroup_settings}
+            adgrup_ga_api_enabled = [settings.ad_group for settings in adgroup_settings_ga_api_enabled]
+            content_ads_ga_api_enabled = ContentAd.objects.filter(ad_group__in=adgrup_ga_api_enabled)
+            content_ad_ids_ga_api_enabled = {content_ad.id for content_ad in content_ads_ga_api_enabled}
             ga_accounts = GAAnalyticsAccount.objects.filter(account=account)
             for ga_account in ga_accounts:
                 ga_reports.download(ga_account)
-                # TODO: filter out stats for all the ad groups that are not in ga_api_adgroup_ids
+            stats_ga_enabled = self._filter_stats_ga_enabled(ga_reports.entries, content_ad_ids_ga_api_enabled)
+            update.process_report(ga_date, stats_ga_enabled, ReportType.GOOGLE_ANALYTICS)
+
+    def _filter_stats_ga_enabled(self, ga_report_entries, content_ad_ids_ga_api_enabled):
+        ga_stats = []
+        for entry_key in ga_report_entries.keys():
+            if entry_key[1] in content_ad_ids_ga_api_enabled:
+                stats = ga_report_entries[entry_key]
+                ga_stats.append(stats)
+        return ga_stats
