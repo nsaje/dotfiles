@@ -64,7 +64,7 @@ class GAReportLog(models.Model):
 
     ad_groups = models.CharField(max_length=128, blank=False, null=True)
 
-    s3_key =  models.CharField(max_length=1024, blank=False, null=True)
+    s3_key = models.CharField(max_length=1024, blank=False, null=True)
 
     visits_reported = models.IntegerField(blank=False, null=True)
     visits_imported = models.IntegerField(blank=False, null=True)
@@ -116,7 +116,7 @@ class ReportLog(models.Model):
     visits_reported = models.IntegerField(blank=False, null=True)
     visits_imported = models.IntegerField(blank=False, null=True)
 
-    s3_key =  models.CharField(max_length=1024, blank=False, null=True)
+    s3_key = models.CharField(max_length=1024, blank=False, null=True)
 
     state = models.IntegerField(
         default=constants.ReportState.RECEIVED,
