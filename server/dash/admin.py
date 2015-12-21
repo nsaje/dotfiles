@@ -994,6 +994,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)
         self.list_display_links = (None, )
 
+        
 class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'account',
@@ -1008,10 +1009,12 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     date_hierarchy = 'start_date'
     list_filter = ['status', 'license_fee', 'created_by']
     readonly_fields = ('created_dt', 'created_by',)
+    form = dash_forms.CreditLineItemAdminForm
 
 
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
+        '__str__',
         'campaign',
         'start_date',
         'end_date',
@@ -1021,7 +1024,8 @@ class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     )
     date_hierarchy = 'start_date'
     list_filter = ['credit', 'created_by']
-    readonly_fields = ('created_dt', 'created_by',)
+    readonly_fields = ('created_dt', 'created_by', 'freed_cc')
+    form = dash_forms.BudgetLineItemAdminForm
 
 
 class ScheduledExportReportLogAdmin(admin.ModelAdmin):

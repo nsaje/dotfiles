@@ -788,3 +788,39 @@ class PublisherBlacklistForm(forms.ModelForm):
     class Meta:
         model = models.PublisherBlacklist
         exclude = ['everywhere', 'account', 'campaign', 'ad_group', 'source', 'status']
+
+
+class CreditLineItemAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(CreditLineItemAdminForm, self).__init__(*args, **kwargs)
+        # archived state is stored in settings, we need to have a more stupid query
+        not_archived = [
+            a.pk for a in models.Account.objects.all() if not a.is_archived()
+        ]
+        # workaround to not change model __unicode__ methods
+        self.fields['account'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
+        self.fields['account'].queryset = models.Account.objects.filter(pk__in=not_archived)
+        
+    class Meta:
+        model = models.CreditLineItem
+        fields = ['account', 'start_date', 'end_date', 'amount', 'license_fee', 'status', 'comment']
+
+
+class BudgetLineItemAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(BudgetLineItemAdminForm, self).__init__(*args, **kwargs)
+        # archived state is stored in settings, we need to have a more stupid query
+        not_archived = [
+            c.id for c in models.Campaign.objects.all() if not c.is_archived()
+        ]
+        # workaround to not change model __unicode__ methods
+        self.fields['campaign'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
+        self.fields['campaign'].queryset = models.Campaign.objects.filter(pk__in=not_archived)
+
+        self.fields['credit'].queryset = models.CreditLineItem.objects.exclude(
+            status=constants.CreditLineItemStatus.CANCELED
+        )
+        
+    class Meta:
+        model = models.BudgetLineItem
+        fields = ['campaign', 'credit', 'start_date', 'end_date', 'amount', 'comment']
