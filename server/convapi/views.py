@@ -71,9 +71,9 @@ def _extract_content_type(name):
     return 'text/plain'
 
 
-def reprocess_report_log(report_log, is_omniture):
+def reprocess_report_log(report_log):
     """
-    Reproces existing report log. Creates a new report log as a result. Uses existing
+    Reprocess existing report log. Creates a new report log as a result. Uses existing
     s3 object keys of stored report files.
 
     report_log  - can be either GAReportLog or ReportLog instance.
@@ -83,28 +83,36 @@ def reprocess_report_log(report_log, is_omniture):
 
     logger.info('Reprocessing report log %s', report_log.pk)
 
-    recipient = ''
-    received_date = datetime.datetime.today()
-    content_type = _extract_content_type(report_log.s3_key)
     attachment_name = (report_log.csv_filename if hasattr(report_log, 'csv_filename')
                        else report_log.report_filename)
 
-    try:
-        ga_report_task = GAReportTask(
-            subject=report_log.email_subject,
-            date=received_date,
-            sender=report_log.sender,
-            recipient=recipient,
-            from_address=report_log.from_address,
-            text=None,
-            attachment_s3_key=report_log.s3_key,
-            attachment_name=attachment_name,
-            attachments_count=1,
-            attachment_content_type=content_type
-        )
+    mandatory_attrs = ('email_subject', 'sender', 'recipient', 'from_address', 's3_key')
+    missing_values = [x for x in mandatory_attrs if not getattr(report_log, x)]
+    if not attachment_name:
+        missing_values.append('report_filename')
 
+    if missing_values:
+        raise Exception("Can't reprocess - missing values %r", missing_values)
+
+    received_date = datetime.datetime.today()
+    content_type = _extract_content_type(report_log.s3_key)
+
+    report_task = GAReportTask(
+        subject=report_log.email_subject,
+        date=received_date,
+        sender=report_log.sender,
+        recipient=report_log.recipient,
+        from_address=report_log.from_address,
+        text=None,
+        attachment_s3_key=report_log.s3_key,
+        attachment_name=attachment_name,
+        attachments_count=1,
+        attachment_content_type=content_type
+    )
+
+    try:
         tasks.process_ga_report.apply_async(
-            (ga_report_task, ),
+            (report_task, ),
             queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE
         )
     except Exception as e:
@@ -116,6 +124,7 @@ def reprocess_report_log(report_log, is_omniture):
             from_address=report_log.from_address,
             s3_key=report_log.s3_key,
             csv_filename=attachment_name,
+            recipient=report_log.recipient,
             state=constants.ReportState.FAILED
         )
         failed_ga_report_log.add_error(e.message)
@@ -123,20 +132,7 @@ def reprocess_report_log(report_log, is_omniture):
         logger.exception(e.message)
 
     try:
-        report_task = GAReportTask(
-            subject=report_log.email_subject,
-            date=received_date,
-            sender=report_log.sender,
-            recipient=recipient,
-            from_address=report_log.from_address,
-            text=None,
-            attachment_s3_key=report_log.s3_key,
-            attachment_name=report_log.csv_filename,
-            attachments_count=1,
-            attachment_content_type=content_type
-        )
-
-        if is_omniture:
+        if OMNITURE_REPORT_MAIL in report_log.recipient:
             tasks.process_omniture_report_v2.apply_async(
                 (report_task, ),
                 queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE
@@ -146,7 +142,6 @@ def reprocess_report_log(report_log, is_omniture):
                 (report_task, ),
                 queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE
             )
-
     except Exception as e:
         failed_report_log = models.ReportLog(
             email_subject=report_log.email_subject,
@@ -155,6 +150,7 @@ def reprocess_report_log(report_log, is_omniture):
             sender=report_log.sender,
             from_address=report_log.from_address,
             s3_key=report_log.s3_key,
+            recipient=report_log.recipient,
             report_filename=attachment_name,
             state=constants.ReportState.FAILED
         )

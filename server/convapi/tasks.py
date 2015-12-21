@@ -106,6 +106,7 @@ def process_ga_report(ga_report_task):
         report_log.from_address = ga_report_task.from_address
         report_log.state = constants.ReportState.RECEIVED
         report_log.s3_key = ga_report_task.attachment_s3_key
+        report_log.recipient = ga_report_task.recipient
 
         if int(ga_report_task.attachment_count) != 1:
             logger.warning('ERROR: single attachment expected')
@@ -385,6 +386,7 @@ def process_report_v2(report_task, report_type):
     try:
         report_log = models.ReportLog()
         report_log.s3_key = report_task.attachment_s3_key
+        report_log.recipient = report_task.recipient
         # create report log and validate incoming task
         content = _update_and_validate_report_log_v2(report_task, report_log)
 
