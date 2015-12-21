@@ -71,6 +71,98 @@ def _extract_content_type(name):
     return 'text/plain'
 
 
+def reprocess_report_log(report_log, is_omniture):
+    """
+    Reproces existing report log. Creates a new report log as a result. Uses existing
+    s3 object keys of stored report files.
+
+    report_log  - can be either GAReportLog or ReportLog instance.
+    is_omniture - denotes whether this is an Omniture or GA report.
+                  It can not be determined automatically.
+    """
+
+    logger.info('Reprocessing report log %s', report_log.pk)
+
+    recipient = ''
+    received_date = datetime.datetime.today()
+    content_type = _extract_content_type(report_log.s3_key)
+    attachment_name = (report_log.csv_filename if hasattr(report_log, 'csv_filename')
+                       else report_log.report_filename)
+
+    try:
+        ga_report_task = GAReportTask(
+            subject=report_log.email_subject,
+            date=received_date,
+            sender=report_log.sender,
+            recipient=recipient,
+            from_address=report_log.from_address,
+            text=None,
+            attachment_s3_key=report_log.s3_key,
+            attachment_name=attachment_name,
+            attachments_count=1,
+            attachment_content_type=content_type
+        )
+
+        tasks.process_ga_report.apply_async(
+            (ga_report_task, ),
+            queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE
+        )
+    except Exception as e:
+        failed_ga_report_log = models.GAReportLog(
+            email_subject=report_log.email_subject,
+            datetime=received_date,
+            for_date=report_log.for_date,
+            sender=report_log.sender,
+            from_address=report_log.from_address,
+            s3_key=report_log.s3_key,
+            csv_filename=attachment_name,
+            state=constants.ReportState.FAILED
+        )
+        failed_ga_report_log.add_error(e.message)
+        failed_ga_report_log.save()
+        logger.exception(e.message)
+
+    try:
+        report_task = GAReportTask(
+            subject=report_log.email_subject,
+            date=received_date,
+            sender=report_log.sender,
+            recipient=recipient,
+            from_address=report_log.from_address,
+            text=None,
+            attachment_s3_key=report_log.s3_key,
+            attachment_name=report_log.csv_filename,
+            attachments_count=1,
+            attachment_content_type=content_type
+        )
+
+        if is_omniture:
+            tasks.process_omniture_report_v2.apply_async(
+                (report_task, ),
+                queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE
+            )
+        else:
+            tasks.process_ga_report_v2.apply_async(
+                (report_task, ),
+                queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE
+            )
+
+    except Exception as e:
+        failed_report_log = models.ReportLog(
+            email_subject=report_log.email_subject,
+            datetime=received_date,
+            for_date=report_log.for_date,
+            sender=report_log.sender,
+            from_address=report_log.from_address,
+            s3_key=report_log.s3_key,
+            report_filename=attachment_name,
+            state=constants.ReportState.FAILED
+        )
+        failed_report_log.add_error(e.message)
+        failed_report_log.save()
+        logger.exception(e.message)
+
+
 @csrf_exempt
 def mailgun_gareps(request):
     newrelic.agent.set_background_task(flag=True)
@@ -90,7 +182,7 @@ def mailgun_gareps(request):
         return HttpResponse(status=406)
 
     statsd_incr('convapi.accepted_emails')
-    key = None
+    s3_key = None
 
     attachment_name = ''
     ga_report_task = None
@@ -102,7 +194,7 @@ def mailgun_gareps(request):
         attachment_name, content = _first_valid_report_attachment(request.FILES)
         content_type = _extract_content_type(attachment_name)
 
-        key = store_to_s3(csvreport_date, attachment_name, content)
+        s3_key = store_to_s3(csvreport_date, attachment_name, content)
         logger.info("Storing to S3 {date}-{att_name}-{cl}".format(
                date=csvreport_date_raw or '',
                att_name=attachment_name or '',
@@ -116,7 +208,7 @@ def mailgun_gareps(request):
             request.POST.get('recipient'),
             request.POST.get('from'),
             None,
-            key,
+            s3_key,
             attachment_name,
             request.POST.get('attachment-count', 0),
             content_type
@@ -146,7 +238,7 @@ def mailgun_gareps(request):
             request.POST.get('recipient'),
             request.POST.get('from'),
             None,
-            key,
+            s3_key,
             attachment_name,
             request.POST.get('attachment-count', 0),
             content_type)
