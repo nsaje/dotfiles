@@ -26,7 +26,7 @@ def get_ga_service():
     )
     http = credentials.authorize(httplib2.Http())
     # Build the GA service object.
-    service = googleapiclient.discovery.build(GA_API_NAME, GA_API_VERSION, http=http)
+    service = googleapiclient.discovery.build(GA_API_NAME, GA_API_VERSION, http=http, cache_discovery=False)
     return service
 
 
@@ -88,16 +88,19 @@ class GAApiReport(GAReport):
         self.start_date = start_date
 
     def download(self, ga_account):
-        profiles = self.ga_service.management().profiles().list(
-                accountId=ga_account.ga_account_id, webPropertyId=ga_account.ga_web_property_id).execute()
+        profiles = self._get_ga_profiles(ga_account)
         self._download_postclick_stats(profiles)
         self._download_goal_conversion_stats(profiles)
+
+    def _get_ga_profiles(self, ga_account):
+        return self.ga_service.management().profiles().list(
+                accountId=ga_account.ga_account_id, webPropertyId=ga_account.ga_web_property_id).execute()
 
     def _download_postclick_stats(self, profiles):
         has_more = True
         start_index = 1
         while has_more:
-            ga_stats = self._download_stats_from_ga(profiles['items'][0]['id'],
+            ga_stats = self._download_stats_from_ga(self.start_date, profiles['items'][0]['id'],
                                                     'ga:sessions,ga:newUsers,ga:bounceRate,ga:pageviews,ga:timeonsite',
                                                     start_index)
             if ga_stats is None:
@@ -113,11 +116,11 @@ class GAApiReport(GAReport):
             start_index += ga_stats['itemsPerPage']
             has_more = (start_index < ga_stats['totalResults'])
 
-    def _download_stats_from_ga(self, profile_id, metrics, start_index):
+    def _download_stats_from_ga(self, start_date, profile_id, metrics, start_index):
         ga_stats = self.ga_service.data().ga().get(
                 ids='ga:' + profile_id,
-                start_date=self.start_date.strftime('%Y-%m-%d'),
-                end_date=self.start_date.strftime('%Y-%m-%d'),
+                start_date=start_date.strftime('%Y-%m-%d'),
+                end_date=start_date.strftime('%Y-%m-%d'),
                 metrics=metrics,
                 dimensions='ga:landingPagePath,ga:keyword',
                 filters='ga:landingPagePath=@_z1_,ga:keyword=~.*z1[0-9]+[a-zA-Z].+?1z.*',
@@ -142,16 +145,15 @@ class GAApiReport(GAReport):
 
     def _download_goal_conversion_stats(self, profiles):
         profile = profiles['items'][0]
-        goal_metadata = self.ga_service.management().goals().list(accountId=profile['accountId'],
-                                                              webPropertyId=profile['webPropertyId'],
-                                                              profileId=profile['id']).execute()
+        goal_metadata = self._get_ga_goals(profile)
         goals = {}
-        for sub_goal_metadata in list_chunker(goal_metadata['items'], MAX_METRICS_PER_GA_REQUEST / NUM_METRICS_PER_GOAL):
+        for sub_goal_metadata in list_chunker(goal_metadata['items'],
+                                              MAX_METRICS_PER_GA_REQUEST / NUM_METRICS_PER_GOAL):
             ga_metrics = self._generate_ga_metrics(sub_goal_metadata)
             has_more = True
             start_index = 1
             while has_more:
-                ga_stats = self._download_stats_from_ga(profile['id'], ga_metrics, start_index)
+                ga_stats = self._download_stats_from_ga(self.start_date, profile['id'], ga_metrics, start_index)
                 if ga_stats is None:
                     logger.debug('No goal conversion data was found.')
                     return
@@ -165,6 +167,11 @@ class GAApiReport(GAReport):
             report_entry = GAApiReportRow(key[0], key[1], key[2])
             report_entry.set_conversion_goal_stats_with(value)
             self._update_report_entry_goal_conversion_stats(report_entry)
+
+    def _get_ga_goals(self, profile):
+        return self.ga_service.management().goals().list(accountId=profile['accountId'],
+                                                         webPropertyId=profile['webPropertyId'],
+                                                         profileId=profile['id']).execute()
 
     def _generate_ga_metrics(self, goals):
         # we have to split the Google Analytics' metrics into chunks, because Google Analytics
