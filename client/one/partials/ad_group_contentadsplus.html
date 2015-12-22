@@ -7,7 +7,7 @@
             <div ng-if="hasPermission('zemauth.can_see_infobox')" ng-class="{'infobox-container-full': infoboxVisible, 'infobox-container-short': !infoboxVisible}">
                 <zem-infobox header="infoboxHeader" settings="infoboxSettings" link-to="'main.adGroups.settings'" element-id="$state.params.id"></zem-infobox>
             </div>
-        <div> 
+        <div>
     </div>
     <div class="section table-ad-group-ads-plus">
         <div class="button-bar">
@@ -23,7 +23,7 @@
                     + Content Ads
                 </button>
             </div>
-            <div class="button-bar-item export-container">
+            <div ng-if="!hasPermission('zemauth.exports_plus')" class="button-bar-item export-container">
                 <zem-export
                     start-date="dateRange.startDate"
                     end-date="dateRange.endDate"
