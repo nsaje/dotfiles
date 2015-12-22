@@ -226,7 +226,7 @@ def mailgun_gareps(request):
             report_log.email_subject = ga_report_task.subject
             report_log.from_address = ga_report_task.from_address
             report_log.recipient = ga_report_task.recipient
-            report_log.s3_key = ga_report_task.s3_key
+            report_log.s3_key = ga_report_task.attachment_s3_key
 
         report_log.csv_filename = request.FILES.get('attachment-1').name if request.FILES.get('attachment-1') is not None else None
         report_log.state = constants.ReportState.FAILED
@@ -265,7 +265,7 @@ def mailgun_gareps(request):
             report_log.email_subject = report_task.subject
             report_log.from_address = report_task.from_address
             report_log.recipient = report_task.recipient
-            report_log.s3_key = report_task.s3_key
+            report_log.s3_key = report_task.attachment_s3_key
 
         report_log.report_filename = request.FILES.get('attachment-1').name if request.FILES.get('attachment-1') is not None else None
         report_log.state = constants.ReportState.FAILED

@@ -33,7 +33,7 @@ def store_to_s3(date, filename, content):
 
 def check_report_log_for_reprocess(report_log):
     if report_log.state != constants.ReportState.FAILED:
-        raise Exception("Report log needs to be in failed state for reprocess, id={}".format(
+        raise Exception("Only failed report logs can be reprocessed, id={}".format(
             report_log.id))
 
     mandatory_attrs = ('email_subject', 'recipient', 'from_address', 's3_key')

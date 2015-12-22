@@ -102,7 +102,7 @@ def ReprocessViewTestCase(TestCase):
     def test_not_failed(self):
         self.report_log.state = constants.ReportState.EMPTY_REPORT
 
-        with self.assertRaisesMessage(Exception, ("Report log needs to be in failed state for reprocess, id={}".format(
+        with self.assertRaisesMessage(Exception, ("Only failed report logs can be reprocessed, id={}".format(
                 self.report_log.id))):
             views.reprocess_report_logs([self.report_log])
 
