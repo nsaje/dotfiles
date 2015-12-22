@@ -78,7 +78,7 @@ def reprocess_report_logs(report_logs):
         helpers.check_report_log_for_reprocess(rl)
 
     received_date = datetime.datetime.today()
-    sender = "Reprocess script"
+    sender = "Reprocess report logs script"
 
     # if all checks completed successfully attempt reprocess
     for rl in report_logs:
