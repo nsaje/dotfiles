@@ -74,7 +74,7 @@ Day Index,Sessions
             'signature': signature,
             'token': '',
             })
-        f.name = "test"
+        f.name = "test.csv"
         request.FILES['attachment-1'] = f
         response = views.mailgun_gareps(request)
         self.assertEqual(response.status_code, 200)
