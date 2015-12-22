@@ -817,8 +817,8 @@ class BudgetLineItemAdminForm(forms.ModelForm):
         self.fields['campaign'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
         self.fields['campaign'].queryset = models.Campaign.objects.filter(pk__in=not_archived)
 
-        # self.fields['credit'].queryset = models.CreditLineItem.objects.exclude(
-        #     status=constants.CreditLineItemStatus.CANCELED
+        # self.fields['credit'].queryset = models.CreditLineItem.objects.filter(
+        #     status=constants.CreditLineItemStatus.SIGNED
         # )
         
     class Meta:
