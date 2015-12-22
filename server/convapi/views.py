@@ -222,8 +222,12 @@ def mailgun_gareps(request):
 
     except Exception as e:
         report_log = models.GAReportLog()
-        report_log.email_subject = ga_report_task.subject if ga_report_task is not None else None
-        report_log.from_address = ga_report_task.from_address if ga_report_task is not None else None
+        if ga_report_task:
+            report_log.email_subject = ga_report_task.subject
+            report_log.from_address = ga_report_task.from_address
+            report_log.recipient = ga_report_task.recipient
+            report_log.s3_key = ga_report_task.s3_key
+
         report_log.csv_filename = request.FILES.get('attachment-1').name if request.FILES.get('attachment-1') is not None else None
         report_log.state = constants.ReportState.FAILED
         report_log.save()
@@ -256,8 +260,13 @@ def mailgun_gareps(request):
             )
     except Exception as e:
         report_log = models.ReportLog()
-        report_log.email_subject = report_task.subject if report_task is not None else None
-        report_log.from_address = report_task.from_address if report_task is not None else None
+
+        if report_task:
+            report_log.email_subject = report_task.subject
+            report_log.from_address = report_task.from_address
+            report_log.recipient = report_task.recipient
+            report_log.s3_key = report_task.s3_key
+
         report_log.report_filename = request.FILES.get('attachment-1').name if request.FILES.get('attachment-1') is not None else None
         report_log.state = constants.ReportState.FAILED
         report_log.save()
