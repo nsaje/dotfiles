@@ -364,7 +364,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         checked: false,
         type: 'currency',
         totalRow: true,
-        help: 'Amouont spent per media source.',
+        help: 'Amount spent per media source.',
         order: true,
         initialOrder: 'desc',
         internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),

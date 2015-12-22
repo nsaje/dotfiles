@@ -173,6 +173,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             totalRow: true,
             order: true,
             initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
             shown: $scope.hasPermission('zemauth.can_view_actual_costs')
         },
         {
@@ -197,6 +198,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             totalRow: true,
             order: true,
             initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
@@ -229,7 +231,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             checked: false,
             type: 'currency',
             totalRow: true,
-            help: 'Amouont spent per media source.',
+            help: 'Amount spent per media source.',
             order: true,
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),

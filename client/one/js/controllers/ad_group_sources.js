@@ -310,6 +310,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             shown: 'true',
             totalRow: true,
             order: true,
+            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
             initialOrder: 'desc',
             shown: $scope.hasPermission('zemauth.can_view_actual_costs')
         },
@@ -335,6 +336,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             totalRow: true,
             order: true,
             initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
@@ -366,7 +368,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             checked: false,
             type: 'currency',
             totalRow: true,
-            help: 'Amouont spent per media source.',
+            help: 'Amount spent per media source.',
             order: true,
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),

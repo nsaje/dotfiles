@@ -821,7 +821,6 @@ class AdGroupPublishersTableTest(TestCase):
 
         expected_row_1 = {
             u'clicks': 123,
-            u'cost': 2.4,
             u'data_cost': 0,
             u'media_cost': 2.4,
             u'e_data_cost': 0,
@@ -846,7 +845,6 @@ class AdGroupPublishersTableTest(TestCase):
 
         self.assertIn('totals', result['data'])
         self.assertEqual(result['data']['totals'], {	u'clicks': 323,
-                                                        u'cost': 2.1,
                                                         u'cpc': 1.2,
                                                         u'ctr': 99.0,
                                                         u'media_cost': 2.1,
@@ -945,7 +943,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'ctr': 100.0,
             u'exchange': u'AdsNative',
             u'cpc': 1.3,
-            u'cost': 2.4,
             u'media_cost': 2.4,
             u'e_media_cost': 2.4,
             u'data_cost': 0,
@@ -1168,7 +1165,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'ctr': 100.0,
             u'exchange': u'Adiant',
             u'cpc': 1.3,
-            u'cost': 2.4,
             u'media_cost': 2.4,
             u'e_media_cost': 2.4,
             u'data_cost': 0,
@@ -1177,6 +1173,110 @@ class AdGroupPublishersTableTest(TestCase):
             u'billing_cost': 3,
             u'license_fee': 0.6,
             u'data_cost': 0,
+            u'impressions': 10560,
+            u'clicks': 123,
+            u'source_id': 7
+        })
+
+    def test_actual_hidden(self, mock_query):
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password='secret')
+
+        self.user.user_permissions.add(
+            authmodels.Permission.objects.get(codename="can_view_effective_costs")
+        )
+        self.user.user_permissions.add(
+            authmodels.Permission.objects.get(codename="can_see_publishers")
+        )
+        
+        date = datetime.date(2015, 2, 22)
+
+        mock_stats1 = [{
+            'clicks': 123,
+            'cost': 2.4,
+            'data_cost': 0,
+            'e_data_cost': 0,
+            'total_cost': 3,
+            'billing_cost': 3,
+            'media_cost': 2.4,
+            'e_media_cost': 2.4,
+            'license_fee': 0.6,
+            'cpc': 1.3,
+            'ctr': 100.0,
+            'impressions': 10560,
+            'date': date.isoformat(),
+            'domain': 'example.com',
+            'exchange': 'adiant',
+        }]
+        mock_stats2 = {
+            'clicks': 123,
+            'cost': 2.4,
+            'data_cost': 0,
+            'e_data_cost': 0,
+            'total_cost': 3,
+            'billing_cost': 3,
+            'media_cost': 2.4,
+            'e_media_cost': 2.4,
+            'license_fee': 0.6,
+            'cpc': 1.3,
+            'ctr': 100.0,
+            'impressions': 10560,
+            'date': date.isoformat(),
+        }
+        mock_query.side_effect = [mock_stats1, mock_stats2]
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        params = {
+            'page': 1,
+            'order': '-cost',
+            'size': 2,
+            'start_date': date.isoformat(),
+            'end_date': date.isoformat(),
+        }
+
+        response = self.client.get(
+            reverse('ad_group_publishers_table', kwargs={'id_': ad_group.id, 'level_': 'ad_groups'}),
+            params,
+            follow=True
+        )
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['-cost'],
+            constraints={'ad_group': ad_group.id, }
+        )
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            constraints={"ad_group": ad_group.id, }
+        )
+
+        result = json.loads(response.content)
+
+        self.assertIn('success', result)
+        self.assertEqual(result['success'], True)
+
+        self.assertIn('data', result)
+
+        self.assertIn('rows', result['data'])
+        self.assertEqual(len(result['data']['rows']), 1)
+
+        self.assertDictEqual(result['data']['rows'][0], {
+            u'domain': u'example.com',
+            u'domain_link': u'http://example.com',
+            u'blacklisted': u'Active',
+            u'can_blacklist_publisher': True,
+            u'ctr': 100.0,
+            u'exchange': u'Adiant',
+            u'cpc': 1.3,
+            u'e_media_cost': 2.4,
+            u'e_data_cost': 0,
+            u'billing_cost': 3,
+            u'license_fee': 0.6,
             u'impressions': 10560,
             u'clicks': 123,
             u'source_id': 7
