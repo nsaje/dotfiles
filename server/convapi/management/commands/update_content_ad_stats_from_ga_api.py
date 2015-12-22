@@ -39,20 +39,17 @@ class Command(BaseCommand):
         logger.info("Retrieving post click data for publisher from Google Analytics.")
         ga_service = ga_api.get_ga_service()
         ga_reports = GAApiReport(ga_service, ga_date)
-        accounts = Account.objects.filter(campaign__adgroup__settings__enable_ga_tracking=True,
-                                          campaign__adgroup__settings__ga_tracking_type=GATrackingType.API).distinct()
-        for account in accounts:
-            adgroup_settings_ga_api_enabled = AdGroupSettings.objects.filter(ad_group__campaign__account=account) \
-                .group_current_settings() \
-                .filter(enable_ga_tracking=True, ga_tracking_type=GATrackingType.API)
-            adgrup_ga_api_enabled = [settings.ad_group for settings in adgroup_settings_ga_api_enabled]
-            content_ads_ga_api_enabled = ContentAd.objects.filter(ad_group__in=adgrup_ga_api_enabled)
-            content_ad_ids_ga_api_enabled = {content_ad.id for content_ad in content_ads_ga_api_enabled}
-            ga_accounts = GAAnalyticsAccount.objects.filter(account=account)
-            for ga_account in ga_accounts:
-                ga_reports.download(ga_account)
-            stats_ga_enabled = self._filter_stats_ga_enabled(ga_reports.entries, content_ad_ids_ga_api_enabled)
-            update.process_report(ga_date, stats_ga_enabled, ReportType.GOOGLE_ANALYTICS)
+        adgroup_settings_ga_api_enabled = AdGroupSettings.objects.all().group_current_settings() \
+            .filter(enable_ga_tracking=True, ga_tracking_type=GATrackingType.API)
+        adgrup_ga_api_enabled = [settings.ad_group for settings in adgroup_settings_ga_api_enabled]
+        content_ads_ga_api_enabled = ContentAd.objects.filter(ad_group__in=adgrup_ga_api_enabled)
+        content_ad_ids_ga_api_enabled = {content_ad.id for content_ad in content_ads_ga_api_enabled}
+        accounts_ga_api_enabled = Account.objects.filter(campaign__adgroup__in=adgrup_ga_api_enabled).distinct()
+        ga_accounts = GAAnalyticsAccount.objects.filter(account__in=accounts_ga_api_enabled)
+        for ga_account in ga_accounts:
+            ga_reports.download(ga_account)
+        stats_ga_enabled = self._filter_stats_ga_enabled(ga_reports.entries, content_ad_ids_ga_api_enabled)
+        update.process_report(ga_date, stats_ga_enabled, ReportType.GOOGLE_ANALYTICS)
 
     def _filter_stats_ga_enabled(self, ga_report_entries, content_ad_ids_ga_api_enabled):
         ga_stats = []
