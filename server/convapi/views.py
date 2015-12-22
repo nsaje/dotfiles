@@ -148,7 +148,14 @@ def mailgun_gareps(request):
 
         report_task = GAReportTask.from_request(request, s3_key, attachment_name, content_type)
     except Exception:
-        msg = "Unable to fetch parameters needed to create parsing task, POST {}".format(request.POST)
+        post_params = request.POST.dict()
+
+        # strip away secrets
+        del post_params['signature']
+        del post_params['token']
+
+        msg = "Unable to fetch parameters needed to create parsing task, POST {}".format(post_params)
+
         failed_report_log = models.ReportLog(
             state=constants.ReportState.FAILED,
             errors=msg
