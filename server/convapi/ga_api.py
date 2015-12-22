@@ -2,6 +2,7 @@ import json
 import logging
 import httplib2
 import googleapiclient.discovery
+from googleapiclient.errors import HttpError
 from oauth2client.client import SignedJwtAssertionCredentials
 from django.conf import settings
 from convapi.parse_v2 import ReportRow, GAReport
@@ -117,18 +118,25 @@ class GAApiReport(GAReport):
             has_more = (start_index < ga_stats['totalResults'])
 
     def _download_stats_from_ga(self, start_date, profile_id, metrics, start_index):
-        ga_stats = self.ga_service.data().ga().get(
-                ids='ga:' + profile_id,
-                start_date=start_date.strftime('%Y-%m-%d'),
-                end_date=start_date.strftime('%Y-%m-%d'),
-                metrics=metrics,
-                dimensions='ga:landingPagePath,ga:keyword',
-                filters='ga:landingPagePath=@_z1_,ga:keyword=~.*z1[0-9]+[a-zA-Z].+?1z.*',
-                start_index=start_index
-        ).execute()
-        if start_index == 1 and ga_stats['totalResults'] == 0:
-            ga_stats = None
-        return ga_stats
+        try:
+            ga_stats = self.ga_service.data().ga().get(
+                    ids='ga:' + profile_id,
+                    start_date=start_date.strftime('%Y-%m-%d'),
+                    end_date=start_date.strftime('%Y-%m-%d'),
+                    metrics=metrics,
+                    dimensions='ga:landingPagePath,ga:keyword',
+                    filters='ga:landingPagePath=@_z1_,ga:keyword=~.*z1[0-9]+[a-zA-Z].+?1z.*',
+                    start_index=start_index
+            ).execute()
+            if start_index == 1 and ga_stats['totalResults'] == 0:
+                ga_stats = None
+            return ga_stats
+        except HttpError:
+            logger.exception('Google Analytics API call failed.')
+            return None
+        except Exception, ex:
+            logger.exception('General exception when calling Google Analytics API.')
+            raise ex
 
     def _parse_keyword_or_url(self, row):
         content_ad_id, source_param = self._parse_z11z_keyword(row[1])
