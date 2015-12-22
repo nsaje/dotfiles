@@ -814,7 +814,9 @@ class BudgetLineItemAdminForm(forms.ModelForm):
         #     c.id for c in models.Campaign.objects.all() if not c.is_archived()
         # ]
         # # workaround to not change model __unicode__ methods
-        # self.fields['campaign'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
+
+        self.fields['campaign'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
+
         # self.fields['campaign'].queryset = models.Campaign.objects.filter(pk__in=not_archived)
 
         # self.fields['credit'].queryset = models.CreditLineItem.objects.filter(
