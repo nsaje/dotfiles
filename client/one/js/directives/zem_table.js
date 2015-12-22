@@ -89,7 +89,7 @@ oneApp.directive('zemTable', ['config', '$window', function(config, $window) {
             // to be removed when this is ready https://trello.com/c/vUBH4tz1/591-campaign-goals
             $scope.getRowStyle = function(row) {
                 // check user
-                var allowedUsers = [5, 8, 13, 70, 283];
+                var allowedUsers = [8, 13, 70, 283, 454];
                 if (allowedUsers.indexOf(parseInt($scope.$parent.user.id)) === -1) {
                     return;
                 }
