@@ -14,18 +14,6 @@ import dash.models
 from utils import test_helper
 
 
-class DictMatcher():
-    def __init__(self, obj):
-        self.obj = obj
-
-    def __eq__(self, other):
-        obj_copy = dict(self.obj[0])
-        other_copy = dict(other[0])
-        del obj_copy['content_ad_id']
-        del other_copy['content_ad_id']
-        return obj_copy == other_copy
-
-
 @patch('reports.refresh.redshift')
 class RefreshContentAdStats(test.TestCase):
     fixtures = ['test_api_contentads.yaml']
@@ -58,7 +46,10 @@ class RefreshContentAdStats(test.TestCase):
             'data_cost_cc': 150000,
             'adgroup_id': 1,
             'campaign_id': 1,
-            'account_id': 1
+            'account_id': 1,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
+            'license_fee_nano': 0
         }, {
             'conversions': '{}',
             'cost_cc': 250000,
@@ -75,33 +66,239 @@ class RefreshContentAdStats(test.TestCase):
             'data_cost_cc': 250000,
             'adgroup_id': 1,
             'campaign_id': 1,
-            'account_id': 1
+            'account_id': 1,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
+            'license_fee_nano': 0
         }]
+
+        self.assertEqual(1, mock_redshift.insert_contentadstats.call_count)
+        mock_redshift.insert_contentadstats.assert_has_call(test_helper.ListMatcher(rows))
+
+    def test_diff_row(self, mock_redshift):
+        mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+
+        date = datetime.datetime(2015, 2, 1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+
+        models.ContentAdStats.objects.all().delete()
+        models.ContentAdPostclickStats.objects.all().delete()
+
+        refresh.refresh_contentadstats(date, campaign)
+
+        mock_redshift.delete_contentadstats.assert_called_with(
+            date, campaign.id)
 
         diff_rows = [{
             'conversions': '{}',
-            'cost_cc': -400000,
-            'pageviews': -4000,
+            'cost_cc': 400000,
+            'pageviews': 4000,
             'account_id': 1,
             'content_ad_id': -1,
-            'new_visits': -300,
-            'total_time_on_site': -130,
+            'new_visits': 300,
+            'total_time_on_site': 130,
             'campaign_id': 1,
-            'visits': -3000,
-            'data_cost_cc': -400000,
-            'bounced_visits': -400,
+            'visits': 3000,
+            'data_cost_cc': 400000,
+            'bounced_visits': 400,
             'source_id': 1,
             'date': '2015-02-01',
-            'impressions': -3000000,
-            'clicks': -300,
-            'adgroup_id': 1,
+            'impressions': 3000000,
+            'clicks': 300,
+            'adgroup_id': 1
         }]
 
+        self.assertEqual(2, mock_redshift.insert_contentadstats.call_count)
+        mock_redshift.insert_contentadstats.assert_has_call([])
+        mock_redshift.insert_contentadstats.assert_has_call(diff_rows)
+
+    def test_diff_row_no_ad_group_stats(self, mock_redshift):
+        mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+
+        date = datetime.datetime(2015, 2, 1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+
+
+        refresh.refresh_contentadstats(date, campaign)
+
+        mock_redshift.delete_contentadstats.assert_called_with(
+            date, campaign.id)
+
+        rows = [{
+            'conversions': '{"omniture__Transaction 2": 20, "ga__Goal 1": 10}',
+            'cost_cc': 150000,
+            'pageviews': 1500,
+            'content_ad_id': 1,
+            'new_visits': 100,
+            'clicks': 100,
+            'total_time_on_site': 60,
+            'bounced_visits': 150,
+            'visits': 1000,
+            'source_id': 1,
+            'date': datetime.date(2015, 2, 1),
+            'impressions': 1000000,
+            'data_cost_cc': 150000,
+            'adgroup_id': 1,
+            'campaign_id': 1,
+            'account_id': 1,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
+            'license_fee_nano': 0
+        }, {
+            'conversions': '{}',
+            'cost_cc': 250000,
+            'pageviews': 2500,
+            'content_ad_id': 2,
+            'new_visits': 200,
+            'clicks': 200,
+            'total_time_on_site': 70,
+            'bounced_visits': 250,
+            'visits': 2000,
+            'source_id': 1,
+            'date': datetime.date(2015, 2, 1),
+            'impressions': 2000000,
+            'data_cost_cc': 250000,
+            'adgroup_id': 1,
+            'campaign_id': 1,
+            'account_id': 1,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
+            'license_fee_nano': 0
+        }]
+
+        self.assertEqual(1, mock_redshift.insert_contentadstats.call_count)
         mock_redshift.insert_contentadstats.assert_has_call(test_helper.ListMatcher(rows))
-        # DictMatcher here is needed because we mock redshift module which
-        # causes comparisons to fail because redshift constants are also mocked
-        # (ie. DIFF caid -1 becomes a MagicMock
-        mock_redshift.insert_contentadstats.assert_any_call(DictMatcher(diff_rows))
+
+    def test_refresh_contentadstats_budgets(self, mock_redshift):
+
+        mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+
+        date = datetime.datetime(2015, 2, 1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+
+        models.BudgetDailyStatement.objects.create(
+            budget_id=1,
+            date=date,
+            media_spend_nano=400000000000,
+            data_spend_nano=400000000000,
+            license_fee_nano=80000000000,
+        )
+
+        refresh.refresh_contentadstats(date, campaign)
+
+        mock_redshift.delete_contentadstats.assert_called_with(
+            date, campaign.id)
+
+        rows = [{
+            'conversions': '{"omniture__Transaction 2": 20, "ga__Goal 1": 10}',
+            'cost_cc': 150000,
+            'pageviews': 1500,
+            'content_ad_id': 1,
+            'new_visits': 100,
+            'clicks': 100,
+            'total_time_on_site': 60,
+            'bounced_visits': 150,
+            'visits': 1000,
+            'source_id': 1,
+            'date': datetime.date(2015, 2, 1),
+            'impressions': 1000000,
+            'data_cost_cc': 150000,
+            'adgroup_id': 1,
+            'campaign_id': 1,
+            'account_id': 1,
+            'effective_cost_nano': 150000000000,
+            'effective_data_cost_nano': 150000000000,
+            'license_fee_nano': 30000000000
+        }, {
+            'conversions': '{}',
+            'cost_cc': 250000,
+            'pageviews': 2500,
+            'content_ad_id': 2,
+            'new_visits': 200,
+            'clicks': 200,
+            'total_time_on_site': 70,
+            'bounced_visits': 250,
+            'visits': 2000,
+            'source_id': 1,
+            'date': datetime.date(2015, 2, 1),
+            'impressions': 2000000,
+            'data_cost_cc': 250000,
+            'adgroup_id': 1,
+            'campaign_id': 1,
+            'account_id': 1,
+            'effective_cost_nano': 250000000000,
+            'effective_data_cost_nano': 250000000000,
+            'license_fee_nano': 50000000000
+        }]
+
+        self.assertEqual(1, mock_redshift.insert_contentadstats.call_count)
+        mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
+
+    def test_refresh_contentadstats_budgets_overspend(self, mock_redshift):
+
+        mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+
+        date = datetime.datetime(2015, 2, 1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+
+        # has only 20% of actual spend
+        models.BudgetDailyStatement.objects.create(
+            budget_id=1,
+            date=date,
+            media_spend_nano=8000000000,
+            data_spend_nano=8000000000,
+            license_fee_nano=1600000000,
+        )
+
+        refresh.refresh_contentadstats(date, campaign)
+
+        mock_redshift.delete_contentadstats.assert_called_with(
+            date, campaign.id)
+
+        rows = [{
+            'conversions': '{"omniture__Transaction 2": 20, "ga__Goal 1": 10}',
+            'cost_cc': 150000,
+            'pageviews': 1500,
+            'content_ad_id': 1,
+            'new_visits': 100,
+            'clicks': 100,
+            'total_time_on_site': 60,
+            'bounced_visits': 150,
+            'visits': 1000,
+            'source_id': 1,
+            'date': datetime.date(2015, 2, 1),
+            'impressions': 1000000,
+            'data_cost_cc': 150000,
+            'adgroup_id': 1,
+            'campaign_id': 1,
+            'account_id': 1,
+            'effective_cost_nano': 30000000000,
+            'effective_data_cost_nano': 30000000000,
+            'license_fee_nano': 6000000000
+        }, {
+            'conversions': '{}',
+            'cost_cc': 250000,
+            'pageviews': 2500,
+            'content_ad_id': 2,
+            'new_visits': 200,
+            'clicks': 200,
+            'total_time_on_site': 70,
+            'bounced_visits': 250,
+            'visits': 2000,
+            'source_id': 1,
+            'date': datetime.date(2015, 2, 1),
+            'impressions': 2000000,
+            'data_cost_cc': 250000,
+            'adgroup_id': 1,
+            'campaign_id': 1,
+            'account_id': 1,
+            'effective_cost_nano': 50000000000,
+            'effective_data_cost_nano': 50000000000,
+            'license_fee_nano': 10000000000
+        }]
+
+        self.assertEqual(1, mock_redshift.insert_contentadstats.call_count)
+        mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
 
     def test_refresh_contentadstats_no_source_id(self, mock_redshift):
         date = datetime.datetime(2015, 2, 2)
@@ -128,7 +325,10 @@ class RefreshContentAdStats(test.TestCase):
             'data_cost_cc': 550000,
             'adgroup_id': 2,
             'campaign_id': 2,
-            'account_id': 1
+            'account_id': 1,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
+            'license_fee_nano': 0
         }, {
             'conversions': '{}',
             'cost_cc': 650000,
@@ -145,7 +345,10 @@ class RefreshContentAdStats(test.TestCase):
             'data_cost_cc': 650000,
             'adgroup_id': 2,
             'campaign_id': 2,
-            'account_id': 1
+            'account_id': 1,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
+            'license_fee_nano': 0
         }]
 
         mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
@@ -175,7 +378,10 @@ class RefreshContentAdStats(test.TestCase):
             'data_cost_cc': None,
             'adgroup_id': 3,
             'campaign_id': 3,
-            'account_id': 1
+            'account_id': 1,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
+            'license_fee_nano': 0
         }]
 
         mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))

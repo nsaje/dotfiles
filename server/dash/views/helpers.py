@@ -803,6 +803,13 @@ def get_user_full_name_or_email(user):
     return result.encode('utf-8')
 
 
+def get_target_regions_string(regions):
+    if not regions:
+        return 'worldwide'
+
+    return ', '.join(constants.AdTargetLocation.get_text(x) for x in regions)
+
+
 def copy_stats_to_row(stat, row):
     for key in ['impressions', 'clicks', 'cost', 'data_cost', 'cpc', 'ctr',
                 'visits', 'click_discrepancy', 'pageviews', 'media_cost',

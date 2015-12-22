@@ -993,7 +993,7 @@ class AdGroup(models.Model):
     def get_current_settings(self):
         if not self.pk:
             raise exc.BaseError(
-                'Ad group setting couln\'t be fetched because ad group hasn\'t been saved yet.'
+                'Ad group setting couldn\'t be fetched because ad group hasn\'t been saved yet.'
             )
 
         settings = AdGroupSettings.objects.\
@@ -1927,7 +1927,7 @@ class CreditLineItem(FootprintModel):
     def is_past(self, date=None):
         if date is None:
             date = dates_helper.local_today()
-        return self.end_date <= date
+        return self.end_date < date
 
     def get_allocated_amount(self):
         return sum(b.allocated_amount() for b in self.budgets.all())
@@ -1952,9 +1952,10 @@ class CreditLineItem(FootprintModel):
             credit=self,
         )
 
-    def __str__(self):
-        return '{} - ${} - from {} to {}'.format(str(self.account), self.amount,
-                                                 self.start_date, self.end_date)
+    def __unicode__(self):
+        return u'{} - {} - ${} - from {} to {}'.format(
+            self.account.id, unicode(self.account), self.amount,
+            self.start_date, self.end_date)
 
     def is_editable(self):
         return self.status == constants.CreditLineItemStatus.PENDING
@@ -2064,6 +2065,15 @@ class BudgetLineItem(FootprintModel):
                                    on_delete=models.PROTECT, null=True, blank=True)
 
     objects = QuerySetManager()
+
+    def __unicode__(self):
+        return u'${} - from {} to {} (id: {}, campaign: {})'.format(
+            self.amount,
+            self.start_date,
+            self.end_date,
+            self.id,
+            unicode(self.campaign),
+        )
 
     def save(self, request=None, *args, **kwargs):
         self.full_clean()

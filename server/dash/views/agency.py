@@ -50,6 +50,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, ad_group),
+            'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
         }
 
@@ -93,6 +94,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(new_settings, ad_group),
+            'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group)
         }
 
@@ -218,6 +220,14 @@ class AdGroupSettings(api_common.BaseApiView):
             helpers.set_ad_group_source_defaults(default_settings, new_settings, ad_group_source, request)
 
         zwei_actions.send(actionlogs_to_send)
+
+    def get_default_settings_dict(self, ad_group):
+        settings = ad_group.campaign.get_current_settings()
+
+        return {
+            'target_devices': settings.target_devices,
+            'target_regions': settings.target_regions
+        }
 
 
 class CampaignAgency(api_common.BaseApiView):
@@ -372,6 +382,14 @@ class CampaignAgency(api_common.BaseApiView):
                 'name': 'Archived',
                 'value': str(new_settings.archived)
             }),
+            ('target_devices', {
+                'name': 'Target Devices',
+                'value': ', '.join(constants.AdTargetDevice.get_text(x) for x in new_settings.target_devices)
+            }),
+            ('target_regions', {
+                'name': 'Target Devices',
+                'value': helpers.get_target_regions_string(new_settings.target_regions)
+            })
         ])
 
         if old_settings is not None:

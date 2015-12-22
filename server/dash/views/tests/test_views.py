@@ -238,6 +238,11 @@ class CampaignAdGroups(TestCase):
         ad_group_settings = ad_group.get_current_settings()
         self.assertIsNotNone(ad_group_settings.id)
 
+        # check if default settings from campaign level are
+        # copied to the newly created settings
+        self.assertEqual(ad_group_settings.target_devices, ['mobile'])
+        self.assertEqual(ad_group_settings.target_regions, ['NC', '501'])
+
 
 class AdGroupContentAdCSVTest(TestCase):
     fixtures = ['test_api', 'test_views']

@@ -610,8 +610,7 @@ class CampaignAdGroups(api_common.BaseApiView):
 
             # always create settings when creating an ad group
             # and propagate them to external sources
-            ad_group_settings = ad_group.get_current_settings()
-            ad_group_settings.save(request)
+            ad_group_settings = self._create_new_settings(ad_group, request)
 
             actionlogs_to_send.extend(
                 api.order_ad_group_settings_update(
@@ -632,6 +631,17 @@ class CampaignAdGroups(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def _create_new_settings(self, ad_group, request):
+        settings = ad_group.get_current_settings()  # get default ad group settings
+        campaign_settings = ad_group.campaign.get_current_settings()
+
+        settings.target_devices = campaign_settings.target_devices
+        settings.target_regions = campaign_settings.target_regions
+
+        settings.save(request)
+
+        return settings
 
 
 class CampaignOverview(api_common.BaseApiView):
