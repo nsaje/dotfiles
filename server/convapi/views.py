@@ -192,10 +192,10 @@ def mailgun_gareps(request):
 
         s3_key = store_to_s3(csvreport_date, attachment_name, content)
         logger.info("Storing to S3 {date}-{att_name}-{cl}".format(
-               date=csvreport_date_raw or '',
-               att_name=attachment_name or '',
-               cl=len(content) if content else 0
-           ))
+            date=csvreport_date_raw or '',
+            att_name=attachment_name or '',
+            cl=len(content) if content else 0
+        ))
 
         ga_report_task = GAReportTask(
             request.POST.get('subject'),
