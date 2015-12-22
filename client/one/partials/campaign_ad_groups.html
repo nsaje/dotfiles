@@ -7,7 +7,7 @@
             <div ng-if="hasPermission('zemauth.can_see_infobox')" ng-class="{'infobox-container-full': infoboxVisible, 'infobox-container-short': !infoboxVisible}">
                 <zem-infobox header="infoboxHeader" settings="infoboxSettings" link-to="'main.campaigns.settings'" element-id="$state.params.id"></zem-infobox>
             </div>
-        <div> 
+        <div>
     </div>
     <div class="section table-ad-group-ads">
         <div class="button-bar">
@@ -16,7 +16,7 @@
                 <button type="button" class="btn btn-add" ng-click="addAdGroup()">+ Ad group</button>
                 <div class="loader" ng-show="addGroupRequestInProgress"></div>
             </div>
-            <div class="button-bar-item export-container">
+            <div ng-if="!hasPermission('zemauth.exports_plus')" class="button-bar-item export-container">
                 <zem-export
                     start-date="dateRange.startDate"
                     end-date="dateRange.endDate"
@@ -42,8 +42,6 @@
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
 
             <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
-
-            <div class="clearfix"></div>
         </div>
 
         <alert type="info" class="alert-sync" ng-show="!isSyncRecent">
