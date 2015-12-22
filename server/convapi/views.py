@@ -15,6 +15,7 @@ from utils.statsd_helper import statsd_incr
 from convapi import models
 from convapi import constants
 from convapi import tasks
+from convapi import helpers
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +72,20 @@ def _extract_content_type(name):
     return 'text/plain'
 
 
-def reprocess_report_log(report_log):
+def reprocess_report_logs(report_logs):
+
+    for rl in report_logs:
+        helpers.check_report_log_for_reprocess(rl)
+
+    received_date = datetime.datetime.today()
+    sender = "Reprocess script"
+
+    # if all checks completed successfully attempt reprocess
+    for rl in report_logs:
+        _reprocess_report_log(rl, sender=sender, received_date=received_date)
+
+
+def _reprocess_report_log(report_log, sender, received_date):
     """
     Reprocess existing report log. Creates a new report log as a result. Uses existing
     s3 object keys of stored report files.
@@ -83,24 +97,15 @@ def reprocess_report_log(report_log):
 
     logger.info('Reprocessing report log %s', report_log.pk)
 
-    attachment_name = (report_log.csv_filename if hasattr(report_log, 'csv_filename')
-                       else report_log.report_filename)
+    helpers.check_report_log_for_reprocess(report_log)
 
-    mandatory_attrs = ('email_subject', 'sender', 'recipient', 'from_address', 's3_key')
-    missing_values = [x for x in mandatory_attrs if not getattr(report_log, x)]
-    if not attachment_name:
-        missing_values.append('report_filename')
-
-    if missing_values:
-        raise Exception("Can't reprocess - missing values %r", missing_values)
-
-    received_date = datetime.datetime.today()
     content_type = _extract_content_type(report_log.s3_key)
+    attachment_name = report_log.get_report_filename()
 
     report_task = GAReportTask(
         subject=report_log.email_subject,
         date=received_date,
-        sender=report_log.sender,
+        sender=sender,
         recipient=report_log.recipient,
         from_address=report_log.from_address,
         text=None,
@@ -120,7 +125,7 @@ def reprocess_report_log(report_log):
             email_subject=report_log.email_subject,
             datetime=received_date,
             for_date=report_log.for_date,
-            sender=report_log.sender,
+            sender=sender,
             from_address=report_log.from_address,
             s3_key=report_log.s3_key,
             csv_filename=attachment_name,
@@ -147,7 +152,7 @@ def reprocess_report_log(report_log):
             email_subject=report_log.email_subject,
             datetime=received_date,
             for_date=report_log.for_date,
-            sender=report_log.sender,
+            sender=sender,
             from_address=report_log.from_address,
             s3_key=report_log.s3_key,
             recipient=report_log.recipient,

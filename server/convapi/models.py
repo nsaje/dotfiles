@@ -106,6 +106,9 @@ class GAReportLog(models.Model):
         else:
             self.visits_reported += n
 
+    def get_report_filename(self):
+        return self.csv_filename
+
 
 class ReportLog(models.Model):
 
@@ -151,3 +154,6 @@ class ReportLog(models.Model):
             self.visits_reported = n
         else:
             self.visits_reported += n
+
+    def get_report_filename(self):
+        return self.report_filename
