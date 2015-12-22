@@ -98,22 +98,25 @@ class GAApiReport(GAReport):
                 accountId=ga_account.ga_account_id, webPropertyId=ga_account.ga_web_property_id).execute()
 
     def _download_postclick_stats(self, profiles):
-        has_more = True
+        for row in self._ga_stats_generator(self.start_date, profiles['items'][0]['id'],
+                                            'ga:sessions,ga:newUsers,ga:bounceRate,ga:pageviews,ga:timeonsite'):
+            logger.debug('Processing GA postclick data row: %s', row)
+            content_ad_id, media_source_tracking_slug = self._parse_keyword_or_url(row)
+            report_entry = GAApiReportRow(self.start_date, content_ad_id, media_source_tracking_slug)
+            report_entry.set_postclick_stats(row)
+            self._update_report_entry_postclick_stats(report_entry)
+
+    def _ga_stats_generator(self, start_date, profile_id, metrics):
         start_index = 1
+        has_more = True
         while has_more:
-            ga_stats = self._download_stats_from_ga(self.start_date, profiles['items'][0]['id'],
-                                                    'ga:sessions,ga:newUsers,ga:bounceRate,ga:pageviews,ga:timeonsite',
-                                                    start_index)
+            ga_stats = self._download_stats_from_ga(self.start_date, profile_id, metrics, start_index)
             if ga_stats is None:
                 logger.debug('No postclick data was found.')
                 break
             rows = ga_stats.get('rows')
             for row in rows:
-                logger.debug('Processing GA postclick data row: %s', row)
-                content_ad_id, media_source_tracking_slug = self._parse_keyword_or_url(row)
-                report_entry = GAApiReportRow(self.start_date, content_ad_id, media_source_tracking_slug)
-                report_entry.set_postclick_stats(row)
-                self._update_report_entry_postclick_stats(report_entry)
+                yield row
             start_index += ga_stats['itemsPerPage']
             has_more = (start_index < ga_stats['totalResults'])
 
@@ -158,19 +161,9 @@ class GAApiReport(GAReport):
         for sub_goal_metadata in list_chunker(goal_metadata['items'],
                                               MAX_METRICS_PER_GA_REQUEST / NUM_METRICS_PER_GOAL):
             ga_metrics = self._generate_ga_metrics(sub_goal_metadata)
-            has_more = True
-            start_index = 1
-            while has_more:
-                ga_stats = self._download_stats_from_ga(self.start_date, profile['id'], ga_metrics, start_index)
-                if ga_stats is None:
-                    logger.debug('No goal conversion data was found.')
-                    return
-                rows = ga_stats.get('rows')
-                for row in rows:
-                    logger.debug('Processing GA conversion goal data row: %s', row)
-                    self._update_goals(goals, row, sub_goal_metadata)
-                start_index += ga_stats['itemsPerPage']
-                has_more = (start_index < ga_stats['totalResults'])
+            for row in self._ga_stats_generator(self.start_date, profile['id'], ga_metrics):
+                logger.debug('Processing GA conversion goal data row: %s', row)
+                self._update_goals(goals, row, sub_goal_metadata)
         for key, value in goals.iteritems():
             report_entry = GAApiReportRow(key[0], key[1], key[2])
             report_entry.set_conversion_goal_stats_with(value)
