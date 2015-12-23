@@ -1624,7 +1624,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             self._add_adgroup_log_to_history(
                 request,
                 publisher_blacklist + related_publisher_blacklist,
-                ad_group,
                 state
             )
 
@@ -1805,7 +1804,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 request,
                 ad_group,
                 state,
-                constants.PublisherBlacklistLevel.GLOBAL,
                 global_blacklist
             )
 
@@ -1856,7 +1854,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 blacklist.append(new_entry or existing_entry)
         return blacklist
 
-    def _add_adgroup_log_to_history(self, request, publishers, ad_group, state):
+    def _add_adgroup_log_to_history(self, request, publishers, state):
         history_entries = {}
         for publisher in publishers:
             adgid = publisher['ad_group_id']
@@ -1864,29 +1862,28 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             history_entries[adgid].append(publisher)
 
         for adgid, adg_publishers in history_entries.iteritems():
-            changes_text = '{action} the following publishers {pubs}.'.format(
-                action="Blacklisted" if state == constants.PublisherStatus.BLACKLISTED else "Enabled",
-                pubs=", ".join( ("{pub} on {slug}".format(pub=pub_bl['domain'], slug=pub_bl['source'].name)
-                    for pub_bl in adg_publishers)
-                )
-            )
-
             ad_group = models.AdGroup.objects.get(pk=adgid)
-            settings = ad_group.get_current_settings().copy_settings()
-            settings.changes_text = changes_text
-            settings.save(request)
+            self._add_to_history(request, ad_group, state, adg_publishers)
+
         email_helper.send_ad_group_notification_email(ad_group, request)
 
-    def _add_to_history(self, request, ad_group, level, state, blacklist):
-        changes_text = '{action} the following publishers {pubs}.'.format(
-            action="Blacklisted" if state == constants.PublisherStatus.BLACKLISTED else "Enabled",
-            pubs=", ".join( ("{pub} on {slug}".format(pub=pub_bl['domain'], slug=pub_bl['source'].name)
-                 for pub_bl in blacklist)
-            )
+    def _add_to_history(self, request, ad_group, state, blacklist):
+        action_string = "Blacklisted" if state == constants.PublisherStatus.BLACKLISTED else "Enabled"
+
+        pub_strings = [u"{pub} on {slug}".format(
+                        pub=pub_bl['domain'],
+                        slug=pub_bl['source'].name
+                      ) for pub_bl in blacklist]
+        pubs_string = u", ".join(pub_strings)
+
+        changes_text = u'{action} the following publishers {pubs}.'.format(
+            action=action_string,
+            pubs=pubs_string
         )
         settings = ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
+
         email_helper.send_ad_group_notification_email(ad_group, request)
 
 
