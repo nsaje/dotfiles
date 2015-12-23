@@ -15,6 +15,7 @@ from utils.statsd_helper import statsd_incr
 from convapi import models
 from convapi import constants
 from convapi import tasks
+from convapi import helpers
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,42 @@ def _extract_content_type(name):
     return 'text/plain'
 
 
+def reprocess_report_logs(report_logs):
+
+    for rl in report_logs:
+        helpers.check_report_log_for_reprocess(rl)
+
+    received_date = datetime.datetime.today()
+    sender = "Reprocess report logs script"
+
+    # if all checks completed successfully attempt reprocess
+    for rl in report_logs:
+        _reprocess_report_log(rl, sender=sender, received_date=received_date)
+
+
+def _reprocess_report_log(report_log, sender, received_date):
+    """
+    Reprocess existing report log. Creates a new report log as a result. Uses existing
+    s3 object keys of stored report files.
+
+    report_log  - can be either GAReportLog or ReportLog instance.
+    is_omniture - denotes whether this is an Omniture or GA report.
+                  It can not be determined automatically.
+    """
+
+    logger.info('Reprocessing report log %s', report_log.pk)
+
+    helpers.check_report_log_for_reprocess(report_log)
+
+    content_type = _extract_content_type(report_log.s3_key)
+    attachment_name = report_log.get_report_filename()
+
+    report_task = GAReportTask.from_report_log(
+        report_log, received_date, sender, attachment_name, content_type)
+
+    process_report_task(report_task)
+
+
 @csrf_exempt
 def mailgun_gareps(request):
     newrelic.agent.set_background_task(flag=True)
@@ -90,10 +127,10 @@ def mailgun_gareps(request):
         return HttpResponse(status=406)
 
     statsd_incr('convapi.accepted_emails')
-    key = None
 
+    s3_key = None
     attachment_name = ''
-    ga_report_task = None
+    report_task = None
     try:
 
         csvreport_date_raw = email.utils.parsedate(request.POST.get('Date'))
@@ -102,56 +139,48 @@ def mailgun_gareps(request):
         attachment_name, content = _first_valid_report_attachment(request.FILES)
         content_type = _extract_content_type(attachment_name)
 
-        key = store_to_s3(csvreport_date, attachment_name, content)
         logger.info("Storing to S3 {date}-{att_name}-{cl}".format(
-               date=csvreport_date_raw or '',
-               att_name=attachment_name or '',
-               cl=len(content) if content else 0
-           ))
+            date=csvreport_date_raw or '',
+            att_name=attachment_name or '',
+            cl=len(content) if content else 0
+        ))
+        s3_key = store_to_s3(csvreport_date, attachment_name, content)
 
-        ga_report_task = GAReportTask(
-            request.POST.get('subject'),
-            request.POST.get('Date'),
-            request.POST.get('sender'),
-            request.POST.get('recipient'),
-            request.POST.get('from'),
-            None,
-            key,
-            attachment_name,
-            request.POST.get('attachment-count', 0),
-            content_type
+        report_task = GAReportTask.from_request(request, s3_key, attachment_name, content_type)
+    except Exception:
+        post_params = request.POST.dict()
+
+        # strip away secrets
+        del post_params['signature']
+        del post_params['token']
+
+        msg = "Unable to fetch parameters needed to create parsing task, POST {}".format(post_params)
+
+        failed_report_log = models.ReportLog(
+            state=constants.ReportState.FAILED,
+            errors=msg
         )
+        failed_report_log.save()
+        logger.exception(msg)
 
+    if report_task:
+        process_report_task(report_task)
+
+    return HttpResponse(status=200)
+
+
+def process_report_task(report_task):
+    try:
         tasks.process_ga_report.apply_async(
-            (ga_report_task, ),
+            (report_task, ),
             queue=settings.CELERY_DEFAULT_CONVAPI_QUEUE
         )
-
     except Exception as e:
-        report_log = models.GAReportLog()
-        report_log.email_subject = ga_report_task.subject if ga_report_task is not None else None
-        report_log.from_address = ga_report_task.from_address if ga_report_task is not None else None
-        report_log.csv_filename = request.FILES.get('attachment-1').name if request.FILES.get('attachment-1') is not None else None
-        report_log.state = constants.ReportState.FAILED
-        report_log.save()
+        report_task.create_failed_report_log(models.GAReportLog, e)
         logger.exception(e.message)
 
-    report_task = None
     try:
-        content_type = _extract_content_type(attachment_name)
-        report_task = GAReportTask(
-            request.POST.get('subject'),
-            request.POST.get('Date'),
-            request.POST.get('sender'),
-            request.POST.get('recipient'),
-            request.POST.get('from'),
-            None,
-            key,
-            attachment_name,
-            request.POST.get('attachment-count', 0),
-            content_type)
-
-        if OMNITURE_REPORT_MAIL in request.POST.get('recipient'):
+        if report_task.is_omniture_report():
             tasks.process_omniture_report_v2.apply_async(
                 (report_task, ),
                 queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE
@@ -162,18 +191,16 @@ def mailgun_gareps(request):
                 queue=settings.CELERY_DEFAULT_CONVAPI_V2_QUEUE
             )
     except Exception as e:
-        report_log = models.ReportLog()
-        report_log.email_subject = report_task.subject if report_task is not None else None
-        report_log.from_address = report_task.from_address if report_task is not None else None
-        report_log.report_filename = request.FILES.get('attachment-1').name if request.FILES.get('attachment-1') is not None else None
-        report_log.state = constants.ReportState.FAILED
-        report_log.save()
+        report_task.create_failed_report_log(models.ReportLog, e)
         logger.exception(e.message)
-
-    return HttpResponse(status=200)
 
 
 class GAReportTask:
+    """
+    Holds data needed to parse a GA or Omniture report. It is assumend to be
+    read only after initialization.
+    """
+
     def __init__(self, subject, date, sender, recipient, from_address, text,
                  attachment_s3_key, attachment_name, attachments_count, attachment_content_type):
         self.subject = subject
@@ -187,3 +214,55 @@ class GAReportTask:
         self.attachment_s3_key = attachment_s3_key
         self.attachment_name = attachment_name
         self.attachment_count = attachments_count
+
+    def is_omniture_report(self):
+        return OMNITURE_REPORT_MAIL in self.recipient
+
+    def create_failed_report_log(self, report_log_class, ex):
+        report_log = report_log_class(state=constants.ReportState.FAILED)
+
+        report_log.datetime = self.date
+        report_log.email_subject = self.subject
+        report_log.from_address = self.from_address
+        report_log.recipient = self.recipient
+        report_log.s3_key = self.attachment_s3_key
+
+        if hasattr(report_log, 'csv_filename'):
+            report_log.csv_filename = self.attachment_name
+        else:
+            report_log.report_filename = self.attachment_name
+
+        report_log.add_error(ex.message)
+        report_log.save()
+
+    @classmethod
+    def from_report_log(cls, report_log, received_date, sender, attachment_name, content_type):
+        report_task = GAReportTask(
+            subject=report_log.email_subject,
+            date=received_date,
+            sender=sender,
+            recipient=report_log.recipient,
+            from_address=report_log.from_address,
+            text=None,
+            attachment_s3_key=report_log.s3_key,
+            attachment_name=attachment_name,
+            attachments_count=1,
+            attachment_content_type=content_type
+        )
+        return report_task
+
+    @classmethod
+    def from_request(cls, request, s3_key, attachment_name, content_type):
+        report_task = GAReportTask(
+            request.POST.get('subject'),
+            request.POST.get('Date'),
+            request.POST.get('sender'),
+            request.POST.get('recipient'),
+            request.POST.get('from'),
+            None,
+            s3_key,
+            attachment_name,
+            request.POST.get('attachment-count', 0),
+            content_type
+        )
+        return report_task

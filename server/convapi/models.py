@@ -60,11 +60,13 @@ class GAReportLog(models.Model):
 
     from_address = models.CharField(max_length=1024, blank=False, null=True)
 
+    recipient = models.CharField(max_length=1024, blank=False, null=True)
+
     csv_filename = models.CharField(max_length=1024, blank=False, null=True)
 
     ad_groups = models.CharField(max_length=128, blank=False, null=True)
 
-    s3_key =  models.CharField(max_length=1024, blank=False, null=True)
+    s3_key = models.CharField(max_length=1024, blank=False, null=True)
 
     visits_reported = models.IntegerField(blank=False, null=True)
     visits_imported = models.IntegerField(blank=False, null=True)
@@ -104,6 +106,9 @@ class GAReportLog(models.Model):
         else:
             self.visits_reported += n
 
+    def get_report_filename(self):
+        return self.csv_filename
+
 
 class ReportLog(models.Model):
 
@@ -111,12 +116,13 @@ class ReportLog(models.Model):
     for_date = models.DateField(null=True)
     email_subject = models.CharField(max_length=1024, blank=False, null=True)
     from_address = models.CharField(max_length=1024, blank=False, null=True)
+    recipient = models.CharField(max_length=1024, blank=False, null=True)
     report_filename = models.CharField(max_length=1024, blank=False, null=True)
 
     visits_reported = models.IntegerField(blank=False, null=True)
     visits_imported = models.IntegerField(blank=False, null=True)
 
-    s3_key =  models.CharField(max_length=1024, blank=False, null=True)
+    s3_key = models.CharField(max_length=1024, blank=False, null=True)
 
     state = models.IntegerField(
         default=constants.ReportState.RECEIVED,
@@ -148,3 +154,6 @@ class ReportLog(models.Model):
             self.visits_reported = n
         else:
             self.visits_reported += n
+
+    def get_report_filename(self):
+        return self.report_filename
