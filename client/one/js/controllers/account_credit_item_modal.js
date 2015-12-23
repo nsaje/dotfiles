@@ -13,10 +13,15 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
     };
     $scope.errors = {};
 
-    $scope.getLicenseFees = function(search) {
+    $scope.getLicenseFees = function(search, additional) {
         // use fresh instance because we modify the collection on the fly
         var fees = ['15.00', '20.00', '25.00'];
-
+        if (additional !== undefined) {
+            if (fees.indexOf(additional) === -1) {
+                fees.push(additional);
+            }
+            fees.sort();
+        }
         // adds the searched for value to the array
         if (search && fees.indexOf(search) === -1) {
             fees.unshift(search);
@@ -76,6 +81,10 @@ oneApp.controller('AccountCreditItemModalCtrl', ['$scope', '$modalInstance', '$t
                 $scope.wasSigned = data.isSigned;
                 $scope.canDelete = !data.isSigned && !data.numOfBudgets;
                 $scope.minDate = data.endDate;
+                $scope.creditItem.licenseFee = $filter('number')(
+                    $scope.creditItem.licenseFee.replace('%', ''),
+                    2
+                );
             }).finally(function () {
                 $scope.isLoadingInProgress = false;
             });
