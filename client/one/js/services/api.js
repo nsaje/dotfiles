@@ -2864,6 +2864,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                             startDate: moment(obj.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                             endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                             id: obj.id,
+                            comment: obj.comment,
                             isAvailable: obj.is_available
                         };
                     })

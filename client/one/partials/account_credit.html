@@ -28,6 +28,7 @@
                     <th>Credit Amount</th>
                     <th>Allocated Budgets</th>
                     <th>Available Credit</th>
+					<th>Notes</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -44,6 +45,10 @@
                         <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
+					<td>
+						<zem-note-popover ng-if="item.comment" content="{{ item.comment }}" placement="top"></zem-note-popover>
+						<span ng-if="!item.comment">N/A</span>
+					</td>
                     <td>
                         <ul class="row-actions">
                             <li ng-click="editCreditItem(item.id)">edit</li>
@@ -70,6 +75,7 @@
                     <th>Total Credit Amount</th>
                     <th>Allocated Budgets</th>
                     <th>Available Credit</th>
+					<th>Notes</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -86,6 +92,10 @@
                         <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
+					<td>
+						<zem-note-popover ng-if="item.comment" content="{{ item.comment }}" placement="top"></zem-note-popover>
+						<span ng-if="!item.comment">N/A</span>
+					</td>
                     <td>
                         <ul class="row-actions">
                             <li ng-click="editCreditItem(item.id)">edit</li>

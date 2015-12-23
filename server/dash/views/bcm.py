@@ -56,6 +56,7 @@ class AccountCreditView(api_common.BaseApiView):
             'license_fee': helpers.format_decimal_to_percent(item.license_fee) + '%',
             'total': item.amount,
             'allocated': allocated,
+            'comment': item.comment,
             'budgets': [
                 { 'id': b.pk, 'amount': b.amount } for b in item.budgets.all()
             ],
@@ -244,6 +245,7 @@ class CampaignBudgetView(api_common.BaseApiView):
                 'license_fee': helpers.format_decimal_to_percent(credit.license_fee),
                 'start_date': credit.start_date,
                 'end_date': credit.end_date,
+                'comment': credit.comment,
                 'is_available': credit.is_available()
             }
             for credit in available_credits
