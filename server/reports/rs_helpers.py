@@ -88,19 +88,3 @@ def ranked(field_name, order_field):
         order_field = order_field[1:] + ' DESC'
     return "RANK() OVER (PARTITION BY {} ORDER BY {})".format(field_name, order_field)
 
-def expand(name, divisors):
-    return [
-        '{}_{}'.format(name, d) for d in divisors
-    ]
-
-def expand_sum_div(name, expr, divisors, out=unchanged):
-    out = []
-    for d in divisors:
-        field_name = '{}_{}'.format(name, d)
-        out.append(dict(
-            sql=field_name,
-            app=field_name,
-            out=out,
-            calc=sum_div(expr, d)
-        ))
-    return out

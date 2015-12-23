@@ -20,6 +20,7 @@ FORMULA_BILLING_COST = '({} + {} + {})'.format(
     rsh.sum_agr('effective_data_cost_nano'),
     rsh.sum_agr('license_fee_nano'),
 )
+
 FORMULA_TOTAL_COST = '({}*10000 + {}*10000 + {})'.format(
     rsh.sum_agr('cost_cc'),
     rsh.sum_agr('data_cost_cc'),
@@ -84,9 +85,7 @@ class RSContentAdStatsModel(redshift.RSModel):
              out=rsh.unchanged, calc=rsh.is_all_null(['visits', 'pageviews', 'new_visits', 'bounced_visits', 'total_time_on_site']))
     ]
 
-    #_GOAL_FIELDS = rsh.expand_sum_div('cpa', '')
-
-    FIELDS = _BREAKDOWN_FIELDS + _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _CONVERSION_GOAL_FIELDS + _OTHER_AGGREGATIONS# + _GOAL_FIELDS
+    FIELDS = _BREAKDOWN_FIELDS + _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _CONVERSION_GOAL_FIELDS + _OTHER_AGGREGATIONS
 
     DEFAULT_RETURNED_FIELDS_APP = [f['app'] for f in _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS]
     ALLOWED_BREAKDOWN_FIELDS_APP = set(f['app'] for f in _BREAKDOWN_FIELDS)

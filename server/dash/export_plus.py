@@ -443,6 +443,21 @@ class AdGroupExport(object):
 
         return get_csv_content(fieldnames, results)
 
+def filter_allowed_fields(request, fields):
+    allowed_fields = []
+    can_view_effective_costs = request.user.has_perm('zemauth.can_view_effective_costs')
+    can_view_actual_costs = request.user.has_perm('zemauth.can_view_actual_costs')
+    for f in fields:
+        if f in ('e_data_cost', 'e_media_cost',
+                 'license_fee', 'billing_cost') and not can_view_effective_costs:
+            continue
+        if f in ('data_cost', 'media_cost',
+                 'license_fee', 'total_cost') and not can_view_actual_costs:
+            continue
+        if f in ('cost', ) and (can_view_effective_costs or can_view_actual_costs):
+            continue
+        allowed_fields.append(f)
+    return allowed_fields
 
 def get_report_from_export_report(export_report, start_date, end_date):
     return _get_report(
@@ -461,8 +476,12 @@ def get_report_from_export_report(export_report, start_date, end_date):
         account=export_report.account
     )
 
-
 def get_report_from_request(request, account=None, campaign=None, ad_group=None, by_source=False):
+    additional_fields = filter_allowed_fields(
+        request,
+        helpers.get_additional_columns(request.GET.get('additional_fields'))
+    )
+    
     granularity = get_granularity_from_type(request.GET.get('type'))
     return _get_report(
         request.user,
@@ -470,7 +489,7 @@ def get_report_from_request(request, account=None, campaign=None, ad_group=None,
         helpers.get_stats_end_date(request.GET.get('end_date')),
         filtered_sources=helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')),
         order=request.GET.get('order') or 'name',
-        additional_fields=helpers.get_additional_columns(request.GET.get('additional_fields')),
+        additional_fields=additional_fields,
         granularity=granularity,
         breakdown=get_breakdown_from_granularity(granularity),
         by_source=by_source,
