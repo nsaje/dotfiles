@@ -217,6 +217,7 @@ class AccountCreditItemViewTest(BCMViewTestCase):
                     "spend": "0.0000",
                     "id": 1,
                     "total": 100000,
+                    "comment": "Test case",
                     "start_date": "2015-10-01"
                 }
             ]

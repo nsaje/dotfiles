@@ -40,7 +40,7 @@
             <div class="col-xs-4">
                 <ui-select theme="select2" id="license-fee-select" class="form-control" ng-model="creditItem.licenseFee" ng-disabled="creditItem.isSigned">
                     <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
-                    <ui-select-choices repeat="fee in getLicenseFees($select.search, $creditItem.licenseFee) | filter: $select.search">
+                    <ui-select-choices repeat="fee in getLicenseFees($select.search, creditItem.licenseFee) | filter: $select.search">
                         <span ng-bind-html="fee"></span>%
                     </ui-select-choices>
                 </ui-select>
@@ -99,6 +99,7 @@
                         <th>Budget</th>
                         <th>Total spend</th>
                         <th>Flight dates</th>
+						<th>Notes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -107,9 +108,10 @@
                         <td>{{ item.total | decimalCurrency:"$":2  }}</td>
                         <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
                         <td>{{ item.startDate }} - {{ item.endDate }}</td>
+						<td><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
                     </tr>
                     <tr ng-show="!creditItem.numOfBudgets" class="message">
-                        <td colspan="9">No allocated budget items.</td>
+                        <td colspan="5">No allocated budget items.</td>
                     </tr>
                 </tbody>
             </table>

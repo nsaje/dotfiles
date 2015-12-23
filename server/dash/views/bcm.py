@@ -171,6 +171,7 @@ class AccountCreditItemView(api_common.BaseApiView):
                     'spend': b.get_spend_data(use_decimal=True)['total'],
                     'start_date': b.start_date,
                     'end_date': b.end_date,
+                    'comment': b.comment
                 }
                 for b in item.budgets.all().order_by('-created_dt')
             ],

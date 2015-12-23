@@ -46,8 +46,7 @@
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
                     <td>
-                        <zem-note-popover ng-if="item.comment" content="{{ item.comment }}" placement="top"></zem-note-popover>
-                        <span ng-if="!item.comment">N/A</span>
+                        <zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover>
                     </td>
                     <td>
                         <ul class="row-actions">
@@ -93,8 +92,7 @@
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
                     <td>
-                        <zem-note-popover ng-if="item.comment" content="{{ item.comment }}" placement="top"></zem-note-popover>
-                        <span ng-if="!item.comment">N/A</span>
+                        <zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover>
                     </td>
                     <td>
                         <ul class="row-actions">

@@ -2736,6 +2736,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                             endDate: moment(itm.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                             total: itm.total,
                             spend: itm.spend,
+                            comment: itm.comment,
                             campaign: itm.campaign
                         };
                     }),
