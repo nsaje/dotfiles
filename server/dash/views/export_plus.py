@@ -43,7 +43,7 @@ class ExportApiView(api_common.BaseApiView):
 
 
 class ExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 250000
+    MAX_ROWS = 500000
     ALL_ACC_BD_ADG_MAX_DAYS = 62
     ALL_ACC_BD_CAMP_MAX_DAYS = 160
 
@@ -115,7 +115,7 @@ class ExportAllowed(api_common.BaseApiView):
 
 
 class SourcesExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 250000
+    MAX_ROWS = 500000
     ALL_ACC_BD_ADG_MAX_DAYS = 11
     ALL_ACC_BD_CAMP_MAX_DAYS = 21
     ALL_ACC_BD_ACC_MAX_DAYS = 62

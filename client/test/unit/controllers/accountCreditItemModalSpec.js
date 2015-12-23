@@ -168,7 +168,8 @@ describe('AccountCreditItemModalCtrl', function() {
                 id: 1,
                 isSigned: true,
                 endDate: '12/31/2015',
-                startDate: '12/1/2015'
+                startDate: '12/1/2015',
+                licenseFee: '15%'
             });
 
             $scope.$digest();
