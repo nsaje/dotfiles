@@ -1,4 +1,3 @@
-import json
 from datetime import date
 
 import mock
@@ -25,8 +24,9 @@ class TestGAApiReport(TestCase):
         self.assertTrue(len(ga_reports.entries) == 1)
         expected_key = ('2015-12-07', 42001, 'b1_pubmatic')
         self.assertTrue(expected_key in ga_reports.entries)
-        self.assertEqual(ga_reports.entries[expected_key].raw_row,
-                         '["/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood", "(not set)", "1", "0", "100.0", "1", "0.0"]')
+        self.assertEqual(
+            '["/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood", "(not set)", "2", "1", "100.0", "1", "10.0"]',
+            ga_reports.entries[expected_key].raw_row)
 
     def _create_ga_profiles_mock(self):
         return {'items': [{'id': '100021248', 'accountId': '2175716', 'webPropertyId': 'UA-2175716-35'}],
@@ -40,10 +40,10 @@ class TestGAApiReport(TestCase):
         if metrics == 'ga:sessions,ga:newUsers,ga:bounceRate,ga:pageviews,ga:timeonsite':
             return {'rows': [
                 ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood',
-                 '(not set)', '1', '0', '100.0', '1', '0.0']], 'itemsPerPage': 1000, 'totalResults': 1}
+                 '(not set)', '2', '1', '100.0', '1', '10.0']], 'itemsPerPage': 1000, 'totalResults': 1}
         elif metrics == 'ga:goal1ConversionRate,ga:goal1Completions':
             return {'rows': [
                 ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood',
-                 '(not set)', '0.0', '0']], 'itemsPerPage': 1000, 'totalResults': 1}
+                 '(not set)', '1.0', '2']], 'itemsPerPage': 1000, 'totalResults': 1}
         else:
             raise Exception('Undefined GA metrics: ' + metrics)
