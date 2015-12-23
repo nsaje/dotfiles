@@ -49,7 +49,6 @@ class AccountCreditViewTest(BCMViewTestCase):
         
         
         self.assertEqual(response.status_code, 200)
-
         self.assertEqual(json.loads(response.content)['data'], {
             "active": [
                 {
@@ -61,6 +60,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "license_fee": "20%",
                     "allocated": "100000.0000",
                     "total": 100000,
+                    "comment": "Test case",
                     "id": 1,
                     "is_signed": False,
                     "budgets": [
@@ -95,6 +95,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "comment": "Test case",
                     "allocated": "100000.0000",
                     "total": 100000,
                     "id": 1,
@@ -318,6 +319,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "end_date": "2015-11-30",
                     "id": 1,
                     "is_available": False,
+                    "comment": "Test case",
                     "license_fee": "20",
                     "total": 100000,
                     "start_date": "2015-10-01"
@@ -366,6 +368,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "end_date": "2015-11-30",
                     "id": 1,
                     "is_available": False,
+                    "comment": "Test case",
                     "license_fee": "20",
                     "total": 100000,
                     "start_date": "2015-10-01"
@@ -568,8 +571,6 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)['data']
 
-        self.maxDiff = None
-        
         self.assertEqual(data, {
             "active": [
                 {
@@ -607,6 +608,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     u"id": 1,
                     u"is_available": True,
                     u"license_fee": u"20",
+                    u"comment": "Test case",
                     u"total": 250000,
                     u"start_date": u"2015-10-01"
                 }
@@ -657,7 +659,6 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             data_spend_nano=0,
             license_fee_nano=50*models.TO_NANO_MULTIPLIER,
         )
-        self.maxDiff = None
         for num in range(0, 5):
             BudgetDailyStatement.objects.create(
                 budget=budget,
@@ -686,6 +687,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "total": 10000,
                     "id": 3,
                     "is_signed": True,
+                    "comment": None,
                     "budgets": [
                         {"amount": 10000, "id": 2}
                     ],
@@ -699,6 +701,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
                     "allocated": "100000.0000",
+                    "comment": "Test case",
                     "total": 100000,
                     "id": 1,
                     "is_signed": False,
@@ -725,6 +728,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": str(budget.created_dt.date()),
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "comment": None,
                     "allocated": "4994.0000",
                     "total": 10000,
                     "id": 3,
@@ -736,8 +740,8 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                 },
                 {
                     "available": "0.0000",
-                    "end_date":
-                    "2015-11-30",
+                    "end_date": "2015-11-30",
+                    "comment": "Test case",
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
@@ -768,6 +772,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
                     "allocated": "4950.0000",
+                    "comment": None,
                     "total": 10000,
                     "id": 3,
                     "is_signed": True,
@@ -783,6 +788,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_on": "2014-06-04",
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
+                    "comment": "Test case",
                     "allocated": "100000.0000",
                     "total": 100000,
                     "id": 1,
