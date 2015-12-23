@@ -247,6 +247,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
                 }));
             }
         }
+
     };
 
     var getDailyStats = function () {

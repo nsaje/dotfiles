@@ -534,12 +534,6 @@ var options = {
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
-        {name: 'Spend', value: constants.chartMetric.COST},
-        {name: 'Actual Media Cost', value: constants.chartMetric.MEDIA_COST},
-        {name: 'Media Cost', value: constants.chartMetric.EFFECTIVE_MEDIA_COST},
-        {name: 'Actual Data Cost', value: constants.chartMetric.DATA_COST},
-        {name: 'Data Cost', value: constants.chartMetric.EFFECTIVE_DATA_COST},
-        {name: 'License Fee', value: constants.chartMetric.LICENSE_FEE},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
     ],
     adGroupAcquisitionChartPostClickMetrics: [
@@ -561,8 +555,6 @@ var options = {
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
-        {name: 'Spend', value: constants.chartMetric.COST},
-        {name: 'Data Cost', value: constants.chartMetric.DATA_COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
     ],
     campaignConversionGoalChartMetrics: [
@@ -573,15 +565,23 @@ var options = {
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
-        {name: 'Spend', value: constants.chartMetric.COST},
-        {name: 'Data Cost', value: constants.chartMetric.DATA_COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
     ],
     allAccountsChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
-        {name: 'Spend', value: constants.chartMetric.COST},
-        {name: 'Data Cost', value: constants.chartMetric.DATA_COST},
         {name: 'Avg. CPC', value: constants.chartMetric.CPC}
+    ],
+    legacyCostChartMetrics : [
+        {name: 'Spend', value: constants.chartMetric.COST},
+    ],
+    effectiveCostChartMetrics: [
+        {name: 'Data Cost', value: constants.chartMetric.EFFECTIVE_DATA_COST},
+        {name: 'License Fee', value: constants.chartMetric.LICENSE_FEE},
+        {name: 'Media Cost', value: constants.chartMetric.EFFECTIVE_MEDIA_COST},
+    ],
+    actualCostChartMetrics: [
+        {name: 'Actual Media Cost', value: constants.chartMetric.MEDIA_COST},
+        {name: 'Actual Data Cost', value: constants.chartMetric.DATA_COST},
     ],
     iabCategories: [
         {name: "IAB1 - Arts & Entertainment", value: constants.iabCategory.IAB1},
