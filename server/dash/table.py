@@ -428,23 +428,23 @@ class AdGroupSourcesTableUpdates(object):
 class SourcesTable(object):
     def get(self, user, level_, filtered_sources, start_date, end_date, order, id_=None):
         ad_group_level = False
+        kwargs = None
         if level_ == 'all_accounts':
             level_sources_table = AllAccountsSourcesTable(user, id_, filtered_sources)
-            e_yesterday_cost, e_yesterday_total_cost = level_sources_table.get_yesterday_cost(account=level_sources_table.accounts)
-            yesterday_cost, yesterday_total_cost = level_sources_table.get_yesterday_cost(actual=True, account=level_sources_table.accounts)
+            kwargs = { 'account': level_sources_table.accounts }
         elif level_ == 'accounts':
             level_sources_table = AccountSourcesTable(user, id_, filtered_sources)
-            e_yesterday_cost, e_yesterday_total_cost = level_sources_table.get_yesterday_cost(account=level_sources_table.account)
-            yesterday_cost, yesterday_total_cost = level_sources_table.get_yesterday_cost(actual=True, account=level_sources_table.account)
+            kwargs = { 'account': level_sources_table.account }
         elif level_ == 'campaigns':
             level_sources_table = CampaignSourcesTable(user, id_, filtered_sources)
-            e_yesterday_cost, e_yesterday_total_cost = level_sources_table.get_yesterday_cost(campaign=level_sources_table.campaign)
-            yesterday_cost, yesterday_total_cost = level_sources_table.get_yesterday_cost(actual=True, campaign=level_sources_table.campaign)
+            kwargs = { 'campaign': level_sources_table.campaign } 
         elif level_ == 'ad_groups':
             ad_group_level = True
             level_sources_table = AdGroupSourcesTable(user, id_, filtered_sources)
-            e_yesterday_cost, e_yesterday_total_cost = level_sources_table.get_yesterday_cost(ad_group=level_sources_table.ad_group)
-            yesterday_cost, yesterday_total_cost = level_sources_table.get_yesterday_cost(actual=True, ad_group=level_sources_table.ad_group)
+            kwargs = { 'ad_group': level_sources_table.ad_group }
+        if kwargs:
+            e_yesterday_cost, e_yesterday_total_cost = self.get_yesterday_cost(level_sources_table, **kwargs)
+            yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(level_sources_table, actual=True, **kwargs)
 
         sources = level_sources_table.get_sources()
         sources_states = level_sources_table.ad_group_sources_states
@@ -528,11 +528,11 @@ class SourcesTable(object):
 
         return response
 
-    def get_yesterday_cost(self, actual=False, **kwargs):
+    def get_yesterday_cost(self, table, actual=False, **kwargs):
         if actual:
-            yesterday_cost = self.reports_api.get_actual_yesterday_cost(**kwargs)
+            yesterday_cost = table.reports_api.get_actual_yesterday_cost(**kwargs)
         else:
-            yesterday_cost = reports.api.get_yesterday_cost(**kwargs)
+            yesterday_cost = table.reports_api.get_yesterday_cost(**kwargs)
         yesterday_total_cost = None
         if yesterday_cost:
             yesterday_total_cost = sum(yesterday_cost.values())
