@@ -110,7 +110,7 @@ def get_goal_value(user, campaign, campaign_settings, goal_type):
 
     if goal_type == dash.constants.CampaignGoal.CPA:
         # CPA is still being implemented via Conversion&Goals epic
-        raise exceptions.NotImplementedError()
+        return 0  # TODO implement this properly
     elif goal_type == dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE:
         return totals_stats.get('bounce_rate', 0) or 0
     elif goal_type == dash.constants.CampaignGoal.NEW_UNIQUE_VISITORS:
