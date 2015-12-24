@@ -107,6 +107,31 @@ class RedshiftTest(TestCase):
 
         mock_cursor.execute.assert_called_with(query, params)
 
+    def test_delete_publishers(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = mock_cursor
+
+        start_date = datetime.date(2015, 1, 1)
+        end_date = datetime.date(2015, 1, 31)
+        redshift.delete_publishers(start_date, end_date)
+
+        query = 'DELETE FROM b1_publishers_1 WHERE date >= %s AND date <= %s'
+        params = ['2015-01-01', '2015-01-31']
+        mock_cursor.execute.assert_called_with(query, params)
+
+    def test_update_publishers(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = mock_cursor
+
+        s3_filename = 's3://b1-eventlog-sync/publishers/2015-01-01-2015-01-31--123456789/part-00000.lzo'
+        aws_access_id = 'xxxxxxx'
+        aws_access_secret = 'xxxxxxxx'
+        redshift.update_publishers(s3_filename, aws_access_id, aws_access_secret)
+
+        query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV LZOP"
+        params = [s3_filename, aws_access_id, aws_access_secret]
+        mock_cursor.execute.assert_called_with(query, params)
+
     def test_vacuum_touchpoint_conversions(self, mock_get_cursor):
         mock_cursor = Mock()
         mock_get_cursor.return_value = mock_cursor

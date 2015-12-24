@@ -157,6 +157,28 @@ def vacuum_touchpoint_conversions():
     cursor.close()
 
 
+@statsd_timer('reports.redshift', 'delete_publishers')
+def delete_publishers(start_date, end_date):
+    cursor = get_cursor()
+
+    query = 'DELETE FROM b1_publishers_1 WHERE date >= %s AND date <= %s'
+    params = [start_date.isoformat(), end_date.isoformat()]
+
+    cursor.execute(query, params)
+    cursor.close()
+
+
+@statsd_timer('reports.redshift', 'update_publishers')
+def update_publishers(s3_filename, aws_access_id, aws_access_secret):
+    cursor = get_cursor()
+
+    query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV LZOP"
+    params = [s3_filename, aws_access_id, aws_access_secret]
+
+    cursor.execute(query, params)
+    cursor.close()
+
+
 def get_cursor():
     return MyCursor(connections[settings.STATS_DB_NAME].cursor())
 
