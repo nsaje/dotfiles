@@ -220,19 +220,19 @@ Zemanta
     )
     try:
         send_mail(
-            'Campaign Auto-Pilot Changes - {camp}, {account}'.format(
+            u'Campaign Auto-Pilot Changes - {camp}, {account}'.format(
                 camp=campaign_name,
                 account=account_name
             ),
             body,
-            'Zemanta <{}>'.format(automation.settings.AUTOPILOT_EMAIL),
+            u'Zemanta <{}>'.format(automation.settings.AUTOPILOT_EMAIL),
             emails,
             fail_silently=False
         )
     except Exception as e:
-        logger.exception('Auto-pilot bid CPC e-mail for campaign %s to %s was not sent because an exception was raised:',
+        logger.exception(u'Auto-pilot bid CPC e-mail for campaign %s to %s was not sent because an exception was raised:',
                          campaign_name,
-                         ''.join(emails))
+                         u''.join(emails))
         desc = {
             'campaign_name': campaign_name,
             'email': ''.join(emails)
