@@ -52,7 +52,7 @@ def get_reports_api_module(user):
 
 
 def calculate_flight_time(start_date, end_date):
-    start_date_str = start_date.strftime('%m/%d')
+    start_date_str = start_date.strftime('%m/%d') if start_date else ''
     end_date_str = end_date.strftime('%m/%d') if end_date else ''
 
     flight_time = "{start_date} - {end_date}".format(
