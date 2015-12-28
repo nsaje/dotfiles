@@ -52,7 +52,7 @@ def get_reports_api_module(user):
 
 
 def calculate_flight_time(start_date, end_date):
-    start_date_str = start_date.strftime('%m/%d')
+    start_date_str = start_date.strftime('%m/%d') if start_date else ''
     end_date_str = end_date.strftime('%m/%d') if end_date else ''
 
     flight_time = "{start_date} - {end_date}".format(
@@ -110,7 +110,7 @@ def get_goal_value(user, campaign, campaign_settings, goal_type):
 
     if goal_type == dash.constants.CampaignGoal.CPA:
         # CPA is still being implemented via Conversion&Goals epic
-        raise exceptions.NotImplementedError()
+        return 0  # TODO implement this properly
     elif goal_type == dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE:
         return totals_stats.get('bounce_rate', 0) or 0
     elif goal_type == dash.constants.CampaignGoal.NEW_UNIQUE_VISITORS:

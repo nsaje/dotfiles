@@ -33,14 +33,8 @@
             <div class="form-group" ng-class="{'has-error': !!errors.targetDevices}">
                 <label class="col-xs-3 control-label">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.settings_defaults_on_campaign_level')" popover-placement="right"></zem-internal-feature>
-                    Default settings
-                    <zem-help-popover content="Default targeting settings used for all newly created ad groups." placement="top"></zem-help-popover>
-                </label>
-            </div>
-            <div class="form-group" ng-class="{'has-error': !!errors.targetDevices}">
-                <label class="col-xs-3 control-label">
-                    Device targeting
-                    <zem-help-popover content="The devices on which your content ads should be shown." placement="top"></zem-help-popover>
+                    Default device targeting
+                    <zem-help-popover content="The devices on which your content ads should be shown. Used for all newly created ad groups." placement="top"></zem-help-popover>
                 </label>
                 <div class="col">
                     <div class="checkbox" ng-repeat='device in settings.targetDevices'>
@@ -55,8 +49,9 @@
 
             <div class="form-group" ng-class="{'has-error': !!errors.targetRegions}">
                 <label class="col-xs-2 control-label">
-                    Locations
-                    <zem-help-popover content="The countries, states and DMA regions where your content ads should be shown." placement="top"></zem-help-popover>
+                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.settings_defaults_on_campaign_level')" popover-placement="right"></zem-internal-feature>
+                    Default locations
+                    <zem-help-popover content="The countries, states and DMA regions where your content ads should be shown. Used for all newly created ad groups." placement="top"></zem-help-popover>
                 </label>
 
                 <div class="col-xs-6 col-md-4">
