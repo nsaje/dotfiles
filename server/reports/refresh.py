@@ -18,7 +18,7 @@ import dash.models
 
 logger = logging.getLogger(__name__)
 
-CC_TO_NANO = 1000000
+CC_TO_NANO = 100000
 
 
 def _get_joined_stats_rows(date, campaign_id):
