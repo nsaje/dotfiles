@@ -1147,13 +1147,14 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     ad_group_.allow_tags = True
     ad_group_.admin_order_field = 'ad_group'
 
-
     def account_(self, obj):
-        if obj.account is None:
+        account = obj.account or (obj.campaign.account if obj.campaign else None)
+
+        if account is None:
             return ""
         return '<a href="{account_url}">{account}</a>'.format(
-            account_url=reverse('admin:dash_account_change', args=(obj.campaign.account.id,)),
-            account=obj.campaign.account
+            account_url=reverse('admin:dash_account_change', args=(account.id,)),
+            account=account
         )
     account_.allow_tags = True
     account_.admin_order_field = 'campaign__account'
