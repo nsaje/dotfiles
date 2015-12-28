@@ -134,9 +134,9 @@ class GAApiReport(GAReport):
             if start_index == 1 and ga_stats['totalResults'] == 0:
                 ga_stats = None
             return ga_stats
-        except HttpError:
+        except HttpError, ex:
             logger.exception('Google Analytics API call failed.')
-            return None
+            raise ex
         except Exception, ex:
             logger.exception('General exception when calling Google Analytics API.')
             raise ex
