@@ -37,7 +37,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--email', metavar='EMAIL', nargs='*', help='Reports receiver e-mail.',
-                            default=['dusan.omercevic@zemanta.com', 'gregor.ratajc@zemanta.com'])
+                            default=['operations@zemanta.com', 'gregor.ratajc@zemanta.com'])
         parser.add_argument('--source-id', metavar='SOURCEID', nargs='?', default='3', type=int,
                             help='Source id. 3 (Outbrain) by default.')
 
