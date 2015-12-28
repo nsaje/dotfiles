@@ -5,10 +5,15 @@ import sys
 
 import datetime
 from django.core.management import BaseCommand
+from django.db import transaction
 
 from reports import redshift
+from server import settings
+from utils.s3helpers import S3Helper
 
 logger = logging.getLogger(__name__)
+
+PREFIX_PUBLISHERS_FORMAT = 'publishers/{}-{}'
 
 
 class Command(BaseCommand):
@@ -17,6 +22,7 @@ class Command(BaseCommand):
         make_option('-e', '--end-date', help='End date for the publishers import', dest='end_date')
     )
 
+    @transaction.atomic
     def handle(self, *args, **options):
         try:
             start_date = options['start_date']
@@ -36,3 +42,10 @@ class Command(BaseCommand):
             end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
         logger.info('Updating publishers in RedShift: start_date=%s, end_date=%s', str(start_date), str(end_date))
         redshift.delete_publishers(start_date, end_date)
+        bucket_name = settings.S3_BUCKET_B1_EVENTLOG_SYNC
+        bucket_b1_eventlog_sync = S3Helper(bucket_name=bucket_name)
+        prefix_publishers = PREFIX_PUBLISHERS_FORMAT.format(start_date.isoformat(), end_date.isoformat())
+        publishers = bucket_b1_eventlog_sync.list(prefix_publishers)
+        for publisher in publishers:
+            publisher_s3_uri = 's3://{}/{}'.format(bucket_name, publisher.name)
+            redshift.update_publishers(publisher_s3_uri, settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
