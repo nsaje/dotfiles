@@ -42,8 +42,8 @@ class Command(BaseCommand):
         adgroup_settings_ga_api_enabled = AdGroupSettings.objects.all().group_current_settings() \
             .filter(enable_ga_tracking=True, ga_tracking_type=GATrackingType.API)
         adgrup_ga_api_enabled = [settings.ad_group for settings in adgroup_settings_ga_api_enabled]
-        content_ads_ga_api_enabled = ContentAd.objects.filter(ad_group__in=adgrup_ga_api_enabled)
-        content_ad_ids_ga_api_enabled = {content_ad.id for content_ad in content_ads_ga_api_enabled}
+        content_ad_ids_ga_api_enabled = set(
+            ContentAd.objects.filter(ad_group__in=adgrup_ga_api_enabled).values_list('id', flat=True))
         accounts_ga_api_enabled = Account.objects.filter(campaign__adgroup__in=adgrup_ga_api_enabled).distinct()
         ga_accounts = GAAnalyticsAccount.objects.filter(account__in=accounts_ga_api_enabled)
         for ga_account in ga_accounts:
