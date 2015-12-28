@@ -57,6 +57,13 @@ class AdGroupAdsPlusTableTest(TestCase):
             'clicks': 1000,
             'impressions': 1000000,
             'cost': 100,
+            'media_cost': 100,
+            'data_cost': None,
+            'e_data_cost': None,
+            'e_media_cost': 100,
+            'total_cost': 110,
+            'billing_cost': 110,
+            'license_fee': 10,    
             'visits': 40,
             'click_discrepancy': 0.2,
             'pageviews': 123,
@@ -71,6 +78,13 @@ class AdGroupAdsPlusTableTest(TestCase):
             'clicks': 1500,
             'impressions': 2000000,
             'cost': 200,
+            'media_cost': 200,
+            'data_cost': None,
+            'e_data_cost': None,
+            'e_media_cost': None,
+            'total_cost': 200,
+            'billing_cost': 200,
+            'license_fee': 0,    
             'ctr': '15.5000',
             'content_ad': 2,
             'visits': 30,
@@ -163,7 +177,13 @@ class AdGroupAdsPlusTableTest(TestCase):
             'conversion_goal_1': 0,
             'conversion_goal_2': None,
             'cost': 100,
+            'media_cost': 100,
             'data_cost': None,
+            'e_data_cost': None,
+            'e_media_cost': 100,
+            'total_cost': 110,
+            'billing_cost': 110,
+            'license_fee': 10,            
             'cpc': '0.0100',
             'ctr': '12.5000',
             'editable_fields': {'status_setting': {'enabled': True, 'message': None}},
@@ -220,6 +240,12 @@ class AdGroupAdsPlusTableTest(TestCase):
             'submission_status': [],
             'cost': None,
             'data_cost': None,
+            'media_cost': None,
+            'e_data_cost': None,
+            'e_media_cost': None,
+            'total_cost': None,
+            'billing_cost': None,
+            'license_fee': None,            
             'batch_name': 'batch 1',
             'batch_id': 1,
             'display_url': 'example.com',
@@ -236,7 +262,6 @@ class AdGroupAdsPlusTableTest(TestCase):
             'pv_per_visit': None,
             'avg_tos': None,
         }
-
         self.assertItemsEqual(sorted(result['data']['rows']), [expected_row_1, expected_row_2])
 
         self.assertIn('totals', result['data'])
@@ -246,7 +271,13 @@ class AdGroupAdsPlusTableTest(TestCase):
             'conversion_goal_1': 0,
             'conversion_goal_2': None,
             'cost': 200,
+            'media_cost': 200,
             'data_cost': None,
+            'e_data_cost': None,
+            'e_media_cost': None,
+            'total_cost': 200,
+            'billing_cost': 200,
+            'license_fee': 0, 
             'cpc': '0.0200',
             'ctr': '15.5000',
             'impressions': 2000000,
@@ -701,24 +732,36 @@ class AdGroupPublishersTableTest(TestCase):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
-         'clicks': 123,
-         'cost': 2.4,
-         'data_cost': 0,
-         'cpc': 1.3,
-         'ctr': 100.0,
-         'impressions': 10560,
-         'date': date.isoformat(),
-         'domain': 'example.com',
-         'exchange': 'adiant',
+            'clicks': 123,
+            'cost': 2.4,
+            'data_cost': 0,
+            'media_cost': 2.4,
+            'e_data_cost': 0,
+            'e_media_cost': 2.4,
+            'license_fee': 0.1,
+            'billing_cost': 2.5,
+            'total_cost': 2.5,
+            'cpc': 1.3,
+            'ctr': 100.0,
+            'impressions': 10560,
+            'date': date.isoformat(),
+            'domain': 'example.com',
+            'exchange': 'adiant',
         }]
         mock_stats2 = {
-         'clicks': 323,
-         'cost': 2.1,
-         'data_cost': 1.9,
-         'cpc': 1.2,
-         'ctr': 99.0,
-         'impressions': 1560,
-         'date': date.isoformat(),
+            'clicks': 323,
+            'cost': 2.1,
+            'data_cost': 1.9,
+            'media_cost': 2.1,
+            'e_data_cost': 1.9,
+            'e_media_cost': 2.1,
+            'license_fee': 0.2,
+            'billing_cost': 4.2,
+            'total_cost': 4.2,
+            'cpc': 1.2,
+            'ctr': 99.0,
+            'impressions': 1560,
+            'date': date.isoformat(),
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -778,8 +821,13 @@ class AdGroupPublishersTableTest(TestCase):
 
         expected_row_1 = {
             u'clicks': 123,
-            u'cost': 2.4,
             u'data_cost': 0,
+            u'media_cost': 2.4,
+            u'e_data_cost': 0,
+            u'e_media_cost': 2.4,
+            u'license_fee': 0.1,
+            u'billing_cost': 2.5,
+            u'total_cost': 2.5,
             u'cpc': 1.3,
             u'ctr': 100.0,
             u'domain': None,
@@ -796,12 +844,16 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
 
         self.assertIn('totals', result['data'])
-
         self.assertEqual(result['data']['totals'], {	u'clicks': 323,
-                                                        u'cost': 2.1,
                                                         u'cpc': 1.2,
                                                         u'ctr': 99.0,
+                                                        u'media_cost': 2.1,
+                                                        u'license_fee': 0.2,
+                                                        u'total_cost': 4.2,
+                                                        u'billing_cost': 4.2,
+                                                        u'e_data_cost': 1.9,
                                                         u'data_cost': 1.9,
+                                                        u'e_media_cost': 2.1,
                                                         u'impressions': 1560})
 
 
@@ -810,22 +862,30 @@ class AdGroupPublishersTableTest(TestCase):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
-         'clicks': 123,
-         'cost': 2.4,
-         'cpc': 1.3,
-         'ctr': 100.0,
-         'impressions': 10560,
-         'date': date.isoformat(),
-         'domain': 'example.com',
-         'exchange': 'adsnative',
+            'clicks': 123,
+            'cost': 2.4,
+            'media_cost': 2.4,
+            'e_media_cost': 2.4,
+            'total_cost': 2.4,
+            'billing_cost': 2.4,
+            'cpc': 1.3,
+            'ctr': 100.0,
+            'impressions': 10560,
+            'date': date.isoformat(),
+            'domain': 'example.com',
+            'exchange': 'adsnative',
         }]
         mock_stats2 = {
-         'clicks': 123,
-         'cost': 2.4,
-         'cpc': 1.3,
-         'ctr': 100.0,
-         'impressions': 10560,
-         'date': date.isoformat(),
+            'clicks': 123,
+            'cost': 2.4,
+            'media_cost': 2.4,
+            'e_media_cost': 2.4,
+            'total_cost': 2.4,
+            'billing_cost': 2.4,
+            'cpc': 1.3,
+            'ctr': 100.0,
+            'impressions': 10560,
+            'date': date.isoformat(),
         }
         mock_active.side_effect = [mock_stats1, mock_stats2]
 
@@ -883,8 +943,13 @@ class AdGroupPublishersTableTest(TestCase):
             u'ctr': 100.0,
             u'exchange': u'AdsNative',
             u'cpc': 1.3,
-            u'cost': 2.4,
+            u'media_cost': 2.4,
+            u'e_media_cost': 2.4,
             u'data_cost': 0,
+            u'e_data_cost': 0,
+            u'license_fee': 0,
+            u'total_cost': 2.4,
+            u'billing_cost': 2.4,
             u'impressions': 10560,
             u'clicks': 123,
             u'source_id': 1
@@ -1019,22 +1084,36 @@ class AdGroupPublishersTableTest(TestCase):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
-         'clicks': 123,
-         'cost': 2.4,
-         'cpc': 1.3,
-         'ctr': 100.0,
-         'impressions': 10560,
-         'date': date.isoformat(),
-         'domain': 'example.com',
-         'exchange': 'adiant',
+            'clicks': 123,
+            'cost': 2.4,
+            'data_cost': 0,
+            'e_data_cost': 0,
+            'total_cost': 3,
+            'billing_cost': 3,
+            'media_cost': 2.4,
+            'e_media_cost': 2.4,
+            'license_fee': 0.6,
+            'cpc': 1.3,
+            'ctr': 100.0,
+            'impressions': 10560,
+            'date': date.isoformat(),
+            'domain': 'example.com',
+            'exchange': 'adiant',
         }]
         mock_stats2 = {
-         'clicks': 123,
-         'cost': 2.4,
-         'cpc': 1.3,
-         'ctr': 100.0,
-         'impressions': 10560,
-         'date': date.isoformat(),
+            'clicks': 123,
+            'cost': 2.4,
+            'data_cost': 0,
+            'e_data_cost': 0,
+            'total_cost': 3,
+            'billing_cost': 3,
+            'media_cost': 2.4,
+            'e_media_cost': 2.4,
+            'license_fee': 0.6,
+            'cpc': 1.3,
+            'ctr': 100.0,
+            'impressions': 10560,
+            'date': date.isoformat(),
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -1086,8 +1165,118 @@ class AdGroupPublishersTableTest(TestCase):
             u'ctr': 100.0,
             u'exchange': u'Adiant',
             u'cpc': 1.3,
-            u'cost': 2.4,
+            u'media_cost': 2.4,
+            u'e_media_cost': 2.4,
             u'data_cost': 0,
+            u'e_data_cost': 0,
+            u'total_cost': 3,
+            u'billing_cost': 3,
+            u'license_fee': 0.6,
+            u'data_cost': 0,
+            u'impressions': 10560,
+            u'clicks': 123,
+            u'source_id': 7
+        })
+
+    def test_actual_hidden(self, mock_query):
+        self.user = User.objects.get(pk=2)
+        self.client.login(username=self.user.email, password='secret')
+
+        self.user.user_permissions.add(
+            authmodels.Permission.objects.get(codename="can_view_effective_costs")
+        )
+        self.user.user_permissions.add(
+            authmodels.Permission.objects.get(codename="can_see_publishers")
+        )
+        
+        date = datetime.date(2015, 2, 22)
+
+        mock_stats1 = [{
+            'clicks': 123,
+            'cost': 2.4,
+            'data_cost': 0,
+            'e_data_cost': 0,
+            'total_cost': 3,
+            'billing_cost': 3,
+            'media_cost': 2.4,
+            'e_media_cost': 2.4,
+            'license_fee': 0.6,
+            'cpc': 1.3,
+            'ctr': 100.0,
+            'impressions': 10560,
+            'date': date.isoformat(),
+            'domain': 'example.com',
+            'exchange': 'adiant',
+        }]
+        mock_stats2 = {
+            'clicks': 123,
+            'cost': 2.4,
+            'data_cost': 0,
+            'e_data_cost': 0,
+            'total_cost': 3,
+            'billing_cost': 3,
+            'media_cost': 2.4,
+            'e_media_cost': 2.4,
+            'license_fee': 0.6,
+            'cpc': 1.3,
+            'ctr': 100.0,
+            'impressions': 10560,
+            'date': date.isoformat(),
+        }
+        mock_query.side_effect = [mock_stats1, mock_stats2]
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        params = {
+            'page': 1,
+            'order': '-cost',
+            'size': 2,
+            'start_date': date.isoformat(),
+            'end_date': date.isoformat(),
+        }
+
+        response = self.client.get(
+            reverse('ad_group_publishers_table', kwargs={'id_': ad_group.id, 'level_': 'ad_groups'}),
+            params,
+            follow=True
+        )
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['-cost'],
+            constraints={'ad_group': ad_group.id, }
+        )
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            constraints={"ad_group": ad_group.id, }
+        )
+
+        result = json.loads(response.content)
+
+        self.assertIn('success', result)
+        self.assertEqual(result['success'], True)
+
+        self.assertIn('data', result)
+
+        self.assertIn('rows', result['data'])
+        self.assertEqual(len(result['data']['rows']), 1)
+
+        self.assertDictEqual(result['data']['rows'][0], {
+            u'domain': u'example.com',
+            u'domain_link': u'http://example.com',
+            u'blacklisted': u'Active',
+            u'can_blacklist_publisher': True,
+            u'ctr': 100.0,
+            u'exchange': u'Adiant',
+            u'cpc': 1.3,
+            u'e_media_cost': 2.4,
+            u'e_data_cost': 0,
+            u'billing_cost': 3,
+            u'license_fee': 0.6,
             u'impressions': 10560,
             u'clicks': 123,
             u'source_id': 7

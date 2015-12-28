@@ -249,6 +249,7 @@ def get_yesterday_cost(**constraints):
     result = {row['source']: row['cost'] for row in rs}
     return result
 
+get_actual_yesterday_cost = get_yesterday_cost # compatibility alias
 
 def get_day_cost(day, breakdown=None, **constraints):
     rs = query(
