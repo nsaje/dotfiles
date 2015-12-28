@@ -375,7 +375,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'cost', 'data_cost',
                 'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
                 'cpc', 'clicks', 'impressions', 'ctr', 'license_fee',
-                'yesterday_cost', 'yesterday_media_cost', 'yesterday_e_media_cost'
+                'yesterday_cost', 'e_yesterday_cost'
             ]
         },
         {

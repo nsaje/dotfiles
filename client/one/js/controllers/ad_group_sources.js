@@ -98,7 +98,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 'yesterday_cost', 'supply_dash_url',
                 'current_bid_cpc', 'current_daily_budget',
                 'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
-                'license_fee', 'yesterday_media_cost', 'yesterday_e_media_cost'
+                'license_fee', 'e_yesterday_cost'
             ]
         },
         {
