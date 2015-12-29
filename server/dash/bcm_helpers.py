@@ -23,7 +23,7 @@ def clean_credit_input(account=None, valid_from=None, valid_to=None,
     else:
         valid_to = (valid_from + relativedelta(years=1)) # default 1y
     if amount:
-        amount = int(_money_to_decimal(amount))
+        amount = int(round(_money_to_decimal(amount)))
     if license_fee:
         if '%' in license_fee:
             license_fee = Decimal(license_fee.strip('%')) * Decimal('0.01')
