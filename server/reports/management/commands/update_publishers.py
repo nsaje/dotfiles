@@ -47,5 +47,5 @@ class Command(BaseCommand):
         prefix_publishers = PREFIX_PUBLISHERS_FORMAT.format(start_date.isoformat(), end_date.isoformat())
         publishers = bucket_b1_eventlog_sync.list(prefix_publishers)
         for publisher in publishers:
-            publisher_s3_uri = 's3://{}/{}'.format(bucket_name, publisher.name)
+            publisher_s3_uri = 's3://{}/{}/part-00000.lzo'.format(bucket_name, publisher.name)
             redshift.update_publishers(publisher_s3_uri, settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
