@@ -95,7 +95,7 @@ Zemanta
     )
     try:
         send_mail(
-            'Campaign budget low - {camp}, {account}'.format(
+            u'Campaign budget low - {camp}, {account}'.format(
                 camp=campaign_name,
                 account=account_name
             ),
