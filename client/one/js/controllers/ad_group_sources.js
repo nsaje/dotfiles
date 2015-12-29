@@ -307,7 +307,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             checked: false,
             type: 'currency',
             help: 'Amount that you have spent yesterday for promotion on specific media source, including overspend.',
-            shown: 'true',
             totalRow: true,
             order: true,
             internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
