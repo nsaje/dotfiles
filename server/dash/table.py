@@ -530,14 +530,14 @@ class SourcesTable(object):
 
     def get_yesterday_cost(self, table, actual=False, **kwargs):
         if actual:
-            yesterday_cost = table.reports_api.get_actual_yesterday_cost(**kwargs)
+            yesterday_cost = table.reports_api.get_actual_yesterday_cost(kwargs)
         else:
-            yesterday_cost = table.reports_api.get_yesterday_cost(**kwargs)
+            yesterday_cost = table.reports_api.get_yesterday_cost(kwargs)
         yesterday_total_cost = None
         if yesterday_cost:
             yesterday_total_cost = sum(yesterday_cost.values())
         return yesterday_cost, yesterday_total_cost
-    
+
     def get_totals(self,
                    ad_group_level,
                    user,
@@ -1348,6 +1348,19 @@ class CampaignAdGroupsTable(object):
 
         return helpers.get_ad_group_state_by_sources_running_status(
             ad_groups, ad_groups_settings, [], 'id')
+
+    def get_yesterday_cost(self, campaign, actual=False):
+        constraints = dict(campaign=campaign)
+        breakdown = ['ad_group']
+
+        if actual:
+            yesterday_cost = self.reports_api.get_actual_yesterday_cost(constraints, breakdown)
+        else:
+            yesterday_cost = self.reports_api.get_yesterday_cost(constraints, breakdown)
+        yesterday_total_cost = None
+        if yesterday_cost:
+            yesterday_total_cost = sum(yesterday_cost.values())
+        return yesterday_cost, yesterday_total_cost
 
     def get_data_status(self, user, ad_groups, last_success_actions, last_pixel_sync):
         last_pixel_sync_message = None

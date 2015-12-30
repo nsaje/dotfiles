@@ -448,7 +448,7 @@ class YesterdayCostTestCase(test.TestCase):
         datetime_mock.datetime = DatetimeMock
         datetime_mock.timedelta = datetime.timedelta
 
-        result = api.get_yesterday_cost(ad_group=1)
+        result = api.get_yesterday_cost(dict(ad_group=1))
         self.assertEqual(result, {1: 1.9043})
 
     @patch('reports.api.datetime')
@@ -461,7 +461,7 @@ class YesterdayCostTestCase(test.TestCase):
         datetime_mock.datetime = DatetimeMock
         datetime_mock.timedelta = datetime.timedelta
 
-        result = api.get_yesterday_cost(ad_group=1)
+        result = api.get_yesterday_cost(dict(ad_group=1))
         self.assertEqual(result, {})
 
 
