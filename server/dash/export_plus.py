@@ -9,7 +9,6 @@ from dash import stats_helper
 from dash import budget
 from dash import constants
 from dash.views import helpers
-import reports.api_contentads
 
 from utils import exc
 
@@ -294,6 +293,7 @@ class AllAccountsExport(object):
         required_fields = ['start_date', 'end_date']
         dimensions = []
         exclude_fields = []
+
         if breakdown == 'account':
             required_fields.extend(['account'])
             dimensions.extend(['account'])
@@ -514,8 +514,10 @@ def _get_report(
         ad_group=None,
         campaign=None,
         account=None):
+
     if not user.has_perm('zemauth.exports_plus'):
         raise exc.ForbiddenError(message='Not allowed')
+
     account_name = campaign_name = ad_group_name = None
     account_id = campaign_id = ad_group_id = None
     if account:

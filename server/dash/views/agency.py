@@ -1019,7 +1019,6 @@ class AccountAgency(api_common.BaseApiView):
         account.allowed_sources.add(*list(to_be_added))
         account.allowed_sources.remove(*list(to_be_removed))
 
-
     def set_settings(self, settings, account, resource):
         settings.account = account
         settings.name = resource['name']

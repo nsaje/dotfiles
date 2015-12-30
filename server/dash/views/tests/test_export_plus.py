@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from mock import patch, Mock
+from mock import patch
 import datetime
 import slugify
 import json
@@ -8,7 +8,6 @@ import json
 from django import test
 from django import http
 from django.contrib.auth.models import Permission
-from django.core.urlresolvers import reverse
 
 from dash.views import export_plus
 import dash.models
@@ -30,7 +29,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
     def setUp(self):
         self.ad_group_id = 1
 
-        self.query_patcher = patch('dash.export_plus.reports.api_contentads.query')
+        self.query_patcher = patch('reports.api_contentads.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{
@@ -83,8 +82,7 @@ class AdGroupAdsPlusExportTestCase(AssertRowMixin, test.TestCase):
         request.GET['end_date'] = '2014-07-01'
         request.GET['additional_fields'] = 'cpc,clicks,visits'
         request.GET['order'] = '-visits'
-        request.user = Mock()
-        request.user.id = 1
+        request.user = models.User.objects.get(pk=1)
         permission = Permission.objects.get(codename='exports_plus')
         request.user.user_permissions.add(permission)
 
@@ -115,7 +113,7 @@ class CampaignAdGroupsExportTestCase(AssertRowMixin, test.TestCase):
 
     def setUp(self):
         self.campaign_id = 1
-        self.query_patcher = patch('dash.export_plus.reports.api.query')
+        self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{
@@ -220,7 +218,7 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
 
     def setUp(self):
         self.account_id = 1
-        self.query_patcher = patch('dash.export_plus.reports.api.query')
+        self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{
@@ -352,7 +350,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
     fixtures = ['test_api']
 
     def setUp(self):
-        self.query_patcher = patch('dash.export_plus.reports.api.query')
+        self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{
@@ -476,7 +474,7 @@ class AdGroupSourcesExportTestCase(AssertRowMixin, test.TestCase):
     def setUp(self):
         self.ad_group_id = 1
 
-        self.query_patcher = patch('dash.export_plus.reports.api.query')
+        self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{
@@ -551,7 +549,7 @@ class CampaignSourcesExportTestCase(AssertRowMixin, test.TestCase):
     def setUp(self):
         self.campaign_id = 1
 
-        self.query_patcher = patch('dash.export_plus.reports.api.query')
+        self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{
@@ -672,7 +670,7 @@ class AccountSourcesExportTestCase(AssertRowMixin, test.TestCase):
     def setUp(self):
         self.account_id = 1
 
-        self.query_patcher = patch('dash.export_plus.reports.api.query')
+        self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{
@@ -817,7 +815,7 @@ class AllAccountsSourcesExportTestCase(AssertRowMixin, test.TestCase):
     fixtures = ['test_api']
 
     def setUp(self):
-        self.query_patcher = patch('dash.export_plus.reports.api.query')
+        self.query_patcher = patch('reports.api.query')
         self.mock_query = self.query_patcher.start()
         self.mock_query.side_effect = [
             [{

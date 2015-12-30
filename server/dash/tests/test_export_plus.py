@@ -69,7 +69,7 @@ class ExportPlusTestCase(test.TestCase):
 
         self.assertEqual(content, expected_content)
 
-    @patch('dash.export_plus.reports.api_contentads.query')
+    @patch('reports.api_contentads.query')
     def test_generate_rows(self, mock_query):
         mock_stats = [{
             'ad_group': 1,
