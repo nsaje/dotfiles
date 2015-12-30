@@ -29,7 +29,7 @@ class AdGroupSettingsTest(TestCase):
             'settings': {
                 'state': 1,
                 'start_date': '2015-05-01',
-                'end_date': '2015-06-30',
+                'end_date': str(datetime.date.today()),
                 'cpc_cc': '0.3000',
                 'daily_budget_cc': '200.0000',
                 'target_devices': ['desktop'],
@@ -108,7 +108,7 @@ class AdGroupSettingsTest(TestCase):
                 'settings': {
                     'cpc_cc': '0.30',
                     'daily_budget_cc': '200.00',
-                    'end_date': '2015-06-30',
+                    'end_date': str(datetime.date.today()),
                     'id': '1',
                     'name': 'Test ad group name',
                     'start_date': '2015-05-01',
@@ -214,7 +214,7 @@ class AdGroupSettingsTest(TestCase):
                 'settings': {
                     'cpc_cc': '0.30',
                     'daily_budget_cc': '200.00',
-                    'end_date': '2015-06-30',
+                    'end_date': str(datetime.date.today()),
                     'id': '10',
                     'name': 'Test ad group name',
                     'start_date': '2015-05-01',
