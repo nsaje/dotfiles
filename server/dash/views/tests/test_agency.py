@@ -314,6 +314,44 @@ class AdGroupSettingsTest(TestCase):
         self.assertFalse(response_dict['success'])
         self.assertIn('target_regions', response_dict['data']['errors'])
 
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
+    def test_end_date_in_the_past(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        self.settings_dict['settings']['end_date'] = '2015-05-02'
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict['success'])
+        self.assertIn('end_date', response_dict['data']['errors'])
+
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
+    def test_enable_without_budget(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=2)
+
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        self.settings_dict['settings']['id'] = 2
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict['success'])
+        self.assertIn('state', response_dict['data']['errors'])
+
 
 @patch('dash.views.agency.api.order_ad_group_settings_update')
 @patch('dash.views.agency.actionlog_api')
