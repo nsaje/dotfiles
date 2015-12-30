@@ -92,24 +92,24 @@ class AdGroupSettingsForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 
-#     def clean_state(self):
-#         state = self.cleaned_data.get('state')
-# 
-#         if state == constants.AdGroupSettingsState.ACTIVE:
-#             # active state is only valid if there is budget available
-# 
-#             adgroup = models.AdGroup.objects.get(id=self.cleaned_data.get('id'))
-#             campaign_budget = budget.CampaignBudget(adgroup.campaign)
-# 
-#             total = campaign_budget.get_total()
-#             spend = campaign_budget.get_spend()
-# 
-#             available = total - spend
-# 
-#             if not available:
-#                 raise forms.ValidationError("{}: {}".format(adgroup.name, available))
-# 
-#         return state
+    def clean_state(self):
+        state = self.cleaned_data.get('state')
+ 
+        if state == constants.AdGroupSettingsState.ACTIVE:
+            # active state is only valid if there is budget available
+ 
+            adgroup = models.AdGroup.objects.get(id=self.cleaned_data.get('id'))
+            campaign_budget = budget.CampaignBudget(adgroup.campaign)
+ 
+            total = campaign_budget.get_total()
+            spend = campaign_budget.get_spend()
+ 
+            available = total - spend
+ 
+            if not available:
+                raise forms.ValidationError("Cannot enable ad group without available budget.")
+ 
+        return state
 
     def clean_end_date(self):
         state = self.cleaned_data.get('state')
