@@ -1110,9 +1110,8 @@ class UserActionType(ConstantBase):
     SET_MEDIA_SOURCE_SETTINGS = 21
 
     SCHEDULE_REPORT = 22
-    DOWNLOAD_SCHEDULED_REPORT = 23
-    DELETE_SCHEDULED_REPORT = 24
-    DOWNLOAD_REPORT = 25
+    DELETE_SCHEDULED_REPORT = 23
+    DOWNLOAD_REPORT = 24
 
     _VALUES = {
         UPLOAD_CONTENT_ADS: 'Upload Content Ads',
@@ -1137,7 +1136,6 @@ class UserActionType(ConstantBase):
         CREATE_MEDIA_SOURCE_CAMPAIGN: 'Create Media Source Campaign',
         SET_MEDIA_SOURCE_SETTINGS: 'Set Media Source Settings',
         SCHEDULE_REPORT: 'Schedule report',
-        DOWNLOAD_SCHEDULED_REPORT: 'Download scheduled report',
         DELETE_SCHEDULED_REPORT: 'Delete scheduled report',
         DOWNLOAD_REPORT: 'Direct report download'
     }
