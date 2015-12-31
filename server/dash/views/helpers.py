@@ -1013,8 +1013,8 @@ def log_useraction_if_necessary(request, user_action_type, account=None, campaig
         user_action_log.save()
 
 
-def adgroup_has_available_budget(adgroup):
-    campaign_budget = budget.CampaignBudget(adgroup.campaign)
+def ad_group_has_available_budget(ad_group):
+    campaign_budget = budget.CampaignBudget(ad_group.campaign)
 
     total = campaign_budget.get_total()
     spend = campaign_budget.get_spend()

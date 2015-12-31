@@ -74,7 +74,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         # ACTIVE state is only valid when there is budget to spend
         if form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE and\
-           not helpers.adgroup_has_available_budget(ad_group):
+           not helpers.ad_group_has_available_budget(ad_group):
 
             form.add_error('state', 'Cannot enable ad group without available budget.')
             raise exc.ValidationError(errors=dict(form.errors))
