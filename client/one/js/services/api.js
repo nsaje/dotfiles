@@ -1450,7 +1450,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return {
                 id: settings.id,
                 accountManager: settings.account_manager,
-                salesRepresentative: settings.sales_representative,
                 IABCategory: settings.iab_category
             };
         }
@@ -1489,7 +1488,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return {
                 id: settings.id,
                 account_manager: settings.accountManager,
-                sales_representative: settings.salesRepresentative,
                 iab_category: settings.IABCategory
             };
         }
@@ -1498,7 +1496,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             var result = {
                 id: errors.id,
                 accountManager: errors.account_manager,
-                salesRepresentative: errors.sales_representative,
                 IABCategory: errors.iab_category
             };
 
@@ -1518,7 +1515,6 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
                         accountManagers: data.data.account_managers,
-                        salesReps: data.data.sales_reps,
                         canArchive: data.data.can_archive,
                         canRestore: data.data.can_restore,
                         history: convertHistoryFromApi(data.data.history)

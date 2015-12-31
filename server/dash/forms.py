@@ -347,9 +347,6 @@ class ConversionGoalForm(forms.Form):
 class CampaignAgencyForm(forms.Form):
     id = forms.IntegerField()
     account_manager = forms.IntegerField()
-    sales_representative = forms.IntegerField(
-        required=False
-    )
     iab_category = forms.ChoiceField(
         choices=constants.IABCategory.get_choices(),
     )
@@ -367,23 +364,6 @@ class CampaignAgencyForm(forms.Form):
             raise forms.ValidationError(err_msg)
 
         return account_manager
-
-    def clean_sales_representative(self):
-        sales_representative_id = self.cleaned_data.get('sales_representative')
-
-        if sales_representative_id is None:
-            return None
-
-        err_msg = 'Invalid sales representative.'
-
-        try:
-            sales_representative = ZemUser.objects.\
-                get_users_with_perm('campaign_settings_sales_rep').\
-                get(pk=sales_representative_id)
-        except ZemUser.DoesNotExist:
-            raise forms.ValidationError(err_msg)
-
-        return sales_representative
 
 
 class CampaignSettingsForm(forms.Form):

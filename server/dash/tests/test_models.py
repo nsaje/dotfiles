@@ -222,7 +222,8 @@ class CampaignSettingsTest(TestCase):
             'changes_text',
             'useractionlog',
             'account_manager_id',
-            'sales_representative_id'
+            'sales_representative',
+            'sales_representative_id',
         ]
 
         all_fields = set(models.CampaignSettings._settings_fields + meta_fields)
@@ -240,7 +241,6 @@ class CampaignSettingsTest(TestCase):
             'promotion_goal': 1,
             'target_regions': [u'CA', u'501'],
             'service_fee': Decimal('0.2000'),
-            'sales_representative': User.objects.get(pk=1),
             'campaign_goal': 2,
             'goal_quantity': Decimal('10.00')
         }

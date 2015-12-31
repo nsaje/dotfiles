@@ -37,7 +37,7 @@ def _allowed_to_automatically_stop_campaign(campaign):
 
 def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays_spend):
     account_manager = campaign.get_current_settings().account_manager
-    sales_rep = campaign.get_current_settings().sales_representative
+    sales_rep = campaign.get_sales_representative()
     emails = []
     if account_manager is not None:
         emails.append(account_manager.email)
@@ -209,7 +209,7 @@ def stop_and_notify_depleted_budget_campaigns():
 
 def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterdays_spend):
     account_manager = campaign.get_current_settings().account_manager
-    sales_rep = campaign.get_current_settings().sales_representative
+    sales_rep = campaign.get_sales_representative()
     emails = []
     if account_manager is not None:
         emails.append(account_manager.email)

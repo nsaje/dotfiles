@@ -1548,8 +1548,7 @@ class CampaignAgencyTest(TestCase):
             'changed_by': 'superuser@test.com',
             'settings': [
                 {'name': 'Name', 'value': ''},
-                {'name': 'Account Manager', 'value': 'user@test.com'},
-                {'name': 'Sales Representative', 'value': 'john@test.com'},
+                {'name': 'Campaign Manager', 'value': 'user@test.com'},
                 {'name': 'IAB Category', 'value': 'Uncategorized'},
                 {'name': 'Campaign goal', 'value': 'new unique visitors'},
                 {'name': 'Goal quantity', 'value': '0.00'},

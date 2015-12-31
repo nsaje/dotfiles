@@ -5,7 +5,6 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', fu
     $scope.canArchive = false;
     $scope.canRestore = true;
     $scope.accountManagers = [];
-    $scope.salesReps = [];
     $scope.errors = {};
     $scope.availablePixels = [];
     $scope.requestInProgress = false;
@@ -31,7 +30,6 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', fu
                     $scope.discarded = true;
                 } else {
                     $scope.accountManagers = data.accountManagers;
-                    $scope.salesReps = data.salesReps;
                 }
             },
             function (data) {

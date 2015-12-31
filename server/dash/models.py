@@ -316,6 +316,9 @@ class Campaign(models.Model, PermissionMixin):
 
     admin_link.allow_tags = True
 
+    def get_sales_representative(self):
+        return self.account.get_current_settings().default_sales_representative
+
     def get_current_settings(self):
         if not self.pk:
             raise exc.BaseError(
@@ -485,7 +488,7 @@ class AccountSettings(SettingsBase):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
-    
+
     objects = QuerySetManager()
 
     def save(self, request, *args, **kwargs):
@@ -506,7 +509,6 @@ class CampaignSettings(SettingsBase):
     _settings_fields = [
         'name',
         'account_manager',
-        'sales_representative',
         'service_fee',
         'iab_category',
         'promotion_goal',
@@ -532,6 +534,9 @@ class CampaignSettings(SettingsBase):
         related_name="+",
         on_delete=models.PROTECT
     )
+
+    # sales_representative on campaign level is currently deprecated, use
+    # account level sales representative instead.
     sales_representative = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,

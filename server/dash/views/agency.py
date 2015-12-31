@@ -243,7 +243,6 @@ class CampaignAgency(api_common.BaseApiView):
         response = {
             'settings': self.get_dict(campaign_settings, campaign),
             'account_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
-            'sales_reps': self.get_user_list(campaign_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(campaign),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
@@ -351,12 +350,8 @@ class CampaignAgency(api_common.BaseApiView):
                 'value': new_settings.name.encode('utf-8')
             }),
             ('account_manager', {
-                'name': 'Account Manager',
+                'name': 'Campaign Manager',
                 'value': helpers.get_user_full_name_or_email(new_settings.account_manager)
-            }),
-            ('sales_representative', {
-                'name': 'Sales Representative',
-                'value': helpers.get_user_full_name_or_email(new_settings.sales_representative)
             }),
             ('iab_category', {
                 'name': 'IAB Category',
@@ -399,10 +394,6 @@ class CampaignAgency(api_common.BaseApiView):
                 settings_dict['account_manager']['old_value'] = \
                     helpers.get_user_full_name_or_email(old_settings.account_manager)
 
-            if old_settings.sales_representative is not None:
-                settings_dict['sales_representative']['old_value'] = \
-                    helpers.get_user_full_name_or_email(old_settings.sales_representative)
-
             settings_dict['iab_category']['old_value'] = \
                 constants.IABCategory.get_text(old_settings.iab_category)
 
@@ -434,9 +425,6 @@ class CampaignAgency(api_common.BaseApiView):
                 'account_manager':
                     str(settings.account_manager.id)
                     if settings.account_manager is not None else None,
-                'sales_representative':
-                    str(settings.sales_representative.id)
-                    if settings.sales_representative is not None else None,
                 'iab_category': settings.iab_category,
             }
 
@@ -445,7 +433,6 @@ class CampaignAgency(api_common.BaseApiView):
     def set_settings(self, settings, campaign, resource):
         settings.campaign = campaign
         settings.account_manager = resource['account_manager']
-        settings.sales_representative = resource['sales_representative']
         settings.iab_category = resource['iab_category']
 
     def get_user_list(self, settings, perm_name):
