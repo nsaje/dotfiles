@@ -14,6 +14,7 @@ import actionlog.models
 from dash import models
 from dash import constants
 from dash import api
+from dash import budget
 from utils import exc
 from utils import statsd_helper
 import automation.autopilot
@@ -1010,3 +1011,14 @@ def log_useraction_if_necessary(request, user_action_type, account=None, campaig
             ad_group_settings_id=ad_group.get_current_settings().id if ad_group else None
         )
         user_action_log.save()
+
+
+def adgroup_has_available_budget(adgroup):
+    campaign_budget = budget.CampaignBudget(adgroup.campaign)
+
+    total = campaign_budget.get_total()
+    spend = campaign_budget.get_spend()
+
+    available = total - spend
+
+    return bool(available)
