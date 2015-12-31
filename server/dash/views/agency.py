@@ -271,6 +271,7 @@ class CampaignAgency(api_common.BaseApiView):
 
         changes = prev_settings.get_setting_changes(settings)
         if changes:
+            email_helper.send_campaign_notification_email(campaign, request)
             helpers.log_useraction_if_necessary(request,
                                                 constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS,
                                                 campaign=campaign)
@@ -308,7 +309,6 @@ class CampaignAgency(api_common.BaseApiView):
                     )
                 )
 
-        email_helper.send_campaign_notification_email(campaign, request)
         zwei_actions.send(actions)
 
     def get_history(self, campaign):
@@ -611,26 +611,30 @@ class CampaignSettings(api_common.BaseApiView):
 
         settings_dict = resource.get('settings', {})
 
-        settings = campaign.get_current_settings().copy_settings()
+        current_settings = campaign.get_current_settings()
+        new_settings = current_settings.copy_settings()
         if not request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
             # copy properties that can't be set by the user
             # to pass validation
-            settings_dict['target_devices'] = settings.target_devices
-            settings_dict['target_regions'] = settings.target_regions
+            settings_dict['target_devices'] = new_settings.target_devices
+            settings_dict['target_regions'] = new_settings.target_regions
 
         form = forms.CampaignSettingsForm(settings_dict)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        self.set_settings(request, settings, campaign, form.cleaned_data)
+        self.set_settings(request, new_settings, campaign, form.cleaned_data)
         self.set_campaign(campaign, form.cleaned_data)
 
-        CampaignAgency.propagate_and_save(campaign, settings, request)
+        CampaignAgency.propagate_and_save(campaign, new_settings, request)
 
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_SETTINGS, campaign=campaign)
+        changes = current_settings.get_setting_changes(new_settings)
+        if changes:
+            email_helper.send_campaign_notification_email(campaign, request)
+            helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_SETTINGS, campaign=campaign)
 
         response = {
-            'settings': self.get_dict(request, settings, campaign)
+            'settings': self.get_dict(request, new_settings, campaign)
         }
 
         return self.create_api_response(response)
