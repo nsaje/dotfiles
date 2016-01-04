@@ -1,10 +1,8 @@
-
 # -*- coding: utf-8 -*-
 
 import json
 from mock import patch
 import datetime
-import httplib
 
 from django.test import TestCase, Client, TransactionTestCase
 from django.http.request import HttpRequest

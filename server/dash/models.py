@@ -1155,6 +1155,15 @@ class AdGroupSource(models.Model):
         null=True
     )
 
+    objects = QuerySetManager()
+
+    class QuerySet(models.QuerySet):
+        def filter_by_sources(self, sources):
+            if not should_filter_by_sources(sources):
+                return self
+
+            return self.filter(source__in=sources)
+
     def get_tracking_ids(self):
         msid = self.source.tracking_slug or ''
         if self.source.source_type and\

@@ -157,146 +157,88 @@ class NavigationDataView(api_common.BaseApiView):
         include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
-        data = {}
-        self.fetch_ad_groups(data, request.user, filtered_sources)
-        self.fetch_campaigns(data, request.user, filtered_sources)
-        self.fetch_accounts(data, request.user, filtered_sources)
-
-        self.add_settings_data(data, include_archived_flag, filtered_sources)
-
-        result = []
-        for account in data.values():
-            account['campaigns'] = account['campaigns'].values()
-            result.append(account)
+        result = self.load_data(request.user, filtered_sources, include_archived_flag)
 
         return self.create_api_response(result)
 
-    def add_settings_data(self, data, include_archived_flag, filtered_sources):
+    def load_data(self, user, sources, include_archived_flag):
 
-        account_ids, campaign_ids, ad_group_ids = [], [], []
+        ad_groups = models.AdGroup.objects.all().filter_by_user(user).filter_by_sources(sources).only('id', 'name', 'campaign_id', 'content_ads_tab_with_cms')
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group__in=ad_groups).filter_by_sources(sources).only('id', 'ad_group_id')
 
-        # collect only relevant ids, so that we don't unnecessarly fetch
-        # the entire set of account/campaign/ad group settings
-        for account in data.values():
-            account_ids.append(account['id'])
-            for campaign in account['campaigns'].values():
-                campaign_ids.append(campaign['id'])
-                for ad_group in campaign['adGroups']:
-                    ad_group_ids.append(ad_group['id'])
+        map_ad_group_source = dict(ad_group_sources.values_list('id', 'ad_group_id'))
 
-        account_settingss = models.AccountSettings.objects\
-                                                  .filter(account_id__in=account_ids)\
-                                                  .group_current_settings()
-        account_settingss = {acc_settings.account_id: acc_settings for acc_settings in account_settingss}
+        ad_groups_settings = {ags.ad_group_id: ags for ags in models.AdGroupSettings.objects.filter(ad_group__in=ad_groups).group_current_settings().only('ad_group_id', 'state', 'start_date', 'end_date')}
 
-        campaign_settingss = models.CampaignSettings.objects\
-                                                    .filter(campaign_id__in=campaign_ids)\
-                                                    .group_current_settings()
-        campaign_settingss = {camp_settings.campaign_id: camp_settings for camp_settings in campaign_settingss}
+        ad_groups_sources_settings = models.AdGroupSourceSettings.objects.all().group_current_settings().only('ad_group_source_id', 'state')
+        ad_groups_sources_settings_dict = {}
+        for ad_group_source_settings in ad_groups_sources_settings:
+            ad_group_source_id = ad_group_source_settings.ad_group_source_id
 
-        ad_group_settingss = models.AdGroupSettings.objects\
-                                                   .filter(ad_group_id__in=ad_group_ids)\
-                                                   .group_current_settings()
-        ad_group_settingss = {ag_settings.ad_group_id: ag_settings for ag_settings in ad_group_settingss}
+            # filter by ad group and source
+            if ad_group_source_id in map_ad_group_source:
+                ad_group_id = map_ad_group_source[ad_group_source_id]
+                ad_groups_sources_settings_dict.setdefault(ad_group_id, []).append(ad_group_source_settings)
 
-        ad_group_sources_settingss = models.AdGroupSourceSettings.objects\
-                                                                 .filter(ad_group_source__ad_group_id__in=ad_group_ids)\
-                                                                 .filter_by_sources(filtered_sources)\
-                                                                 .group_current_settings()\
-                                                                 .select_related('ad_group_source')
-        sources_settings = {}
-        for source_settings in ad_group_sources_settingss:
-            key = source_settings.ad_group_source.ad_group_id
-            sources_settings.setdefault(key, [])
-            sources_settings[key].append(source_settings)
-
-        for account in data.values():
-            account_settings = account_settingss.get(account['id'])
-
-            if include_archived_flag:
-                account['archived'] = account_settings.archived if account_settings else False
-
-            for campaign in account['campaigns'].values():
-                campaign_settings = campaign_settingss.get(campaign['id'])
-
-                if include_archived_flag:
-                    campaign['archived'] = campaign_settings.archived if campaign_settings else False
-
-                for ad_group in campaign['adGroups']:
-                    ad_group_settings = ad_group_settingss.get(ad_group['id'])
-
-                    if include_archived_flag:
-                        ad_group['archived'] = ad_group_settings.archived if ad_group_settings else False
-
-                    ad_group['state'] = constants.AdGroupSettingsState.get_text(
-                        ad_group_settings.state if ad_group_settings
-                        else constants.AdGroupSettingsState.INACTIVE
-                    ).lower()
-
-                    ad_group['status'] = constants.AdGroupRunningStatus.get_text(
-                        models.AdGroup.get_running_status(
-                            ad_group_settings
-                        )
-                    ).lower()
-
-    def fetch_ad_groups(self, data, user, sources):
-        ad_groups = models.AdGroup.objects.all().\
-            filter_by_user(user).\
-            filter_by_sources(sources).\
-            select_related('campaign__account')
-
+        data_campaign_ad_groups = {}
         for ad_group in ad_groups:
-            campaign = ad_group.campaign
-            account = campaign.account
+            ad_group_settings = ad_groups_settings[ad_group.id]
+            ad_group_source_settings = ad_groups_sources_settings_dict.get(ad_group.id)
 
-            self.add_account_dict(data, account)
+            running_status = models.AdGroup.get_running_status(ad_group_settings, ad_group_source_settings)
+            state = ad_group_settings.state if ad_group_settings else constants.AdGroupSettingsState.INACTIVE
 
-            campaigns = data[account.id]['campaigns']
-            self.add_campaign_dict(campaigns, campaign)
+            ad_group_dict = {
+                'id': ad_group.id,
+                'name': ad_group.name,
+                'contentAdsTabWithCMS': ad_group.content_ads_tab_with_cms,
+                'status': constants.AdGroupRunningStatus.get_text(running_status).lower(),
+                'state': constants.AdGroupSettingsState.get_text(state).lower()
+            }
+            if include_archived_flag:
+                ad_group_dict['archived'] = ad_group_settings.archived if ad_group_settings else False
 
-            campaigns[campaign.id]['adGroups'].append(
-                {
-                    'id': ad_group.id,
-                    'name': ad_group.name,
-                    'contentAdsTabWithCMS': ad_group.content_ads_tab_with_cms,
-                }
-            )
+            data_campaign_ad_groups.setdefault(ad_group.campaign_id, []).append(ad_group_dict)
 
-    def fetch_campaigns(self, data, user, sources):
-        campaigns = models.Campaign.objects.all().\
-            filter_by_user(user).\
-            filter_by_sources(sources).\
-            select_related('account')
+        data_account_campaigns = {}
+        campaigns = models.Campaign.objects.all().filter_by_user(user).filter_by_sources(sources).only('id', 'name', 'account_id')
+
+        if include_archived_flag:
+            campaigns_settings = {cs.campaign_id: cs for cs in models.CampaignSettings.objects.filter(campaign__in=campaigns).group_current_settings().only('campaign_id', 'archived')}
 
         for campaign in campaigns:
-            account = campaign.account
-
-            self.add_account_dict(data, account)
-            self.add_campaign_dict(data[account.id]['campaigns'], campaign)
-
-    def fetch_accounts(self, data, user, sources):
-        accounts = models.Account.objects.all().\
-            filter_by_user(user).\
-            filter_by_sources(sources)
-
-        for account in accounts:
-            self.add_account_dict(data, account)
-
-    def add_account_dict(self, data, account):
-        if account.id not in data:
-            data[account.id] = {
-                'id': account.id,
-                'name': account.name,
-                'campaigns': {}
-            }
-
-    def add_campaign_dict(self, data, campaign):
-        if campaign.id not in data:
-            data[campaign.id] = {
+            campaign_dict = {
                 'id': campaign.id,
                 'name': campaign.name,
-                'adGroups': []
+                'adGroups': data_campaign_ad_groups.get(campaign.id, [])
             }
+
+            if include_archived_flag:
+                campaign_settings = campaigns_settings.get(campaign.id)
+                campaign_dict['archived'] = campaign_settings.archived if campaign_settings else False
+
+            data_account_campaigns.setdefault(campaign.account_id, []).append(campaign_dict)
+
+        data_root = []
+        accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(sources).only('id', 'name')
+
+        if include_archived_flag:
+            accounts_settings = {acs.account_id: acs for acs in models.AccountSettings.objects.filter(account__in=accounts).group_current_settings().only('account_id', 'archived')}
+
+        for account in accounts:
+            account_dict = {
+                'id': account.id,
+                'name': account.name,
+                'campaigns': data_account_campaigns.get(account.id, [])
+            }
+
+            if include_archived_flag:
+                account_settings = accounts_settings.get(account.id)
+                account_dict['archived'] = account_settings.archived if account_settings else False
+
+            data_root.append(account_dict)
+
+        return data_root
 
 
 class AccountArchive(api_common.BaseApiView):
@@ -976,7 +918,7 @@ class AdGroupSources(api_common.BaseApiView):
 
     def _can_target_existing_regions(self, source, ad_group_settings):
         return region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) or\
-               region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings)
+            region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings)
 
 
 class Account(api_common.BaseApiView):
