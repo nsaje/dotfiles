@@ -1816,6 +1816,7 @@ class PublishersTable(object):
                 'blacklisted': publisher_data['blacklisted'],
                 'exchange': source_name,
                 'source_id': publisher_data['source_id'],
+                'external_id': publisher_data['external_id'],
 
                 'cost': publisher_data.get('cost', 0),
                 'license_fee': publisher_data.get('license_fee', 0),

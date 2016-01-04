@@ -1669,6 +1669,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
             source = source_cache[domain]
 
+            # don't generate publisher entries on adgroup and campaign level
+            # for Outbrain since it only supports account level blacklisting
+            if source.source_type.type == constants.SourceType.OUTBRAIN:
+               continue
+
             # get all adgroups
             for ad_group in filtered_ad_groups:
                 ret.append({
