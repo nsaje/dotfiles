@@ -437,7 +437,7 @@ class SourcesTable(object):
             kwargs = { 'account': level_sources_table.account }
         elif level_ == 'campaigns':
             level_sources_table = CampaignSourcesTable(user, id_, filtered_sources)
-            kwargs = { 'campaign': level_sources_table.campaign } 
+            kwargs = { 'campaign': level_sources_table.campaign }
         elif level_ == 'ad_groups':
             ad_group_level = True
             level_sources_table = AdGroupSourcesTable(user, id_, filtered_sources)
@@ -537,7 +537,7 @@ class SourcesTable(object):
         if yesterday_cost:
             yesterday_total_cost = sum(yesterday_cost.values())
         return yesterday_cost, yesterday_total_cost
-    
+
     def get_totals(self,
                    ad_group_level,
                    user,
@@ -555,7 +555,7 @@ class SourcesTable(object):
             result['e_yesterday_cost'] = e_yesterday_cost
         if user.has_perm('zemauth.can_view_effective_costs') and not user.has_perm('zemauth.can_view_actual_costs'):
             del result['yesterday_cost']
-        
+
         if ad_group_level and user.has_perm('zemauth.set_ad_group_source_settings'):
             result['daily_budget'] = get_daily_budget_total(ad_group_sources, sources_states, sources_settings)
             result['current_daily_budget'] = get_current_daily_budget_total(sources_states)
@@ -663,9 +663,9 @@ class SourcesTable(object):
                 ad_group_settings = level_sources_table.ad_group_settings
 
                 row['editable_fields'] = helpers.get_editable_fields(
-                    ad_group_source, 
+                    ad_group_source,
                     ad_group_settings,
-                    source_settings, 
+                    source_settings,
                     user,
                     allowed_sources,
                 )
@@ -1610,7 +1610,7 @@ class PublishersTable(object):
             if s.bidder_slug:
                 exchange_name = s.bidder_slug
             else:
-                exchange_name = s.name
+                exchange_name = s.name.lower()
             map_exchange_to_source_name[exchange_name] = s.name
 
         # this is a really bad practice, but used extensively in models.py
@@ -1834,7 +1834,7 @@ class PublishersTable(object):
                 row['total_cost'] = publisher_data.get('total_cost', 0)
                 row['media_cost'] = publisher_data.get('media_cost', 0)
                 row['data_cost'] = publisher_data.get('data_cost', 0)
-                
+
 
             if publisher_data.get('blacklisted_level'):
                 row['blacklisted_level'] = publisher_data['blacklisted_level']
