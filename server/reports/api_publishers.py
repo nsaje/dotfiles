@@ -2,7 +2,7 @@ import logging
 import copy
 from reports import redshift
 
-from reports.rs_helpers import from_micro_cpm, from_nano, to_percent, sum_div, sum_agr, unchanged
+from reports.rs_helpers import from_micro_cpm, from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +24,11 @@ class RSPublishersModel(redshift.RSModel):
     DEFAULT_RETURNED_FIELDS_APP = [
         "clicks", "impressions", "cost", "data_cost", "media_cost", "ctr", "cpc",
         "e_media_cost", "e_data_cost", "total_cost", "billing_cost", "license_fee",
+        "external_id",
+
     ]
     # fields that are allowed for breakdowns (app-based naming)
-    ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'date', ])
+    ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'date'])
 
     # 	SQL NAME                           APP NAME            OUTPUT TRANSFORM        AGGREGATE                                  ORDER BY function
     FIELDS = [
@@ -34,6 +36,7 @@ class RSPublishersModel(redshift.RSModel):
         dict(sql='impressions_sum',        app='impressions',  out=unchanged,          calc=sum_agr('impressions'),               order="SUM(impressions) = 0, impressions_sum {direction}"),
         dict(sql='domain',                 app='domain',       out=unchanged),
         dict(sql='exchange',               app='exchange',     out=unchanged),
+        dict(sql='external_id',            app='external_id',  out=unchanged,          calc=max_agr('external_id')),
         dict(sql='date',                   app='date',         out=unchanged),
         dict(sql='cost_micro_sum',         app='cost',         out=from_micro_cpm,     calc=sum_agr('cost_micro'),                order="SUM(cost_micro) = 0, cost_micro_sum {direction}"),
         dict(sql='media_cost_micro_sum',   app='media_cost',   out=from_micro_cpm,     calc=sum_agr('cost_micro'),                order="SUM(cost_micro) = 0, cost_micro_sum {direction}"),
