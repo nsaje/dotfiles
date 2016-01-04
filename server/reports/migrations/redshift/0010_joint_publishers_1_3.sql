@@ -14,13 +14,13 @@ SELECT
 FROM b1_publishers_1 
 UNION 
 SELECT 
-	ob_publishers_1.date, 
-	ob_publishers_1.adgroup_id, 
-	ob_publishers_1.exchange, 
-	ob_publishers_1.domain, 
-	ob_publishers_1.clicks, 
-	ob_publishers_1.impressions, 
-	ob_publishers_1.cost_micro,
+	ob_publishers_2.date, 
+	ob_publishers_2.adgroup_id, 
+	ob_publishers_2.exchange, 
+	ob_publishers_2.domain, 
+	ob_publishers_2.clicks, 
+	ob_publishers_2.impressions, 
+	ob_publishers_2.cost_micro,
 	0 as data_cost_micro,
 	0 as license_fee_nano,
 	0 as effective_cost_nano,
