@@ -500,6 +500,46 @@ class RunningStateHelpersTestCase(TestCase):
             }
         )
 
+    def test_get_ad_group_state_by_sources_running_status_group_by_campaign(self):
+
+        status_dict = helpers.get_ad_group_state_by_sources_running_status(
+            self.ad_groups, self.ad_groups_settings, self.ad_group_sources_settings, 'campaign_id')
+
+        self.assertDictEqual(status_dict, {
+            1: constants.AdGroupSettingsState.ACTIVE,
+            3: constants.AdGroupSettingsState.ACTIVE
+        })
+
+        ad_groups = models.AdGroup.objects.filter(id__in=[6, 7])
+        self.assertTrue(all(status_dict[ag.campaign_id] == constants.AdGroupSettingsState.INACTIVE for ag in ad_groups))
+
+    def test_get_ad_group_state_by_sources_running_status_group_by_account(self):
+
+        status_dict = helpers.get_ad_group_state_by_sources_running_status(
+            self.ad_groups, self.ad_groups_settings, self.ad_group_sources_settings, 'campaign__account_id')
+
+        self.assertDictEqual(status_dict, {
+            1: constants.AdGroupSettingsState.ACTIVE,
+            2: constants.AdGroupSettingsState.ACTIVE
+        })
+
+        ad_groups = models.AdGroup.objects.filter(id__in=[6, 7])
+        self.assertTrue(
+            all(status_dict[ag.campaign.account_id] == constants.AdGroupSettingsState.INACTIVE for ag in ad_groups))
+
+    def test_get_ad_group_state_by_sources_running_status_group_by_ad_group(self):
+
+        status_dict = helpers.get_ad_group_state_by_sources_running_status(
+            self.ad_groups, self.ad_groups_settings, self.ad_group_sources_settings, 'id')
+
+        self.assertDictEqual(status_dict, {
+            1: constants.AdGroupSettingsState.ACTIVE,
+            3: constants.AdGroupSettingsState.ACTIVE
+        })
+
+        ad_groups = models.AdGroup.objects.filter(id__in=[6, 7])
+        self.assertTrue(all(status_dict[ag.id] == constants.AdGroupSettingsState.INACTIVE for ag in ad_groups))
+
 
 class GetChangedContentAdsTestCase(TestCase):
     fixtures = ['test_api']
