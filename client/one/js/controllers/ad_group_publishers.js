@@ -104,6 +104,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             "checked": checked,
             "source_id": row.source_id,
             "domain": row.domain,
+            "exchange": row.exchange,
             "blacklisted": row.blacklisted,
             "blacklisted_level": row.blacklisted_level
         };
@@ -124,6 +125,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.updatePublisherBlacklistCombo = function () {
         var countBlacklistedSelected = 0,
             countNonBlacklistedSelected = 0,
+            countOutbrainSelected = 0,
             countAllSelected = 0,
             maxBlacklistedLevel = null,
             levels = [
@@ -144,6 +146,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 } else if (entry.blacklisted === 'Active') {
                     countNonBlacklistedSelected += 1;
                 }
+                if (entry.exchange === "Outbrain") {
+                    countOutbrainSelected += 1;
+                }
             }
         });
 
@@ -157,6 +162,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 }
                 else if (row.blacklisted === 'Active') {
                     countNonBlacklistedSelected += 1;
+                }
+                if (row.exchange === "Outbrain") {
+                    countOutbrainSelected += 1;
                 }
             });
         }
@@ -184,6 +192,20 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 // user can always blacklist on higher level
                 // than currently blacklisted
                 $scope.setBulkAction(level, 'blacklist', enabled);
+            });
+        }
+        
+        if (countOutbrainSelected > 0) {
+            // user can always blacklist on higher level
+            // than currently blacklisted
+            var disabledOutbrainLevels = [
+                constants.publisherBlacklistLevel.ADGROUP,
+                constants.publisherBlacklistLevel.CAMPAIGN,
+                constants.publisherBlacklistLevel.GLOBAL
+            ];
+            disabledOutbrainLevels.forEach(function (level) {
+                $scope.setBulkAction(level, 'blacklist', false);
+                $scope.setBulkAction(level, 'enable', false);
             });
         }
     };
