@@ -17,7 +17,7 @@ SELECT
 	ob_publishers_2.date, 
 	ob_publishers_2.adgroup_id, 
 	ob_publishers_2.exchange, 
-	ob_publishers_2.domain, 
+	ob_publishers_2.ob_id, 
 	ob_publishers_2.clicks, 
 	ob_publishers_2.impressions, 
 	ob_publishers_2.cost_micro,
