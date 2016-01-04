@@ -7,5 +7,5 @@ create table ob_publishers_2(
         impressions int,  
         cost_micro bigint,
         ob_id varchar(255),
-        unique (date, adgroup_id, exchange, domain))
+        unique (date, adgroup_id, exchange))
 sortkey(date, adgroup_id);

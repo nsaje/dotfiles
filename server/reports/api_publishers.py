@@ -18,7 +18,7 @@ FORMULA_TOTAL_COST = '({}*1000 + {}*1000 + {})'.format(
 )
 
 class RSPublishersModel(redshift.RSModel):
-    TABLE_NAME = 'joint_publishers_1_2'
+    TABLE_NAME = 'joint_publishers_1_3'
 
     # fields that are always returned (app-based naming)
     DEFAULT_RETURNED_FIELDS_APP = [
