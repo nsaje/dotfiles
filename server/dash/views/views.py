@@ -1292,7 +1292,6 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
         if content_ads.exists():
             api.add_content_ads_archived_change_to_history(ad_group, content_ads, True, request)
             email_helper.send_ad_group_notification_email(ad_group, request)
-
             helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
                                                 ad_group=ad_group)
 
