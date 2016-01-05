@@ -198,6 +198,7 @@ def _update_publisher_blacklist(key, level, publishers):
         blacklist_entry = models.PublisherBlacklist(
             name=publisher['domain'],
             source=source,
+            external_id=publisher.get('external_id') or None,
         )
 
         if level == constants.PublisherBlacklistLevel.GLOBAL:
