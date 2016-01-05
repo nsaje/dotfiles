@@ -222,8 +222,6 @@ class CampaignSettingsTest(TestCase):
             'changes_text',
             'useractionlog',
             'account_manager_id',
-            'sales_representative',
-            'sales_representative_id',
         ]
 
         all_fields = set(models.CampaignSettings._settings_fields + meta_fields)

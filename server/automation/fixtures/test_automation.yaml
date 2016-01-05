@@ -50,7 +50,6 @@
     name: 'Campaign Settings 1'
     account_manager: 1
     campaign: 1
-    sales_representative: 1
   model: dash.campaignsettings
   pk: 1
 

@@ -733,7 +733,6 @@
         created_by: 1
         name: 'test campaign 2'
         account_manager: NULL
-        sales_representative: NULL
         iab_category: 'IAB24'
         campaign_goal: 4
         goal_quantity: 10
@@ -748,7 +747,6 @@
         created_by: 1
         name: 'test campaign 4'
         account_manager: NULL
-        sales_representative: NULL
         iab_category: 'IAB24'
         campaign: 4
         archived: True

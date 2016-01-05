@@ -13,7 +13,6 @@ from django.db import transaction
 from django.core import validators
 
 from dash import api
-from dash import budget
 from dash import constants
 from dash import models
 from dash import regions

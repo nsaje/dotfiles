@@ -80,7 +80,6 @@
         created_by: 1
         archived: False
         account_manager: 2
-        sales_representative: 3
         campaign_goal: 3
         goal_quantity: 0
         target_devices: ['mobile']

@@ -535,14 +535,6 @@ class CampaignSettings(SettingsBase):
         on_delete=models.PROTECT
     )
 
-    # sales_representative on campaign level is currently deprecated, use
-    # account level sales representative instead.
-    sales_representative = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        related_name="+",
-        on_delete=models.PROTECT
-    )
     service_fee = models.DecimalField(
         decimal_places=4,
         max_digits=5,
