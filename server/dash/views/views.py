@@ -1525,7 +1525,6 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         publishers = []
         if select_all:
             publishers = self._query_all_publishers(ad_group, start_date, end_date)
-
         # update with pending statuses
         if level in (constants.PublisherBlacklistLevel.ADGROUP,
                      constants.PublisherBlacklistLevel.CAMPAIGN,
@@ -1700,6 +1699,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             if (domain, ad_group.id, source.id,) in ignored_publishers:
                 continue
 
+            if level != constants.PublisherBlacklistLevel.ACCOUNT and\
+                    source.source_type.type == constants.SourceType.OUTBRAIN:
+                # only allow outbrain for account level
+                continue
+
             blacklist_global = False
             if level == constants.PublisherBlacklistLevel.GLOBAL:
                 blacklist_global = True
@@ -1833,6 +1837,10 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
                 if state == constants.PublisherStatus.BLACKLISTED and\
                         (domain, source_id,) in existing_blacklisted_publishers:
+                    continue
+
+                if source.source_type.type == constants.SourceType.OUTBRAIN:
+                    # Outbrain only has account level blacklist
                     continue
 
                 # store blacklisted publishers and push to other sources
