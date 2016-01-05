@@ -65,7 +65,6 @@ class DeleteCreditTestCase(TestCase):
     fixtures = ['test_io.yaml']
 
     def test_delete(self):
-        print 'beee'
         self.assertEqual(len(dash.models.BudgetLineItem.objects.filter(credit_id=1)), 1)
         credit = dash.models.CreditLineItem.objects.get(pk=1)
         with self.assertRaises(Exception):
