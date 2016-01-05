@@ -19,35 +19,32 @@ REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
 
 @statsd_timer('reports.redshift', 'delete_contentadstats')
 def delete_contentadstats(date, campaign_id):
-    cursor = get_cursor()
-
     query = 'DELETE FROM contentadstats WHERE date = %s AND campaign_id = %s AND content_ad_id != %s'
     params = [date.isoformat(), campaign_id, REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
+    _execute(query, params)
 
-    cursor.execute(query, params)
-    cursor.close()
+
+def _execute(query, params):
+    with get_cursor() as cursor:
+        cursor.execute(query, params)
+
+
+def get_cursor():
+    return MyCursor(connections[settings.STATS_DB_NAME].cursor())
 
 
 @statsd_timer('reports.redshift', 'delete_contentadstatsdiff')
 def delete_contentadstats_diff(date, campaign_id):
-    cursor = get_cursor()
-
     query = 'DELETE FROM contentadstats WHERE date = %s AND campaign_id = %s AND content_ad_id = %s'
     params = [date.isoformat(), campaign_id, REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
-
-    cursor.execute(query, params)
-    cursor.close()
+    _execute(query, params)
 
 
 @statsd_timer('reports.redshift', 'delete_touchpointconversions')
 def delete_touchpoint_conversions(date, account_id, slug):
-    cursor = get_cursor()
-
     query = 'DELETE FROM touchpointconversions WHERE date = %s AND account_id = %s AND slug = %s'
     params = [date.isoformat(), account_id, slug]
-
-    cursor.execute(query, params)
-    cursor.close()
+    _execute(query, params)
 
 
 @statsd_timer('reports.redshift', 'insert_contentadstats')
@@ -141,46 +138,28 @@ def get_pixels_last_verified_dt(account_id=None):
 @statsd_timer('reports.redshift', 'vacuum_contentadstats')
 def vacuum_contentadstats():
     query = 'VACUUM FULL contentadstats'
-
-    cursor = get_cursor()
-    cursor.execute(query, [])
-    cursor.close()
+    _execute(query, [])
 
 
 @statsd_timer('reports.redshift', 'vacuum_touchpoint_conversions')
 def vacuum_touchpoint_conversions():
     query = 'VACUUM FULL touchpointconversions'
-
-    cursor = get_cursor()
-    cursor.execute(query, [])
-
-    cursor.close()
+    _execute(query, [])
 
 
 @statsd_timer('reports.redshift', 'delete_publishers')
 def delete_publishers(start_date, end_date):
-    cursor = get_cursor()
-
     query = 'DELETE FROM b1_publishers_1 WHERE date >= %s AND date <= %s'
     params = [start_date.isoformat(), end_date.isoformat()]
-
-    cursor.execute(query, params)
-    cursor.close()
+    _execute(query, params)
 
 
 @statsd_timer('reports.redshift', 'update_publishers')
 def update_publishers(s3_filename, aws_access_id, aws_access_secret):
-    cursor = get_cursor()
-
-    query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV LZOP"
+    query = "COPY b1_publi" \
+            "shers_1 FROM '%s' CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV LZOP"
     params = [s3_filename, aws_access_id, aws_access_secret]
-
-    cursor.execute(query, params)
-    cursor.close()
-
-
-def get_cursor():
-    return MyCursor(connections[settings.STATS_DB_NAME].cursor())
+    _execute(query, params)
 
 
 def _get_row_string(cursor, cols, row):
