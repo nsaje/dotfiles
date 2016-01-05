@@ -1097,7 +1097,7 @@ class AccountAgency(api_common.BaseApiView):
             old_settings = settings[i - 1] if i > 0 else None
             new_settings = settings[i]
 
-            settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
+            settings_dict = self.convert_settings_to_dict(new_settings, old_settings)
             changes_text = self.get_changes_string(new_settings, old_settings, settings_dict)
 
             if not changes_text:
@@ -1113,25 +1113,7 @@ class AccountAgency(api_common.BaseApiView):
 
         return history
 
-    def get_changes_string(self, new_settings, old_settings, settings_dict):
-        if not old_settings:
-            return 'Created settings'
-
-        change_strings = []
-        changes = old_settings.get_setting_changes(new_settings)
-
-        for key in changes:
-            setting = settings_dict[key]
-            change_strings.append(
-                '{} set to "{}"'.format(setting['name'], setting['value'])
-            )
-
-        if new_settings.changes_text:
-            change_strings.append(new_settings.changes_text)
-
-        return ', '.join(change_strings)
-
-    def convert_settings_to_dict(self, old_settings, new_settings):
+    def convert_settings_to_dict(self, new_settings, old_settings):
         settings_dict = OrderedDict([
             ('name', {
                 'name': 'Name',
@@ -1171,6 +1153,24 @@ class AccountAgency(api_common.BaseApiView):
                 helpers.format_decimal_to_percent(old_settings.service_fee) + '%'
 
         return settings_dict
+
+    def get_changes_string(self, new_settings, old_settings, settings_dict):
+        if not old_settings:
+            return 'Created settings'
+
+        change_strings = []
+        changes = old_settings.get_setting_changes(new_settings)
+
+        for key in changes:
+            setting = settings_dict[key]
+            change_strings.append(
+                '{} set to "{}"'.format(setting['name'], setting['value'])
+            )
+
+        if new_settings.changes_text:
+            change_strings.append(new_settings.changes_text)
+
+        return ', '.join(change_strings)
 
     def get_user_list(self, settings, perm_name):
         users = list(ZemUser.objects.get_users_with_perm(perm_name))

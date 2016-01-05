@@ -1907,7 +1907,6 @@ class AccountAgencyTest(TestCase):
             'archived': False
         })
 
-
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put(self, mock_log_useraction):
         client = self._get_client_with_permissions([
@@ -1978,15 +1977,87 @@ class AccountAgencyTest(TestCase):
         content = json.loads(response.content)
         self.assertFalse(content['success'])
 
+    def test_get_history_multiple(self):
+        account = models.Account.objects.get(pk=200)
+        view = agency.AccountAgency()
+        history = view.get_history(account)
+
+        self.assertEqual(len(history), 5)
+        self.assertFalse(history[0]['show_old_settings'])
+        self.assertTrue(history[1]['show_old_settings'])
+        self.assertTrue(history[-1]['show_old_settings'])
+
+    def test_get_history_initial(self):
+        account = models.Account.objects.get(pk=201)
+        view = agency.AccountAgency()
+        history = view.get_history(account)
+
+        self.assertEqual(len(history), 1)
+        self.assertFalse(history[0]['show_old_settings'])
+
+    def test_get_history_empty(self):
+        account = models.Account.objects.get(pk=202)
+        view = agency.AccountAgency()
+        history = view.get_history(account)
+
+        self.assertFalse(history)
+
+    def test_convert_settings_to_dict(self):
+        old_settings = models.AccountSettings.objects.get(pk=200)
+        new_settings = models.AccountSettings.objects.get(pk=201)
+        view = agency.AccountAgency()
+
+        settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
+
+        self.assertIsNotNone(settings_dict)
+        self.assertEqual(len(settings_dict), 5)
+        self.assertIn('name', settings_dict['name'])
+        self.assertIn('value', settings_dict['name'])
+        self.assertIn('old_value', settings_dict['name'])
+
+    def test_convert_settings_to_dict_old_settings_none(self):
+        old_settings = None
+        new_settings = models.AccountSettings.objects.get(pk=201)
+        view = agency.AccountAgency()
+
+        settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
+
+        self.assertIsNotNone(settings_dict)
+        self.assertEqual(len(settings_dict), 5)
+        self.assertIn('name', settings_dict['name'])
+        self.assertIn('value', settings_dict['name'])
+        self.assertNotIn('old_value', settings_dict['name'])
+
+    def test_get_changes_string(self):
+        expected_changes_strings = [
+            'Created settings',
+            'Service Fee set to "10%"',
+            'Default Sales Representative set to "superuser@test.com", Service Fee set to "20%"',
+            '',
+            'some text',
+            'Service Fee set to "10%", some text'
+        ]
+
+        view = agency.AccountAgency()
+        for i in range(6):
+            old_settings = models.AccountSettings.objects.get(pk=200+i-1) if i > 0 else None
+            new_settings = models.AccountSettings.objects.get(pk=200+i)
+            settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
+            changes_string = view.get_changes_string(new_settings, old_settings, settings_dict)
+
+            self.assertEqual(changes_string, expected_changes_strings[i])
+
     def test_set_allowed_sources(self):
         account = models.Account.objects.get(pk=1)
-        account_settings = models.AccountSettings.objects.latest('created_dt')
+        account_settings = account.get_current_settings()
         view = agency.AccountAgency()
         view.set_allowed_sources(account_settings, account, True, self._get_form_with_allowed_sources_dict({
             1: {'allowed': True},
             2: {'allowed': False},
             3: {'allowed': True}
             }))
+
+        self.assertIsNotNone(account_settings.changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1, 3])
@@ -1994,7 +2065,6 @@ class AccountAgencyTest(TestCase):
 
     def test_set_allowed_sources_cant_remove_unreleased(self):
         account = models.Account.objects.get(pk=1)
-        account_settings = models.AccountSettings.objects.latest('created_dt')
         account.allowed_sources.add(3) # add an unreleased source
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
@@ -2002,6 +2072,7 @@ class AccountAgencyTest(TestCase):
         )
         self.assertFalse(models.Source.objects.get(pk=3).released)
 
+        account_settings = account.get_current_settings()
         view = agency.AccountAgency()
         view.set_allowed_sources(
             account_settings,
@@ -2012,6 +2083,7 @@ class AccountAgencyTest(TestCase):
                 2: {'allowed': False},
                 3: {'allowed': False}
             }))
+        self.assertIsNotNone(account_settings.changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([3,])
@@ -2019,7 +2091,7 @@ class AccountAgencyTest(TestCase):
 
     def test_set_allowed_sources_cant_add_unreleased(self):
         account = models.Account.objects.get(pk=1)
-        account_settings = models.AccountSettings.objects.latest('created_dt')
+        account_settings = account.get_current_settings()
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1,2])
@@ -2036,6 +2108,7 @@ class AccountAgencyTest(TestCase):
                 2: {'allowed': True},
                 3: {'allowed': True}
             }))
+        self.assertIsNotNone(account_settings.changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([2,])
@@ -2043,7 +2116,7 @@ class AccountAgencyTest(TestCase):
 
     def test_set_allowed_sources_cant_remove_running_source(self):
         account = models.Account.objects.get(pk=111)
-        account_settings = models.AccountSettings.objects.latest('created_dt')
+        account_settings = account.get_current_settings()
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([2,3])
@@ -2068,13 +2141,14 @@ class AccountAgencyTest(TestCase):
 
     def test_set_allowed_sources_none(self):
         account = models.Account.objects.get(pk=1)
-        account_settings = models.AccountSettings.objects.latest('created_dt')
+        account_settings = account.get_current_settings()
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1,2])
         )
         view = agency.AccountAgency()
         view.set_allowed_sources(account_settings, account, True, self._get_form_with_allowed_sources_dict(None))
+        self.assertIsNone(account_settings.changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1,2])
