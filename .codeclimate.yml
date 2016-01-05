@@ -8,3 +8,4 @@ ratings:
 
 exclude_paths:
 - client/lib/*
+- server/**/migrations/*.py
