@@ -157,7 +157,7 @@ def delete_publishers(start_date, end_date):
 @statsd_timer('reports.redshift', 'update_publishers')
 def update_publishers(s3_filename, aws_access_id, aws_access_secret):
     query = "COPY b1_publi" \
-            "shers_1 FROM '%s' CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV LZOP"
+            "shers_1 FROM '%s' CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV"
     params = [s3_filename, aws_access_id, aws_access_secret]
     _execute(query, params)
 

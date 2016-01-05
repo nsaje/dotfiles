@@ -20,6 +20,6 @@ class CommandUpdatePublishersTest(TestCase):
         command.handle(start_date='2015-12-29', end_date='2015-12-31')
         delete_publishers_mock.assert_called_with(datetime.date(2015, 12, 29), datetime.date(2015, 12, 31))
         update_publishers_mock.assert_called_with(
-            's3://b1-eventlog-sync-test/publishers/2015-12-29-2015-12-31--1451296802070761934/part-00000.lzo',
+            's3://b1-eventlog-sync-test/publishers/2015-12-29-2015-12-31--1451296802070761934/part-00000',
             settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
         s3helper_list_mock.assert_called_with('publishers/2015-12-29-2015-12-31')

@@ -15,7 +15,7 @@ from utils.s3helpers import S3Helper
 logger = logging.getLogger(__name__)
 
 PREFIX_PUBLISHERS_FORMAT = 'publishers/{}-{}'
-PUBLISHER_S3_URI_FORMAT = 's3://{}/{}/part-00000.lzo'
+PUBLISHER_S3_URI_FORMAT = 's3://{}/{}/part-00000'
 
 
 class Command(BaseCommand):
