@@ -107,7 +107,7 @@ class Command(BaseCommand):
             created_dt__gte=date_from,
             created_dt__lte=date_to,
             status=dash.constants.PublisherStatus.BLACKLISTED
-        ).order_by("-id")[0]
+        ).order_by("-id").first()
 
         if first_blacklist_entry is None or last_blacklist_entry is None:
             return []

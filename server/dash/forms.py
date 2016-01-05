@@ -13,6 +13,7 @@ from django.db import transaction
 from django.core import validators
 
 from dash import api
+from dash import budget
 from dash import constants
 from dash import models
 from dash import regions
@@ -92,11 +93,16 @@ class AdGroupSettingsForm(forms.Form):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 
     def clean_end_date(self):
+        state = self.cleaned_data.get('state')
         end_date = self.cleaned_data.get('end_date')
         start_date = self.cleaned_data.get('start_date')
 
-        if start_date and end_date and end_date < start_date:
-            raise forms.ValidationError('End date must not occur before start date.')
+        if end_date:
+            if start_date and end_date < start_date:
+                raise forms.ValidationError('End date must not occur before start date.')
+
+            if end_date < datetime.date.today() and state == constants.AdGroupSettingsState.ACTIVE:
+                raise forms.ValidationError('End date cannot be set in the past.')
 
         return end_date
 
