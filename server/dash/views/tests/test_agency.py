@@ -1878,7 +1878,7 @@ class AccountAgencyTest(TestCase):
             permission_object = Permission.objects.get(codename=perm)
             user.user_permissions.add(permission_object)
         user.save()
-        
+
         client = Client()
         client.login(username=user.email, password=password)
         return client
@@ -1978,11 +1978,11 @@ class AccountAgencyTest(TestCase):
         content = json.loads(response.content)
         self.assertFalse(content['success'])
 
-
     def test_set_allowed_sources(self):
         account = models.Account.objects.get(pk=1)
+        account_settings = models.AccountSettings.objects.latest('created_dt')
         view = agency.AccountAgency()
-        view.set_allowed_sources(account, True, self._get_form_with_allowed_sources_dict({
+        view.set_allowed_sources(account_settings, account, True, self._get_form_with_allowed_sources_dict({
             1: {'allowed': True},
             2: {'allowed': False},
             3: {'allowed': True}
@@ -1991,9 +1991,10 @@ class AccountAgencyTest(TestCase):
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1, 3])
         )
-    
+
     def test_set_allowed_sources_cant_remove_unreleased(self):
         account = models.Account.objects.get(pk=1)
+        account_settings = models.AccountSettings.objects.latest('created_dt')
         account.allowed_sources.add(3) # add an unreleased source
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
@@ -2003,8 +2004,9 @@ class AccountAgencyTest(TestCase):
 
         view = agency.AccountAgency()
         view.set_allowed_sources(
+            account_settings,
             account,
-            False, # no permission to remove unreleased source 3 
+            False, # no permission to remove unreleased source 3
             self._get_form_with_allowed_sources_dict({
                 1: {'allowed': False},
                 2: {'allowed': False},
@@ -2017,6 +2019,7 @@ class AccountAgencyTest(TestCase):
 
     def test_set_allowed_sources_cant_add_unreleased(self):
         account = models.Account.objects.get(pk=1)
+        account_settings = models.AccountSettings.objects.latest('created_dt')
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1,2])
@@ -2025,8 +2028,9 @@ class AccountAgencyTest(TestCase):
 
         view = agency.AccountAgency()
         view.set_allowed_sources(
+            account_settings,
             account,
-            False, # no permission to add unreleased source 3 
+            False, # no permission to add unreleased source 3
             self._get_form_with_allowed_sources_dict({
                 1: {'allowed': False},
                 2: {'allowed': True},
@@ -2039,6 +2043,7 @@ class AccountAgencyTest(TestCase):
 
     def test_set_allowed_sources_cant_remove_running_source(self):
         account = models.Account.objects.get(pk=111)
+        account_settings = models.AccountSettings.objects.latest('created_dt')
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([2,3])
@@ -2048,13 +2053,14 @@ class AccountAgencyTest(TestCase):
             2: {'allowed': False},
             3: {'allowed': True}
         })
-        
+
         view.set_allowed_sources(
+            account_settings,
             account,
-            False, # no permission to add unreleased source 3 
+            False, # no permission to add unreleased source 3
             form
         )
-  
+
         self.assertEqual(
             dict(form.errors),
             {'allowed_sources': [u'Can\'t save changes because media source Source 2 is still used on this account.']}
@@ -2062,12 +2068,13 @@ class AccountAgencyTest(TestCase):
 
     def test_set_allowed_sources_none(self):
         account = models.Account.objects.get(pk=1)
+        account_settings = models.AccountSettings.objects.latest('created_dt')
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1,2])
         )
         view = agency.AccountAgency()
-        view.set_allowed_sources(account, True, self._get_form_with_allowed_sources_dict(None))
+        view.set_allowed_sources(account_settings, account, True, self._get_form_with_allowed_sources_dict(None))
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1,2])
@@ -2085,7 +2092,7 @@ class AccountAgencyTest(TestCase):
             follow=True
         )
         response = json.loads(response.content)
-      
+
         self.assertEqual(response['data']['settings']['allowed_sources'], {
             '2': {'name': 'Source 2', 'allowed': True},
             '3': {'name': 'Source 3 (unreleased)'}
@@ -2102,7 +2109,7 @@ class AccountAgencyTest(TestCase):
             follow=True
         )
         response = json.loads(response.content)
-      
+
         self.assertEqual(response['data']['settings']['allowed_sources'], {
             '2': {'name': 'Source 2', 'allowed': True},
             })
@@ -2112,9 +2119,9 @@ class AccountAgencyTest(TestCase):
         form = self._get_form_with_allowed_sources_dict({})
         view.add_error_to_account_agency_form(form, [1,2])
         self.assertEqual(
-            dict(form.errors), 
+            dict(form.errors),
             {
-                'allowed_sources': 
+                'allowed_sources':
                     [u'Can\'t save changes because media sources Source 1, Source 2 are still used on this account.']
             }
         )
@@ -2124,9 +2131,9 @@ class AccountAgencyTest(TestCase):
         form = self._get_form_with_allowed_sources_dict({})
         view.add_error_to_account_agency_form(form, [1])
         self.assertEqual(
-            dict(form.errors), 
+            dict(form.errors),
             {
-                'allowed_sources': 
+                'allowed_sources':
                     [u'Can\'t save changes because media source Source 1 is still used on this account.']
             }
         )
