@@ -732,7 +732,7 @@
         created_dt: '2014-06-04T00:00:00'
         created_by: 1
         name: 'test campaign 2'
-        account_manager: NULL
+        campaign_manager: NULL
         iab_category: 'IAB24'
         campaign_goal: 4
         goal_quantity: 10
@@ -746,7 +746,7 @@
         created_dt: '2014-06-04T00:00:00'
         created_by: 1
         name: 'test campaign 4'
-        account_manager: NULL
+        campaign_manager: NULL
         iab_category: 'IAB24'
         campaign: 4
         archived: True
@@ -757,7 +757,7 @@
         created_dt: '2014-06-04T00:00:00'
         created_by: 1
         name: 'test campaign 5'
-        account_manager: NULL
+        campaign_manager: NULL
         campaign: 5
         archived: True
     model: dash.campaignsettings

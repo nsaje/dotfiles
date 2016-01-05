@@ -1017,8 +1017,8 @@ class AccountCampaigns(api_common.BaseApiView):
 
         settings = campaign.get_current_settings()  # creates new settings with default values
         settings.name = name
-        settings.account_manager = (account_settings.default_account_manager
-                                    if account_settings.default_account_manager else request.user)
+        settings.campaign_manager = (account_settings.default_account_manager
+                                     if account_settings.default_account_manager else request.user)
         settings.save(request)
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_CAMPAIGN,

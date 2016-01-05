@@ -417,7 +417,7 @@ class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         ))
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == 'account_manager':
+        if db_field.name == 'campaign_manager':
             kwargs['queryset'] = ZemUser.objects.get_users_with_perm(
                 'campaign_settings_account_manager'
             ).order_by('last_name')
@@ -430,7 +430,7 @@ class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     search_fields = ['campaign__name']
     list_display = (
         'campaign',
-        'account_manager',
+        'campaign_manager',
         'service_fee',
         'iab_category',
         'promotion_goal',

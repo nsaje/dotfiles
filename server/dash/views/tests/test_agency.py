@@ -1609,7 +1609,7 @@ class CampaignAgencyTest(TestCase):
             json.dumps({
                 'settings': {
                     'id': 1,
-                    'account_manager': 1,
+                    'campaign_manager': 1,
                     'iab_category': 'IAB17',
                     'name': 'ignore name'
                 }
@@ -1624,7 +1624,7 @@ class CampaignAgencyTest(TestCase):
         settings = campaign.get_current_settings()
 
         self.assertEqual(campaign.name, 'test campaign 1')
-        self.assertEqual(settings.account_manager_id, 1)
+        self.assertEqual(settings.campaign_manager_id, 1)
         self.assertEqual(settings.iab_category, 'IAB17')
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)

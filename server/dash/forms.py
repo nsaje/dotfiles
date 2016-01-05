@@ -351,24 +351,24 @@ class ConversionGoalForm(forms.Form):
 
 class CampaignAgencyForm(forms.Form):
     id = forms.IntegerField()
-    account_manager = forms.IntegerField()
+    campaign_manager = forms.IntegerField()
     iab_category = forms.ChoiceField(
         choices=constants.IABCategory.get_choices(),
     )
 
-    def clean_account_manager(self):
-        account_manager_id = self.cleaned_data.get('account_manager')
+    def clean_campaign_manager(self):
+        campaign_manager_id = self.cleaned_data.get('campaign_manager')
 
-        err_msg = 'Invalid account manager.'
+        err_msg = 'Invalid campaign manager.'
 
         try:
-            account_manager = ZemUser.objects.\
+            campaign_manager = ZemUser.objects.\
                 get_users_with_perm('campaign_settings_account_manager', True).\
-                get(pk=account_manager_id)
+                get(pk=campaign_manager_id)
         except ZemUser.DoesNotExist:
             raise forms.ValidationError(err_msg)
 
-        return account_manager
+        return campaign_manager
 
 
 class CampaignSettingsForm(forms.Form):
