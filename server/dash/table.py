@@ -1693,6 +1693,8 @@ class PublishersTable(object):
                     level = blacklisted_pub.get_blacklist_level()
                     publisher_data['blacklisted_level'] = level
                     publisher_data['blacklisted_level_description'] = constants.PublisherBlacklistLevel.verbose(level)
+                    if blacklisted_pub.external_id is not None:
+                        publisher_data['external_id'] = blacklisted_pub.external_id
 
         response = {
             'rows': self.get_rows(
@@ -1816,7 +1818,7 @@ class PublishersTable(object):
                 'blacklisted': publisher_data['blacklisted'],
                 'exchange': source_name,
                 'source_id': publisher_data['source_id'],
-                'external_id': publisher_data['external_id'],
+                'external_id': publisher_data.get('external_id')
 
                 'cost': publisher_data.get('cost', 0),
                 'license_fee': publisher_data.get('license_fee', 0),
