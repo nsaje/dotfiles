@@ -53,7 +53,7 @@ class Command(BaseCommand):
         return end_date
 
     def _get_s3_publisher_uri(self, start_date, end_date):
-        bucket_name = settings.S3_BUCKET_B1_EVENTLOG_SYNC
+        bucket_name = settings.S3_BUCKET_STATS
         bucket_b1_eventlog_sync = S3Helper(bucket_name=bucket_name)
         prefix_publishers = PREFIX_PUBLISHERS_FORMAT.format(start_date.isoformat(), end_date.isoformat())
         publishers = bucket_b1_eventlog_sync.list(prefix_publishers)
