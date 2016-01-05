@@ -105,6 +105,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             "source_id": row.source_id,
             "domain": row.domain,
             "exchange": row.exchange,
+            "external_id": row.external_id,
             "blacklisted": row.blacklisted,
             "blacklisted_level": row.blacklisted_level
         };
