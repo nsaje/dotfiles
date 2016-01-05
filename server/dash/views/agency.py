@@ -1025,9 +1025,15 @@ class AccountAgency(api_common.BaseApiView):
         to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
 
         if to_be_added or to_be_removed:
-            changes_text = u'Updated media sources ({} added, {} removed)'.format(len(to_be_added), len(to_be_removed))
-            settings.changes_text = ', '.join(filter(None, (changes_text, settings.changes_text)))
+            added_media_source_names = (allowed_sources_dict[k]['name'] for k in to_be_added)
+            removed_media_source_names = (allowed_sources_dict[k]['name'] for k in to_be_removed)
 
+            changes_text = ', '.join(filter(None, [
+                u'Added media sources ({})'.format(', '.join(added_media_source_names)) if to_be_added else None,
+                u'Removed media sources ({})'.format(', '.join(removed_media_source_names)) if to_be_removed else None
+                ]))
+
+            settings.changes_text = changes_text
             account.allowed_sources.add(*list(to_be_added))
             account.allowed_sources.remove(*list(to_be_removed))
 
