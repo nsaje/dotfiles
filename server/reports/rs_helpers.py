@@ -43,10 +43,12 @@ def decimal_to_int_exact(num):
 def additions(*cols):
     return '({})'.format('+'.join(cols))
 
+
 def total_cost(nano_cols=[], cc_cols=[]):
     return additions(
         *map(sum_agr, nano_cols) + ['{}*100000'.format(sum_agr(col)) for col in cc_cols]
     )
+
 
 def sum_div(expr, divisor):
     return ('CASE WHEN SUM("{divisor}") <> 0 THEN SUM(CAST("{expr}" AS FLOAT)) / SUM("{divisor}") '

@@ -13,7 +13,11 @@ import reports.rs_helpers as rsh
 import dash.models
 import dash.constants
 
+from utils.sort_helper import map_by_breakdown
+
+
 logger = logging.getLogger(__name__)
+
 
 class RSContentAdStatsModel(redshift.RSModel):
     TABLE_NAME = 'contentadstats'
@@ -266,7 +270,8 @@ def get_yesterday_cost(constraints, breakdown=None):
 
     rs = get_day_cost(yesterday, breakdown=breakdown, **constraints)
 
-    result = {row['source']: row.get('e_media_cost', row['cost']) or 0.0 for row in rs}
+    result = map_by_breakdown(rs, breakdown, lambda row: row.get('e_media_cost', row['cost']) or 0.0)
+
     return result
 
 
@@ -282,7 +287,8 @@ def get_actual_yesterday_cost(constraints, breakdown=None):
 
     rs = get_day_cost(yesterday, breakdown=breakdown, **constraints)
 
-    result = {row['source']: row.get('media_cost', row['cost']) or 0.0 for row in rs}
+    result = map_by_breakdown(rs, breakdown, lambda row: row.get('media_cost', row['cost']) or 0.0)
+
     return result
 
 def get_day_cost(day, breakdown=None, **constraints):

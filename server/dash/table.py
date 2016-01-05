@@ -1301,6 +1301,9 @@ class CampaignAdGroupsTable(object):
 
         ad_groups_status_dict = self.get_per_ad_group_status_dict(ad_groups, ad_groups_settings, filtered_sources)
 
+        e_yesterday_cost, e_yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign)
+        yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign, actual=True)
+
         response = {
             'rows': self.get_rows(
                 user,
@@ -1311,9 +1314,11 @@ class CampaignAdGroupsTable(object):
                 last_success_actions_joined,
                 order,
                 has_view_archived_permission,
-                show_archived
+                show_archived,
+                e_yesterday_cost,
+                yesterday_cost,
             ),
-            'totals': totals_stats,
+            'totals': self.get_totals(user, totals_stats, e_yesterday_total_cost, yesterday_total_cost),
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_success_actions_joined.values()),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
@@ -1349,14 +1354,14 @@ class CampaignAdGroupsTable(object):
         return helpers.get_ad_group_state_by_sources_running_status(
             ad_groups, ad_groups_settings, [], 'id')
 
-    def get_yesterday_cost(self, campaign, actual=False):
+    def get_yesterday_cost(self, reports_api, campaign, actual=False):
         constraints = dict(campaign=campaign)
         breakdown = ['ad_group']
 
         if actual:
-            yesterday_cost = self.reports_api.get_actual_yesterday_cost(constraints, breakdown)
+            yesterday_cost = reports_api.get_actual_yesterday_cost(constraints, breakdown)
         else:
-            yesterday_cost = self.reports_api.get_yesterday_cost(constraints, breakdown)
+            yesterday_cost = reports_api.get_yesterday_cost(constraints, breakdown)
         yesterday_total_cost = None
         if yesterday_cost:
             yesterday_total_cost = sum(yesterday_cost.values())
@@ -1374,7 +1379,7 @@ class CampaignAdGroupsTable(object):
         )
 
     def get_rows(self, user, ad_groups, ad_groups_settings, ad_groups_status_dict, stats, last_actions,
-                 order, has_view_archived_permission, show_archived):
+                 order, has_view_archived_permission, show_archived, e_yesterday_cost, yesterday_cost):
         rows = []
 
         # map settings for quicker access
@@ -1383,7 +1388,7 @@ class CampaignAdGroupsTable(object):
         for ad_group in ad_groups:
             row = {
                 'name': ad_group.name,
-                'ad_group': str(ad_group.pk)
+                'ad_group': str(ad_group.id),
             }
 
             ad_group_data = {}
@@ -1409,6 +1414,11 @@ class CampaignAdGroupsTable(object):
 
             row.update(ad_group_data)
 
+            if user.has_perm('zemauth.can_view_effective_costs'):
+                row['e_yesterday_cost'] = e_yesterday_cost.get(ad_group.id)
+            if not user.has_perm('zemauth.can_view_effective_costs') or user.has_perm('zemauth.can_view_actual_costs'):
+                row['yesterday_cost'] = yesterday_cost.get(ad_group.id)
+
             last_sync = last_actions.get(ad_group.pk)
 
             row['last_sync'] = last_sync
@@ -1422,6 +1432,14 @@ class CampaignAdGroupsTable(object):
                 rows = sort_results(rows, [order])
 
         return rows
+
+    def get_totals(self, user, totals_data, e_yesterday_cost, yesterday_cost):
+        if user.has_perm('zemauth.can_view_effective_costs'):
+            totals_data['e_yesterday_cost'] = e_yesterday_cost
+        if not user.has_perm('zemauth.can_view_effective_costs') or user.has_perm('zemauth.can_view_actual_costs'):
+            totals_data['yesterday_cost'] = yesterday_cost
+
+        return totals_data
 
 
 class AccountCampaignsTable(object):
