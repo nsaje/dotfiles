@@ -47,9 +47,9 @@ class CommandUpdateContentAdStatsFromGAApiTest(TestCase):
             return {'rows': [
                 ['/driving/voltbolt/?_z1_adgid=1&_z1_caid=1&_z1_msid=adblade&_z1_disga=zemgagood',
                  '(not set)', '2', '1', '100.0', '1', '10.0']], 'itemsPerPage': 1000, 'totalResults': 1}
-        elif metrics == 'ga:goal1ConversionRate,ga:goal1Completions':
+        elif metrics == 'ga:goal1Completions':
             return {'rows': [
                 ['/driving/voltbolt/?_z1_adgid=1&_z1_caid=1&_z1_msid=adblade&_z1_disga=zemgagood',
-                 '(not set)', '1.0', '2']], 'itemsPerPage': 1000, 'totalResults': 1}
+                 '(not set)', '2']], 'itemsPerPage': 1000, 'totalResults': 1}
         else:
             raise Exception('Undefined GA metrics: ' + metrics)

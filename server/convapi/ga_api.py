@@ -13,9 +13,12 @@ logger = logging.getLogger(__name__)
 GA_API_NAME = 'analytics'
 GA_API_VERSION = 'v3'
 GA_SCOPE = ['https://www.googleapis.com/auth/analytics.readonly']
+GA_GOAL_METRICS_FORMAT = 'ga:goal{0}Completions'
+GA_DIMENSIONS = 'ga:landingPagePath,ga:keyword'
 
 MAX_METRICS_PER_GA_REQUEST = 10
-NUM_METRICS_PER_GOAL = 2
+NUM_METRICS_PER_GOAL = len(GA_GOAL_METRICS_FORMAT.split(','))
+NUM_GA_DIMENSIONS = len(GA_DIMENSIONS.split(','))
 
 
 def get_ga_service():
@@ -127,19 +130,19 @@ class GAApiReport(GAReport):
                     start_date=start_date.strftime('%Y-%m-%d'),
                     end_date=start_date.strftime('%Y-%m-%d'),
                     metrics=metrics,
-                    dimensions='ga:landingPagePath,ga:keyword',
+                    dimensions=GA_DIMENSIONS,
                     filters='ga:landingPagePath=@_z1_,ga:keyword=~.*z1[0-9]+[a-zA-Z].+?1z.*',
                     start_index=start_index
             ).execute()
             if start_index == 1 and ga_stats['totalResults'] == 0:
                 ga_stats = None
             return ga_stats
-        except HttpError, ex:
+        except HttpError:
             logger.exception('Google Analytics API call failed.')
-            raise ex
-        except Exception, ex:
+            raise
+        except Exception:
             logger.exception('General exception when calling Google Analytics API.')
-            raise ex
+            raise
 
     def _parse_keyword_or_url(self, row):
         content_ad_id, source_param = self._parse_z11z_keyword(row[1])
@@ -177,8 +180,7 @@ class GAApiReport(GAReport):
     def _generate_ga_metrics(self, goals):
         # we have to split the Google Analytics' metrics into chunks, because Google Analytics
         # supports at most 10 metrics per request.
-        goal_ids = [goal['id'] for goal in goals]
-        ga_metrics = ['ga:goal{0}ConversionRate,ga:goal{0}Completions'.format(goal_id) for goal_id in goal_ids]
+        ga_metrics = [GA_GOAL_METRICS_FORMAT.format(goal['id']) for goal in goals]
         return ','.join(ga_metrics)
 
     def _update_report_entry_goal_conversion_stats(self, report_entry):
@@ -193,7 +195,7 @@ class GAApiReport(GAReport):
         sub_goals = {}
         for i, metadata in enumerate(sub_goal_metadata):
             sub_goal_name = metadata['name']
-            sub_goals[sub_goal_name] = int(row[3 + i * NUM_METRICS_PER_GOAL])
+            sub_goals[sub_goal_name] = int(row[NUM_GA_DIMENSIONS + i * NUM_METRICS_PER_GOAL])
         key = (self.start_date, content_ad_id, media_source_tracking_slug)
         existing_goal = goals.get(key)
         if existing_goal is None:
