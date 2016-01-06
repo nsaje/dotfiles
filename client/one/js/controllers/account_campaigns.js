@@ -581,6 +581,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
                 $scope.isPermissionInternal('zemauth.can_view_actual_costs')
             );
         }
+        console.log($scope.chartMetricOptions)
     };
 
     $scope.init = function() {
