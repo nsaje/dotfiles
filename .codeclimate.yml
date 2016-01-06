@@ -16,5 +16,5 @@ ratings:
    - "**.py"
 
 exclude_paths:
-- client/lib/*
+- client/lib/**/*
 - server/**/migrations/*.py
