@@ -17,6 +17,7 @@ MAIN_COLUMNS = [
     'e_data_cost', 'total_cost', 'billing_cost', 'license_fee'
 ]
 
+
 def generate_rows(dimensions, start_date, end_date, user, ignore_diff_rows=False, conversion_goals=None, **kwargs):
     ordering = ['date'] if 'date' in dimensions else []
 
