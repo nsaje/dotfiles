@@ -249,7 +249,8 @@ class CampaignAgency(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(campaign_settings, campaign),
-            'campaign_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
+            'account_managers': self.get_user_list(campaign_settings, 'campaign_settings_account_manager'),
+            'sales_reps': self.get_user_list(campaign_settings, 'campaign_settings_sales_rep'),
             'history': self.get_history(campaign),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
@@ -277,7 +278,6 @@ class CampaignAgency(api_common.BaseApiView):
 
         changes = prev_settings.get_setting_changes(settings)
         if changes:
-            email_helper.send_campaign_notification_email(campaign, request)
             helpers.log_useraction_if_necessary(request,
                                                 constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS,
                                                 campaign=campaign)
@@ -315,6 +315,7 @@ class CampaignAgency(api_common.BaseApiView):
                     )
                 )
 
+        email_helper.send_campaign_notification_email(campaign, request)
         zwei_actions.send(actions)
 
     def get_history(self, campaign):
@@ -356,9 +357,13 @@ class CampaignAgency(api_common.BaseApiView):
                 'name': 'Name',
                 'value': new_settings.name.encode('utf-8')
             }),
-            ('campaign_manager', {
-                'name': 'Campaign Manager',
-                'value': helpers.get_user_full_name_or_email(new_settings.campaign_manager)
+            ('account_manager', {
+                'name': 'Account Manager',
+                'value': helpers.get_user_full_name_or_email(new_settings.account_manager)
+            }),
+            ('sales_representative', {
+                'name': 'Sales Representative',
+                'value': helpers.get_user_full_name_or_email(new_settings.sales_representative)
             }),
             ('iab_category', {
                 'name': 'IAB Category',
@@ -397,9 +402,13 @@ class CampaignAgency(api_common.BaseApiView):
         if old_settings is not None:
             settings_dict['name']['old_value'] = old_settings.name.encode('utf-8')
 
-            if old_settings.campaign_manager is not None:
-                settings_dict['campaign_manager']['old_value'] = \
-                    helpers.get_user_full_name_or_email(old_settings.campaign_manager)
+            if old_settings.account_manager is not None:
+                settings_dict['account_manager']['old_value'] = \
+                    helpers.get_user_full_name_or_email(old_settings.account_manager)
+
+            if old_settings.sales_representative is not None:
+                settings_dict['sales_representative']['old_value'] = \
+                    helpers.get_user_full_name_or_email(old_settings.sales_representative)
 
             settings_dict['iab_category']['old_value'] = \
                 constants.IABCategory.get_text(old_settings.iab_category)
@@ -429,9 +438,12 @@ class CampaignAgency(api_common.BaseApiView):
             result = {
                 'id': str(campaign.pk),
                 'name': campaign.name,
-                'campaign_manager':
-                    str(settings.campaign_manager.id)
-                    if settings.campaign_manager is not None else None,
+                'account_manager':
+                    str(settings.account_manager.id)
+                    if settings.account_manager is not None else None,
+                'sales_representative':
+                    str(settings.sales_representative.id)
+                    if settings.sales_representative is not None else None,
                 'iab_category': settings.iab_category,
             }
 
@@ -439,13 +451,14 @@ class CampaignAgency(api_common.BaseApiView):
 
     def set_settings(self, settings, campaign, resource):
         settings.campaign = campaign
-        settings.campaign_manager = resource['campaign_manager']
+        settings.account_manager = resource['account_manager']
+        settings.sales_representative = resource['sales_representative']
         settings.iab_category = resource['iab_category']
 
     def get_user_list(self, settings, perm_name):
         users = list(ZemUser.objects.get_users_with_perm(perm_name))
 
-        manager = settings.campaign_manager
+        manager = settings.account_manager
         if manager is not None and manager not in users:
             users.append(manager)
 
@@ -605,30 +618,26 @@ class CampaignSettings(api_common.BaseApiView):
 
         settings_dict = resource.get('settings', {})
 
-        current_settings = campaign.get_current_settings()
-        new_settings = current_settings.copy_settings()
+        settings = campaign.get_current_settings().copy_settings()
         if not request.user.has_perm('zemauth.settings_defaults_on_campaign_level'):
             # copy properties that can't be set by the user
             # to pass validation
-            settings_dict['target_devices'] = new_settings.target_devices
-            settings_dict['target_regions'] = new_settings.target_regions
+            settings_dict['target_devices'] = settings.target_devices
+            settings_dict['target_regions'] = settings.target_regions
 
         form = forms.CampaignSettingsForm(settings_dict)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        self.set_settings(request, new_settings, campaign, form.cleaned_data)
+        self.set_settings(request, settings, campaign, form.cleaned_data)
         self.set_campaign(campaign, form.cleaned_data)
 
-        CampaignAgency.propagate_and_save(campaign, new_settings, request)
+        CampaignAgency.propagate_and_save(campaign, settings, request)
 
-        changes = current_settings.get_setting_changes(new_settings)
-        if changes:
-            email_helper.send_campaign_notification_email(campaign, request)
-            helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_SETTINGS, campaign=campaign)
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_SETTINGS, campaign=campaign)
 
         response = {
-            'settings': self.get_dict(request, new_settings, campaign)
+            'settings': self.get_dict(request, settings, campaign)
         }
 
         return self.create_api_response(response)

@@ -49,7 +49,7 @@
             <div class="col-xs-8" ng-if="!availablePixels.length">
                 <p class="form-control-static">
                 Not available. You must
-                <a ng-if="hasPermission('zemauth.account_account_view')" zem-in-link="main.accounts.settings({ id: account.id })">set up a conversion pixel</a>
+                <a ng-if="hasPermission('zemauth.account_account_view')" zem-in-link="main.accounts.account({ id: account.id })">set up a conversion pixel</a>
                 <span ng-if="!hasPermission('zemauth.account_account_view')">set up a conversion pixel</span> first.
                 </p>
             </div>

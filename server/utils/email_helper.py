@@ -67,7 +67,7 @@ Zemanta
     campaign_settings = ad_group.campaign.get_current_settings()
 
     send_notification_mail(
-        campaign_settings.campaign_manager, subject, body, ad_group.campaign.get_campaign_url(request))
+        campaign_settings.account_manager, subject, body, ad_group.campaign.get_campaign_url(request))
 
 
 def send_campaign_notification_email(campaign, request):
@@ -99,7 +99,7 @@ Zemanta
     campaign_settings = campaign.get_current_settings()
 
     send_notification_mail(
-        campaign_settings.campaign_manager, subject, body, campaign.get_campaign_url(request))
+        campaign_settings.account_manager, subject, body, campaign.get_campaign_url(request))
 
 
 def send_account_pixel_notification(account, request):
@@ -303,7 +303,7 @@ def should_send_notification_mail(campaign, user, request):
 
     campaign_settings = campaign.get_current_settings()
 
-    if not campaign_settings or not campaign_settings.campaign_manager:
+    if not campaign_settings or not campaign_settings.account_manager:
         logger.error(
             'Could not send e-mail because there is no account manager set for campaign with id %s.',
             campaign.pk
@@ -320,7 +320,7 @@ def should_send_notification_mail(campaign, user, request):
         )
         return False
 
-    if user.pk == campaign_settings.campaign_manager.pk:
+    if user.pk == campaign_settings.account_manager.pk:
         return False
 
     return True

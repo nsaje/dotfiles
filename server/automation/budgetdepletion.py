@@ -23,10 +23,10 @@ def manager_has_been_notified(campaign):
     today = today_utc.astimezone(
         pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
     yesterday = today - datetime.timedelta(days=1, hours=-1)
-    campaign_manager = campaign.get_current_settings().campaign_manager
+    account_manager = campaign.get_current_settings().account_manager
     return automation.models.CampaignBudgetDepletionNotification.objects.filter(
         Q(campaign=campaign),
-        Q(account_manager=campaign_manager),
+        Q(account_manager=account_manager),
         Q(created_dt__gte=yesterday)).count() > 0
 
 
@@ -36,11 +36,11 @@ def _allowed_to_automatically_stop_campaign(campaign):
 
 
 def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays_spend):
-    campaign_manager = campaign.get_current_settings().campaign_manager
-    sales_rep = campaign.get_sales_representative()
+    account_manager = campaign.get_current_settings().account_manager
+    sales_rep = campaign.get_current_settings().sales_representative
     emails = []
-    if campaign_manager is not None:
-        emails.append(campaign_manager.email)
+    if account_manager is not None:
+        emails.append(account_manager.email)
     if sales_rep is not None:
         emails.append(sales_rep.email)
     total_daily_budget = automation.helpers.get_total_daily_budget_amount(campaign)
@@ -58,7 +58,7 @@ def notify_campaign_with_depleting_budget(campaign, available_budget, yesterdays
         campaign=campaign,
         available_budget=available_budget,
         yesterdays_spend=yesterdays_spend,
-        account_manager=campaign_manager).save()
+        account_manager=account_manager).save()
 
 
 def budget_is_depleting(available_budget, yesterdays_spend):
@@ -208,11 +208,11 @@ def stop_and_notify_depleted_budget_campaigns():
 
 
 def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterdays_spend):
-    campaign_manager = campaign.get_current_settings().campaign_manager
-    sales_rep = campaign.get_sales_representative()
+    account_manager = campaign.get_current_settings().account_manager
+    sales_rep = campaign.get_current_settings().sales_representative
     emails = []
-    if campaign_manager is not None:
-        emails.append(campaign_manager.email)
+    if account_manager is not None:
+        emails.append(account_manager.email)
     if sales_rep is not None:
         emails.append(sales_rep.email)
 
@@ -227,5 +227,5 @@ def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterd
         campaign=campaign,
         available_budget=available_budget,
         yesterdays_spend=yesterdays_spend,
-        campaign_manager=campaign_manager,
+        account_manager=account_manager,
         stopped=True).save()

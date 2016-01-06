@@ -125,7 +125,8 @@ oneApp.config(['$provide', function ($provide) {
             var deferred = $q.defer(),
                 settings = defaults.newCampaignSettings(zemDemoCacheService.generateId('campaign')),
                 campaign = angular.extend({}, {
-                    campaignManagers: defaults.campaignManagers,
+                    accountManagers: defaults.accountManagers,
+                    salesReps: defaults.accountManagers,
                     history: [{
                         changedBy: 'test.account@zemanta.si',
                         changesText: 'Created settings',

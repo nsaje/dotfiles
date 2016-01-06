@@ -221,7 +221,8 @@ class CampaignSettingsTest(TestCase):
             'created_by_id',
             'changes_text',
             'useractionlog',
-            'campaign_manager_id',
+            'account_manager_id',
+            'sales_representative_id'
         ]
 
         all_fields = set(models.CampaignSettings._settings_fields + meta_fields)
@@ -235,10 +236,11 @@ class CampaignSettingsTest(TestCase):
             'iab_category': u'1',
             'name': u'Test campaign 1',
             'target_devices': [u'mobile'],
-            'campaign_manager': User.objects.get(pk=1),
+            'account_manager': User.objects.get(pk=1),
             'promotion_goal': 1,
             'target_regions': [u'CA', u'501'],
             'service_fee': Decimal('0.2000'),
+            'sales_representative': User.objects.get(pk=1),
             'campaign_goal': 2,
             'goal_quantity': Decimal('10.00')
         }

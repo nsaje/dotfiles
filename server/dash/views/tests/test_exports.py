@@ -101,7 +101,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
 
         self._assert_row(
             worksheet, 4,
-            ['Date', 'Account', 'Campaign', 'Campaign Manager', 'Sales Representative',
+            ['Date', 'Account', 'Campaign', 'Account Manager', 'Sales Representative',
              'Service Fee', 'IAB Category', 'Promotion Goal', 'Spend', 'Avg. CPC', 'Clicks', 'Impressions', 'CTR',
              'Fee Amount', 'Total Amount']
         )
@@ -153,7 +153,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
             'total_amount': 1101.1149425287356,
             'campaign': u'test campaign 1 \u010c\u017e\u0161',
             'fee_amount': 143.14494252873556,
-            'campaign_manager': 'N/A',
+            'account_manager': 'N/A',
             'promotion_goal': 'N/A',
             'cost': 957.97,
             'service_fee': 0.13,
@@ -175,7 +175,7 @@ class AllAccountsExportTestCase(AssertRowMixin, test.TestCase):
             'total_amount': 'N/A',
             'campaign': u'test campaign 1 \u010c\u017e\u0161',
             'fee_amount': 'N/A',
-            'campaign_manager': 'N/A',
+            'account_manager': 'N/A',
             'promotion_goal': 'N/A',
             'cost': 957.97,
             'service_fee': 'N/A',
