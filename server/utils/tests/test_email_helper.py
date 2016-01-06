@@ -63,7 +63,7 @@ class EmailHelperTestCase(TestCase):
         SEND_NOTIFICATION_MAIL=True
     )
     def test_send_ad_group_notification_email(self):
-        account_manager = User.objects.create_user('manager@user.com')
+        campaign_manager = User.objects.create_user('manager@user.com')
 
         account = dash_models.Account()
         account.save(self.request)
@@ -71,7 +71,7 @@ class EmailHelperTestCase(TestCase):
         campaign = dash_models.Campaign(account=account)
         campaign.save(self.request)
 
-        campaign_settings = dash_models.CampaignSettings(campaign=campaign, account_manager=account_manager)
+        campaign_settings = dash_models.CampaignSettings(campaign=campaign, campaign_manager=campaign_manager)
         campaign_settings.save(self.request)
 
         ad_group = dash_models.AdGroup(id=8, campaign=campaign)
@@ -86,9 +86,9 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [account_manager.email])
+        self.assertEqual(mail.outbox[0].to, [campaign_manager.email])
 
-        self.request.user = account_manager
+        self.request.user = campaign_manager
         email_helper.send_ad_group_notification_email( ad_group, self.request)
 
         self.assertEqual(len(mail.outbox), 1)
@@ -121,7 +121,7 @@ class EmailHelperTestCase(TestCase):
         SEND_NOTIFICATION_MAIL=True
     )
     def test_send_campaign_notification_email(self):
-        account_manager = User.objects.create_user('manager@user.com')
+        campaign_manager = User.objects.create_user('manager@user.com')
 
         account = dash_models.Account()
         account.save(self.request)
@@ -129,7 +129,7 @@ class EmailHelperTestCase(TestCase):
         campaign = dash_models.Campaign(account=account, id=48)
         campaign.save(self.request)
 
-        campaign_settings = dash_models.CampaignSettings(campaign=campaign, account_manager=account_manager)
+        campaign_settings = dash_models.CampaignSettings(campaign=campaign, campaign_manager=campaign_manager)
         campaign_settings.save(self.request)
 
         email_helper.send_campaign_notification_email(campaign, self.request)
@@ -141,9 +141,9 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(mail.outbox[0].subject, subject)
         self.assertEqual(mail.outbox[0].body, body)
         self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, [account_manager.email])
+        self.assertEqual(mail.outbox[0].to, [campaign_manager.email])
 
-        self.request.user = account_manager
+        self.request.user = campaign_manager
         email_helper.send_campaign_notification_email(campaign, self.request)
 
         self.assertEqual(len(mail.outbox), 1)

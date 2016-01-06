@@ -34,8 +34,10 @@ CC_TO_DEC_MULTIPLIER = Decimal('0.0001')
 TO_CC_MULTIPLIER = 10**4
 TO_NANO_MULTIPLIER = 10**9
 
+
 def nano_to_cc(num):
     return int(round(num * 0.00001))
+
 
 def validate(*validators):
     errors = {}
@@ -316,6 +318,9 @@ class Campaign(models.Model, PermissionMixin):
 
     admin_link.allow_tags = True
 
+    def get_sales_representative(self):
+        return self.account.get_current_settings().default_sales_representative
+
     def get_current_settings(self):
         if not self.pk:
             raise exc.BaseError(
@@ -505,8 +510,7 @@ class AccountSettings(SettingsBase):
 class CampaignSettings(SettingsBase):
     _settings_fields = [
         'name',
-        'account_manager',
-        'sales_representative',
+        'campaign_manager',
         'service_fee',
         'iab_category',
         'promotion_goal',
@@ -532,12 +536,13 @@ class CampaignSettings(SettingsBase):
         related_name="+",
         on_delete=models.PROTECT
     )
-    sales_representative = models.ForeignKey(
+    campaign_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
         related_name="+",
         on_delete=models.PROTECT
     )
+
     service_fee = models.DecimalField(
         decimal_places=4,
         max_digits=5,

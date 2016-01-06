@@ -1,35 +1,19 @@
 <div class="page page-campaign-agency" ng-if="!campaign.archived">
     <form id="form-campaign-agency" class="form-horizontal">
-        <div class="form-group" ng-class="{'has-error': !!errors.accountManager}">
+        <div class="form-group" ng-class="{'has-error': !!errors.campaignManager}">
             <label for="account-manager-select" class="col-xs-3 control-label">
-                Account Manager
+                Campaign Manager
                 <zem-help-popover content="Account manager responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-3">
-                <ui-select theme="select2" id="account-manager-select" class="form-control" ng-model="settings.accountManager">
+                <ui-select theme="select2" id="account-manager-select" class="form-control" ng-model="settings.campaignManager">
                     <ui-select-match>{{$select.selected.name}}</ui-select-match>
-                    <ui-select-choices repeat="manager.id as manager in accountManagers | orderBy:getName | filter:$select.search">
+                    <ui-select-choices repeat="manager.id as manager in campaignManagers | orderBy:getName | filter:$select.search">
                         <div ng-bind-html="manager.name | highlight: $select.search"></div>
                     </ui-select-choices>
                 </ui-select>
             </div>
-            <label ng-repeat="error in errors.accountManager" class="control-label error" for="account-manager-select">{{ error }}</label>
-        </div>
-
-        <div class="form-group" ng-class="{'has-error': !!errors.salesRepresentative}">
-            <label for="sales-representative-select" class="col-xs-3 control-label">
-                Sales Representative
-                <zem-help-popover content="Sales representative responsible for the campaign and the communication with the client." placement="top"></zem-help-popover>
-            </label>
-            <div class="col-xs-3">
-                <ui-select theme="select2" id="sales-representative-select" class="form-control" ng-model="settings.salesRepresentative">
-                    <ui-select-match>{{$select.selected.name}}</ui-select-match>
-                    <ui-select-choices repeat="rep.id as rep in salesReps | orderBy:getName | filter:$select.search">
-                        <div ng-bind-html="rep.name | highlight: $select.search"></div>
-                    </ui-select-choices>
-                </ui-select>
-            </div>
-            <label ng-repeat="error in errors.salesRepresentative" class="control-label error" for="sales-representative-select">{{ error }}</label>
+            <label ng-repeat="error in errors.campaignManager" class="control-label error" for="account-manager-select">{{ error }}</label>
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.IABCategory}">

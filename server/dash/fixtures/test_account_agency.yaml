@@ -59,8 +59,7 @@
         campaign: 111
         created_dt: '2015-09-23T09:57:22'
         created_by: 1
-        account_manager: 1
-        sales_representative: 1
+        campaign_manager: 1
         archived: true
     model: dash.campaignsettings
     pk: 111
@@ -80,8 +79,7 @@
         campaign: 1112
         created_dt: '2015-09-23T09:57:22'
         created_by: 1
-        account_manager: 1
-        sales_representative: 1
+        campaign_manager: 1
         archived: false
     model: dash.campaignsettings
     pk: 1112

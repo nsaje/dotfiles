@@ -1449,8 +1449,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         function convertSettingsFromApi(settings) {
             return {
                 id: settings.id,
-                accountManager: settings.account_manager,
-                salesRepresentative: settings.sales_representative,
+                campaignManager: settings.campaign_manager,
                 IABCategory: settings.iab_category
             };
         }
@@ -1488,8 +1487,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         function convertSettingsToApi(settings) {
             return {
                 id: settings.id,
-                account_manager: settings.accountManager,
-                sales_representative: settings.salesRepresentative,
+                campaign_manager: settings.campaignManager,
                 iab_category: settings.IABCategory
             };
         }
@@ -1497,8 +1495,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
         function convertValidationErrorFromApi(errors) {
             var result = {
                 id: errors.id,
-                accountManager: errors.account_manager,
-                salesRepresentative: errors.sales_representative,
+                campaignManager: errors.campaign_manager,
                 IABCategory: errors.iab_category
             };
 
@@ -1517,8 +1514,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                     }
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
-                        accountManagers: data.data.account_managers,
-                        salesReps: data.data.sales_reps,
+                        campaignManagers: data.data.campaign_managers,
                         canArchive: data.data.can_archive,
                         canRestore: data.data.can_restore,
                         history: convertHistoryFromApi(data.data.history)
