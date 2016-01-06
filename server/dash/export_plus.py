@@ -34,7 +34,6 @@ FIELDNAMES = {
     'total_cost': 'Actual Total Spend',
     'cpc': 'Average CPC',
     'ctr': 'CTR',
-    'ctr': 'CTR',
     'url': 'URL',
     'end_date': 'End Date',
     'image_url': 'Image URL',
@@ -67,6 +66,13 @@ FORMAT_2_DECIMALS = ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_ra
 FORMAT_3_DECIMALS = ['cpc']
 
 FORMAT_DIVIDE_100 = ['percent_new_users', 'bounce_rate']
+
+FORMAT_EMPTY_TO_0 = [
+    'data_cost', 'cost', 'cpc',
+    'clicks', 'impressions', 'ctr', 'visits', 'pageviews',
+    'e_media_cost', 'media_cost', 'e_data_cost', 'total_cost',
+    'billing_cost', 'license_fee', 'ctr'
+]
 
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows, conversion_goals, include_budgets=False, **constraints):
@@ -206,8 +212,8 @@ def _populate_account_stat(stat, prefetched_data, statuses=None, budgets=None):
         stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
     if statuses:
         if 'source' in stat:
-            stat['status'] = _get_sources_state(
-                models.AdGroupSource.objects.filter(ad_group__campaign__account=stat['account'], source=stat['source']))
+            sources = models.AdGroupSource.objects.filter(ad_group__campaign__account=stat['account'], source=stat['source'])
+            stat['status'] = _get_sources_state(sources)
         else:
             stat['status'] = statuses[stat['account']]
     stat['account'] = prefetched_data.get(stat['account']).name
@@ -251,15 +257,10 @@ def _adjust_ordering_by_name(order, dimensions):
     return order
 
 
-def get_csv_content(fieldnames, data, title_text=None):
+def get_csv_content(fieldnames, data):
     output = StringIO.StringIO()
-    if title_text is not None:
-        output.write('# {0}\n\n'.format(title_text))
-
     writer = unicodecsv.DictWriter(output, fieldnames, encoding='utf-8', dialect='excel')
-
     writer.writerow(fieldnames)
-
     for item in data:
         # Format
         row = {}
@@ -267,9 +268,13 @@ def get_csv_content(fieldnames, data, title_text=None):
             value = item.get(key)
             formatted_value = value
 
-            if not value:
+            if not value and key in FORMAT_EMPTY_TO_0:
+                formatted_value = 0
+                value = 0
+            elif not value and key not in FORMAT_EMPTY_TO_0:
                 formatted_value = ''
-            elif key in FORMAT_DIVIDE_100:
+
+            if key in FORMAT_DIVIDE_100:
                 value = value / 100
 
             if value and key in FORMAT_1_DECIMAL:
