@@ -2,31 +2,50 @@ import logging
 import copy
 from reports import redshift
 
-from reports.rs_helpers import from_micro_cpm, to_percent, sum_div, sum_agr
+from reports.rs_helpers import from_micro_cpm, from_nano, to_percent, sum_div, sum_agr, unchanged
 
 logger = logging.getLogger(__name__)
 
+FORMULA_BILLING_COST = '({} + {} + {})'.format(
+    sum_agr('effective_cost_nano'),
+    sum_agr('effective_data_cost_nano'),
+    sum_agr('license_fee_nano'),
+)
+FORMULA_TOTAL_COST = '({}*1000 + {}*1000 + {})'.format(
+    sum_agr('cost_micro'),
+    sum_agr('data_cost_micro'),
+    sum_agr('license_fee_nano'),
+)
 
 class RSPublishersModel(redshift.RSModel):
-    TABLE_NAME = 'joint_publishers_1_1'
+    TABLE_NAME = 'joint_publishers_1_2'
 
     # fields that are always returned (app-based naming)
-    DEFAULT_RETURNED_FIELDS_APP = ["clicks", "impressions", "cost", "data_cost", "ctr", "cpc"]
+    DEFAULT_RETURNED_FIELDS_APP = [
+        "clicks", "impressions", "cost", "data_cost", "media_cost", "ctr", "cpc",
+        "e_media_cost", "e_data_cost", "total_cost", "billing_cost", "license_fee", 
+    ]
     # fields that are allowed for breakdowns (app-based naming)
     ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'date', ])
 
-    # 	SQL NAME                   APP NAME           OUTPUT TRANSFORM                    AGGREGATE                              ORDER BY function
+    # 	SQL NAME                           APP NAME            OUTPUT TRANSFORM        AGGREGATE                                  ORDER BY function
     FIELDS = [
-        dict(sql='clicks_sum',      app='clicks',      out=lambda v: v,                    calc=sum_agr('clicks')),
-        dict(sql='impressions_sum', app='impressions', out=lambda v: v,                    calc=sum_agr('impressions'),          order="SUM(impressions) = 0, impressions_sum {direction}"),
-        dict(sql='domain',          app='domain',      out=lambda v: v),
-        dict(sql='exchange',        app='exchange',    out=lambda v: v),
-        dict(sql='date',            app='date',        out=lambda v: v),
-        dict(sql='cost_micro_sum',  app='cost',        out=lambda v: from_micro_cpm(v),    calc=sum_agr('cost_micro'),           order="SUM(cost_micro) = 0, cost_micro_sum {direction}"),
-    dict(sql='data_cost_micro_sum', app='data_cost',   out=lambda v: from_micro_cpm(v),    calc=sum_agr('data_cost_micro'),      order="SUM(data_cost_micro) = 0, data_cost_micro_sum {direction}"),
-        dict(sql='cpc_micro',       app='cpc',         out=lambda v: from_micro_cpm(v),    calc=sum_div("cost_micro", "clicks"), order="SUM(clicks) = 0, sum(cost_micro) IS NULL, cpc_micro {direction}"),  # makes sure nulls are last
-        dict(sql='ctr',             app='ctr',         out=lambda v: to_percent(v),        calc=sum_div("clicks", "impressions"),order="sum(impressions) IS NULL, ctr {direction}"),
-        dict(sql='adgroup_id',      app='ad_group',    out=lambda v: v),
+        dict(sql='clicks_sum',             app='clicks',       out=unchanged,          calc=sum_agr('clicks')),
+        dict(sql='impressions_sum',        app='impressions',  out=unchanged,          calc=sum_agr('impressions'),               order="SUM(impressions) = 0, impressions_sum {direction}"),
+        dict(sql='domain',                 app='domain',       out=unchanged),
+        dict(sql='exchange',               app='exchange',     out=unchanged),
+        dict(sql='date',                   app='date',         out=unchanged),
+        dict(sql='cost_micro_sum',         app='cost',         out=from_micro_cpm,     calc=sum_agr('cost_micro'),                order="SUM(cost_micro) = 0, cost_micro_sum {direction}"),
+        dict(sql='media_cost_micro_sum',   app='media_cost',   out=from_micro_cpm,     calc=sum_agr('cost_micro'),                order="SUM(cost_micro) = 0, cost_micro_sum {direction}"),
+        dict(sql='data_cost_micro_sum',    app='data_cost',    out=from_micro_cpm,     calc=sum_agr('data_cost_micro'),           order="SUM(data_cost_micro) = 0, data_cost_micro_sum {direction}"),
+        dict(sql='cpc_micro',              app='cpc',          out=from_micro_cpm,     calc=sum_div("cost_micro", "clicks"),      order="SUM(clicks) = 0, sum(cost_micro) IS NULL, cpc_micro {direction}"),  # makes sure nulls are last
+        dict(sql='ctr',                    app='ctr',          out=to_percent,         calc=sum_div("clicks", "impressions"),     order="SUM(impressions) IS NULL, ctr {direction}"),
+        dict(sql='adgroup_id',             app='ad_group',     out=unchanged),
+        dict(sql='license_fee_nano_sum',   app='license_fee',  out=from_nano,          calc=sum_agr('license_fee_nano'),          order="license_fee_nano_sum = 0, license_fee_nano_sum {direction}"),
+        dict(sql='e_media_cost_nano_sum',  app='e_media_cost', out=from_nano,          calc=sum_agr('effective_cost_nano'),       order="effective_cost_nano_sum = 0, cost_micro_sum {direction}"),
+        dict(sql='e_data_cost_nano_sum',   app='e_data_cost',  out=from_nano,          calc=sum_agr('effective_data_cost_nano'),  order="data_cost_micro_sum = 0, data_cost_micro_sum {direction}"),
+        dict(sql='billing_cost_nano_sum',  app='billing_cost', out=from_nano,          calc=FORMULA_BILLING_COST,                 order="billing_cost_nano_sum = 0, billing_cost_nano_sum {direction}"),
+        dict(sql='total_cost_nano_sum',    app='total_cost',   out=from_nano,          calc=FORMULA_TOTAL_COST,                   order="total_cost_micro_sum = 0, total_cost_micro_sum {direction}"),
     ]
 
 

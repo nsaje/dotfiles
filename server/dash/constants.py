@@ -1109,6 +1109,10 @@ class UserActionType(ConstantBase):
     CREATE_MEDIA_SOURCE_CAMPAIGN = 20
     SET_MEDIA_SOURCE_SETTINGS = 21
 
+    SCHEDULE_REPORT = 22
+    DELETE_SCHEDULED_REPORT = 23
+    DOWNLOAD_REPORT = 24
+
     _VALUES = {
         UPLOAD_CONTENT_ADS: 'Upload Content Ads',
         SET_CONTENT_AD_STATE: 'Set Content Ad(s) State',
@@ -1131,6 +1135,9 @@ class UserActionType(ConstantBase):
         ARCHIVE_RESTORE_CONVERSION_PIXEL: 'Archive/Restore Conversion Pixel',
         CREATE_MEDIA_SOURCE_CAMPAIGN: 'Create Media Source Campaign',
         SET_MEDIA_SOURCE_SETTINGS: 'Set Media Source Settings',
+        SCHEDULE_REPORT: 'Schedule report',
+        DELETE_SCHEDULED_REPORT: 'Delete scheduled report',
+        DOWNLOAD_REPORT: 'Direct report download'
     }
 
 
@@ -1156,6 +1163,7 @@ class CreditLineItemStatus(ConstantBase):
         PENDING: 'Pending',
         CANCELED: 'Canceled',
     }
+
 
 class BudgetLineItemState(ConstantBase):
     ACTIVE = 1

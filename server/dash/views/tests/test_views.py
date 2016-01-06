@@ -146,8 +146,7 @@ class AccountCampaignsTest(TestCase):
         self.assertEqual(settings.target_devices, constants.AdTargetDevice.get_all())
         self.assertEqual(settings.target_regions, ['US'])
         self.assertEqual(settings.name, campaign_name)
-        self.assertEqual(settings.account_manager.id, 2)
-        self.assertEqual(settings.sales_representative.id, 3)
+        self.assertEqual(settings.campaign_manager.id, 2)
 
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
@@ -1536,7 +1535,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
     def test_post_blacklist(self, cursor):
         cursor().dictfetchall.return_value = [
         {
-            'domain': u'zemanta.com',
+            'domain': u'掌上留园－6park',  # an actual domain from production
             'ctr': 0.0,
             'exchange': 'adiant',
             'cpc_micro': 0,
@@ -1571,7 +1570,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                 u"publishers": [{
                     u"exchange": u"adiant",
                     u"source_id": 7,
-                    u"domain": u"zemanta.com",
+                    u"domain": u"掌上留园－6park",
                     u"ad_group_id": 1
                     }]
             }, publisher_blacklist_action.first().payload['args'])
@@ -1582,7 +1581,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
         self.assertEqual(1, publisher_blacklist.ad_group.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
-        self.assertEqual('zemanta.com', publisher_blacklist.name)
+        self.assertEqual(u'掌上留园－6park', publisher_blacklist.name)
 
     @patch('reports.redshift.get_cursor')
     def test_post_enable(self, cursor):

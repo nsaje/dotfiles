@@ -347,11 +347,17 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 'domain_link',
                 'exchange',
                 'cost',
-                'data_cost',
                 'cpc',
                 'clicks',
                 'impressions',
-                'ctr'
+                'ctr',
+                'media_cost',
+                'data_cost',                
+                'e_media_cost',
+                'e_data_cost',
+                'total_cost',
+                'billing_cost',
+                'license_fee'
             ]
         }
     ];
@@ -428,23 +434,95 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             field: 'cost',
             checked: true,
             type: 'currency',
-            shown: true,
             help: "Amount spent per publisher.",
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
+            shown: !$scope.hasPermission('zemauth.can_view_effective_costs') && !$scope.hasPermission('zemauth.can_view_actual_costs')
+        },
+        {
+            name: 'Actual Media Spend',
+            field: 'media_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Amount spent per media source, including overspend.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+        },
+        {
+            name: 'Media Spend',
+            field: 'e_media_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Amount spent per media source.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'Actual Data Cost',
+            field: 'data_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Additional targeting/segmenting costs, including overspend.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
         },
         {
             name: 'Data Cost',
-            field: 'data_cost',
-            checked: true,
+            field: 'e_data_cost',
+            checked: false,
             type: 'currency',
-            help: 'Additional targeting/segmenting costs.',
             totalRow: true,
+            help: 'Additional targeting/segmenting costs.',
             order: true,
             initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_data_cost'),
-            shown: $scope.hasPermission('zemauth.can_view_data_cost')
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'Actual Total Spend',
+            field: 'total_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee, including overspend.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+        },
+        {
+            name: 'Total Spend',
+            field: 'billing_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'License Fee',
+            field: 'license_fee',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Zemanta One platform usage cost.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
             name: 'Avg. CPC',
@@ -574,6 +652,27 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     var setChartOptions = function (goals) {
         $scope.chartMetricOptions = options.adGroupChartMetrics;
+
+        if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.effectiveCostChartMetrics,
+                $scope.isPermissionInternal('zemauth.can_view_effective_costs')
+            );
+        } else if (! $scope.hasPermission('zemauth.can_view_actual_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.legacyCostChartMetrics,
+                false
+            );
+        }
+        if ($scope.hasPermission('zemauth.can_view_actual_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.actualCostChartMetrics,
+                $scope.isPermissionInternal('zemauth.can_view_actual_costs')
+            );
+        }
     };
 
     var getDailyStats = function () {

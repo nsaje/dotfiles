@@ -21,14 +21,21 @@ def get_ad_group_sources(source):
         submission_status=constants.ContentAdSubmissionStatus.PENDING
     ).values('content_ad__ad_group_id').distinct()
 
-    ad_group_states = models.AdGroupSettings.objects\
-                                            .all()\
-                                            .group_current_settings()\
-                                            .values('ad_group_id', 'state')
+    ad_group_sources = []
 
-    ad_group_ids = list(set([x['content_ad__ad_group_id'] for x in ad_group_ids]) &
-                        set([x['ad_group_id'] for x in ad_group_states if x['state'] == constants.AdGroupSettingsState.ACTIVE]))
-    return models.AdGroupSource.objects.filter(ad_group_id__in=ad_group_ids, source=source)
+    for ad_group_id_dict in ad_group_ids:
+        ad_group_id = ad_group_id_dict['content_ad__ad_group_id']
+
+        ad_group = models.AdGroup.objects.get(pk=ad_group_id)
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_source = models.AdGroupSource.objects.get(ad_group=ad_group, source=source)
+        ad_group_source_settings = ad_group_source.get_current_settings()
+
+        if models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, [ad_group_source_settings])\
+           == constants.AdGroupRunningStatus.ACTIVE:
+            ad_group_sources.append(ad_group_source)
+
+    return ad_group_sources
 
 
 class Command(BaseCommand):
@@ -37,7 +44,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--email', metavar='EMAIL', nargs='*', help='Reports receiver e-mail.',
-                            default=['dusan.omercevic@zemanta.com', 'gregor.ratajc@zemanta.com'])
+                            default=['operations@zemanta.com', 'gregor.ratajc@zemanta.com'])
         parser.add_argument('--source-id', metavar='SOURCEID', nargs='?', default='3', type=int,
                             help='Source id. 3 (Outbrain) by default.')
 

@@ -27,7 +27,7 @@ var nav, chart, tabs,
         this.campaign = {
             adGroups: element(by.cssContainingText('.nav-tabs .tab-title', 'Ad groups')),
             agency: element(by.cssContainingText('.nav-tabs .tab-title', 'Agency')),
-            settings: element(by.cssContainingText('.nav-tabs .tab-title', 'Campaign')),
+            settings: element(by.cssContainingText('.nav-tabs .tab-title', 'Settings')),
             budget: element(by.cssContainingText('.nav-tabs .tab-title', 'Budget'))
         };
     };

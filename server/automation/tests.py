@@ -180,9 +180,9 @@ class BudgetDepletionTestCase(test.TestCase):
 
     def test_send_autopilot_CPC_changes_email(self):
         autopilot.send_autopilot_CPC_changes_email(
-            'campaign_name',
+            u'\u2014campaign_name',
             1,
-            'account_name',
+            u'\u2014account_name',
             ['test@zemanta.com'],
             {(u'Adgroup', 109): [{
                 'old_cpc': decimal.Decimal('0.1800'),

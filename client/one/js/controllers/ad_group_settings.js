@@ -12,6 +12,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.saveRequestInProgress = false;
     $scope.saved = null;
     $scope.discarded = null;
+    $scope.minEndDate = new Date();
 
     // isOpen has to be an object property instead
     // of being directly on $scope because

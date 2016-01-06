@@ -417,13 +417,9 @@ class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         ))
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == 'account_manager':
+        if db_field.name == 'campaign_manager':
             kwargs['queryset'] = ZemUser.objects.get_users_with_perm(
                 'campaign_settings_account_manager'
-            ).order_by('last_name')
-        elif db_field.name == 'sales_representative':
-            kwargs['queryset'] = ZemUser.objects.get_users_with_perm(
-                'campaign_settings_sales_rep'
             ).order_by('last_name')
 
         return super(CampaignSettingsAdmin, self).\
@@ -434,8 +430,7 @@ class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     search_fields = ['campaign__name']
     list_display = (
         'campaign',
-        'account_manager',
-        'sales_representative',
+        'campaign_manager',
         'service_fee',
         'iab_category',
         'promotion_goal',
@@ -1147,13 +1142,14 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     ad_group_.allow_tags = True
     ad_group_.admin_order_field = 'ad_group'
 
-
     def account_(self, obj):
-        if obj.account is None:
+        account = obj.account or (obj.campaign.account if obj.campaign else None)
+
+        if account is None:
             return ""
         return '<a href="{account_url}">{account}</a>'.format(
-            account_url=reverse('admin:dash_account_change', args=(obj.campaign.account.id,)),
-            account=obj.campaign.account
+            account_url=reverse('admin:dash_account_change', args=(account.id,)),
+            account=account
         )
     account_.allow_tags = True
     account_.admin_order_field = 'campaign__account'

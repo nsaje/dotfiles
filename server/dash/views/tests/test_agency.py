@@ -29,7 +29,7 @@ class AdGroupSettingsTest(TestCase):
             'settings': {
                 'state': 1,
                 'start_date': '2015-05-01',
-                'end_date': '2015-06-30',
+                'end_date': str(datetime.date.today()),
                 'cpc_cc': '0.3000',
                 'daily_budget_cc': '200.0000',
                 'target_devices': ['desktop'],
@@ -108,7 +108,7 @@ class AdGroupSettingsTest(TestCase):
                 'settings': {
                     'cpc_cc': '0.30',
                     'daily_budget_cc': '200.00',
-                    'end_date': '2015-06-30',
+                    'end_date': str(datetime.date.today()),
                     'id': '1',
                     'name': 'Test ad group name',
                     'start_date': '2015-05-01',
@@ -214,7 +214,7 @@ class AdGroupSettingsTest(TestCase):
                 'settings': {
                     'cpc_cc': '0.30',
                     'daily_budget_cc': '200.00',
-                    'end_date': '2015-06-30',
+                    'end_date': str(datetime.date.today()),
                     'id': '10',
                     'name': 'Test ad group name',
                     'start_date': '2015-05-01',
@@ -313,6 +313,44 @@ class AdGroupSettingsTest(TestCase):
         response_dict = json.loads(response.content)
         self.assertFalse(response_dict['success'])
         self.assertIn('target_regions', response_dict['data']['errors'])
+
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
+    def test_end_date_in_the_past(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        self.settings_dict['settings']['end_date'] = '2015-05-02'
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict['success'])
+        self.assertIn('end_date', response_dict['data']['errors'])
+
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
+    def test_enable_without_budget(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=2)
+
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        self.settings_dict['settings']['id'] = 2
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict['success'])
+        self.assertIn('state', response_dict['data']['errors'])
 
 
 @patch('dash.views.agency.api.order_ad_group_settings_update')
@@ -1548,8 +1586,7 @@ class CampaignAgencyTest(TestCase):
             'changed_by': 'superuser@test.com',
             'settings': [
                 {'name': 'Name', 'value': ''},
-                {'name': 'Account Manager', 'value': 'user@test.com'},
-                {'name': 'Sales Representative', 'value': 'john@test.com'},
+                {'name': 'Campaign Manager', 'value': 'user@test.com'},
                 {'name': 'IAB Category', 'value': 'Uncategorized'},
                 {'name': 'Campaign goal', 'value': 'new unique visitors'},
                 {'name': 'Goal quantity', 'value': '0.00'},
@@ -1572,7 +1609,7 @@ class CampaignAgencyTest(TestCase):
             json.dumps({
                 'settings': {
                     'id': 1,
-                    'account_manager': 1,
+                    'campaign_manager': 1,
                     'iab_category': 'IAB17',
                     'name': 'ignore name'
                 }
@@ -1587,7 +1624,7 @@ class CampaignAgencyTest(TestCase):
         settings = campaign.get_current_settings()
 
         self.assertEqual(campaign.name, 'test campaign 1')
-        self.assertEqual(settings.account_manager_id, 1)
+        self.assertEqual(settings.campaign_manager_id, 1)
         self.assertEqual(settings.iab_category, 'IAB17')
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
