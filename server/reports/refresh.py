@@ -18,7 +18,7 @@ import dash.models
 
 logger = logging.getLogger(__name__)
 
-CC_TO_NANO = 1000000
+CC_TO_NANO = 100000
 
 
 def _get_joined_stats_rows(date, campaign_id):
@@ -111,9 +111,9 @@ def _get_goals_json(goals):
 def _add_effective_spend(date, campaign, rows):
     pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)
     for row in rows:
-        row['effective_media_spend_nano'] = int(pct_actual_spend * (row['cost_cc'] or 0) * CC_TO_NANO)
-        row['effective_data_spend_nano'] = int(pct_actual_spend * (row['data_cost_cc'] or 0) * CC_TO_NANO)
-        row['license_fee_nano'] = int(pct_license_fee * (row['effective_media_spend_nano'] + row['effective_data_spend_nano']))
+        row['effective_cost_nano'] = int(pct_actual_spend * (row['cost_cc'] or 0) * CC_TO_NANO)
+        row['effective_data_cost_nano'] = int(pct_actual_spend * (row['data_cost_cc'] or 0) * CC_TO_NANO)
+        row['license_fee_nano'] = int(pct_license_fee * (row['effective_cost_nano'] + row['effective_data_cost_nano']))
 
 
 def notify_contentadstats_change(date, campaign_id):
@@ -222,12 +222,14 @@ def refresh_contentadstats_diff(date, campaign):
         if all(row[key] == 0 for key in metric_keys):
             continue
 
-        if any(row[key] < 0 for key in metric_keys):
+        missing_keys = set(key for key in metric_keys if row[key] < 0)
+        if missing_keys:
             logger.error(
-                'ad group stats data missing. skipping it in refreshing diffs. ad group id: {} source id: {}'.format(
-                    adgroup_stats.ad_group.id,
-                    adgroup_stats.source.id
-                )
+                'ad group stats data missing. skipping it in refreshing diffs. ad group id: %s source id: %s date: %s keys: %s',
+                adgroup_stats.ad_group.id,
+                adgroup_stats.source.id,
+                date,
+                missing_keys
             )
             continue
 

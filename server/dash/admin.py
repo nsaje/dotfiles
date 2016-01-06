@@ -994,6 +994,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)
         self.list_display_links = (None, )
 
+        
 class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'account',
@@ -1008,10 +1009,12 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     date_hierarchy = 'start_date'
     list_filter = ['status', 'license_fee', 'created_by']
     readonly_fields = ('created_dt', 'created_by',)
+    form = dash_forms.CreditLineItemAdminForm
 
 
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
+        '__str__',
         'campaign',
         'start_date',
         'end_date',
@@ -1021,7 +1024,8 @@ class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     )
     date_hierarchy = 'start_date'
     list_filter = ['credit', 'created_by']
-    readonly_fields = ('created_dt', 'created_by',)
+    readonly_fields = ('created_dt', 'created_by', 'freed_cc')
+    form = dash_forms.BudgetLineItemAdminForm
 
 
 class ScheduledExportReportLogAdmin(admin.ModelAdmin):
@@ -1143,13 +1147,14 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     ad_group_.allow_tags = True
     ad_group_.admin_order_field = 'ad_group'
 
-
     def account_(self, obj):
-        if obj.account is None:
+        account = obj.account or (obj.campaign.account if obj.campaign else None)
+
+        if account is None:
             return ""
         return '<a href="{account_url}">{account}</a>'.format(
-            account_url=reverse('admin:dash_account_change', args=(obj.campaign.account.id,)),
-            account=obj.campaign.account
+            account_url=reverse('admin:dash_account_change', args=(account.id,)),
+            account=account
         )
     account_.allow_tags = True
     account_.admin_order_field = 'campaign__account'

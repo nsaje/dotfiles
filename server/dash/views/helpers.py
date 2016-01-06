@@ -14,6 +14,7 @@ import actionlog.models
 from dash import models
 from dash import constants
 from dash import api
+from dash import budget
 from utils import exc
 from utils import statsd_helper
 import automation.autopilot
@@ -803,10 +804,19 @@ def get_user_full_name_or_email(user):
     return result.encode('utf-8')
 
 
+def get_target_regions_string(regions):
+    if not regions:
+        return 'worldwide'
+
+    return ', '.join(constants.AdTargetLocation.get_text(x) for x in regions)
+
+
 def copy_stats_to_row(stat, row):
     for key in ['impressions', 'clicks', 'cost', 'data_cost', 'cpc', 'ctr',
-                'visits', 'click_discrepancy', 'pageviews',
-                'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
+                'visits', 'click_discrepancy', 'pageviews', 'media_cost',
+                'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
+                'license_fee', ]:
         row[key] = stat.get(key)
 
     for key in [k for k in stat.keys() if k.startswith('conversion_goal_')]:
@@ -1001,3 +1011,14 @@ def log_useraction_if_necessary(request, user_action_type, account=None, campaig
             ad_group_settings_id=ad_group.get_current_settings().id if ad_group else None
         )
         user_action_log.save()
+
+
+def ad_group_has_available_budget(ad_group):
+    campaign_budget = budget.CampaignBudget(ad_group.campaign)
+
+    total = campaign_budget.get_total()
+    spend = campaign_budget.get_spend()
+
+    available = total - spend
+
+    return bool(available)

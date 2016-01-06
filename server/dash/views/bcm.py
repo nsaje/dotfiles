@@ -48,7 +48,7 @@ class AccountCreditView(api_common.BaseApiView):
         allocated = item.get_allocated_amount()
         return {
             'id': item.pk,
-            'created_by': str(item.created_by),
+            'created_by': str(item.created_by or 'Zemanta One'),
             'created_on': item.created_dt.date(),
             'start_date': item.start_date,
             'end_date': item.end_date,
@@ -56,6 +56,7 @@ class AccountCreditView(api_common.BaseApiView):
             'license_fee': helpers.format_decimal_to_percent(item.license_fee) + '%',
             'total': item.amount,
             'allocated': allocated,
+            'comment': item.comment,
             'budgets': [
                 { 'id': b.pk, 'amount': b.amount } for b in item.budgets.all()
             ],
@@ -153,7 +154,7 @@ class AccountCreditItemView(api_common.BaseApiView):
     def _get_response(self, item):
         return self.create_api_response({
             'id': item.pk,
-            'created_by': str(item.created_by or 'system'),
+            'created_by': str(item.created_by or 'Zemanta One'),
             'created_on': item.created_dt.date(),
             'start_date': item.start_date,
             'end_date': item.end_date,
@@ -170,6 +171,7 @@ class AccountCreditItemView(api_common.BaseApiView):
                     'spend': b.get_spend_data(use_decimal=True)['total'],
                     'start_date': b.start_date,
                     'end_date': b.end_date,
+                    'comment': b.comment
                 }
                 for b in item.budgets.all().order_by('-created_dt')
             ],
@@ -244,6 +246,7 @@ class CampaignBudgetView(api_common.BaseApiView):
                 'license_fee': helpers.format_decimal_to_percent(credit.license_fee),
                 'start_date': credit.start_date,
                 'end_date': credit.end_date,
+                'comment': credit.comment,
                 'is_available': credit.is_available()
             }
             for credit in available_credits
@@ -351,7 +354,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
     def _get_response(self, item):
         return self.create_api_response({
             'amount': item.amount,
-            'created_by': str(item.created_by),
+            'created_by': str(item.created_by or 'Zemanta One'),
             'created_at': item.created_dt,
             'start_date': item.start_date,
             'end_date': item.end_date,

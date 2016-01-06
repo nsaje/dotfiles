@@ -27,11 +27,12 @@
                             <th>License Fee</th>
                             <th>Valid From</th>
                             <th>Valid To</th>
+                            <th>Notes</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr ng-repeat="credit in availableCredit">
-                            <td ng-if="isNew">
+                            <td ng-if="isNew" title="{{ credit.comment }}">
                                 <input type="radio" ng-model="budgetItem.credit" ng-click="checkCreditValues()" ng-value="credit" />
                             </td>
                             <td>{{ credit.available | decimalCurrency:"$":2  }}</td>
@@ -39,6 +40,9 @@
                             <td>{{ credit.licenseFee }}%</td>
                             <td>{{ credit.startDate }}</td>
                             <td>{{ credit.endDate }}</td>
+                            <td>
+                                <zem-note-popover content="{{ credit.comment }}" placement="top"></zem-note-popover>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

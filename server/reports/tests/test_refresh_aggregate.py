@@ -47,8 +47,8 @@ class RefreshContentAdStats(test.TestCase):
             'adgroup_id': 1,
             'campaign_id': 1,
             'account_id': 1,
-            'effective_media_spend_nano': 0,
-            'effective_data_spend_nano': 0,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
             'license_fee_nano': 0
         }, {
             'conversions': '{}',
@@ -67,8 +67,8 @@ class RefreshContentAdStats(test.TestCase):
             'adgroup_id': 1,
             'campaign_id': 1,
             'account_id': 1,
-            'effective_media_spend_nano': 0,
-            'effective_data_spend_nano': 0,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
             'license_fee_nano': 0
         }]
 
@@ -141,8 +141,8 @@ class RefreshContentAdStats(test.TestCase):
             'adgroup_id': 1,
             'campaign_id': 1,
             'account_id': 1,
-            'effective_media_spend_nano': 0,
-            'effective_data_spend_nano': 0,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
             'license_fee_nano': 0
         }, {
             'conversions': '{}',
@@ -161,8 +161,8 @@ class RefreshContentAdStats(test.TestCase):
             'adgroup_id': 1,
             'campaign_id': 1,
             'account_id': 1,
-            'effective_media_spend_nano': 0,
-            'effective_data_spend_nano': 0,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
             'license_fee_nano': 0
         }]
 
@@ -206,9 +206,9 @@ class RefreshContentAdStats(test.TestCase):
             'adgroup_id': 1,
             'campaign_id': 1,
             'account_id': 1,
-            'effective_media_spend_nano': 150000000000,
-            'effective_data_spend_nano': 150000000000,
-            'license_fee_nano': 30000000000
+            'effective_cost_nano': 15000000000,
+            'effective_data_cost_nano': 15000000000,
+            'license_fee_nano': 3000000000
         }, {
             'conversions': '{}',
             'cost_cc': 250000,
@@ -226,9 +226,9 @@ class RefreshContentAdStats(test.TestCase):
             'adgroup_id': 1,
             'campaign_id': 1,
             'account_id': 1,
-            'effective_media_spend_nano': 250000000000,
-            'effective_data_spend_nano': 250000000000,
-            'license_fee_nano': 50000000000
+            'effective_cost_nano': 25000000000,
+            'effective_data_cost_nano': 25000000000,
+            'license_fee_nano': 5000000000
         }]
 
         self.assertEqual(1, mock_redshift.insert_contentadstats.call_count)
@@ -272,9 +272,9 @@ class RefreshContentAdStats(test.TestCase):
             'adgroup_id': 1,
             'campaign_id': 1,
             'account_id': 1,
-            'effective_media_spend_nano': 30000000000,
-            'effective_data_spend_nano': 30000000000,
-            'license_fee_nano': 6000000000
+            'effective_cost_nano': 3000000000,
+            'effective_data_cost_nano': 3000000000,
+            'license_fee_nano': 600000000
         }, {
             'conversions': '{}',
             'cost_cc': 250000,
@@ -292,9 +292,9 @@ class RefreshContentAdStats(test.TestCase):
             'adgroup_id': 1,
             'campaign_id': 1,
             'account_id': 1,
-            'effective_media_spend_nano': 50000000000,
-            'effective_data_spend_nano': 50000000000,
-            'license_fee_nano': 10000000000
+            'effective_cost_nano': 5000000000,
+            'effective_data_cost_nano': 5000000000,
+            'license_fee_nano': 1000000000
         }]
 
         self.assertEqual(1, mock_redshift.insert_contentadstats.call_count)
@@ -326,8 +326,8 @@ class RefreshContentAdStats(test.TestCase):
             'adgroup_id': 2,
             'campaign_id': 2,
             'account_id': 1,
-            'effective_media_spend_nano': 0,
-            'effective_data_spend_nano': 0,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
             'license_fee_nano': 0
         }, {
             'conversions': '{}',
@@ -346,8 +346,8 @@ class RefreshContentAdStats(test.TestCase):
             'adgroup_id': 2,
             'campaign_id': 2,
             'account_id': 1,
-            'effective_media_spend_nano': 0,
-            'effective_data_spend_nano': 0,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
             'license_fee_nano': 0
         }]
 
@@ -379,8 +379,8 @@ class RefreshContentAdStats(test.TestCase):
             'adgroup_id': 3,
             'campaign_id': 3,
             'account_id': 1,
-            'effective_media_spend_nano': 0,
-            'effective_data_spend_nano': 0,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
             'license_fee_nano': 0
         }]
 

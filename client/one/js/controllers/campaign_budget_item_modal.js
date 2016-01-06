@@ -83,16 +83,16 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
     $scope.init = function () {
         $scope.saveRequestInProgress = false;
         $scope.isNew = $scope.selectedBudgetId === null;
-
-        $scope.availableCredit = $scope.getAvailableCredit(false);
-        
-        $scope.minDate = $scope.availableCredit[0].startDate;
-        $scope.maxDate = $scope.availableCredit[0].endDate;
-        $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
-        $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
         $scope.discarded = false;
 
         if ($scope.isNew) {
+            $scope.availableCredit = $scope.getAvailableCredit(false);
+            
+            $scope.minDate = $scope.availableCredit[0].startDate;
+            $scope.maxDate = $scope.availableCredit[0].endDate;
+            $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
+            $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
+            
             $scope.budgetItem.isEditable = true;
             $scope.budgetItem.startDate = $scope.initStartDate;
             $scope.budgetItem.endDate = $scope.initEndDate;

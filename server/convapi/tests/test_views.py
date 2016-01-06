@@ -5,9 +5,12 @@ from django.test import TestCase, RequestFactory
 
 import hmac
 import hashlib
-import datetime
 import StringIO
+
 from convapi import views
+from convapi import models
+from convapi import constants
+
 from django.conf import settings
 
 
@@ -71,7 +74,38 @@ Day Index,Sessions
             'signature': signature,
             'token': '',
             })
-        f.name = "test"
+        f.name = "test.csv"
         request.FILES['attachment-1'] = f
         response = views.mailgun_gareps(request)
         self.assertEqual(response.status_code, 200)
+
+
+def ReprocessViewTestCase(TestCase):
+    def setUp(self):
+        self.report_log = models.ReportLog(
+            state=constants.ReportState.FAILED,
+            s3_key='dummy_key.csv',
+            email_subject='Analytics Reports',
+            recipient='gareports@mailapi.zemanta.com',
+            from_address='no-reply@google.com',
+            report_filename='test.csv'
+        )
+        self.report_log.save()
+
+    def test_missing_values(self):
+        self.report_log.recipient = None
+
+        with self.assertRaisesMessage(Exception, ("Can't reprocess - missing values. Report log id={}, "
+                                                  "missing values={}".format(self.report_log.id, 'recipient'))):
+            views.reprocess_report_logs([self.report_log])
+
+    def test_not_failed(self):
+        self.report_log.state = constants.ReportState.EMPTY_REPORT
+
+        with self.assertRaisesMessage(Exception, ("Only failed report logs can be reprocessed, id={}".format(
+                self.report_log.id))):
+            views.reprocess_report_logs([self.report_log])
+
+    def test_reprocess_report_logs(self):
+        # should not raise an exception
+        views.reprocess_report_logs([self.report_log])

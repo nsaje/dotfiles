@@ -11,7 +11,7 @@
     </alert>
 
     <form id="form-ad-group-settings" class="form-horizontal">
-        <div class="form-group">
+        <div class="form-group" ng-class="{'has-error': !!errors.state}">
             <label for="campaign-state-switch" class="col-xs-2 control-label">
                 Ad Group Status
                 <zem-help-popover content="This is the current state of the Ad Group. If you enable the Ad Group you must then go enable preferred Media Sources too.
@@ -22,6 +22,8 @@
                     <label class="btn btn-success" ng-model="settings.state" ng-repeat="state in options.adGroupSettingsStates" btn-radio="state.value">{{ state.name }}</label>
                 </div>
             </div>
+
+            <label ng-repeat="error in errors.state" class="control-label error" for="name-input">{{ error }}</label>
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.name}">
@@ -54,7 +56,7 @@
                 <zem-help-popover content="The date when content promotion paused." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
-                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" ng-model="settings.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
+                <input id="end-date-input" type="text" class="form-control" datepicker-popup="M/d/yyyy" min-date="minEndDate" ng-model="settings.endDate" is-open="endDatePicker.isOpen" ng-click="openDatePicker('endDate')">
             </div>
 
             <div class="checkbox col-xs-2">
@@ -71,6 +73,7 @@
                 <label class="col-xs-2 control-label">
                     Device targeting
                     <zem-help-popover content="The devices on which your content ads should be shown." placement="top"></zem-help-popover>
+                    <span class="sidenote" ng-if="!isDefaultTargetDevices() && hasPermission('zemauth.settings_defaults_on_campaign_level')">* different than campaign default</span>
                 </label>
                 <div class="col"
                     zem-tutorial-popover-condition-promise="adGroupHasFreshSettings()"
@@ -90,6 +93,7 @@
                 <label class="col-xs-2 control-label">
                     Locations
                     <zem-help-popover content="The countries, states and DMA regions where your content ads should be shown." placement="top"></zem-help-popover>
+                    <span class="sidenote" ng-if="!isDefaultTargetRegions() && hasPermission('zemauth.settings_defaults_on_campaign_level')">* different than campaign default</span>
                 </label>
 
                 <div class="col-xs-6 col-md-4">

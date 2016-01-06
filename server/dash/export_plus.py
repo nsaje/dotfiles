@@ -9,7 +9,6 @@ from dash import stats_helper
 from dash import budget
 from dash import constants
 from dash.views import helpers
-import reports.api_contentads
 
 from utils import exc
 
@@ -25,8 +24,13 @@ FIELDNAMES = {
     'campaign': 'Campaign',
     'click_discrepancy': 'Click Discrepancy',
     'clicks': 'Clicks',
-    'cost': 'Spend',
-    'data_cost': 'Data Cost',
+    'cost': 'Media Spend',
+    'media_cost': 'Actual Media Spend',
+    'data_cost': 'Actual Data Spend',
+    'e_data_cost': 'Data Cost',
+    'e_media_cost': 'Media Spend',
+    'billing_cost': 'Total Spend',
+    'total_cost': 'Actual Total Spend',
     'cpc': 'Average CPC',
     'ctr': 'CTR',
     'ctr': 'CTR',
@@ -56,7 +60,8 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
 FORMAT_1_DECIMAL = ['avg_tos']
 
 FORMAT_2_DECIMALS = ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate', 'pv_per_visit',
-                     'avg_tos', 'cost', 'data_cost', 'budget', 'available_budget', 'unspent_budget']
+                     'avg_tos', 'cost', 'data_cost', 'media_cost', 'e_media_cost', 'e_data_cost',
+                     'total_cost', 'billing_cost', 'budget', 'available_budget', 'unspent_budget']
 
 FORMAT_3_DECIMALS = ['cpc']
 
@@ -288,6 +293,7 @@ class AllAccountsExport(object):
         required_fields = ['start_date', 'end_date']
         dimensions = []
         exclude_fields = []
+
         if breakdown == 'account':
             required_fields.extend(['account'])
             dimensions.extend(['account'])
@@ -437,6 +443,21 @@ class AdGroupExport(object):
 
         return get_csv_content(fieldnames, results)
 
+def filter_allowed_fields(request, fields):
+    allowed_fields = []
+    can_view_effective_costs = request.user.has_perm('zemauth.can_view_effective_costs')
+    can_view_actual_costs = request.user.has_perm('zemauth.can_view_actual_costs')
+    for f in fields:
+        if f in ('e_data_cost', 'e_media_cost',
+                 'license_fee', 'billing_cost') and not can_view_effective_costs:
+            continue
+        if f in ('data_cost', 'media_cost',
+                 'license_fee', 'total_cost') and not can_view_actual_costs:
+            continue
+        if f in ('cost', ) and (can_view_effective_costs or can_view_actual_costs):
+            continue
+        allowed_fields.append(f)
+    return allowed_fields
 
 def get_report_from_export_report(export_report, start_date, end_date):
     return _get_report(
@@ -455,8 +476,12 @@ def get_report_from_export_report(export_report, start_date, end_date):
         account=export_report.account
     )
 
-
 def get_report_from_request(request, account=None, campaign=None, ad_group=None, by_source=False):
+    additional_fields = filter_allowed_fields(
+        request,
+        helpers.get_additional_columns(request.GET.get('additional_fields'))
+    )
+    
     granularity = get_granularity_from_type(request.GET.get('type'))
     return _get_report(
         request.user,
@@ -464,7 +489,7 @@ def get_report_from_request(request, account=None, campaign=None, ad_group=None,
         helpers.get_stats_end_date(request.GET.get('end_date')),
         filtered_sources=helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources')),
         order=request.GET.get('order') or 'name',
-        additional_fields=helpers.get_additional_columns(request.GET.get('additional_fields')),
+        additional_fields=additional_fields,
         granularity=granularity,
         breakdown=get_breakdown_from_granularity(granularity),
         by_source=by_source,
@@ -489,8 +514,10 @@ def _get_report(
         ad_group=None,
         campaign=None,
         account=None):
+
     if not user.has_perm('zemauth.exports_plus'):
         raise exc.ForbiddenError(message='Not allowed')
+
     account_name = campaign_name = ad_group_name = None
     account_id = campaign_id = ad_group_id = None
     if account:

@@ -238,6 +238,11 @@ class CampaignAdGroups(TestCase):
         ad_group_settings = ad_group.get_current_settings()
         self.assertIsNotNone(ad_group_settings.id)
 
+        # check if default settings from campaign level are
+        # copied to the newly created settings
+        self.assertEqual(ad_group_settings.target_devices, ['mobile'])
+        self.assertEqual(ad_group_settings.target_regions, ['NC', '501'])
+
 
 class AdGroupContentAdCSVTest(TestCase):
     fixtures = ['test_api', 'test_views']
@@ -1531,7 +1536,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
     def test_post_blacklist(self, cursor):
         cursor().dictfetchall.return_value = [
         {
-            'domain': u'zemanta.com',
+            'domain': u'掌上留园－6park',  # an actual domain from production
             'ctr': 0.0,
             'exchange': 'adiant',
             'cpc_micro': 0,
@@ -1566,7 +1571,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                 u"publishers": [{
                     u"exchange": u"adiant",
                     u"source_id": 7,
-                    u"domain": u"zemanta.com",
+                    u"domain": u"掌上留园－6park",
                     u"ad_group_id": 1
                     }]
             }, publisher_blacklist_action.first().payload['args'])
@@ -1577,7 +1582,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
         self.assertEqual(1, publisher_blacklist.ad_group.id)
         self.assertEqual('b1_adiant', publisher_blacklist.source.tracking_slug)
-        self.assertEqual('zemanta.com', publisher_blacklist.name)
+        self.assertEqual(u'掌上留园－6park', publisher_blacklist.name)
 
     @patch('reports.redshift.get_cursor')
     def test_post_enable(self, cursor):

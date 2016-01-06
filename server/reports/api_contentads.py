@@ -15,51 +15,61 @@ import dash.constants
 
 logger = logging.getLogger(__name__)
 
-
 class RSContentAdStatsModel(redshift.RSModel):
     TABLE_NAME = 'contentadstats'
 
-    # 	SQL NAME                   APP NAME           OUTPUT TRANSFORM      AGGREGATE
+    # 	SQL NAME                          APP NAME                  OUTPUT TRANSFORM              AGGREGATE
     _BREAKDOWN_FIELDS = [
-        dict(sql='date',          app='date',        out=rsh.unchanged),
-        dict(sql='content_ad_id', app='content_ad',  out=rsh.unchanged),
-        dict(sql='source_id',     app='source',      out=rsh.unchanged),
-        dict(sql='adgroup_id',    app='ad_group',    out=rsh.unchanged),
-        dict(sql='campaign_id',   app='campaign',    out=rsh.unchanged),
-        dict(sql='account_id',    app='account',     out=rsh.unchanged),
-    ]
+        dict(sql='date',                  app='date',               out=rsh.unchanged),
+        dict(sql='content_ad_id',         app='content_ad',         out=rsh.unchanged),
+        dict(sql='source_id',             app='source',             out=rsh.unchanged),
+        dict(sql='adgroup_id',            app='ad_group',           out=rsh.unchanged),
+        dict(sql='campaign_id',           app='campaign',           out=rsh.unchanged),
+        dict(sql='account_id',            app='account',            out=rsh.unchanged),
+    ] 
 
     _TRAFFIC_FIELDS = [
-        dict(sql='clicks_sum',      app='clicks',      out=rsh.unchanged,   calc=rsh.sum_agr('clicks')),
-        dict(sql='impressions_sum', app='impressions', out=rsh.unchanged,   calc=rsh.sum_agr('impressions')),
-        dict(sql='cost_cc_sum',     app='cost',        out=rsh.from_cc,     calc=rsh.sum_agr('cost_cc')),
-        dict(sql='data_cost_cc_sum',app='data_cost',   out=rsh.from_cc,     calc=rsh.sum_agr('data_cost_cc')),        
-        dict(sql='ctr',             app='ctr',         out=rsh.to_percent,  calc=rsh.sum_div('clicks', 'impressions')),
-        dict(sql='cpc_cc',          app='cpc',         out=rsh.from_cc,     calc=rsh.sum_div('cost_cc', 'clicks')),
+        dict(sql='clicks_sum',            app='clicks',             out=rsh.unchanged,            calc=rsh.sum_agr('clicks')),
+        dict(sql='impressions_sum',       app='impressions',        out=rsh.unchanged,            calc=rsh.sum_agr('impressions')),
+        dict(sql='cost_cc_sum',           app='cost',               out=rsh.from_cc,              calc=rsh.sum_agr('cost_cc')),
+        dict(sql='data_cost_cc_sum',      app='data_cost',          out=rsh.from_cc,              calc=rsh.sum_agr('data_cost_cc')),
+        
+        # BCM
+        dict(sql='media_cost_cc_sum',     app='media_cost',         out=rsh.from_cc,              calc=rsh.sum_agr('cost_cc')),
+        dict(sql='e_media_cost_nano_sum', app='e_media_cost',       out=rsh.from_nano,            calc=rsh.sum_agr('effective_cost_nano')),
+        dict(sql='e_data_cost_nano_sum',  app='e_data_cost',        out=rsh.from_nano,            calc=rsh.sum_agr('effective_data_cost_nano')),
+        dict(sql='license_fee_nano_sum',  app='license_fee',        out=rsh.from_nano,            calc=rsh.sum_agr('license_fee_nano')),
+        dict(sql='billing_nano_cost',     app='billing_cost',       out=rsh.from_nano,            calc=rsh.total_cost(nano_cols=['effective_cost_nano', 'effective_data_cost_nano', 'license_fee_nano'])),
+        dict(sql='total_nano_cost',       app='total_cost',         out=rsh.from_nano,            calc=rsh.total_cost(nano_cols=['license_fee_nano'], cc_cols=['cost_cc', 'data_cost_cc'])),
+
+        # Derivatives
+        dict(sql='ctr',                   app='ctr',                out=rsh.to_percent,           calc=rsh.sum_div('clicks', 'impressions')),
+        dict(sql='cpc_cc',                app='cpc',                out=rsh.from_cc,              calc=rsh.sum_div('cost_cc', 'clicks')),
+
     ]
 
     _POSTCLICK_ACQUISITION_FIELDS = [
-        dict(sql='visits_sum',         app='visits',            out=rsh.unchanged,   calc=rsh.sum_agr('visits')),
-        dict(sql='click_discrepancy',  app='click_discrepancy', out=rsh.to_percent,  calc=rsh.click_discrepancy('clicks', 'visits')),
-        dict(sql='pageviews_sum',      app='pageviews',         out=rsh.unchanged,   calc=rsh.sum_agr('pageviews')),
+        dict(sql='visits_sum',            app='visits',             out=rsh.unchanged,            calc=rsh.sum_agr('visits')),
+        dict(sql='click_discrepancy',     app='click_discrepancy',  out=rsh.to_percent,           calc=rsh.click_discrepancy('clicks', 'visits')),
+        dict(sql='pageviews_sum',         app='pageviews',          out=rsh.unchanged,            calc=rsh.sum_agr('pageviews')),
     ]
 
     _POSTCLICK_ENGAGEMENT_FIELDS = [
-        dict(sql='new_visits_sum',     app='new_visits',        out=rsh.unchanged,   calc=rsh.sum_agr('new_visits')),
-        dict(sql='percent_new_users',  app='percent_new_users', out=rsh.to_percent,  calc=rsh.sum_div('new_visits', 'visits')),
-        dict(sql='bounce_rate',        app='bounce_rate',       out=rsh.to_percent,  calc=rsh.sum_div('bounced_visits', 'visits')),
-        dict(sql='pv_per_visit',       app='pv_per_visit',      out=rsh.unchanged,   calc=rsh.sum_div('pageviews', 'visits')),
-        dict(sql='avg_tos',            app='avg_tos',           out=rsh.unchanged,   calc=rsh.sum_div('total_time_on_site', 'visits')),
+        dict(sql='new_visits_sum',        app='new_visits',         out=rsh.unchanged,            calc=rsh.sum_agr('new_visits')),
+        dict(sql='percent_new_users',     app='percent_new_users',  out=rsh.to_percent,           calc=rsh.sum_div('new_visits', 'visits')),
+        dict(sql='bounce_rate',           app='bounce_rate',        out=rsh.to_percent,           calc=rsh.sum_div('bounced_visits', 'visits')),
+        dict(sql='pv_per_visit',          app='pv_per_visit',       out=rsh.unchanged,            calc=rsh.sum_div('pageviews', 'visits')),
+        dict(sql='avg_tos',               app='avg_tos',            out=rsh.unchanged,            calc=rsh.sum_div('total_time_on_site', 'visits')),
     ]
 
     _CONVERSION_GOAL_FIELDS = [
-        dict(sql='conversions', app='conversions', out=rsh.decimal_to_int_exact, calc=rsh.sum_expr(rsh.extract_json_or_null('conversions')), num_json_params=2)
+        dict(sql='conversions',           app='conversions',        out=rsh.decimal_to_int_exact, calc=rsh.sum_expr(rsh.extract_json_or_null('conversions')), num_json_params=2)
     ]
 
     _OTHER_AGGREGATIONS = [
-        dict(sql='total_time_on_site', app='duration', out=rsh.unchanged),
-        dict(sql='has_postclick_metrics', app='has_postclick_metrics', out=rsh.unchanged,
-             calc=rsh.is_all_null(['visits', 'pageviews', 'new_visits', 'bounced_visits', 'total_time_on_site']))
+        dict(sql='total_time_on_site',    app='duration',           out=rsh.unchanged),
+        dict(sql='has_postclick_metrics', app='has_postclick_metrics',
+             out=rsh.unchanged, calc=rsh.is_all_null(['visits', 'pageviews', 'new_visits', 'bounced_visits', 'total_time_on_site']))
     ]
 
     FIELDS = _BREAKDOWN_FIELDS + _TRAFFIC_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _CONVERSION_GOAL_FIELDS + _OTHER_AGGREGATIONS
@@ -251,9 +261,20 @@ def get_yesterday_cost(**constraints):
 
     rs = get_day_cost(yesterday, breakdown=['source'], **constraints)
 
-    result = {row['source']: row['cost'] if row['cost'] else 0.0 for row in rs}
+    result = {row['source']: row.get('e_media_cost', row['cost']) or 0.0 for row in rs}
     return result
 
+
+def get_actual_yesterday_cost(**constraints):
+    today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
+    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
+    today = datetime.datetime(today.year, today.month, today.day)
+    yesterday = today - datetime.timedelta(days=1)
+
+    rs = get_day_cost(yesterday, breakdown=['source'], **constraints)
+
+    result = {row['source']: row.get('media_cost', row['cost']) or 0.0 for row in rs}
+    return result
 
 def get_day_cost(day, breakdown=None, **constraints):
     rs = query(

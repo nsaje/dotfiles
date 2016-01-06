@@ -95,7 +95,7 @@ Zemanta
     )
     try:
         send_mail(
-            'Campaign budget low - {camp}, {account}'.format(
+            u'Campaign budget low - {camp}, {account}'.format(
                 camp=campaign_name,
                 account=account_name
             ),
@@ -105,7 +105,7 @@ Zemanta
             fail_silently=False
         )
     except Exception as e:
-        logger.exception('Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
+        logger.exception(u'Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
                          campaign_name,
                          ', '.join(emails))
         desc = {

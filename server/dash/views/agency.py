@@ -50,6 +50,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(settings, ad_group),
+            'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
         }
 
@@ -69,6 +70,13 @@ class AdGroupSettings(api_common.BaseApiView):
 
         form = forms.AdGroupSettingsForm(resource.get('settings', {}))
         if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
+
+        # ACTIVE state is only valid when there is budget to spend
+        if form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE and\
+           not helpers.ad_group_has_available_budget(ad_group):
+
+            form.add_error('state', 'Cannot enable ad group without available budget.')
             raise exc.ValidationError(errors=dict(form.errors))
 
         self.set_ad_group(ad_group, form.cleaned_data)
@@ -93,6 +101,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         response = {
             'settings': self.get_dict(new_settings, ad_group),
+            'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group)
         }
 
@@ -218,6 +227,14 @@ class AdGroupSettings(api_common.BaseApiView):
             helpers.set_ad_group_source_defaults(default_settings, new_settings, ad_group_source, request)
 
         zwei_actions.send(actionlogs_to_send)
+
+    def get_default_settings_dict(self, ad_group):
+        settings = ad_group.campaign.get_current_settings()
+
+        return {
+            'target_devices': settings.target_devices,
+            'target_regions': settings.target_regions
+        }
 
 
 class CampaignAgency(api_common.BaseApiView):
@@ -372,6 +389,14 @@ class CampaignAgency(api_common.BaseApiView):
                 'name': 'Archived',
                 'value': str(new_settings.archived)
             }),
+            ('target_devices', {
+                'name': 'Target Devices',
+                'value': ', '.join(constants.AdTargetDevice.get_text(x) for x in new_settings.target_devices)
+            }),
+            ('target_regions', {
+                'name': 'Target Devices',
+                'value': helpers.get_target_regions_string(new_settings.target_regions)
+            })
         ])
 
         if old_settings is not None:
@@ -1000,7 +1025,6 @@ class AccountAgency(api_common.BaseApiView):
 
         account.allowed_sources.add(*list(to_be_added))
         account.allowed_sources.remove(*list(to_be_removed))
-
 
     def set_settings(self, settings, account, resource):
         settings.account = account

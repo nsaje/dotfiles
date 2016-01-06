@@ -929,6 +929,13 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
             return result;
         }
 
+        function convertDefaultSettingsFromApi(settings) {
+            return {
+                targetRegions: settings.target_regions,
+                targetDevices: convertTargetDevicesFromApi(settings.target_devices),
+            };
+        }
+
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/settings/';
@@ -938,12 +945,16 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
             $http.get(url, config).
                 success(function (data, status) {
-                    var resource;
+                    var settings, defaultSettings;
                     if (data && data.data && data.data.settings) {
-                        resource = convertFromApi(data.data.settings);
+                        settings = convertFromApi(data.data.settings);
+                    }
+                    if (data && data.data && data.data.default_settings) {
+                        defaultSettings = convertDefaultSettingsFromApi(data.data.default_settings);
                     }
                     deferred.resolve({
-                        settings: resource,
+                        settings: settings,
+                        defaultSettings: defaultSettings,
                         actionIsWaiting: data.data.action_is_waiting
                     });
                 }).
@@ -967,12 +978,16 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
 
             $http.put(url, data, config).
                 success(function (data, status) {
-                    var resource;
+                    var settings, defaultSettings;
                     if (data && data.data && data.data.settings) {
-                        resource = convertFromApi(data.data.settings);
+                        settings = convertFromApi(data.data.settings);
+                    }
+                    if (data && data.data && data.data.default_settings) {
+                        defaultSettings = convertDefaultSettingsFromApi(data.data.default_settings);
                     }
                     deferred.resolve({
-                        settings: resource,
+                        settings: settings,
+                        defaultSettings: defaultSettings,
                         actionIsWaiting: data.data.action_is_waiting
                     });
                 }).
@@ -2721,6 +2736,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                             endDate: moment(itm.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                             total: itm.total,
                             spend: itm.spend,
+                            comment: itm.comment,
                             campaign: itm.campaign
                         };
                     }),
@@ -2849,6 +2865,7 @@ oneApp.factory("api", ["$http", "$q", "zemFilterService", function($http, $q, ze
                             startDate: moment(obj.start_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                             endDate: moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                             id: obj.id,
+                            comment: obj.comment,
                             isAvailable: obj.is_available
                         };
                     })

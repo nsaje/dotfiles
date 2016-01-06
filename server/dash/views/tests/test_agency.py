@@ -19,11 +19,8 @@ from dash import models
 from dash import constants
 from dash.views import agency
 from dash import forms
-from utils import exc
 
 
-@patch('dash.views.agency.api.order_ad_group_settings_update')
-@patch('dash.views.agency.actionlog_api')
 class AdGroupSettingsTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
 
@@ -32,7 +29,7 @@ class AdGroupSettingsTest(TestCase):
             'settings': {
                 'state': 1,
                 'start_date': '2015-05-01',
-                'end_date': '2015-06-30',
+                'end_date': str(datetime.date.today()),
                 'cpc_cc': '0.3000',
                 'daily_budget_cc': '200.0000',
                 'target_devices': ['desktop'],
@@ -45,6 +42,42 @@ class AdGroupSettingsTest(TestCase):
         user = User.objects.get(pk=1)
         self.client.login(username=user.email, password='secret')
 
+    def test_get(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        response = self.client.get(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            follow=True
+        )
+
+        self.assertEqual(json.loads(response.content), {
+            'data': {
+                'action_is_waiting': False,
+                'default_settings': {
+                    'target_devices': ['mobile'],
+                    'target_regions': ['NC', '501'],
+                },
+                'settings': {
+                    'adobe_tracking_param': '',
+                    'cpc_cc': '',
+                    'daily_budget_cc': '100.00',
+                    'enable_adobe_tracking': False,
+                    'enable_ga_tracking': True,
+                    'end_date': '2015-04-02',
+                    'id': '1',
+                    'name': 'test adgroup 1',
+                    'start_date': '2015-03-02',
+                    'state': 2,
+                    'target_devices': ['desktop', 'mobile'],
+                    'target_regions': ['UK', 'US', 'CA'],
+                    'tracking_code': 'param1=foo&param2=bar'
+                }
+            },
+            'success': True
+        })
+
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put(self, mock_log_useraction, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -68,10 +101,14 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(json.loads(response.content), {
             'data': {
                 'action_is_waiting': True,
+                'default_settings': {
+                    'target_devices': ['mobile'],
+                    'target_regions': ['NC', '501'],
+                },
                 'settings': {
                     'cpc_cc': '0.30',
                     'daily_budget_cc': '200.00',
-                    'end_date': '2015-06-30',
+                    'end_date': str(datetime.date.today()),
                     'id': '1',
                     'name': 'Test ad group name',
                     'start_date': '2015-05-01',
@@ -109,6 +146,8 @@ class AdGroupSettingsTest(TestCase):
         mock_log_useraction.assert_called_with(
             response.wsgi_request, constants.UserActionType.SET_AD_GROUP_SETTINGS, ad_group=ad_group)
 
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
     def test_put_without_non_propagated_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
@@ -144,6 +183,8 @@ class AdGroupSettingsTest(TestCase):
         mock_order_ad_group_settings_update.assert_called_with(
             ad_group, old_settings, new_settings, ANY, send=False)
 
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
                                            mock_order_ad_group_settings_update):
@@ -166,10 +207,14 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(json.loads(response.content), {
             'data': {
                 'action_is_waiting': True,
+                'default_settings': {
+                    'target_devices': ['mobile'],
+                    'target_regions': ['NC', '501'],
+                },
                 'settings': {
                     'cpc_cc': '0.30',
                     'daily_budget_cc': '200.00',
-                    'end_date': '2015-06-30',
+                    'end_date': str(datetime.date.today()),
                     'id': '10',
                     'name': 'Test ad group name',
                     'start_date': '2015-05-01',
@@ -211,6 +256,8 @@ class AdGroupSettingsTest(TestCase):
             constants.UserActionType.SET_AD_GROUP_SETTINGS,
             ad_group=ad_group)
 
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
     def test_put_tracking_codes_with_permission(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
         mock_actionlog_api.is_waiting_for_set_actions.return_value = True
@@ -229,6 +276,8 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(response_settings_dict['tracking_code'], 'asd=123')
         self.assertEqual(response_settings_dict['enable_ga_tracking'], False)
 
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
     def test_put_invalid_target_region(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
 
@@ -246,6 +295,8 @@ class AdGroupSettingsTest(TestCase):
         self.assertFalse(response_dict['success'])
         self.assertIn('target_regions', response_dict['data']['errors'])
 
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
     def test_put_us_and_dmas(self, mock_actionlog_api, mock_order_ad_group_settings_update):
         ad_group = models.AdGroup.objects.get(pk=1)
 
@@ -262,6 +313,44 @@ class AdGroupSettingsTest(TestCase):
         response_dict = json.loads(response.content)
         self.assertFalse(response_dict['success'])
         self.assertIn('target_regions', response_dict['data']['errors'])
+
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
+    def test_end_date_in_the_past(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        self.settings_dict['settings']['end_date'] = '2015-05-02'
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict['success'])
+        self.assertIn('end_date', response_dict['data']['errors'])
+
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
+    def test_enable_without_budget(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=2)
+
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        self.settings_dict['settings']['id'] = 2
+
+        response = self.client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict['success'])
+        self.assertIn('state', response_dict['data']['errors'])
 
 
 @patch('dash.views.agency.api.order_ad_group_settings_update')
@@ -1491,6 +1580,26 @@ class CampaignAgencyTest(TestCase):
         self.assertTrue(content['success'])
         self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
         self.assertEqual(content['data']['settings']['iab_category'], 'IAB24')
+
+        self.assertEqual(content['data']['history'], [{
+            'datetime': '2014-06-04T05:58:21',
+            'changed_by': 'superuser@test.com',
+            'settings': [
+                {'name': 'Name', 'value': ''},
+                {'name': 'Account Manager', 'value': 'user@test.com'},
+                {'name': 'Sales Representative', 'value': 'john@test.com'},
+                {'name': 'IAB Category', 'value': 'Uncategorized'},
+                {'name': 'Campaign goal', 'value': 'new unique visitors'},
+                {'name': 'Goal quantity', 'value': '0.00'},
+                {'name': 'Service Fee', 'value': '20%'},
+                {'name': 'Promotion Goal', 'value': 'Brand Building'},
+                {'name': 'Archived', 'value': 'False'},
+                {'name': 'Target Devices', 'value': 'Mobile'},
+                {'name': 'Target Devices', 'value': 'New Caledonia, 501 New York, NY'}
+            ],
+            'show_old_settings': False,
+            'changes_text': 'Created settings'
+        }])
 
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('dash.views.helpers.log_useraction_if_necessary')
