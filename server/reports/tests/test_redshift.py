@@ -129,7 +129,7 @@ class RedshiftTest(TestCase):
         s3_filename = 's3://b1-eventlog-sync/publishers/2015-01-01-2015-01-31--123456789/part-00000'
         aws_access_id = 'xxxxxxx'
         aws_access_secret = 'xxxxxxxx'
-        redshift.update_publishers(s3_filename, aws_access_id, aws_access_secret)
+        redshift.insert_publishers(s3_filename, aws_access_id, aws_access_secret)
 
         query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV"
         params = [s3_filename, aws_access_id, aws_access_secret]

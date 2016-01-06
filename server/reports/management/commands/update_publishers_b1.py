@@ -36,7 +36,7 @@ class Command(BaseCommand):
         publisher_s3_uri = self._get_s3_publisher_uri(start_date, end_date)
         logger.debug('Inserting publisher data from S3 file: %s', publisher_s3_uri)
         redshift.delete_publishers(start_date, end_date)
-        redshift.update_publishers(publisher_s3_uri, settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+        redshift.insert_publishers(publisher_s3_uri, settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
 
     def _get_start_date(self, options):
         start_date = command_helpers.parse_date(options, 'start_date')

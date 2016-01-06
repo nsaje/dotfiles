@@ -10,7 +10,7 @@ from utils import s3helpers
 
 class CommandUpdatePublishersTest(TestCase):
     @mock.patch('reports.redshift.delete_publishers')
-    @mock.patch('reports.redshift.update_publishers')
+    @mock.patch('reports.redshift.insert_publishers')
     @mock.patch.object(s3helpers.S3Helper, 'list')
     def test_handle(self, s3helper_list_mock, update_publishers_mock, delete_publishers_mock):
         s3helper_list_mock.return_value = [
