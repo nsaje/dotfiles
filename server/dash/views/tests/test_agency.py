@@ -2028,7 +2028,7 @@ class AccountAgencyTest(TestCase):
         self.assertIn('value', settings_dict['name'])
         self.assertNotIn('old_value', settings_dict['name'])
 
-    def test_get_changes_string(self):
+    def test_get_changes_text(self):
         expected_changes_strings = [
             'Created settings',
             'Service Fee set to "10%"',
@@ -2042,10 +2042,33 @@ class AccountAgencyTest(TestCase):
         for i in range(6):
             old_settings = models.AccountSettings.objects.get(pk=200+i-1) if i > 0 else None
             new_settings = models.AccountSettings.objects.get(pk=200+i)
-            settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
-            changes_string = view.get_changes_string(new_settings, old_settings, settings_dict)
+            changes_string = view.get_changes_text(new_settings, old_settings)
 
             self.assertEqual(changes_string, expected_changes_strings[i])
+
+    def test_get_changes_text_for_media_sources(self):
+        view = agency.AccountAgency()
+
+        self.assertEqual(
+            view.get_changes_text_for_media_sources([1], [2]),
+            'Added media sources (Source 1), Removed media sources (Source 2)'
+        )
+        self.assertEqual(
+            view.get_changes_text_for_media_sources([1, 2], [3]),
+            'Added media sources (Source 1, Source 2), Removed media sources (Source 3)'
+        )
+        self.assertEqual(
+            view.get_changes_text_for_media_sources([], []),
+            ''
+        )
+        self.assertEqual(
+            view.get_changes_text_for_media_sources([1], []),
+            'Added media sources (Source 1)'
+        )
+        self.assertEqual(
+            view.get_changes_text_for_media_sources([], [2]),
+            'Removed media sources (Source 2)'
+        )
 
     def test_set_allowed_sources(self):
         account = models.Account.objects.get(pk=1)
@@ -2168,8 +2191,8 @@ class AccountAgencyTest(TestCase):
         response = json.loads(response.content)
 
         self.assertEqual(response['data']['settings']['allowed_sources'], {
-            '2': {'name': 'Source 2', 'allowed': True},
-            '3': {'name': 'Source 3 (unreleased)'}
+            '2': {'name': 'Source 2', 'allowed': True, 'released': True},
+            '3': {'name': 'Source 3', 'released': False}
             })
 
     def test_get_allowed_sources_no_released(self):
@@ -2185,7 +2208,7 @@ class AccountAgencyTest(TestCase):
         response = json.loads(response.content)
 
         self.assertEqual(response['data']['settings']['allowed_sources'], {
-            '2': {'name': 'Source 2', 'allowed': True},
+            '2': {'name': 'Source 2', 'allowed': True, 'released': True},
             })
 
     def test_add_error_to_account_agency_form(self):

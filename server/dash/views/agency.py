@@ -1025,15 +1025,7 @@ class AccountAgency(api_common.BaseApiView):
         to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
 
         if to_be_added or to_be_removed:
-            added_media_source_names = (allowed_sources_dict[k]['name'] for k in to_be_added)
-            removed_media_source_names = (allowed_sources_dict[k]['name'] for k in to_be_removed)
-
-            changes_text = ', '.join(filter(None, [
-                u'Added media sources ({})'.format(', '.join(added_media_source_names)) if to_be_added else None,
-                u'Removed media sources ({})'.format(', '.join(removed_media_source_names)) if to_be_removed else None
-                ]))
-
-            settings.changes_text = changes_text
+            settings.changes_text = self.get_changes_text_for_media_sources(to_be_added, to_be_removed)
             account.allowed_sources.add(*list(to_be_added))
             account.allowed_sources.remove(*list(to_be_removed))
 
@@ -1043,13 +1035,6 @@ class AccountAgency(api_common.BaseApiView):
         settings.default_account_manager = resource['default_account_manager']
         settings.default_sales_representative = resource['default_sales_representative']
         settings.service_fee = helpers.format_percent_to_decimal(resource['service_fee'])
-
-    def add_unreleased_label_to_names(self, allowed_sources_dict, all_sources):
-        for source in all_sources:
-            if source.id in allowed_sources_dict and not source.released:
-                name = allowed_sources_dict[source.id]['name']
-                allowed_sources_dict[source.id]['name'] = '{} (unreleased)'.format(name)
-        return allowed_sources_dict
 
     def get_allowed_sources(self, include_unreleased_sources, allowed_sources_ids_list):
         allowed_sources_dict = {}
@@ -1064,8 +1049,8 @@ class AccountAgency(api_common.BaseApiView):
             source_settings = {'name': source.name}
             if source.id in allowed_sources_ids_list:
                 source_settings['allowed'] = True
+            source_settings['released'] = source.released
             allowed_sources_dict[source.id] = source_settings
-        allowed_sources_dict = self.add_unreleased_label_to_names(allowed_sources_dict, all_sources)
 
         return allowed_sources_dict
 
@@ -1104,7 +1089,7 @@ class AccountAgency(api_common.BaseApiView):
             new_settings = settings[i]
 
             settings_dict = self.convert_settings_to_dict(new_settings, old_settings)
-            changes_text = self.get_changes_string(new_settings, old_settings, settings_dict)
+            changes_text = self.get_changes_text(new_settings, old_settings)
 
             if not changes_text:
                 continue
@@ -1160,12 +1145,21 @@ class AccountAgency(api_common.BaseApiView):
 
         return settings_dict
 
-    def get_changes_string(self, new_settings, old_settings, settings_dict):
+    def get_changes_text(self, new_settings, old_settings):
         if not old_settings:
             return 'Created settings'
 
+        changes_text = ', '.join(filter(None, [
+            self.get_changes_text_for_settings(new_settings, old_settings),
+            new_settings.changes_text
+        ]))
+
+        return changes_text
+
+    def get_changes_text_for_settings(self, new_settings, old_settings):
         change_strings = []
         changes = old_settings.get_setting_changes(new_settings)
+        settings_dict = self.convert_settings_to_dict(new_settings, None)
 
         for key in changes:
             setting = settings_dict[key]
@@ -1173,10 +1167,18 @@ class AccountAgency(api_common.BaseApiView):
                 '{} set to "{}"'.format(setting['name'], setting['value'])
             )
 
-        if new_settings.changes_text:
-            change_strings.append(new_settings.changes_text)
-
         return ', '.join(change_strings)
+
+    def get_changes_text_for_media_sources(self, added_source_ids, removed_source_ids):
+        added_sources = models.Source.objects.filter(id__in=added_source_ids).values_list('name', flat=True)
+        removed_sources = models.Source.objects.filter(id__in=removed_source_ids).values_list('name', flat=True)
+
+        changes_text = ', '.join(filter(None, [
+            u'Added media sources ({})'.format(', '.join(added_sources)) if added_sources else None,
+            u'Removed media sources ({})'.format(', '.join(removed_sources)) if removed_sources else None
+        ]))
+
+        return changes_text
 
     def get_user_list(self, settings, perm_name):
         users = list(ZemUser.objects.get_users_with_perm(perm_name))
