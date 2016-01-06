@@ -4,7 +4,8 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', fu
     $scope.history = [];
     $scope.canArchive = false;
     $scope.canRestore = true;
-    $scope.campaignManagers = [];
+    $scope.accountManagers = [];
+    $scope.salesReps = [];
     $scope.errors = {};
     $scope.availablePixels = [];
     $scope.requestInProgress = false;
@@ -29,7 +30,8 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', fu
                 if (discarded) {
                     $scope.discarded = true;
                 } else {
-                    $scope.campaignManagers = data.campaignManagers;
+                    $scope.accountManagers = data.accountManagers;
+                    $scope.salesReps = data.salesReps;
                 }
             },
             function (data) {

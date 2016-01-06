@@ -13,6 +13,7 @@ from django.db import transaction
 from django.core import validators
 
 from dash import api
+from dash import budget
 from dash import constants
 from dash import models
 from dash import regions
@@ -351,24 +352,44 @@ class ConversionGoalForm(forms.Form):
 
 class CampaignAgencyForm(forms.Form):
     id = forms.IntegerField()
-    campaign_manager = forms.IntegerField()
+    account_manager = forms.IntegerField()
+    sales_representative = forms.IntegerField(
+        required=False
+    )
     iab_category = forms.ChoiceField(
         choices=constants.IABCategory.get_choices(),
     )
 
-    def clean_campaign_manager(self):
-        campaign_manager_id = self.cleaned_data.get('campaign_manager')
+    def clean_account_manager(self):
+        account_manager_id = self.cleaned_data.get('account_manager')
 
-        err_msg = 'Invalid campaign manager.'
+        err_msg = 'Invalid account manager.'
 
         try:
-            campaign_manager = ZemUser.objects.\
+            account_manager = ZemUser.objects.\
                 get_users_with_perm('campaign_settings_account_manager', True).\
-                get(pk=campaign_manager_id)
+                get(pk=account_manager_id)
         except ZemUser.DoesNotExist:
             raise forms.ValidationError(err_msg)
 
-        return campaign_manager
+        return account_manager
+
+    def clean_sales_representative(self):
+        sales_representative_id = self.cleaned_data.get('sales_representative')
+
+        if sales_representative_id is None:
+            return None
+
+        err_msg = 'Invalid sales representative.'
+
+        try:
+            sales_representative = ZemUser.objects.\
+                get_users_with_perm('campaign_settings_sales_rep').\
+                get(pk=sales_representative_id)
+        except ZemUser.DoesNotExist:
+            raise forms.ValidationError(err_msg)
+
+        return sales_representative
 
 
 class CampaignSettingsForm(forms.Form):

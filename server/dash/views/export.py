@@ -831,7 +831,7 @@ class AllAccountsExport(ExportApiView):
                 {'key': 'date', 'name': 'Date', 'format': 'date'},
                 {'key': 'account', 'name': 'Account'},
                 {'key': 'campaign', 'name': 'Campaign'},
-                {'key': 'campaign_manager', 'name': 'Campaign Manager'},
+                {'key': 'account_manager', 'name': 'Account Manager'},
                 {'key': 'sales_representative', 'name': 'Sales Representative'},
                 {'key': 'service_fee', 'name': 'Service Fee', 'format': 'percent'},
                 {'key': 'iab_category', 'name': 'IAB Category'},
@@ -888,13 +888,12 @@ class AllAccountsExport(ExportApiView):
         for result in results:
             campaign_id = result['campaign']
             cs = campaign_settings.get(campaign_id)
-            sales_representative = cs.campaign.get_sales_representative() if cs is not None else None
 
             has_service_fee = result.get('service_fee') and result['service_fee'] != 'N/A'
             cost = result['cost'] or 0
             result['campaign'] = campaign_names[campaign_id]
-            result['campaign_manager'] = cs.campaign_manager.email if cs is not None and cs.campaign_manager is not None else 'N/A'
-            result['sales_representative'] = sales_representative.email if sales_representative is not None else 'N/A'
+            result['account_manager'] = cs.account_manager.email if cs is not None and cs.account_manager is not None else 'N/A'
+            result['sales_representative'] = cs.sales_representative.email if cs is not None and cs.sales_representative is not None else 'N/A'
             result['iab_category'] = cs.iab_category if cs is not None else 'N/A'
             result['promotion_goal'] = constants.PromotionGoal.get_text(cs.promotion_goal) if cs is not None else 'N/A'
             result['fee_amount'] = (cost / (1.0 - result['service_fee'])) - cost if has_service_fee else 'N/A'
