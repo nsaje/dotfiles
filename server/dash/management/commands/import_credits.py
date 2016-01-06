@@ -9,6 +9,8 @@ import reports.models
 import dash.bcm_helpers
 from django.db.models import Sum
 
+LINE_CORRECTIONS, LINE_IN_Z1, LINE_CREDIT_ID, LINE_ACCOUNT_ID, LINE_VALID_FROM, LINE_VALID_TO, LINE_DATE_SIGNED, LINE_TOTAL_AMOUNT, LINE_LICENSE_TYPE, LINE_LICENSE_PERCENT, LINE_LICENSE_TOTAL, LINE_MEDIA_AMOUNT, LINE_NOTES, LINE_PDF = range(14)
+
 def are_date_ranges_overlaping(dates):
     if len(dates) <= 1:
         return False
@@ -33,18 +35,19 @@ class Command(BaseCommand):
                 if not num:
                     continue
                 credit = dict(
-                    account=line[0],
-                    valid_from=line[1],
-                    valid_to=line[2],
-                    amount=line[4],
-                    notes=line[8] + ' ' + line[9],
+                    account=line[LINE_ACCOUNT_ID],
+                    valid_from=line[LINE_VALID_FROM],
+                    valid_to=line[LINE_VALID_TO],
+                    amount=line[LINE_TOTAL_AMOUNT],
+                    notes=line[LINE_NOTES] + ' ' + line[LINE_PDF],
                 )
-                credit_license_type = line[5]
+                credit_license_type = line[LINE_LICENSE_TYPE]
 
                 if 'Flat' in credit_license_type:
                     credit['license_fee'] = 0
+                    credit['amount'] = line[LINE_MEDIA_AMOUNT]
                 elif '%' in credit_license_type:
-                    credit['total_license_fee'] = line[6]
+                    credit['license_fee'] = line[LINE_LICENSE_PERCENT]
                 else:
                     skipped += 1
                     continue

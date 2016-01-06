@@ -48,7 +48,7 @@ class AccountCreditView(api_common.BaseApiView):
         allocated = item.get_allocated_amount()
         return {
             'id': item.pk,
-            'created_by': str(item.created_by),
+            'created_by': str(item.created_by or 'Zemanta One'),
             'created_on': item.created_dt.date(),
             'start_date': item.start_date,
             'end_date': item.end_date,
@@ -154,7 +154,7 @@ class AccountCreditItemView(api_common.BaseApiView):
     def _get_response(self, item):
         return self.create_api_response({
             'id': item.pk,
-            'created_by': str(item.created_by or 'system'),
+            'created_by': str(item.created_by or 'Zemanta One'),
             'created_on': item.created_dt.date(),
             'start_date': item.start_date,
             'end_date': item.end_date,
@@ -354,7 +354,7 @@ class CampaignBudgetItemView(api_common.BaseApiView):
     def _get_response(self, item):
         return self.create_api_response({
             'amount': item.amount,
-            'created_by': str(item.created_by),
+            'created_by': str(item.created_by or 'Zemanta One'),
             'created_at': item.created_dt,
             'start_date': item.start_date,
             'end_date': item.end_date,
