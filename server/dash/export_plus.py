@@ -106,8 +106,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
             ad_group_sources = models.AdGroupSource.objects.filter(
                 ad_group__campaign__account__in=models.Account.objects.all().filter_by_user(user),
                 source=stat['source'])
-            ad_group_sources_states = helpers.get_ad_group_sources_states(ad_group_sources)
-            stat['status'] = table.SourcesTable().get_state(ad_group_sources_states)
+            stat['status'] = stat['status'] = _get_sources_state(ad_group_sources)
 
         if 'source' in stat:
             stat['source'] = source_names[stat['source']]
@@ -193,9 +192,8 @@ def _populate_campaign_stat(stat, campaign, statuses=None, budgets=None):
         stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
     if statuses:
         if 'source' in stat:
-            ad_group_sources = models.AdGroupSource.objects.filter(ad_group__campaign=stat['campaign'], source=stat['source'])
-            ad_group_sources_states = helpers.get_ad_group_sources_states(ad_group_sources)
-            stat['status'] = table.SourcesTable().get_state(ad_group_sources_states)
+            stat['status'] = _get_sources_state(
+                models.AdGroupSource.objects.filter(ad_group__campaign=stat['campaign'], source=stat['source']))
         else:
             stat['status'] = statuses[campaign.id]
     return stat
@@ -208,13 +206,16 @@ def _populate_account_stat(stat, prefetched_data, statuses=None, budgets=None):
         stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
     if statuses:
         if 'source' in stat:
-            ad_group_sources = models.AdGroupSource.objects.filter(ad_group__campaign__account=stat['account'], source=stat['source'])
-            ad_group_sources_states = helpers.get_ad_group_sources_states(ad_group_sources)
-            stat['status'] = table.SourcesTable().get_state(ad_group_sources_states)
+            stat['status'] = _get_sources_state(
+                models.AdGroupSource.objects.filter(ad_group__campaign__account=stat['account'], source=stat['source']))
         else:
             stat['status'] = statuses[stat['account']]
     stat['account'] = prefetched_data.get(stat['account']).name
     return stat
+
+
+def _get_sources_state(ad_group_sources):
+    return table.SourcesTable().get_state(helpers.get_ad_group_sources_states(ad_group_sources))
 
 
 def _prefetch_content_ad_data(constraints):
