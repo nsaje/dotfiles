@@ -166,22 +166,15 @@ def query_publisher_list(start_date, end_date, breakdown_fields=[], order_fields
 
 def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts, total_cost):
     # TODO: Execute this inside a transaction
-    fields_sql = ['date', 'adgroup_id', 'exchange', 'domain', 'name', 'clicks', 'cost_micro', 'ob_id']
+    fields_sql = ['date', 'adgroup_id', 'exchange', 'name', 'clicks', 'cost_micro', 'ob_id']
     row_tuples = []
     total_clicks = 0
     for row in datarowdicts:
         total_clicks += row['clicks']
 
     for row in datarowdicts:
-        # strip http:
-        url = row['url']
-        if url.startswith("https://"):
-            url = url[8:]
-        if url.startswith("http://"):
-            url = url[7:]
-        url = url.strip("/")
         cost = 1.0 * row['clicks'] / total_clicks * total_cost
-        newrow = (date, ad_group, exchange, url, row['name'], row['clicks'], cost * 1000000000, row['ob_id'])
+        newrow = (date, ad_group, exchange, row['name'], row['clicks'], cost * 1000000000, row['ob_id'])
         row_tuples.append(newrow)
 
     cursor = redshift.get_cursor()
