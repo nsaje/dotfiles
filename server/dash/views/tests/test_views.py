@@ -2012,7 +2012,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
     def test_post_outbrain_account_blacklist(self, cursor):
         cursor().dictfetchall.return_value = [
         {
-            'domain': u'Test',  # an actual domain from production
+            'domain': u'Test',
             'ctr': 0.0,
             'exchange': 'outbrain',
             'external_id': 'sfdafkl1230899012asldas',
@@ -2066,7 +2066,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
     def test_post_outbrain_invalid_level_blacklist(self, cursor):
         cursor().dictfetchall.return_value = [
         {
-            'domain': u'Test',  # an actual domain from production
+            'domain': u'Test',
             'ctr': 0.0,
             'exchange': 'outbrain',
             'external_id': 'sfdafkl1230899012asldas',
