@@ -146,8 +146,7 @@ class AccountCampaignsTest(TestCase):
         self.assertEqual(settings.target_devices, constants.AdTargetDevice.get_all())
         self.assertEqual(settings.target_regions, ['US'])
         self.assertEqual(settings.name, campaign_name)
-        self.assertEqual(settings.account_manager.id, 2)
-        self.assertEqual(settings.sales_representative.id, 3)
+        self.assertEqual(settings.campaign_manager.id, 2)
 
         mock_log_useraction.assert_called_with(
             response.wsgi_request,

@@ -151,8 +151,7 @@
         created_by: 1
         changes_text: 'changes'
         name: 'Test campaign 1'
-        account_manager: 1
-        sales_representative: 1
+        campaign_manager: 1
         service_fee: '0.2000'
         iab_category: 1
         campaign_goal: 2

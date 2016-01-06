@@ -48,9 +48,8 @@
     created_dt: '2014-06-04T09:58:21'
     created_by_id: 1
     name: 'Campaign Settings 1'
-    account_manager: 1
+    campaign_manager: 1
     campaign: 1
-    sales_representative: 1
   model: dash.campaignsettings
   pk: 1
 
