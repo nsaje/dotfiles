@@ -75,7 +75,8 @@ FORMAT_EMPTY_TO_0 = [
 ]
 
 
-def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows, conversion_goals, include_budgets=False, **constraints):
+def _generate_rows(dimensions, start_date, end_date, user, ordering,
+                   ignore_diff_rows, conversion_goals, include_budgets=False, **constraints):
     stats = stats_helper.get_stats_with_conversions(
         user,
         start_date,
@@ -105,7 +106,8 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         elif 'ad_group' in dimensions:
             stat = _populate_ad_group_stat(stat, prefetched_data.get(id=stat['ad_group']), statuses=statuses)
         elif 'campaign' in dimensions:
-            stat = _populate_campaign_stat(stat, prefetched_data.get(id=stat['campaign']), statuses=statuses, budgets=budgets)
+            stat = _populate_campaign_stat(stat, prefetched_data.get(
+                id=stat['campaign']), statuses=statuses, budgets=budgets)
         elif 'account' in dimensions:
             stat = _populate_account_stat(stat, prefetched_data, statuses, budgets)
         else:
@@ -150,7 +152,8 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets, include
                         'spent_budget': budget.CampaignBudget(camp).get_spend()}
                        for camp in data}
     elif 'account' in dimensions:
-        accounts = constraints['account'] if isinstance(constraints['account'], collections.Iterable) else [constraints['account']]
+        accounts = constraints['account'] if isinstance(
+            constraints['account'], collections.Iterable) else [constraints['account']]
         data = {account.id: account for account in accounts}
         if include_statuses:
             statuses = table.AccountsAccountsTable().get_per_account_status_dict(accounts, constraints['source'])
@@ -181,7 +184,9 @@ def _populate_ad_group_stat(stat, ad_group, statuses=None):
     stat['account'] = ad_group.campaign.account.name
     if statuses:
         if 'source' in stat:
-            stat['status'] = models.AdGroupSource.objects.get(ad_group=stat['ad_group'], source=stat['source']).get_current_settings().state
+            stat['status'] = models.AdGroupSource.objects.get(
+                ad_group=stat['ad_group'],
+                source=stat['source']).get_current_settings().state
         else:
             stat['status'] = statuses[ad_group.id]
 
@@ -212,7 +217,8 @@ def _populate_account_stat(stat, prefetched_data, statuses=None, budgets=None):
         stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
     if statuses:
         if 'source' in stat:
-            sources = models.AdGroupSource.objects.filter(ad_group__campaign__account=stat['account'], source=stat['source'])
+            sources = models.AdGroupSource.objects.filter(
+                ad_group__campaign__account=stat['account'], source=stat['source'])
             stat['status'] = _get_sources_state(sources)
         else:
             stat['status'] = statuses[stat['account']]
@@ -340,7 +346,8 @@ def _include_breakdowns(required_fields, dimensions, by_day, by_source):
 
 
 class AllAccountsExport(object):
-    def get_data(self, user, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False, by_day=False):
+    def get_data(self, user, filtered_sources, start_date, end_date, order,
+                 additional_fields, breakdown=None, by_source=False, by_day=False):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
         if not user.has_perm('zemauth.view_archived_entities'):
             accounts = accounts.exclude_archived()
@@ -360,7 +367,8 @@ class AllAccountsExport(object):
             required_fields.extend(['account', 'campaign', 'ad_group'])
             dimensions.extend(['account', 'campaign', 'ad_group'])
 
-        include_budgets = (any([field in additional_fields for field in ['budget', 'available_budget', 'unspent_budget']])
+        include_budgets = (any(
+                           [field in additional_fields for field in ['budget', 'available_budget', 'unspent_budget']])
                            and not by_day and breakdown != 'ad_group')
         if not include_budgets:
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
@@ -385,7 +393,8 @@ class AllAccountsExport(object):
 
 
 class AccountExport(object):
-    def get_data(self, user, account_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False, by_day=False):
+    def get_data(self, user, account_id, filtered_sources, start_date, end_date,
+                 order, additional_fields, breakdown=None, by_source=False, by_day=False):
         account = helpers.get_account(user, account_id)
 
         dimensions = ['account']
@@ -410,7 +419,8 @@ class AccountExport(object):
         order = order if order not in ['state', 'status_setting'] else 'status'
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
-        include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']]) and not by_day
+        include_budgets = any(
+            [field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']]) and not by_day
 
         results = _generate_rows(
             dimensions,
@@ -428,7 +438,8 @@ class AccountExport(object):
 
 
 class CampaignExport(object):
-    def get_data(self, user, campaign_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False, by_day=False):
+    def get_data(self, user, campaign_id, filtered_sources, start_date, end_date,
+                 order, additional_fields, breakdown=None, by_source=False, by_day=False):
         campaign = helpers.get_campaign(user, campaign_id)
 
         dimensions = ['campaign']
@@ -465,7 +476,8 @@ class CampaignExport(object):
 
 
 class AdGroupExport(object):
-    def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date, order, additional_fields, breakdown=None, by_source=False, by_day=False):
+    def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date,
+                 order, additional_fields, breakdown=None, by_source=False, by_day=False):
 
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
@@ -621,7 +633,8 @@ def _get_report(
     return (contents, filename)
 
 
-def _get_report_contents(user, filtered_sources, start_date, end_date, order, additional_fields, breakdown, by_source, by_day, account_id=None, campaign_id=None, ad_group_id=None):
+def _get_report_contents(user, filtered_sources, start_date, end_date, order, additional_fields,
+                         breakdown, by_source, by_day, account_id=None, campaign_id=None, ad_group_id=None):
     arguments = {
         'user': user,
         'filtered_sources': filtered_sources,
@@ -646,10 +659,12 @@ def _get_report_contents(user, filtered_sources, start_date, end_date, order, ad
     return AllAccountsExport().get_data(**arguments)
 
 
-def _get_report_filename(granularity, start_date, end_date, account_name='', campaign_name='', ad_group_name='', by_source=False, by_day=False):
+def _get_report_filename(granularity, start_date, end_date, account_name='', campaign_name='',
+                         ad_group_name='', by_source=False, by_day=False):
     name = ''
     all_accounts_name = ''
-    if granularity == constants.ScheduledReportGranularity.ALL_ACCOUNTS or not any([account_name, campaign_name, ad_group_name]):
+    if granularity == constants.ScheduledReportGranularity.ALL_ACCOUNTS or not any(
+            [account_name, campaign_name, ad_group_name]):
         all_accounts_name = 'ZemantaOne'
     if granularity == constants.ScheduledReportGranularity.ACCOUNT and not account_name:
         name += '-_by_account'
