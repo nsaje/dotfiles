@@ -155,7 +155,8 @@ class ExportPlusTestCase(test.TestCase):
             'image_url': u'/123456789/200x300.jpg',
             'date': datetime.date(2014, 7, 1),
             'impressions': 100000,
-            'clicks': 103
+            'clicks': 103,
+            'status': 1,
         }, {
             'uploaded': datetime.date(2015, 2, 21),
             'end_date': datetime.date(2014, 7, 2),
@@ -174,7 +175,8 @@ class ExportPlusTestCase(test.TestCase):
             'image_url': u'/123456789/200x300.jpg',
             'date': datetime.date(2014, 7, 1),
             'impressions': 200000,
-            'clicks': 203
+            'clicks': 203,
+            'status': 2
         }])
 
     def test_get_report_filename(self):
