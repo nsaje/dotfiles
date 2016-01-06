@@ -8,7 +8,6 @@ from dash import models
 from dash import stats_helper
 from dash import budget
 from dash import constants
-from dash import table
 from dash.views import helpers
 
 from utils import exc
@@ -111,10 +110,11 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering,
         elif 'account' in dimensions:
             stat = _populate_account_stat(stat, prefetched_data, statuses, budgets)
         else:
-            ad_group_sources = models.AdGroupSource.objects.filter(
-                ad_group__campaign__account__in=models.Account.objects.all().filter_by_user(user),
-                source=stat['source'])
-            stat['status'] = stat['status'] = _get_sources_state(ad_group_sources)
+            if include_statuses:
+                ad_group_sources = models.AdGroupSource.objects.filter(
+                    ad_group__campaign__account__in=models.Account.objects.all().filter_by_user(user),
+                    source=stat['source'])
+                stat['status'] = stat['status'] = _get_sources_state(ad_group_sources)
 
         if 'source' in stat:
             stat['source'] = source_names[stat['source']]
@@ -137,15 +137,12 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets, include
         distinct_ad_groups = set(adg for adg in (stat['ad_group'] for stat in stats))
         data = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
         if include_statuses:
-            statuses = table.CampaignAdGroupsTable().get_per_ad_group_status_dict(
-                data,
-                models.AdGroupSettings.objects.filter(ad_group__in=data).group_current_settings(),
-                constraints['source'])
+            statuses = _get_statuses(data, 'id')
     elif 'campaign' in dimensions:
         distinct_campaigns = set(camp for camp in (stat['campaign'] for stat in stats))
         data = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
         if include_statuses:
-            statuses = table.AccountCampaignsTable().get_per_campaign_status_dict(data, constraints['source'])
+            statuses = _get_statuses(models.AdGroup.objects.filter(campaign__in=data), 'campaign_id')
         if include_budgets:
             budgets = {camp.id:
                        {'budget': budget.CampaignBudget(camp).get_total(),
@@ -156,7 +153,9 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets, include
             constraints['account'], collections.Iterable) else [constraints['account']]
         data = {account.id: account for account in accounts}
         if include_statuses:
-            statuses = table.AccountsAccountsTable().get_per_account_status_dict(accounts, constraints['source'])
+            statuses = _get_statuses(
+                models.AdGroup.objects.filter(campaign__account_id__in=accounts),
+                'campaign__account_id')
         if include_budgets:
             all_accounts_budget = budget.GlobalBudget().get_total_by_account()
             all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
@@ -165,6 +164,13 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets, include
                         'spent_budget': all_accounts_total_spend.get(acc.id, 0)}
                        for acc in accounts}
     return data, budgets, statuses
+
+
+def _get_statuses(ad_groups, identifier):
+    ad_groups_settings = models.AdGroupSettings.objects.filter(
+        ad_group__in=ad_groups).group_current_settings()
+    return helpers.get_ad_group_state_by_sources_running_status(
+        ad_groups, ad_groups_settings, [], identifier)
 
 
 def _populate_content_ad_stat(stat, content_ad):
@@ -227,7 +233,11 @@ def _populate_account_stat(stat, prefetched_data, statuses=None, budgets=None):
 
 
 def _get_sources_state(ad_group_sources):
-    return table.SourcesTable().get_state(helpers.get_ad_group_sources_states(ad_group_sources))
+    if any(
+            s.state == constants.AdGroupSourceSettingsState.ACTIVE
+            for s in helpers.get_ad_group_sources_states(ad_group_sources)):
+        return constants.AdGroupSourceSettingsState.ACTIVE
+    return constants.AdGroupSourceSettingsState.INACTIVE
 
 
 def _prefetch_content_ad_data(constraints):
