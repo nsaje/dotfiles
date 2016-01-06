@@ -2,6 +2,7 @@ from collections import defaultdict
 import datetime
 import json
 import logging
+import time
 
 from django.db.models import Sum, Max
 from django.db import connection, transaction
@@ -11,6 +12,8 @@ import reports.models
 from reports.db_raw_helpers import dictfetchall
 from reports import redshift
 from reports import daily_statements
+from utils import json_helper
+from utils import s3helpers
 from utils import statsd_helper
 from utils import sqs_helper
 
@@ -19,6 +22,8 @@ import dash.models
 logger = logging.getLogger(__name__)
 
 CC_TO_NANO = 100000
+
+LOAD_CONTENTADS_KEY_FORMAT = 'contentadstats_load/{year}/{month}/{day}/{campaign_id}/{ts}.json'
 
 
 def _get_joined_stats_rows(date, campaign_id):
@@ -145,7 +150,19 @@ def refresh_changed_contentadstats():
     statsd_helper.statsd_gauge('reports.refresh.refresh_changed_contentadstats_num', len(to_refresh))
 
 
-@transaction.atomic(using=settings.STATS_DB_NAME)
+def put_contentadstats_to_s3(date, campaign, rows):
+    rows_json = json.dumps(rows, cls=json_helper.DateJSONEncoder)
+    s3_key = LOAD_CONTENTADS_KEY_FORMAT.format(
+        year=date.year,
+        month=date.month,
+        day=date.day,
+        campaign_id=campaign.id,
+        ts=int(time.time()*1000)
+    )
+    s3helpers.S3Helper().put(s3_key, rows_json)
+    return s3_key
+
+
 def refresh_contentadstats(date, campaign):
     # join data
     rows = _get_joined_stats_rows(date, campaign.id)
@@ -154,12 +171,14 @@ def refresh_contentadstats(date, campaign):
     _add_effective_spend(date, campaign, rows)
     rows = [_add_goals(row, goals_dict) for row in rows]
     rows = [_add_ids(row, campaign) for row in rows]
+    s3_key = put_contentadstats_to_s3(date, campaign, rows)
 
-    redshift.delete_contentadstats(date, campaign.id)
-    redshift.insert_contentadstats(rows)
+    with transaction.atomic(using=settings.STATS_DB_NAME):
+        redshift.delete_contentadstats(date, campaign.id)
+        redshift.load_contentadstats(s3_key)
 
-    redshift.delete_contentadstats_diff(date, campaign.id)
-    refresh_contentadstats_diff(date, campaign)
+        redshift.delete_contentadstats_diff(date, campaign.id)
+        refresh_contentadstats_diff(date, campaign)
 
 
 def refresh_contentadstats_diff(date, campaign):

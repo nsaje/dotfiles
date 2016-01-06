@@ -1,7 +1,7 @@
 import datetime
 from mock import patch, Mock, call
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from reports import redshift
 
@@ -34,6 +34,16 @@ class RedshiftTest(TestCase):
         mock_cursor().mogrify.assert_any_call('(%s,%s)', ['a', 1])
         mock_cursor().mogrify.assert_any_call('(%s,%s)', ['b', 2])
         mock_cursor().execute.assert_called_with(query, [])
+
+    @override_settings(AWS_ACCESS_KEY_ID='access_key')
+    @override_settings(AWS_SECRET_ACCESS_KEY='secret_access_key')
+    def test_load_contentadstats(self, mock_cursor):
+        redshift.load_contentadstats('test/s3/key.json')
+
+        query = 'COPY contentadstats FROM \'%s\' CREDENTIALS \'aws_access_key_id=%s;aws_secret_access_key=%s\' FORMAT JSON'
+        params = ['test/s3/key.json', 'access_key', 'secret_access_key']
+
+        mock_cursor().execute.assert_called_once_with(query, params)
 
     def test_sum_contentadstats(self, mock_cursor):
         redshift.sum_contentadstats()
