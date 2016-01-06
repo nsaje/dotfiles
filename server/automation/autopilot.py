@@ -326,7 +326,7 @@ def adjust_autopilot_media_sources_bid_cpcs():
             camp.name,
             camp.id,
             camp.account.name,
-            [camp.get_current_settings().account_manager.email],
+            [camp.get_current_settings().campaign_manager.email],
             adgroup_changes
         )
     report_autopilot_metrics()
