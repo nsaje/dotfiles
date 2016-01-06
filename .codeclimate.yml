@@ -1,11 +1,20 @@
 engines:
   pep8:
     enabled: true
+  radon:
+    enabled: true
+  fixme:
+    enabled: true
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - python
 
 ratings:
    paths:
    - "**.py"
 
 exclude_paths:
-- client/lib/*
+- client/lib/**/*
 - server/**/migrations/*.py
