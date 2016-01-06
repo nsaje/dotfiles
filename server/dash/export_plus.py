@@ -8,6 +8,7 @@ from dash import models
 from dash import stats_helper
 from dash import budget
 from dash import constants
+from dash import table
 from dash.views import helpers
 
 from utils import exc
@@ -79,7 +80,13 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         constraints=constraints
     )
 
-    prefetched_data, budgets = _prefetch_rows_data(dimensions, constraints, stats, include_budgets)
+    include_statuses = ordering == 'status'
+    prefetched_data, budgets, statuses = _prefetch_rows_data(
+        dimensions,
+        constraints,
+        stats,
+        include_budgets=include_budgets,
+        include_statuses=include_statuses)
     if 'source' in dimensions:
         source_names = {source.id: source.name for source in models.Source.objects.all()}
 
@@ -87,21 +94,23 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         stat['start_date'] = start_date
         stat['end_date'] = end_date
 
-        if 'source' in stat:
-            stat['source'] = source_names[stat['source']]
-
         if 'content_ad' in dimensions:
             stat = _populate_content_ad_stat(stat, prefetched_data[stat['content_ad']])
         elif 'ad_group' in dimensions:
-            stat = _populate_ad_group_stat(stat, prefetched_data.get(id=stat['ad_group']))
+            stat = _populate_ad_group_stat(stat, prefetched_data.get(id=stat['ad_group']), statuses=statuses)
         elif 'campaign' in dimensions:
-            stat = _populate_campaign_stat(stat, prefetched_data.get(id=stat['campaign']), budgets)
+            stat = _populate_campaign_stat(stat, prefetched_data.get(id=stat['campaign']), statuses=statuses, budgets=budgets)
         elif 'account' in dimensions:
-            if include_budgets:
-                stat['budget'] = budgets[stat['account']].get('budget')
-                stat['available_budget'] = stat['budget'] - budgets[stat['account']].get('spent_budget')
-                stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
-            stat['account'] = prefetched_data.get(stat['account'])
+            stat = _populate_account_stat(stat, prefetched_data, statuses, budgets)
+        else:
+            ad_group_sources = models.AdGroupSource.objects.filter(
+                ad_group__campaign__account__in=models.Account.objects.all().filter_by_user(user),
+                source=stat['source'])
+            ad_group_sources_states = helpers.get_ad_group_sources_states(ad_group_sources)
+            stat['status'] = table.SourcesTable().get_state(ad_group_sources_states)
+
+        if 'source' in stat:
+            stat['source'] = source_names[stat['source']]
 
     if 'date' in dimensions:
         ordering = 'date'
@@ -111,17 +120,25 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
     return sort_results(stats, [ordering])
 
 
-def _prefetch_rows_data(dimensions, constraints, stats, include_budgets):
+def _prefetch_rows_data(dimensions, constraints, stats, include_budgets, include_statuses):
     data = None
     budgets = None
+    statuses = None
     if 'content_ad' in dimensions:
         data = _prefetch_content_ad_data(constraints)
     elif 'ad_group' in dimensions:
         distinct_ad_groups = set(adg for adg in (stat['ad_group'] for stat in stats))
         data = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
+        if include_statuses:
+            statuses = table.CampaignAdGroupsTable().get_per_ad_group_status_dict(
+                data,
+                models.AdGroupSettings.objects.filter(ad_group__in=data).group_current_settings(),
+                constraints['source'])
     elif 'campaign' in dimensions:
         distinct_campaigns = set(camp for camp in (stat['campaign'] for stat in stats))
         data = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
+        if include_statuses:
+            statuses = table.AccountCampaignsTable().get_per_campaign_status_dict(data, constraints['source'])
         if include_budgets:
             budgets = {camp.id:
                        {'budget': budget.CampaignBudget(camp).get_total(),
@@ -129,7 +146,9 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets):
                        for camp in data}
     elif 'account' in dimensions:
         accounts = constraints['account'] if isinstance(constraints['account'], collections.Iterable) else [constraints['account']]
-        data = {account.id: account.name for account in accounts}
+        data = {account.id: account for account in accounts}
+        if include_statuses:
+            statuses = table.AccountsAccountsTable().get_per_account_status_dict(accounts, constraints['source'])
         if include_budgets:
             all_accounts_budget = budget.GlobalBudget().get_total_by_account()
             all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
@@ -137,7 +156,7 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets):
                        {'budget': all_accounts_budget.get(acc.id, 0),
                         'spent_budget': all_accounts_total_spend.get(acc.id, 0)}
                        for acc in accounts}
-    return data, budgets
+    return data, budgets, statuses
 
 
 def _populate_content_ad_stat(stat, content_ad):
@@ -148,23 +167,53 @@ def _populate_content_ad_stat(stat, content_ad):
     stat['url'] = content_ad.url
     stat['image_url'] = content_ad.get_image_url()
     stat['uploaded'] = content_ad.created_dt.date()
+    stat['status'] = content_ad.state
     return stat
 
 
-def _populate_ad_group_stat(stat, ad_group):
-    stat['ad_group'] = ad_group.name
+def _populate_ad_group_stat(stat, ad_group, statuses=None):
     stat['campaign'] = ad_group.campaign.name
     stat['account'] = ad_group.campaign.account.name
+    if statuses:
+        if 'source' in stat:
+            stat['status'] = models.AdGroupSource.objects.get(ad_group=stat['ad_group'], source=stat['source']).get_current_settings().state
+        else:
+            stat['status'] = statuses[ad_group.id]
+
+    stat['ad_group'] = ad_group.name
     return stat
 
 
-def _populate_campaign_stat(stat, campaign, budgets=None):
+def _populate_campaign_stat(stat, campaign, statuses=None, budgets=None):
     stat['campaign'] = campaign
     stat['account'] = campaign.account.name
     if budgets:
         stat['budget'] = budgets[campaign.id].get('budget')
         stat['available_budget'] = stat['budget'] - budgets[campaign.id].get('spent_budget')
         stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
+    if statuses:
+        if 'source' in stat:
+            ad_group_sources = models.AdGroupSource.objects.filter(ad_group__campaign=stat['campaign'], source=stat['source'])
+            ad_group_sources_states = helpers.get_ad_group_sources_states(ad_group_sources)
+            stat['status'] = table.SourcesTable().get_state(ad_group_sources_states)
+        else:
+            stat['status'] = statuses[campaign.id]
+    return stat
+
+
+def _populate_account_stat(stat, prefetched_data, statuses=None, budgets=None):
+    if budgets:
+        stat['budget'] = budgets[stat['account']].get('budget')
+        stat['available_budget'] = stat['budget'] - budgets[stat['account']].get('spent_budget')
+        stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
+    if statuses:
+        if 'source' in stat:
+            ad_group_sources = models.AdGroupSource.objects.filter(ad_group__campaign__account=stat['account'], source=stat['source'])
+            ad_group_sources_states = helpers.get_ad_group_sources_states(ad_group_sources)
+            stat['status'] = table.SourcesTable().get_state(ad_group_sources_states)
+        else:
+            stat['status'] = statuses[stat['account']]
+    stat['account'] = prefetched_data.get(stat['account']).name
     return stat
 
 
@@ -294,6 +343,7 @@ class AllAccountsExport(object):
         dimensions = []
         exclude_fields = []
 
+        order = order if order not in ['state', 'status_setting'] else 'status'
         if breakdown == 'account':
             required_fields.extend(['account'])
             dimensions.extend(['account'])
@@ -351,6 +401,7 @@ class AccountExport(object):
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
+        order = order if order not in ['state', 'status_setting'] else 'status'
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
         include_budgets = any([field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']]) and not by_day
@@ -387,7 +438,7 @@ class CampaignExport(object):
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
 
         fieldnames = _get_fieldnames(required_fields, additional_fields)
-
+        order = order if order not in ['state', 'status_setting'] else 'status'
         conversion_goals = _get_conversion_goals(user, campaign)
         for conversion_goal in conversion_goals:
             if conversion_goal.get_view_key(conversion_goals) in additional_fields:
@@ -422,7 +473,7 @@ class AdGroupExport(object):
             dimensions.extend(['content_ad'])
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
-
+        order = order if order not in ['state', 'status_setting'] else 'status'
         fieldnames = _get_fieldnames(required_fields, additional_fields)
 
         conversion_goals = _get_conversion_goals(user, ad_group.campaign)
@@ -443,6 +494,7 @@ class AdGroupExport(object):
 
         return get_csv_content(fieldnames, results)
 
+
 def filter_allowed_fields(request, fields):
     allowed_fields = []
     can_view_effective_costs = request.user.has_perm('zemauth.can_view_effective_costs')
@@ -458,6 +510,7 @@ def filter_allowed_fields(request, fields):
             continue
         allowed_fields.append(f)
     return allowed_fields
+
 
 def get_report_from_export_report(export_report, start_date, end_date):
     return _get_report(
@@ -476,12 +529,13 @@ def get_report_from_export_report(export_report, start_date, end_date):
         account=export_report.account
     )
 
+
 def get_report_from_request(request, account=None, campaign=None, ad_group=None, by_source=False):
     additional_fields = filter_allowed_fields(
         request,
         helpers.get_additional_columns(request.GET.get('additional_fields'))
     )
-    
+
     granularity = get_granularity_from_type(request.GET.get('type'))
     return _get_report(
         request.user,
