@@ -499,46 +499,73 @@ class ContentAdStatsDataChangeTestCase(test.TestCase):
         mock_sqs_write_message.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE,
                                                        {'date': date.isoformat(), 'campaign_id': 1})
 
+    @patch('reports.daily_statements.reprocess_daily_statements')
     @patch('reports.refresh.refresh_contentadstats')
     @patch('utils.sqs_helper.get_all_messages')
     @patch('utils.sqs_helper.delete_messages')
     @test.override_settings(CAMPAIGN_CHANGE_QUEUE='test')
-    def test_refresh_changed_contentadstats(self, mock_delete_messages,
-                                            mock_get_all_messages, mock_refresh_contentadstats):
+    def test_refresh_changed_contentadstats(self, mock_delete_messages, mock_get_all_messages,
+                                            mock_refresh_contentadstats, mock_reprocess):
         campaign_id = 1
 
         message1 = Message(body='{"date": "2015-12-01", "campaign_id": 1}')
-        message2 = Message(body='{"date": "2015-12-02", "campaign_id": 1}')
+        message2 = Message(body='{"date": "2016-01-01", "campaign_id": 1}')
         mock_get_all_messages.return_value = [message1, message2]
+        mock_reprocess.return_value = [
+            datetime.date(2015, 12, 1),
+            datetime.date(2015, 12, 2),
+            datetime.date(2015, 12, 3),
+            datetime.date(2015, 12, 4),
+            datetime.date(2015, 12, 5),
+        ]
 
         refresh.refresh_changed_contentadstats()
 
         campaign = dash.models.Campaign.objects.get(id=campaign_id)
+        mock_reprocess.assert_called_once_with(datetime.date(2015, 12, 1), campaign)
+
         calls = [
             call(datetime.date(2015, 12, 1), campaign),
-            call(datetime.date(2015, 12, 2), campaign)
+            call(datetime.date(2015, 12, 2), campaign),
+            call(datetime.date(2015, 12, 3), campaign),
+            call(datetime.date(2015, 12, 4), campaign),
+            call(datetime.date(2015, 12, 5), campaign),
+            call(datetime.date(2016, 1, 1), campaign),
         ]
         mock_refresh_contentadstats.assert_has_calls(calls, any_order=True)
 
-        delete_calls = [
-            call(settings.CAMPAIGN_CHANGE_QUEUE, [message1]),
-            call(settings.CAMPAIGN_CHANGE_QUEUE, [message2])
-        ]
-        mock_delete_messages.assert_has_calls(delete_calls, any_order=True)
+        mock_delete_messages.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, [message1, message2])
 
+    @patch('reports.daily_statements.reprocess_daily_statements')
     @patch('reports.refresh.refresh_contentadstats')
     @patch('utils.sqs_helper.get_all_messages')
     @patch('utils.sqs_helper.delete_messages')
     @test.override_settings(CAMPAIGN_CHANGE_QUEUE='test')
-    def test_refresh_changed_contentadstats_duplicate(self, mock_delete_messages,
-                                                      mock_get_all_messages, mock_refresh_contentadstats):
+    def test_refresh_changed_contentadstats_duplicate(self, mock_delete_messages, mock_get_all_messages,
+                                                      mock_refresh_contentadstats, mock_reprocess):
         campaign_id = 1
         message1 = Message(body='{"date": "2015-12-01", "campaign_id": 1}')
         message2 = Message(body='{"date": "2015-12-01", "campaign_id": 1}')
         mock_get_all_messages.return_value = [message1, message2]
+        mock_reprocess.return_value = [
+            datetime.date(2015, 12, 1),
+            datetime.date(2015, 12, 2),
+            datetime.date(2015, 12, 3),
+            datetime.date(2015, 12, 4),
+            datetime.date(2015, 12, 5),
+        ]
 
         refresh.refresh_changed_contentadstats()
 
         campaign = dash.models.Campaign.objects.get(id=campaign_id)
-        mock_refresh_contentadstats.assert_called_once_with(datetime.date(2015, 12, 1), campaign)
+        mock_reprocess.assert_called_once_with(datetime.date(2015, 12, 1), campaign)
+
+        calls = [
+            call(datetime.date(2015, 12, 1), campaign),
+            call(datetime.date(2015, 12, 2), campaign),
+            call(datetime.date(2015, 12, 3), campaign),
+            call(datetime.date(2015, 12, 4), campaign),
+            call(datetime.date(2015, 12, 5), campaign),
+        ]
+        mock_refresh_contentadstats.assert_has_calls(calls, any_order=True)
         mock_delete_messages.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, [message1, message2])

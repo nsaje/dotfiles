@@ -140,3 +140,4 @@ def reprocess_daily_statements(date, campaign):
     dates = _get_dates(date, campaign)
     for date in dates:
         _generate_statements(date, campaign)
+    return dates
