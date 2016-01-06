@@ -2051,11 +2051,11 @@ class AccountAgencyTest(TestCase):
 
         self.assertEqual(
             view.get_changes_text_for_media_sources([1], [2]),
-            'Added media sources (Source 1), Removed media sources (Source 2)'
+            'Added allowed media sources (Source 1), Removed media sources (Source 2)'
         )
         self.assertEqual(
             view.get_changes_text_for_media_sources([1, 2], [3]),
-            'Added media sources (Source 1, Source 2), Removed media sources (Source 3)'
+            'Added allowed media sources (Source 1, Source 2), Removed media sources (Source 3)'
         )
         self.assertEqual(
             view.get_changes_text_for_media_sources([], []),
@@ -2063,11 +2063,11 @@ class AccountAgencyTest(TestCase):
         )
         self.assertEqual(
             view.get_changes_text_for_media_sources([1], []),
-            'Added media sources (Source 1)'
+            'Added allowed media sources (Source 1)'
         )
         self.assertEqual(
             view.get_changes_text_for_media_sources([], [2]),
-            'Removed media sources (Source 2)'
+            'Removed allowed media sources (Source 2)'
         )
 
     def test_set_allowed_sources(self):

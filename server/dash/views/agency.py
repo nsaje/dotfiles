@@ -1174,8 +1174,8 @@ class AccountAgency(api_common.BaseApiView):
         removed_sources = models.Source.objects.filter(id__in=removed_source_ids).values_list('name', flat=True)
 
         changes_text = ', '.join(filter(None, [
-            u'Added media sources ({})'.format(', '.join(added_sources)) if added_sources else None,
-            u'Removed media sources ({})'.format(', '.join(removed_sources)) if removed_sources else None
+            u'Added allowed media sources ({})'.format(', '.join(added_sources)) if added_sources else None,
+            u'Removed allowed media sources ({})'.format(', '.join(removed_sources)) if removed_sources else None
         ]))
 
         return changes_text
