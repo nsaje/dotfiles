@@ -193,7 +193,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     };
 
     $scope.countPublisherBlacklistEntry = function (count, entry) {
-        var newCount = Object.create(count);
+        var newCount = angular.copy(count);
 
         if (entry.blacklisted === 'Blacklisted') {
             newCount.countBlacklistedSelected += 1;
