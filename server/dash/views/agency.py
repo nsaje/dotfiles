@@ -907,7 +907,7 @@ class AccountAgency(api_common.BaseApiView):
                 self.set_settings(settings, account, form.cleaned_data)
 
             if 'allowed_sources' in form.cleaned_data \
-                and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+                    and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
                 raise exc.MissingDataError()
 
             if 'allowed_sources' in form.cleaned_data:
@@ -950,28 +950,6 @@ class AccountAgency(api_common.BaseApiView):
     def set_account(self, account, resource):
         account.name = resource['name']
 
-    def get_allowed_sources_list_from_dict(self, allowed_sources_dict):
-        allowed_sources_ids = []
-        for k, v in allowed_sources_dict.iteritems():
-            if v.get('allowed', False):
-                allowed_sources_ids.append(k)
-
-        return allowed_sources_ids
-
-    def get_current_allowed_sources_list(self, account, can_see_all_available_sources):
-        queryset = account.allowed_sources.all()
-        if not can_see_all_available_sources:
-            queryset = queryset.filter(released=True)
-
-        return [source.id for source in queryset]
-
-    def filter_allowed_sources_list(self, allowed_sources_list, can_see_all_available_sources):
-        queryset = models.Source.objects.filter(id__in=allowed_sources_list)
-        if not can_see_all_available_sources:
-            queryset = queryset.filter(released=True)
-
-        return [source.id for source in queryset]
-
     def get_non_removable_sources(self, account, sources_to_be_removed):
         non_removable_source_ids_list = []
 
@@ -1005,29 +983,49 @@ class AccountAgency(api_common.BaseApiView):
         if not allowed_sources_dict:
             return
 
-        new_allowed_sources_list = self.get_allowed_sources_list_from_dict(allowed_sources_dict)
-        new_allowed_sources_list = self.filter_allowed_sources_list(
-            new_allowed_sources_list,
-            can_see_all_available_sources
-        )
-        current_allowed_sources_list = self.get_current_allowed_sources_list(account, can_see_all_available_sources)
+        all_available_sources = self.get_all_media_sources(can_see_all_available_sources)
+        current_allowed_sources = self.get_allowed_media_sources(account, can_see_all_available_sources)
+        new_allowed_sources = self.filter_allowed_sources_dict(all_available_sources, allowed_sources_dict)
 
-        new_allowed_sources_set = set(new_allowed_sources_list)
-        current_allowed_sources_set = set(current_allowed_sources_list)
+        new_allowed_sources_set = set(new_allowed_sources)
+        current_allowed_sources_set = set(current_allowed_sources)
 
         to_be_removed = current_allowed_sources_set.difference(new_allowed_sources_set)
+        to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
 
         non_removable_sources = self.get_non_removable_sources(account, to_be_removed)
         if len(non_removable_sources) > 0:
             self.add_error_to_account_agency_form(account_agency_form, non_removable_sources)
             return
 
-        to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
-
         if to_be_added or to_be_removed:
             settings.changes_text = self.get_changes_text_for_media_sources(to_be_added, to_be_removed)
             account.allowed_sources.add(*list(to_be_added))
             account.allowed_sources.remove(*list(to_be_removed))
+
+    def get_all_media_sources(self, can_see_all_available_sources):
+        qs_sources = models.Source.objects.all()
+        if not can_see_all_available_sources:
+            qs_sources = qs_sources.filter(released=True)
+
+        return list(qs_sources)
+
+    def get_allowed_media_sources(self, account, can_see_all_available_sources):
+        qs_allowed_sources = account.allowed_sources.all()
+        if not can_see_all_available_sources:
+            qs_allowed_sources = qs_allowed_sources.filter(released=True)
+
+        return list(qs_allowed_sources)
+
+    def filter_allowed_sources_dict(self, sources, allowed_sources_dict):
+        allowed_sources = []
+        for source in sources:
+            if source.id in allowed_sources_dict:
+                value = allowed_sources_dict[source.id]
+                if value.get('allowed', False):
+                    allowed_sources.append(source)
+
+        return allowed_sources
 
     def set_settings(self, settings, account, resource):
         settings.account = account
@@ -1169,16 +1167,18 @@ class AccountAgency(api_common.BaseApiView):
 
         return ', '.join(change_strings)
 
-    def get_changes_text_for_media_sources(self, added_source_ids, removed_source_ids):
-        added_sources = models.Source.objects.filter(id__in=added_source_ids).values_list('name', flat=True)
-        removed_sources = models.Source.objects.filter(id__in=removed_source_ids).values_list('name', flat=True)
+    def get_changes_text_for_media_sources(self, added_sources, removed_sources):
+        added_sources_text = None
+        if added_sources:
+            added_sources_names = [source.name for source in added_sources]
+            added_sources_text = u'Added allowed media sources ({})'.format(', '.join(added_sources_names))
 
-        changes_text = ', '.join(filter(None, [
-            u'Added allowed media sources ({})'.format(', '.join(added_sources)) if added_sources else None,
-            u'Removed allowed media sources ({})'.format(', '.join(removed_sources)) if removed_sources else None
-        ]))
+        removed_sources_text = None
+        if removed_sources:
+            removed_sources_names = [source.name for source in removed_sources]
+            removed_sources_text = u'Removed allowed media sources ({})'.format(', '.join(removed_sources_names))
 
-        return changes_text
+        return ', '.join(filter(None, [added_sources_text, removed_sources_text]))
 
     def get_user_list(self, settings, perm_name):
         users = list(ZemUser.objects.get_users_with_perm(perm_name))
@@ -1339,7 +1339,10 @@ class AccountUsers(api_common.BaseApiView):
             else:
                 self._raise_validation_error(
                     form.errors,
-                    message=u'The user with e-mail {} is already registred as \"{}\". Please contact technical support if you want to change the user\'s name or leave first and last names blank if you just want to add access to the account for this user.'.format(user.email, user.get_full_name())
+                    message=u'The user with e-mail {} is already registred as \"{}\". '
+                            u'Please contact technical support if you want to change the user\'s '
+                            u'name or leave first and last names blank if you just want to add '
+                            u'access to the account for this user.'.format(user.email, user.get_full_name())
                 )
         except ZemUser.DoesNotExist:
             if not is_valid:

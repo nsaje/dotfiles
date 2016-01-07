@@ -2000,7 +2000,7 @@ class AccountAgencyTest(TestCase):
         view = agency.AccountAgency()
         history = view.get_history(account)
 
-        self.assertFalse(history)
+        self.assertEqual(history, [])
 
     def test_convert_settings_to_dict(self):
         old_settings = models.AccountSettings.objects.get(pk=200)
@@ -2040,8 +2040,9 @@ class AccountAgencyTest(TestCase):
 
         view = agency.AccountAgency()
         for i in range(6):
-            old_settings = models.AccountSettings.objects.get(pk=200+i-1) if i > 0 else None
-            new_settings = models.AccountSettings.objects.get(pk=200+i)
+            new_settings_pk = 200+i
+            new_settings = models.AccountSettings.objects.get(pk=new_settings_pk)
+            old_settings = models.AccountSettings.objects.get(pk=new_settings_pk-1) if i > 0 else None
             changes_string = view.get_changes_text(new_settings, old_settings)
 
             self.assertEqual(changes_string, expected_changes_strings[i])
@@ -2049,12 +2050,13 @@ class AccountAgencyTest(TestCase):
     def test_get_changes_text_for_media_sources(self):
         view = agency.AccountAgency()
 
+        sources = list(models.Source.objects.all())
         self.assertEqual(
-            view.get_changes_text_for_media_sources([1], [2]),
+            view.get_changes_text_for_media_sources(sources[0:1], sources[1:2]),
             'Added allowed media sources (Source 1), Removed allowed media sources (Source 2)'
         )
         self.assertEqual(
-            view.get_changes_text_for_media_sources([1, 2], [3]),
+            view.get_changes_text_for_media_sources(sources[0:2], sources[2:3]),
             'Added allowed media sources (Source 1, Source 2), Removed allowed media sources (Source 3)'
         )
         self.assertEqual(
@@ -2062,11 +2064,11 @@ class AccountAgencyTest(TestCase):
             ''
         )
         self.assertEqual(
-            view.get_changes_text_for_media_sources([1], []),
+            view.get_changes_text_for_media_sources(sources[0:1], []),
             'Added allowed media sources (Source 1)'
         )
         self.assertEqual(
-            view.get_changes_text_for_media_sources([], [2]),
+            view.get_changes_text_for_media_sources([], sources[1:2]),
             'Removed allowed media sources (Source 2)'
         )
 
