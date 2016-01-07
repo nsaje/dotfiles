@@ -29,13 +29,13 @@ class CommandUpdateContentAdStatsFromGAApiTest(TestCase):
         self.assertTrue(postclick_stats.count() == 1)
         self.assertEqual(
                 {'content_ad': 1, 'pageviews': 1, 'new_visits': 1, 'total_time_on_site': 10, 'bounced_visits': 2,
-                 'visits': 2, 'source': 4, 'date': datetime.date(2015, 12, 7), u'id': 1},
-                model_to_dict(postclick_stats.first()))
+                 'visits': 2, 'source': 4, 'date': datetime.date(2015, 12, 7)},
+                model_to_dict(postclick_stats.first(), exclude='id'))
         goal_conversion_stats = ContentAdGoalConversionStats.objects.all()
         self.assertTrue(goal_conversion_stats.count() == 1)
-        self.assertEqual({'conversions': 2, 'content_ad': 1, 'goal_type': u'ga', 'source': 4,
-                          'date': datetime.datetime(2015, 12, 7, 0, 0), u'id': 1},
-                         model_to_dict(goal_conversion_stats.first()))
+        self.assertEqual({'conversions': 2, 'content_ad': 1, 'goal_type': 'ga', 'source': 4,
+                          'date': datetime.datetime(2015, 12, 7, 0, 0)},
+                         model_to_dict(goal_conversion_stats.first(), exclude='id'))
         sqs_write_message_mock.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE,
                                                        {'date': '2015-12-07', 'campaign_id': 1})
 
