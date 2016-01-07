@@ -44,7 +44,8 @@ class RedshiftTest(TestCase):
     def test_load_contentadstats(self, mock_cursor):
         redshift.load_contentadstats('test/s3/key.json')
 
-        query = 'COPY contentadstats FROM \'%s\' CREDENTIALS \'aws_access_key_id=%s;aws_secret_access_key=%s\' FORMAT JSON'
+        query = 'COPY contentadstats FROM \'%s\' '\
+                'CREDENTIALS \'aws_access_key_id=%s;aws_secret_access_key=%s\' FORMAT JSON MAXERROR 0'
         params = ['s3://test-bucket-stats/test/s3/key.json', 'access_key', 'secret_access_key']
 
         mock_cursor().execute.assert_called_once_with(query, params)
