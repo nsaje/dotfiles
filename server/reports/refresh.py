@@ -127,18 +127,20 @@ def notify_contentadstats_change(date, campaign_id):
 def refresh_changed_contentadstats():
     messages = sqs_helper.get_all_messages(settings.CAMPAIGN_CHANGE_QUEUE)
 
-    to_refresh = defaultdict(list)
+    to_refresh = defaultdict(lambda: defaultdict(list))
     for message in messages:
         body = json.loads(message.get_body())
-        key = (body['date'], body['campaign_id'])
-        to_refresh[key].append(message)
+        key = body['campaign_id']
+        to_refresh[key]['dates'].append(body['date'])
+        to_refresh[key]['messages'].append(message)
 
     for key, val in to_refresh.iteritems():
-        date = datetime.datetime.strptime(key[0], '%Y-%m-%d').date()
-        campaign = dash.models.Campaign.objects.get(id=key[1])
-        daily_statements.reprocess_daily_statements(date, campaign)
-        refresh_contentadstats(date, campaign)
-        sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, val)
+        dates = [datetime.datetime.strptime(d, '%Y-%m-%d').date() for d in val['dates']]
+        campaign = dash.models.Campaign.objects.get(id=key)
+        changed_dates = daily_statements.reprocess_daily_statements(min(dates), campaign)
+        for date in set(changed_dates).union(set(dates)):
+            refresh_contentadstats(date, campaign)
+        sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, val['messages'])
 
     statsd_helper.statsd_gauge('reports.refresh.refresh_changed_contentadstats_num', len(to_refresh))
 

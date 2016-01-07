@@ -112,6 +112,41 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             initialOrder: 'asc'
         },
         {
+            name: 'Actual Yesterday Spend',
+            field: 'yesterday_cost',
+            checked: false,
+            type: 'currency',
+            help: 'Amount that you have spent yesterday for promotion on specific ad group, including overspend.',
+            totalRow: true,
+            order: true,
+            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+            initialOrder: 'desc',
+            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+        },
+        {
+            name: 'Yesterday Spend',
+            field: 'yesterday_cost',
+            checked: false,
+            type: 'currency',
+            help: 'Amount that you have spent yesterday for promotion on specific ad group.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+            shown: !$scope.hasPermission('zemauth.can_view_effective_costs') && !$scope.hasPermission('zemauth.can_view_actual_costs')
+        },
+        {
+            name: 'Yesterday Spend',
+            field: 'e_yesterday_cost',
+            checked: false,
+            type: 'currency',
+            help: 'Amount that you have spent yesterday for promotion on specific ad group.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
             name: 'Spend',
             field: 'cost',
             checked: true,
@@ -283,7 +318,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             'fields': [
                 'cost', 'data_cost', 'cpc', 'clicks', 'impressions', 'ctr',
                 'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
-                'license_fee'
+                'license_fee', 'yesterday_cost', 'e_yesterday_cost'
             ]
         },
         {

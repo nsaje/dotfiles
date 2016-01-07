@@ -108,12 +108,12 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             controller: 'AccountAgencyCtrl'
         })
         .state('main.accounts.settings', {
-            url: '/account',
+            url: '/settings',
             templateUrl: '/partials/account_account.html',
             controller: 'AccountAccountCtrl'
         })
         .state('main.accounts.archived', {
-            url: '/settings',
+            url: '/archived',
             templateUrl: '/partials/account_settings.html'
         }).state('main.accounts.credit', {
             url: '/credit',

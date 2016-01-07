@@ -122,6 +122,7 @@ AWS_SECRET_ACCESS_KEY = ''
 
 # S3 related settings
 S3_BUCKET = ''
+S3_BUCKET_STATS = ''
 USE_S3 = False
 
 # adgroup-level reports aggregations

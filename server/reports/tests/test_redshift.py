@@ -4,6 +4,7 @@ from mock import patch, Mock, call
 from django.test import TestCase
 
 from reports import redshift
+from reports.db_raw_helpers import MyCursor
 
 
 @patch('reports.redshift.get_cursor')
@@ -11,7 +12,10 @@ class RedshiftTest(TestCase):
     def setUp(self):
         redshift.STATS_DB_NAME = 'default'
 
-    def test_delete_contentadstats(self, mock_cursor):
+    def test_delete_contentadstats(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = MyCursor(mock_cursor)
+
         date = datetime.date(2015, 1, 1)
         campaign_id = 1
 
@@ -19,8 +23,7 @@ class RedshiftTest(TestCase):
 
         query = 'DELETE FROM contentadstats WHERE date = %s AND campaign_id = %s AND content_ad_id != %s'
         params = ['2015-01-01', 1, -1]
-
-        mock_cursor().execute.assert_called_with(query, params)
+        mock_cursor.execute.assert_called_with(query, params)
 
     def test_insert_contentadstats(self, mock_cursor):
         mock_cursor().mogrify.side_effect = ["('a',1)", "('b',2)"]
@@ -70,7 +73,7 @@ class RedshiftTest(TestCase):
 
     def test_vacuum_contentadstats(self, mock_get_cursor):
         mock_cursor = Mock()
-        mock_get_cursor.return_value = mock_cursor
+        mock_get_cursor.return_value = MyCursor(mock_cursor)
 
         redshift.vacuum_contentadstats()
 
@@ -95,7 +98,7 @@ class RedshiftTest(TestCase):
 
     def test_delete_touchpoint_conversions(self, mock_get_cursor):
         mock_cursor = Mock()
-        mock_get_cursor.return_value = mock_cursor
+        mock_get_cursor.return_value = MyCursor(mock_cursor)
 
         date = datetime.date(2015, 1, 1)
         account_id = 1
@@ -107,9 +110,34 @@ class RedshiftTest(TestCase):
 
         mock_cursor.execute.assert_called_with(query, params)
 
+    def test_delete_publishers(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = MyCursor(mock_cursor)
+
+        start_date = datetime.date(2015, 1, 1)
+        end_date = datetime.date(2015, 1, 31)
+        redshift.delete_publishers(start_date, end_date)
+
+        query = 'DELETE FROM b1_publishers_1 WHERE date >= %s AND date <= %s'
+        params = ['2015-01-01', '2015-01-31']
+        mock_cursor.execute.assert_called_with(query, params)
+
+    def test_update_publishers(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = MyCursor(mock_cursor)
+
+        s3_filename = 's3://b1-eventlog-sync/publishers/2015-01-01-2015-01-31--123456789/part-00000'
+        aws_access_id = 'xxxxxxx'
+        aws_access_secret = 'xxxxxxxx'
+        redshift.insert_publishers(s3_filename, aws_access_id, aws_access_secret)
+
+        query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV"
+        params = [s3_filename, aws_access_id, aws_access_secret]
+        mock_cursor.execute.assert_called_with(query, params)
+
     def test_vacuum_touchpoint_conversions(self, mock_get_cursor):
         mock_cursor = Mock()
-        mock_get_cursor.return_value = mock_cursor
+        mock_get_cursor.return_value = MyCursor(mock_cursor)
 
         redshift.vacuum_touchpoint_conversions()
 

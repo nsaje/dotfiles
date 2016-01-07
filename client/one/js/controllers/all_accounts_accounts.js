@@ -216,6 +216,17 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'desc'
         },
         {
+            name: 'Impressions',
+            field: 'impressions',
+            checked: true,
+            type: 'number',
+            shown: true,
+            totalRow: true,
+            help: 'The number of times content ads have been displayed.',
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
             name: '',
             nameCssClass: 'data-status-icon',
             type: 'dataStatus',
@@ -243,7 +254,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             'name': 'Traffic Acquisition',
             'fields': [
-                'clicks', 'cost', 'data_cost', 'cpc', 'budget', 'available_budget', 'unspent_budget',
+                'clicks', 'impressions', 'cost', 'data_cost', 'cpc', 'budget', 'available_budget', 'unspent_budget',
                 'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost', 'license_fee'
             ]
         },

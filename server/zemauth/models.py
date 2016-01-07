@@ -162,6 +162,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('account_account_view', "Can view account's Account tab."),
             ('can_view_effective_costs', 'Can view effective costs'),
             ('can_view_actual_costs', 'Can view actual costs'),
+            ('can_modify_outbrain_account_publisher_blacklist_status', 'Can modify Outbrain account publisher blacklist status'),
         )
 
     def get_full_name(self):
