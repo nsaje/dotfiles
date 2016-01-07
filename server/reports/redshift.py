@@ -19,35 +19,32 @@ REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
 
 @statsd_timer('reports.redshift', 'delete_contentadstats')
 def delete_contentadstats(date, campaign_id):
-    cursor = get_cursor()
-
     query = 'DELETE FROM contentadstats WHERE date = %s AND campaign_id = %s AND content_ad_id != %s'
     params = [date.isoformat(), campaign_id, REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
+    _execute(query, params)
 
-    cursor.execute(query, params)
-    cursor.close()
+
+def _execute(query, params):
+    with get_cursor() as cursor:
+        cursor.execute(query, params)
+
+
+def get_cursor():
+    return MyCursor(connections[settings.STATS_DB_NAME].cursor())
 
 
 @statsd_timer('reports.redshift', 'delete_contentadstatsdiff')
 def delete_contentadstats_diff(date, campaign_id):
-    cursor = get_cursor()
-
     query = 'DELETE FROM contentadstats WHERE date = %s AND campaign_id = %s AND content_ad_id = %s'
     params = [date.isoformat(), campaign_id, REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
-
-    cursor.execute(query, params)
-    cursor.close()
+    _execute(query, params)
 
 
 @statsd_timer('reports.redshift', 'delete_touchpointconversions')
 def delete_touchpoint_conversions(date, account_id, slug):
-    cursor = get_cursor()
-
     query = 'DELETE FROM touchpointconversions WHERE date = %s AND account_id = %s AND slug = %s'
     params = [date.isoformat(), account_id, slug]
-
-    cursor.execute(query, params)
-    cursor.close()
+    _execute(query, params)
 
 
 @statsd_timer('reports.redshift', 'insert_contentadstats')
@@ -60,8 +57,8 @@ def insert_contentadstats(rows):
     cols = rows[0].keys()
 
     query = 'INSERT INTO contentadstats ({cols}) VALUES {rows}'.format(
-        cols=','.join(cols),
-        rows=','.join(str(_get_row_string(cursor, cols, row)) for row in rows))
+            cols=','.join(cols),
+            rows=','.join(str(_get_row_string(cursor, cols, row)) for row in rows))
 
     cursor.execute(query, [])
     cursor.close()
@@ -88,8 +85,8 @@ def insert_touchpoint_conversions(rows):
     cols = rows[0].keys()
 
     query = 'INSERT INTO touchpointconversions ({cols}) VALUES {rows}'.format(
-        cols=','.join(cols),
-        rows=','.join(_get_row_string(cursor, cols, row) for row in rows))
+            cols=','.join(cols),
+            rows=','.join(_get_row_string(cursor, cols, row) for row in rows))
 
     cursor.execute(query, [])
     cursor.close()
@@ -107,6 +104,7 @@ def sum_contentadstats():
 
     cursor.close()
     return result[0]
+
 
 @statsd_timer('reports.redshift', 'sum_of_stats')
 def sum_of_stats():
@@ -152,24 +150,27 @@ def get_pixels_last_verified_dt(account_id=None):
 @statsd_timer('reports.redshift', 'vacuum_contentadstats')
 def vacuum_contentadstats():
     query = 'VACUUM FULL contentadstats'
-
-    cursor = get_cursor()
-    cursor.execute(query, [])
-    cursor.close()
+    _execute(query, [])
 
 
 @statsd_timer('reports.redshift', 'vacuum_touchpoint_conversions')
 def vacuum_touchpoint_conversions():
     query = 'VACUUM FULL touchpointconversions'
-
-    cursor = get_cursor()
-    cursor.execute(query, [])
-
-    cursor.close()
+    _execute(query, [])
 
 
-def get_cursor():
-    return MyCursor(connections[settings.STATS_DB_NAME].cursor())
+@statsd_timer('reports.redshift', 'delete_publishers')
+def delete_publishers(start_date, end_date):
+    query = 'DELETE FROM b1_publishers_1 WHERE date >= %s AND date <= %s'
+    params = [start_date.isoformat(), end_date.isoformat()]
+    _execute(query, params)
+
+
+@statsd_timer('reports.redshift', 'insert_publishers')
+def insert_publishers(s3_filename, aws_access_id, aws_access_secret):
+    query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV"
+    params = [s3_filename, aws_access_id, aws_access_secret]
+    _execute(query, params)
 
 
 def _get_row_string(cursor, cols, row):
@@ -194,10 +195,10 @@ def execute_multi_insert_sql(cursor, table, fields_sql, all_row_tuples, max_at_a
     fields_str = "(" + ",".join(fields_sql) + ")"
     fields_placeholder = "(" + ",".join(["%s"] * len(fields_sql)) + ")"
     for row_tuples in grouper(max_at_a_time, all_row_tuples):
-        statement = "INSERT INTO {table} {fields} VALUES {fields_strs}".\
-                    format(table=table,
-                           fields=fields_str,
-                           fields_strs=",".join([fields_placeholder] * len(row_tuples)))
+        statement = "INSERT INTO {table} {fields} VALUES {fields_strs}". \
+            format(table=table,
+                   fields=fields_str,
+                   fields_strs=",".join([fields_placeholder] * len(row_tuples)))
 
         row_tuples_flat = [item for sublist in row_tuples for item in sublist]
         cursor.execute(statement, row_tuples_flat)
@@ -440,29 +441,29 @@ class RSModel(object):
         from_params = []
         if subquery:
             from_table, from_params, from_json_fields = self._prepare_select_query(
-                returned_fields=subquery['returned_fields'],
-                breakdown_fields=subquery.get('breakdown_fields', []),
-                order_fields=subquery.get('order_fields', []),
-                offset=subquery.get('offset'),
-                limit=subquery.get('limit'),
-                constraints=subquery.get('constraints', {}),
-                constraints_list=subquery.get('constraints_list', []),
-                having_constraints=subquery.get('having_constraints'),
-                subquery=subquery.get('subquery')
+                    returned_fields=subquery['returned_fields'],
+                    breakdown_fields=subquery.get('breakdown_fields', []),
+                    order_fields=subquery.get('order_fields', []),
+                    offset=subquery.get('offset'),
+                    limit=subquery.get('limit'),
+                    constraints=subquery.get('constraints', {}),
+                    constraints_list=subquery.get('constraints_list', []),
+                    having_constraints=subquery.get('having_constraints'),
+                    subquery=subquery.get('subquery')
             )
             from_table = '(' + from_table + ')'
             json_fields.extend(from_json_fields)
 
         params = returned_params + from_params + constraint_params
         statement = self._form_select_query(
-            from_table,
-            breakdown_fields + returned_fields,
-            constraint_str,
-            breakdown_fields=breakdown_fields,
-            order_fields=order_fields,
-            limit=limit,
-            offset=offset,
-            having_constraints=having_constraints
+                from_table,
+                breakdown_fields + returned_fields,
+                constraint_str,
+                breakdown_fields=breakdown_fields,
+                order_fields=order_fields,
+                limit=limit,
+                offset=offset,
+                having_constraints=having_constraints
         )
 
         return (statement, params, json_fields)
@@ -471,8 +472,8 @@ class RSModel(object):
     def _form_select_query(table, fields, constraint_str, breakdown_fields=None, order_fields=None, limit=None,
                            offset=None, having_constraints=None):
         cmd = 'SELECT {fields} FROM {table}'.format(
-            fields=','.join(fields),
-            table=table,
+                fields=','.join(fields),
+                table=table,
         )
 
         if constraint_str:
@@ -529,15 +530,15 @@ class RSModel(object):
                              constraints_list=None, having_constraints=None, subquery=None):
 
         (statement, params, json_fields) = self._prepare_select_query(
-            returned_fields=returned_fields,
-            breakdown_fields=breakdown_fields,
-            order_fields=order_fields,
-            offset=offset,
-            limit=limit,
-            constraints=constraints,
-            constraints_list=constraints_list if constraints_list else [],
-            having_constraints=having_constraints,
-            subquery=subquery)
+                returned_fields=returned_fields,
+                breakdown_fields=breakdown_fields,
+                order_fields=order_fields,
+                offset=offset,
+                limit=limit,
+                constraints=constraints,
+                constraints_list=constraints_list if constraints_list else [],
+                having_constraints=having_constraints,
+                subquery=subquery)
 
         cursor.execute(statement, params)
         results = cursor.dictfetchall()

@@ -815,7 +815,7 @@ class FetchReportsByPublisherTestCase(TestCase):
             'url': 'http://money.cnn.com',
             'name': 'Some publisher',
             'clicks': 2,
-            'ob_section_id': 'AABBCCDDEEFF',
+            'ob_id': 'AABBCCDDEEFF',
         }
         zwei_response_data = {
             'status': 'success',

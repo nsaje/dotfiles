@@ -1163,6 +1163,43 @@ class PublisherCallbackTest(TransactionTestCase):
         self.assertEqual('b1_sharethrough', second_blacklist.source.tracking_slug)
         self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, second_blacklist.status)
 
+    def test_update_outbrain_publisher_blacklist(self):
+        # ad_group_source = models.AdGroupSource.objects.get(id=1)
+        args = {
+            'key': [1],
+            'level': dash.constants.PublisherBlacklistLevel.ACCOUNT,
+            'state': dash.constants.PublisherStatus.BLACKLISTED,
+            'publishers': [{
+                'domain': 'Awesome publisher',
+                'exchange': 'adiant',
+                'external_id': '12345',
+                'source_id': 3
+            },
+            {
+                'domain': 'Happy little publisher',
+                'exchange': 'outbrain',
+                'external_id': '67890',
+                'source_id': 3
+            }]
+        }
+
+        api.update_publisher_blacklist_state(args)
+        allblacklist = dash.models.PublisherBlacklist.objects.all()
+        self.assertEqual(2, allblacklist.count())
+
+        first_blacklist = allblacklist[0]
+        # self.assertEqual(ad_group_source.ad_group.id, first_blacklist.ad_group.id)
+        self.assertEqual(u'Awesome publisher', first_blacklist.name)
+        self.assertEqual('outbrain', first_blacklist.source.tracking_slug)
+        self.assertEqual('12345', first_blacklist.external_id)
+        self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, first_blacklist.status)
+
+        second_blacklist = allblacklist[1]
+        #self.assertEqual(ad_group_source.ad_group.id, second_blacklist.ad_group.id)
+        self.assertEqual(u'Happy little publisher', second_blacklist.name)
+        self.assertEqual('outbrain', second_blacklist.source.tracking_slug)
+        self.assertEqual('67890', second_blacklist.external_id)
+        self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, second_blacklist.status)
 
     def test_hiearchy_publisher_blacklist(self):
         ad_group = models.AdGroup.objects.get(pk=1)
