@@ -71,6 +71,11 @@ def count_agr(field_name):
 def count_ranked(field_name, rank):
     return 'SUM(CASE WHEN {} = {} THEN 1 ELSE 0 END)'.format(field_name, rank)
 
+def min_agr(field_name):
+    return 'MAX("{field_name}")'.format(field_name=field_name)
+
+def max_agr(field_name):
+    return 'MAX("{field_name}")'.format(field_name=field_name)
 
 def sum_agr(field_name):
     return 'SUM("{field_name}")'.format(field_name=field_name)
