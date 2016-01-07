@@ -1671,7 +1671,18 @@ class PublishersTable(object):
             known_source = source_cache_by_slug.get(publisher_data['exchange']) is not None
 
             publisher_data['source_id'] = publisher_source.id if known_source else -1
-            publisher_data['can_blacklist_publisher'] = publisher_source.can_modify_publisher_blacklist_automatically() if known_source else False
+            # there's a separate permission for Outbrain blacklisting which
+            # might get removed in the future
+            can_blacklist_outbrain_publisher = known_source and publisher_source.source_type.type == constants.SourceType.OUTBRAIN and\
+                user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status')
+
+            if publisher_source.can_modify_publisher_blacklist_automatically() and\
+                    known_source and\
+                    (publisher_source.source_type.type != constants.SourceType.OUTBRAIN or
+                     can_blacklist_outbrain_publisher):
+                publisher_data['can_blacklist_publisher'] = True
+            else:
+                publisher_data['can_blacklist_publisher'] = False
 
             if source_cache_by_slug.get(publisher_data['exchange']) is None:
                 continue
