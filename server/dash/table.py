@@ -1669,7 +1669,7 @@ class PublishersTable(object):
         for publisher_data in publishers_data:
             publisher_data['blacklisted'] = 'Active'
             domain = publisher_data['domain']
-            source_slug = publisher_data['exchange']
+            source_slug = publisher_data['exchange'].lower()
 
             if source_slug not in source_cache_by_slug:
                 source_cache_by_slug[source_slug] =\
@@ -1696,10 +1696,11 @@ class PublishersTable(object):
 
 
         for publisher_data in publishers_data:
+            publisher_exchange = publisher_data['exchange'].lower()
             publisher_domain = publisher_data['domain']
-            publisher_source = source_cache_by_slug.get(publisher_data['exchange'].lower()) or publisher_data['exchange']
+            publisher_source = source_cache_by_slug.get(publisher_exchange) or publisher_exchange
 
-            known_source = source_cache_by_slug.get(publisher_data['exchange'].lower()) is not None
+            known_source = source_cache_by_slug.get(publisher_exchange) is not None
 
             publisher_data['source_id'] = publisher_source.id if known_source else -1
             # there's a separate permission for Outbrain blacklisting which
@@ -1715,7 +1716,7 @@ class PublishersTable(object):
             else:
                 publisher_data['can_blacklist_publisher'] = False
 
-            if source_cache_by_slug.get(publisher_data['exchange']) is None:
+            if source_cache_by_slug.get(publisher_exchange) is None:
                 continue
 
             for blacklisted_pub in pub_blacklist_qs:
