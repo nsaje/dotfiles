@@ -95,7 +95,9 @@ class AdGroupSettings(api_common.BaseApiView):
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
-            email_helper.send_ad_group_notification_email(ad_group, request)
+            changes_text = models.AdGroupSettings.get_changes_text(current_settings, new_settings, request.user)
+
+            email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
             helpers.log_useraction_if_necessary(request, user_action_type, ad_group=ad_group)
 
         response = {
@@ -1210,13 +1212,7 @@ class AdGroupAgency(api_common.BaseApiView):
             old_settings = ad_group_settings[i - 1] if i > 0 else None
             new_settings = ad_group_settings[i]
 
-            changes = old_settings.get_setting_changes(new_settings) \
-                if old_settings is not None else None
-
-            if new_settings.changes_text is not None:
-                changes_text = new_settings.changes_text
-            else:
-                changes_text = self.convert_changes_to_string(changes, user)
+            changes_text = models.AdGroupSettings.get_changes_text(old_settings, new_settings, user)
 
             if i > 0 and not len(changes_text):
                 continue
@@ -1235,26 +1231,6 @@ class AdGroupAgency(api_common.BaseApiView):
             })
 
         return history
-
-    @newrelic.agent.function_trace()
-    def convert_changes_to_string(self, changes, user):
-        if changes is None:
-            return 'Created settings'
-
-        change_strings = []
-
-        for key, value in changes.iteritems():
-            if key in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
-                    not user.has_perm('zemauth.new_content_ads_tab'):
-                continue
-
-            prop = models.AdGroupSettings.get_human_prop_name(key)
-            val = models.AdGroupSettings.get_human_value(key, value)
-            change_strings.append(
-                u'{} set to "{}"'.format(prop, val)
-            )
-
-        return ', '.join(change_strings)
 
     @newrelic.agent.function_trace()
     def convert_settings_to_dict(self, old_settings, new_settings, user):

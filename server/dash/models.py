@@ -1396,6 +1396,32 @@ class AdGroupSettings(SettingsBase):
 
         return value
 
+    @classmethod
+    def get_changes_text(cls, old_settings, new_settings, user):
+
+        if new_settings.changes_text is not None:
+            return new_settings.changes_text
+
+        changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
+
+        if changes is None:
+            return 'Created settings'
+
+        change_strings = []
+
+        for key, value in changes.iteritems():
+            if key in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
+                    not user.has_perm('zemauth.new_content_ads_tab'):
+                continue
+
+            prop = cls.get_human_prop_name(key)
+            val = cls.get_human_value(key, value)
+            change_strings.append(
+                u'{} set to "{}"'.format(prop, val)
+            )
+
+        return ', '.join(change_strings)
+
     objects = QuerySetManager()
 
     def get_tracking_codes(self):

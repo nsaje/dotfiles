@@ -36,7 +36,7 @@ def send_notification_mail(account_manager, subject, body, settings_url):
         )
 
 
-def send_ad_group_notification_email(ad_group, request):
+def send_ad_group_notification_email(ad_group, request, changes_text):
     if not should_send_notification_mail(ad_group.campaign, request.user, request):
         return
 
@@ -51,7 +51,11 @@ def send_ad_group_notification_email(ad_group, request):
 
     body = u'''Hi account manager of {ad_group.name}
 
-We'd like to notify you that {user.email} has made a change in the settings of the ad group {ad_group.name}, campaign {campaign.name}, account {account.name}. Please check {link_url} for details.
+We'd like to notify you that {user.email} has made the following changes in the settings of the ad group {ad_group.name}, campaign {campaign.name}, account {account.name}:
+
+    {changes_text}
+
+Please check {link_url} for further details.
 
 Yours truly,
 Zemanta
@@ -61,7 +65,8 @@ Zemanta
         ad_group=ad_group,
         campaign=ad_group.campaign,
         account=ad_group.campaign.account,
-        link_url=link_url
+        link_url=link_url,
+        changes_text=changes_text
     )
 
     campaign_settings = ad_group.campaign.get_current_settings()
