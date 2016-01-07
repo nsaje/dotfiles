@@ -67,16 +67,13 @@ def insert_contentadstats(rows):
 
 @statsd_timer('reports.redshift', 'load_contentadstats')
 def load_contentadstats(s3_key):
-    cursor = get_cursor()
-
     query = 'COPY contentadstats FROM \'%s\' '\
             'CREDENTIALS \'aws_access_key_id=%s;aws_secret_access_key=%s\' FORMAT JSON MAXERROR 0'
     params = [S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_key),
               settings.AWS_ACCESS_KEY_ID,
               settings.AWS_SECRET_ACCESS_KEY]
 
-    cursor.execute(query, params)
-    cursor.close()
+    _execute(query, params)
 
 
 @statsd_timer('reports.redshift', 'insert_touchpointconversions')
