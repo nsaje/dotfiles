@@ -1,11 +1,13 @@
 import datetime
 import mock
+from django import test
 from django.test import TestCase
 from django.forms.models import model_to_dict
 
 from convapi.ga_api import GAApiReport
 from convapi.management.commands.update_content_ad_stats_from_ga_api import Command
 from reports.models import ContentAdPostclickStats, ContentAdGoalConversionStats
+from server import settings
 
 
 class CommandUpdateContentAdStatsFromGAApiTest(TestCase):
@@ -15,7 +17,9 @@ class CommandUpdateContentAdStatsFromGAApiTest(TestCase):
     @mock.patch.object(GAApiReport, '_get_ga_profiles')
     @mock.patch.object(GAApiReport, '_get_ga_goals')
     @mock.patch.object(GAApiReport, '_download_stats_from_ga')
-    def test_handle(self, _download_stats_from_ga_mock, _get_ga_goals_mock, _get_ga_profiles_mock, ga_service_mock):
+    @mock.patch('utils.sqs_helper.write_message_json')
+    def test_handle(self, sqs_write_message_mock, _download_stats_from_ga_mock, _get_ga_goals_mock,
+                    _get_ga_profiles_mock, ga_service_mock):
         _get_ga_profiles_mock.return_value = self._create_ga_profiles_mock()
         _get_ga_goals_mock.return_value = self._create_ga_goals_mock()
         _download_stats_from_ga_mock.side_effect = self._download_stats_from_ga_side_effect
@@ -33,6 +37,8 @@ class CommandUpdateContentAdStatsFromGAApiTest(TestCase):
         self.assertEqual({'conversions': 2, 'content_ad': 1, 'goal_type': u'ga', 'source': 4,
                           'date': datetime.datetime(2015, 12, 7, 0, 0), u'id': 1},
                          model_to_dict(goal_conversion_stats.first()))
+        sqs_write_message_mock.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE,
+                                                       {'date': '2015-12-07', 'campaign_id': 1})
 
     def _create_ga_profiles_mock(self):
         return {'items': [{'id': '100021248', 'accountId': '2175716', 'webPropertyId': 'UA-2175716-35'}],
