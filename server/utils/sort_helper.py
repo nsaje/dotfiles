@@ -35,3 +35,16 @@ def sort_results(results, order_fields=None):
         rows = sorted(rows, key=_key, reverse=reverse)
 
     return rows
+
+
+def map_by_breakdown(rows, breakdown, mapper):
+    result = {}
+    first_dimensions = breakdown[:-1]
+
+    for row in rows:
+        row_dict = result
+        for dimension in first_dimensions:
+            row_dict = row_dict.setdefault(row[dimension], {})
+        row_dict[row[breakdown[-1]]] = mapper(row)
+
+    return result
