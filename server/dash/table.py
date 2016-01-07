@@ -1699,7 +1699,7 @@ class PublishersTable(object):
             publisher_domain = publisher_data['domain']
             publisher_source = source_cache_by_slug.get(publisher_data['exchange'].lower()) or publisher_data['exchange']
 
-            known_source = source_cache_by_slug.get(publisher_data['exchange']) is not None
+            known_source = source_cache_by_slug.get(publisher_data['exchange'].lower()) is not None
 
             publisher_data['source_id'] = publisher_source.id if known_source else -1
             # there's a separate permission for Outbrain blacklisting which
