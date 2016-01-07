@@ -198,6 +198,7 @@ def _update_publisher_blacklist(key, level, publishers):
         blacklist_entry = models.PublisherBlacklist(
             name=publisher['domain'],
             source=source,
+            external_id=publisher.get('external_id') or None,
         )
 
         if level == constants.PublisherBlacklistLevel.GLOBAL:
@@ -901,14 +902,19 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
         blacklisted_publishers[source_type_id] =\
             blacklisted_publishers.get(source_type_id, [])
 
-        blacklisted_publishers[source_type_id].extend(
-            list(map(lambda pub: {
+        kv_filtered_blacklist = []
+        for pub in filtered_blacklist:
+            kv_pub = {
                 'domain': pub['domain'],
                 'exchange': pub['source'].tracking_slug.replace('b1_', ''),
                 'source_id': pub['source'].id,
                 'ad_group_id': pub['ad_group_id'],
-            }, filtered_blacklist))
-        )
+            }
+            if pub.get('external_id') is not None:
+                kv_pub['external_id'] = pub.get('external_id')
+            kv_filtered_blacklist.append(kv_pub)
+
+        blacklisted_publishers[source_type_id].extend(kv_filtered_blacklist)
 
     if blacklisted_publishers != {}:
         for source_type_id, blacklist in blacklisted_publishers.iteritems():
