@@ -80,7 +80,7 @@ function $zemLazyPopoverDirective($http, $templateCache, $compile, $parse, $time
                         removeTooltip();
                     }
                 };
-                element.off(event, hide);                
+                element.off(event, hide);
             };
 
             element.on('$destroy', hide);

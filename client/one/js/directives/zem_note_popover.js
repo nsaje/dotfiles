@@ -13,7 +13,7 @@ oneApp.directive('zemNotePopover', ['$window', function($window) {
                 var parts;
                 if (!fileExt) {
                     parts = url.split('.');
-                    fileExt = parts[parts.length -1 ];
+                    fileExt = parts[parts.length - 1];
                 }
                 return ' <i class="glyphicon glyphicon-paperclip"></i>' + fileExt;
             }
