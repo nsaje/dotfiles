@@ -152,8 +152,7 @@ def refresh_changed_contentadstats():
 
 def _get_s3_file_content_json(rows):
     # Redshift expects a whitespace separated list of top-level objects or arrays (each representing a row)
-    # http://docs.aws.amazon.com/redshift/latest/dg/copy-parameters-data-format.html#copy-json
-    # (search of JSON Data File)
+    # http://docs.aws.amazon.com/redshift/latest/dg/copy-parameters-data-format.html#copy-json-data-file
     return '\n'.join(json.dumps(row, cls=json_helper.DateJSONEncoder) for row in rows)
 
 
