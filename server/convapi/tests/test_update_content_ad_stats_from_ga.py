@@ -1,6 +1,5 @@
 import datetime
 import mock
-from django import test
 from django.test import TestCase
 from django.forms.models import model_to_dict
 
