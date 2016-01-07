@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dash', '0009_campaignsettings_campaign_manager'),
+        ('dash', '0010_merge'),
     ]
 
     operations = [
