@@ -9,6 +9,7 @@ from reports import exc
 from reports.db_raw_helpers import MyCursor, is_collection
 
 JSON_KEY_DELIMITER = '--'
+S3_FILE_URI = 's3://{bucket_name}/{key}'
 
 # historically we have migrated data to Redshift partially
 # but there are differences and missing data for older
@@ -69,7 +70,9 @@ def load_contentadstats(s3_key):
     cursor = get_cursor()
 
     query = 'COPY contentadstats FROM \'%s\' CREDENTIALS \'aws_access_key_id=%s;aws_secret_access_key=%s\' FORMAT JSON'
-    params = [s3_key, settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY]
+    params = [S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_key),
+              settings.AWS_ACCESS_KEY_ID,
+              settings.AWS_SECRET_ACCESS_KEY]
 
     cursor.execute(query, params)
     cursor.close()

@@ -150,8 +150,15 @@ def refresh_changed_contentadstats():
     statsd_helper.statsd_gauge('reports.refresh.refresh_changed_contentadstats_num', len(to_refresh))
 
 
+def _get_s3_file_content_json(rows):
+    # Redshift expects a whitespace separated list of top-level objects or arrays (each representing a row)
+    # http://docs.aws.amazon.com/redshift/latest/dg/copy-parameters-data-format.html#copy-json
+    # (search of JSON Data File)
+    return '\n'.join(json.dumps(row, cls=json_helper.DateJSONEncoder) for row in rows)
+
+
 def put_contentadstats_to_s3(date, campaign, rows):
-    rows_json = json.dumps(rows, cls=json_helper.DateJSONEncoder)
+    rows_json = _get_s3_file_content_json(rows)
     s3_key = LOAD_CONTENTADS_KEY_FORMAT.format(
         year=date.year,
         month=date.month,
@@ -159,7 +166,7 @@ def put_contentadstats_to_s3(date, campaign, rows):
         campaign_id=campaign.id,
         ts=int(time.time()*1000)
     )
-    s3helpers.S3Helper().put(s3_key, rows_json)
+    s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).put(s3_key, rows_json)
     return s3_key
 
 
