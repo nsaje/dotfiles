@@ -511,13 +511,14 @@ class ContentAdStatsDataChangeTestCase(test.TestCase):
         mock_sqs_write_message.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE,
                                                        {'date': date.isoformat(), 'campaign_id': 1})
 
+    @patch('reports.refresh.notify_daily_statements_change')
     @patch('reports.daily_statements.reprocess_daily_statements')
     @patch('reports.refresh.refresh_contentadstats')
     @patch('utils.sqs_helper.get_all_messages')
     @patch('utils.sqs_helper.delete_messages')
     @test.override_settings(CAMPAIGN_CHANGE_QUEUE='test')
     def test_refresh_changed_contentadstats(self, mock_delete_messages, mock_get_all_messages,
-                                            mock_refresh_contentadstats, mock_reprocess):
+                                            mock_refresh_contentadstats, mock_reprocess, mock_notify):
         campaign_id = 1
 
         message1 = Message(body='{"date": "2015-12-01", "campaign_id": 1}')
@@ -548,13 +549,14 @@ class ContentAdStatsDataChangeTestCase(test.TestCase):
 
         mock_delete_messages.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, [message1, message2])
 
+    @patch('reports.refresh.notify_daily_statements_change')
     @patch('reports.daily_statements.reprocess_daily_statements')
     @patch('reports.refresh.refresh_contentadstats')
     @patch('utils.sqs_helper.get_all_messages')
     @patch('utils.sqs_helper.delete_messages')
     @test.override_settings(CAMPAIGN_CHANGE_QUEUE='test')
     def test_refresh_changed_contentadstats_duplicate(self, mock_delete_messages, mock_get_all_messages,
-                                                      mock_refresh_contentadstats, mock_reprocess):
+                                                      mock_refresh_contentadstats, mock_reprocess, mock_notify):
         campaign_id = 1
         message1 = Message(body='{"date": "2015-12-01", "campaign_id": 1}')
         message2 = Message(body='{"date": "2015-12-01", "campaign_id": 1}')
