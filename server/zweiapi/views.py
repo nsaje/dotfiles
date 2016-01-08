@@ -275,9 +275,9 @@ def _has_changed(data, ad_group, source, date, key_type):
     old_val = cache.get(key)
 
     if old_val is None or val != old_val:
-        logger.info('Change of data for ad group: {}, source: {}, date: {}, key type {}'.format(
-            ad_group.id, source.id, date, key_type))
-        logger.info("Old key {}, new key {}".format(old_val, val))
+        logger.debug(
+            'Change of data for ad group: {}, source: {}, date: {}, key type {}, old key {}, new key {}'.format(
+                ad_group.id, source.id, date, key_type, old_val, val))
 
         return True
 
@@ -409,7 +409,7 @@ def _fetch_reports_by_publisher_callback(action, data):
     # centralize in order to reduce possibility of mistakes, if you want everything to run again, just increase the number
     change_unique_key = "reports_by_publisher_2"
 
-    if valid_response:  # and _has_changed(data, ad_group, source, date, change_unique_key):
+    if valid_response:
         ret = get_day_cost(date, ad_group=ad_group, source=source)
         cost = ret['cost']
         if cost is None:
