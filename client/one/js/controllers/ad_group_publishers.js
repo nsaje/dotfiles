@@ -136,7 +136,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.ob_blacklisted_selected = 0;
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
             var pubStatus = $scope.selectedPublisherStatus[publisherId];
-            if (pubStatus.exchange === 'Outbrain' && pubStatus.checked) {
+            if (pubStatus.exchange === 'Outbrain' && pubStatus.checked && pubStatus.blacklisted !== 'Blacklisted') {
                 $scope.ob_blacklisted_selected += 1;
             }
         });
@@ -263,6 +263,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.updateRowBlacklistInfo();
         } else {
             $scope.clearPublisherSelection();
+            $scope.updateOutbrainPublisherSelection();
         }
 
         $scope.updatePublisherBlacklistCombo();
@@ -298,7 +299,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.rows.forEach(function (row) {
             if (row !== undefined) {
                 if (row.exchange === 'Outbrain') {
-                    if (!row.publisherSelected) {
+                    if (!row.publisherSelected && row.blacklisted !== 'Blacklisted') {
                         if ($scope.ob_blacklisted_count + $scope.ob_blacklisted_selected >= 10) {
                             row.can_blacklist_publisher = false;
                         }
