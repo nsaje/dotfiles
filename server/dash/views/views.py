@@ -610,6 +610,7 @@ class CampaignAdGroups(api_common.BaseApiView):
             # and propagate them to external sources
             ad_group_settings = self._create_new_settings(ad_group, request)
 
+            # TODO: Only for redirector?...
             actionlogs_to_send.extend(
                 api.order_ad_group_settings_update(
                     ad_group, models.AdGroupSettings(), ad_group_settings, request,
@@ -620,7 +621,17 @@ class CampaignAdGroups(api_common.BaseApiView):
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_AD_GROUP,
                                             ad_group=ad_group, campaign=campaign)
 
+        # TODO: Remove this? There is no action_logs
         actionlog.zwei_actions.send(actionlogs_to_send)
+
+        # TODO: What happens if default settings does not exists, or region is not ok
+        sources = campaign.account.allowed_sources.all()
+        for source in sources:
+            try:
+                helpers.add_source_to_ad_group(request, ad_group, source)
+            except Exception:
+                # TODO: Check how to propagate error in this case
+                logger.warning("Unable to add source ({}) to newly created ad group ({}).".format(source.name, ad_group.name))
 
         response = {
             'name': ad_group.name,
@@ -892,6 +903,7 @@ class AdGroupSources(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
             raise exc.MissingDataError()
 
+        # TODO: allowed sources
         filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -932,51 +944,12 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
         source_id = json.loads(request.body)['source_id']
         source = models.Source.objects.get(id=source_id)
 
-        try:
-            default_settings = models.DefaultSourceSettings.objects.get(source=source)
-        except models.DefaultSourceSettings.DoesNotExist:
-            raise exc.MissingDataError('No default settings set for {}.'.format(source.name))
-
-        if not default_settings.credentials:
-            raise exc.MissingDataError('No default credentials set in {}.'.format(default_settings))
-
-        if models.AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
-            raise exc.ForbiddenError('{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
-
-        if not self._can_target_existing_regions(source, ad_group.get_current_settings()):
-            raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'\
-                                      .format(source.name))
-
-        ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
-        ad_group_source.save(request)
-
-        external_name = ad_group_source.get_external_name()
-        actionlog.api.create_campaign(ad_group_source, external_name, request)
-        self._add_to_history(ad_group_source, request)
-
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_MEDIA_SOURCE_CAMPAIGN,
-                                            ad_group=ad_group)
-
-        if request.user.has_perm('zemauth.add_media_sources_automatically'):
-            helpers.set_ad_group_source_defaults(default_settings, ad_group.get_current_settings(), ad_group_source,
-                                                 request)
+        helpers.add_source_to_ad_group(request, ad_group, source)
 
         return self.create_api_response(None)
-
-    def _add_to_history(self, ad_group_source, request):
-        changes_text = '{} campaign created.'.format(ad_group_source.source.name)
-
-        settings = ad_group_source.ad_group.get_current_settings().copy_settings()
-        settings.changes_text = changes_text
-        settings.save(request)
-
-    def _can_target_existing_regions(self, source, ad_group_settings):
-        return region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) or\
-               region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings)
 
 
 class Account(api_common.BaseApiView):
