@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.db import transaction
 
-from utils.command_helpers import set_logger_verbosity
+from utils.command_helpers import set_logger_verbosity, ExceptionCommand
 
 from reports import redshift
 
@@ -18,7 +18,7 @@ from reports import redshift
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
     help = "Loads fixtures into the stats database"
 
     def add_arguments(self, parser):

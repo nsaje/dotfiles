@@ -10,6 +10,7 @@ from django.db import transaction
 from reports import redshift
 from server import settings
 from utils import command_helpers
+from utils.command_helpers import ExceptionCommand
 from utils.s3helpers import S3Helper
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ PREFIX_PUBLISHERS_FORMAT = 'publishers/{}-{}'
 PUBLISHER_S3_URI_FORMAT = 's3://{}/{}/part-00000'
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
     option_list = BaseCommand.option_list + (
         make_option('-s', '--start-date', help='Start date for the publishers import', dest='start_date'),
         make_option('-e', '--end-date', help='End date for the publishers import', dest='end_date')
