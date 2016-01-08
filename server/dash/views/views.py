@@ -1489,6 +1489,8 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
 class PublishersBlacklistStatus(api_common.BaseApiView):
 
+    MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS = 10
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_publisher_blacklist_state_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
@@ -1679,6 +1681,13 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         count_failed_publisher = 0
         source_cache = {}
 
+        # OB currently has a limit of 10 blocked publishers per marketer
+        count_ob_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
+            account=ad_group.campaign.account,
+            source__source_type__type=constants.SourceType.OUTBRAIN,
+            status__in=(constants.PublisherStatus.BLACKLISTED, constants.PublisherStatus.PENDING)
+        ).count()
+
         for publisher in publishers:
             domain = publisher['domain']
             if domain not in source_cache:
@@ -1702,6 +1711,20 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                     source.source_type.type == constants.SourceType.OUTBRAIN:
                 # only allow outbrain for account level
                 continue
+
+            if level == constants.PublisherBlacklistLevel.ACCOUNT and\
+                    source.source_type.type == constants.SourceType.OUTBRAIN and\
+                    count_ob_blacklisted_publishers >= 10:
+                # don't request more than 10 publisher on Outbrain per
+                # account to be attempted to be blacklisted
+                # because actions will fail and manual cleanup will be
+                # necessary
+                continue
+
+            if level == constants.PublisherBlacklistLevel.ACCOUNT and\
+                    source.source_type.type == constants.SourceType.OUTBRAIN and\
+                    count_ob_blacklisted_publishers < 10:
+                count_ob_blacklisted_publishers += 1
 
             blacklist_global = False
             if level == constants.PublisherBlacklistLevel.GLOBAL:
