@@ -28,3 +28,10 @@ class JSONEncoder(json.JSONEncoder):
             return str(obj)
         else:
             return json.JSONEncoder.default(self, obj)
+
+
+class DateJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.date) and not isinstance(obj, datetime.datetime):
+            return obj.isoformat()
+        return super(DateJSONEncoder, self).default(obj)

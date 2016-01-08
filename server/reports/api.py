@@ -238,13 +238,17 @@ def get_cost_from(start_date, **constraints):
     return result
 
 
-def get_yesterday_cost(**constraints):
+def get_yesterday_cost(constraints, breakdown=None):
+
+    if breakdown is None:
+        breakdown = ['source']
+
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
     today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
     today = datetime.datetime(today.year, today.month, today.day)
     yesterday = today - datetime.timedelta(days=1)
 
-    rs = get_day_cost(yesterday, breakdown=['source'], **constraints)
+    rs = get_day_cost(yesterday, breakdown=breakdown, **constraints)
 
     result = {row['source']: row['cost'] for row in rs}
     return result

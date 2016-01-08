@@ -2,6 +2,7 @@ from collections import defaultdict
 import datetime
 import json
 import logging
+import time
 
 from django.db.models import Sum, Max
 from django.db import connection, transaction
@@ -11,6 +12,8 @@ import reports.models
 from reports.db_raw_helpers import dictfetchall
 from reports import redshift
 from reports import daily_statements
+from utils import json_helper
+from utils import s3helpers
 from utils import statsd_helper
 from utils import sqs_helper
 
@@ -19,6 +22,8 @@ import dash.models
 logger = logging.getLogger(__name__)
 
 CC_TO_NANO = 100000
+
+LOAD_CONTENTADS_KEY_FORMAT = 'contentadstats_load/{year}/{month}/{day}/{campaign_id}/{ts}.json'
 
 
 def _get_joined_stats_rows(date, campaign_id):
@@ -127,23 +132,43 @@ def notify_contentadstats_change(date, campaign_id):
 def refresh_changed_contentadstats():
     messages = sqs_helper.get_all_messages(settings.CAMPAIGN_CHANGE_QUEUE)
 
-    to_refresh = defaultdict(list)
+    to_refresh = defaultdict(lambda: defaultdict(list))
     for message in messages:
         body = json.loads(message.get_body())
-        key = (body['date'], body['campaign_id'])
-        to_refresh[key].append(message)
+        key = body['campaign_id']
+        to_refresh[key]['dates'].append(body['date'])
+        to_refresh[key]['messages'].append(message)
 
     for key, val in to_refresh.iteritems():
-        date = datetime.datetime.strptime(key[0], '%Y-%m-%d').date()
-        campaign = dash.models.Campaign.objects.get(id=key[1])
-        daily_statements.reprocess_daily_statements(date, campaign)
-        refresh_contentadstats(date, campaign)
-        sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, val)
+        dates = [datetime.datetime.strptime(d, '%Y-%m-%d').date() for d in val['dates']]
+        campaign = dash.models.Campaign.objects.get(id=key)
+        changed_dates = daily_statements.reprocess_daily_statements(min(dates), campaign)
+        for date in set(changed_dates).union(set(dates)):
+            refresh_contentadstats(date, campaign)
+        sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, val['messages'])
 
     statsd_helper.statsd_gauge('reports.refresh.refresh_changed_contentadstats_num', len(to_refresh))
 
 
-@transaction.atomic(using=settings.STATS_DB_NAME)
+def _get_s3_file_content_json(rows):
+    # Redshift expects a whitespace separated list of top-level objects or arrays (each representing a row)
+    # http://docs.aws.amazon.com/redshift/latest/dg/copy-parameters-data-format.html#copy-json-data-file
+    return '\n'.join(json.dumps(row, cls=json_helper.DateJSONEncoder) for row in rows)
+
+
+def put_contentadstats_to_s3(date, campaign, rows):
+    rows_json = _get_s3_file_content_json(rows)
+    s3_key = LOAD_CONTENTADS_KEY_FORMAT.format(
+        year=date.year,
+        month=date.month,
+        day=date.day,
+        campaign_id=campaign.id,
+        ts=int(time.time()*1000)
+    )
+    s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).put(s3_key, rows_json)
+    return s3_key
+
+
 def refresh_contentadstats(date, campaign):
     # join data
     rows = _get_joined_stats_rows(date, campaign.id)
@@ -152,12 +177,14 @@ def refresh_contentadstats(date, campaign):
     _add_effective_spend(date, campaign, rows)
     rows = [_add_goals(row, goals_dict) for row in rows]
     rows = [_add_ids(row, campaign) for row in rows]
+    s3_key = put_contentadstats_to_s3(date, campaign, rows)
 
-    redshift.delete_contentadstats(date, campaign.id)
-    redshift.insert_contentadstats(rows)
+    with transaction.atomic(using=settings.STATS_DB_NAME):
+        redshift.delete_contentadstats(date, campaign.id)
+        redshift.load_contentadstats(s3_key)
 
-    redshift.delete_contentadstats_diff(date, campaign.id)
-    refresh_contentadstats_diff(date, campaign)
+        redshift.delete_contentadstats_diff(date, campaign.id)
+        refresh_contentadstats_diff(date, campaign)
 
 
 def refresh_contentadstats_diff(date, campaign):

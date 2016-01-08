@@ -43,10 +43,12 @@ def decimal_to_int_exact(num):
 def additions(*cols):
     return '({})'.format('+'.join(cols))
 
+
 def total_cost(nano_cols=[], cc_cols=[]):
     return additions(
         *map(sum_agr, nano_cols) + ['{}*100000'.format(sum_agr(col)) for col in cc_cols]
     )
+
 
 def sum_div(expr, divisor):
     return ('CASE WHEN SUM("{divisor}") <> 0 THEN SUM(CAST("{expr}" AS FLOAT)) / SUM("{divisor}") '
@@ -71,6 +73,11 @@ def count_agr(field_name):
 def count_ranked(field_name, rank):
     return 'SUM(CASE WHEN {} = {} THEN 1 ELSE 0 END)'.format(field_name, rank)
 
+def min_agr(field_name):
+    return 'MAX("{field_name}")'.format(field_name=field_name)
+
+def max_agr(field_name):
+    return 'MAX("{field_name}")'.format(field_name=field_name)
 
 def sum_agr(field_name):
     return 'SUM("{field_name}")'.format(field_name=field_name)

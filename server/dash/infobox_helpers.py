@@ -90,7 +90,7 @@ def get_total_campaign_spend(user, campaign):
 def get_yesterday_total_cost(user, campaign):
     yesterday_cost = get_reports_api_module(
         user
-    ).get_yesterday_cost(campaign=campaign)
+    ).get_yesterday_cost(dict(campaign=campaign))
     yesterday_total_cost = None
     if yesterday_cost:
         yesterday_total_cost = sum(yesterday_cost.values())

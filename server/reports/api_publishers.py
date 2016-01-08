@@ -2,7 +2,7 @@ import logging
 import copy
 from reports import redshift
 
-from reports.rs_helpers import from_micro_cpm, from_nano, to_percent, sum_div, sum_agr, unchanged
+from reports.rs_helpers import from_micro_cpm, from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr
 
 logger = logging.getLogger(__name__)
 
@@ -18,15 +18,17 @@ FORMULA_TOTAL_COST = '({}*1000 + {}*1000 + {})'.format(
 )
 
 class RSPublishersModel(redshift.RSModel):
-    TABLE_NAME = 'joint_publishers_1_2'
+    TABLE_NAME = 'joint_publishers_1_3'
 
     # fields that are always returned (app-based naming)
     DEFAULT_RETURNED_FIELDS_APP = [
         "clicks", "impressions", "cost", "data_cost", "media_cost", "ctr", "cpc",
-        "e_media_cost", "e_data_cost", "total_cost", "billing_cost", "license_fee", 
+        "e_media_cost", "e_data_cost", "total_cost", "billing_cost", "license_fee",
+        "external_id",
+
     ]
     # fields that are allowed for breakdowns (app-based naming)
-    ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'date', ])
+    ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'date'])
 
     # 	SQL NAME                           APP NAME            OUTPUT TRANSFORM        AGGREGATE                                  ORDER BY function
     FIELDS = [
@@ -34,6 +36,7 @@ class RSPublishersModel(redshift.RSModel):
         dict(sql='impressions_sum',        app='impressions',  out=unchanged,          calc=sum_agr('impressions'),               order="SUM(impressions) = 0, impressions_sum {direction}"),
         dict(sql='domain',                 app='domain',       out=unchanged),
         dict(sql='exchange',               app='exchange',     out=unchanged),
+        dict(sql='external_id',            app='external_id',  out=unchanged,          calc=max_agr('external_id')),
         dict(sql='date',                   app='date',         out=unchanged),
         dict(sql='cost_micro_sum',         app='cost',         out=from_micro_cpm,     calc=sum_agr('cost_micro'),                order="SUM(cost_micro) = 0, cost_micro_sum {direction}"),
         dict(sql='media_cost_micro_sum',   app='media_cost',   out=from_micro_cpm,     calc=sum_agr('cost_micro'),                order="SUM(cost_micro) = 0, cost_micro_sum {direction}"),
@@ -50,12 +53,12 @@ class RSPublishersModel(redshift.RSModel):
 
 
 class RSOutbrainPublishersModel(RSPublishersModel):
-    TABLE_NAME = 'ob_publishers_1'
+    TABLE_NAME = 'ob_publishers_2'
 
     FIELDS = copy.copy(RSPublishersModel.FIELDS) + [
         # The following are only available for Outbrain tables
-        dict(sql='ob_section_id',   app='ob_section_id',   out=lambda v: v),
-        dict(sql='name',            app='name',            out=lambda v: v),
+        dict(sql='ob_id',   app='ob_id',   out=lambda v: v),
+        dict(sql='name',    app='name',            out=lambda v: v),
     ]
 
 
@@ -89,9 +92,11 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
 def query_active_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, blacklist=[]):
     constraints_list = []
     if blacklist:
+        aggregated_blacklist = _aggregate_domains(blacklist)
+
         # create a base object, then OR onto it
-        rsq = ~_map_blacklist_to_rs_queryset(blacklist[0])
-        for blacklist_entry in blacklist[1:]:
+        rsq = ~_map_blacklist_to_rs_queryset(aggregated_blacklist[0])
+        for blacklist_entry in aggregated_blacklist[1:]:
             rsq &= ~_map_blacklist_to_rs_queryset(blacklist_entry)
         constraints_list = [rsq]
 
@@ -108,9 +113,11 @@ def query_active_publishers(start_date, end_date, breakdown_fields=[], order_fie
 def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, blacklist=[]):
     constraints_list = []
     if blacklist:
+        aggregated_blacklist = _aggregate_domains(blacklist)
+
         # create a base object, then OR onto it
-        rsq = _map_blacklist_to_rs_queryset(blacklist[0])
-        for blacklist_entry in blacklist[1:]:
+        rsq = _map_blacklist_to_rs_queryset(aggregated_blacklist[0])
+        for blacklist_entry in aggregated_blacklist[1:]:
             rsq |= _map_blacklist_to_rs_queryset(blacklist_entry)
         constraints_list = [rsq]
     else:
@@ -128,6 +135,34 @@ def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], orde
         constraints_list=constraints_list
     )
 
+def _aggregate_domains(blacklist):
+    # creates a new blacklist that groups all domains that belong to same
+    # adgroup_id and exchange into one list (thus reducing query size)
+
+    aggregated_pubs = {}
+
+    ret = []
+    for blacklist_entry in blacklist:
+        # treat global publishers separately
+        if blacklist_entry.get('adgroup_id') is None:
+            ret.append({
+                'domain': blacklist_entry['domain'],
+            })
+            continue
+
+        key = (blacklist_entry['adgroup_id'], blacklist_entry['exchange'])
+        aggregated_pubs[key] = aggregated_pubs.get(key, []) + [blacklist_entry['domain']]
+    for adgroup_id, exchange in aggregated_pubs:
+        domain_list = aggregated_pubs[ (adgroup_id, exchange) ]
+        if len(domain_list) == 1:
+            domain_list = domain_list[0]
+
+        ret.append({
+            'domain': domain_list,
+            'exchange': exchange,
+            'adgroup_id': adgroup_id
+        })
+    return ret
 
 def _map_blacklist_to_rs_queryset(blacklist):
     if blacklist.get('adgroup_id') is not None:
@@ -163,22 +198,15 @@ def query_publisher_list(start_date, end_date, breakdown_fields=[], order_fields
 
 def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts, total_cost):
     # TODO: Execute this inside a transaction
-    fields_sql = ['date', 'adgroup_id', 'exchange', 'domain', 'name', 'clicks', 'cost_micro', 'ob_section_id']
+    fields_sql = ['date', 'adgroup_id', 'exchange', 'name', 'clicks', 'cost_micro', 'ob_id']
     row_tuples = []
     total_clicks = 0
     for row in datarowdicts:
         total_clicks += row['clicks']
 
     for row in datarowdicts:
-        # strip http:
-        url = row['url']
-        if url.startswith("https://"):
-            url = url[8:]
-        if url.startswith("http://"):
-            url = url[7:]
-        url = url.strip("/")
         cost = 1.0 * row['clicks'] / total_clicks * total_cost
-        newrow = (date, ad_group, exchange, url, row['name'], row['clicks'], cost * 1000000000, row['ob_section_id'])
+        newrow = (date, ad_group, exchange, row['name'], row['clicks'], cost * 1000000000, row['ob_id'])
         row_tuples.append(newrow)
 
     cursor = redshift.get_cursor()
