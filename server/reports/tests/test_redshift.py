@@ -137,16 +137,17 @@ class RedshiftTest(TestCase):
         params = ['2015-01-01', '2015-01-31']
         mock_cursor.execute.assert_called_with(query, params)
 
-    def test_update_publishers(self, mock_get_cursor):
+    def test_load_publishers(self, mock_get_cursor):
         mock_cursor = Mock()
         mock_get_cursor.return_value = MyCursor(mock_cursor)
 
         s3_filename = 's3://b1-eventlog-sync/publishers/2015-01-01-2015-01-31--123456789/part-00000'
         aws_access_id = 'xxxxxxx'
         aws_access_secret = 'xxxxxxxx'
-        redshift.insert_publishers(s3_filename, aws_access_id, aws_access_secret)
+        redshift.load_publishers(s3_filename, aws_access_id, aws_access_secret)
 
-        query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV"
+        query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS "\
+                "'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV MAXERROR 0"
         params = [s3_filename, aws_access_id, aws_access_secret]
         mock_cursor.execute.assert_called_with(query, params)
 
