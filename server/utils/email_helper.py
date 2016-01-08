@@ -398,10 +398,7 @@ Report was scheduled by {scheduled_by}.
 
 
 def _format_changes_text(changes_text):
-    if changes_text:
-        changes_text = changes_text[0].lower() + changes_text[1:]
-
-        if changes_text[-1] == '.':
-            changes_text = changes_text[:-1]
+    if changes_text and changes_text[-1] == '.':
+        changes_text = changes_text[:-1]
 
     return changes_text
