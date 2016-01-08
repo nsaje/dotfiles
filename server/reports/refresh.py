@@ -129,22 +129,23 @@ def notify_contentadstats_change(date, campaign_id):
     )
 
 
+def notify_daily_statements_change(date, campaign_id):
+    sqs_helper.write_message_json(
+        settings.DAILY_STATEMENTS_CHANGE_QUEUE,
+        {'date': date.isoformat(), 'campaign_id': campaign_id}
+    )
+
+
 @statsd_helper.statsd_timer('reports.refresh', 'refresh_changed_contentadstats_timer')
 def refresh_changed_contentadstats():
     messages = sqs_helper.get_all_messages(settings.CAMPAIGN_CHANGE_QUEUE)
 
     to_refresh = defaultdict(lambda: defaultdict(list))
-    num_to_refresh = 0
     for message in messages:
-        if num_to_refresh > MAX_DATES_TO_REFRESH:
-            message.change_visibility(0)
-            continue
-
         body = json.loads(message.get_body())
         key = body['campaign_id']
         to_refresh[key]['dates'].append(body['date'])
         to_refresh[key]['messages'].append(message)
-        num_to_refresh += 1
 
     for key, val in to_refresh.iteritems():
         dates = [datetime.datetime.strptime(d, '%Y-%m-%d').date() for d in val['dates']]
@@ -153,14 +154,41 @@ def refresh_changed_contentadstats():
         logger.info('Refreshing changed content ad stats for campaign %s and %s date(s)', campaign.id, len(dates))
         changed_dates = daily_statements.reprocess_daily_statements(min(dates), campaign)
 
-        to_refresh_dates = set(changed_dates).union(set(dates))
-        logger.info('Refreshed daily statements, refreshing Redshift stats for %s date(s)')
-        for date in to_refresh_dates:
+        for date in set(changed_dates).union(set(dates)):
+            notify_daily_statements_change(date, campaign)
             refresh_contentadstats(date, campaign)
 
         sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, val['messages'])
 
     statsd_helper.statsd_gauge('reports.refresh.refresh_changed_contentadstats_num', len(to_refresh))
+
+
+@statsd_helper.statsd_timer('reports.refresh', 'refresh_changed_daily_statements_timer')
+def refresh_changed_daily_statements():
+    messages = sqs_helper.get_all_messages(settings.DAILY_STATEMENTS_CHANGE_QUEUE)
+
+    to_refresh = {}
+    num_to_refresh = 0
+    for message in messages:
+        if num_to_refresh > MAX_DATES_TO_REFRESH:
+            message.change_visibility(0)
+            continue
+
+        body = json.loads(message.get_body())
+        key = (body['date'], body['campaign_id'])
+        to_refresh[key]['messages'].append(message)
+        num_to_refresh += 1
+
+    for key, val in to_refresh.iteritems():
+        date = key[0]
+        campaign = key[1]
+
+        logger.info('Refreshing changed content ad stats for campaign %s and date %s', campaign.id, date)
+        refresh_contentadstats(date, campaign)
+
+        sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, val)
+
+    statsd_helper.statsd_gauge('reports.refresh.refresh_changed_daily_statements_num', len(to_refresh))
 
 
 def _get_s3_file_content_json(rows):
