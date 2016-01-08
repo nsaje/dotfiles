@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 CC_TO_NANO = 100000
 
 LOAD_CONTENTADS_KEY_FORMAT = 'contentadstats_load/{year}/{month}/{day}/{campaign_id}/{ts}.json'
+MAX_DATES_TO_REFRESH = 200
 
 
 def _get_joined_stats_rows(date, campaign_id):
@@ -133,18 +134,27 @@ def refresh_changed_contentadstats():
     messages = sqs_helper.get_all_messages(settings.CAMPAIGN_CHANGE_QUEUE)
 
     to_refresh = defaultdict(lambda: defaultdict(list))
+    num_to_refresh = 0
     for message in messages:
+        if num_to_refresh > MAX_DATES_TO_REFRESH:
+            message.change_visibility(0)
+            continue
+
         body = json.loads(message.get_body())
         key = body['campaign_id']
         to_refresh[key]['dates'].append(body['date'])
         to_refresh[key]['messages'].append(message)
+        num_to_refresh += 1
 
     for key, val in to_refresh.iteritems():
         dates = [datetime.datetime.strptime(d, '%Y-%m-%d').date() for d in val['dates']]
         campaign = dash.models.Campaign.objects.get(id=key)
+
+        logger.info('Refreshing changed content ad stats for campaign %s and %s dates', campaign.id, len(dates))
         changed_dates = daily_statements.reprocess_daily_statements(min(dates), campaign)
         for date in set(changed_dates).union(set(dates)):
             refresh_contentadstats(date, campaign)
+
         sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, val['messages'])
 
     statsd_helper.statsd_gauge('reports.refresh.refresh_changed_contentadstats_num', len(to_refresh))
@@ -188,7 +198,7 @@ def refresh_contentadstats(date, campaign):
 
 
 def refresh_contentadstats_diff(date, campaign):
-    logger.info('refresh_contentadstats_diff: Refreshing adgroup and contentad stats in Redshift')
+    logger.debug('refresh_contentadstats_diff: Refreshing adgroup and contentad stats in Redshift')
     adgroup_stats_batch = reports.models.AdGroupStats.objects.filter(
         datetime__contains=date,
         ad_group__campaign_id=campaign.id
@@ -268,7 +278,7 @@ def refresh_contentadstats_diff(date, campaign):
 
     if diff_rows != []:
         redshift.insert_contentadstats(diff_rows)
-        logger.info('refresh_contentadstats_diff: Inserted {count} diff rows into redshift'.format(count=len(diff_rows)))
+        logger.debug('refresh_contentadstats_diff: Inserted {count} diff rows into redshift'.format(count=len(diff_rows)))
 
 
 def refresh_adgroup_stats(**constraints):
