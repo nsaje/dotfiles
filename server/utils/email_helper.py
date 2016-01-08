@@ -51,9 +51,7 @@ def send_ad_group_notification_email(ad_group, request, changes_text):
 
     body = u'''Hi account manager of {ad_group.name}
 
-We'd like to notify you that {user.email} has made the following changes in the settings of the ad group {ad_group.name}, campaign {campaign.name}, account {account.name}:
-
-    {changes_text}
+We'd like to notify you that {user.email} has made the following change in the settings of the ad group {ad_group.name}, campaign {campaign.name}, account {account.name}: {changes_text}.
 
 Please check {link_url} for further details.
 
@@ -66,7 +64,7 @@ Zemanta
         campaign=ad_group.campaign,
         account=ad_group.campaign.account,
         link_url=link_url,
-        changes_text=changes_text
+        changes_text=_format_changes_text(changes_text)
     )
 
     campaign_settings = ad_group.campaign.get_current_settings()
@@ -75,7 +73,7 @@ Zemanta
         campaign_settings.campaign_manager, subject, body, ad_group.campaign.get_campaign_url(request))
 
 
-def send_campaign_notification_email(campaign, request):
+def send_campaign_notification_email(campaign, request, changes_text):
     if not should_send_notification_mail(campaign, request.user, request):
         return
 
@@ -89,7 +87,9 @@ def send_campaign_notification_email(campaign, request):
 
     body = u'''Hi account manager of {campaign.name}
 
-We'd like to notify you that {user.email} has made a change in the settings or budget of campaign {campaign.name}, account {account.name}. Please check {link_url} for details.
+We'd like to notify you that {user.email} has made the following change in the settings of campaign {campaign.name}, account {account.name}: {changes_text}.
+
+Please check {link_url} for further details.
 
 Yours truly,
 Zemanta
@@ -98,7 +98,43 @@ Zemanta
         user=request.user,
         campaign=campaign,
         account=campaign.account,
-        link_url=link_url
+        link_url=link_url,
+        changes_text=_format_changes_text(changes_text)
+    )
+
+    campaign_settings = campaign.get_current_settings()
+
+    send_notification_mail(
+        campaign_settings.campaign_manager, subject, body, campaign.get_campaign_url(request))
+
+
+def send_budget_notification_email(campaign, request, changes_text):
+    if not should_send_notification_mail(campaign, request.user, request):
+        return
+
+    subject = u'Settings change - campaign {}, account {}'.format(
+        campaign.name,
+        campaign.account.name
+    )
+
+    link_url = request.build_absolute_uri('/campaigns/{}/agency'.format(campaign.pk))
+    link_url = link_url.replace('http://', 'https://')
+
+    body = u'''Hi account manager of {campaign.name}
+
+We'd like to notify you that {user.email} has made the following change in the budget of campaign {campaign.name}, account {account.name}: {changes_text}.
+
+Please check {link_url} for further details.
+
+Yours truly,
+Zemanta
+    '''
+    body = body.format(
+        user=request.user,
+        campaign=campaign,
+        account=campaign.account,
+        link_url=link_url,
+        changes_text=_format_changes_text(changes_text)
     )
 
     campaign_settings = campaign.get_current_settings()
@@ -359,3 +395,13 @@ Report was scheduled by {scheduled_by}.
     email = EmailMessage(subject, body, 'Zemanta <{}>'.format(settings.FROM_EMAIL), email_adresses)
     email.attach(report_filename + '.csv', report_contents, 'text/csv')
     email.send(fail_silently=False)
+
+
+def _format_changes_text(changes_text):
+    if changes_text:
+        changes_text = changes_text[0].lower() + changes_text[1:]
+
+        if changes_text[-1] == '.':
+            changes_text = changes_text[:-1]
+
+    return changes_text
