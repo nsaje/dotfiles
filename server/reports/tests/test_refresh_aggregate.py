@@ -537,16 +537,6 @@ class ContentAdStatsDataChangeTestCase(test.TestCase):
         campaign = dash.models.Campaign.objects.get(id=campaign_id)
         mock_reprocess.assert_called_once_with(datetime.date(2015, 12, 1), campaign)
 
-        calls = [
-            call(datetime.date(2015, 12, 1), campaign),
-            call(datetime.date(2015, 12, 2), campaign),
-            call(datetime.date(2015, 12, 3), campaign),
-            call(datetime.date(2015, 12, 4), campaign),
-            call(datetime.date(2015, 12, 5), campaign),
-            call(datetime.date(2016, 1, 1), campaign),
-        ]
-        mock_refresh_contentadstats.assert_has_calls(calls, any_order=True)
-
         mock_delete_messages.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, [message1, message2])
 
     @patch('reports.refresh.notify_daily_statements_change')
@@ -573,15 +563,6 @@ class ContentAdStatsDataChangeTestCase(test.TestCase):
 
         campaign = dash.models.Campaign.objects.get(id=campaign_id)
         mock_reprocess.assert_called_once_with(datetime.date(2015, 12, 1), campaign)
-
-        calls = [
-            call(datetime.date(2015, 12, 1), campaign),
-            call(datetime.date(2015, 12, 2), campaign),
-            call(datetime.date(2015, 12, 3), campaign),
-            call(datetime.date(2015, 12, 4), campaign),
-            call(datetime.date(2015, 12, 5), campaign),
-        ]
-        mock_refresh_contentadstats.assert_has_calls(calls, any_order=True)
         mock_delete_messages.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, [message1, message2])
 
 
