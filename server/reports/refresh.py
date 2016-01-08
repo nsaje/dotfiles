@@ -150,9 +150,12 @@ def refresh_changed_contentadstats():
         dates = [datetime.datetime.strptime(d, '%Y-%m-%d').date() for d in val['dates']]
         campaign = dash.models.Campaign.objects.get(id=key)
 
-        logger.info('Refreshing changed content ad stats for campaign %s and %s dates', campaign.id, len(dates))
+        logger.info('Refreshing changed content ad stats for campaign %s and %s date(s)', campaign.id, len(dates))
         changed_dates = daily_statements.reprocess_daily_statements(min(dates), campaign)
-        for date in set(changed_dates).union(set(dates)):
+
+        to_refresh_dates = set(changed_dates).union(set(dates))
+        logger.ingo('Refreshed daily statements, refreshing Redshift stats for %s date(s)')
+        for date in to_refresh_dates:
             refresh_contentadstats(date, campaign)
 
         sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, val['messages'])
