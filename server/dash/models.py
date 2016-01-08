@@ -34,8 +34,10 @@ CC_TO_DEC_MULTIPLIER = Decimal('0.0001')
 TO_CC_MULTIPLIER = 10**4
 TO_NANO_MULTIPLIER = 10**9
 
+
 def nano_to_cc(num):
     return int(round(num * 0.00001))
+
 
 def validate(*validators):
     errors = {}
@@ -316,6 +318,9 @@ class Campaign(models.Model, PermissionMixin):
 
     admin_link.allow_tags = True
 
+    def get_sales_representative(self):
+        return self.account.get_current_settings().default_sales_representative
+
     def get_current_settings(self):
         if not self.pk:
             raise exc.BaseError(
@@ -485,7 +490,7 @@ class AccountSettings(SettingsBase):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
-    
+
     objects = QuerySetManager()
 
     def save(self, request, *args, **kwargs):
@@ -505,8 +510,7 @@ class AccountSettings(SettingsBase):
 class CampaignSettings(SettingsBase):
     _settings_fields = [
         'name',
-        'account_manager',
-        'sales_representative',
+        'campaign_manager',
         'service_fee',
         'iab_category',
         'promotion_goal',
@@ -526,18 +530,13 @@ class CampaignSettings(SettingsBase):
     campaign = models.ForeignKey(Campaign, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
-    account_manager = models.ForeignKey(
+    campaign_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
         related_name="+",
         on_delete=models.PROTECT
     )
-    sales_representative = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        related_name="+",
-        on_delete=models.PROTECT
-    )
+
     service_fee = models.DecimalField(
         decimal_places=4,
         max_digits=5,
@@ -1871,6 +1870,7 @@ class PublisherBlacklist(models.Model):
     campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
     ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
     source = models.ForeignKey(Source, null=True, on_delete=models.PROTECT)
+    external_id = models.CharField(max_length=127, blank=False, null=True, verbose_name='External ID')
 
     status = models.IntegerField(
         default=constants.PublisherStatus.BLACKLISTED,
@@ -2002,7 +2002,7 @@ class CreditLineItem(FootprintModel):
             return
         prev_amount = self.previous_value('amount')
         budgets = self.budgets.all()
-        
+
         if prev_amount < self.amount or not budgets:
             return
         if self.amount < sum(b.amount for b in budgets):
@@ -2126,11 +2126,11 @@ class BudgetLineItem(FootprintModel):
             raise AssertionError('Budget has to be inactive to be freed.')
         amount_cc = self.amount * TO_CC_MULTIPLIER
         spend_data = self.get_spend_data()
-        
+
         reserve = self.get_reserve_amount_cc()
         free_date = self.end_date + datetime.timedelta(days=settings.LAST_N_DAY_REPORTS)
         is_over_sync_time = dates_helper.local_today() > free_date
-    
+
         if is_over_sync_time:
             # After we completed all syncs, free all the assets including reserve
             self.freed_cc = max(0, amount_cc - spend_data['total_cc'])
@@ -2178,7 +2178,7 @@ class BudgetLineItem(FootprintModel):
             key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
             for key in spend_data.keys()
         }
-    
+
     def get_daily_spend(self, date, use_decimal=False):
         spend_data = {
             'media_cc': 0, 'data_cc': 0,

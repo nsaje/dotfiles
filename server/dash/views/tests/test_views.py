@@ -146,8 +146,7 @@ class AccountCampaignsTest(TestCase):
         self.assertEqual(settings.target_devices, constants.AdTargetDevice.get_all())
         self.assertEqual(settings.target_regions, ['US'])
         self.assertEqual(settings.name, campaign_name)
-        self.assertEqual(settings.account_manager.id, 2)
-        self.assertEqual(settings.sales_representative.id, 3)
+        self.assertEqual(settings.campaign_manager.id, 2)
 
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
@@ -1939,7 +1938,6 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             settings9.changes_text
         )
 
-
     @patch('reports.redshift.get_cursor')
     def test_post_campaign_all_but_blacklist_1(self, cursor):
         cursor().dictfetchall.return_value = [
@@ -2009,6 +2007,98 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertTrue(res['success'])
 
         self.assertEqual(1, models.PublisherBlacklist.objects.count())
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_outbrain_account_blacklist(self, cursor):
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'Test',
+            'ctr': 0.0,
+            'exchange': 'outbrain',
+            'external_id': 'sfdafkl1230899012asldas',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.ACCOUNT,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": []
+        }
+        res = self._post_publisher_blacklist(1, payload)
+
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(1, publisher_blacklist_action.count())
+        self.assertDictEqual(
+            {
+                u"key": [1, ''],
+                u"state": 2,
+                u"level": u"account",
+                u"publishers": [{
+                    u"exchange": u"outbrain",
+                    u"source_id": 3,
+                    u"domain": u"Test",
+                    u"ad_group_id": 1,
+                    u"external_id": u"sfdafkl1230899012asldas"
+                    }]
+            }, publisher_blacklist_action.first().payload['args'])
+        self.assertTrue(res['success'])
+
+        self.assertEqual(1, models.PublisherBlacklist.objects.count())
+        publisher_blacklist = models.PublisherBlacklist.objects.first()
+        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(1, publisher_blacklist.account.id)
+        self.assertEqual('outbrain', publisher_blacklist.source.tracking_slug)
+        self.assertEqual(u'Test', publisher_blacklist.name)
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_outbrain_invalid_level_blacklist(self, cursor):
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'Test',
+            'ctr': 0.0,
+            'exchange': 'outbrain',
+            'external_id': 'sfdafkl1230899012asldas',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+
+        for level in (constants.PublisherBlacklistLevel.ADGROUP,
+                      constants.PublisherBlacklistLevel.CAMPAIGN,
+                      constants.PublisherBlacklistLevel.GLOBAL):
+            payload = {
+                "state": constants.PublisherStatus.BLACKLISTED,
+                "level": level,
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat(),
+                "select_all": True,
+                "publishers_selected": [],
+                "publishers_not_selected": []
+            }
+            res = self._post_publisher_blacklist(1, payload)
+            self.assertTrue(res['success'])
+
+            publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+                action_type=actionlog.constants.ActionType.AUTOMATIC,
+                action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+            )
+            self.assertEqual(0, publisher_blacklist_action.count())
 
 
 class AdGroupOverviewTest(TestCase):

@@ -437,7 +437,7 @@ class SourcesTable(object):
             kwargs = { 'account': level_sources_table.account }
         elif level_ == 'campaigns':
             level_sources_table = CampaignSourcesTable(user, id_, filtered_sources)
-            kwargs = { 'campaign': level_sources_table.campaign } 
+            kwargs = { 'campaign': level_sources_table.campaign }
         elif level_ == 'ad_groups':
             ad_group_level = True
             level_sources_table = AdGroupSourcesTable(user, id_, filtered_sources)
@@ -530,14 +530,14 @@ class SourcesTable(object):
 
     def get_yesterday_cost(self, table, actual=False, **kwargs):
         if actual:
-            yesterday_cost = table.reports_api.get_actual_yesterday_cost(**kwargs)
+            yesterday_cost = table.reports_api.get_actual_yesterday_cost(kwargs)
         else:
-            yesterday_cost = table.reports_api.get_yesterday_cost(**kwargs)
+            yesterday_cost = table.reports_api.get_yesterday_cost(kwargs)
         yesterday_total_cost = None
         if yesterday_cost:
             yesterday_total_cost = sum(yesterday_cost.values())
         return yesterday_cost, yesterday_total_cost
-    
+
     def get_totals(self,
                    ad_group_level,
                    user,
@@ -555,7 +555,7 @@ class SourcesTable(object):
             result['e_yesterday_cost'] = e_yesterday_cost
         if user.has_perm('zemauth.can_view_effective_costs') and not user.has_perm('zemauth.can_view_actual_costs'):
             del result['yesterday_cost']
-        
+
         if ad_group_level and user.has_perm('zemauth.set_ad_group_source_settings'):
             result['daily_budget'] = get_daily_budget_total(ad_group_sources, sources_states, sources_settings)
             result['current_daily_budget'] = get_current_daily_budget_total(sources_states)
@@ -663,9 +663,9 @@ class SourcesTable(object):
                 ad_group_settings = level_sources_table.ad_group_settings
 
                 row['editable_fields'] = helpers.get_editable_fields(
-                    ad_group_source, 
+                    ad_group_source,
                     ad_group_settings,
-                    source_settings, 
+                    source_settings,
                     user,
                     allowed_sources,
                 )
@@ -1301,6 +1301,9 @@ class CampaignAdGroupsTable(object):
 
         ad_groups_status_dict = self.get_per_ad_group_status_dict(ad_groups, ad_groups_settings, filtered_sources)
 
+        e_yesterday_cost, e_yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign)
+        yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign, actual=True)
+
         response = {
             'rows': self.get_rows(
                 user,
@@ -1311,9 +1314,11 @@ class CampaignAdGroupsTable(object):
                 last_success_actions_joined,
                 order,
                 has_view_archived_permission,
-                show_archived
+                show_archived,
+                e_yesterday_cost,
+                yesterday_cost,
             ),
-            'totals': totals_stats,
+            'totals': self.get_totals(user, totals_stats, e_yesterday_total_cost, yesterday_total_cost),
             'last_sync': pytz.utc.localize(last_sync).isoformat() if last_sync is not None else None,
             'is_sync_recent': helpers.is_sync_recent(last_success_actions_joined.values()),
             'is_sync_in_progress': actionlog.api.is_sync_in_progress(
@@ -1349,6 +1354,19 @@ class CampaignAdGroupsTable(object):
         return helpers.get_ad_group_state_by_sources_running_status(
             ad_groups, ad_groups_settings, [], 'id')
 
+    def get_yesterday_cost(self, reports_api, campaign, actual=False):
+        constraints = dict(campaign=campaign)
+        breakdown = ['ad_group']
+
+        if actual:
+            yesterday_cost = reports_api.get_actual_yesterday_cost(constraints, breakdown)
+        else:
+            yesterday_cost = reports_api.get_yesterday_cost(constraints, breakdown)
+        yesterday_total_cost = None
+        if yesterday_cost:
+            yesterday_total_cost = sum(yesterday_cost.values())
+        return yesterday_cost, yesterday_total_cost
+
     def get_data_status(self, user, ad_groups, last_success_actions, last_pixel_sync):
         last_pixel_sync_message = None
         if user.has_perm('zemauth.conversion_reports'):
@@ -1361,7 +1379,7 @@ class CampaignAdGroupsTable(object):
         )
 
     def get_rows(self, user, ad_groups, ad_groups_settings, ad_groups_status_dict, stats, last_actions,
-                 order, has_view_archived_permission, show_archived):
+                 order, has_view_archived_permission, show_archived, e_yesterday_cost, yesterday_cost):
         rows = []
 
         # map settings for quicker access
@@ -1370,7 +1388,7 @@ class CampaignAdGroupsTable(object):
         for ad_group in ad_groups:
             row = {
                 'name': ad_group.name,
-                'ad_group': str(ad_group.pk)
+                'ad_group': str(ad_group.id),
             }
 
             ad_group_data = {}
@@ -1396,6 +1414,11 @@ class CampaignAdGroupsTable(object):
 
             row.update(ad_group_data)
 
+            if user.has_perm('zemauth.can_view_effective_costs'):
+                row['e_yesterday_cost'] = e_yesterday_cost.get(ad_group.id)
+            if not user.has_perm('zemauth.can_view_effective_costs') or user.has_perm('zemauth.can_view_actual_costs'):
+                row['yesterday_cost'] = yesterday_cost.get(ad_group.id)
+
             last_sync = last_actions.get(ad_group.pk)
 
             row['last_sync'] = last_sync
@@ -1409,6 +1432,14 @@ class CampaignAdGroupsTable(object):
                 rows = sort_results(rows, [order])
 
         return rows
+
+    def get_totals(self, user, totals_data, e_yesterday_cost, yesterday_cost):
+        if user.has_perm('zemauth.can_view_effective_costs'):
+            totals_data['e_yesterday_cost'] = e_yesterday_cost
+        if not user.has_perm('zemauth.can_view_effective_costs') or user.has_perm('zemauth.can_view_actual_costs'):
+            totals_data['yesterday_cost'] = yesterday_cost
+
+        return totals_data
 
 
 class AccountCampaignsTable(object):
@@ -1610,7 +1641,7 @@ class PublishersTable(object):
             if s.bidder_slug:
                 exchange_name = s.bidder_slug
             else:
-                exchange_name = s.name
+                exchange_name = s.name.lower()
             map_exchange_to_source_name[exchange_name] = s.name
 
         # this is a really bad practice, but used extensively in models.py
@@ -1638,7 +1669,7 @@ class PublishersTable(object):
         for publisher_data in publishers_data:
             publisher_data['blacklisted'] = 'Active'
             domain = publisher_data['domain']
-            source_slug = publisher_data['exchange']
+            source_slug = publisher_data['exchange'].lower()
 
             if source_slug not in source_cache_by_slug:
                 source_cache_by_slug[source_slug] =\
@@ -1665,15 +1696,27 @@ class PublishersTable(object):
 
 
         for publisher_data in publishers_data:
+            publisher_exchange = publisher_data['exchange'].lower()
             publisher_domain = publisher_data['domain']
-            publisher_source = source_cache_by_slug.get(publisher_data['exchange'].lower()) or publisher_data['exchange']
+            publisher_source = source_cache_by_slug.get(publisher_exchange) or publisher_exchange
 
-            known_source = source_cache_by_slug.get(publisher_data['exchange']) is not None
+            known_source = source_cache_by_slug.get(publisher_exchange) is not None
 
             publisher_data['source_id'] = publisher_source.id if known_source else -1
-            publisher_data['can_blacklist_publisher'] = publisher_source.can_modify_publisher_blacklist_automatically() if known_source else False
+            # there's a separate permission for Outbrain blacklisting which
+            # might get removed in the future
+            can_blacklist_outbrain_publisher = known_source and publisher_source.source_type.type == constants.SourceType.OUTBRAIN and\
+                user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status')
 
-            if source_cache_by_slug.get(publisher_data['exchange']) is None:
+            if publisher_source.can_modify_publisher_blacklist_automatically() and\
+                    known_source and\
+                    (publisher_source.source_type.type != constants.SourceType.OUTBRAIN or
+                     can_blacklist_outbrain_publisher):
+                publisher_data['can_blacklist_publisher'] = True
+            else:
+                publisher_data['can_blacklist_publisher'] = False
+
+            if source_cache_by_slug.get(publisher_exchange) is None:
                 continue
 
             for blacklisted_pub in pub_blacklist_qs:
@@ -1693,6 +1736,8 @@ class PublishersTable(object):
                     level = blacklisted_pub.get_blacklist_level()
                     publisher_data['blacklisted_level'] = level
                     publisher_data['blacklisted_level_description'] = constants.PublisherBlacklistLevel.verbose(level)
+                    if blacklisted_pub.external_id is not None:
+                        publisher_data['external_id'] = blacklisted_pub.external_id
 
         response = {
             'rows': self.get_rows(
@@ -1816,6 +1861,7 @@ class PublishersTable(object):
                 'blacklisted': publisher_data['blacklisted'],
                 'exchange': source_name,
                 'source_id': publisher_data['source_id'],
+                'external_id': publisher_data.get('external_id'),
 
                 'cost': publisher_data.get('cost', 0),
                 'license_fee': publisher_data.get('license_fee', 0),
@@ -1834,7 +1880,7 @@ class PublishersTable(object):
                 row['total_cost'] = publisher_data.get('total_cost', 0)
                 row['media_cost'] = publisher_data.get('media_cost', 0)
                 row['data_cost'] = publisher_data.get('data_cost', 0)
-                
+
 
             if publisher_data.get('blacklisted_level'):
                 row['blacklisted_level'] = publisher_data['blacklisted_level']

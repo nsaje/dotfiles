@@ -10,6 +10,7 @@ function $zemLazyPopoverDirective($http, $templateCache, $compile, $parse, $time
     // zem-lazy-popover-placement = top/bottom/left/right
     // zem-lazy-popover-animation-class = fade
     // zem-lazy-popover-append-to-body = true/false
+    // zem-lazy-popover-event = mouseleave/click (mouseleave by default)
     
     var entityMap = {
         "&": "&amp;",
@@ -32,6 +33,7 @@ function $zemLazyPopoverDirective($http, $templateCache, $compile, $parse, $time
             var appendToBody = false;
             var ttScope = null;
             var tooltip = null;
+            var event = attrs.zemLazyPopoverEvent || "mouseleave";
 
             var positionTooltip = function () {
                 if (!tooltip) { return; }
@@ -78,9 +80,10 @@ function $zemLazyPopoverDirective($http, $templateCache, $compile, $parse, $time
                         removeTooltip();
                     }
                 };
-                element.off("mouseleave", hide);
+                element.off(event, hide);
             };
 
+            element.on('$destroy', hide);
             
             element.on("mouseenter", function() {
                 // If we have a timeout set, cancel it and add in classes
@@ -110,13 +113,12 @@ function $zemLazyPopoverDirective($http, $templateCache, $compile, $parse, $time
                 }
                 if (!templateUrl && !templateHtml) {
                     // There is no content to be shown
-                    return
+                    return;
                 }
-
 
                 ttScope = scope.$new(false);
 
-                element.on("mouseleave", hide);
+                element.on(event, hide);
 
                 function haveTemplateContent(templateContent) {
                     if (!ttScope) {
@@ -171,8 +173,8 @@ function $zemLazyPopoverDirective($http, $templateCache, $compile, $parse, $time
                 ttScope.$apply();
 
             });
-        },
-    }
+        }
+    };
 };
 
 angular.module('one')

@@ -6,7 +6,7 @@ engines:
   fixme:
     enabled: true
   duplication:
-    enabled: true
+    enabled: false
     config:
       languages:
       - python
