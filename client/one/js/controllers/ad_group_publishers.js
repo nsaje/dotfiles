@@ -20,6 +20,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.pagination = {
         currentPage: 1
     };
+    $scope.ob_blacklisted_count = 0;
+    $scope.ob_blacklisted_selected = 0;
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
@@ -99,7 +101,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.selectedPublisherChanged = function (row, checked) {
         var numNotSelected = 0;
-
+        
         $scope.selectedPublisherStatus[$scope.calculatePublisherHash(row)] = {
             "checked": checked,
             "source_id": row.source_id,
@@ -111,16 +113,33 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         };
 
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
-            if (!$scope.selectedPublisherStatus[publisherId].checked) {
+            var pubStatus = $scope.selectedPublisherStatus[publisherId];
+            if (!pubStatus.checked) {
                 numNotSelected += 1;
             }
         });
+        $scope.recountOutbrainPublishers();
 
         $scope.updatePublisherBlacklistCombo();
 
         if ($scope.selectedAll) {
             $scope.selectionMenuConfig.partialSelection = numNotSelected > 0;
         }
+
+        if (row.exchange === 'Outbrain') {
+            $scope.updateOutbrainPublisherSelection();
+            $scope.updateRowBlacklistInfo();
+        }
+    };
+
+    $scope.recountOutbrainPublishers = function () {
+        $scope.ob_blacklisted_selected = 0;
+        Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
+            var pubStatus = $scope.selectedPublisherStatus[publisherId];
+            if (pubStatus.exchange === 'Outbrain' && pubStatus.checked) {
+                $scope.ob_blacklisted_selected += 1;
+            }
+        });
     };
 
     $scope.updatePublisherBlacklistCombo = function () {
@@ -132,9 +151,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 constants.publisherBlacklistLevel.GLOBAL
             ];
 
-        count.countBlacklistedSelected = 0
+        count.countBlacklistedSelected = 0;
         count.countNonBlacklistedSelected = 0;
-        count.countOutbrainSelected = 0
+        count.countOutbrainSelected = 0;
         count.countAllSelected = 0;
         count.maxBlacklistedLevel = null;
 
@@ -240,6 +259,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         if (selected) {
             $scope.updatePublisherSelection();
+            $scope.updateOutbrainPublisherSelection();
+            $scope.updateRowBlacklistInfo();
         } else {
             $scope.clearPublisherSelection();
         }
@@ -251,19 +272,14 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.rows.forEach(function (row) {
             row.publisherSelected = false;
         });
+
+        $scope.ob_blacklisted_selected = 0;
     };
 
     $scope.updatePublisherSelection = function () {
         $scope.rows.forEach(function (row) {
             if (row !== undefined) {
                 row.disabledSelection = !row.can_blacklist_publisher;
-                if (!row.can_blacklist_publisher) {
-                    row.blacklistInfo = "This publisher can't be blacklisted because the media source doesn't support publisher blacklisting or the limit of max blacklisted publisher on this particular media source has been reached. ";
-                    row.blacklistInfo = row.blacklistInfo.concat("Contact your account manager for further details.");
-                } else {
-                    row.blacklistInfo = null;
-                }
-
                 if (row.can_blacklist_publisher) {
                     var rowId = $scope.calculatePublisherHash(row);
                     if ($scope.selectedPublisherStatus[rowId] !== undefined) {
@@ -273,6 +289,39 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                     } else {
                         row.publisherSelected = false;
                     }
+                }
+            }
+        });
+    };
+
+    $scope.updateOutbrainPublisherSelection = function () {
+        $scope.rows.forEach(function (row) {
+            if (row !== undefined) {
+                if (row.exchange === 'Outbrain') {
+                    if (!row.publisherSelected) {
+                        if ($scope.ob_blacklisted_count + $scope.ob_blacklisted_selected >= 10) {
+                            row.can_blacklist_publisher = false;
+                        }
+                    }
+
+                    if ($scope.ob_blacklisted_count + $scope.ob_blacklisted_selected < 10) {
+                        row.can_blacklist_publisher = true;
+                    }
+
+                    row.disabledSelection = !row.can_blacklist_publisher;
+                }
+            }
+        });
+    };
+
+    $scope.updateRowBlacklistInfo = function () {
+        $scope.rows.forEach(function (row) {
+            if (row !== undefined) {
+                if (!row.can_blacklist_publisher) {
+                    row.blacklistInfo = "This publisher can't be blacklisted because the media source doesn't support publisher blacklisting or the limit of max blacklisted publisher on this particular media source has been reached. ";
+                    row.blacklistInfo = row.blacklistInfo.concat("Contact your account manager for further details.");
+                } else {
+                    row.blacklistInfo = null;
                 }
             }
         });
@@ -635,8 +684,12 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.totals.checked = $scope.selectedTotals;
                 $scope.lastChange = data.lastChange;
                 $scope.pagination = data.pagination;
+                $scope.ob_blacklisted_count = data.ob_blacklisted_count;
 
+                $scope.recountOutbrainPublishers();
                 $scope.updatePublisherSelection();
+                $scope.updateOutbrainPublisherSelection();
+                $scope.updateRowBlacklistInfo();
             },
             function (data) {
                 // error

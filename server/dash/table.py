@@ -1767,6 +1767,7 @@ class PublishersTable(object):
                 totals_data,
             ),
             'order': order,
+            'ob_blacklisted_count': count_ob_blacklisted_publishers,
         }
         return response
 
