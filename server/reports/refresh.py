@@ -167,7 +167,7 @@ def refresh_changed_contentadstats():
 def refresh_changed_daily_statements():
     messages = sqs_helper.get_all_messages(settings.DAILY_STATEMENTS_CHANGE_QUEUE)
 
-    to_refresh = {}
+    to_refresh = defaultdict(list)
     num_to_refresh = 0
     for message in messages:
         if num_to_refresh > MAX_DATES_TO_REFRESH:
@@ -176,7 +176,7 @@ def refresh_changed_daily_statements():
 
         body = json.loads(message.get_body())
         key = (body['date'], body['campaign_id'])
-        to_refresh[key]['messages'].append(message)
+        to_refresh[key].append(message)
         num_to_refresh += 1
 
     for key, val in to_refresh.iteritems():
