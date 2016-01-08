@@ -922,8 +922,8 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
             key = None
             if level == constants.PublisherBlacklistLevel.ACCOUNT:
                 key = [ad_group.campaign.account.id]
-                if source_type_id == constants.SourceType.OUTBRAIN:
-                    key.append(ad_group.campaign.account.outbrain_marketer_id)
+                if source_type_cache[source_type_id].type == constants.SourceType.OUTBRAIN:
+                    key.append(ad_group.campaign.account.outbrain_marketer_id or '')
             elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
                 key = [ad_group.campaign.id]
             elif level == constants.PublisherBlacklistLevel.ADGROUP:

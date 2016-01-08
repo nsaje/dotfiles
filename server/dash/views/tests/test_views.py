@@ -2043,7 +2043,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertEqual(1, publisher_blacklist_action.count())
         self.assertDictEqual(
             {
-                u"key": [1],
+                u"key": [1, ''],
                 u"state": 2,
                 u"level": u"account",
                 u"publishers": [{
