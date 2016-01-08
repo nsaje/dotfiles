@@ -141,10 +141,17 @@ def _aggregate_domains(blacklist):
 
     aggregated_pubs = {}
 
+    ret = []
     for blacklist_entry in blacklist:
+        # treat global publishers separately
+        if blacklist_entry.get('adgroup_id') is None:
+            ret.append({
+                'domain': blacklist_entry['domain'],
+            })
+            continue
+
         key = (blacklist_entry['adgroup_id'], blacklist_entry['exchange'])
         aggregated_pubs[key] = aggregated_pubs.get(key, []) + [blacklist_entry['domain']]
-    ret = []
     for adgroup_id, exchange in aggregated_pubs:
         domain_list = aggregated_pubs[ (adgroup_id, exchange) ]
         if len(domain_list) == 1:
