@@ -65,8 +65,30 @@ class ExportPlusTestCase(test.TestCase):
 
         content = export_plus.get_csv_content(fieldnames, self.data)
 
-        expected_content = 'Date,Cost,Data Cost,Clicks,CTR\r\n2014-07-01,1000.12,10.10,103,1.03\r\n2014-07-01,2000.12,23.10,203,2.03\r\n'
+        expected_content = '''Date,Cost,Data Cost,Clicks,CTR
+2014-07-01,1000.12,10.10,103,1.03
+2014-07-01,2000.12,23.10,203,2.03
+'''
+        self.assertEqual(content, expected_content)
 
+    def test_get_csv_content_with_statuses(self):
+        fieldnames = OrderedDict([
+            ('date', 'Date'),
+            ('cost', 'Cost'),
+            ('data_cost', 'Data Cost'),
+            ('clicks', 'Clicks'),
+            ('ctr', 'CTR'),
+            ('status', 'Status')
+        ])
+        data = self.data
+        data[0].append({'status': 1})
+        data[1].append({'status': 2})
+        content = export_plus.get_csv_content(fieldnames, self.data)
+
+        expected_content = '''Date,Cost,Data Cost,Clicks,CTR,Status
+2014-07-01,1000.12,10.10,103,1.03,1
+2014-07-01,2000.12,23.10,203,2.03,2
+'''
         self.assertEqual(content, expected_content)
 
     @patch('reports.api_contentads.query')
@@ -178,6 +200,34 @@ class ExportPlusTestCase(test.TestCase):
             'clicks': 203,
             'status': 2
         }])
+
+        rows_ordered_by_state = export_plus._generate_rows(
+            dimensions,
+            start_date,
+            end_date,
+            user,
+            'impressions',
+            True,
+            ['-state'],
+            source=sources,
+            ad_group=ad_group
+        )
+
+        mock_query.assert_called_with(
+            start_date,
+            end_date,
+            breakdown=dimensions,
+            order=['-state'],
+            conversion_goals=[],
+            ignore_diff_rows=True,
+            **{
+                'source': sources,
+                'ad_group': ad_group
+            }
+        )
+
+        self.assertEqual(rows_ordered_by_state[0].get('status'), 2)
+        self.assertEqual(rows_ordered_by_state[1].get('status'), 1)
 
     def test_get_report_filename(self):
         self.assertEqual(
