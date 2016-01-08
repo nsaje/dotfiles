@@ -154,7 +154,7 @@ def refresh_changed_contentadstats():
         changed_dates = daily_statements.reprocess_daily_statements(min(dates), campaign)
 
         to_refresh_dates = set(changed_dates).union(set(dates))
-        logger.ingo('Refreshed daily statements, refreshing Redshift stats for %s date(s)')
+        logger.info('Refreshed daily statements, refreshing Redshift stats for %s date(s)')
         for date in to_refresh_dates:
             refresh_contentadstats(date, campaign)
 
