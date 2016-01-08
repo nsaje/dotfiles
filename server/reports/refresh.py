@@ -189,7 +189,7 @@ def refresh_changed_daily_statements():
         logger.info('Refreshing changed content ad stats for campaign %s and date %s', campaign.id, date)
         refresh_contentadstats(date, campaign)
 
-        sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, val)
+        sqs_helper.delete_messages(settings.DAILY_STATEMENTS_CHANGE_QUEUE, val)
 
     statsd_helper.statsd_gauge('reports.refresh.refresh_changed_daily_statements_num', len(to_refresh))
 
