@@ -9,6 +9,7 @@ from reports import exc
 from reports.db_raw_helpers import MyCursor, is_collection
 
 JSON_KEY_DELIMITER = '--'
+S3_FILE_URI = 's3://{bucket_name}/{key}'
 
 # historically we have migrated data to Redshift partially
 # but there are differences and missing data for older
@@ -62,6 +63,17 @@ def insert_contentadstats(rows):
 
     cursor.execute(query, [])
     cursor.close()
+
+
+@statsd_timer('reports.redshift', 'load_contentadstats')
+def load_contentadstats(s3_key):
+    query = 'COPY contentadstats FROM \'%s\' '\
+            'CREDENTIALS \'aws_access_key_id=%s;aws_secret_access_key=%s\' FORMAT JSON \'auto\' MAXERROR 0'
+    params = [S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_key),
+              settings.AWS_ACCESS_KEY_ID,
+              settings.AWS_SECRET_ACCESS_KEY]
+
+    _execute(query, params)
 
 
 @statsd_timer('reports.redshift', 'insert_touchpointconversions')
@@ -155,9 +167,10 @@ def delete_publishers(start_date, end_date):
     _execute(query, params)
 
 
-@statsd_timer('reports.redshift', 'insert_publishers')
-def insert_publishers(s3_filename, aws_access_id, aws_access_secret):
-    query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV"
+@statsd_timer('reports.redshift', 'load_publishers')
+def load_publishers(s3_filename, aws_access_id, aws_access_secret):
+    query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS "\
+            "'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV MAXERROR 0"
     params = [s3_filename, aws_access_id, aws_access_secret]
     _execute(query, params)
 

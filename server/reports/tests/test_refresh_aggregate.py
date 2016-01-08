@@ -1,5 +1,6 @@
 from mock import patch, call
 import datetime
+import time
 
 from boto.sqs.message import Message
 from django import test
@@ -14,13 +15,15 @@ import dash.models
 from utils import test_helper
 
 
+@patch('reports.refresh.put_contentadstats_to_s3')
 @patch('reports.refresh.redshift')
 class RefreshContentAdStats(test.TestCase):
     fixtures = ['test_api_contentads.yaml']
 
-    def test_refresh_contentadstats(self, mock_redshift):
+    def test_refresh_contentadstats(self, mock_redshift, mock_put_contentadstats_to_s3):
 
         mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+        mock_put_contentadstats_to_s3.return_value = 's3_key'
 
         date = datetime.datetime(2015, 2, 1)
         campaign = dash.models.Campaign.objects.get(pk=1)
@@ -72,11 +75,12 @@ class RefreshContentAdStats(test.TestCase):
             'license_fee_nano': 0
         }]
 
-        self.assertEqual(1, mock_redshift.insert_contentadstats.call_count)
-        mock_redshift.insert_contentadstats.assert_has_call(test_helper.ListMatcher(rows))
+        mock_put_contentadstats_to_s3.assert_called_once_with(date, campaign, test_helper.ListMatcher(rows))
+        mock_redshift.load_contentadstats.assert_called_once_with('s3_key')
 
-    def test_diff_row(self, mock_redshift):
+    def test_diff_row(self, mock_redshift, mock_put_contentadstats_to_s3):
         mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+        mock_put_contentadstats_to_s3.return_value = 's3_key'
 
         date = datetime.datetime(2015, 2, 1)
         campaign = dash.models.Campaign.objects.get(pk=1)
@@ -108,16 +112,16 @@ class RefreshContentAdStats(test.TestCase):
             'adgroup_id': 1
         }]
 
-        self.assertEqual(2, mock_redshift.insert_contentadstats.call_count)
-        mock_redshift.insert_contentadstats.assert_has_call([])
-        mock_redshift.insert_contentadstats.assert_has_call(diff_rows)
+        mock_put_contentadstats_to_s3.assert_called_once_with(date, campaign, [])
+        mock_redshift.load_contentadstats.assert_called_once_with('s3_key')
+        mock_redshift.insert_contentadstats.assert_called_once_with(diff_rows)
 
-    def test_diff_row_no_ad_group_stats(self, mock_redshift):
+    def test_diff_row_no_ad_group_stats(self, mock_redshift, mock_put_contentadstats_to_s3):
         mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+        mock_put_contentadstats_to_s3.return_value = 's3_key'
 
         date = datetime.datetime(2015, 2, 1)
         campaign = dash.models.Campaign.objects.get(pk=1)
-
 
         refresh.refresh_contentadstats(date, campaign)
 
@@ -166,12 +170,13 @@ class RefreshContentAdStats(test.TestCase):
             'license_fee_nano': 0
         }]
 
-        self.assertEqual(1, mock_redshift.insert_contentadstats.call_count)
-        mock_redshift.insert_contentadstats.assert_has_call(test_helper.ListMatcher(rows))
+        mock_put_contentadstats_to_s3.assert_called_once_with(date, campaign, rows)
+        mock_redshift.load_contentadstats.assert_called_once_with('s3_key')
 
-    def test_refresh_contentadstats_budgets(self, mock_redshift):
+    def test_refresh_contentadstats_budgets(self, mock_redshift, mock_put_contentadstats_to_s3):
 
         mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+        mock_put_contentadstats_to_s3.return_value = 's3_key'
 
         date = datetime.datetime(2015, 2, 1)
         campaign = dash.models.Campaign.objects.get(pk=1)
@@ -231,12 +236,13 @@ class RefreshContentAdStats(test.TestCase):
             'license_fee_nano': 5000000000
         }]
 
-        self.assertEqual(1, mock_redshift.insert_contentadstats.call_count)
-        mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
+        mock_put_contentadstats_to_s3.assert_called_once_with(date, campaign, rows)
+        mock_redshift.load_contentadstats.assert_called_once_with('s3_key')
 
-    def test_refresh_contentadstats_budgets_overspend(self, mock_redshift):
+    def test_refresh_contentadstats_budgets_overspend(self, mock_redshift, mock_put_contentadstats_to_s3):
 
         mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+        mock_put_contentadstats_to_s3.return_value = 's3_key'
 
         date = datetime.datetime(2015, 2, 1)
         campaign = dash.models.Campaign.objects.get(pk=1)
@@ -297,10 +303,12 @@ class RefreshContentAdStats(test.TestCase):
             'license_fee_nano': 1000000000
         }]
 
-        self.assertEqual(1, mock_redshift.insert_contentadstats.call_count)
-        mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
+        mock_put_contentadstats_to_s3.assert_called_once_with(date, campaign, rows)
+        mock_redshift.load_contentadstats.assert_called_once_with('s3_key')
 
-    def test_refresh_contentadstats_no_source_id(self, mock_redshift):
+    def test_refresh_contentadstats_no_source_id(self, mock_redshift, mock_put_contentadstats_to_s3):
+        mock_put_contentadstats_to_s3.return_value = 's3_key'
+
         date = datetime.datetime(2015, 2, 2)
         campaign = dash.models.Campaign.objects.get(pk=2)
 
@@ -351,9 +359,12 @@ class RefreshContentAdStats(test.TestCase):
             'license_fee_nano': 0
         }]
 
-        mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
+        mock_put_contentadstats_to_s3.assert_called_once_with(date, campaign, rows)
+        mock_redshift.load_contentadstats.assert_called_once_with('s3_key')
 
-    def test_refresh_contentadstats_missing_contentad_stats(self, mock_redshift):
+    def test_refresh_contentadstats_missing_contentad_stats(self, mock_redshift, mock_put_contentadstats_to_s3):
+        mock_put_contentadstats_to_s3.return_value = 's3_key'
+
         date = datetime.datetime(2015, 2, 2)
         campaign = dash.models.Campaign.objects.get(pk=3)
 
@@ -384,7 +395,8 @@ class RefreshContentAdStats(test.TestCase):
             'license_fee_nano': 0
         }]
 
-        mock_redshift.insert_contentadstats.assert_called_with(test_helper.ListMatcher(rows))
+        mock_put_contentadstats_to_s3.assert_called_once_with(date, campaign, rows)
+        mock_redshift.load_contentadstats.assert_called_once_with('s3_key')
 
 
 class RefreshAdGroupStatsTestCase(test.TestCase):
@@ -569,3 +581,73 @@ class ContentAdStatsDataChangeTestCase(test.TestCase):
         ]
         mock_refresh_contentadstats.assert_has_calls(calls, any_order=True)
         mock_delete_messages.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, [message1, message2])
+
+
+class PutContentAdStatsToS3TestCase(test.TestCase):
+
+    fixtures = ['test_api_contentads.yaml']
+
+    @patch('utils.s3helpers.S3Helper')
+    @patch('reports.refresh.time')
+    def test_put_contentadstats_to_s3(self, mock_time, mock_s3helper):
+        mock_time.time.return_value = time.mktime(datetime.datetime(2016, 1, 1).timetuple())
+        campaign = dash.models.Campaign.objects.get(id=1)
+        date = datetime.date(2015, 2, 1)
+
+        test_rows = [{
+            'conversions': '{"omniture__transaction 2": 20, "ga__goal 1": 10}',
+            'cost_cc': 150000,
+            'pageviews': 1500,
+            'content_ad_id': 1,
+            'new_visits': 100,
+            'clicks': 100,
+            'total_time_on_site': 60,
+            'bounced_visits': 150,
+            'visits': 1000,
+            'source_id': 1,
+            'date': date,
+            'impressions': 1000000,
+            'data_cost_cc': 150000,
+            'adgroup_id': 1,
+            'campaign_id': 1,
+            'account_id': 1,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
+            'license_fee_nano': 0
+        }, {
+            'conversions': '{}',
+            'cost_cc': 250000,
+            'pageviews': 2500,
+            'content_ad_id': 2,
+            'new_visits': 200,
+            'clicks': 200,
+            'total_time_on_site': 70,
+            'bounced_visits': 250,
+            'visits': 2000,
+            'source_id': 1,
+            'date': date,
+            'impressions': 2000000,
+            'data_cost_cc': 250000,
+            'adgroup_id': 1,
+            'campaign_id': 1,
+            'account_id': 1,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
+            'license_fee_nano': 0
+        }]
+
+        refresh.put_contentadstats_to_s3(date, campaign, test_rows)
+
+        expected_key = 'contentadstats_load/2015/2/1/1/1451606400000.json'
+        expected_json =\
+            '{"conversions": "{\\"omniture__transaction 2\\": 20, \\"ga__goal 1\\": 10}", "license_fee_nano": 0, '\
+            '"cost_cc": 150000, "pageviews": 1500, "account_id": 1, "content_ad_id": 1, "new_visits": 100, '\
+            '"effective_cost_nano": 0, "total_time_on_site": 60, "bounced_visits": 150, "visits": 1000, '\
+            '"data_cost_cc": 150000, "date": "2015-02-01", "effective_data_cost_nano": 0, "source_id": 1, '\
+            '"impressions": 1000000, "clicks": 100, "adgroup_id": 1, "campaign_id": 1}\n{"conversions": "{}", '\
+            '"license_fee_nano": 0, "cost_cc": 250000, "pageviews": 2500, "account_id": 1, "content_ad_id": 2, '\
+            '"new_visits": 200, "effective_cost_nano": 0, "total_time_on_site": 70, "bounced_visits": 250, '\
+            '"visits": 2000, "data_cost_cc": 250000, "date": "2015-02-01", "effective_data_cost_nano": 0, '\
+            '"source_id": 1, "impressions": 2000000, "clicks": 200, "adgroup_id": 1, "campaign_id": 1}'
+
+        mock_s3helper.return_value.put.assert_called_once_with(expected_key, expected_json)
