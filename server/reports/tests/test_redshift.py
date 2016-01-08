@@ -51,7 +51,7 @@ class RedshiftTest(TestCase):
                 'CREDENTIALS \'aws_access_key_id=%s;aws_secret_access_key=%s\' FORMAT JSON \'auto\' MAXERROR 0'
         params = ['s3://test-bucket-stats/test/s3/key.json', 'access_key', 'secret_access_key']
 
-        mock_cursor.execute.assert_called_once_with(query, params)
+        mock_cursor.execute.assert_called_once_with(query % tuple(params), [])
 
     def test_sum_contentadstats(self, mock_cursor):
         redshift.sum_contentadstats()
