@@ -827,7 +827,7 @@ class FetchReportsByPublisherTestCase(TestCase):
         ob_insert_adgroup_date.assert_has_calls ([mock.call(
                                               datetime.date(2014,6,4),
                                               1,
-                                              "Outbrain",
+                                              "outbrain",
                                               [article_row],
                                               1.9043	# daily cost
                                               )])
