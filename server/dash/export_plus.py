@@ -45,7 +45,8 @@ FIELDNAMES = {
     'title': 'Title',
     'unspent_budget': 'Unspent Budget',
     'visits': 'Visits',
-    'date': 'Date'
+    'date': 'Date',
+    'license_fee': 'License Fee'
 }
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
@@ -54,7 +55,7 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
                        'daily_budget', 'current_daily_budget', 'yesterday_cost',
                        'image_urls', 'urlLink', 'upload_time',
                        'batch_name', 'display_url', 'brand_name',
-                       'description', 'call_to_action']
+                       'description', 'call_to_action', 'e_yesterday_cost']
 
 FORMAT_1_DECIMAL = ['avg_tos']
 
@@ -70,7 +71,7 @@ FORMAT_EMPTY_TO_0 = [
     'data_cost', 'cost', 'cpc',
     'clicks', 'impressions', 'ctr', 'visits', 'pageviews',
     'e_media_cost', 'media_cost', 'e_data_cost', 'total_cost',
-    'billing_cost', 'license_fee', 'ctr'
+    'billing_cost', 'license_fee'
 ]
 
 
@@ -85,8 +86,8 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering,
         conversion_goals=conversion_goals,
         constraints=constraints
     )
-
-    include_statuses = ordering == 'status'
+    ordering = _adjust_ordering(ordering, dimensions)
+    include_statuses = ordering in ['status', '-status']
     prefetched_data, budgets, statuses = _prefetch_rows_data(
         dimensions,
         constraints,
@@ -109,8 +110,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering,
                 id=stat['campaign']), statuses=statuses, budgets=budgets)
         elif 'account' in dimensions:
             stat = _populate_account_stat(stat, prefetched_data, statuses, budgets)
-        else:
-            if include_statuses:
+        elif include_statuses:
                 ad_group_sources = models.AdGroupSource.objects.filter(
                     ad_group__campaign__account__in=models.Account.objects.all().filter_by_user(user),
                     source=stat['source'])
@@ -119,11 +119,6 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering,
         if 'source' in stat:
             stat['source'] = source_names[stat['source']]
 
-    if 'date' in dimensions:
-        ordering = 'date'
-    else:
-        ordering = _adjust_ordering_by_name(ordering, dimensions)
-
     return sort_results(stats, [ordering])
 
 
@@ -131,31 +126,26 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets, include
     data = None
     budgets = None
     statuses = None
+    by_source = ('source' in dimensions)
     if 'content_ad' in dimensions:
         data = _prefetch_content_ad_data(constraints)
     elif 'ad_group' in dimensions:
         distinct_ad_groups = set(adg for adg in (stat['ad_group'] for stat in stats))
         data = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
-        if include_statuses:
-            statuses = _get_statuses(data, 'id')
+        statuses = None if not include_statuses else _prefetch_statuses(data, 'ad_group', by_source)
     elif 'campaign' in dimensions:
         distinct_campaigns = set(camp for camp in (stat['campaign'] for stat in stats))
         data = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
-        if include_statuses:
-            statuses = _get_statuses(models.AdGroup.objects.filter(campaign__in=data), 'campaign_id')
-        if include_budgets:
-            budgets = {camp.id:
-                       {'budget': budget.CampaignBudget(camp).get_total(),
-                        'spent_budget': budget.CampaignBudget(camp).get_spend()}
-                       for camp in data}
+        statuses = None if not include_statuses else _prefetch_statuses(data, 'campaign', by_source)
+        budgets = None if not include_budgets else {
+            camp.id: {'budget': budget.CampaignBudget(camp).get_total(),
+                      'spent_budget': budget.CampaignBudget(camp).get_spend()}
+            for camp in data}
     elif 'account' in dimensions:
         accounts = constraints['account'] if isinstance(
             constraints['account'], collections.Iterable) else [constraints['account']]
         data = {account.id: account for account in accounts}
-        if include_statuses:
-            statuses = _get_statuses(
-                models.AdGroup.objects.filter(campaign__account_id__in=accounts),
-                'campaign__account_id')
+        statuses = None if not include_statuses else _prefetch_statuses(accounts, 'account', by_source)
         if include_budgets:
             all_accounts_budget = budget.GlobalBudget().get_total_by_account()
             all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
@@ -166,11 +156,33 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets, include
     return data, budgets, statuses
 
 
-def _get_statuses(ad_groups, identifier):
+def _prefetch_statuses(entities, level, by_source):
+    if level == 'account':
+        model_class = models.Account
+        by_source_constraints = 'ad_group__campaign__account'
+        constraints = 'campaign__account_id'
+    elif level == 'campaign':
+        model_class = models.Campaign
+        by_source_constraints = 'ad_group__campaign'
+        constraints = 'campaign_id'
+    elif level == 'ad_group':
+        model_class = models.AdGroup
+        by_source_constraints = 'ad_group'
+        constraints = 'id'
+
+    if by_source:
+        ad_group_sources = helpers.get_active_ad_group_sources(model_class, entities)
+        return {entity.id: {ad_group_source.source.id:
+                _get_sources_state(ad_group_sources.filter(
+                    source=ad_group_source.source.id, **{by_source_constraints: entity}))
+                for ad_group_source in ad_group_sources.filter(**{by_source_constraints: entity})}
+                for entity in entities}
+
+    ad_groups = models.AdGroup.objects.filter(**{constraints+'__in': entities})
     ad_groups_settings = models.AdGroupSettings.objects.filter(
         ad_group__in=ad_groups).group_current_settings()
     return helpers.get_ad_group_state_by_sources_running_status(
-        ad_groups, ad_groups_settings, [], identifier)
+        ad_groups, ad_groups_settings, [], constraints)
 
 
 def _populate_content_ad_stat(stat, content_ad):
@@ -189,13 +201,9 @@ def _populate_ad_group_stat(stat, ad_group, statuses=None):
     stat['campaign'] = ad_group.campaign.name
     stat['account'] = ad_group.campaign.account.name
     if statuses:
+        stat['status'] = statuses[ad_group.id]
         if 'source' in stat:
-            stat['status'] = models.AdGroupSource.objects.get(
-                ad_group=stat['ad_group'],
-                source=stat['source']).get_current_settings().state
-        else:
-            stat['status'] = statuses[ad_group.id]
-
+            stat['status'] = stat['status'].get(stat['source'])
     stat['ad_group'] = ad_group.name
     return stat
 
@@ -208,11 +216,9 @@ def _populate_campaign_stat(stat, campaign, statuses=None, budgets=None):
         stat['available_budget'] = stat['budget'] - budgets[campaign.id].get('spent_budget')
         stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
     if statuses:
+        stat['status'] = statuses[campaign.id]
         if 'source' in stat:
-            stat['status'] = _get_sources_state(
-                models.AdGroupSource.objects.filter(ad_group__campaign=stat['campaign'], source=stat['source']))
-        else:
-            stat['status'] = statuses[campaign.id]
+            stat['status'] = stat['status'].get(stat['source'])
     return stat
 
 
@@ -222,19 +228,15 @@ def _populate_account_stat(stat, prefetched_data, statuses=None, budgets=None):
         stat['available_budget'] = stat['budget'] - budgets[stat['account']].get('spent_budget')
         stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
     if statuses:
+        stat['status'] = statuses[stat['account']]
         if 'source' in stat:
-            sources = models.AdGroupSource.objects.filter(
-                ad_group__campaign__account=stat['account'], source=stat['source'])
-            stat['status'] = _get_sources_state(sources)
-        else:
-            stat['status'] = statuses[stat['account']]
+            stat['status'] = stat['status'].get(stat['source'])
     stat['account'] = prefetched_data.get(stat['account']).name
     return stat
 
 
 def _get_sources_state(ad_group_sources):
-    if any(
-            s.state == constants.AdGroupSourceSettingsState.ACTIVE
+    if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE
             for s in helpers.get_ad_group_sources_states(ad_group_sources)):
         return constants.AdGroupSourceSettingsState.ACTIVE
     return constants.AdGroupSourceSettingsState.INACTIVE
@@ -260,8 +262,12 @@ def _prefetch_content_ad_data(constraints):
     return {c.id: c for c in content_ads}
 
 
-def _adjust_ordering_by_name(order, dimensions):
-    if order in ['name', '-name']:
+def _adjust_ordering(order, dimensions):
+    if 'date' in dimensions:
+        return 'date'
+    elif order in ['state', 'status_setting', '-state', '-status_setting']:
+        return ('-' if order[0] == '-' else '') + 'status'
+    elif order in ['name', '-name']:
         if 'source' in dimensions:
             return ('-' if order[0] == '-' else '') + 'source'
         elif 'ad_group' in dimensions:
@@ -289,8 +295,7 @@ def get_csv_content(fieldnames, data):
                 value = 0
             elif not value and key not in FORMAT_EMPTY_TO_0:
                 formatted_value = ''
-
-            if key in FORMAT_DIVIDE_100:
+            elif key in FORMAT_DIVIDE_100:
                 value = value / 100
 
             if value and key in FORMAT_1_DECIMAL:
@@ -366,7 +371,6 @@ class AllAccountsExport(object):
         dimensions = []
         exclude_fields = []
 
-        order = order if order not in ['state', 'status_setting'] else 'status'
         if breakdown == 'account':
             required_fields.extend(['account'])
             dimensions.extend(['account'])
@@ -426,7 +430,6 @@ class AccountExport(object):
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
-        order = order if order not in ['state', 'status_setting'] else 'status'
 
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
         include_budgets = any(
@@ -465,7 +468,6 @@ class CampaignExport(object):
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
 
         fieldnames = _get_fieldnames(required_fields, additional_fields)
-        order = order if order not in ['state', 'status_setting'] else 'status'
         conversion_goals = _get_conversion_goals(user, campaign)
         for conversion_goal in conversion_goals:
             if conversion_goal.get_view_key(conversion_goals) in additional_fields:
@@ -501,7 +503,6 @@ class AdGroupExport(object):
             dimensions.extend(['content_ad'])
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
-        order = order if order not in ['state', 'status_setting'] else 'status'
         fieldnames = _get_fieldnames(required_fields, additional_fields)
 
         conversion_goals = _get_conversion_goals(user, ad_group.campaign)
