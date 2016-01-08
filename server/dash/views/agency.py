@@ -1168,17 +1168,18 @@ class AccountAgency(api_common.BaseApiView):
         return ', '.join(change_strings)
 
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):
-        added_sources_text = None
+        sources_text_list = []
         if added_sources:
             added_sources_names = [source.name for source in added_sources]
             added_sources_text = u'Added allowed media sources ({})'.format(', '.join(added_sources_names))
+            sources_text_list.append(added_sources_text)
 
-        removed_sources_text = None
         if removed_sources:
             removed_sources_names = [source.name for source in removed_sources]
             removed_sources_text = u'Removed allowed media sources ({})'.format(', '.join(removed_sources_names))
+            sources_text_list.append(removed_sources_text)
 
-        return ', '.join(filter(None, [added_sources_text, removed_sources_text]))
+        return ', '.join(sources_text_list)
 
     def get_user_list(self, settings, perm_name):
         users = list(ZemUser.objects.get_users_with_perm(perm_name))
