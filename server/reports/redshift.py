@@ -223,6 +223,7 @@ class RSQ(object):
         return self
 
     def expand(self, rs_model):
+        # BUG: This code will overflow the stack in case there are too many WHERE conditions
         parts = []
         params = []
 
