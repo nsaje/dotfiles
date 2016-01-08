@@ -10,6 +10,9 @@ from dash import models as dash_models
 from utils import email_helper
 
 
+@override_settings(
+    SEND_NOTIFICATION_MAIL=True
+)
 class EmailHelperTestCase(TestCase):
     def setUp(self):
         request_factory = RequestFactory()
@@ -46,7 +49,7 @@ class EmailHelperTestCase(TestCase):
         self.user.email = None
         email_helper._send_email_to_user(self.user, self.request, None, None)
 
-        mock_trigger_event.called
+        self.assertTrue(mock_trigger_event.called)
 
     @override_settings(
         HOSTNAME='testhost',
@@ -57,11 +60,8 @@ class EmailHelperTestCase(TestCase):
     @patch('utils.email_helper.pagerduty_helper.trigger')
     def test_send_email_to_user_failed_user_none(self, mock_trigger_event):
         email_helper._send_email_to_user(None, self.request, None, None)
-        mock_trigger_event.called
+        self.assertTrue(mock_trigger_event.called)
 
-    @override_settings(
-        SEND_NOTIFICATION_MAIL=True
-    )
     def test_send_ad_group_notification_email(self):
         campaign_manager = User.objects.create_user('manager@user.com')
 
@@ -77,10 +77,10 @@ class EmailHelperTestCase(TestCase):
         ad_group = dash_models.AdGroup(id=8, campaign=campaign)
         ad_group.save(self.request)
 
-        email_helper.send_ad_group_notification_email(ad_group, self.request)
+        email_helper.send_ad_group_notification_email(ad_group, self.request, 'Something changed, yo')
 
         subject = 'Settings change - ad group , campaign , account '
-        body = 'Hi account manager of \n\nWe\'d like to notify you that test@user.com has made a change in the settings of the ad group , campaign , account . Please check https://testserver/ad_groups/8/agency for details.\n\nYours truly,\nZemanta\n    '
+        body = 'Hi account manager of \n\nWe\'d like to notify you that test@user.com has made the following change in the settings of the ad group , campaign , account : something changed, yo.\n\nPlease check https://testserver/ad_groups/8/agency for further details.\n\nYours truly,\nZemanta\n    '
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)
@@ -89,7 +89,7 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(mail.outbox[0].to, [campaign_manager.email])
 
         self.request.user = campaign_manager
-        email_helper.send_ad_group_notification_email( ad_group, self.request)
+        email_helper.send_ad_group_notification_email(ad_group, self.request, 'Test')
 
         self.assertEqual(len(mail.outbox), 1)
 
@@ -97,7 +97,7 @@ class EmailHelperTestCase(TestCase):
         HOSTNAME='testhost',
         PAGER_DUTY_ENABLED=True,
         PAGER_DUTY_URL='http://pagerduty.example.com',
-        PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
+        PAGER_DUTY_ADOPS_SERVICE_KEY='123abc',
     )
     @patch('utils.email_helper.pagerduty_helper.trigger')
     def test_send_ad_group_notification_email_failed(self, mock_trigger_event):
@@ -110,16 +110,12 @@ class EmailHelperTestCase(TestCase):
         ad_group = dash_models.AdGroup(campaign=campaign)
         ad_group.save(self.request)
 
+        campaign.get_current_settings().save(self.request)
 
-        self.user.email = None
+        email_helper.send_ad_group_notification_email(ad_group, self.request, 'Test')
 
-        email_helper.send_ad_group_notification_email(ad_group, self.request)
+        self.assertTrue(mock_trigger_event.called)
 
-        mock_trigger_event.called
-
-    @override_settings(
-        SEND_NOTIFICATION_MAIL=True
-    )
     def test_send_campaign_notification_email(self):
         campaign_manager = User.objects.create_user('manager@user.com')
 
@@ -132,10 +128,10 @@ class EmailHelperTestCase(TestCase):
         campaign_settings = dash_models.CampaignSettings(campaign=campaign, campaign_manager=campaign_manager)
         campaign_settings.save(self.request)
 
-        email_helper.send_campaign_notification_email(campaign, self.request)
+        email_helper.send_campaign_notification_email(campaign, self.request, 'Something changed, yo')
 
         subject = 'Settings change - campaign , account '
-        body = 'Hi account manager of \n\nWe\'d like to notify you that test@user.com has made a change in the settings or budget of campaign , account . Please check https://testserver/campaigns/48/agency for details.\n\nYours truly,\nZemanta\n    '
+        body = 'Hi account manager of \n\nWe\'d like to notify you that test@user.com has made the following change in the settings of campaign , account : something changed, yo.\n\nPlease check https://testserver/campaigns/48/agency for further details.\n\nYours truly,\nZemanta\n    '
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)
@@ -144,7 +140,7 @@ class EmailHelperTestCase(TestCase):
         self.assertEqual(mail.outbox[0].to, [campaign_manager.email])
 
         self.request.user = campaign_manager
-        email_helper.send_campaign_notification_email(campaign, self.request)
+        email_helper.send_campaign_notification_email(campaign, self.request, 'Test')
 
         self.assertEqual(len(mail.outbox), 1)
 
@@ -165,8 +161,59 @@ class EmailHelperTestCase(TestCase):
         ad_group = dash_models.AdGroup(campaign=campaign)
         ad_group.save(self.request)
 
-        self.user.email = None
+        campaign.get_current_settings().save(self.request)
 
-        email_helper.send_campaign_notification_email(campaign, self.request)
+        email_helper.send_campaign_notification_email(campaign, self.request, 'Test')
 
-        mock_trigger_event.called
+        self.assertTrue(mock_trigger_event.called)
+
+    def test_send_budget_notification_email(self):
+        campaign_manager = User.objects.create_user('manager@user.com')
+
+        account = dash_models.Account()
+        account.save(self.request)
+
+        campaign = dash_models.Campaign(account=account, id=48)
+        campaign.save(self.request)
+
+        campaign_settings = dash_models.CampaignSettings(campaign=campaign, campaign_manager=campaign_manager)
+        campaign_settings.save(self.request)
+
+        email_helper.send_budget_notification_email(campaign, self.request, 'Something changed, yo')
+
+        subject = 'Settings change - campaign , account '
+        body = 'Hi account manager of \n\nWe\'d like to notify you that test@user.com has made the following change in the budget of campaign , account : something changed, yo.\n\nPlease check https://testserver/campaigns/48/agency for further details.\n\nYours truly,\nZemanta\n    '
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, subject)
+        self.assertEqual(mail.outbox[0].body, body)
+        self.assertEqual(mail.outbox[0].from_email, 'Zemanta <{}>'.format(settings.FROM_EMAIL))
+        self.assertEqual(mail.outbox[0].to, [campaign_manager.email])
+
+        self.request.user = campaign_manager
+        email_helper.send_budget_notification_email(campaign, self.request, 'Test')
+
+        self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(
+        HOSTNAME='testhost',
+        PAGER_DUTY_ENABLED=True,
+        PAGER_DUTY_URL='http://pagerduty.example.com',
+        PAGER_DUTY_ADOPS_SERVICE_KEY='123abc'
+    )
+    @patch('utils.email_helper.pagerduty_helper.trigger')
+    def test_send_budget_notification_email_failed(self, mock_trigger_event):
+        account = dash_models.Account()
+        account.save(self.request)
+
+        campaign = dash_models.Campaign(account=account)
+        campaign.save(self.request)
+
+        ad_group = dash_models.AdGroup(campaign=campaign)
+        ad_group.save(self.request)
+
+        campaign.get_current_settings().save(self.request)
+
+        email_helper.send_budget_notification_email(campaign, self.request, 'Test')
+
+        self.assertTrue(mock_trigger_event.called)

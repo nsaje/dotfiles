@@ -1488,8 +1488,8 @@ class CampaignBudgetTest(TestCase):
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.budget.CampaignBudget')
-    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_put(self, mock_send_campaign_notification_email, MockCampaignBudget, mock_log_useraction):
+    @patch('dash.views.agency.email_helper.send_budget_notification_email')
+    def test_put(self, mock_send_budget_notification_email, MockCampaignBudget, mock_log_useraction):
         password = 'secret'
         self.user = User.objects.get(pk=1)
         self.client.login(username=self.user.email, password=password)
@@ -1527,7 +1527,7 @@ class CampaignBudgetTest(TestCase):
         MockCampaignBudget.return_value.edit.assert_called_with(
             revoke_amount=0, allocate_amount=1000.0, request=response.wsgi_request
         )
-        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
+        mock_send_budget_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.SET_CAMPAIGN_BUDGET,
@@ -1581,6 +1581,25 @@ class CampaignAgencyTest(TestCase):
         self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
         self.assertEqual(content['data']['settings']['iab_category'], 'IAB24')
 
+        test_dict = {
+            'datetime': '2014-06-04T05:58:21',
+            'changed_by': 'superuser@test.com',
+            'settings': [
+                {'name': 'Name', 'value': ''},
+                {'name': 'Campaign Manager', 'value': 'user@test.com'},
+                {'name': 'IAB Category', 'value': 'Uncategorized'},
+                {'name': 'Campaign Goal', 'value': 'new unique visitors'},
+                {'name': 'Goal Quantity', 'value': '0.00'},
+                {'name': 'Service Fee', 'value': '20%'},
+                {'name': 'Promotion Goal', 'value': 'Brand Building'},
+                {'name': 'Archived', 'value': 'False'},
+                {'name': 'Device targeting', 'value': 'Mobile'},
+                {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'}
+            ],
+            'show_old_settings': False,
+            'changes_text': 'Created settings'
+        }
+
         self.assertEqual(content['data']['history'], [{
             'datetime': '2014-06-04T05:58:21',
             'changed_by': 'superuser@test.com',
@@ -1588,13 +1607,13 @@ class CampaignAgencyTest(TestCase):
                 {'name': 'Name', 'value': ''},
                 {'name': 'Campaign Manager', 'value': 'user@test.com'},
                 {'name': 'IAB Category', 'value': 'Uncategorized'},
-                {'name': 'Campaign goal', 'value': 'new unique visitors'},
-                {'name': 'Goal quantity', 'value': '0.00'},
+                {'name': 'Campaign Goal', 'value': 'new unique visitors'},
+                {'name': 'Goal Quantity', 'value': '0.00'},
                 {'name': 'Service Fee', 'value': '20%'},
                 {'name': 'Promotion Goal', 'value': 'Brand Building'},
                 {'name': 'Archived', 'value': 'False'},
-                {'name': 'Target Devices', 'value': 'Mobile'},
-                {'name': 'Target Devices', 'value': 'New Caledonia, 501 New York, NY'}
+                {'name': 'Device targeting', 'value': 'Mobile'},
+                {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'}
             ],
             'show_old_settings': False,
             'changes_text': 'Created settings'
@@ -1627,7 +1646,7 @@ class CampaignAgencyTest(TestCase):
         self.assertEqual(settings.campaign_manager_id, 1)
         self.assertEqual(settings.iab_category, 'IAB17')
 
-        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
+        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS,
@@ -1725,7 +1744,7 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(settings.target_devices, ['desktop'])
         self.assertEqual(settings.target_regions, ['CA', '502'])
 
-        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
+        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.SET_CAMPAIGN_SETTINGS,
