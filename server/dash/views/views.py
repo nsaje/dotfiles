@@ -926,7 +926,7 @@ class AdGroupSources(api_common.BaseApiView):
             sources.append({
                 'id': source_settings.source.id,
                 'name': source_settings.source.name,
-                'can_target_existing_regions': self._can_target_existing_regions(source_settings.source,
+                'can_target_existing_regions': helpers._can_target_existing_regions(source_settings.source,
                                                                                  ad_group_settings)
             })
 
