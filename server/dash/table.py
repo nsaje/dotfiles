@@ -1623,6 +1623,9 @@ class AccountCampaignsTable(object):
 
 
 class PublishersTable(object):
+
+    MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS = 10
+
     def get(self, user, level_, filtered_sources, show_blacklisted_publishers, start_date, end_date, order, page, size, id_=None):
         if not user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
@@ -1693,7 +1696,11 @@ class PublishersTable(object):
                 name=domain,
                 everywhere=True
             )
-
+        # OB currently has a limit of 10 blocked publishers per marketer
+        count_ob_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
+            account=adgroup.campaign.account,
+            source__source_type__type=constants.SourceType.OUTBRAIN
+        ).count()
 
         for publisher_data in publishers_data:
             publisher_exchange = publisher_data['exchange'].lower()
@@ -1703,10 +1710,12 @@ class PublishersTable(object):
             known_source = source_cache_by_slug.get(publisher_exchange) is not None
 
             publisher_data['source_id'] = publisher_source.id if known_source else -1
+
             # there's a separate permission for Outbrain blacklisting which
             # might get removed in the future
             can_blacklist_outbrain_publisher = known_source and publisher_source.source_type.type == constants.SourceType.OUTBRAIN and\
-                user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status')
+                user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status') and\
+                count_ob_blacklisted_publishers < PublishersTable.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS
 
             if publisher_source.can_modify_publisher_blacklist_automatically() and\
                     known_source and\
