@@ -263,19 +263,20 @@ def _prefetch_content_ad_data(constraints):
 
 
 def _adjust_ordering(order, dimensions):
+    trailing_dash = ('-' if order[0] == '-' else '')
     if 'date' in dimensions:
         return 'date'
     elif order in ['state', 'status_setting', '-state', '-status_setting']:
-        return ('-' if order[0] == '-' else '') + 'status'
+        return trailing_dash + 'status'
     elif order in ['name', '-name']:
         if 'source' in dimensions:
-            return ('-' if order[0] == '-' else '') + 'source'
+            return trailing_dash + 'source'
         elif 'ad_group' in dimensions:
-            return ('-' if order[0] == '-' else '') + 'ad_group'
+            return trailing_dash + 'ad_group'
         elif 'campaign' in dimensions:
-            return ('-' if order[0] == '-' else '') + 'campaign'
+            return trailing_dash + 'campaign'
         elif 'account' in dimensions:
-            return ('-' if order[0] == '-' else '') + 'account'
+            return trailing_dash + 'account'
     return order
 
 

@@ -54,46 +54,7 @@ class ExportPlusTestCase(test.TestCase):
 
         redshift.STATS_DB_NAME = 'default'
 
-    def test_get_csv_content(self):
-        fieldnames = OrderedDict([
-            ('date', 'Date'),
-            ('cost', 'Cost'),
-            ('data_cost', 'Data Cost'),
-            ('clicks', 'Clicks'),
-            ('ctr', 'CTR')
-        ])
-
-        content = export_plus.get_csv_content(fieldnames, self.data)
-
-        expected_content = '''Date,Cost,Data Cost,Clicks,CTR
-2014-07-01,1000.12,10.10,103,1.03
-2014-07-01,2000.12,23.10,203,2.03
-'''
-        self.assertEqual(content, expected_content)
-
-    def test_get_csv_content_with_statuses(self):
-        fieldnames = OrderedDict([
-            ('date', 'Date'),
-            ('cost', 'Cost'),
-            ('data_cost', 'Data Cost'),
-            ('clicks', 'Clicks'),
-            ('ctr', 'CTR'),
-            ('status', 'Status')
-        ])
-        data = self.data
-        data[0].append({'status': 1})
-        data[1].append({'status': 2})
-        content = export_plus.get_csv_content(fieldnames, self.data)
-
-        expected_content = '''Date,Cost,Data Cost,Clicks,CTR,Status
-2014-07-01,1000.12,10.10,103,1.03,1
-2014-07-01,2000.12,23.10,203,2.03,2
-'''
-        self.assertEqual(content, expected_content)
-
-    @patch('reports.api_contentads.query')
-    def test_generate_rows(self, mock_query):
-        mock_stats = [{
+        self.mock_generate_rows_stats = [{
             'ad_group': 1,
             'campaign': 1,
             'account': 1,
@@ -123,7 +84,46 @@ class ExportPlusTestCase(test.TestCase):
             'source': 3
         }]
 
-        mock_query.return_value = mock_stats
+    def test_get_csv_content(self):
+        fieldnames = OrderedDict([
+            ('date', 'Date'),
+            ('cost', 'Cost'),
+            ('data_cost', 'Data Cost'),
+            ('clicks', 'Clicks'),
+            ('ctr', 'CTR')
+        ])
+
+        content = export_plus.get_csv_content(fieldnames, self.data)
+
+        expected_content = '''Date,Cost,Data Cost,Clicks,CTR\r
+2014-07-01,1000.12,10.10,103,1.03\r
+2014-07-01,2000.12,23.10,203,2.03\r
+'''
+        self.assertEqual(content, expected_content)
+
+    def test_get_csv_content_with_statuses(self):
+        fieldnames = OrderedDict([
+            ('date', 'Date'),
+            ('cost', 'Cost'),
+            ('data_cost', 'Data Cost'),
+            ('clicks', 'Clicks'),
+            ('ctr', 'CTR'),
+            ('status', 'Status')
+        ])
+        data = self.data
+        data[0]['status'] = 1
+        data[1]['status'] = 2
+        content = export_plus.get_csv_content(fieldnames, self.data)
+
+        expected_content = '''Date,Cost,Data Cost,Clicks,CTR,Status\r
+2014-07-01,1000.12,10.10,103,1.03,1\r
+2014-07-01,2000.12,23.10,203,2.03,2\r
+'''
+        self.assertEqual(content, expected_content)
+
+    @patch('reports.api_contentads.query')
+    def test_generate_rows(self, mock_query):
+        mock_query.return_value = self.mock_generate_rows_stats
 
         dimensions = ['ad_group', 'content_ad', 'source']
         start_date = datetime.date(2014, 6, 30)
@@ -201,14 +201,27 @@ class ExportPlusTestCase(test.TestCase):
             'status': 2
         }])
 
-        rows_ordered_by_state = export_plus._generate_rows(
+    @patch('reports.api_contentads.query')
+    def test_generate_rows_order_by_status(self, mock_query):
+        mock_query.return_value = self.mock_generate_rows_stats
+
+        dimensions = ['ad_group', 'content_ad', 'source']
+        start_date = datetime.date(2014, 6, 30)
+        end_date = datetime.date(2014, 7, 2)
+        user = User.objects.get(id=1)
+
+        sources = models.Source.objects.all()
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        rows = export_plus._generate_rows(
             dimensions,
             start_date,
             end_date,
             user,
-            'impressions',
+            '-state',
             True,
-            ['-state'],
+            [],
             source=sources,
             ad_group=ad_group
         )
@@ -217,7 +230,7 @@ class ExportPlusTestCase(test.TestCase):
             start_date,
             end_date,
             breakdown=dimensions,
-            order=['-state'],
+            order=[],
             conversion_goals=[],
             ignore_diff_rows=True,
             **{
@@ -225,9 +238,8 @@ class ExportPlusTestCase(test.TestCase):
                 'ad_group': ad_group
             }
         )
-
-        self.assertEqual(rows_ordered_by_state[0].get('status'), 2)
-        self.assertEqual(rows_ordered_by_state[1].get('status'), 1)
+        self.assertEqual(rows[0].get('status'), 2)
+        self.assertEqual(rows[1].get('status'), 1)
 
     def test_get_report_filename(self):
         self.assertEqual(
