@@ -417,7 +417,7 @@ def _fetch_reports_by_publisher_callback(action, data):
 
         reports.api_publishers.ob_insert_adgroup_date(date,
                                                       ad_group.id,
-                                                      "Outbrain",  # Hardcoding this at the time, the problem is that source.name can change
+                                                      "outbrain",  # Hardcoding this at the time, the problem is that source.name can change
                                                       rows_raw,
                                                       cost)
         _set_reports_cache(data, ad_group, source, date, change_unique_key)
