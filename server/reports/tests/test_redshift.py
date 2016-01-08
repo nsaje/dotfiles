@@ -41,14 +41,17 @@ class RedshiftTest(TestCase):
     @override_settings(AWS_ACCESS_KEY_ID='access_key')
     @override_settings(AWS_SECRET_ACCESS_KEY='secret_access_key')
     @override_settings(S3_BUCKET_STATS='test-bucket-stats')
-    def test_load_contentadstats(self, mock_cursor):
+    def test_load_contentadstats(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = MyCursor(mock_cursor)
+
         redshift.load_contentadstats('test/s3/key.json')
 
         query = 'COPY contentadstats FROM \'%s\' '\
                 'CREDENTIALS \'aws_access_key_id=%s;aws_secret_access_key=%s\' FORMAT JSON \'auto\' MAXERROR 0'
         params = ['s3://test-bucket-stats/test/s3/key.json', 'access_key', 'secret_access_key']
 
-        mock_cursor().execute.assert_called_once_with(query, params)
+        mock_cursor.execute.assert_called_once_with(query, params)
 
     def test_sum_contentadstats(self, mock_cursor):
         redshift.sum_contentadstats()
