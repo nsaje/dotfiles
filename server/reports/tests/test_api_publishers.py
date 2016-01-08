@@ -243,6 +243,51 @@ class ApiPublishersTest(TestCase):
 
         self.assertIn(' OR '.join(['(domain=%s AND adgroup_id=%s AND exchange=%s)'] * 2), self._get_query())
 
+    def test_query_blacklisted_joined(self):
+        # this doesn't really test blacklisting but runs the functions to make
+        # sure blacklisting condition creation executes
+        # setup some test data
+        self.get_cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'ctr': 0.0,
+            'exchange': 'gumgum',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+
+        # setup some blacklisted publisher entries
+        blacklist = [
+            {
+                'domain': 'test.com',
+                'adgroup_id': 1,
+                'exchange': 'triplelift'
+            },
+            {
+                'domain': 'test1.com',
+                'adgroup_id': 1,
+                'exchange': 'triplelift',
+            },
+        ]
+
+        constraints = {'ad_group': 1}
+
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date = datetime.timedelta(days=31)
+
+        publishers_data = api_publishers.query_blacklisted_publishers(
+            start_date, end_date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['-cost'],
+            constraints=constraints,
+            blacklist=blacklist
+        )
+
+        self.assertIn('(domain IN (%s,%s) AND adgroup_id=%s AND exchange=%s)', self._get_query())
+
 
 @mock.patch('reports.redshift.get_cursor')
 class ApiPublishersInsertTest(TestCase):
