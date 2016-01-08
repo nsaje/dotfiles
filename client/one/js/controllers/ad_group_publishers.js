@@ -258,7 +258,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             if (row !== undefined) {
                 row.disabledSelection = !row.can_blacklist_publisher;
                 if (!row.can_blacklist_publisher) {
-                    row.blacklistInfo = "This publisher can't be blacklisted because the media source doesn't support publisher blacklisting. ";
+                    row.blacklistInfo = "This publisher can't be blacklisted because the media source doesn't support publisher blacklisting or the limit of max blacklisted publisher on this particular media source has been reached. ";
                     row.blacklistInfo = row.blacklistInfo.concat("Contact your account manager for further details.");
                 } else {
                     row.blacklistInfo = null;
