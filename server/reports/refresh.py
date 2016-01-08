@@ -155,8 +155,7 @@ def refresh_changed_contentadstats():
         changed_dates = daily_statements.reprocess_daily_statements(min(dates), campaign)
 
         for date in set(changed_dates).union(set(dates)):
-            notify_daily_statements_change(date, campaign)
-            refresh_contentadstats(date, campaign)
+            notify_daily_statements_change(date, campaign.id)
 
         sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, val['messages'])
 
