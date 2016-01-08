@@ -183,8 +183,8 @@ def refresh_changed_daily_statements():
         to_refresh[key].append(message)
 
     for key, val in to_refresh.iteritems():
-        date = key[0]
-        campaign = key[1]
+        date = datetime.datetime.strptime(key[0], '%Y-%m-%d').date()
+        campaign = dash.models.Campaign.objects.get(id=key[1])
 
         logger.info('Refreshing changed content ad stats for campaign %s and date %s', campaign.id, date)
         refresh_contentadstats(date, campaign)
