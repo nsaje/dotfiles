@@ -1742,23 +1742,13 @@ class PublishersTable(object):
             publisher_domain = publisher_data['domain']
             publisher_source = source_cache_by_slug.get(publisher_exchange) or publisher_exchange
 
-            known_source = source_cache_by_slug.get(publisher_exchange) is not None
-
-            publisher_data['source_id'] = publisher_source.id if known_source else -1
-
-            # there's a separate permission for Outbrain blacklisting which
-            # might get removed in the future
-            can_blacklist_outbrain_publisher = known_source and publisher_source.source_type.type == constants.SourceType.OUTBRAIN and\
-                user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status') and\
-                count_ob_blacklisted_publishers < constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT
-
-            if publisher_source.can_modify_publisher_blacklist_automatically() and\
-                    known_source and\
-                    (publisher_source.source_type.type != constants.SourceType.OUTBRAIN or
-                        can_blacklist_outbrain_publisher):
-                publisher_data['can_blacklist_publisher'] = True
-            else:
-                publisher_data['can_blacklist_publisher'] = False
+            publisher_data['can_blacklist_publisher'] =\
+                self._can_blacklist_publisher(
+                    user,
+                    publisher_data,
+                    count_ob_blacklisted_publishers,
+                    source_cache_by_slug
+                )
 
             if source_cache_by_slug.get(publisher_exchange) is None:
                 continue
@@ -1782,6 +1772,29 @@ class PublishersTable(object):
                     publisher_data['blacklisted_level_description'] = constants.PublisherBlacklistLevel.verbose(level)
                     if blacklisted_pub.external_id is not None:
                         publisher_data['external_id'] = blacklisted_pub.external_id
+
+    def _can_blacklist_publisher(self, user, publisher_data, count_ob_blacklisted_publishers, source_cache_by_slug):
+        publisher_exchange = publisher_data['exchange'].lower()
+        publisher_domain = publisher_data['domain']
+        publisher_source = source_cache_by_slug.get(publisher_exchange) or publisher_exchange
+
+        known_source = source_cache_by_slug.get(publisher_exchange) is not None
+
+        publisher_data['source_id'] = publisher_source.id if known_source else -1
+
+        # there's a separate permission for Outbrain blacklisting which
+        # might get removed in the future
+        can_blacklist_outbrain_publisher = known_source and publisher_source.source_type.type == constants.SourceType.OUTBRAIN and\
+            user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status') and\
+            count_ob_blacklisted_publishers < constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT
+
+        if publisher_source.can_modify_publisher_blacklist_automatically() and\
+                known_source and\
+                (publisher_source.source_type.type != constants.SourceType.OUTBRAIN or
+                    can_blacklist_outbrain_publisher):
+            return True
+        else:
+            return False
 
     def _query_filtered_publishers(self, show_blacklisted_publishers, start_date, end_date, adgroup, constraints, order):
         if not show_blacklisted_publishers or\
