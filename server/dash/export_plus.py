@@ -144,8 +144,9 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets, include
             constraints['account'], collections.Iterable) else [constraints['account']]
         data = {account.id: account for account in accounts}
 
-    statuses = None if not include_statuses else _prefetch_statuses(data, level, by_source)
-    budgets = None if not include_budgets else _prefetch_budgets(data, level)
+    if level in ['account', 'campaign']:
+        statuses = None if not include_statuses else _prefetch_statuses(data, level, by_source)
+        budgets = None if not include_budgets else _prefetch_budgets(data, level)
     return data, budgets, statuses
 
 
@@ -158,10 +159,10 @@ def _prefetch_budgets(data, level):
                  'spent_budget': all_accounts_total_spend.get(acc, 0)}
                 for acc in data}
     elif level == 'campaign':
-        return {
-            camp.id: {'budget': budget.CampaignBudget(camp).get_total(),
-                      'spent_budget': budget.CampaignBudget(camp).get_spend()}
-            for camp in data}
+        return {camp.id:
+                {'budget': budget.CampaignBudget(camp).get_total(),
+                 'spent_budget': budget.CampaignBudget(camp).get_spend()}
+                for camp in data}
     return None
 
 
@@ -330,6 +331,7 @@ def _format_decimals(value, field):
         return '{:.2f}'.format(value)
     elif value and field in FORMAT_3_DECIMALS:
         return '{:.3f}'.format(value)
+    return value
 
 
 def _get_fieldnames(required_fields, additional_fields, exclude=[]):
