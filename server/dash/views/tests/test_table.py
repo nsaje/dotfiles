@@ -1086,6 +1086,148 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'AdsNative', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123, u'source_id': 1})
     """
 
+    def test_get_outbrain_blacklisted_over_quota(self, mock_query):
+        date = datetime.date(2015, 2, 22)
+
+        for i in xrange(10):
+            models.PublisherBlacklist.objects.create(
+                account=models.Account.objects.get(pk=1),
+                source=models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN),
+                name='test_{}'.format(i),
+                status=constants.PublisherStatus.BLACKLISTED,
+            )
+
+        mock_stats1 = [{
+            'clicks': 123,
+            'cost': 2.4,
+            'data_cost': 0,
+            'media_cost': 2.4,
+            'e_data_cost': 0,
+            'e_media_cost': 2.4,
+            'license_fee': 0.1,
+            'external_id': '12345',
+            'billing_cost': 2.5,
+            'total_cost': 2.5,
+            'cpc': 1.3,
+            'ctr': 100.0,
+            'impressions': 10560,
+            'date': date.isoformat(),
+            'domain': 'test_1',
+            'exchange': 'outbrain',
+        }]
+        mock_stats2 = {
+            'clicks': 323,
+            'cost': 2.1,
+            'data_cost': 1.9,
+            'media_cost': 2.1,
+            'e_data_cost': 1.9,
+            'e_media_cost': 2.1,
+            'license_fee': 0.2,
+            'external_id': '12345',
+            'billing_cost': 4.2,
+            'total_cost': 4.2,
+            'cpc': 1.2,
+            'ctr': 99.0,
+            'impressions': 1560,
+            'date': date.isoformat(),
+        }
+        mock_query.side_effect = [mock_stats1, mock_stats2]
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        params = {
+            'page': 1,
+            'order': 'domain',
+            'size': 2,
+            'start_date': date.isoformat(),
+            'end_date': date.isoformat(),
+        }
+
+        response = self.client.get(
+            reverse('ad_group_publishers_table', kwargs={'id_': ad_group.id, 'level_': 'ad_groups'}),
+            params,
+            follow=True
+        )
+
+        sources_matcher = QuerySetMatcher(models.Source.objects.all())
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['domain'],
+            constraints={'ad_group': ad_group.id}
+        )
+
+        mock_query.assert_any_call(
+            date,
+            date,
+            constraints={"ad_group": ad_group.id},
+        )
+
+        result = json.loads(response.content)
+
+        self.assertIn('success', result)
+        self.assertEqual(result['success'], True)
+
+        self.assertIn('data', result)
+
+        self.assertIn('order', result['data'])
+        self.assertEqual(result['data']['order'], 'domain')
+
+        self.assertIn('pagination', result['data'])
+        self.assertEqual(result['data']['pagination'], {
+            'count': 1,
+            'currentPage': 1,
+            'endIndex': 1,
+            'numPages': 1,
+            'size': 2,
+            'startIndex': 1
+        })
+
+        self.assertIn('rows', result['data'])
+
+        expected_row_1 = {
+            u'clicks': 123,
+            u'data_cost': 0,
+            u'media_cost': 2.4,
+            u'e_data_cost': 0,
+            u'e_media_cost': 2.4,
+            u'external_id': '12345',
+            u'license_fee': 0.1,
+            u'billing_cost': 2.5,
+            u'total_cost': 2.5,
+            u'cpc': 1.3,
+            u'ctr': 100.0,
+            u'domain': None,
+            u'domain_link': u'',
+            u'blacklisted': u'Blacklisted',
+            u'can_blacklist_publisher': False,
+            u'blacklisted_level': 'account',
+            u'blacklisted_level_description': 'Blacklisted in this account',
+            u'exchange': u'Outbrain',
+            u'source_id': 3,
+            u'impressions': 10560,
+            u'domain': 'test_1',
+            u'domain_link': 'http://test_1',
+        }
+
+        self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
+
+        self.assertIn('totals', result['data'])
+        self.assertEqual(result['data']['totals'], {	u'clicks': 323,
+                                                        u'cpc': 1.2,
+                                                        u'ctr': 99.0,
+                                                        u'media_cost': 2.1,
+                                                        u'license_fee': 0.2,
+                                                        u'total_cost': 4.2,
+                                                        u'billing_cost': 4.2,
+                                                        u'e_data_cost': 1.9,
+                                                        u'data_cost': 1.9,
+                                                        u'e_media_cost': 2.1,
+                                                        u'impressions': 1560})
+
+
     def test_get_reverse_order(self, mock_query):
         date = datetime.date(2015, 2, 22)
 
