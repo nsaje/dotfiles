@@ -172,7 +172,7 @@ def delete_publishers(start_date, end_date):
 
 
 @statsd_timer('reports.redshift', 'load_b1_publishers')
-def load_b1_publishers(s3_key, aws_access_id, aws_access_secret):
+def load_b1_publishers(s3_key):
     query = "COPY b1_publishers_1 FROM %s CREDENTIALS "\
             "%s FORMAT CSV MAXERROR 0"
 

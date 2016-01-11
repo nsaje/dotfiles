@@ -47,11 +47,11 @@ class RedshiftTest(TestCase):
 
         redshift.load_contentadstats('test/s3/key.json')
 
-        query = 'COPY contentadstats FROM \'%s\' '\
-                'CREDENTIALS \'aws_access_key_id=%s;aws_secret_access_key=%s\' FORMAT JSON \'auto\' MAXERROR 0'
-        params = ['s3://test-bucket-stats/test/s3/key.json', 'access_key', 'secret_access_key']
+        query = 'COPY contentadstats FROM %s CREDENTIALS %s FORMAT JSON \'auto\' MAXERROR 0'
+        params = ['s3://test-bucket-stats/test/s3/key.json',
+                  'aws_access_key_id=access_key;aws_secret_access_key=secret_access_key']
 
-        mock_cursor.execute.assert_called_once_with(query % tuple(params), [])
+        mock_cursor.execute.assert_called_once_with(query, params)
 
     def test_sum_contentadstats(self, mock_cursor):
         redshift.sum_contentadstats()
@@ -137,18 +137,17 @@ class RedshiftTest(TestCase):
         params = ['2015-01-01', '2015-01-31']
         mock_cursor.execute.assert_called_with(query, params)
 
+    @override_settings(AWS_ACCESS_KEY_ID='access_key')
+    @override_settings(AWS_SECRET_ACCESS_KEY='secret_access_key')
     def test_load_b1_publishers(self, mock_get_cursor):
         mock_cursor = Mock()
         mock_get_cursor.return_value = MyCursor(mock_cursor)
 
         s3_key = 'publishers/2015-01-01-2015-01-31--123456789/part-00000'
-        aws_access_id = 'xxxxxxx'
-        aws_access_secret = 'xxxxxxxx'
-        redshift.load_b1_publishers(s3_key, aws_access_id, aws_access_secret)
+        redshift.load_b1_publishers(s3_key)
 
-        query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS "\
-                "'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV MAXERROR 0"
-        params = [s3_key, aws_access_id, aws_access_secret]
+        query = "COPY b1_publishers_1 FROM %s CREDENTIALS %s FORMAT CSV MAXERROR 0"
+        params = ['s3:///' + s3_key, 'aws_access_key_id=access_key;aws_secret_access_key=secret_access_key']
         mock_cursor.execute.assert_called_with(query, params)
 
     def test_vacuum_touchpoint_conversions(self, mock_get_cursor):
