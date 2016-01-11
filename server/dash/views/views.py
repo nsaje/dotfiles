@@ -1712,11 +1712,12 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
             if level == constants.PublisherBlacklistLevel.ACCOUNT and\
                     source.source_type.type == constants.SourceType.OUTBRAIN and\
-                    count_ob_blacklisted_publishers >= 10:
+                    count_ob_blacklisted_publishers >= constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT:
                 # don't request more than 10 publisher on Outbrain per
                 # account to be attempted to be blacklisted
                 # because actions will fail and manual cleanup will be
                 # necessary
+                logger.error('Attempted to blacklist more than 10 publishers per account on Outbrain')
                 continue
 
             if level == constants.PublisherBlacklistLevel.ACCOUNT and\
