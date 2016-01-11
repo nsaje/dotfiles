@@ -955,6 +955,20 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_setting
     return 'This media source doesn\'t support setting this value through the dashboard.'
 
 
+def add_source_to_ad_group(default_source_settings, ad_group):
+    ad_group_source = models.AdGroupSource(
+        source=default_source_settings.source,
+        ad_group=ad_group,
+        source_credentials=default_source_settings.credentials,
+        can_manage_content_ads=default_source_settings.source.can_manage_content_ads(),
+    )
+
+    if default_source_settings.source.source_type.type == constants.SourceType.GRAVITY:
+        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
+
+    return ad_group_source
+
+
 def set_ad_group_source_defaults(default_source_settings, ad_group_settings, ad_group_source,
                                  request, send_action=False):
 
@@ -1010,32 +1024,7 @@ def ad_group_has_available_budget(ad_group):
     return bool(available)
 
 
-def add_source_to_ad_group(request, ad_group, source):
-    if models.AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
-        raise exc.ForbiddenError('{} media source for ad group {} already exists.'.format(source.name, ad_group.id))
-
-    if not _can_target_existing_regions(source, ad_group.get_current_settings()):
-        raise exc.ValidationError(
-                '{} media source can not be added because it does not support selected region targeting.'
-                .format(source.name))
-
-    default_settings = _get_source_default_settings(source)
-    ad_group_source = _create_ad_group_source(ad_group, default_settings)
-    ad_group_source.save(request)
-
-    external_name = ad_group_source.get_external_name()
-    actionlog.api.create_campaign(ad_group_source, external_name, request)
-    _add_history_campaign_created(request, ad_group_source)
-
-    log_useraction_if_necessary(request, constants.UserActionType.CREATE_MEDIA_SOURCE_CAMPAIGN, ad_group=ad_group)
-
-    if request.user.has_perm('zemauth.add_media_sources_automatically'):
-        set_ad_group_source_defaults(default_settings, ad_group.get_current_settings(), ad_group_source, request)
-
-    return ad_group_source
-
-
-def _get_source_default_settings(source):
+def get_source_default_settings(source):
     try:
         default_settings = models.DefaultSourceSettings.objects.get(source=source)
     except models.DefaultSourceSettings.DoesNotExist:
@@ -1045,30 +1034,3 @@ def _get_source_default_settings(source):
         raise exc.MissingDataError('No default credentials set in {}.'.format(default_settings))
 
     return default_settings
-
-
-def _create_ad_group_source(ad_group, settings):
-    ad_group_source = models.AdGroupSource(
-            source=settings.source,
-            ad_group=ad_group,
-            source_credentials=settings.credentials,
-            can_manage_content_ads=settings.source.can_manage_content_ads(),
-    )
-
-    if settings.source.source_type.type == constants.SourceType.GRAVITY:
-        ad_group_source.source_campaign_key = settings.SOURCE_CAMPAIGN_KEY_PENDING_VALUE
-
-    return ad_group_source
-
-
-def _add_history_campaign_created(request, ad_group_source):
-    changes_text = '{} campaign created.'.format(ad_group_source.source.name)
-
-    settings = ad_group_source.ad_group.get_current_settings().copy_settings()
-    settings.changes_text = changes_text
-    settings.save(request)
-
-
-def _can_target_existing_regions(source, ad_group_settings):
-    return region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) or \
-           region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings)
