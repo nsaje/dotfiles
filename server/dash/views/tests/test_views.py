@@ -2100,6 +2100,57 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             )
             self.assertEqual(0, publisher_blacklist_action.count())
 
+    @patch('reports.redshift.get_cursor')
+    def test_post_outbrain_over_quota(self, cursor):
+        for i in xrange(10):
+            models.PublisherBlacklist.objects.create(
+                account=models.Account.objects.get(pk=1),
+                source=models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN),
+                name='test_{}'.format(i),
+                status=constants.PublisherStatus.BLACKLISTED,
+            )
+
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'Test',
+            'ctr': 0.0,
+            'exchange': 'outbrain',
+            'external_id': 'sfdafkl1230899012asldas',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.ACCOUNT,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": []
+        }
+        res = self._post_publisher_blacklist(1, payload)
+
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(0, publisher_blacklist_action.count())
+        self.assertTrue(res['success'])
+
+        self.assertEqual(10, models.PublisherBlacklist.objects.count())
+        """
+        publisher_blacklist = models.PublisherBlacklist.objects.first()
+        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
+        self.assertEqual(1, publisher_blacklist.account.id)
+        self.assertEqual('outbrain', publisher_blacklist.source.tracking_slug)
+        self.assertEqual(u'Test', publisher_blacklist.name)
+        """
+
 
 class AdGroupOverviewTest(TestCase):
     fixtures = ['test_api.yaml']
