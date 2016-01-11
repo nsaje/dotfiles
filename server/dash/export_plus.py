@@ -144,7 +144,7 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets, include
             constraints['account'], collections.Iterable) else [constraints['account']]
         data = {account.id: account for account in accounts}
 
-    if level in ['account', 'campaign']:
+    if level in ['account', 'campaign', 'ad_group']:
         statuses = None if not include_statuses else _prefetch_statuses(data, level, by_source)
         budgets = None if not include_budgets else _prefetch_budgets(data, level)
     return data, budgets, statuses
