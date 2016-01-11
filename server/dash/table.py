@@ -1662,64 +1662,13 @@ class PublishersTable(object):
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
         publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(publishers_data, page, size)
 
-        source_cache_by_slug = {
-            'outbrain': models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN)
-        }
+        # self._annotate_publishers(publishers_data
+        self._annotate_publishers(publishers_data, user, adgroup)
 
-        pub_blacklist_qs = self._construct_pub_bl_queryset(publishers_data, adgroup, source_cache_by_slug)
-
-        # OB currently has a limit of 10 blocked publishers per marketer
         count_ob_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
             account=adgroup.campaign.account,
             source__source_type__type=constants.SourceType.OUTBRAIN
         ).count()
-
-        # self._annotate_publishers(publishers_data
-        for publisher_data in publishers_data:
-            publisher_exchange = publisher_data['exchange'].lower()
-            publisher_domain = publisher_data['domain']
-            publisher_source = source_cache_by_slug.get(publisher_exchange) or publisher_exchange
-
-            known_source = source_cache_by_slug.get(publisher_exchange) is not None
-
-            publisher_data['source_id'] = publisher_source.id if known_source else -1
-
-            # there's a separate permission for Outbrain blacklisting which
-            # might get removed in the future
-            can_blacklist_outbrain_publisher = known_source and publisher_source.source_type.type == constants.SourceType.OUTBRAIN and\
-                user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status') and\
-                count_ob_blacklisted_publishers < constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT
-
-            if publisher_source.can_modify_publisher_blacklist_automatically() and\
-                    known_source and\
-                    (publisher_source.source_type.type != constants.SourceType.OUTBRAIN or
-                     can_blacklist_outbrain_publisher):
-                publisher_data['can_blacklist_publisher'] = True
-            else:
-                publisher_data['can_blacklist_publisher'] = False
-
-            if source_cache_by_slug.get(publisher_exchange) is None:
-                continue
-
-            for blacklisted_pub in pub_blacklist_qs:
-                globally_blacklisted = publisher_domain == blacklisted_pub.name and\
-                    blacklisted_pub.everywhere
-
-                if publisher_domain == blacklisted_pub.name and\
-                        publisher_source == blacklisted_pub.source and\
-                        (blacklisted_pub.account == adgroup.campaign.account or
-                         blacklisted_pub.campaign == adgroup.campaign or
-                         blacklisted_pub.ad_group == adgroup) or\
-                        globally_blacklisted:
-                    if blacklisted_pub.status == constants.PublisherStatus.BLACKLISTED:
-                        publisher_data['blacklisted'] = 'Blacklisted'
-                    elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
-                        publisher_data['blacklisted'] = 'Pending'
-                    level = blacklisted_pub.get_blacklist_level()
-                    publisher_data['blacklisted_level'] = level
-                    publisher_data['blacklisted_level_description'] = constants.PublisherBlacklistLevel.verbose(level)
-                    if blacklisted_pub.external_id is not None:
-                        publisher_data['external_id'] = blacklisted_pub.external_id
 
         response = {
             'rows': self.get_rows(
@@ -1744,7 +1693,11 @@ class PublishersTable(object):
         }
         return response
 
-    def _construct_pub_bl_queryset(self, publishers_data, adgroup, source_cache_by_slug):
+    def _construct_pub_bl_queryset(self, publishers_data, adgroup):
+        source_cache_by_slug = {
+            'outbrain': models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN)
+        }
+
         pub_blacklist_qs = models.PublisherBlacklist.objects.none()
         for publisher_data in publishers_data:
             publisher_data['blacklisted'] = 'Active'
@@ -1773,7 +1726,62 @@ class PublishersTable(object):
                 name=domain,
                 everywhere=True
             )
-        return pub_blacklist_qs
+        return pub_blacklist_qs, source_cache_by_slug
+
+    def _annotate_publishers(self, publishers_data, user, adgroup):
+        pub_blacklist_qs, source_cache_by_slug = self._construct_pub_bl_queryset(publishers_data, adgroup)
+
+        # OB currently has a limit of 10 blocked publishers per marketer
+        count_ob_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
+            account=adgroup.campaign.account,
+            source__source_type__type=constants.SourceType.OUTBRAIN
+        ).count()
+
+        for publisher_data in publishers_data:
+            publisher_exchange = publisher_data['exchange'].lower()
+            publisher_domain = publisher_data['domain']
+            publisher_source = source_cache_by_slug.get(publisher_exchange) or publisher_exchange
+
+            known_source = source_cache_by_slug.get(publisher_exchange) is not None
+
+            publisher_data['source_id'] = publisher_source.id if known_source else -1
+
+            # there's a separate permission for Outbrain blacklisting which
+            # might get removed in the future
+            can_blacklist_outbrain_publisher = known_source and publisher_source.source_type.type == constants.SourceType.OUTBRAIN and\
+                user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status') and\
+                count_ob_blacklisted_publishers < constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT
+
+            if publisher_source.can_modify_publisher_blacklist_automatically() and\
+                    known_source and\
+                    (publisher_source.source_type.type != constants.SourceType.OUTBRAIN or
+                        can_blacklist_outbrain_publisher):
+                publisher_data['can_blacklist_publisher'] = True
+            else:
+                publisher_data['can_blacklist_publisher'] = False
+
+            if source_cache_by_slug.get(publisher_exchange) is None:
+                continue
+
+            for blacklisted_pub in pub_blacklist_qs:
+                globally_blacklisted = publisher_domain == blacklisted_pub.name and\
+                    blacklisted_pub.everywhere
+
+                if publisher_domain == blacklisted_pub.name and\
+                        publisher_source == blacklisted_pub.source and\
+                        (blacklisted_pub.account == adgroup.campaign.account or
+                            blacklisted_pub.campaign == adgroup.campaign or
+                            blacklisted_pub.ad_group == adgroup) or\
+                        globally_blacklisted:
+                    if blacklisted_pub.status == constants.PublisherStatus.BLACKLISTED:
+                        publisher_data['blacklisted'] = 'Blacklisted'
+                    elif blacklisted_pub.status == constants.PublisherStatus.PENDING:
+                        publisher_data['blacklisted'] = 'Pending'
+                    level = blacklisted_pub.get_blacklist_level()
+                    publisher_data['blacklisted_level'] = level
+                    publisher_data['blacklisted_level_description'] = constants.PublisherBlacklistLevel.verbose(level)
+                    if blacklisted_pub.external_id is not None:
+                        publisher_data['external_id'] = blacklisted_pub.external_id
 
     def _query_filtered_publishers(self, show_blacklisted_publishers, start_date, end_date, adgroup, constraints, order):
         if not show_blacklisted_publishers or\
