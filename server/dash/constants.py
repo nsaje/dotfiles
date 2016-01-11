@@ -2,6 +2,11 @@ from utils.constant_base import ConstantBase
 from dash import regions
 
 
+# Outbrain supports only 10 blocked publisher per marketer id
+# which corresponds to 10 blacklisted publishers per Z1 account
+MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 10
+
+
 class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
@@ -1041,14 +1046,6 @@ class SourceType(ConstantBase):
         YAHOO: 'Yahoo',
         ZEMANTA: 'Zemanta',
         B1: 'B1'
-    }
-
-
-class SourceLimits(ConstantBase):
-    MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 10
-
-    _VALUES = {
-        MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT: 'Max. blacklisted publishers for Outbrain per account',
     }
 
 

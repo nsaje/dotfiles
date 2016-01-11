@@ -1666,40 +1666,15 @@ class PublishersTable(object):
             'outbrain': models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN)
         }
 
-        pub_blacklist_qs = models.PublisherBlacklist.objects.none()
-        for publisher_data in publishers_data:
-            publisher_data['blacklisted'] = 'Active'
-            domain = publisher_data['domain']
-            source_slug = publisher_data['exchange'].lower()
+        pub_blacklist_qs = self._construct_pub_bl_queryset(publishers_data, adgroup, source_cache_by_slug)
 
-            if source_slug not in source_cache_by_slug:
-                source_cache_by_slug[source_slug] =\
-                    models.Source.objects.filter(bidder_slug=source_slug).first()
-
-            if source_cache_by_slug[source_slug] is None:
-                continue
-
-            pub_blacklist_qs |= models.PublisherBlacklist.objects.filter(
-                Q(
-                    name=domain,
-                    source=source_cache_by_slug[source_slug]
-                ) | Q(
-                    Q(ad_group=adgroup) |
-                    Q(campaign=adgroup.campaign) |
-                    Q(account=adgroup.campaign.account)
-                )
-            )
-
-            pub_blacklist_qs |= models.PublisherBlacklist.objects.filter(
-                name=domain,
-                everywhere=True
-            )
         # OB currently has a limit of 10 blocked publishers per marketer
         count_ob_blacklisted_publishers = models.PublisherBlacklist.objects.filter(
             account=adgroup.campaign.account,
             source__source_type__type=constants.SourceType.OUTBRAIN
         ).count()
 
+        # self._annotate_publishers(publishers_data
         for publisher_data in publishers_data:
             publisher_exchange = publisher_data['exchange'].lower()
             publisher_domain = publisher_data['domain']
@@ -1713,7 +1688,7 @@ class PublishersTable(object):
             # might get removed in the future
             can_blacklist_outbrain_publisher = known_source and publisher_source.source_type.type == constants.SourceType.OUTBRAIN and\
                 user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status') and\
-                count_ob_blacklisted_publishers < constants.SourceLimits.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT
+                count_ob_blacklisted_publishers < constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT
 
             if publisher_source.can_modify_publisher_blacklist_automatically() and\
                     known_source and\
@@ -1768,6 +1743,37 @@ class PublishersTable(object):
             'ob_blacklisted_count': count_ob_blacklisted_publishers,
         }
         return response
+
+    def _construct_pub_bl_queryset(self, publishers_data, adgroup, source_cache_by_slug):
+        pub_blacklist_qs = models.PublisherBlacklist.objects.none()
+        for publisher_data in publishers_data:
+            publisher_data['blacklisted'] = 'Active'
+            domain = publisher_data['domain']
+            source_slug = publisher_data['exchange'].lower()
+
+            if source_slug not in source_cache_by_slug:
+                source_cache_by_slug[source_slug] =\
+                    models.Source.objects.filter(bidder_slug=source_slug).first()
+
+            if source_cache_by_slug[source_slug] is None:
+                continue
+
+            pub_blacklist_qs |= models.PublisherBlacklist.objects.filter(
+                Q(
+                    name=domain,
+                    source=source_cache_by_slug[source_slug]
+                ) | Q(
+                    Q(ad_group=adgroup) |
+                    Q(campaign=adgroup.campaign) |
+                    Q(account=adgroup.campaign.account)
+                )
+            )
+
+            pub_blacklist_qs |= models.PublisherBlacklist.objects.filter(
+                name=domain,
+                everywhere=True
+            )
+        return pub_blacklist_qs
 
     def _query_filtered_publishers(self, show_blacklisted_publishers, start_date, end_date, adgroup, constraints, order):
         if not show_blacklisted_publishers or\
