@@ -109,7 +109,10 @@ class RefreshContentAdStats(test.TestCase):
             'date': '2015-02-01',
             'impressions': 3000000,
             'clicks': 300,
-            'adgroup_id': 1
+            'adgroup_id': 1,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
+            'license_fee_nano': 0,
         }]
 
         mock_put_contentadstats_to_s3.assert_called_once_with(date, campaign, [])
@@ -238,6 +241,57 @@ class RefreshContentAdStats(test.TestCase):
 
         mock_put_contentadstats_to_s3.assert_called_once_with(date, campaign, rows)
         mock_redshift.load_contentadstats.assert_called_once_with('s3_key')
+
+    def test_refresh_contentadstats_budgets_diff(self, mock_redshift, mock_put_contentadstats_to_s3):
+
+        mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+        mock_put_contentadstats_to_s3.return_value = 's3_key'
+
+        date = datetime.datetime(2015, 2, 1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+
+        models.BudgetDailyStatement.objects.create(
+            budget_id=1,
+            date=date,
+            media_spend_nano=400000000000,
+            data_spend_nano=400000000000,
+            license_fee_nano=80000000000,
+        )
+
+        models.ContentAdStats.objects.all().delete()
+        models.ContentAdPostclickStats.objects.all().delete()
+
+        refresh.refresh_contentadstats(date, campaign)
+
+        mock_redshift.delete_contentadstats.assert_called_with(
+            date, campaign.id)
+
+        rows = []
+        diff_rows = [{
+            'content_ad_id': -1,
+            'adgroup_id': 1,
+            'campaign_id': 1,
+            'account_id': 1,
+            'source_id': 1,
+            'date': '2015-02-01',
+            'impressions': 3000000,
+            'clicks': 300,
+            'cost_cc': 400000,
+            'data_cost_cc': 400000,
+            'pageviews': 4000,
+            'visits': 3000,
+            'new_visits': 300,
+            'bounced_visits': 400,
+            'total_time_on_site': 130,
+            'conversions': '{}',
+            'effective_cost_nano': 40000000000,
+            'effective_data_cost_nano': 40000000000,
+            'license_fee_nano': 8000000000
+        }]
+
+        mock_put_contentadstats_to_s3.assert_called_once_with(date, campaign, rows)
+        mock_redshift.load_contentadstats.assert_called_once_with('s3_key')
+        mock_redshift.insert_contentadstats.assert_called_once_with(diff_rows)
 
     def test_refresh_contentadstats_budgets_overspend(self, mock_redshift, mock_put_contentadstats_to_s3):
 

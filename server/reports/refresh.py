@@ -232,20 +232,17 @@ def refresh_contentadstats(date, campaign):
 
 
 def refresh_contentadstats_diff(date, campaign):
-    logger.debug('refresh_contentadstats_diff: Refreshing adgroup and contentad stats in Redshift')
     adgroup_stats_batch = reports.models.AdGroupStats.objects.filter(
         datetime__contains=date,
         ad_group__campaign_id=campaign.id
     )
 
     diff_rows = []
-    for adgroup_stats in adgroup_stats_batch:
-        # also remove and recalculate difference between adgroup stats and
-        # contentadstats - this will be needed until we deprecated adgroupstats
-        contentadstats_aggregate = reports.models.ContentAdStats.objects.filter(
-            content_ad__ad_group=adgroup_stats.ad_group,
-            source=adgroup_stats.source,
-            date=adgroup_stats.datetime.date()
+    for ag_stats in adgroup_stats_batch:
+        ca_stats_agg = reports.models.ContentAdStats.objects.filter(
+            content_ad__ad_group=ag_stats.ad_group,
+            source=ag_stats.source,
+            date=ag_stats.datetime.date()
         ).aggregate(
             impressions_sum=Sum('impressions'),
             clicks_sum=Sum('clicks'),
@@ -253,10 +250,10 @@ def refresh_contentadstats_diff(date, campaign):
             data_cost_cc_sum=Sum('data_cost_cc'),
         )
 
-        contentad_postclickstats_aggregate = reports.models.ContentAdPostclickStats.objects.filter(
-            content_ad__ad_group=adgroup_stats.ad_group,
-            source=adgroup_stats.source,
-            date=adgroup_stats.datetime.date()
+        ca_postclickstats_agg = reports.models.ContentAdPostclickStats.objects.filter(
+            content_ad__ad_group=ag_stats.ad_group,
+            source=ag_stats.source,
+            date=ag_stats.datetime.date()
         ).aggregate(
             visits_sum=Sum('visits'),
             new_visits_sum=Sum('new_visits'),
@@ -266,23 +263,23 @@ def refresh_contentadstats_diff(date, campaign):
         )
 
         row = {
-            'date': adgroup_stats.datetime.date().isoformat(),
+            'date': ag_stats.datetime.date().isoformat(),
             'content_ad_id': redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID,
-            'adgroup_id': adgroup_stats.ad_group.id,
-            'source_id': adgroup_stats.source.id,
-            'campaign_id': adgroup_stats.ad_group.campaign.id,
-            'account_id': adgroup_stats.ad_group.campaign.account.id,
+            'adgroup_id': ag_stats.ad_group.id,
+            'source_id': ag_stats.source.id,
+            'campaign_id': ag_stats.ad_group.campaign.id,
+            'account_id': ag_stats.ad_group.campaign.account.id,
 
-            'impressions': (adgroup_stats.impressions or 0) - (contentadstats_aggregate['impressions_sum'] or 0),
-            'clicks': (adgroup_stats.clicks or 0) - (contentadstats_aggregate['clicks_sum'] or 0),
-            'cost_cc': (adgroup_stats.cost_cc or 0) - (contentadstats_aggregate['cost_cc_sum'] or 0),
-            'data_cost_cc': (adgroup_stats.data_cost_cc or 0) - (contentadstats_aggregate['data_cost_cc_sum'] or 0),
+            'impressions': (ag_stats.impressions or 0) - (ca_stats_agg['impressions_sum'] or 0),
+            'clicks': (ag_stats.clicks or 0) - (ca_stats_agg['clicks_sum'] or 0),
+            'cost_cc': (ag_stats.cost_cc or 0) - (ca_stats_agg['cost_cc_sum'] or 0),
+            'data_cost_cc': (ag_stats.data_cost_cc or 0) - (ca_stats_agg['data_cost_cc_sum'] or 0),
 
-            'visits': (adgroup_stats.visits or 0) - (contentad_postclickstats_aggregate['visits_sum'] or 0),
-            'new_visits': (adgroup_stats.new_visits or 0) - (contentad_postclickstats_aggregate['new_visits_sum'] or 0),
-            'bounced_visits': (adgroup_stats.bounced_visits or 0) - (contentad_postclickstats_aggregate['bounced_visits_sum'] or 0),
-            'pageviews': (adgroup_stats.pageviews or 0) - (contentad_postclickstats_aggregate['pageviews_sum'] or 0),
-            'total_time_on_site': (adgroup_stats.duration or 0) - (contentad_postclickstats_aggregate['total_time_on_site_sum'] or 0),
+            'visits': (ag_stats.visits or 0) - (ca_postclickstats_agg['visits_sum'] or 0),
+            'new_visits': (ag_stats.new_visits or 0) - (ca_postclickstats_agg['new_visits_sum'] or 0),
+            'bounced_visits': (ag_stats.bounced_visits or 0) - (ca_postclickstats_agg['bounced_visits_sum'] or 0),
+            'pageviews': (ag_stats.pageviews or 0) - (ca_postclickstats_agg['pageviews_sum'] or 0),
+            'total_time_on_site': (ag_stats.duration or 0) - (ca_postclickstats_agg['total_time_on_site_sum'] or 0),
 
             'conversions': '{}'
         }
@@ -296,9 +293,10 @@ def refresh_contentadstats_diff(date, campaign):
         missing_keys = set(key for key in metric_keys if row[key] < 0)
         if missing_keys:
             logger.error(
-                'ad group stats data missing. skipping it in refreshing diffs. ad group id: %s source id: %s date: %s keys: %s',
-                adgroup_stats.ad_group.id,
-                adgroup_stats.source.id,
+                'ad group stats data missing. skipping it in refreshing diffs. '
+                'ad group id: %s source id: %s date: %s keys: %s',
+                ag_stats.ad_group.id,
+                ag_stats.source.id,
                 date,
                 missing_keys
             )
@@ -310,9 +308,8 @@ def refresh_contentadstats_diff(date, campaign):
 
         diff_rows.append(row)
 
-    if diff_rows != []:
-        redshift.insert_contentadstats(diff_rows)
-        logger.debug('refresh_contentadstats_diff: Inserted {count} diff rows into redshift'.format(count=len(diff_rows)))
+    _add_effective_spend(date, campaign, diff_rows)
+    redshift.insert_contentadstats(diff_rows)
 
 
 def refresh_adgroup_stats(**constraints):

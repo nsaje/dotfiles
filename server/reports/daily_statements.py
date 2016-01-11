@@ -20,10 +20,9 @@ def _generate_statements(date, campaign):
     existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
     existing_statements.filter(date=date).delete()
 
-    stats = reports.models.ContentAdStats.objects\
-                                         .filter(content_ad__ad_group__campaign_id=campaign.id, date=date)\
-                                         .aggregate(cost_cc_sum=Sum('cost_cc'),
-                                                    data_cost_cc_sum=Sum('data_cost_cc'))
+    stats = reports.models.AdGroupStats.objects\
+                                       .filter(ad_group__campaign_id=campaign.id, datetime=date)\
+                                       .aggregate(cost_cc_sum=Sum('cost_cc'), data_cost_cc_sum=Sum('data_cost_cc'))
 
     per_budget_spend_nano = defaultdict(lambda: defaultdict(int))
     for existing_statement in existing_statements:
@@ -114,8 +113,8 @@ def get_effective_spend_pcts(date, campaign):
             data_nano=Sum('data_spend_nano'),
             license_fee_nano=Sum('license_fee_nano')
         )
-    actual_spends = reports.models.ContentAdStats.objects.\
-        filter(content_ad__ad_group__campaign_id=campaign.id, date=date).\
+    actual_spends = reports.models.AdGroupStats.objects.\
+        filter(ad_group__campaign_id=campaign.id, datetime=date).\
         aggregate(
             media_cc=Sum('cost_cc'),
             data_cc=Sum('data_cost_cc')
