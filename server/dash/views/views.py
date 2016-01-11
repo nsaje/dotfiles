@@ -1489,8 +1489,6 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
 class PublishersBlacklistStatus(api_common.BaseApiView):
 
-    MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS = 10
-
     @statsd_helper.statsd_timer('dash.api', 'ad_group_publisher_blacklist_state_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
@@ -1723,7 +1721,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
             if level == constants.PublisherBlacklistLevel.ACCOUNT and\
                     source.source_type.type == constants.SourceType.OUTBRAIN and\
-                    count_ob_blacklisted_publishers < PublishersBlacklistStatus.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS:
+                    count_ob_blacklisted_publishers < constants.SourceLimits.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT:
                 count_ob_blacklisted_publishers += 1
 
             blacklist_global = False

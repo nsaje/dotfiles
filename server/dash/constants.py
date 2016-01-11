@@ -1044,6 +1044,14 @@ class SourceType(ConstantBase):
     }
 
 
+class SourceLimits(ConstantBase):
+    MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 10
+
+    _VALUES = {
+        MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT : 'Max. blacklisted publishers for Outbrain per account',
+    }
+
+
 class ConversionPixelStatus(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
