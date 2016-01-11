@@ -846,28 +846,6 @@ class AccountAgency(api_common.BaseApiView):
     def set_account(self, account, resource):
         account.name = resource['name']
 
-    def get_allowed_sources_list_from_dict(self, allowed_sources_dict):
-        allowed_sources_ids = []
-        for k, v in allowed_sources_dict.iteritems():
-            if v.get('allowed', False):
-                allowed_sources_ids.append(k)
-
-        return allowed_sources_ids
-
-    def get_current_allowed_sources_list(self, account, can_see_all_available_sources):
-        queryset = account.allowed_sources.all()
-        if not can_see_all_available_sources:
-            queryset = queryset.filter(released=True)
-
-        return [source.id for source in queryset]
-
-    def filter_allowed_sources_list(self, allowed_sources_list, can_see_all_available_sources):
-        queryset = models.Source.objects.filter(id__in=allowed_sources_list)
-        if not can_see_all_available_sources:
-            queryset = queryset.filter(released=True)
-
-        return [source.id for source in queryset]
-
     def get_non_removable_sources(self, account, sources_to_be_removed):
         non_removable_source_ids_list = []
 
