@@ -127,33 +127,42 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets, include
     budgets = None
     statuses = None
     by_source = ('source' in dimensions)
+    level = None
     if 'content_ad' in dimensions:
         data = _prefetch_content_ad_data(constraints)
     elif 'ad_group' in dimensions:
+        level = 'ad_group'
         distinct_ad_groups = set(adg for adg in (stat['ad_group'] for stat in stats))
         data = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
-        statuses = None if not include_statuses else _prefetch_statuses(data, 'ad_group', by_source)
     elif 'campaign' in dimensions:
+        level = 'campaign'
         distinct_campaigns = set(camp for camp in (stat['campaign'] for stat in stats))
         data = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
-        statuses = None if not include_statuses else _prefetch_statuses(data, 'campaign', by_source)
-        budgets = None if not include_budgets else {
-            camp.id: {'budget': budget.CampaignBudget(camp).get_total(),
-                      'spent_budget': budget.CampaignBudget(camp).get_spend()}
-            for camp in data}
     elif 'account' in dimensions:
+        level = 'account'
         accounts = constraints['account'] if isinstance(
             constraints['account'], collections.Iterable) else [constraints['account']]
         data = {account.id: account for account in accounts}
-        statuses = None if not include_statuses else _prefetch_statuses(accounts, 'account', by_source)
-        if include_budgets:
-            all_accounts_budget = budget.GlobalBudget().get_total_by_account()
-            all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
-            budgets = {acc.id:
-                       {'budget': all_accounts_budget.get(acc.id, 0),
-                        'spent_budget': all_accounts_total_spend.get(acc.id, 0)}
-                       for acc in accounts}
+
+    statuses = None if not include_statuses else _prefetch_statuses(data, level, by_source)
+    budgets = None if not include_budgets else _prefetch_budgets(data, level)
     return data, budgets, statuses
+
+
+def _prefetch_budgets(data, level):
+    if level == 'account':
+        all_accounts_budget = budget.GlobalBudget().get_total_by_account()
+        all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
+        return {acc:
+                {'budget': all_accounts_budget.get(acc, 0),
+                 'spent_budget': all_accounts_total_spend.get(acc, 0)}
+                for acc in data}
+    elif level == 'campaign':
+        return {
+            camp.id: {'budget': budget.CampaignBudget(camp).get_total(),
+                      'spent_budget': budget.CampaignBudget(camp).get_spend()}
+            for camp in data}
+    return None
 
 
 def _prefetch_statuses(entities, level, by_source):
@@ -287,36 +296,40 @@ def get_csv_content(fieldnames, data):
     for item in data:
         # Format
         row = {}
-        for key in fieldnames.keys():
-            value = item.get(key)
+        for field in fieldnames.keys():
+            value = item.get(field)
             formatted_value = value
 
-            if not value and key in FORMAT_EMPTY_TO_0:
+            if not value and field in FORMAT_EMPTY_TO_0:
                 formatted_value = 0
                 value = 0
-            elif not value and key not in FORMAT_EMPTY_TO_0:
+            elif not value and field not in FORMAT_EMPTY_TO_0:
                 formatted_value = ''
-            elif key in FORMAT_DIVIDE_100:
+            elif field in FORMAT_DIVIDE_100:
                 value = value / 100
 
-            if value and key in FORMAT_1_DECIMAL:
-                formatted_value = '{:.1f}'.format(value)
-            elif value and key in FORMAT_2_DECIMALS:
-                formatted_value = '{:.2f}'.format(value)
-            elif value and key in FORMAT_3_DECIMALS:
-                formatted_value = '{:.3f}'.format(value)
+            formatted_value = _format_decimals(value, field)
 
-            if key == 'date':
+            if field == 'date':
                 formatted_value = value.strftime('%Y-%m-%d')
 
             if ';' in repr(formatted_value):
                 formatted_value = '"' + formatted_value + '"'
 
-            row[key] = formatted_value
+            row[field] = formatted_value
 
         writer.writerow(row)
 
     return output.getvalue()
+
+
+def _format_decimals(value, field):
+    if value and field in FORMAT_1_DECIMAL:
+        return '{:.1f}'.format(value)
+    elif value and field in FORMAT_2_DECIMALS:
+        return '{:.2f}'.format(value)
+    elif value and field in FORMAT_3_DECIMALS:
+        return '{:.3f}'.format(value)
 
 
 def _get_fieldnames(required_fields, additional_fields, exclude=[]):
