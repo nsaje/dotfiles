@@ -274,10 +274,9 @@ class CampaignAgency(api_common.BaseApiView):
         new_settings = old_settings.copy_settings()
         self.set_settings(new_settings, campaign, form.cleaned_data)
 
-        self.propagate_and_save(campaign, new_settings, request)
-
-        self.log_changes(campaign, old_settings, new_settings, request,
-                         constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS)
+        helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
+        helpers.log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request,
+                                                        constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS)
 
         response = {
             'settings': self.get_dict(new_settings, campaign),
@@ -287,41 +286,6 @@ class CampaignAgency(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
-
-    @classmethod
-    def propagate_and_save(cls, campaign, settings, request):
-        actions = []
-
-        with transaction.atomic():
-            campaign.save(request)
-            settings.save(request)
-
-            # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
-            campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-
-            for ad_group in campaign_ad_groups:
-                adgroup_settings = ad_group.get_current_settings()
-                actions.extend(
-                    api.order_ad_group_settings_update(
-                        ad_group,
-                        adgroup_settings,
-                        adgroup_settings,
-                        request,
-                        send=False,
-                        iab_update=True
-                    )
-                )
-
-        zwei_actions.send(actions)
-
-    @classmethod
-    def log_changes(cls, campaign, old_settings, new_settings, request, user_action_type):
-        changes = old_settings.get_setting_changes(new_settings)
-        if changes:
-            changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings)
-            email_helper.send_campaign_notification_email(campaign, request, changes_text)
-            helpers.log_useraction_if_necessary(
-                request, user_action_type, campaign=campaign)
 
     def get_history(self, campaign):
         settings = models.CampaignSettings.objects.\
@@ -562,10 +526,9 @@ class CampaignSettings(api_common.BaseApiView):
         self.set_settings(request, new_settings, campaign, form.cleaned_data)
         self.set_campaign(campaign, form.cleaned_data)
 
-        CampaignAgency.propagate_and_save(campaign, new_settings, request)
-
-        CampaignAgency.log_changes(campaign, current_settings, new_settings, request,
-                                   constants.UserActionType.SET_CAMPAIGN_SETTINGS)
+        helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
+        helpers.log_and_notify_campaign_settings_change(campaign, current_settings, new_settings, request,
+                                                        constants.UserActionType.SET_CAMPAIGN_SETTINGS)
 
         response = {
             'settings': self.get_dict(request, new_settings, campaign)
