@@ -5,7 +5,7 @@ import reports.refresh
 
 class Command(BaseCommand):
 
-    help = "Refreshes dialy statements for all campaigns marked as changed"
+    help = "Refreshes data in Redshift for all campaigns marked as changed"
 
     def handle(self, *args, **options):
-        reports.refresh.refresh_changed_contentadstats()
+        reports.refresh.refresh_changed_daily_statements()
