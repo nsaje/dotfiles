@@ -1723,7 +1723,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
             if level == constants.PublisherBlacklistLevel.ACCOUNT and\
                     source.source_type.type == constants.SourceType.OUTBRAIN and\
-                    count_ob_blacklisted_publishers < 10:
+                    count_ob_blacklisted_publishers < PublishersBlacklistStatus.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS:
                 count_ob_blacklisted_publishers += 1
 
             blacklist_global = False
