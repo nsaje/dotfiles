@@ -101,7 +101,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     $scope.selectedPublisherChanged = function (row, checked) {
         var numNotSelected = 0;
-        
+
         $scope.selectedPublisherStatus[$scope.calculatePublisherHash(row)] = {
             "checked": checked,
             "source_id": row.source_id,
@@ -336,8 +336,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
 
         for (publisherId in $scope.selectedPublisherStatus) {
-            if ($scope.selectedPublisherStatus.hasOwnProperty(publisherId)
-                    && $scope.selectedPublisherStatus[publisherId].checked) {
+            if ($scope.selectedPublisherStatus.hasOwnProperty(publisherId) && 
+                    $scope.selectedPublisherStatus[publisherId].checked) {
                 return true;
             }
         }
@@ -880,7 +880,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         $scope.loadPage();
 
-        $scope.getAdGroupState();	// To display message if the adgroup is paused
+        $scope.getAdGroupState();    // To display message if the adgroup is paused
 
         getTableData();
         getDailyStats();
