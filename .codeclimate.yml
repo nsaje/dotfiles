@@ -4,7 +4,7 @@ engines:
   radon:
     enabled: true
     config: 
-      threshold: "B"
+      threshold: "C"
   fixme:
     enabled: true
   duplication:
