@@ -1624,8 +1624,6 @@ class AccountCampaignsTable(object):
 
 class PublishersTable(object):
 
-    MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS = 10
-
     def get(self, user, level_, filtered_sources, show_blacklisted_publishers, start_date, end_date, order, page, size, id_=None):
         if not user.has_perm('zemauth.can_see_publishers'):
             raise exc.MissingDataError()
@@ -1715,7 +1713,7 @@ class PublishersTable(object):
             # might get removed in the future
             can_blacklist_outbrain_publisher = known_source and publisher_source.source_type.type == constants.SourceType.OUTBRAIN and\
                 user.has_perm('zemauth.can_modify_outbrain_account_publisher_blacklist_status') and\
-                count_ob_blacklisted_publishers < PublishersTable.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS
+                count_ob_blacklisted_publishers < constants.SourceLimits.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT
 
             if publisher_source.can_modify_publisher_blacklist_automatically() and\
                     known_source and\
