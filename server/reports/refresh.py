@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 CC_TO_NANO = 100000
 
-LOAD_CONTENTADS_KEY_FORMAT = 'contentadstats_load/{year}/{month}/{day}/{campaign_id}/{ts}.json'
+LOAD_CONTENTADS_KEY_FORMAT = 'contentadstats_load/{year}/{month:02d}/{day:02d}/{campaign_id}/{ts}.json'
 MAX_DATES_TO_REFRESH = 200
 
 
