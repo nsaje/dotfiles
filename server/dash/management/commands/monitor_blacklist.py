@@ -21,72 +21,18 @@ class Command(BaseCommand):
 
         logger.info('Monitor publisher blacklisting.')
 
-        impressions, clicks = 0, 0
-        cost, cpc, ctr = 0, 0, 0
-
-        BATCH_SIZE = 50
-        batch = []
-
         blacklisted_before = datetime.datetime.utcnow() - datetime.timedelta(days=2)
-        no_stats_after = datetime.datetime.utcnow() - datetime.timedelta(days=1)
-        processed = 0
 
-        sample = self.random_blacklist_sample(blacklisted_before, no_stats_after)
-        for blacklist_entry in sample:
-            if blacklist_entry.ad_group is None:
-                continue
-            # fetch blacklisted status from db
-            batch.append({
-                'domain': blacklist_entry.name,
-                'adgroup_id': blacklist_entry.ad_group.id,
-                'exchange': blacklist_entry.source.tracking_slug.replace('b1_', ''),
-            })
+        self.monitor_adgroup_level(blacklisted_before)
+        self.monitor_global_level(blacklisted_before)
 
-            if len(batch) >= BATCH_SIZE:
-                totals_data = reports.api_publishers.query_blacklisted_publishers(
-                    no_stats_after.date(),
-                    datetime.datetime.utcnow().date(),
-                    blacklist=batch,
-                )
-                clicks += totals_data.get('clicks', 0) or 0
-                impressions += totals_data.get('impressions', 0) or 0
-                cost += totals_data.get('cost', 0) or 0
-                ctr += totals_data.get('ctr', 0) or 0
-                cpc += totals_data.get('cpc', 0) or 0
-                processed += BATCH_SIZE
-                print "Processed blacklist entries", processed
-                logger.info("Processed %d blacklist entries", processed)
-                batch = []
-
-        if len(batch) > 0:
-            totals_data = reports.api_publishers.query_blacklisted_publishers(
-                no_stats_after.date(),
-                datetime.datetime.utcnow().date(),
-                blacklist=batch
-            )
-            clicks += totals_data.get('clicks', 0) or 0
-            impressions += totals_data.get('impressions', 0) or 0
-            cost += totals_data.get('cost', 0) or 0
-            ctr += totals_data.get('ctr', 0) or 0
-            cpc += totals_data.get('cpc', 0) or 0
-
-        logger.info('Blacklisting summary at {dt}: {blob}'.format(
-            dt=datetime.datetime.utcnow().isoformat(),
-            blob={
-                'clicks': clicks,
-                'impressions': impressions,
-                'cost': cost,
-                'cpc': cpc,
-                'ctr': ctr,
-            }
-        ))
-
+        """
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.clicks', clicks)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.impressions', impressions)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cost', cost)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.ctr', ctr)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cpc', cpc)
-
+        """
         # monitor PENDING publisherblacklist entries
         count_pending = dash.models.PublisherBlacklist.objects.filter(
             status=dash.constants.PublisherStatus.PENDING
@@ -97,41 +43,122 @@ class Command(BaseCommand):
         ).count()
         statsd_helper.statsd_gauge('dash.blacklisted_publisher.blacklisted', count_blacklisted)
 
-    def random_blacklist_sample(self, date_from, date_to, sample_size=1000):
-        first_blacklist_entry = dash.models.PublisherBlacklist.objects.filter(
-            created_dt__gte=date_from,
-            status=dash.constants.PublisherStatus.BLACKLISTED
-        ).first()
+    def monitor_adgroup_level(self, blacklisted_before):
+        blacklisted_set = self.generate_adgroup_blacklist_hash(blacklisted_before)
 
-        last_blacklist_entry = dash.models.PublisherBlacklist.objects.filter(
-            created_dt__gte=date_from,
-            created_dt__lte=date_to,
-            status=dash.constants.PublisherStatus.BLACKLISTED
-        ).order_by("-id").first()
+        data = reports.api_publishers.query(
+            datetime.datetime.utcnow().date() - datetime.timedelta(days=100),
+            datetime.datetime.utcnow().date(),
+            breakdown_fields=['domain', 'ad_group', 'exchange']
+        )
 
-        if first_blacklist_entry is None or last_blacklist_entry is None:
-            return []
+        # hashmap data
+        redshift_stats = {}
+        for row in data:
+            if row['exchange'].lower() == 'outbrain':
+                continue
+            redshift_stats[(
+                row['domain'],
+                row['ad_group'],
+                row['exchange'],
+            )] = row['impressions']
 
-        low = first_blacklist_entry.id
-        high = last_blacklist_entry.id
-
-        count_between = dash.models.PublisherBlacklist.objects.filter(
-            id__range=(low, high),
-            status=dash.constants.PublisherStatus.BLACKLISTED
-        ).count()
-        if count_between < sample_size:
-            return dash.models.PublisherBlacklist.objects.filter(
-                id__range=(low, high),
-                status=dash.constants.PublisherStatus.BLACKLISTED
+        # do set intersection
+        redshift_stats_keys = set(redshift_stats.keys())
+        print redshift_stats_keys
+        for key in blacklisted_set.intersection(redshift_stats_keys):
+            logger.warning(
+                'monitor_blacklist: Found publisher statistics for globally blacklisted publisher',
+                extra={'key': key}
             )
+            statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.impressions', redshift_stats[key])
 
-        ret = []
-        for i in xrange(sample_size):
-            potential_id = random.randint(low, high)
+    def monitor_global_level(self, blacklisted_before):
+        blacklisted_set = self.generate_global_blacklist_hash(blacklisted_before)
 
-            random_blacklist = dash.models.PublisherBlacklist.objects.filter(
-                id=potential_id
-            ).first()
-            if random_blacklist is not None:
-                ret.append(random_blacklist)
-        return ret
+        data = reports.api_publishers.query(
+            datetime.datetime.utcnow().date() - datetime.timedelta(days=100),
+            datetime.datetime.utcnow().date(),
+            breakdown_fields=['domain', 'exchange']
+        )
+
+        # hashmap data
+        redshift_stats = {}
+        for row in data:
+            if row['exchange'].lower() == 'outbrain':
+                continue
+            redshift_stats[(
+                row['domain'],
+                row['exchange'],
+            )] = row['impressions']
+
+        print blacklisted_set
+        # do set intersection
+        redshift_stats_keys = set(redshift_stats.keys())
+        for key in blacklisted_set.intersection(redshift_stats_keys):
+            logger.warning(
+                'monitor_blacklist: Found publisher statistics for globally blacklisted publisher.',
+                extra={'key': key}
+            )
+            statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_impressions', redshift_stats[key])
+
+    def generate_adgroup_blacklist_hash(self, blacklisted_before):
+        adgroup_blacklist = set(
+            [(pub.name, pub.ad_group.id, pub.source.tracking_slug.replace('b1_', ''),)
+             for pub in dash.models.PublisherBlacklist.objects.filter(
+                 ad_group__isnull=False,
+                 source__source_type__type=dash.constants.SourceType.B1,
+                 status=dash.constants.PublisherStatus.BLACKLISTED,
+                 created_dt__lte=blacklisted_before,
+             )]
+        )
+
+        campaign_account_blacklist = []
+        for pub in dash.models.PublisherBlacklist.objects.filter(
+             campaign__isnull=False,
+             source__source_type__type=dash.constants.SourceType.B1,
+             status=dash.constants.PublisherStatus.BLACKLISTED,
+             created_dt__lte=blacklisted_before,
+        ):
+            # fetch campaign level blacklist
+            adgroup_ids = dash.models.AdGroup.objects.filter(
+                campaign=pub.campaign
+            ).values_list('id', flat=True)
+            for adgroup_id in adgroup_ids:
+                campaign_account_blacklist.append(
+                    (
+                        pub.name,
+                        adgroup_id,
+                        pub.source.tracking_slug.replace('b1_', ''),
+                    )
+                )
+
+        campaign_account_blacklist = []
+        for pub in dash.models.PublisherBlacklist.objects.filter(
+             account__isnull=False,
+             source__source_type__type=dash.constants.SourceType.B1,
+             status=dash.constants.PublisherStatus.BLACKLISTED,
+             created_dt__lte=blacklisted_before,
+        ):
+            # fetch campaign level blacklist
+            adgroup_ids = dash.models.AdGroup.objects.filter(
+                campaign__account=pub.account
+            ).values_list('id', flat=True)
+            for adgroup_id in adgroup_ids:
+                campaign_account_blacklist.append((
+                        pub.name,
+                        adgroup_id,
+                        pub.source.tracking_slug.replace('b1_', ''),
+                    ))
+        return adgroup_blacklist.union(set(campaign_account_blacklist))
+
+    def generate_global_blacklist_hash(self, blacklisted_before):
+        return set(
+            [(pub.name, pub.source.tracking_slug.replace('b1_', ''),)
+             for pub in dash.models.PublisherBlacklist.objects.filter(
+                 everywhere=True,
+                 source__source_type__type=dash.constants.SourceType.B1,
+                 status=dash.constants.PublisherStatus.BLACKLISTED,
+                 created_dt__lte=blacklisted_before,
+             )]
+        )
