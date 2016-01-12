@@ -49,9 +49,11 @@ def send_ad_group_notification_email(ad_group, request, changes_text):
     link_url = request.build_absolute_uri('/ad_groups/{}/agency'.format(ad_group.pk))
     link_url = link_url.replace('http://', 'https://')
 
-    body = u'''Hi account manager of {ad_group.name}
+    body = u'''Hi account manager of ad group {ad_group.name}
 
-We'd like to notify you that {user.email} has made the following change in the settings of the ad group {ad_group.name}, campaign {campaign.name}, account {account.name}: {changes_text}.
+We'd like to notify you that {user.email} has made the following change in the settings of the ad group {ad_group.name}, campaign {campaign.name}, account {account.name}:
+
+{changes_text}
 
 Please check {link_url} for further details.
 
@@ -85,9 +87,11 @@ def send_campaign_notification_email(campaign, request, changes_text):
     link_url = request.build_absolute_uri('/campaigns/{}/agency'.format(campaign.pk))
     link_url = link_url.replace('http://', 'https://')
 
-    body = u'''Hi account manager of {campaign.name}
+    body = u'''Hi account manager of campaign {campaign.name}
 
-We'd like to notify you that {user.email} has made the following change in the settings of campaign {campaign.name}, account {account.name}: {changes_text}.
+We'd like to notify you that {user.email} has made the following change in the settings of campaign {campaign.name}, account {account.name}:
+
+{changes_text}
 
 Please check {link_url} for further details.
 
@@ -120,9 +124,11 @@ def send_budget_notification_email(campaign, request, changes_text):
     link_url = request.build_absolute_uri('/campaigns/{}/agency'.format(campaign.pk))
     link_url = link_url.replace('http://', 'https://')
 
-    body = u'''Hi account manager of {campaign.name}
+    body = u'''Hi account manager of campaign {campaign.name}
 
-We'd like to notify you that {user.email} has made the following change in the budget of campaign {campaign.name}, account {account.name}: {changes_text}.
+We'd like to notify you that {user.email} has made the following change in the budget of campaign {campaign.name}, account {account.name}:
+
+{changes_text}
 
 Please check {link_url} for further details.
 
@@ -398,7 +404,15 @@ Report was scheduled by {scheduled_by}.
 
 
 def _format_changes_text(changes_text):
-    if changes_text and changes_text[-1] == '.':
-        changes_text = changes_text[:-1]
+    lines = changes_text.split('\n')
+    for i in range(len(lines)):
+        lines[i] = '- ' + lines[i]
 
-    return changes_text
+        # remove end punctuations
+        if lines[i][-1] in '.,':
+            lines[i] = lines[i][:-1]
+
+        # append the right punctuation
+        lines[i] += '.' if (i + 1) == len(lines) else ','
+
+    return '\n'.join(lines)
