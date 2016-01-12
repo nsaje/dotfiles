@@ -42,6 +42,8 @@ SUPRESS_INVALID_CONTENT_ID_CHECK = {
     927: {3: ['2015-12-08']}
 }
 
+OUTBRAIN_SOURCE_ID = 3
+
 
 @csrf_exempt
 @statsd_helper.statsd_timer('zweiapi.views', 'zwei_callback')
@@ -403,43 +405,25 @@ def _fetch_reports_by_publisher_callback(action, data):
 
     rows_raw = data['data']
 
-    valid_response = True
-    empty_response = False
+    if source.id != OUTBRAIN_SOURCE_ID:
+        raise Exception('Fetch reports by publisher supported only on Outbrain')
 
-    # centralize in order to reduce possibility of mistakes, if you want everything to run again, just increase the number
+    # centralize in order to reduce possibility of mistakes
+    # if you want everything to run again, just increase the number
     change_unique_key = "reports_by_publisher_2"
 
-    if valid_response:
-        ret = get_day_cost(date, ad_group=ad_group, source=source)
-        cost = ret['cost']
-        if cost is None:
-            cost = 0
+    ret = get_day_cost(date, ad_group=ad_group, source=source)
+    cost = ret['cost']
+    if cost is None:
+        cost = 0
 
-        reports.api_publishers.ob_insert_adgroup_date(date,
-                                                      ad_group.id,
-                                                      "outbrain",  # Hardcoding this at the time, the problem is that source.name can change
-                                                      rows_raw,
-                                                      cost)
-        _set_reports_cache(data, ad_group, source, date, change_unique_key)
+    reports.api_publishers.put_ob_data_to_s3(date, ad_group, rows_raw)
+    reports.api_publishers.ob_insert_adgroup_date(
+        date,
+        ad_group.id,
+        "outbrain",  # Hardcoding this at the time, the problem is that source.name can change
+        rows_raw,
+        cost
+    )
 
-    if not valid_response:
-        msg = 'Update of publishers for adgroup %d, source %d, datetime '\
-              '%s skipped due to report not being valid (empty response).'
-
-        action.state = actionlog.constants.ActionState.FAILED
-        action.message = msg % (ad_group.id, source.id, date)
-        action.save()
-
-        logger.debug(msg, ad_group.id, source.id, date)
-
-    if empty_response:
-        logger.debug(
-            'Empty report received for adgroup %d, source %d, datetime %s',
-            ad_group.id,
-            source.id,
-            date
-        )
-        statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
-        statsd_helper.statsd_incr(
-            'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
-        )
+    _set_reports_cache(data, ad_group, source, date, change_unique_key)

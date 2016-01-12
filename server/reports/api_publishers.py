@@ -1,8 +1,15 @@
-import logging
 import copy
-from reports import redshift
+import json
+import logging
+import time
 
+from django.conf import settings
+from django.db import transaction
+
+from reports import redshift
 from reports.rs_helpers import from_micro_cpm, from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr
+
+from utils import s3helpers
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +23,10 @@ FORMULA_TOTAL_COST = '({}*1000 + {}*1000 + {})'.format(
     sum_agr('data_cost_micro'),
     sum_agr('license_fee_nano'),
 )
+
+
+OB_PUBLISHERS_KEY_FORMAT = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/{ad_group_id}/{ts}.json'
+
 
 class RSPublishersModel(redshift.RSModel):
     TABLE_NAME = 'joint_publishers_1_3'
@@ -197,7 +208,6 @@ def query_publisher_list(start_date, end_date, breakdown_fields=[], order_fields
 
 
 def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts, total_cost):
-    # TODO: Execute this inside a transaction
     fields_sql = ['date', 'adgroup_id', 'exchange', 'name', 'clicks', 'cost_micro', 'ob_id']
     row_tuples = []
     total_clicks = 0
@@ -209,7 +219,19 @@ def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts, total_cost):
         newrow = (date, ad_group, exchange, row['name'], row['clicks'], cost * 1000000000, row['ob_id'])
         row_tuples.append(newrow)
 
-    cursor = redshift.get_cursor()
-    rs_ob_pub.execute_delete(cursor, {'date__eq': date, 'ad_group__eq': ad_group, 'exchange__eq': exchange})
-    rs_ob_pub.execute_multi_insert_sql(cursor, fields_sql, row_tuples)
-    cursor.close()
+    with transaction.atomic(using=settings.STATS_DB_NAME):
+        cursor = redshift.get_cursor()
+        rs_ob_pub.execute_delete(cursor, {'date__eq': date, 'ad_group__eq': ad_group, 'exchange__eq': exchange})
+        rs_ob_pub.execute_multi_insert_sql(cursor, fields_sql, row_tuples)
+        cursor.close()
+
+
+def put_ob_data_to_s3(date, ad_group, rows):
+    key = OB_PUBLISHERS_KEY_FORMAT.format(
+        year=date.year,
+        month=date.month,
+        day=date.day,
+        ad_group_id=ad_group.id,
+        ts=int(time.time()*1000)
+    )
+    s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).put(key, json.dumps(rows))
