@@ -221,7 +221,6 @@ def put_contentadstats_to_s3(date, campaign, rows):
 
 
 def put_b1_pub_stats_to_s3(date, rows):
-    print rows 
     rows_json = _get_s3_file_content_json(rows)
     s3_key = LOAD_B1_PUB_STATS_KEY_FMT.format(
         year=date.year,
