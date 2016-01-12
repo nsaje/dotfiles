@@ -104,13 +104,13 @@ class Command(BaseCommand):
 
     def generate_adgroup_blacklist_hash(self, blacklisted_before):
         adgroup_blacklist = set(
-            [(pub.name, pub.ad_group.id, pub.source.tracking_slug.replace('b1_', ''),)
+            [(pub[0], pub[1], pub[2].replace('b1_', ''),)
              for pub in dash.models.PublisherBlacklist.objects.filter(
                  ad_group__isnull=False,
                  source__source_type__type=dash.constants.SourceType.B1,
                  status=dash.constants.PublisherStatus.BLACKLISTED,
                  created_dt__lte=blacklisted_before,
-             )]
+             ).values_list('name', 'ad_group__id', 'source__tracking_slug')]
         )
 
         campaign_account_blacklist = []
@@ -119,7 +119,7 @@ class Command(BaseCommand):
              source__source_type__type=dash.constants.SourceType.B1,
              status=dash.constants.PublisherStatus.BLACKLISTED,
              created_dt__lte=blacklisted_before,
-        ):
+        ).iterator():
             # fetch campaign level blacklist
             adgroup_ids = dash.models.AdGroup.objects.filter(
                 campaign=pub.campaign
@@ -139,7 +139,7 @@ class Command(BaseCommand):
              source__source_type__type=dash.constants.SourceType.B1,
              status=dash.constants.PublisherStatus.BLACKLISTED,
              created_dt__lte=blacklisted_before,
-        ):
+        ).iterator():
             # fetch campaign level blacklist
             adgroup_ids = dash.models.AdGroup.objects.filter(
                 campaign__account=pub.account
@@ -160,5 +160,5 @@ class Command(BaseCommand):
                  source__source_type__type=dash.constants.SourceType.B1,
                  status=dash.constants.PublisherStatus.BLACKLISTED,
                  created_dt__lte=blacklisted_before,
-             )]
+             ).iterator()]
         )
