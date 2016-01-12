@@ -337,6 +337,14 @@ class Campaign(models.Model, PermissionMixin):
 
         return settings
 
+    def get_current_budget_settings(self):
+        cbs_latest = None
+        try:
+            cbs_latest = CampaignBudgetSettings.objects.filter(campaign=self).latest()
+        except CampaignBudgetSettings.DoesNotExist:
+            pass
+        return cbs_latest
+
     def can_archive(self):
         for ad_group in self.adgroup_set.all():
             if not ad_group.can_archive():
@@ -433,6 +441,14 @@ class SettingsBase(models.Model):
 
         return changes
 
+    @classmethod
+    def get_default_value(cls, prop_name):
+        return cls.get_defaults_dict().get(prop_name)
+
+    @classmethod
+    def get_defaults_dict(cls):
+        return {}
+
     def copy_settings(self):
         new_settings = type(self)()
 
@@ -511,11 +527,11 @@ class CampaignSettings(SettingsBase):
     _settings_fields = [
         'name',
         'campaign_manager',
-        'service_fee',
         'iab_category',
-        'promotion_goal',
         'campaign_goal',
         'goal_quantity',
+        'service_fee',
+        'promotion_goal',
         'archived',
         'target_devices',
         'target_regions'
@@ -576,6 +592,28 @@ class CampaignSettings(SettingsBase):
 
         super(CampaignSettings, self).save(*args, **kwargs)
 
+    @classmethod
+    def get_changes_text(cls, old_settings, new_settings):
+
+        if new_settings.changes_text is not None:
+            return new_settings.changes_text
+
+        changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
+
+        if changes is None:
+            return 'Created settings'
+
+        change_strings = []
+
+        for key, value in changes.iteritems():
+            prop = cls.get_human_prop_name(key)
+            val = cls.get_human_value(key, value)
+            change_strings.append(
+                u'{} set to "{}"'.format(prop, val)
+            )
+
+        return ', '.join(change_strings)
+
     class Meta:
         ordering = ('-created_dt',)
 
@@ -589,6 +627,49 @@ class CampaignSettings(SettingsBase):
             'target_devices': constants.AdTargetDevice.get_all(),
             'target_regions': ['US']
         }
+
+    @classmethod
+    def get_human_prop_name(cls, prop_name):
+        NAMES = {
+            'name': 'Name',
+            'campaign_manager': 'Campaign Manager',
+            'iab_category': 'IAB Category',
+            'campaign_goal': 'Campaign Goal',
+            'goal_quantity': 'Goal Quantity',
+            'service_fee': 'Service Fee',
+            'promotion_goal': 'Promotion Goal',
+            'archived': 'Archived',
+            'target_devices': 'Device targeting',
+            'target_regions': 'Locations',
+        }
+
+        return NAMES[prop_name]
+
+    @classmethod
+    def get_human_value(cls, prop_name, value):
+        if prop_name == 'name':
+            value = value.encode('utf-8')
+        elif prop_name == 'campaign_manager':
+            value = views.helpers.get_user_full_name_or_email(value)
+        elif prop_name == 'iab_category':
+            value = constants.IABCategory.get_text(value)
+        elif prop_name == 'campaign_goal':
+            value = constants.CampaignGoal.get_text(value)
+        elif prop_name == 'service_fee':
+            value = views.helpers.format_decimal_to_percent(value) + '%'
+        elif prop_name == 'promotion_goal':
+            value = constants.PromotionGoal.get_text(value)
+        elif prop_name == 'target_devices':
+            value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
+        elif prop_name == 'target_regions':
+            if value:
+                value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
+            else:
+                value = 'worldwide'
+        elif prop_name == 'archived':
+            value = str(value)
+
+        return value
 
 
 class SourceType(models.Model):
@@ -1344,10 +1425,6 @@ class AdGroupSettings(SettingsBase):
         }
 
     @classmethod
-    def get_default_value(cls, prop_name):
-        return cls.get_defaults_dict().get(prop_name)
-
-    @classmethod
     def get_human_prop_name(cls, prop_name):
         NAMES = {
             'start_date': 'Start date',
@@ -1395,6 +1472,32 @@ class AdGroupSettings(SettingsBase):
             value = str(value)
 
         return value
+
+    @classmethod
+    def get_changes_text(cls, old_settings, new_settings, user):
+
+        if new_settings.changes_text is not None:
+            return new_settings.changes_text
+
+        changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
+
+        if changes is None:
+            return 'Created settings'
+
+        change_strings = []
+
+        for key, value in changes.iteritems():
+            if key in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
+                    not user.has_perm('zemauth.new_content_ads_tab'):
+                continue
+
+            prop = cls.get_human_prop_name(key)
+            val = cls.get_human_value(key, value)
+            change_strings.append(
+                u'{} set to "{}"'.format(prop, val)
+            )
+
+        return ', '.join(change_strings)
 
     objects = QuerySetManager()
 

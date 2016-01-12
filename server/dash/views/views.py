@@ -1289,16 +1289,7 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
         # reload
         content_ads = content_ads.all()
 
-        if content_ads.exists():
-            api.add_content_ads_archived_change_to_history(ad_group, content_ads, True, request)
-            email_helper.send_ad_group_notification_email(ad_group, request)
-            helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
-                                                ad_group=ad_group)
-
-            with transaction.atomic():
-                for content_ad in content_ads:
-                    content_ad.archived = True
-                    content_ad.save()
+        api.update_content_ads_archived_state(request, content_ads, ad_group, archived=True)
 
         response['archived_count'] = content_ads.count()
         response['rows'] = {
@@ -1337,18 +1328,7 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
             include_archived=True
         )
 
-        if content_ads.exists():
-
-            api.add_content_ads_archived_change_to_history(ad_group, content_ads, False, request)
-            email_helper.send_ad_group_notification_email(ad_group, request)
-
-            helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
-                                                ad_group=ad_group)
-
-            with transaction.atomic():
-                for content_ad in content_ads:
-                    content_ad.archived = False
-                    content_ad.save()
+        api.update_content_ads_archived_state(request, content_ads, ad_group, archived=False)
 
         return self.create_api_response({
             'rows': {content_ad.id: {
@@ -1387,8 +1367,7 @@ class AdGroupContentAdState(api_common.BaseApiView):
 
         if content_ads.exists():
             api.update_content_ads_state(content_ads, state, request)
-            api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
-            email_helper.send_ad_group_notification_email(ad_group, request)
+            api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
 
             helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CONTENT_AD_STATE,
                                                 ad_group=ad_group)
@@ -1920,7 +1899,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         settings.changes_text = changes_text
         settings.save(request)
 
-        email_helper.send_ad_group_notification_email(ad_group, request)
+        email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
