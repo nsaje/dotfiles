@@ -1232,14 +1232,13 @@ class AdGroupSourceSettingsWriter(object):
 
             changes_text_parts.append(text)
 
-        changes_text = ', '.join(changes_text_parts)
-
         settings = self.ad_group_source.ad_group.get_current_settings().copy_settings()
-        settings.changes_text = changes_text
+        settings.changes_text = ', '.join(changes_text_parts)
         settings.save(request)
 
         if request:
-            email_helper.send_ad_group_notification_email(self.ad_group_source.ad_group, request, changes_text)
+            email_helper.send_ad_group_notification_email(
+                self.ad_group_source.ad_group, request, '\n'.join(changes_text_parts))
 
 
 def get_content_ad(content_ad_id):

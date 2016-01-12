@@ -95,7 +95,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
-            changes_text = models.AdGroupSettings.get_changes_text(current_settings, new_settings, request.user)
+            changes_text = models.AdGroupSettings.get_changes_text(
+                current_settings, new_settings, request.user, separator='\n')
 
             email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
             helpers.log_useraction_if_necessary(request, user_action_type, ad_group=ad_group)
