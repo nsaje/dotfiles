@@ -1488,8 +1488,8 @@ class CampaignBudgetTest(TestCase):
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     @patch('dash.views.agency.budget.CampaignBudget')
-    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_put(self, mock_send_campaign_notification_email, MockCampaignBudget, mock_log_useraction):
+    @patch('dash.views.agency.email_helper.send_budget_notification_email')
+    def test_put(self, mock_send_budget_notification_email, MockCampaignBudget, mock_log_useraction):
         password = 'secret'
         self.user = User.objects.get(pk=1)
         self.client.login(username=self.user.email, password=password)
@@ -1527,7 +1527,7 @@ class CampaignBudgetTest(TestCase):
         MockCampaignBudget.return_value.edit.assert_called_with(
             revoke_amount=0, allocate_amount=1000.0, request=response.wsgi_request
         )
-        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
+        mock_send_budget_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.SET_CAMPAIGN_BUDGET,
@@ -1581,6 +1581,25 @@ class CampaignAgencyTest(TestCase):
         self.assertEqual(content['data']['settings']['name'], 'test campaign 1')
         self.assertEqual(content['data']['settings']['iab_category'], 'IAB24')
 
+        test_dict = {
+            'datetime': '2014-06-04T05:58:21',
+            'changed_by': 'superuser@test.com',
+            'settings': [
+                {'name': 'Name', 'value': ''},
+                {'name': 'Campaign Manager', 'value': 'user@test.com'},
+                {'name': 'IAB Category', 'value': 'Uncategorized'},
+                {'name': 'Campaign Goal', 'value': 'new unique visitors'},
+                {'name': 'Goal Quantity', 'value': '0.00'},
+                {'name': 'Service Fee', 'value': '20%'},
+                {'name': 'Promotion Goal', 'value': 'Brand Building'},
+                {'name': 'Archived', 'value': 'False'},
+                {'name': 'Device targeting', 'value': 'Mobile'},
+                {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'}
+            ],
+            'show_old_settings': False,
+            'changes_text': 'Created settings'
+        }
+
         self.assertEqual(content['data']['history'], [{
             'datetime': '2014-06-04T05:58:21',
             'changed_by': 'superuser@test.com',
@@ -1588,13 +1607,13 @@ class CampaignAgencyTest(TestCase):
                 {'name': 'Name', 'value': ''},
                 {'name': 'Campaign Manager', 'value': 'user@test.com'},
                 {'name': 'IAB Category', 'value': 'Uncategorized'},
-                {'name': 'Campaign goal', 'value': 'new unique visitors'},
-                {'name': 'Goal quantity', 'value': '0.00'},
+                {'name': 'Campaign Goal', 'value': 'new unique visitors'},
+                {'name': 'Goal Quantity', 'value': '0.00'},
                 {'name': 'Service Fee', 'value': '20%'},
                 {'name': 'Promotion Goal', 'value': 'Brand Building'},
                 {'name': 'Archived', 'value': 'False'},
-                {'name': 'Target Devices', 'value': 'Mobile'},
-                {'name': 'Target Devices', 'value': 'New Caledonia, 501 New York, NY'}
+                {'name': 'Device targeting', 'value': 'Mobile'},
+                {'name': 'Locations', 'value': 'New Caledonia, 501 New York, NY'}
             ],
             'show_old_settings': False,
             'changes_text': 'Created settings'
@@ -1627,7 +1646,7 @@ class CampaignAgencyTest(TestCase):
         self.assertEqual(settings.campaign_manager_id, 1)
         self.assertEqual(settings.iab_category, 'IAB17')
 
-        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
+        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS,
@@ -1725,7 +1744,7 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(settings.target_devices, ['desktop'])
         self.assertEqual(settings.target_regions, ['CA', '502'])
 
-        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request)
+        mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.SET_CAMPAIGN_SETTINGS,
@@ -1877,7 +1896,7 @@ class AccountAgencyTest(TestCase):
             permission_object = Permission.objects.get(codename=perm)
             user.user_permissions.add(permission_object)
         user.save()
-        
+
         client = Client()
         client.login(username=user.email, password=password)
         return client
@@ -1905,7 +1924,6 @@ class AccountAgencyTest(TestCase):
             'id': '1',
             'archived': False
         })
-
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put(self, mock_log_useraction):
@@ -1977,20 +1995,117 @@ class AccountAgencyTest(TestCase):
         content = json.loads(response.content)
         self.assertFalse(content['success'])
 
+    def test_get_history_multiple(self):
+        account = models.Account.objects.get(pk=200)
+        view = agency.AccountAgency()
+        history = view.get_history(account)
+
+        self.assertEqual(len(history), 5)
+        self.assertFalse(history[0]['show_old_settings'])
+        self.assertTrue(history[1]['show_old_settings'])
+        self.assertTrue(history[-1]['show_old_settings'])
+
+    def test_get_history_initial(self):
+        account = models.Account.objects.get(pk=201)
+        view = agency.AccountAgency()
+        history = view.get_history(account)
+
+        self.assertEqual(len(history), 1)
+        self.assertFalse(history[0]['show_old_settings'])
+
+    def test_get_history_empty(self):
+        account = models.Account.objects.get(pk=202)
+        view = agency.AccountAgency()
+        history = view.get_history(account)
+
+        self.assertEqual(history, [])
+
+    def test_convert_settings_to_dict(self):
+        old_settings = models.AccountSettings.objects.get(pk=200)
+        new_settings = models.AccountSettings.objects.get(pk=201)
+        view = agency.AccountAgency()
+
+        settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
+
+        self.assertIsNotNone(settings_dict)
+        self.assertEqual(len(settings_dict), 5)
+        self.assertIn('name', settings_dict['name'])
+        self.assertIn('value', settings_dict['name'])
+        self.assertIn('old_value', settings_dict['name'])
+
+    def test_convert_settings_to_dict_old_settings_none(self):
+        old_settings = None
+        new_settings = models.AccountSettings.objects.get(pk=201)
+        view = agency.AccountAgency()
+
+        settings_dict = view.convert_settings_to_dict(new_settings, old_settings)
+
+        self.assertIsNotNone(settings_dict)
+        self.assertEqual(len(settings_dict), 5)
+        self.assertIn('name', settings_dict['name'])
+        self.assertIn('value', settings_dict['name'])
+        self.assertNotIn('old_value', settings_dict['name'])
+
+    def test_get_changes_text(self):
+        expected_changes_strings = [
+            'Created settings',
+            'Service Fee set to "10%"',
+            'Default Sales Representative set to "superuser@test.com", Service Fee set to "20%"',
+            '',
+            'some text',
+            'Service Fee set to "10%", some text'
+        ]
+
+        view = agency.AccountAgency()
+        for i in range(6):
+            new_settings_pk = 200+i
+            new_settings = models.AccountSettings.objects.get(pk=new_settings_pk)
+            old_settings = models.AccountSettings.objects.get(pk=new_settings_pk-1) if i > 0 else None
+            changes_string = view.get_changes_text(new_settings, old_settings)
+
+            self.assertEqual(changes_string, expected_changes_strings[i])
+
+    def test_get_changes_text_for_media_sources(self):
+        view = agency.AccountAgency()
+
+        sources = list(models.Source.objects.all())
+        self.assertEqual(
+            view.get_changes_text_for_media_sources(sources[0:1], sources[1:2]),
+            'Added allowed media sources (Source 1), Removed allowed media sources (Source 2)'
+        )
+        self.assertEqual(
+            view.get_changes_text_for_media_sources(sources[0:2], sources[2:3]),
+            'Added allowed media sources (Source 1, Source 2), Removed allowed media sources (Source 3)'
+        )
+        self.assertEqual(
+            view.get_changes_text_for_media_sources([], []),
+            ''
+        )
+        self.assertEqual(
+            view.get_changes_text_for_media_sources(sources[0:1], []),
+            'Added allowed media sources (Source 1)'
+        )
+        self.assertEqual(
+            view.get_changes_text_for_media_sources([], sources[1:2]),
+            'Removed allowed media sources (Source 2)'
+        )
 
     def test_set_allowed_sources(self):
         account = models.Account.objects.get(pk=1)
+        account_settings = account.get_current_settings()
         view = agency.AccountAgency()
-        view.set_allowed_sources(account, True, self._get_form_with_allowed_sources_dict({
+        view.set_allowed_sources(account_settings, account, True, self._get_form_with_allowed_sources_dict({
             1: {'allowed': True},
             2: {'allowed': False},
             3: {'allowed': True}
             }))
+
+        self.assertIsNotNone(account_settings.changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1, 3])
         )
-    
+
     def test_set_allowed_sources_cant_remove_unreleased(self):
         account = models.Account.objects.get(pk=1)
         account.allowed_sources.add(3) # add an unreleased source
@@ -2000,15 +2115,18 @@ class AccountAgencyTest(TestCase):
         )
         self.assertFalse(models.Source.objects.get(pk=3).released)
 
+        account_settings = account.get_current_settings()
         view = agency.AccountAgency()
         view.set_allowed_sources(
+            account_settings,
             account,
-            False, # no permission to remove unreleased source 3 
+            False, # no permission to remove unreleased source 3
             self._get_form_with_allowed_sources_dict({
                 1: {'allowed': False},
                 2: {'allowed': False},
                 3: {'allowed': False}
             }))
+        self.assertIsNotNone(account_settings.changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([3,])
@@ -2016,6 +2134,7 @@ class AccountAgencyTest(TestCase):
 
     def test_set_allowed_sources_cant_add_unreleased(self):
         account = models.Account.objects.get(pk=1)
+        account_settings = account.get_current_settings()
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1,2])
@@ -2024,13 +2143,15 @@ class AccountAgencyTest(TestCase):
 
         view = agency.AccountAgency()
         view.set_allowed_sources(
+            account_settings,
             account,
-            False, # no permission to add unreleased source 3 
+            False, # no permission to add unreleased source 3
             self._get_form_with_allowed_sources_dict({
                 1: {'allowed': False},
                 2: {'allowed': True},
                 3: {'allowed': True}
             }))
+        self.assertIsNotNone(account_settings.changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([2,])
@@ -2038,6 +2159,7 @@ class AccountAgencyTest(TestCase):
 
     def test_set_allowed_sources_cant_remove_running_source(self):
         account = models.Account.objects.get(pk=111)
+        account_settings = account.get_current_settings()
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([2,3])
@@ -2047,13 +2169,14 @@ class AccountAgencyTest(TestCase):
             2: {'allowed': False},
             3: {'allowed': True}
         })
-        
+
         view.set_allowed_sources(
+            account_settings,
             account,
-            False, # no permission to add unreleased source 3 
+            False, # no permission to add unreleased source 3
             form
         )
-  
+
         self.assertEqual(
             dict(form.errors),
             {'allowed_sources': [u'Can\'t save changes because media source Source 2 is still used on this account.']}
@@ -2061,12 +2184,14 @@ class AccountAgencyTest(TestCase):
 
     def test_set_allowed_sources_none(self):
         account = models.Account.objects.get(pk=1)
+        account_settings = account.get_current_settings()
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1,2])
         )
         view = agency.AccountAgency()
-        view.set_allowed_sources(account, True, self._get_form_with_allowed_sources_dict(None))
+        view.set_allowed_sources(account_settings, account, True, self._get_form_with_allowed_sources_dict(None))
+        self.assertIsNone(account_settings.changes_text)
         self.assertEqual(
             set(account.allowed_sources.values_list('id', flat=True)),
             set([1,2])
@@ -2084,10 +2209,10 @@ class AccountAgencyTest(TestCase):
             follow=True
         )
         response = json.loads(response.content)
-      
+
         self.assertEqual(response['data']['settings']['allowed_sources'], {
-            '2': {'name': 'Source 2', 'allowed': True},
-            '3': {'name': 'Source 3 (unreleased)'}
+            '2': {'name': 'Source 2', 'allowed': True, 'released': True},
+            '3': {'name': 'Source 3', 'released': False}
             })
 
     def test_get_allowed_sources_no_released(self):
@@ -2101,9 +2226,9 @@ class AccountAgencyTest(TestCase):
             follow=True
         )
         response = json.loads(response.content)
-      
+
         self.assertEqual(response['data']['settings']['allowed_sources'], {
-            '2': {'name': 'Source 2', 'allowed': True},
+            '2': {'name': 'Source 2', 'allowed': True, 'released': True},
             })
 
     def test_add_error_to_account_agency_form(self):
@@ -2111,9 +2236,9 @@ class AccountAgencyTest(TestCase):
         form = self._get_form_with_allowed_sources_dict({})
         view.add_error_to_account_agency_form(form, [1,2])
         self.assertEqual(
-            dict(form.errors), 
+            dict(form.errors),
             {
-                'allowed_sources': 
+                'allowed_sources':
                     [u'Can\'t save changes because media sources Source 1, Source 2 are still used on this account.']
             }
         )
@@ -2123,9 +2248,9 @@ class AccountAgencyTest(TestCase):
         form = self._get_form_with_allowed_sources_dict({})
         view.add_error_to_account_agency_form(form, [1])
         self.assertEqual(
-            dict(form.errors), 
+            dict(form.errors),
             {
-                'allowed_sources': 
+                'allowed_sources':
                     [u'Can\'t save changes because media source Source 1 is still used on this account.']
             }
         )

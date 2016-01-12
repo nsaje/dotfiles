@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
-from mock import patch
+from mock import patch, ANY
 import datetime
 import httplib
 
@@ -542,7 +542,7 @@ class AdGroupContentAdStateTest(TestCase):
         request = HttpRequest()
         request.user = User(id=1)
 
-        api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
+        api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
 
         settings = ad_group.get_current_settings()
 
@@ -560,7 +560,7 @@ class AdGroupContentAdStateTest(TestCase):
         request = HttpRequest()
         request.user = User(id=1)
 
-        api.add_content_ads_state_change_to_history(ad_group, content_ads, state, request)
+        api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
 
         settings = ad_group.get_current_settings()
 
@@ -740,7 +740,7 @@ class AdGroupContentAdArchive(TestCase):
                 'status_setting': 2
             }})
 
-        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request, 'Content ad(s) 2 Archived.')
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
@@ -770,7 +770,7 @@ class AdGroupContentAdArchive(TestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request, ANY)
 
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
     def test_archive_set_batch(self, mock_send_mail):
@@ -799,7 +799,7 @@ class AdGroupContentAdArchive(TestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request, ANY)
 
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
     def test_archive_pause_active_before_archiving(self, mock_send_mail):
@@ -826,7 +826,7 @@ class AdGroupContentAdArchive(TestCase):
         self.assertEqual(response_dict['data']['active_count'], active_count)
         self.assertEqual(response_dict['data']['archived_count'], archived_count)
 
-        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request, 'Content ad(s) 1, 2 Archived.')
 
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
     def test_content_ad_ids_validation_error(self, mock_send_mail):
@@ -846,7 +846,7 @@ class AdGroupContentAdArchive(TestCase):
         request = HttpRequest()
         request.user = User(id=1)
 
-        api.add_content_ads_archived_change_to_history(ad_group, content_ads, True, request)
+        api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
 
         settings = ad_group.get_current_settings()
 
@@ -862,7 +862,7 @@ class AdGroupContentAdArchive(TestCase):
         request = HttpRequest()
         request.user = User(id=1)
 
-        api.add_content_ads_archived_change_to_history(ad_group, content_ads, True, request)
+        api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
 
         settings = ad_group.get_current_settings()
 
@@ -914,7 +914,8 @@ class AdGroupContentAdRestore(TestCase):
         self.assertTrue(response_dict['success'])
         self.assertEqual(response_dict['data']['rows'], {'2': {'archived': False, 'status_setting': content_ad.state}})
 
-        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_send_mail.assert_called_with(
+            ad_group, response.wsgi_request, 'Content ad(s) 2 Restored.')
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
@@ -947,7 +948,7 @@ class AdGroupContentAdRestore(TestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request, ANY)
 
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
     def test_archive_set_batch(self, mock_send_mail):
@@ -977,7 +978,7 @@ class AdGroupContentAdRestore(TestCase):
                              'status_setting': ad.state
                          } for ad in content_ads})
 
-        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request, ANY)
 
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
     def test_restore_success_when_all_restored(self, mock_send_mail):
@@ -999,7 +1000,7 @@ class AdGroupContentAdRestore(TestCase):
         response_dict = json.loads(response.content)
         self.assertTrue(response_dict['success'])
 
-        mock_send_mail.assert_called_with(ad_group, response.wsgi_request)
+        mock_send_mail.assert_called_with(ad_group, response.wsgi_request, ANY)
 
     @patch('dash.views.views.email_helper.send_ad_group_notification_email')
     def test_content_ad_ids_validation_error(self, mock_send_mail):
@@ -1019,7 +1020,7 @@ class AdGroupContentAdRestore(TestCase):
         request = HttpRequest()
         request.user = User(id=1)
 
-        api.add_content_ads_archived_change_to_history(ad_group, content_ads, False, request)
+        api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
 
         settings = ad_group.get_current_settings()
 
@@ -1035,7 +1036,7 @@ class AdGroupContentAdRestore(TestCase):
         request = HttpRequest()
         request.user = User(id=1)
 
-        api.add_content_ads_archived_change_to_history(ad_group, content_ads, False, request)
+        api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
 
         settings = ad_group.get_current_settings()
 
@@ -2143,6 +2144,50 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
                 action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
             )
             self.assertEqual(0, publisher_blacklist_action.count())
+
+    @patch('reports.redshift.get_cursor')
+    def test_post_outbrain_over_quota(self, cursor):
+        for i in xrange(10):
+            models.PublisherBlacklist.objects.create(
+                account=models.Account.objects.get(pk=1),
+                source=models.Source.objects.get(tracking_slug=constants.SourceType.OUTBRAIN),
+                name='test_{}'.format(i),
+                status=constants.PublisherStatus.BLACKLISTED,
+            )
+
+        cursor().dictfetchall.return_value = [
+        {
+            'domain': u'Test',
+            'ctr': 0.0,
+            'exchange': 'outbrain',
+            'external_id': 'sfdafkl1230899012asldas',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date + datetime.timedelta(days=31)
+        payload = {
+            "state": constants.PublisherStatus.BLACKLISTED,
+            "level": constants.PublisherBlacklistLevel.ACCOUNT,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "select_all": True,
+            "publishers_selected": [],
+            "publishers_not_selected": []
+        }
+        res = self._post_publisher_blacklist(1, payload)
+
+        publisher_blacklist_action = actionlog.models.ActionLog.objects.filter(
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            action=actionlog.constants.Action.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(0, publisher_blacklist_action.count())
+        self.assertTrue(res['success'])
+
+        self.assertEqual(10, models.PublisherBlacklist.objects.count())
 
 
 class AdGroupOverviewTest(TestCase):

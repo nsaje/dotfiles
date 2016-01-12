@@ -20,5 +20,6 @@
 0 9 * * *       /home/ubuntu/docker-manage-py.sh send_content_approval_email
 40 * * * *      /home/ubuntu/docker-manage-py.sh monitor_adgroup_propagation
 0 7 * * *       /home/ubuntu/docker-manage-py.sh send_scheduled_export_reports
-*/5 * * * *     /home/ubuntu/docker-manage-py.sh refresh_changed_contentadstats
+*/1 * * * *     /home/ubuntu/docker-manage-py.sh refresh_changed_contentadstats
+*/1 * * * *     /home/ubuntu/docker-manage-py.sh refresh_changed_daily_statements
 29 6,18 * * *   /home/ubuntu/docker-manage-py.sh schedule_old_data_refresh

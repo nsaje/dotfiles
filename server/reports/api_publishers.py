@@ -92,9 +92,11 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
 def query_active_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, blacklist=[]):
     constraints_list = []
     if blacklist:
+        aggregated_blacklist = _aggregate_domains(blacklist)
+
         # create a base object, then OR onto it
-        rsq = ~_map_blacklist_to_rs_queryset(blacklist[0])
-        for blacklist_entry in blacklist[1:]:
+        rsq = ~_map_blacklist_to_rs_queryset(aggregated_blacklist[0])
+        for blacklist_entry in aggregated_blacklist[1:]:
             rsq &= ~_map_blacklist_to_rs_queryset(blacklist_entry)
         constraints_list = [rsq]
 
@@ -111,9 +113,11 @@ def query_active_publishers(start_date, end_date, breakdown_fields=[], order_fie
 def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, blacklist=[]):
     constraints_list = []
     if blacklist:
+        aggregated_blacklist = _aggregate_domains(blacklist)
+
         # create a base object, then OR onto it
-        rsq = _map_blacklist_to_rs_queryset(blacklist[0])
-        for blacklist_entry in blacklist[1:]:
+        rsq = _map_blacklist_to_rs_queryset(aggregated_blacklist[0])
+        for blacklist_entry in aggregated_blacklist[1:]:
             rsq |= _map_blacklist_to_rs_queryset(blacklist_entry)
         constraints_list = [rsq]
     else:
@@ -131,6 +135,34 @@ def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], orde
         constraints_list=constraints_list
     )
 
+def _aggregate_domains(blacklist):
+    # creates a new blacklist that groups all domains that belong to same
+    # adgroup_id and exchange into one list (thus reducing query size)
+
+    aggregated_pubs = {}
+
+    ret = []
+    for blacklist_entry in blacklist:
+        # treat global publishers separately
+        if blacklist_entry.get('adgroup_id') is None:
+            ret.append({
+                'domain': blacklist_entry['domain'],
+            })
+            continue
+
+        key = (blacklist_entry['adgroup_id'], blacklist_entry['exchange'])
+        aggregated_pubs[key] = aggregated_pubs.get(key, []) + [blacklist_entry['domain']]
+    for adgroup_id, exchange in aggregated_pubs:
+        domain_list = aggregated_pubs[ (adgroup_id, exchange) ]
+        if len(domain_list) == 1:
+            domain_list = domain_list[0]
+
+        ret.append({
+            'domain': domain_list,
+            'exchange': exchange,
+            'adgroup_id': adgroup_id
+        })
+    return ret
 
 def _map_blacklist_to_rs_queryset(blacklist):
     if blacklist.get('adgroup_id') is not None:

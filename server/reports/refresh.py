@@ -2,6 +2,7 @@ from collections import defaultdict
 import datetime
 import json
 import logging
+import time
 
 from django.db.models import Sum, Max
 from django.db import connection, transaction
@@ -11,6 +12,8 @@ import reports.models
 from reports.db_raw_helpers import dictfetchall
 from reports import redshift
 from reports import daily_statements
+from utils import json_helper
+from utils import s3helpers
 from utils import statsd_helper
 from utils import sqs_helper
 
@@ -19,6 +22,9 @@ import dash.models
 logger = logging.getLogger(__name__)
 
 CC_TO_NANO = 100000
+
+LOAD_CONTENTADS_KEY_FORMAT = 'contentadstats_load/{year}/{month}/{day}/{campaign_id}/{ts}.json'
+MAX_DATES_TO_REFRESH = 200
 
 
 def _get_joined_stats_rows(date, campaign_id):
@@ -123,6 +129,13 @@ def notify_contentadstats_change(date, campaign_id):
     )
 
 
+def notify_daily_statements_change(date, campaign_id):
+    sqs_helper.write_message_json(
+        settings.DAILY_STATEMENTS_CHANGE_QUEUE,
+        {'date': date.isoformat(), 'campaign_id': campaign_id}
+    )
+
+
 @statsd_helper.statsd_timer('reports.refresh', 'refresh_changed_contentadstats_timer')
 def refresh_changed_contentadstats():
     messages = sqs_helper.get_all_messages(settings.CAMPAIGN_CHANGE_QUEUE)
@@ -137,15 +150,69 @@ def refresh_changed_contentadstats():
     for key, val in to_refresh.iteritems():
         dates = [datetime.datetime.strptime(d, '%Y-%m-%d').date() for d in val['dates']]
         campaign = dash.models.Campaign.objects.get(id=key)
+
+        logger.info('Refreshing changed content ad stats for campaign %s and %s date(s)', campaign.id, len(dates))
         changed_dates = daily_statements.reprocess_daily_statements(min(dates), campaign)
+
         for date in set(changed_dates).union(set(dates)):
-            refresh_contentadstats(date, campaign)
+            notify_daily_statements_change(date, campaign.id)
+
         sqs_helper.delete_messages(settings.CAMPAIGN_CHANGE_QUEUE, val['messages'])
 
     statsd_helper.statsd_gauge('reports.refresh.refresh_changed_contentadstats_num', len(to_refresh))
 
 
-@transaction.atomic(using=settings.STATS_DB_NAME)
+@statsd_helper.statsd_timer('reports.refresh', 'refresh_changed_daily_statements_timer')
+def refresh_changed_daily_statements():
+    messages = sqs_helper.get_all_messages(settings.DAILY_STATEMENTS_CHANGE_QUEUE)
+
+    to_refresh = {}
+    num_to_refresh = 0
+    for message in messages:
+        if num_to_refresh > MAX_DATES_TO_REFRESH:
+            message.change_visibility(0)
+            continue
+
+        body = json.loads(message.get_body())
+        key = (body['date'], body['campaign_id'])
+
+        if key not in to_refresh:
+            to_refresh[key] = []
+            num_to_refresh += 1
+
+        to_refresh[key].append(message)
+
+    for key, val in to_refresh.iteritems():
+        date = datetime.datetime.strptime(key[0], '%Y-%m-%d').date()
+        campaign = dash.models.Campaign.objects.get(id=key[1])
+
+        logger.info('Refreshing changed content ad stats for campaign %s and date %s', campaign.id, date)
+        refresh_contentadstats(date, campaign)
+
+        sqs_helper.delete_messages(settings.DAILY_STATEMENTS_CHANGE_QUEUE, val)
+
+    statsd_helper.statsd_gauge('reports.refresh.refresh_changed_daily_statements_num', len(to_refresh))
+
+
+def _get_s3_file_content_json(rows):
+    # Redshift expects a whitespace separated list of top-level objects or arrays (each representing a row)
+    # http://docs.aws.amazon.com/redshift/latest/dg/copy-parameters-data-format.html#copy-json-data-file
+    return '\n'.join(json.dumps(row, cls=json_helper.DateJSONEncoder) for row in rows)
+
+
+def put_contentadstats_to_s3(date, campaign, rows):
+    rows_json = _get_s3_file_content_json(rows)
+    s3_key = LOAD_CONTENTADS_KEY_FORMAT.format(
+        year=date.year,
+        month=date.month,
+        day=date.day,
+        campaign_id=campaign.id,
+        ts=int(time.time()*1000)
+    )
+    s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).put(s3_key, rows_json)
+    return s3_key
+
+
 def refresh_contentadstats(date, campaign):
     # join data
     rows = _get_joined_stats_rows(date, campaign.id)
@@ -154,29 +221,28 @@ def refresh_contentadstats(date, campaign):
     _add_effective_spend(date, campaign, rows)
     rows = [_add_goals(row, goals_dict) for row in rows]
     rows = [_add_ids(row, campaign) for row in rows]
+    s3_key = put_contentadstats_to_s3(date, campaign, rows)
 
-    redshift.delete_contentadstats(date, campaign.id)
-    redshift.insert_contentadstats(rows)
+    with transaction.atomic(using=settings.STATS_DB_NAME):
+        redshift.delete_contentadstats(date, campaign.id)
+        redshift.load_contentadstats(s3_key)
 
-    redshift.delete_contentadstats_diff(date, campaign.id)
-    refresh_contentadstats_diff(date, campaign)
+        redshift.delete_contentadstats_diff(date, campaign.id)
+        refresh_contentadstats_diff(date, campaign)
 
 
 def refresh_contentadstats_diff(date, campaign):
-    logger.info('refresh_contentadstats_diff: Refreshing adgroup and contentad stats in Redshift')
     adgroup_stats_batch = reports.models.AdGroupStats.objects.filter(
         datetime__contains=date,
         ad_group__campaign_id=campaign.id
     )
 
     diff_rows = []
-    for adgroup_stats in adgroup_stats_batch:
-        # also remove and recalculate difference between adgroup stats and
-        # contentadstats - this will be needed until we deprecated adgroupstats
-        contentadstats_aggregate = reports.models.ContentAdStats.objects.filter(
-            content_ad__ad_group=adgroup_stats.ad_group,
-            source=adgroup_stats.source,
-            date=adgroup_stats.datetime.date()
+    for ag_stats in adgroup_stats_batch:
+        ca_stats_agg = reports.models.ContentAdStats.objects.filter(
+            content_ad__ad_group=ag_stats.ad_group,
+            source=ag_stats.source,
+            date=ag_stats.datetime.date()
         ).aggregate(
             impressions_sum=Sum('impressions'),
             clicks_sum=Sum('clicks'),
@@ -184,10 +250,10 @@ def refresh_contentadstats_diff(date, campaign):
             data_cost_cc_sum=Sum('data_cost_cc'),
         )
 
-        contentad_postclickstats_aggregate = reports.models.ContentAdPostclickStats.objects.filter(
-            content_ad__ad_group=adgroup_stats.ad_group,
-            source=adgroup_stats.source,
-            date=adgroup_stats.datetime.date()
+        ca_postclickstats_agg = reports.models.ContentAdPostclickStats.objects.filter(
+            content_ad__ad_group=ag_stats.ad_group,
+            source=ag_stats.source,
+            date=ag_stats.datetime.date()
         ).aggregate(
             visits_sum=Sum('visits'),
             new_visits_sum=Sum('new_visits'),
@@ -197,23 +263,23 @@ def refresh_contentadstats_diff(date, campaign):
         )
 
         row = {
-            'date': adgroup_stats.datetime.date().isoformat(),
+            'date': ag_stats.datetime.date().isoformat(),
             'content_ad_id': redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID,
-            'adgroup_id': adgroup_stats.ad_group.id,
-            'source_id': adgroup_stats.source.id,
-            'campaign_id': adgroup_stats.ad_group.campaign.id,
-            'account_id': adgroup_stats.ad_group.campaign.account.id,
+            'adgroup_id': ag_stats.ad_group.id,
+            'source_id': ag_stats.source.id,
+            'campaign_id': ag_stats.ad_group.campaign.id,
+            'account_id': ag_stats.ad_group.campaign.account.id,
 
-            'impressions': (adgroup_stats.impressions or 0) - (contentadstats_aggregate['impressions_sum'] or 0),
-            'clicks': (adgroup_stats.clicks or 0) - (contentadstats_aggregate['clicks_sum'] or 0),
-            'cost_cc': (adgroup_stats.cost_cc or 0) - (contentadstats_aggregate['cost_cc_sum'] or 0),
-            'data_cost_cc': (adgroup_stats.data_cost_cc or 0) - (contentadstats_aggregate['data_cost_cc_sum'] or 0),
+            'impressions': (ag_stats.impressions or 0) - (ca_stats_agg['impressions_sum'] or 0),
+            'clicks': (ag_stats.clicks or 0) - (ca_stats_agg['clicks_sum'] or 0),
+            'cost_cc': (ag_stats.cost_cc or 0) - (ca_stats_agg['cost_cc_sum'] or 0),
+            'data_cost_cc': (ag_stats.data_cost_cc or 0) - (ca_stats_agg['data_cost_cc_sum'] or 0),
 
-            'visits': (adgroup_stats.visits or 0) - (contentad_postclickstats_aggregate['visits_sum'] or 0),
-            'new_visits': (adgroup_stats.new_visits or 0) - (contentad_postclickstats_aggregate['new_visits_sum'] or 0),
-            'bounced_visits': (adgroup_stats.bounced_visits or 0) - (contentad_postclickstats_aggregate['bounced_visits_sum'] or 0),
-            'pageviews': (adgroup_stats.pageviews or 0) - (contentad_postclickstats_aggregate['pageviews_sum'] or 0),
-            'total_time_on_site': (adgroup_stats.duration or 0) - (contentad_postclickstats_aggregate['total_time_on_site_sum'] or 0),
+            'visits': (ag_stats.visits or 0) - (ca_postclickstats_agg['visits_sum'] or 0),
+            'new_visits': (ag_stats.new_visits or 0) - (ca_postclickstats_agg['new_visits_sum'] or 0),
+            'bounced_visits': (ag_stats.bounced_visits or 0) - (ca_postclickstats_agg['bounced_visits_sum'] or 0),
+            'pageviews': (ag_stats.pageviews or 0) - (ca_postclickstats_agg['pageviews_sum'] or 0),
+            'total_time_on_site': (ag_stats.duration or 0) - (ca_postclickstats_agg['total_time_on_site_sum'] or 0),
 
             'conversions': '{}'
         }
@@ -227,9 +293,10 @@ def refresh_contentadstats_diff(date, campaign):
         missing_keys = set(key for key in metric_keys if row[key] < 0)
         if missing_keys:
             logger.error(
-                'ad group stats data missing. skipping it in refreshing diffs. ad group id: %s source id: %s date: %s keys: %s',
-                adgroup_stats.ad_group.id,
-                adgroup_stats.source.id,
+                'ad group stats data missing. skipping it in refreshing diffs. '
+                'ad group id: %s source id: %s date: %s keys: %s',
+                ag_stats.ad_group.id,
+                ag_stats.source.id,
                 date,
                 missing_keys
             )
@@ -241,9 +308,8 @@ def refresh_contentadstats_diff(date, campaign):
 
         diff_rows.append(row)
 
-    if diff_rows != []:
-        redshift.insert_contentadstats(diff_rows)
-        logger.info('refresh_contentadstats_diff: Inserted {count} diff rows into redshift'.format(count=len(diff_rows)))
+    _add_effective_spend(date, campaign, diff_rows)
+    redshift.insert_contentadstats(diff_rows)
 
 
 def refresh_adgroup_stats(**constraints):

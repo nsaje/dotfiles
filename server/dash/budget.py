@@ -79,7 +79,7 @@ class CampaignBudget(object):
         self.campaign = campaign
 
     def get_total(self):
-        cbs_latest = self._get_latest()
+        cbs_latest = self.campaign.get_current_budget_settings()
         return float(cbs_latest.total) if cbs_latest is not None else 0
 
     def get_spend(self):
@@ -113,7 +113,7 @@ class CampaignBudget(object):
                 self.campaign.name
             )
 
-        cbs_latest = self._get_latest()
+        cbs_latest = self.campaign.get_current_budget_settings()
 
         with transaction.atomic():
             total = allocate_amount - revoke_amount
@@ -131,14 +131,6 @@ class CampaignBudget(object):
 
     def get_history(self):
         return dash.models.CampaignBudgetSettings.objects.filter(campaign=self.campaign)
-
-    def _get_latest(self):
-        cbs_latest = None
-        try:
-            cbs_latest = dash.models.CampaignBudgetSettings.objects.filter(campaign=self.campaign).latest()
-        except dash.models.CampaignBudgetSettings.DoesNotExist:
-            pass
-        return cbs_latest
 
     def _can_edit(self, user):
         return self.campaign in dash.models.Campaign.objects.all().filter_by_user(user)

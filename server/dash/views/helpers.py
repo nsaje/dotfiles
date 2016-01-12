@@ -6,17 +6,20 @@ import pytz
 from decimal import Decimal
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models import Q, Max
 
 import actionlog.api
 import actionlog.constants
 import actionlog.models
-from dash import models, region_targeting_helper
+import actionlog.zwei_actions
+from dash import models
 from dash import constants
 from dash import api
 from dash import budget
 from utils import exc
 from utils import statsd_helper
+from utils import email_helper
 import automation.autopilot
 
 STATS_START_DELTA = 30
@@ -1034,3 +1037,37 @@ def get_source_default_settings(source):
         raise exc.MissingDataError('No default credentials set in {}.'.format(default_settings))
 
     return default_settings
+
+
+def save_campaign_settings_and_propagate(campaign, settings, request):
+    actions = []
+
+    with transaction.atomic():
+        campaign.save(request)
+        settings.save(request)
+
+        # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
+        campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+
+        for ad_group in campaign_ad_groups:
+            adgroup_settings = ad_group.get_current_settings()
+            actions.extend(
+                api.order_ad_group_settings_update(
+                    ad_group,
+                    adgroup_settings,
+                    adgroup_settings,
+                    request,
+                    send=False,
+                    iab_update=True
+                )
+            )
+
+    actionlog.zwei_actions.send(actions)
+
+
+def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request, user_action_type):
+    changes = old_settings.get_setting_changes(new_settings)
+    if changes:
+        changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator='\n')
+        email_helper.send_campaign_notification_email(campaign, request, changes_text)
+        log_useraction_if_necessary(request, user_action_type, campaign=campaign)
