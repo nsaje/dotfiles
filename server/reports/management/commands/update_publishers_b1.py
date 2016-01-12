@@ -20,7 +20,6 @@ class Command(BaseCommand):
         make_option('-e', '--end-date', help='End date for the publishers import', dest='end_date')
     )
 
-    @transaction.atomic(using=settings.STATS_DB_NAME)
     def handle(self, *args, **options):
         try:
             start_date = self._get_start_date(options)
