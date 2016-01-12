@@ -364,4 +364,4 @@ def _add_to_history(request, batch, ad_group):
     settings = ad_group.get_current_settings().copy_settings()
     settings.changes_text = changes_text
     settings.save(request)
-    email_helper.send_ad_group_notification_email(ad_group, request)
+    email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
