@@ -593,7 +593,7 @@ class CampaignSettings(SettingsBase):
         super(CampaignSettings, self).save(*args, **kwargs)
 
     @classmethod
-    def get_changes_text(cls, old_settings, new_settings):
+    def get_changes_text(cls, old_settings, new_settings, separator=', '):
 
         if new_settings.changes_text is not None:
             return new_settings.changes_text
@@ -612,7 +612,7 @@ class CampaignSettings(SettingsBase):
                 u'{} set to "{}"'.format(prop, val)
             )
 
-        return ', '.join(change_strings)
+        return separator.join(change_strings)
 
     class Meta:
         ordering = ('-created_dt',)
@@ -1474,7 +1474,7 @@ class AdGroupSettings(SettingsBase):
         return value
 
     @classmethod
-    def get_changes_text(cls, old_settings, new_settings, user):
+    def get_changes_text(cls, old_settings, new_settings, user, separator=', '):
 
         if new_settings.changes_text is not None:
             return new_settings.changes_text
@@ -1497,7 +1497,7 @@ class AdGroupSettings(SettingsBase):
                 u'{} set to "{}"'.format(prop, val)
             )
 
-        return ', '.join(change_strings)
+        return separator.join(change_strings)
 
     objects = QuerySetManager()
 
