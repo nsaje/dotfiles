@@ -20,8 +20,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.pagination = {
         currentPage: 1
     };
-    $scope.ob_blacklisted_count = 0;
-    $scope.ob_blacklisted_selected = 0;
+    $scope.obBlacklistedCount = 0;
+    $scope.obBlacklistedSelected = 0;
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
@@ -133,11 +133,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     };
 
     $scope.recountOutbrainPublishers = function () {
-        $scope.ob_blacklisted_selected = 0;
+        $scope.obBlacklistedSelected = 0;
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
             var pubStatus = $scope.selectedPublisherStatus[publisherId];
             if (pubStatus.exchange === constants.sourceTypeName.OUTBRAIN && pubStatus.checked && pubStatus.blacklisted !== 'Blacklisted') {
-                $scope.ob_blacklisted_selected += 1;
+                $scope.obBlacklistedSelected += 1;
             }
         });
     };
@@ -274,7 +274,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             row.publisherSelected = false;
         });
 
-        $scope.ob_blacklisted_selected = 0;
+        $scope.obBlacklistedSelected = 0;
     };
 
     $scope.updatePublisherSelection = function () {
@@ -300,12 +300,12 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             if (row !== undefined) {
                 if (row.exchange === constants.sourceTypeName.OUTBRAIN) {
                     if (!row.publisherSelected && row.blacklisted !== 'Blacklisted') {
-                        if ($scope.ob_blacklisted_count + $scope.ob_blacklisted_selected >= 10) {
+                        if ($scope.obBlacklistedCount + $scope.obBlacklistedSelected >= 10) {
                             row.can_blacklist_publisher = false;
                         }
                     }
 
-                    if ($scope.ob_blacklisted_count + $scope.ob_blacklisted_selected < 10) {
+                    if ($scope.obBlacklistedCount + $scope.obBlacklistedSelected < 10) {
                         row.can_blacklist_publisher = true;
                     }
 
@@ -685,7 +685,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.totals.checked = $scope.selectedTotals;
                 $scope.lastChange = data.lastChange;
                 $scope.pagination = data.pagination;
-                $scope.ob_blacklisted_count = data.ob_blacklisted_count;
+                $scope.obBlacklistedCount = data.obBlacklistedCount;
 
                 $scope.recountOutbrainPublishers();
                 $scope.updatePublisherSelection();
