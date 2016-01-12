@@ -71,8 +71,7 @@ def insert_contentadstats(rows):
 
 @statsd_timer('reports.redshift', 'load_contentadstats')
 def load_contentadstats(s3_key):
-    query = "COPY contentadstats FROM %s "\
-            "CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
+    query = "COPY contentadstats FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
 
     credentials = _get_aws_credentials_string(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
     params = [S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_key), credentials]
@@ -173,8 +172,7 @@ def delete_publishers(start_date, end_date):
 
 @statsd_timer('reports.redshift', 'load_b1_publishers')
 def load_b1_publishers(s3_key):
-    query = "COPY b1_publishers_1 FROM %s CREDENTIALS "\
-            "%s FORMAT CSV MAXERROR 0"
+    query = "COPY b1_publishers_1 FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
 
     credentials = _get_aws_credentials_string(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
     params = [S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_key), credentials]

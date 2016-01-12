@@ -146,7 +146,7 @@ class RedshiftTest(TestCase):
         s3_key = 'publishers/2015-01-01-2015-01-31--123456789/part-00000'
         redshift.load_b1_publishers(s3_key)
 
-        query = "COPY b1_publishers_1 FROM %s CREDENTIALS %s FORMAT CSV MAXERROR 0"
+        query = "COPY b1_publishers_1 FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
         params = ['s3:///' + s3_key, 'aws_access_key_id=access_key;aws_secret_access_key=secret_access_key']
         mock_cursor.execute.assert_called_with(query, params)
 
