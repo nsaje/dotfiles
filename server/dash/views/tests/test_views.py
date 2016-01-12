@@ -2144,13 +2144,6 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         self.assertTrue(res['success'])
 
         self.assertEqual(10, models.PublisherBlacklist.objects.count())
-        """
-        publisher_blacklist = models.PublisherBlacklist.objects.first()
-        self.assertEqual(constants.PublisherStatus.PENDING, publisher_blacklist.status)
-        self.assertEqual(1, publisher_blacklist.account.id)
-        self.assertEqual('outbrain', publisher_blacklist.source.tracking_slug)
-        self.assertEqual(u'Test', publisher_blacklist.name)
-        """
 
 
 class AdGroupOverviewTest(TestCase):
