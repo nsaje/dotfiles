@@ -20,8 +20,8 @@ from dash import exc
 from dash import models
 from dash import constants
 from dash import consistency
-from dash import helpers
 from dash import region_targeting_helper
+from dash import views
 
 import utils.url_helper
 import utils.statsd_helper
@@ -1114,8 +1114,8 @@ def update_content_ads_archived_state(request, content_ads, ad_group, archived):
     if content_ads.exists():
         add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, archived, request)
 
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD,
-                                            ad_group=ad_group)
+        views.helpers.log_useraction_if_necessary(
+            request, constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD, ad_group=ad_group)
 
         with transaction.atomic():
             for content_ad in content_ads:
