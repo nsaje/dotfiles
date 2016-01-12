@@ -290,8 +290,8 @@ def process_b1_publishers_stats(date):
 def refresh_b1_publishers_data(date):
     s3_key = process_b1_publishers_stats(date)
     with transaction.atomic(using=settings.STATS_DB_NAME):
-        redshift.delete_publishers(date)
-        redshift.load_b1_publishers(s3_key)
+        redshift.delete_publishers_b1(date)
+        redshift.load_publishers_b1(s3_key)
 
 
 def refresh_contentadstats(date, campaign):

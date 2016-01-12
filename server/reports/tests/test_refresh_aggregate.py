@@ -778,17 +778,17 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
                         '"cost_micro": 800000, "effective_data_cost_nano": 100000000, "clicks": 5}'
         mock_s3_helper.return_value.put.assert_called_once_with(expected_key, expected_json)
 
-    @patch('reports.redshift.delete_publishers')
-    @patch('reports.redshift.load_b1_publishers')
+    @patch('reports.redshift.delete_publishers_b1')
+    @patch('reports.redshift.load_publishers_b1')
     @patch('reports.refresh.process_b1_publishers_stats')
-    def test_refresh_b1_publishers_data(self, mock_process_stats, mock_load_pubs, mock_delete_pubs):
+    def test_refresh_b1_publishers_data(self, mock_process_stats, mock_load_pubs_b1, mock_delete_pubs_b1):
         mock_process_stats.return_value = 's3_key'
 
         date = datetime.date(2016, 1, 1)
         refresh.refresh_b1_publishers_data(date)
 
-        mock_delete_pubs.assert_called_once_with(date)
-        mock_load_pubs.assert_called_once_with('s3_key')
+        mock_delete_pubs_b1.assert_called_once_with(date)
+        mock_load_pubs_b1.assert_called_once_with('s3_key')
 
 
 class PutContentAdStatsToS3TestCase(test.TestCase):

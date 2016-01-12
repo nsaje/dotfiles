@@ -163,15 +163,15 @@ def vacuum_touchpoint_conversions():
     _execute(query, [])
 
 
-@statsd_timer('reports.redshift', 'delete_publishers')
-def delete_publishers(start_date, end_date):
-    query = 'DELETE FROM b1_publishers_1 WHERE date >= %s AND date <= %s'
-    params = [start_date.isoformat(), end_date.isoformat()]
+@statsd_timer('reports.redshift', 'delete_publishers_b1')
+def delete_publishers_b1(date):
+    query = 'DELETE FROM b1_publishers_1 WHERE date = %s'
+    params = [date.isoformat()]
     _execute(query, params)
 
 
-@statsd_timer('reports.redshift', 'load_b1_publishers')
-def load_b1_publishers(s3_key):
+@statsd_timer('reports.redshift', 'load_publishers_b1')
+def load_publishers_b1(s3_key):
     query = "COPY b1_publishers_1 FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
 
     credentials = _get_aws_credentials_string(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
