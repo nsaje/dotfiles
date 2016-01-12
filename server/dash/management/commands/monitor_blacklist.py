@@ -26,13 +26,6 @@ class Command(BaseCommand):
         self.monitor_adgroup_level(blacklisted_before)
         self.monitor_global_level(blacklisted_before)
 
-        """
-        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.clicks', clicks)
-        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.impressions', impressions)
-        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cost', cost)
-        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.ctr', ctr)
-        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.cpc', cpc)
-        """
         # monitor PENDING publisherblacklist entries
         count_pending = dash.models.PublisherBlacklist.objects.filter(
             status=dash.constants.PublisherStatus.PENDING
@@ -65,7 +58,6 @@ class Command(BaseCommand):
 
         # do set intersection
         redshift_stats_keys = set(redshift_stats.keys())
-        print redshift_stats_keys
         for key in blacklisted_set.intersection(redshift_stats_keys):
             logger.warning(
                 'monitor_blacklist: Found publisher statistics for globally blacklisted publisher',
@@ -77,7 +69,7 @@ class Command(BaseCommand):
         blacklisted_set = self.generate_global_blacklist_hash(blacklisted_before)
 
         data = reports.api_publishers.query(
-            datetime.datetime.utcnow().date() - datetime.timedelta(days=100),
+            datetime.datetime.utcnow().date() - datetime.timedelta(days=1),
             datetime.datetime.utcnow().date(),
             breakdown_fields=['domain', 'exchange']
         )
@@ -92,7 +84,6 @@ class Command(BaseCommand):
                 row['exchange'],
             )] = row['impressions']
 
-        print blacklisted_set
         # do set intersection
         redshift_stats_keys = set(redshift_stats.keys())
         for key in blacklisted_set.intersection(redshift_stats_keys):
