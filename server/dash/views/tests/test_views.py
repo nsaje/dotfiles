@@ -17,6 +17,7 @@ from zemauth.models import User
 from dash import models
 from dash import constants
 from dash import api
+from dash.views import views
 
 from reports import redshift
 
@@ -235,12 +236,55 @@ class CampaignAdGroups(TestCase):
 
         ad_group = models.AdGroup.objects.get(pk=response_dict['data']['id'])
         ad_group_settings = ad_group.get_current_settings()
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        waiting_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
+
         self.assertIsNotNone(ad_group_settings.id)
+        self.assertIsNotNone(ad_group_settings.changes_text)
+        self.assertEqual(len(ad_group_sources), 1)
+        self.assertEqual(len(waiting_sources), 1)
 
         # check if default settings from campaign level are
         # copied to the newly created settings
         self.assertEqual(ad_group_settings.target_devices, ['mobile'])
         self.assertEqual(ad_group_settings.target_regions, ['NC', '501'])
+
+    @patch('actionlog.api.create_campaign')
+    def test_add_media_sources(self, mock_create_campaign):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        ad_group_settings = ad_group.get_current_settings()
+        request = None
+
+        view = views.CampaignAdGroups()
+        actions = view._add_media_sources(request, ad_group, ad_group_settings)
+
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        waiting_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
+        added_source = models.Source.objects.get(pk=1)
+
+        self.assertEqual(len(actions), 1)
+        self.assertEqual(mock_create_campaign.call_count, 1)
+        self.assertEqual(mock_create_campaign.call_args[1]['send'], False)
+
+        self.assertEqual(len(ad_group_sources), 1)
+        self.assertEqual(ad_group_sources[0].source, added_source)
+        self.assertEqual(waiting_ad_group_sources, [])
+
+        self.assertEqual(
+                ad_group_settings.changes_text,
+                'Created settings and automatically created campaigns for 1 sources (AdBlade)'
+        )
+
+    def test_create_new_settings(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        request = None
+
+        view = views.CampaignAdGroups()
+        settings = view._create_new_settings(ad_group, request)
+        campaign_settings = ad_group.campaign.get_current_settings()
+
+        self.assertEqual(settings.target_devices, campaign_settings.target_devices)
+        self.assertEqual(settings.target_regions, campaign_settings.target_regions)
 
 
 class AdGroupContentAdCSVTest(TestCase):

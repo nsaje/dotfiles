@@ -23,6 +23,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 1'
+        allowed_sources: [1,2]
     model: dash.account
     pk: 1
 
@@ -31,6 +32,7 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test account 2'
+        allowed_sources: [1,2]
     model: dash.account
     pk: 2
 
@@ -87,6 +89,28 @@
         deprecated: false
     model: dash.source
     pk: 2
+
+# default source settings
+-   fields:
+        source: 1
+        credentials: 1
+        default_cpc_cc: 0.1
+        mobile_cpc_cc: 0.1
+        daily_budget_cc: 10
+        auto_add: true
+    model: dash.defaultsourcesettings
+    pk: 1
+
+# credentials
+-   fields:
+        source: 1
+        name: 'Test credentials'
+        credentials: '...'
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+    model: dash.sourcecredentials
+    pk: 1
+
 
 # test adgroup
 
@@ -188,3 +212,4 @@
         state: 1
     model: dash.adgroupsourcesettings
     pk: 1
+

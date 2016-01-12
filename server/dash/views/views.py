@@ -604,20 +604,18 @@ class CampaignAdGroups(api_common.BaseApiView):
                     campaign=campaign
             )
             ad_group.save(request)
-
             ad_group_settings = self._create_new_settings(ad_group, request)
             actions_settings = api.order_ad_group_settings_update(ad_group, models.AdGroupSettings(),
-                                                              settings, request, send=False)
+                                                                  ad_group_settings, request, send=False)
             actions.extend(actions_settings)
 
             actions_media_sources = self._add_media_sources(request, ad_group, ad_group_settings)
             actions.extend(actions_media_sources)
 
+        actionlog.zwei_actions.send(actions)
 
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_AD_GROUP,
-                                             ad_group=ad_group, campaign=campaign)
-
-        actionlog.zwei_actions.send(actions)
+                                            ad_group=ad_group, campaign=campaign)
 
         response = {
             'name': ad_group.name,
@@ -633,35 +631,36 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         settings.target_devices = campaign_settings.target_devices
         settings.target_regions = campaign_settings.target_regions
-
         settings.save(request)
-
         return settings
 
-    def _add_media_sources(self, request, ad_group, settings):
+    def _add_media_sources(self, request, ad_group, ad_group_settings):
         sources = list(ad_group.campaign.account.allowed_sources.all())
         actions = []
+        added_sources = []
 
         for source in sources:
             try:
-                default_settings = helpers.get_source_default_settings(source)
+                source_default_settings = helpers.get_source_default_settings(source)
             except exc.MissingDataError as e:
                 logger.warning(
-                        "Adding source ({}) to ad-group ({}) failed due to missing data. Original error message: {}"
-                            .format(source.name, e.message))
+                        "Adding source ({}) to ad-group (pk={}) failed due to missing data. Original error message: {}"
+                            .format(source.name, ad_group.pk, e.message))
+                continue
 
-            ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
-            helpers.set_ad_group_source_defaults(default_settings, ad_group.get_current_settings(), ad_group_source, request)
+            ad_group_source = helpers.add_source_to_ad_group(source_default_settings, ad_group)
             ad_group_source.save(request)
-
+            helpers.set_ad_group_source_defaults(source_default_settings, ad_group_settings, ad_group_source, request)
             external_name = ad_group_source.get_external_name()
             action = actionlog.api.create_campaign(ad_group_source, external_name, request, send=False)
+            added_sources.append(source)
             actions.append(action)
 
-        changes_text = 'Created settings and automatically created campaigns for {} sources ({})'.format(
-                len(sources), ', '.join([source.name for source in sources]))
-        settings.changes_text = changes_text
-        settings.save(request)
+        if added_sources:
+            changes_text = 'Created settings and automatically created campaigns for {} sources ({})'.format(
+                    len(added_sources), ', '.join([source.name for source in added_sources]))
+            ad_group_settings.changes_text = changes_text
+            ad_group_settings.save(request)
 
         return actions
 
