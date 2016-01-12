@@ -139,6 +139,7 @@ class RedshiftTest(TestCase):
 
     @override_settings(AWS_ACCESS_KEY_ID='access_key')
     @override_settings(AWS_SECRET_ACCESS_KEY='secret_access_key')
+    @override_settings(S3_BUCKET_STATS='test-bucket-stats')
     def test_load_b1_publishers(self, mock_get_cursor):
         mock_cursor = Mock()
         mock_get_cursor.return_value = MyCursor(mock_cursor)
@@ -147,7 +148,8 @@ class RedshiftTest(TestCase):
         redshift.load_b1_publishers(s3_key)
 
         query = "COPY b1_publishers_1 FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
-        params = ['s3:///' + s3_key, 'aws_access_key_id=access_key;aws_secret_access_key=secret_access_key']
+        params = ['s3://test-bucket-stats/' + s3_key,
+                  'aws_access_key_id=access_key;aws_secret_access_key=secret_access_key']
         mock_cursor.execute.assert_called_with(query, params)
 
     def test_vacuum_touchpoint_conversions(self, mock_get_cursor):
