@@ -7,9 +7,10 @@ import dash.models
 import reports.refresh
 
 from utils import dates_helper
+from utils.command_helpers import ExceptionCommand
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
 
     help = "Marks all non-archived campaigns' Redshift data to be updated in the next batch"
 

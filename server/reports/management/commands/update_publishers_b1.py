@@ -10,11 +10,13 @@ from django.db import transaction
 import reports.refresh
 from server import settings
 from utils import command_helpers
+from utils.command_helpers import ExceptionCommand
+
 
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
     option_list = BaseCommand.option_list + (
         make_option('-s', '--start-date', help='Start date for the publishers import', dest='start_date'),
         make_option('-e', '--end-date', help='End date for the publishers import', dest='end_date')

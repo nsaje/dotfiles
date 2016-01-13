@@ -6,12 +6,13 @@ from django.core.management.base import BaseCommand, CommandError
 
 from dash.models import ContentAd
 
+from utils.command_helpers import ExceptionCommand
 from utils.redirector_helper import update_redirect
 
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
     """Replaces URLs for a given ad group.
 
     Takes an id of the ad group and a .csv file of the following format:
