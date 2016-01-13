@@ -8,12 +8,12 @@ from django import test
 from django.db.models import Sum
 from django.conf import settings
 
+from reports import exc
 from reports import refresh
 from reports import models
 
 import dash.models
 
-from utils import s3helpers
 from utils import test_helper
 
 
@@ -626,25 +626,32 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
 
     fixtures = ['test_api_contentads.yaml']
 
-    @patch.object(s3helpers.S3Helper, 'list')
-    def test_get_latest_b1_pub_data_s3_key(self, s3_helper_list_mock):
-        s3_helper_list_mock.return_value = [
+    @patch('utils.s3helpers.S3Helper')
+    def test_get_latest_b1_pub_data_s3_key(self, s3_helpers_mock):
+        s3_helpers_mock.return_value.list.return_value = [
             boto.s3.key.Key(name='b1_publishers_raw/2016-01-01-2016-01-01--1451296802070761934/part-00000'),
             boto.s3.key.Key(name='b1_publishers_raw/2016-01-01-2016-01-01--1451282401204254907/part-00000')
         ]
 
         ret = refresh._get_latest_b1_pub_data_s3_key(datetime.date(2016, 1, 1))
 
-        s3_helper_list_mock.assert_called_once_with('b1_publishers_raw/2016-01-01-2016-01-01')
+        s3_helpers_mock.return_value.list.assert_called_once_with('b1_publishers_raw/2016-01-01-2016-01-01')
         self.assertEqual('b1_publishers_raw/2016-01-01-2016-01-01--1451296802070761934/part-00000', ret)
 
-    @patch.object(s3helpers.S3Helper, 'get')
+    @patch('utils.s3helpers.S3Helper')
+    def test_get_latest_b1_pub_data_s3_key_not_found(self, s3_helpers_mock):
+        s3_helpers_mock.return_value.list.return_value = []
+
+        with self.assertRaises(exc.S3FileNotFoundError):
+            refresh._get_latest_b1_pub_data_s3_key(datetime.date(2016, 1, 1))
+
+    @patch('utils.s3helpers.S3Helper')
     @patch('reports.refresh._get_latest_b1_pub_data_s3_key')
-    def test_get_latest_b1_pub_data(self, mock_get_s3_key, mock_s3_get):
+    def test_get_latest_b1_pub_data(self, mock_get_s3_key, mock_s3_helpers):
         raw_b1_data = '2016-01-01,1,adiant,adiant.com,10,1000,20000000,1000000\n'\
                       '2016-01-01,1,adsnative,adsnative.com,5,800,800000,200000'
         mock_get_s3_key.return_value = 'some_key'
-        mock_s3_get.return_value = raw_b1_data
+        mock_s3_helpers.return_value.get.return_value = raw_b1_data
 
         data = refresh._get_latest_b1_pub_data(datetime.date(2016, 1, 1))
         expected = [

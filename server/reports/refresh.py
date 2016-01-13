@@ -12,6 +12,7 @@ from django.db import connection, transaction
 from django.conf import settings
 
 import reports.models
+from reports import exc
 from reports.db_raw_helpers import dictfetchall
 from reports import redshift
 from reports import daily_statements
@@ -243,6 +244,9 @@ def _get_latest_b1_pub_data_s3_key(date):
     prefix_publishers = B1_RAW_PUB_DATA_S3_URI_PREFIX.format(start_date=date.isoformat(), end_date=date.isoformat())
     publishers = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).list(prefix_publishers)
     publishers = [publisher for publisher in publishers if publisher.name.endswith(B1_RAW_PUB_DATA_FILE)]
+    if not publishers:
+        raise exc.S3FileNotFoundError()
+
     latest_publisher = max(publishers, key=_extract_timestamp)
     return latest_publisher.name
 
