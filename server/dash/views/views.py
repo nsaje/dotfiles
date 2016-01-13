@@ -1670,7 +1670,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         for publisher in publishers:
             domain = publisher['domain']
             if domain not in source_cache:
-               source_cache[domain]  = models.Source.objects.filter(id=publisher['source_id']).first()
+               source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
             source = source_cache[domain]
 
             if not source:
