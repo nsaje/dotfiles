@@ -4,7 +4,7 @@
 import json
 from mock import patch, ANY
 import datetime
-import httplib
+import decimal
 
 from django.test import TestCase, Client, TransactionTestCase
 from django.http.request import HttpRequest
@@ -222,7 +222,8 @@ class CampaignAdGroups(TestCase):
         self.client.login(username=User.objects.get(pk=1).email, password='secret')
 
     @patch('utils.redirector_helper.insert_adgroup')
-    def test_put(self, mock_insert_adgroup):
+    @patch('actionlog.zwei_actions.send')
+    def test_put(self, mock_insert_adgroup, mock_zwei_send):
         campaign = models.Campaign.objects.get(pk=1)
 
         response = self.client.put(
@@ -230,6 +231,7 @@ class CampaignAdGroups(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(mock_insert_adgroup.called)
+        self.assertTrue(mock_zwei_send.called)
 
         response_dict = json.loads(response.content)
         self.assertDictContainsSubset({'name': 'New ad group'}, response_dict['data'])
@@ -264,7 +266,7 @@ class CampaignAdGroups(TestCase):
 
         self.assertEqual(len(actions), 1)
         self.assertEqual(mock_create_campaign.call_count, 1)
-        self.assertEqual(mock_create_campaign.call_args[1]['send'], False)
+        self.assertFalse(mock_create_campaign.call_args[1]['send'])
 
         self.assertEqual(len(ad_group_sources), 1)
         self.assertEqual(ad_group_sources[0].source, added_source)
@@ -274,6 +276,30 @@ class CampaignAdGroups(TestCase):
                 ad_group_settings.changes_text,
                 'Created settings and automatically created campaigns for 1 sources (AdBlade)'
         )
+
+    @patch('dash.region_targeting_helper.can_target_existing_regions')
+    @patch('dash.models.AdGroupSettings.is_mobile_only')
+    def test_create_ad_group_source(self, mock_can_target_existing_regions, mock_is_mobile_only):
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        source_settings = models.DefaultSourceSettings.objects.get(pk=1)
+        request = None
+        view = views.CampaignAdGroups()
+
+        mock_can_target_existing_regions.return_value = False
+        mock_is_mobile_only.return_value = False
+        ad_group_source = view._create_ad_group_source(request, source_settings, ad_group_settings)
+        ad_group_source_settings = ad_group_source.get_current_settings()
+        self.assertEqual(ad_group_source_settings.cpc_cc, decimal.Decimal('0.11'))
+        self.assertEqual(ad_group_source_settings.daily_budget_cc, decimal.Decimal(10))
+        self.assertEqual(ad_group_source_settings.state, constants.AdGroupSettingsState.INACTIVE)
+
+        mock_can_target_existing_regions.return_value = True
+        mock_is_mobile_only.return_value = True
+        ad_group_source = view._create_ad_group_source(request, source_settings, ad_group_settings)
+        ad_group_source_settings = ad_group_source.get_current_settings()
+        self.assertEqual(ad_group_source_settings.cpc_cc, decimal.Decimal('0.12'))
+        self.assertEqual(ad_group_source_settings.daily_budget_cc, decimal.Decimal(10))
+        self.assertEqual(ad_group_source_settings.state, constants.AdGroupSettingsState.ACTIVE)
 
     def test_create_new_settings(self):
         ad_group = models.AdGroup.objects.get(pk=1)

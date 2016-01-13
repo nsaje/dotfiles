@@ -94,8 +94,8 @@
 -   fields:
         source: 1
         credentials: 1
-        default_cpc_cc: 0.1
-        mobile_cpc_cc: 0.1
+        default_cpc_cc: 0.11
+        mobile_cpc_cc: 0.12
         daily_budget_cc: 10
         auto_add: true
     model: dash.defaultsourcesettings

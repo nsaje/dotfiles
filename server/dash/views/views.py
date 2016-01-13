@@ -648,9 +648,7 @@ class CampaignAdGroups(api_common.BaseApiView):
                             .format(source.name, ad_group.pk, e.message))
                 continue
 
-            ad_group_source = helpers.add_source_to_ad_group(source_default_settings, ad_group)
-            ad_group_source.save(request)
-            helpers.set_ad_group_source_defaults(source_default_settings, ad_group_settings, ad_group_source, request)
+            ad_group_source = self._create_ad_group_source(request, source_default_settings, ad_group_settings)
             external_name = ad_group_source.get_external_name()
             action = actionlog.api.create_campaign(ad_group_source, external_name, request, send=False)
             added_sources.append(source)
@@ -663,6 +661,18 @@ class CampaignAdGroups(api_common.BaseApiView):
             ad_group_settings.save(request)
 
         return actions
+
+    def _create_ad_group_source(self, request, source_settings, ad_group_settings):
+        source = source_settings.source
+        ad_group = ad_group_settings.ad_group
+
+        ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group)
+        ad_group_source.save(request)
+        active_source_state = region_targeting_helper.can_target_existing_regions(source, ad_group_settings)
+        helpers.set_ad_group_source_settings(request, ad_group_source, source_settings,
+                                             mobile_only=ad_group_settings.is_mobile_only(),
+                                             active=active_source_state)
+        return ad_group_source
 
 
 class CampaignOverview(api_common.BaseApiView):
@@ -937,8 +947,8 @@ class AdGroupSources(api_common.BaseApiView):
             sources.append({
                 'id': source_settings.source.id,
                 'name': source_settings.source.name,
-                'can_target_existing_regions': self._can_target_existing_regions(source_settings.source,
-                                                                                 ad_group_settings)
+                'can_target_existing_regions': region_targeting_helper.can_target_existing_regions(
+                        source_settings.source, ad_group_settings)
             })
 
         sources_waiting = set([ad_group_source.source.name for ad_group_source
@@ -964,7 +974,7 @@ class AdGroupSources(api_common.BaseApiView):
         if models.AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
             raise exc.ForbiddenError('{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
 
-        if not self._can_target_existing_regions(source, ad_group.get_current_settings()):
+        if not region_targeting_helper.can_target_existing_regions(source, ad_group.get_current_settings()):
             raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'\
                                       .format(source.name))
 
@@ -979,8 +989,8 @@ class AdGroupSources(api_common.BaseApiView):
                                             ad_group=ad_group)
 
         if request.user.has_perm('zemauth.add_media_sources_automatically'):
-            helpers.set_ad_group_source_defaults(default_settings, ad_group.get_current_settings(), ad_group_source,
-                                                 request)
+            helpers.set_ad_group_source_settings(request, ad_group_source, default_settings,
+                                                 mobile_only=ad_group.get_current_settings().is_mobile_only())
 
         return self.create_api_response(None)
 
@@ -990,10 +1000,6 @@ class AdGroupSources(api_common.BaseApiView):
         settings = ad_group_source.ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
-
-    def _can_target_existing_regions(self, source, ad_group_settings):
-        return region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) or\
-               region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings)
 
 
 class Account(api_common.BaseApiView):

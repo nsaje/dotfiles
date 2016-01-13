@@ -972,24 +972,16 @@ def add_source_to_ad_group(default_source_settings, ad_group):
     return ad_group_source
 
 
-def set_ad_group_source_defaults(default_source_settings, ad_group_settings, ad_group_source,
-                                 request, send_action=False):
+def set_ad_group_source_settings(request, ad_group_source, source_settings,
+                                 mobile_only=False, active=False, send_action=False):
+    resource = {
+        'daily_budget_cc': source_settings.daily_budget_cc,
+        'cpc_cc': source_settings.mobile_cpc_cc if mobile_only else source_settings.default_cpc_cc,
+        'state': constants.ContentAdSourceState.ACTIVE if active else constants.ContentAdSourceState.INACTIVE
+    }
 
-    # set defaults if available
-    cpc_cc = default_source_settings.mobile_cpc_cc if ad_group_settings.is_mobile_only() else\
-        default_source_settings.default_cpc_cc
-
-    daily_budget_cc = default_source_settings.daily_budget_cc
-
-    resource = {}
-    if daily_budget_cc is not None:
-        resource['daily_budget_cc'] = daily_budget_cc
-    if cpc_cc is not None:
-        resource['cpc_cc'] = cpc_cc
-
-    if resource:
-        settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
-        settings_writer.set(resource, request, send_action=send_action)
+    settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
+    settings_writer.set(resource, request, send_action=send_action)
 
 
 def format_decimal_to_percent(num):
