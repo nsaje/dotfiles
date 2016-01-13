@@ -1,7 +1,8 @@
 import datetime
 import logging
-import random
+import dateutil.parser
 
+from optparse import make_option
 from django.core.management.base import BaseCommand
 
 import reports.api_publishers
@@ -15,13 +16,20 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
 
+    help = "Monitor blacklisted publishers by checking for publisher statistics in Redshift that should not exist."
+
+    option_list = BaseCommand.option_list + (
+        make_option('--blacklisted_before', help='Iso formatted date. All pub. blacklist entries after this date will be ignored'),
+    )
+
     @statsd_helper.statsd_timer('dash.commands', 'monitor_blacklist')
     def handle(self, *args, **options):
-        random.seed()
-
         logger.info('Monitor publisher blacklisting.')
 
-        blacklisted_before = datetime.datetime.utcnow() - datetime.timedelta(days=2)
+        if options.get('blacklisted_before') is None:
+            blacklisted_before = datetime.datetime.utcnow() - datetime.timedelta(days=2)
+        else:
+            blacklisted_before = dateutil.parser.parse(options['blacklisted_before']).date()
 
         self.monitor_adgroup_level(blacklisted_before)
         self.monitor_global_level(blacklisted_before)
@@ -42,20 +50,16 @@ class Command(BaseCommand):
         data = reports.api_publishers.query(
             datetime.datetime.utcnow().date() - datetime.timedelta(days=100),
             datetime.datetime.utcnow().date(),
-            breakdown_fields=['domain', 'ad_group', 'exchange']
+            breakdown_fields=['domain', 'ad_group', 'exchange'],
         )
-
         # hashmap data
         redshift_stats = {}
         for row in data:
-            if row['exchange'].lower() == 'outbrain':
-                continue
             redshift_stats[(
                 row['domain'],
                 row['ad_group'],
-                row['exchange'],
+                row['exchange'].lower(),
             )] = row['impressions']
-
         # do set intersection
         redshift_stats_keys = set(redshift_stats.keys())
         for key in blacklisted_set.intersection(redshift_stats_keys):
@@ -81,7 +85,7 @@ class Command(BaseCommand):
                 continue
             redshift_stats[(
                 row['domain'],
-                row['exchange'],
+                row['exchange'].lower(),
             )] = row['impressions']
 
         # do set intersection
