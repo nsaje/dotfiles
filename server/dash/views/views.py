@@ -49,6 +49,7 @@ from dash import api
 from dash import forms
 from dash import upload
 from dash import infobox_helpers
+from dash import publisher_helpers
 
 import reports.api_publishers
 import reports.api
@@ -1709,7 +1710,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             existing_entry = models.PublisherBlacklist.objects.filter(
                 name=publisher['domain'],
                 source=source).filter(
-                    models.PublisherBlacklist.queryset_by_key(ad_group, level)
+                    publisher_helpers.create_queryset_by_key(ad_group, level)
                 ).first()
 
             # don't create pending pub. blacklist entry
@@ -1898,7 +1899,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         # TODO: revise this if making separate views per level
         helpers.log_useraction_if_necessary(
             request,
-            models.PublisherBlacklist.get_useractiontype(level),
+            publisher_helpers.get_useractiontype(level),
             ad_group=ad_group
         )
 

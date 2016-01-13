@@ -22,6 +22,7 @@ from dash import constants
 from dash import consistency
 from dash import region_targeting_helper
 from dash import views
+from dash import publisher_helpers
 
 import utils.url_helper
 import utils.statsd_helper
@@ -920,7 +921,7 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
     if blacklisted_publishers != {}:
         for source_type_id, blacklist in blacklisted_publishers.iteritems():
 
-            key = [models.PublisherBlacklist.get_key(ad_group, level).id]
+            key = [publisher_helpers.get_key(ad_group, level).id]
             if level == constants.PublisherBlacklistLevel.ACCOUNT:
                 if source_type_cache[source_type_id].type == constants.SourceType.OUTBRAIN:
                     key.append(ad_group.campaign.account.outbrain_marketer_id or '')

@@ -16,7 +16,6 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.core.validators import validate_email
-from django.db.models import Q
 
 
 import utils.string_helper
@@ -2012,59 +2011,6 @@ class PublisherBlacklist(models.Model):
             self.ad_group = ad_group
         else:
             self.ad_group = None
-
-    @staticmethod
-    def get_useractiontype(level):
-        if level == constants.PublisherBlacklistLevel.GLOBAL:
-            return constants.UserActionType.SET_GLOBAL_PUBLISHER_BLACKLIST
-        elif level == constants.PublisherBlacklistLevel.ACCOUNT:
-            return constants.UserActionType.SET_ACCOUNT_PUBLISHER_BLACKLIST
-        elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
-            return constants.UserActionType.SET_CAMPAIGN_PUBLISHER_BLACKLIST
-        elif level == constants.PublisherBlacklistLevel.ADGROUP:
-            return constants.UserActionType.SET_ADGROUP_PUBLISHER_BLACKLIST
-        # dev error
-        raise Exception('Invalid level')
-
-    @staticmethod
-    def get_key(ad_group, level):
-        if level == constants.PublisherBlacklistLevel.GLOBAL:
-            return True
-
-        if level == constants.PublisherBlacklistLevel.ACCOUNT:
-            return ad_group.campaign.account
-
-        if level == constants.PublisherBlacklistLevel.CAMPAIGN:
-            return ad_group.campaign
-
-        if level == constants.PublisherBlacklistLevel.ADGROUP:
-            return ad_group
-
-        # dev error
-        raise Exception('Invalid level')
-
-    @staticmethod
-    def queryset_by_key(ad_group, level):
-        blacklist_global = level == constants.PublisherBlacklistLevel.GLOBAL
-        if level == constants.PublisherBlacklistLevel.ACCOUNT:
-            blacklist_account = ad_group.campaign.account
-        else:
-            blacklist_account = None
-        if level == constants.PublisherBlacklistLevel.CAMPAIGN:
-            blacklist_campaign = ad_group.campaign
-        else:
-            blacklist_campaign = None
-
-        if level == constants.PublisherBlacklistLevel.ADGROUP:
-            blacklist_adgroup = ad_group
-        else:
-            blacklist_adgroup = None
-        return Q(
-            everywhere=blacklist_global,
-            account=blacklist_account,
-            campaign=blacklist_campaign,
-            ad_group=blacklist_adgroup
-        )
 
     class Meta:
         unique_together = (('name', 'everywhere', 'account', 'campaign', 'ad_group', 'source'), )
