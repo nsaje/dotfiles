@@ -26,11 +26,13 @@ import actionlog.zwei_actions
 
 
 class BaseApiForm(forms.Form):
+
     def get_errors():
         pass
 
 
 class AdvancedDateTimeField(forms.fields.DateTimeField):
+
     def strptime(self, value, format):
         return dateutil.parser.parse(value)
 
@@ -215,7 +217,7 @@ class AccountAgencySettingsForm(forms.Form):
         decimal_places=2,
     )
     # this is a dict with custom validation
-    allowed_sources = forms.Field(required=False) 
+    allowed_sources = forms.Field(required=False)
 
     def clean_default_account_manager(self):
         account_manager_id = self.cleaned_data.get('default_account_manager')
@@ -270,7 +272,7 @@ class AccountAgencySettingsForm(forms.Form):
 
             allowed = v.get('allowed', False)
             allowed_sources[key] = {'allowed': allowed, 'name': v.get('name', '')}
-        
+
         return allowed_sources
 
 
@@ -441,13 +443,15 @@ OPTIONAL_CSV_FIELDS = ['crop_areas', 'tracker_urls', 'display_url', 'brand_name'
 
 
 class DisplayURLField(forms.URLField):
+
     def clean(self, value):
         display_url = super(forms.URLField, self).clean(value)
         display_url = display_url.strip()
         display_url = re.sub(r'^https?://', '', display_url)
         display_url = re.sub(r'/$', '', display_url)
 
-        validate_length = validators.MaxLengthValidator(DISPLAY_URL_MAX_LENGTH, message = self.error_messages['max_length'])
+        validate_length = validators.MaxLengthValidator(
+            DISPLAY_URL_MAX_LENGTH, message=self.error_messages['max_length'])
         validate_length(display_url)
 
         return display_url
@@ -509,8 +513,9 @@ class AdGroupAdsPlusUploadForm(forms.Form):
             raise forms.ValidationError('Uploaded file is empty.')
 
     def _get_csv_column_names(self, header):
-        # this function maps original CSV column names to internal, normalized ones that are then used across the application
-        column_names = [col.strip(" _").lower().replace(' ', '_')  for col in header]
+        # this function maps original CSV column names to internal, normalized
+        # ones that are then used across the application
+        column_names = [col.strip(" _").lower().replace(' ', '_') for col in header]
 
         if column_names[0] != 'url':
             raise forms.ValidationError('First column in header should be URL.')
@@ -520,7 +525,6 @@ class AdGroupAdsPlusUploadForm(forms.Form):
 
         if column_names[2] != 'image_url':
             raise forms.ValidationError('Third column in header should be Image URL.')
-
 
         for n, field in enumerate(column_names):
             # We accept "(optional)" in the names of optional columns.
@@ -537,7 +541,8 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         # Make sure each column_name appears only once
         for column_name, count in Counter(column_names).iteritems():
             if count > 1:
-                raise forms.ValidationError("Column \"{0}\" appears multiple times ({1}) in the CSV file.".format(column_name, count))
+                raise forms.ValidationError(
+                    "Column \"{0}\" appears multiple times ({1}) in the CSV file.".format(column_name, count))
 
         return column_names
 
@@ -594,7 +599,8 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         for encoding in encodings:
             try:
                 header = self._get_csv_header(lines)
-                self.csv_column_names = self._get_csv_column_names(header)	# we save self.csv_column_names to be used by form-wide clean()
+                # we save self.csv_column_names to be used by form-wide clean()
+                self.csv_column_names = self._get_csv_column_names(header)
 
                 reader = unicodecsv.DictReader(lines, self.csv_column_names, encoding=encoding)
                 data = self._get_csv_content_ad_data(reader)
@@ -622,11 +628,13 @@ class AdGroupAdsPlusUploadForm(forms.Form):
         # have exactly the same names as normalized names of csv columns
         for column_and_field_name in ['display_url', 'brand_name', 'description', 'call_to_action']:
             if not self.cleaned_data.get(column_and_field_name): 	# if field is empty in the form
-                if column_and_field_name not in self.csv_column_names:	# and is not present as a CSV column
-                    self.add_error(column_and_field_name, forms.ValidationError("{0} has to be present here or as a column in CSV.".format(self.fields[column_and_field_name].label)))
+                if column_and_field_name not in self.csv_column_names:  # and is not present as a CSV column
+                    self.add_error(column_and_field_name, forms.ValidationError(
+                        "{0} has to be present here or as a column in CSV.".format(self.fields[column_and_field_name].label)))
 
 
 class CreditLineItemForm(forms.ModelForm):
+
     def clean_start_date(self):
         start_date = self.cleaned_data['start_date']
         if not self.instance.pk or start_date != self.instance.start_date:
@@ -676,6 +684,7 @@ class BudgetLineItemForm(forms.ModelForm):
 
 
 class MultiEmailField(forms.Field):
+
     def to_python(self, value):
         if not value:
             return []
@@ -776,6 +785,7 @@ class PublisherBlacklistForm(forms.ModelForm):
 
 
 class CreditLineItemAdminForm(forms.ModelForm):
+
     def __init__(self, *args, **kwargs):
         super(CreditLineItemAdminForm, self).__init__(*args, **kwargs)
         # archived state is stored in settings, we need to have a more stupid query
@@ -784,14 +794,17 @@ class CreditLineItemAdminForm(forms.ModelForm):
         ]
         # workaround to not change model __unicode__ methods
         self.fields['account'].label_from_instance = lambda obj: '{} - {}'.format(obj.id, obj.name)
-        self.fields['account'].queryset = models.Account.objects.filter(pk__in=not_archived)
-        
+        self.fields['account'].queryset = models.Account.objects.filter(
+            pk__in=not_archived
+        ).order_by('id', 'name')
+
     class Meta:
         model = models.CreditLineItem
         fields = ['account', 'start_date', 'end_date', 'amount', 'license_fee', 'status', 'comment']
 
 
 class BudgetLineItemAdminForm(forms.ModelForm):
+
     def __init__(self, *args, **kwargs):
         super(BudgetLineItemAdminForm, self).__init__(*args, **kwargs)
         # archived state is stored in settings, we need to have a more stupid query
@@ -801,12 +814,14 @@ class BudgetLineItemAdminForm(forms.ModelForm):
         # workaround to not change model __unicode__ methods
 
         self.fields['campaign'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)
-        self.fields['campaign'].queryset = models.Campaign.objects.filter(pk__in=not_archived)
+        self.fields['campaign'].queryset = models.Campaign.objects.filter(
+            pk__in=not_archived
+        ).order_by('id', 'name')
 
         self.fields['credit'].queryset = models.CreditLineItem.objects.filter(
             status=constants.CreditLineItemStatus.SIGNED
         )
-        
+
     class Meta:
         model = models.BudgetLineItem
         fields = ['campaign', 'credit', 'start_date', 'end_date', 'amount', 'comment']
