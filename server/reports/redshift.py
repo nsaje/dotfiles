@@ -18,6 +18,10 @@ S3_FILE_URI = 's3://{bucket_name}/{key}'
 REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
 
 
+def _get_aws_credentials_string(aws_access_key_id, aws_secret_access_key):
+    return 'aws_access_key_id=%s;aws_secret_access_key=%s' % (aws_access_key_id, aws_secret_access_key)
+
+
 @statsd_timer('reports.redshift', 'delete_contentadstats')
 def delete_contentadstats(date, campaign_id):
     query = 'DELETE FROM contentadstats WHERE date = %s AND campaign_id = %s AND content_ad_id != %s'
@@ -67,13 +71,12 @@ def insert_contentadstats(rows):
 
 @statsd_timer('reports.redshift', 'load_contentadstats')
 def load_contentadstats(s3_key):
-    query = "COPY contentadstats FROM '%s' "\
-            "CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT JSON 'auto' MAXERROR 0"
-    params = [S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_key),
-              settings.AWS_ACCESS_KEY_ID,
-              settings.AWS_SECRET_ACCESS_KEY]
+    query = "COPY contentadstats FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
 
-    _execute(query % tuple(params), [])
+    credentials = _get_aws_credentials_string(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+    params = [S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_key), credentials]
+
+    _execute(query, params)
 
 
 @statsd_timer('reports.redshift', 'insert_touchpointconversions')
@@ -160,19 +163,20 @@ def vacuum_touchpoint_conversions():
     _execute(query, [])
 
 
-@statsd_timer('reports.redshift', 'delete_publishers')
-def delete_publishers(start_date, end_date):
-    query = 'DELETE FROM b1_publishers_1 WHERE date >= %s AND date <= %s'
-    params = [start_date.isoformat(), end_date.isoformat()]
+@statsd_timer('reports.redshift', 'delete_publishers_b1')
+def delete_publishers_b1(date):
+    query = 'DELETE FROM b1_publishers_1 WHERE date = %s'
+    params = [date.isoformat()]
     _execute(query, params)
 
 
-@statsd_timer('reports.redshift', 'load_publishers')
-def load_publishers(s3_filename, aws_access_id, aws_access_secret):
-    query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS "\
-            "'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV MAXERROR 0"
-    params = [s3_filename, aws_access_id, aws_access_secret]
-    _execute(query % tuple(params), [])
+@statsd_timer('reports.redshift', 'load_publishers_b1')
+def load_publishers_b1(s3_key):
+    query = "COPY b1_publishers_1 FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
+
+    credentials = _get_aws_credentials_string(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+    params = [S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_key), credentials]
+    _execute(query, params)
 
 
 def _get_row_string(cursor, cols, row):

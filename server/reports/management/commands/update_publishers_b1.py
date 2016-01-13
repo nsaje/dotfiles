@@ -7,17 +7,11 @@ import datetime
 from django.core.management import BaseCommand
 from django.db import transaction
 
-from reports import redshift
+import reports.refresh
 from server import settings
 from utils import command_helpers
-from utils.s3helpers import S3Helper
 
 logger = logging.getLogger(__name__)
-
-PREFIX_PUBLISHERS_FORMAT = 'publishers/{}-{}'
-PUBLISHER_S3_URI_FORMAT = 's3://{}/{}'
-
-PUBLISHER_STATS_FILE = 'part-00000'
 
 
 class Command(BaseCommand):
@@ -26,7 +20,6 @@ class Command(BaseCommand):
         make_option('-e', '--end-date', help='End date for the publishers import', dest='end_date')
     )
 
-    @transaction.atomic(using=settings.STATS_DB_NAME)
     def handle(self, *args, **options):
         try:
             start_date = self._get_start_date(options)
@@ -34,11 +27,13 @@ class Command(BaseCommand):
         except:
             logger.exception('Failed parsing command line arguments')
             sys.exit(1)
+
         logger.debug('Updating publishers using bidder stats file: start_date=%s, end_date=%s', start_date, end_date)
-        publisher_s3_uri = self._get_s3_publisher_uri(start_date, end_date)
-        logger.debug('Inserting publisher data from S3 file: %s', publisher_s3_uri)
-        redshift.delete_publishers(start_date, end_date)
-        redshift.load_publishers(publisher_s3_uri, settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+
+        while start_date <= end_date:
+            logger.info('Updating for date: %s', start_date)
+            reports.refresh.refresh_b1_publishers_data(start_date)
+            start_date = start_date + datetime.timedelta(days=1)
 
     def _get_start_date(self, options):
         start_date = command_helpers.parse_date(options, 'start_date')
@@ -53,17 +48,3 @@ class Command(BaseCommand):
             logger.info("No end date was provided. Using yesterday's date as default value.")
             end_date = datetime.date.today() - datetime.timedelta(days=1)
         return end_date
-
-    def _get_s3_publisher_uri(self, start_date, end_date):
-        bucket_name = settings.S3_BUCKET_STATS
-        bucket_b1_eventlog_sync = S3Helper(bucket_name=bucket_name)
-        prefix_publishers = PREFIX_PUBLISHERS_FORMAT.format(start_date.isoformat(), end_date.isoformat())
-        publishers = bucket_b1_eventlog_sync.list(prefix_publishers)
-        publishers = [publisher for publisher in publishers if publisher.name.endswith(PUBLISHER_STATS_FILE)]
-        latest_publisher = max(publishers, key=self._extract_timestamp)
-        publisher_s3_uri = PUBLISHER_S3_URI_FORMAT.format(bucket_name, latest_publisher.name)
-        return publisher_s3_uri
-
-    def _extract_timestamp(self, publisher):
-        start = publisher.name.find('--') + 2
-        return publisher.name[start:]

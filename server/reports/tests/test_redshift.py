@@ -47,11 +47,11 @@ class RedshiftTest(TestCase):
 
         redshift.load_contentadstats('test/s3/key.json')
 
-        query = 'COPY contentadstats FROM \'%s\' '\
-                'CREDENTIALS \'aws_access_key_id=%s;aws_secret_access_key=%s\' FORMAT JSON \'auto\' MAXERROR 0'
-        params = ['s3://test-bucket-stats/test/s3/key.json', 'access_key', 'secret_access_key']
+        query = 'COPY contentadstats FROM %s CREDENTIALS %s FORMAT JSON \'auto\' MAXERROR 0'
+        params = ['s3://test-bucket-stats/test/s3/key.json',
+                  'aws_access_key_id=access_key;aws_secret_access_key=secret_access_key']
 
-        mock_cursor.execute.assert_called_once_with(query % tuple(params), [])
+        mock_cursor.execute.assert_called_once_with(query, params)
 
     def test_sum_contentadstats(self, mock_cursor):
         redshift.sum_contentadstats()
@@ -125,30 +125,30 @@ class RedshiftTest(TestCase):
 
         mock_cursor.execute.assert_called_with(query, params)
 
-    def test_delete_publishers(self, mock_get_cursor):
+    def test_delete_publishers_b1(self, mock_get_cursor):
         mock_cursor = Mock()
         mock_get_cursor.return_value = MyCursor(mock_cursor)
 
-        start_date = datetime.date(2015, 1, 1)
-        end_date = datetime.date(2015, 1, 31)
-        redshift.delete_publishers(start_date, end_date)
+        date = datetime.date(2015, 1, 1)
+        redshift.delete_publishers_b1(date)
 
-        query = 'DELETE FROM b1_publishers_1 WHERE date >= %s AND date <= %s'
-        params = ['2015-01-01', '2015-01-31']
+        query = 'DELETE FROM b1_publishers_1 WHERE date = %s'
+        params = ['2015-01-01']
         mock_cursor.execute.assert_called_with(query, params)
 
-    def test_load_publishers(self, mock_get_cursor):
+    @override_settings(AWS_ACCESS_KEY_ID='access_key')
+    @override_settings(AWS_SECRET_ACCESS_KEY='secret_access_key')
+    @override_settings(S3_BUCKET_STATS='test-bucket-stats')
+    def test_load_publishers_b1(self, mock_get_cursor):
         mock_cursor = Mock()
         mock_get_cursor.return_value = MyCursor(mock_cursor)
 
-        s3_filename = 's3://b1-eventlog-sync/publishers/2015-01-01-2015-01-31--123456789/part-00000'
-        aws_access_id = 'xxxxxxx'
-        aws_access_secret = 'xxxxxxxx'
-        redshift.load_publishers(s3_filename, aws_access_id, aws_access_secret)
+        s3_key = 'publishers/2015-01-01-2015-01-31--123456789/part-00000'
+        redshift.load_publishers_b1(s3_key)
 
-        query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS " \
-                "'aws_access_key_id=xxxxxxx;aws_secret_access_key=xxxxxxxx' FORMAT CSV MAXERROR 0" % s3_filename
-        params = []
+        query = "COPY b1_publishers_1 FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
+        params = ['s3://test-bucket-stats/' + s3_key,
+                  'aws_access_key_id=access_key;aws_secret_access_key=secret_access_key']
         mock_cursor.execute.assert_called_with(query, params)
 
     def test_vacuum_touchpoint_conversions(self, mock_get_cursor):
