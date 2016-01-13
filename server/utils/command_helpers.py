@@ -16,7 +16,7 @@ class ExceptionCommand(BaseCommand):
         try:
             return super(ExceptionCommand, self).execute(*args, **options)
         except:
-            logger.exception("Uncaught exception in command")
+            logging.getLogger(self.__class__.__module__).exception("Uncaught exception in command")
 
 
 def last_n_days(n):
