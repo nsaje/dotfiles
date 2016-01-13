@@ -250,7 +250,7 @@ def _get_latest_b1_pub_data_s3_key(date):
 def _augment_b1_pub_data_with_budgets(rows):
     pcts_lookup = {}
     for row in rows:
-        campaign = dash.models.AdGroup.objects.select_related('campaign').get(id=row['ad_group_id']).campaign
+        campaign = dash.models.AdGroup.objects.select_related('campaign').get(id=row['adgroup_id']).campaign
         if (row['date'], campaign.id) not in pcts_lookup:
             pcts_lookup[(row['date'], campaign.id)] = daily_statements.get_effective_spend_pcts(row['date'], campaign)
         pct_actual_spend, pct_license_fee = pcts_lookup[(row['date'], campaign.id)]

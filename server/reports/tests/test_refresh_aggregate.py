@@ -678,7 +678,7 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
         publisher_data = [
             {
                 'date': datetime.date(2016, 1, 1),
-                'ad_group_id': 1,
+                'adgroup_id': 1,
                 'exchange': 'adiant',
                 'domain': 'adiant.com',
                 'clicks': 10,
@@ -688,7 +688,7 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
             },
             {
                 'date': datetime.date(2016, 1, 1),
-                'ad_group_id': 1,
+                'adgroup_id': 1,
                 'exchange': 'adsnative',
                 'domain': 'adsnative.com',
                 'clicks': 5,
@@ -702,7 +702,7 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
         expected = [
             {
                 'date': datetime.date(2016, 1, 1),
-                'ad_group_id': 1,
+                'adgroup_id': 1,
                 'exchange': 'adiant',
                 'domain': 'adiant.com',
                 'clicks': 10,
@@ -715,7 +715,7 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
             },
             {
                 'date': datetime.date(2016, 1, 1),
-                'ad_group_id': 1,
+                'adgroup_id': 1,
                 'exchange': 'adsnative',
                 'domain': 'adsnative.com',
                 'clicks': 5,
