@@ -5,10 +5,9 @@ import sys
 
 import datetime
 from django.core.management import BaseCommand
-from django.db import transaction
 
+from reports import exc
 import reports.refresh
-from server import settings
 from utils import command_helpers
 from utils.command_helpers import ExceptionCommand
 
@@ -27,14 +26,19 @@ class Command(ExceptionCommand):
             start_date = self._get_start_date(options)
             end_date = self._get_end_date(options)
         except:
-            logger.exception('Failed parsing command line arguments')
+            logger.info('Failed parsing command line arguments')
             sys.exit(1)
 
-        logger.debug('Updating publishers using bidder stats file: start_date=%s, end_date=%s', start_date, end_date)
+        logger.info('Updating publishers using bidder stats file: start_date=%s, end_date=%s', start_date, end_date)
 
         while start_date <= end_date:
             logger.info('Updating for date: %s', start_date)
-            reports.refresh.refresh_b1_publishers_data(start_date)
+
+            try:
+                reports.refresh.refresh_b1_publishers_data(start_date)
+            except exc.S3FileNotFoundError:
+                logger.info('Not successful... File not found. Continuing ...')
+
             start_date = start_date + datetime.timedelta(days=1)
 
     def _get_start_date(self, options):
