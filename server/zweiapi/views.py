@@ -404,7 +404,7 @@ def _fetch_reports_by_publisher_callback(action, data):
 
     rows_raw = data['data']
 
-    if source.id != dash.constants.SourceType.OUTBRAIN:
+    if source.source_type.type != dash.constants.SourceType.OUTBRAIN:
         raise Exception('Fetch reports by publisher supported only on Outbrain')
 
     # centralize in order to reduce possibility of mistakes
