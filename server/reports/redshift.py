@@ -172,7 +172,7 @@ def load_publishers(s3_filename, aws_access_id, aws_access_secret):
     query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS "\
             "'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV MAXERROR 0"
     params = [s3_filename, aws_access_id, aws_access_secret]
-    _execute(query, params)
+    _execute(query % tuple(params), [])
 
 
 def _get_row_string(cursor, cols, row):

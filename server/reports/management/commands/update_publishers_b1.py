@@ -15,7 +15,9 @@ from utils.s3helpers import S3Helper
 logger = logging.getLogger(__name__)
 
 PREFIX_PUBLISHERS_FORMAT = 'publishers/{}-{}'
-PUBLISHER_S3_URI_FORMAT = 's3://{}/{}/part-00000'
+PUBLISHER_S3_URI_FORMAT = 's3://{}/{}'
+
+PUBLISHER_STATS_FILE = 'part-00000'
 
 
 class Command(BaseCommand):
@@ -57,6 +59,7 @@ class Command(BaseCommand):
         bucket_b1_eventlog_sync = S3Helper(bucket_name=bucket_name)
         prefix_publishers = PREFIX_PUBLISHERS_FORMAT.format(start_date.isoformat(), end_date.isoformat())
         publishers = bucket_b1_eventlog_sync.list(prefix_publishers)
+        publishers = [publisher for publisher in publishers if publisher.name.endswith(PUBLISHER_STATS_FILE)]
         latest_publisher = max(publishers, key=self._extract_timestamp)
         publisher_s3_uri = PUBLISHER_S3_URI_FORMAT.format(bucket_name, latest_publisher.name)
         return publisher_s3_uri
