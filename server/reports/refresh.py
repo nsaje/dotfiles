@@ -30,8 +30,8 @@ B1_RAW_PUB_DATA_FILE = 'part-00000'
 MICRO_TO_NANO = 1000
 CC_TO_NANO = 100000
 
-LOAD_CONTENTADS_KEY_FMT = 'contentadstats_load/{year}/{month}/{day}/{campaign_id}/{ts}.json'
-LOAD_B1_PUB_STATS_KEY_FMT = 'b1_publishers_load/{year}/{month}/{day}/{ts}.json'
+LOAD_CONTENTADS_KEY_FMT = 'contentadstats_load/{year}/{month:02d}/{day:02d}/{campaign_id}/{ts}.json'
+LOAD_B1_PUB_STATS_KEY_FMT = 'b1_publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
 
 MAX_DATES_TO_REFRESH = 200
 

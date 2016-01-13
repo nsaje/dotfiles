@@ -7,12 +7,12 @@ from optparse import make_option
 
 from convapi import process
 from dash import models
-from utils.command_helpers import parse_date, parse_id_list
+from utils.command_helpers import parse_date, parse_id_list, ExceptionCommand
 
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
 
     option_list = BaseCommand.option_list + (
         make_option('--from_date', help='Iso format.'),

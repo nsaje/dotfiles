@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from dash import models
 from utils import redirector_helper
 from utils import statsd_helper
-from utils.command_helpers import set_logger_verbosity
+from utils.command_helpers import set_logger_verbosity, ExceptionCommand
 
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 KEYS_TO_CHECK = ('tracking_code', 'enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param')
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
 
     help = "Checks and posts ad group propagation consistency between R1 and Z1."
 

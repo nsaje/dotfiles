@@ -9,11 +9,12 @@ from django.core.management.base import BaseCommand
 
 from reports import refresh
 from dash import models
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
 
     option_list = BaseCommand.option_list + (
         make_option('--campaigns', help='Comma separated list of campaign ids.'),
