@@ -255,8 +255,27 @@ class CampaignSettingsTest(TestCase):
         new_settings.changes_text = None
         new_settings.name = u'Ččšćžđ name'
 
+        user = User.objects.create_user('test@example.com')
+        user.first_name = 'Tadej'
+        user.last_name = u'Pavlič'
+        new_settings.campaign_manager = user
+
         self.assertEqual(
-            models.CampaignSettings.get_changes_text(old_settings, new_settings), u'Name set to "Ččšćžđ name"')
+            models.CampaignSettings.get_changes_text(old_settings, new_settings), u'Campaign Manager set to "Tadej Pavli\u010d", Name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
+
+    def test_get_changes_text_nonunicode(self):
+        old_settings = models.CampaignSettings.objects.get(id=1)
+        new_settings = models.CampaignSettings.objects.get(id=1)
+        new_settings.changes_text = None
+        new_settings.name = u'name'
+
+        user = User.objects.create_user('test@example.com')
+        user.first_name = 'Tadej'
+        user.last_name = u'Pavlic'
+        new_settings.campaign_manager = user
+
+        self.assertEqual(
+            models.CampaignSettings.get_changes_text(old_settings, new_settings), u'Campaign Manager set to "Tadej Pavlic", Name set to "name"')
 
 
 class AdGroupSourceTest(TestCase):
