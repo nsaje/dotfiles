@@ -1927,7 +1927,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         settings1 = adg1.get_current_settings()
 
         self.assertEqual(
-            'Blacklisted the following publishers zemanta.com on Adiant.',
+            'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
             settings1.changes_text
         )
 
@@ -1935,7 +1935,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         settings9 = adg9.get_current_settings()
 
         self.assertEqual(
-            'Blacklisted the following publishers zemanta.com on Adiant.',
+            'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
             settings9.changes_text
         )
 
