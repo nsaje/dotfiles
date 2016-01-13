@@ -277,29 +277,19 @@ class CampaignAdGroups(TestCase):
                 'Created settings and automatically created campaigns for 1 sources (AdBlade)'
         )
 
-    @patch('dash.region_targeting_helper.can_target_existing_regions')
-    @patch('dash.models.AdGroupSettings.is_mobile_only')
-    def test_create_ad_group_source(self, mock_can_target_existing_regions, mock_is_mobile_only):
+    @patch('dash.views.helpers.set_ad_group_source_settings')
+    def test_create_ad_group_source(self, mock_set_ad_group_source_settings):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         source_settings = models.DefaultSourceSettings.objects.get(pk=1)
         request = None
         view = views.CampaignAdGroups()
-
-        mock_can_target_existing_regions.return_value = False
-        mock_is_mobile_only.return_value = False
         ad_group_source = view._create_ad_group_source(request, source_settings, ad_group_settings)
-        ad_group_source_settings = ad_group_source.get_current_settings()
-        self.assertEqual(ad_group_source_settings.cpc_cc, decimal.Decimal('0.11'))
-        self.assertEqual(ad_group_source_settings.daily_budget_cc, decimal.Decimal(10))
-        self.assertEqual(ad_group_source_settings.state, constants.AdGroupSettingsState.INACTIVE)
 
-        mock_can_target_existing_regions.return_value = True
-        mock_is_mobile_only.return_value = True
-        ad_group_source = view._create_ad_group_source(request, source_settings, ad_group_settings)
-        ad_group_source_settings = ad_group_source.get_current_settings()
-        self.assertEqual(ad_group_source_settings.cpc_cc, decimal.Decimal('0.12'))
-        self.assertEqual(ad_group_source_settings.daily_budget_cc, decimal.Decimal(10))
-        self.assertEqual(ad_group_source_settings.state, constants.AdGroupSettingsState.ACTIVE)
+        self.assertIsNotNone(ad_group_source)
+        self.assertTrue(mock_set_ad_group_source_settings.called)
+        named_call_args = mock_set_ad_group_source_settings.call_args[1]
+        self.assertEqual(named_call_args['active'], True)
+        self.assertEqual(named_call_args['mobile_only'], False)
 
     def test_create_new_settings(self):
         ad_group = models.AdGroup.objects.get(pk=1)

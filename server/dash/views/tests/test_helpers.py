@@ -1090,7 +1090,7 @@ class SetAdGroupSourceTest(TestCase):
         ad_group_source = ad_group_sources[0]
         self.assertEqual(ad_group_source.source, default_settings.source)
 
-    def test_set_ad_group_source_defaults(self):
+    def test_set_ad_group_source_settings(self):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=6)
         # target mobile
         ad_group_settings.target_devices = ['mobile']
@@ -1101,7 +1101,8 @@ class SetAdGroupSourceTest(TestCase):
         ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group_settings.ad_group)
         ad_group_source.save()
 
-        helpers.set_ad_group_source_defaults(default_settings, ad_group_settings, ad_group_source, self.request)
+        helpers.set_ad_group_source_settings(self.request, ad_group_source, default_settings,
+                                             mobile_only=True, active=True, send_action=False)
 
         ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
         self.assertEqual(ad_group_source_settings.count(), 2)
@@ -1109,6 +1110,16 @@ class SetAdGroupSourceTest(TestCase):
         ad_group_source_settings = ad_group_source_settings.latest()
         self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
         self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.mobile_cpc_cc)
+        self.assertEqual(ad_group_source_settings.state, constants.AdGroupSourceSettingsState.ACTIVE)
+
+        helpers.set_ad_group_source_settings(self.request, ad_group_source, default_settings,
+                                             mobile_only=False, active=False, send_action=False)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
+        self.assertEqual(ad_group_source_settings.count(), 3)
+        ad_group_source_settings = ad_group_source_settings.latest()
+        self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
+        self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.default_cpc_cc)
+        self.assertEqual(ad_group_source_settings.state, constants.AdGroupSourceSettingsState.INACTIVE)
 
 
 class PixelLastSyncTestCase(TestCase):

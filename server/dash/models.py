@@ -1411,7 +1411,9 @@ class AdGroupSettings(SettingsBase):
         return [regions_of_type[target_region] for target_region in self.target_regions or [] if target_region in regions_of_type]
 
     def is_mobile_only(self):
-        return self.target_devices and len(self.target_devices) == 1 and constants.AdTargetDevice.MOBILE in self.target_devices
+        return bool(self.target_devices) \
+               and len(self.target_devices) == 1 \
+               and constants.AdTargetDevice.MOBILE in self.target_devices
 
     @classmethod
     def get_defaults_dict(cls):
