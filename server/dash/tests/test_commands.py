@@ -71,15 +71,17 @@ class MonitorPublisherBlacklistTest(TestCase):
 
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         management.call_command('monitor_blacklist', blacklisted_before=tomorrow.date().isoformat())
+        tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         statsd_gauge_mock.assert_has_calls(
             [
                 mock.call('dash.blacklisted_publisher_stats.global_impressions', 1000)
             ]
         )
 
-    def test_run_outbrain(self):
+    @mock.patch('utils.statsd_helper.statsd_gauge')
+    def test_run_outbrain(self, statsd_gauge_mock):
         dash.models.PublisherBlacklist.objects.create(
-            name='bollocks.com',
+            name='Awesome Publisher',
             account=dash.models.Account.objects.get(pk=1),
             source=dash.models.Source.objects.get(tracking_slug='outbrain'),
             status=dash.constants.PublisherStatus.BLACKLISTED
@@ -90,12 +92,17 @@ class MonitorPublisherBlacklistTest(TestCase):
                 'domain': u'Awesome Publisher',
                 'adgroup_id': 1,
                 'exchange': u'outbrain',
-                'external_id': '12345',
                 'billing_cost_nano_sum': 0.0,
                 'impressions_sum': 1000,
                 'clicks_sum': 0L,
                 'ctr': 0.0,
-                'external_id': u'celebrity-soldiers.littlethings.com',
+                'external_id': u'RandomUuid',
              }
         ]
-        management.call_command('monitor_blacklist')
+        tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+        management.call_command('monitor_blacklist', blacklisted_before=tomorrow.date().isoformat())
+        statsd_gauge_mock.assert_has_calls(
+            [
+                mock.call('dash.blacklisted_publisher_stats.impressions', 1000)
+            ]
+        )

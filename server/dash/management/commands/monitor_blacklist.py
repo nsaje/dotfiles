@@ -128,10 +128,8 @@ class Command(BaseCommand):
                     )
                 )
 
-        campaign_account_blacklist = []
         for pub in dash.models.PublisherBlacklist.objects.filter(
              account__isnull=False,
-             source__source_type__type=dash.constants.SourceType.B1,
              status=dash.constants.PublisherStatus.BLACKLISTED,
              created_dt__lte=blacklisted_before,
         ).iterator():
