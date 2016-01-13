@@ -919,15 +919,11 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
 
     if blacklisted_publishers != {}:
         for source_type_id, blacklist in blacklisted_publishers.iteritems():
-            key = None
+
+            key = [models.PublisherBlacklist.get_key(ad_group, level).id]
             if level == constants.PublisherBlacklistLevel.ACCOUNT:
-                key = [ad_group.campaign.account.id]
                 if source_type_cache[source_type_id].type == constants.SourceType.OUTBRAIN:
                     key.append(ad_group.campaign.account.outbrain_marketer_id or '')
-            elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
-                key = [ad_group.campaign.id]
-            elif level == constants.PublisherBlacklistLevel.ADGROUP:
-                key = [ad_group.id]
 
             actions.extend(
                 actionlog.api.set_publisher_blacklist(
