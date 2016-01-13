@@ -1939,6 +1939,14 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             settings9.changes_text
         )
 
+        useractionlogs = models.UserActionLog.objects.filter(
+            action_type=constants.UserActionType.SET_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(2, useractionlogs.count())
+        for useractionlog in useractionlogs:
+            self.assertTrue(useractionlog.ad_group.id in (1, 9))
+
+
     @patch('reports.redshift.get_cursor')
     def test_post_campaign_all_but_blacklist_1(self, cursor):
         cursor().dictfetchall.return_value = [
