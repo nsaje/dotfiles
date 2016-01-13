@@ -1118,6 +1118,8 @@ class UserActionType(ConstantBase):
     DELETE_SCHEDULED_REPORT = 23
     DOWNLOAD_REPORT = 24
 
+    SET_PUBLISHER_BLACKLIST = 25
+
     _VALUES = {
         UPLOAD_CONTENT_ADS: 'Upload Content Ads',
         SET_CONTENT_AD_STATE: 'Set Content Ad(s) State',
@@ -1142,7 +1144,8 @@ class UserActionType(ConstantBase):
         SET_MEDIA_SOURCE_SETTINGS: 'Set Media Source Settings',
         SCHEDULE_REPORT: 'Schedule report',
         DELETE_SCHEDULED_REPORT: 'Delete scheduled report',
-        DOWNLOAD_REPORT: 'Direct report download'
+        DOWNLOAD_REPORT: 'Direct report download',
+        SET_PUBLISHER_BLACKLIST: 'Set Publisher Blacklist'
     }
 
 
