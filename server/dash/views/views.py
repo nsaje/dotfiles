@@ -1892,12 +1892,14 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         settings.changes_text = changes_text
         settings.save(request)
 
+        # at the moment we only have the publishers view on adgroup level
+        # which means all blacklisting actions are stored in the settings
+        # changes text of the current adgroup
+        # TODO: revise this if making separate views per level
         helpers.log_useraction_if_necessary(
             request,
-            constants.UserActionType.SET_PUBLISHER_BLACKLIST,
-            account=models.PublisherBlacklist.get_key(ad_group, constants.PublisherBlacklistLevel.ACCOUNT),
-            campaign=models.PublisherBlacklist.get_key(ad_group, constants.PublisherBlacklistLevel.CAMPAIGN),
-            ad_group=models.PublisherBlacklist.get_key(ad_group, constants.PublisherBlacklistLevel.ADGROUP)
+            models.PublisherBlacklist.get_useractiontype(level),
+            ad_group=ad_group
         )
 
         email_helper.send_ad_group_notification_email(ad_group, request, changes_text)

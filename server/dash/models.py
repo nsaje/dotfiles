@@ -2014,6 +2014,19 @@ class PublisherBlacklist(models.Model):
             self.ad_group = None
 
     @staticmethod
+    def get_useractiontype(level):
+        if level == constants.PublisherBlacklistLevel.GLOBAL:
+            return constants.UserActionType.SET_GLOBAL_PUBLISHER_BLACKLIST
+        elif level == constants.PublisherBlacklistLevel.ACCOUNT:
+            return constants.UserActionType.SET_ACCOUNT_PUBLISHER_BLACKLIST
+        elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
+            return constants.UserActionType.SET_CAMPAIGN_PUBLISHER_BLACKLIST
+        elif level == constants.PublisherBlacklistLevel.ADGROUP:
+            return constants.UserActionType.SET_ADGROUP_PUBLISHER_BLACKLIST
+        # dev error
+        raise Exception('Invalid level')
+
+    @staticmethod
     def get_key(ad_group, level):
         if level == constants.PublisherBlacklistLevel.GLOBAL:
             return True

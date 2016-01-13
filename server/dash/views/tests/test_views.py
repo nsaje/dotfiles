@@ -1940,7 +1940,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         )
 
         useractionlogs = models.UserActionLog.objects.filter(
-            action_type=constants.UserActionType.SET_PUBLISHER_BLACKLIST
+            action_type=constants.UserActionType.SET_CAMPAIGN_PUBLISHER_BLACKLIST
         )
         self.assertEqual(2, useractionlogs.count())
         for useractionlog in useractionlogs:

@@ -1118,7 +1118,10 @@ class UserActionType(ConstantBase):
     DELETE_SCHEDULED_REPORT = 23
     DOWNLOAD_REPORT = 24
 
-    SET_PUBLISHER_BLACKLIST = 25
+    SET_ADGROUP_PUBLISHER_BLACKLIST = 25
+    SET_CAMPAIGN_PUBLISHER_BLACKLIST = 26
+    SET_ACCOUNT_PUBLISHER_BLACKLIST = 27
+    SET_GLOBAL_PUBLISHER_BLACKLIST = 28
 
     _VALUES = {
         UPLOAD_CONTENT_ADS: 'Upload Content Ads',
@@ -1145,7 +1148,10 @@ class UserActionType(ConstantBase):
         SCHEDULE_REPORT: 'Schedule report',
         DELETE_SCHEDULED_REPORT: 'Delete scheduled report',
         DOWNLOAD_REPORT: 'Direct report download',
-        SET_PUBLISHER_BLACKLIST: 'Set Publisher Blacklist'
+        SET_ADGROUP_PUBLISHER_BLACKLIST: 'Set Adgroup Publisher Blacklist',
+        SET_CAMPAIGN_PUBLISHER_BLACKLIST: 'Set Campaign Publisher Blacklist',
+        SET_ACCOUNT_PUBLISHER_BLACKLIST: 'Set Account Publisher Blacklist',
+        SET_GLOBAL_PUBLISHER_BLACKLIST: 'Set Global Publisher Blacklist'
     }
 
 
