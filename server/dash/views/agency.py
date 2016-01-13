@@ -95,7 +95,10 @@ class AdGroupSettings(api_common.BaseApiView):
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
-            email_helper.send_ad_group_notification_email(ad_group, request)
+            changes_text = models.AdGroupSettings.get_changes_text(
+                current_settings, new_settings, request.user, separator='\n')
+
+            email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
             helpers.log_useraction_if_necessary(request, user_action_type, ad_group=ad_group)
 
         response = {
@@ -268,21 +271,16 @@ class CampaignAgency(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        prev_settings = campaign.get_current_settings()
-        settings = prev_settings.copy_settings()
-        self.set_settings(settings, campaign, form.cleaned_data)
+        old_settings = campaign.get_current_settings()
+        new_settings = old_settings.copy_settings()
+        self.set_settings(new_settings, campaign, form.cleaned_data)
 
-        self.propagate_and_save(campaign, settings, request)
-
-        changes = prev_settings.get_setting_changes(settings)
-        if changes:
-            email_helper.send_campaign_notification_email(campaign, request)
-            helpers.log_useraction_if_necessary(request,
-                                                constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS,
-                                                campaign=campaign)
+        helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
+        helpers.log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request,
+                                                        constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS)
 
         response = {
-            'settings': self.get_dict(settings, campaign),
+            'settings': self.get_dict(new_settings, campaign),
             'history': self.get_history(campaign),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
@@ -290,54 +288,20 @@ class CampaignAgency(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    @classmethod
-    def propagate_and_save(cls, campaign, settings, request):
-        actions = []
-
-        with transaction.atomic():
-            campaign.save(request)
-            settings.save(request)
-
-            # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
-            campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-
-            for ad_group in campaign_ad_groups:
-                adgroup_settings = ad_group.get_current_settings()
-                actions.extend(
-                    api.order_ad_group_settings_update(
-                        ad_group,
-                        adgroup_settings,
-                        adgroup_settings,
-                        request,
-                        send=False,
-                        iab_update=True
-                    )
-                )
-
-        zwei_actions.send(actions)
-
     def get_history(self, campaign):
         settings = models.CampaignSettings.objects.\
             filter(campaign=campaign).\
             order_by('created_dt')
 
         history = []
+
         for i in range(0, len(settings)):
             old_settings = settings[i - 1] if i > 0 else None
             new_settings = settings[i]
 
-            changes = old_settings.get_setting_changes(new_settings) \
-                if old_settings is not None else None
+            changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings)
 
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
-
-            if new_settings.changes_text is not None:
-                changes_text = new_settings.changes_text
-            else:
-                changes_text = self.convert_changes_to_string(changes, settings_dict)
-
-            if i > 0 and not changes_text:
-                continue
 
             history.append({
                 'datetime': new_settings.created_dt,
@@ -350,76 +314,20 @@ class CampaignAgency(api_common.BaseApiView):
         return history
 
     def convert_settings_to_dict(self, old_settings, new_settings):
-        settings_dict = OrderedDict([
-            ('name', {
-                'name': 'Name',
-                'value': new_settings.name.encode('utf-8')
-            }),
-            ('campaign_manager', {
-                'name': 'Campaign Manager',
-                'value': helpers.get_user_full_name_or_email(new_settings.campaign_manager)
-            }),
-            ('iab_category', {
-                'name': 'IAB Category',
-                'value': constants.IABCategory.get_text(new_settings.iab_category)
-            }),
-            ('campaign_goal', {
-                'name': 'Campaign goal',
-                'value': constants.CampaignGoal.get_text(new_settings.campaign_goal),
-            }),
-            ('goal_quantity', {
-                'name': 'Goal quantity',
-                'value': new_settings.goal_quantity,
-            }),
-            ('service_fee', {
-                'name': 'Service Fee',
-                'value': helpers.format_decimal_to_percent(new_settings.service_fee) + '%'
-            }),
-            ('promotion_goal', {
-                'name': 'Promotion Goal',
-                'value': constants.PromotionGoal.get_text(new_settings.promotion_goal)
-            }),
-            ('archived', {
-                'name': 'Archived',
-                'value': str(new_settings.archived)
-            }),
-            ('target_devices', {
-                'name': 'Target Devices',
-                'value': ', '.join(constants.AdTargetDevice.get_text(x) for x in new_settings.target_devices)
-            }),
-            ('target_regions', {
-                'name': 'Target Devices',
-                'value': helpers.get_target_regions_string(new_settings.target_regions)
-            })
-        ])
+        settings_dict = OrderedDict()
 
-        if old_settings is not None:
-            settings_dict['name']['old_value'] = old_settings.name.encode('utf-8')
+        for field in models.CampaignSettings._settings_fields:
+            settings_dict[field] = {
+                'name': models.CampaignSettings.get_human_prop_name(field),
+                'value': models.CampaignSettings.get_human_value(
+                    field, getattr(new_settings, field, models.CampaignSettings.get_default_value(field)))
+            }
 
-            if old_settings.campaign_manager is not None:
-                settings_dict['campaign_manager']['old_value'] = \
-                    helpers.get_user_full_name_or_email(old_settings.campaign_manager)
-
-            settings_dict['iab_category']['old_value'] = \
-                constants.IABCategory.get_text(old_settings.iab_category)
-
-            settings_dict['archived']['old_value'] = str(old_settings.archived)
+            if old_settings is not None:
+                settings_dict[field]['old_value'] = models.CampaignSettings.get_human_value(
+                    field, getattr(old_settings, field, models.CampaignSettings.get_default_value(field)))
 
         return settings_dict
-
-    def convert_changes_to_string(self, changes, settings_dict):
-        if changes is None:
-            return 'Created settings'
-
-        change_strings = []
-
-        for key in changes:
-            setting = settings_dict[key]
-            change_strings.append(
-                '{} set to "{}"'.format(setting['name'], setting['value'])
-            )
-
-        return ', '.join(change_strings)
 
     def get_dict(self, settings, campaign):
         result = {}
@@ -619,12 +527,9 @@ class CampaignSettings(api_common.BaseApiView):
         self.set_settings(request, new_settings, campaign, form.cleaned_data)
         self.set_campaign(campaign, form.cleaned_data)
 
-        CampaignAgency.propagate_and_save(campaign, new_settings, request)
-
-        changes = current_settings.get_setting_changes(new_settings)
-        if changes:
-            email_helper.send_campaign_notification_email(campaign, request)
-            helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_SETTINGS, campaign=campaign)
+        helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
+        helpers.log_and_notify_campaign_settings_change(campaign, current_settings, new_settings, request,
+                                                        constants.UserActionType.SET_CAMPAIGN_SETTINGS)
 
         response = {
             'settings': self.get_dict(request, new_settings, campaign)
@@ -695,9 +600,10 @@ class CampaignBudget(api_common.BaseApiView):
             request=request,
         )
 
-        email_helper.send_campaign_notification_email(campaign, request)
-
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_BUDGET, campaign=campaign)
+        current_budget_settings = campaign.get_current_budget_settings()
+        if current_budget_settings:
+            email_helper.send_budget_notification_email(campaign, request, current_budget_settings.comment)
+            helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_BUDGET, campaign=campaign)
 
         response = self.get_response(campaign)
         return self.create_api_response(response)
@@ -1210,13 +1116,7 @@ class AdGroupAgency(api_common.BaseApiView):
             old_settings = ad_group_settings[i - 1] if i > 0 else None
             new_settings = ad_group_settings[i]
 
-            changes = old_settings.get_setting_changes(new_settings) \
-                if old_settings is not None else None
-
-            if new_settings.changes_text is not None:
-                changes_text = new_settings.changes_text
-            else:
-                changes_text = self.convert_changes_to_string(changes, user)
+            changes_text = models.AdGroupSettings.get_changes_text(old_settings, new_settings, user)
 
             if i > 0 and not len(changes_text):
                 continue
@@ -1235,26 +1135,6 @@ class AdGroupAgency(api_common.BaseApiView):
             })
 
         return history
-
-    @newrelic.agent.function_trace()
-    def convert_changes_to_string(self, changes, user):
-        if changes is None:
-            return 'Created settings'
-
-        change_strings = []
-
-        for key, value in changes.iteritems():
-            if key in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
-                    not user.has_perm('zemauth.new_content_ads_tab'):
-                continue
-
-            prop = models.AdGroupSettings.get_human_prop_name(key)
-            val = models.AdGroupSettings.get_human_value(key, value)
-            change_strings.append(
-                u'{} set to "{}"'.format(prop, val)
-            )
-
-        return ', '.join(change_strings)
 
     @newrelic.agent.function_trace()
     def convert_settings_to_dict(self, old_settings, new_settings, user):

@@ -845,7 +845,7 @@ class PutContentAdStatsToS3TestCase(test.TestCase):
 
         refresh.put_contentadstats_to_s3(date, campaign, test_rows)
 
-        expected_key = 'contentadstats_load/2015/2/1/1/1451606400000.json'
+        expected_key = 'contentadstats_load/2015/02/01/1/1451606400000.json'
         expected_json =\
             '{"conversions": "{\\"omniture__transaction 2\\": 20, \\"ga__goal 1\\": 10}", "license_fee_nano": 0, '\
             '"cost_cc": 150000, "pageviews": 1500, "account_id": 1, "content_ad_id": 1, "new_visits": 100, '\
