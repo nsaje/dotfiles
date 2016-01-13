@@ -46,7 +46,8 @@ class MonitorPublisherBlacklistTest(TestCase):
             ]
         )
 
-    def test_run_global(self):
+    @mock.patch('utils.statsd_helper.statsd_gauge')
+    def test_run_global(self, statsd_gauge_mock):
         dash.models.PublisherBlacklist.objects.create(
             name='bollocks.com',
             everywhere=True,
@@ -56,17 +57,25 @@ class MonitorPublisherBlacklistTest(TestCase):
 
         self.get_cursor().dictfetchall.return_value = [
             {
-                'domain': u'celebrity-soldiers.littlethings.com',
+                'domain': u'bollocks.com',
                 'adgroup_id': 1,
                 'exchange': u'adiant',
                 'billing_cost_nano_sum': 0.0,
                 'impressions_sum': 1000,
                 'clicks_sum': 0L,
                 'ctr': 0.0,
-                'external_id': u'celebrity-soldiers.littlethings.com',
+                'external_id': u'1234567890',
              }
         ]
         management.call_command('monitor_blacklist')
+
+        tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+        management.call_command('monitor_blacklist', blacklisted_before=tomorrow.date().isoformat())
+        statsd_gauge_mock.assert_has_calls(
+            [
+                mock.call('dash.blacklisted_publisher_stats.global_impressions', 1000)
+            ]
+        )
 
     def test_run_outbrain(self):
         dash.models.PublisherBlacklist.objects.create(
