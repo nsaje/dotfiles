@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import datetime
 from decimal import Decimal
 
@@ -247,6 +248,15 @@ class CampaignSettingsTest(TestCase):
             models.CampaignSettings.objects.get(id=1).get_settings_dict(),
             settings_dict,
         )
+
+    def test_get_changes_text_unicode(self):
+        old_settings = models.CampaignSettings.objects.get(id=1)
+        new_settings = models.CampaignSettings.objects.get(id=1)
+        new_settings.changes_text = None
+        new_settings.name = u'Ččšćžđ name'
+
+        self.assertEqual(
+            models.CampaignSettings.get_changes_text(old_settings, new_settings), u'Name set to "Ččšćžđ name"')
 
 
 class AdGroupSourceTest(TestCase):

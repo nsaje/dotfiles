@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import jsonfield
 import binascii
 import datetime
@@ -609,7 +610,7 @@ class CampaignSettings(SettingsBase):
             prop = cls.get_human_prop_name(key)
             val = cls.get_human_value(key, value)
             change_strings.append(
-                u'{} set to "{}"'.format(prop, val)
+                u'{} set to "{}"'.format(prop, val.decode('utf-8'))
             )
 
         return separator.join(change_strings)
