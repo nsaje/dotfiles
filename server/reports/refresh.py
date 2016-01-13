@@ -4,6 +4,7 @@ import datetime
 import dateutil.parser
 import json
 import logging
+import StringIO
 import time
 
 from django.db.models import Sum, Max
@@ -257,13 +258,13 @@ def _augment_b1_pub_data_with_budgets(rows):
 
 
 def _parse_raw_b1_pub_data(f):
-    r = csv.reader(f)
+    r = csv.reader(StringIO.StringIO(f))
 
     rows = []
     for row in r:
         rows.append({
             'date': dateutil.parser.parse(row[0]).date(),
-            'ad_group_id': int(row[1]),
+            'adgroup_id': int(row[1]),
             'exchange': row[2],
             'domain': row[3],
             'clicks': int(row[4]),

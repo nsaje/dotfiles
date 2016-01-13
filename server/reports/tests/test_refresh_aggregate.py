@@ -1,7 +1,6 @@
 from mock import patch
 import datetime
 import time
-import StringIO
 
 import boto.s3
 import boto.sqs
@@ -645,13 +644,13 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
         raw_b1_data = '2016-01-01,1,adiant,adiant.com,10,1000,20000000,1000000\n'\
                       '2016-01-01,1,adsnative,adsnative.com,5,800,800000,200000'
         mock_get_s3_key.return_value = 'some_key'
-        mock_s3_get.return_value = StringIO.StringIO(raw_b1_data)
+        mock_s3_get.return_value = raw_b1_data
 
         data = refresh._get_latest_b1_pub_data(datetime.date(2016, 1, 1))
         expected = [
             {
                 'date': datetime.date(2016, 1, 1),
-                'ad_group_id': 1,
+                'adgroup_id': 1,
                 'exchange': 'adiant',
                 'domain': 'adiant.com',
                 'clicks': 10,
@@ -661,7 +660,7 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
             },
             {
                 'date': datetime.date(2016, 1, 1),
-                'ad_group_id': 1,
+                'adgroup_id': 1,
                 'exchange': 'adsnative',
                 'domain': 'adsnative.com',
                 'clicks': 5,
