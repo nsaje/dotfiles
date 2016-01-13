@@ -25,6 +25,7 @@ import dash.models
 logger = logging.getLogger(__name__)
 
 B1_RAW_PUB_DATA_S3_URI_PREFIX = 'b1_publishers_raw/{start_date}-{end_date}'
+B1_RAW_PUB_DATA_FILE = 'part-00000'
 
 MICRO_TO_NANO = 1000
 CC_TO_NANO = 100000
@@ -241,6 +242,7 @@ def _extract_timestamp(publisher):
 def _get_latest_b1_pub_data_s3_key(date):
     prefix_publishers = B1_RAW_PUB_DATA_S3_URI_PREFIX.format(start_date=date.isoformat(), end_date=date.isoformat())
     publishers = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).list(prefix_publishers)
+    publishers = [publisher for publisher in publishers if publisher.name.endswith(B1_RAW_PUB_DATA_FILE)]
     latest_publisher = max(publishers, key=_extract_timestamp)
     return latest_publisher.name
 

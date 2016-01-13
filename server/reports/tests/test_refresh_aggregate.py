@@ -629,14 +629,14 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
     @patch.object(s3helpers.S3Helper, 'list')
     def test_get_latest_b1_pub_data_s3_key(self, s3_helper_list_mock):
         s3_helper_list_mock.return_value = [
-            boto.s3.key.Key(name='b1_publishers_raw/2016-01-01-2016-01-01--1451296802070761934'),
-            boto.s3.key.Key(name='b1_publishers_raw/2016-01-01-2016-01-01--1451282401204254907')
+            boto.s3.key.Key(name='b1_publishers_raw/2016-01-01-2016-01-01--1451296802070761934/part-00000'),
+            boto.s3.key.Key(name='b1_publishers_raw/2016-01-01-2016-01-01--1451282401204254907/part-00000')
         ]
 
         ret = refresh._get_latest_b1_pub_data_s3_key(datetime.date(2016, 1, 1))
 
         s3_helper_list_mock.assert_called_once_with('b1_publishers_raw/2016-01-01-2016-01-01')
-        self.assertEqual('b1_publishers_raw/2016-01-01-2016-01-01--1451296802070761934', ret)
+        self.assertEqual('b1_publishers_raw/2016-01-01-2016-01-01--1451296802070761934/part-00000', ret)
 
     @patch.object(s3helpers.S3Helper, 'get')
     @patch('reports.refresh._get_latest_b1_pub_data_s3_key')
