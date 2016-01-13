@@ -21,6 +21,7 @@ import actionlog.sync
 import actionlog.zwei_actions
 
 import dash.api
+import dash.constants
 import dash.models
 import reports.daily_statements
 import reports.refresh
@@ -41,8 +42,6 @@ SUPRESS_INVALID_CONTENT_ID_CHECK = {
     # content that should not exist in Outbrain and made some impressions
     927: {3: ['2015-12-08']}
 }
-
-OUTBRAIN_SOURCE_ID = 3
 
 
 @csrf_exempt
@@ -405,7 +404,7 @@ def _fetch_reports_by_publisher_callback(action, data):
 
     rows_raw = data['data']
 
-    if source.id != OUTBRAIN_SOURCE_ID:
+    if source.id != dash.constants.SourceType.OUTBRAIN:
         raise Exception('Fetch reports by publisher supported only on Outbrain')
 
     # centralize in order to reduce possibility of mistakes
