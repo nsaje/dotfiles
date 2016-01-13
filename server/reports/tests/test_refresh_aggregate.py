@@ -767,7 +767,7 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
 
         refresh.process_b1_publishers_stats(datetime.date(2016, 1, 1))
 
-        expected_key = 'b1_publishers_load/2016/1/1/1451606400000.json'
+        expected_key = 'b1_publishers_load/2016/01/01/1451606400000.json'
         expected_json = '{"domain": "adiant.com", "ad_group_id": 1, "exchange": "adiant", "date": "2016-01-01", '\
                         '"impressions": 1000, "license_fee_nano": 1050000000, "data_cost_micro": 1000000, '\
                         '"effective_cost_nano": 10000000000, "cost_micro": 20000000, '\
