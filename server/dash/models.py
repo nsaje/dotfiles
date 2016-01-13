@@ -610,7 +610,7 @@ class CampaignSettings(SettingsBase):
             prop = cls.get_human_prop_name(key)
             val = cls.get_human_value(key, value)
             change_strings.append(
-                u'{} set to "{}"'.format(prop, val.decode('utf-8'))
+                u'{} set to "{}"'.format(prop, val)
             )
 
         return separator.join(change_strings)
@@ -648,9 +648,7 @@ class CampaignSettings(SettingsBase):
 
     @classmethod
     def get_human_value(cls, prop_name, value):
-        if prop_name == 'name':
-            value = value.encode('utf-8')
-        elif prop_name == 'campaign_manager':
+        if prop_name == 'campaign_manager':
             value = views.helpers.get_user_full_name_or_email(value)
         elif prop_name == 'iab_category':
             value = constants.IABCategory.get_text(value)
