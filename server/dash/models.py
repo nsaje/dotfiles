@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import jsonfield
 import binascii
 import datetime
@@ -647,10 +648,8 @@ class CampaignSettings(SettingsBase):
 
     @classmethod
     def get_human_value(cls, prop_name, value):
-        if prop_name == 'name':
-            value = value.encode('utf-8')
-        elif prop_name == 'campaign_manager':
-            value = views.helpers.get_user_full_name_or_email(value)
+        if prop_name == 'campaign_manager':
+            value = views.helpers.get_user_full_name_or_email(value).decode('utf-8')
         elif prop_name == 'iab_category':
             value = constants.IABCategory.get_text(value)
         elif prop_name == 'campaign_goal':
