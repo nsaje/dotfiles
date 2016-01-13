@@ -146,9 +146,9 @@ class RedshiftTest(TestCase):
         aws_access_secret = 'xxxxxxxx'
         redshift.load_publishers(s3_filename, aws_access_id, aws_access_secret)
 
-        query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS "\
-                "'aws_access_key_id=%s;aws_secret_access_key=%s' FORMAT CSV MAXERROR 0"
-        params = [s3_filename, aws_access_id, aws_access_secret]
+        query = "COPY b1_publishers_1 FROM '%s' CREDENTIALS " \
+                "'aws_access_key_id=xxxxxxx;aws_secret_access_key=xxxxxxxx' FORMAT CSV MAXERROR 0" % s3_filename
+        params = []
         mock_cursor.execute.assert_called_with(query, params)
 
     def test_vacuum_touchpoint_conversions(self, mock_get_cursor):
