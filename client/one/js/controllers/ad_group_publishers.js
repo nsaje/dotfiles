@@ -20,6 +20,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.pagination = {
         currentPage: 1
     };
+    $scope.obBlacklistedCount = 0;
+    $scope.obBlacklistedSelected = 0;
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
@@ -111,16 +113,33 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         };
 
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
-            if (!$scope.selectedPublisherStatus[publisherId].checked) {
+            var pubStatus = $scope.selectedPublisherStatus[publisherId];
+            if (!pubStatus.checked) {
                 numNotSelected += 1;
             }
         });
+        $scope.recountOutbrainPublishers();
 
         $scope.updatePublisherBlacklistCombo();
 
         if ($scope.selectedAll) {
             $scope.selectionMenuConfig.partialSelection = numNotSelected > 0;
         }
+
+        if (row.exchange === constants.sourceTypeName.OUTBRAIN) {
+            $scope.updateOutbrainPublisherSelection();
+            $scope.updateRowBlacklistInfo();
+        }
+    };
+
+    $scope.recountOutbrainPublishers = function () {
+        $scope.obBlacklistedSelected = 0;
+        Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
+            var pubStatus = $scope.selectedPublisherStatus[publisherId];
+            if (pubStatus.exchange === constants.sourceTypeName.OUTBRAIN && pubStatus.checked && pubStatus.blacklisted !== 'Blacklisted') {
+                $scope.obBlacklistedSelected += 1;
+            }
+        });
     };
 
     $scope.updatePublisherBlacklistCombo = function () {
@@ -132,9 +151,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 constants.publisherBlacklistLevel.GLOBAL
             ];
 
-        count.countBlacklistedSelected = 0
+        count.countBlacklistedSelected = 0;
         count.countNonBlacklistedSelected = 0;
-        count.countOutbrainSelected = 0
+        count.countOutbrainSelected = 0;
         count.countAllSelected = 0;
         count.maxBlacklistedLevel = null;
 
@@ -240,8 +259,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         if (selected) {
             $scope.updatePublisherSelection();
+            $scope.updateOutbrainPublisherSelection();
+            $scope.updateRowBlacklistInfo();
         } else {
             $scope.clearPublisherSelection();
+            $scope.updateOutbrainPublisherSelection();
         }
 
         $scope.updatePublisherBlacklistCombo();
@@ -251,28 +273,57 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.rows.forEach(function (row) {
             row.publisherSelected = false;
         });
+
+        $scope.obBlacklistedSelected = 0;
     };
 
     $scope.updatePublisherSelection = function () {
         $scope.rows.forEach(function (row) {
+            if (row === undefined) {
+                return;
+            }
+            row.disabledSelection = !row.can_blacklist_publisher;
+            if (row.can_blacklist_publisher) {
+                var rowId = $scope.calculatePublisherHash(row);
+                if ($scope.selectedPublisherStatus[rowId] !== undefined) {
+                    row.publisherSelected = $scope.selectedPublisherStatus[rowId].checked;
+                } else if ($scope.selectedAll) {
+                    row.publisherSelected = true;
+                } else {
+                    row.publisherSelected = false;
+                }
+            }
+        });
+    };
+
+    $scope.updateOutbrainPublisherSelection = function () {
+        $scope.rows.forEach(function (row) {
             if (row !== undefined) {
-                row.disabledSelection = !row.can_blacklist_publisher;
+                if (row.exchange === constants.sourceTypeName.OUTBRAIN) {
+                    if (!row.publisherSelected && row.blacklisted !== 'Blacklisted') {
+                        if ($scope.obBlacklistedCount + $scope.obBlacklistedSelected >= 10) {
+                            row.can_blacklist_publisher = false;
+                        }
+                    }
+
+                    if ($scope.obBlacklistedCount + $scope.obBlacklistedSelected < 10) {
+                        row.can_blacklist_publisher = true;
+                    }
+
+                    row.disabledSelection = !row.can_blacklist_publisher;
+                }
+            }
+        });
+    };
+
+    $scope.updateRowBlacklistInfo = function () {
+        $scope.rows.forEach(function (row) {
+            if (row !== undefined) {
                 if (!row.can_blacklist_publisher) {
-                    row.blacklistInfo = "This publisher can't be blacklisted because the media source doesn't support publisher blacklisting. ";
+                    row.blacklistInfo = "This publisher can't be blacklisted because the media source doesn't support publisher blacklisting or the limit of max blacklisted publisher on this particular media source has been reached. ";
                     row.blacklistInfo = row.blacklistInfo.concat("Contact your account manager for further details.");
                 } else {
                     row.blacklistInfo = null;
-                }
-
-                if (row.can_blacklist_publisher) {
-                    var rowId = $scope.calculatePublisherHash(row);
-                    if ($scope.selectedPublisherStatus[rowId] !== undefined) {
-                        row.publisherSelected = $scope.selectedPublisherStatus[rowId].checked;
-                    } else if ($scope.selectedAll) {
-                        row.publisherSelected = true;
-                    } else {
-                        row.publisherSelected = false;
-                    }
                 }
             }
         });
@@ -286,8 +337,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
 
         for (publisherId in $scope.selectedPublisherStatus) {
-            if ($scope.selectedPublisherStatus.hasOwnProperty(publisherId)
-                    && $scope.selectedPublisherStatus[publisherId].checked) {
+            if ($scope.selectedPublisherStatus.hasOwnProperty(publisherId) && 
+                    $scope.selectedPublisherStatus[publisherId].checked) {
                 return true;
             }
         }
@@ -635,8 +686,12 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.totals.checked = $scope.selectedTotals;
                 $scope.lastChange = data.lastChange;
                 $scope.pagination = data.pagination;
+                $scope.obBlacklistedCount = data.obBlacklistedCount;
 
+                $scope.recountOutbrainPublishers();
                 $scope.updatePublisherSelection();
+                $scope.updateOutbrainPublisherSelection();
+                $scope.updateRowBlacklistInfo();
             },
             function (data) {
                 // error
@@ -826,7 +881,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         $scope.loadPage();
 
-        $scope.getAdGroupState();	// To display message if the adgroup is paused
+        $scope.getAdGroupState();    // To display message if the adgroup is paused
 
         getTableData();
         getDailyStats();

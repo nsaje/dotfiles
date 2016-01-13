@@ -12,7 +12,7 @@ import reports.models
 
 
 @patch('reports.daily_statements.datetime')
-@patch('reports.models.ContentAdStats')
+@patch('reports.models.AdGroupStats')
 class DailyStatementsTestCase(TestCase):
 
     fixtures = ['test_daily_statements.yaml']
@@ -21,13 +21,13 @@ class DailyStatementsTestCase(TestCase):
         self.campaign1 = dash.models.Campaign.objects.get(id=1)
         self.campaign2 = dash.models.Campaign.objects.get(id=2)
 
-    def _configure_content_ad_stats_mock(self, mock_content_ad_stats, return_values):
-        def fn(date, *args, **kwargs):
+    def _configure_ad_group_stats_mock(self, mock_ad_group_stats, return_values):
+        def fn(datetime, *args, **kwargs):
             ret = {'cost_cc_sum': 0, 'data_cost_cc_sum': 0}
-            if date in return_values:
-                ret = return_values[date]
+            if datetime in return_values:
+                ret = return_values[datetime]
             return MagicMock(**{'aggregate.return_value': ret})
-        mock_content_ad_stats.configure_mock(**{'objects.filter.side_effect': fn})
+        mock_ad_group_stats.configure_mock(**{'objects.filter.side_effect': fn})
 
     def _configure_datetime_utcnow_mock(self, mock_datetime, utcnow_value):
         class DatetimeMock(datetime.datetime):
@@ -38,14 +38,14 @@ class DailyStatementsTestCase(TestCase):
         mock_datetime.datetime = DatetimeMock
         mock_datetime.timedelta = datetime.timedelta
 
-    def test_first_day_single_daily_statemnt(self, mock_content_ad_stats, mock_datetime):
+    def test_first_day_single_daily_statemnt(self, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 1): {
                 'cost_cc_sum': 15000000,
                 'data_cost_cc_sum': 5000000,
             }
         }
-        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
 
         update_from = datetime.date(2015, 11, 1)
@@ -59,14 +59,14 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(500000000000, statements[0].data_spend_nano)
         self.assertEqual(400000000000, statements[0].license_fee_nano)
 
-    def test_first_day_cost_none(self, mock_content_ad_stats, mock_datetime):
+    def test_first_day_cost_none(self, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 1): {
                 'cost_cc_sum': None,
                 'data_cost_cc_sum': None,
             }
         }
-        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
 
         update_from = datetime.date(2015, 11, 1)
@@ -80,14 +80,14 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(Decimal('0'), statements[0].data_spend_nano)
         self.assertEqual(Decimal('0'), statements[0].license_fee_nano)
 
-    def test_multiple_budgets_attribution_order(self, mock_content_ad_stats, mock_datetime):
+    def test_multiple_budgets_attribution_order(self, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 20): {
                 'cost_cc_sum': 35000000,
                 'data_cost_cc_sum': 5000000,
             }
         }
-        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 20, 12))
 
         update_from = datetime.date(2015, 11, 1)
@@ -115,14 +115,14 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(0, statements[31].data_spend_nano)
         self.assertEqual(0, statements[31].license_fee_nano)
 
-    def test_overspend(self, mock_content_ad_stats, mock_datetime):
+    def test_overspend(self, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 1): {
                 'cost_cc_sum': 30000000,
                 'data_cost_cc_sum': 5000000,
             }
         }
-        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
 
         update_from = datetime.date(2015, 11, 1)
@@ -135,14 +135,14 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(0, statements[0].data_spend_nano)
         self.assertEqual(500000000000, statements[0].license_fee_nano)
 
-    def test_different_fees(self, mock_content_ad_stats, mock_datetime):
+    def test_different_fees(self, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 1): {
                 'cost_cc_sum': 42500000,
                 'data_cost_cc_sum': 5000000,
             }
         }
-        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 1, 12))
 
         update_from = datetime.date(2015, 11, 1)
@@ -160,7 +160,7 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(500000000000, statements[1].data_spend_nano)
         self.assertEqual(500000000000, statements[1].license_fee_nano)
 
-    def test_different_days(self, mock_content_ad_stats, mock_datetime):
+    def test_different_days(self, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 10): {
                 'cost_cc_sum': 25000000,
@@ -171,7 +171,7 @@ class DailyStatementsTestCase(TestCase):
                 'data_cost_cc_sum': 0,
             }
         }
-        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 11, 12))
 
         update_from = datetime.date(2015, 11, 1)
@@ -204,10 +204,10 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(0, statements[12].data_spend_nano)
         self.assertEqual(200000000000, statements[12].license_fee_nano)
 
-    def test_max_dates_till_today(self, mock_content_ad_stats, mock_datetime):
+    def test_max_dates_till_today(self, mock_ad_group_stats, mock_datetime):
         # check that there's no endless loop when update_from is less than all budget start dates
         return_values = {}
-        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 10, 31, 12))
 
         self.assertTrue(datetime.date(2015, 11, 1),
@@ -218,9 +218,9 @@ class DailyStatementsTestCase(TestCase):
         self.assertItemsEqual([], dates)
 
     @patch('reports.daily_statements._generate_statements')
-    def test_daily_statements_already_exist(self, mock_generate_statements, mock_content_ad_stats, mock_datetime):
+    def test_daily_statements_already_exist(self, mock_generate_statements, mock_ad_group_stats, mock_datetime):
         return_values = {}
-        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 30, 12))
 
         for date in [datetime.date(2015, 11, 1) + datetime.timedelta(days=i) for i in range(30)]:
@@ -242,9 +242,9 @@ class DailyStatementsTestCase(TestCase):
         mock_generate_statements.assert_called_once_with(datetime.date(2015, 11, 30), self.campaign1)
 
     @patch('reports.daily_statements._generate_statements')
-    def test_daily_statements_dont_exist(self, mock_generate_statements, mock_content_ad_stats, mock_datetime):
+    def test_daily_statements_dont_exist(self, mock_generate_statements, mock_ad_group_stats, mock_datetime):
         return_values = {}
-        self._configure_content_ad_stats_mock(mock_content_ad_stats, return_values)
+        self._configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
         self._configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 11, 30, 12))
 
         update_from = datetime.date(2015, 11, 30)
@@ -266,7 +266,7 @@ class EffectiveSpendPctsTestCase(TestCase):
         budget = dash.models.BudgetLineItem.objects.get(id=1)
         date = datetime.date(2015, 2, 1)
 
-        ca_spends = reports.models.ContentAdStats.objects.filter(content_ad__ad_group__campaign_id=1, date=date).\
+        ca_spends = reports.models.AdGroupStats.objects.filter(ad_group__campaign_id=1, datetime=date).\
             aggregate(media_cc=Sum('cost_cc'), data_cc=Sum('data_cost_cc'))
 
         reports.models.BudgetDailyStatement.objects.create(
@@ -286,7 +286,7 @@ class EffectiveSpendPctsTestCase(TestCase):
         budget = dash.models.BudgetLineItem.objects.get(id=1)
         date = datetime.date(2015, 2, 1)
 
-        ca_spends = reports.models.ContentAdStats.objects.filter(content_ad__ad_group__campaign_id=1, date=date).\
+        ca_spends = reports.models.AdGroupStats.objects.filter(ad_group__campaign_id=1, datetime=date).\
             aggregate(media_cc=Sum('cost_cc'), data_cc=Sum('data_cost_cc'))
 
         attributed_media_spend_nano = (ca_spends['media_cc'] * 100000) * Decimal('0.8')
@@ -311,7 +311,7 @@ class EffectiveSpendPctsTestCase(TestCase):
         budget2 = dash.models.BudgetLineItem.objects.get(id=2)
         date = datetime.date(2015, 2, 1)
 
-        ca_spends = reports.models.ContentAdStats.objects.filter(content_ad__ad_group__campaign_id=1, date=date).\
+        ca_spends = reports.models.AdGroupStats.objects.filter(ad_group__campaign_id=1, datetime=date).\
             aggregate(media_cc=Sum('cost_cc'), data_cc=Sum('data_cost_cc'))
 
         attributed_media_spend_nano = (ca_spends['media_cc'] * 100000) * Decimal('0.5')
@@ -342,7 +342,7 @@ class EffectiveSpendPctsTestCase(TestCase):
         budget = dash.models.BudgetLineItem.objects.get(id=1)
         date = datetime.date(2015, 2, 1)
 
-        reports.models.ContentAdStats.objects.all().delete()
+        reports.models.AdGroupStats.objects.all().delete()
 
         reports.models.BudgetDailyStatement.objects.create(
             budget_id=budget.id,
@@ -360,7 +360,7 @@ class EffectiveSpendPctsTestCase(TestCase):
         campaign = dash.models.Campaign.objects.get(id=1)
         date = datetime.date(2015, 2, 1)
 
-        reports.models.ContentAdStats.objects.all().delete()
+        reports.models.AdGroupStats.objects.all().delete()
 
         pct_actual_spend, pct_license_fee = daily_statements.get_effective_spend_pcts(date, campaign)
         self.assertEqual(Decimal('0'), pct_actual_spend)

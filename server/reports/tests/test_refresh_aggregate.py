@@ -1,8 +1,9 @@
-from mock import patch, call
+from mock import patch
 import datetime
 import time
 
-from boto.sqs.message import Message
+import boto.s3
+import boto.sqs
 from django import test
 from django.db.models import Sum
 from django.conf import settings
@@ -12,6 +13,7 @@ from reports import models
 
 import dash.models
 
+from utils import s3helpers
 from utils import test_helper
 
 
@@ -109,7 +111,10 @@ class RefreshContentAdStats(test.TestCase):
             'date': '2015-02-01',
             'impressions': 3000000,
             'clicks': 300,
-            'adgroup_id': 1
+            'adgroup_id': 1,
+            'effective_cost_nano': 0,
+            'effective_data_cost_nano': 0,
+            'license_fee_nano': 0,
         }]
 
         mock_put_contentadstats_to_s3.assert_called_once_with(date, campaign, [])
@@ -238,6 +243,57 @@ class RefreshContentAdStats(test.TestCase):
 
         mock_put_contentadstats_to_s3.assert_called_once_with(date, campaign, rows)
         mock_redshift.load_contentadstats.assert_called_once_with('s3_key')
+
+    def test_refresh_contentadstats_budgets_diff(self, mock_redshift, mock_put_contentadstats_to_s3):
+
+        mock_redshift.REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID = -1
+        mock_put_contentadstats_to_s3.return_value = 's3_key'
+
+        date = datetime.datetime(2015, 2, 1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+
+        models.BudgetDailyStatement.objects.create(
+            budget_id=1,
+            date=date,
+            media_spend_nano=400000000000,
+            data_spend_nano=400000000000,
+            license_fee_nano=80000000000,
+        )
+
+        models.ContentAdStats.objects.all().delete()
+        models.ContentAdPostclickStats.objects.all().delete()
+
+        refresh.refresh_contentadstats(date, campaign)
+
+        mock_redshift.delete_contentadstats.assert_called_with(
+            date, campaign.id)
+
+        rows = []
+        diff_rows = [{
+            'content_ad_id': -1,
+            'adgroup_id': 1,
+            'campaign_id': 1,
+            'account_id': 1,
+            'source_id': 1,
+            'date': '2015-02-01',
+            'impressions': 3000000,
+            'clicks': 300,
+            'cost_cc': 400000,
+            'data_cost_cc': 400000,
+            'pageviews': 4000,
+            'visits': 3000,
+            'new_visits': 300,
+            'bounced_visits': 400,
+            'total_time_on_site': 130,
+            'conversions': '{}',
+            'effective_cost_nano': 40000000000,
+            'effective_data_cost_nano': 40000000000,
+            'license_fee_nano': 8000000000
+        }]
+
+        mock_put_contentadstats_to_s3.assert_called_once_with(date, campaign, rows)
+        mock_redshift.load_contentadstats.assert_called_once_with('s3_key')
+        mock_redshift.insert_contentadstats.assert_called_once_with(diff_rows)
 
     def test_refresh_contentadstats_budgets_overspend(self, mock_redshift, mock_put_contentadstats_to_s3):
 
@@ -511,17 +567,18 @@ class ContentAdStatsDataChangeTestCase(test.TestCase):
         mock_sqs_write_message.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE,
                                                        {'date': date.isoformat(), 'campaign_id': 1})
 
+    @patch('reports.refresh.notify_daily_statements_change')
     @patch('reports.daily_statements.reprocess_daily_statements')
     @patch('reports.refresh.refresh_contentadstats')
     @patch('utils.sqs_helper.get_all_messages')
     @patch('utils.sqs_helper.delete_messages')
     @test.override_settings(CAMPAIGN_CHANGE_QUEUE='test')
     def test_refresh_changed_contentadstats(self, mock_delete_messages, mock_get_all_messages,
-                                            mock_refresh_contentadstats, mock_reprocess):
+                                            mock_refresh_contentadstats, mock_reprocess, mock_notify):
         campaign_id = 1
 
-        message1 = Message(body='{"date": "2015-12-01", "campaign_id": 1}')
-        message2 = Message(body='{"date": "2016-01-01", "campaign_id": 1}')
+        message1 = boto.sqs.message.Message(body='{"date": "2015-12-01", "campaign_id": 1}')
+        message2 = boto.sqs.message.Message(body='{"date": "2016-01-01", "campaign_id": 1}')
         mock_get_all_messages.return_value = [message1, message2]
         mock_reprocess.return_value = [
             datetime.date(2015, 12, 1),
@@ -536,28 +593,19 @@ class ContentAdStatsDataChangeTestCase(test.TestCase):
         campaign = dash.models.Campaign.objects.get(id=campaign_id)
         mock_reprocess.assert_called_once_with(datetime.date(2015, 12, 1), campaign)
 
-        calls = [
-            call(datetime.date(2015, 12, 1), campaign),
-            call(datetime.date(2015, 12, 2), campaign),
-            call(datetime.date(2015, 12, 3), campaign),
-            call(datetime.date(2015, 12, 4), campaign),
-            call(datetime.date(2015, 12, 5), campaign),
-            call(datetime.date(2016, 1, 1), campaign),
-        ]
-        mock_refresh_contentadstats.assert_has_calls(calls, any_order=True)
-
         mock_delete_messages.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, [message1, message2])
 
+    @patch('reports.refresh.notify_daily_statements_change')
     @patch('reports.daily_statements.reprocess_daily_statements')
     @patch('reports.refresh.refresh_contentadstats')
     @patch('utils.sqs_helper.get_all_messages')
     @patch('utils.sqs_helper.delete_messages')
     @test.override_settings(CAMPAIGN_CHANGE_QUEUE='test')
     def test_refresh_changed_contentadstats_duplicate(self, mock_delete_messages, mock_get_all_messages,
-                                                      mock_refresh_contentadstats, mock_reprocess):
+                                                      mock_refresh_contentadstats, mock_reprocess, mock_notify):
         campaign_id = 1
-        message1 = Message(body='{"date": "2015-12-01", "campaign_id": 1}')
-        message2 = Message(body='{"date": "2015-12-01", "campaign_id": 1}')
+        message1 = boto.sqs.message.Message(body='{"date": "2015-12-01", "campaign_id": 1}')
+        message2 = boto.sqs.message.Message(body='{"date": "2015-12-01", "campaign_id": 1}')
         mock_get_all_messages.return_value = [message1, message2]
         mock_reprocess.return_value = [
             datetime.date(2015, 12, 1),
@@ -571,16 +619,175 @@ class ContentAdStatsDataChangeTestCase(test.TestCase):
 
         campaign = dash.models.Campaign.objects.get(id=campaign_id)
         mock_reprocess.assert_called_once_with(datetime.date(2015, 12, 1), campaign)
-
-        calls = [
-            call(datetime.date(2015, 12, 1), campaign),
-            call(datetime.date(2015, 12, 2), campaign),
-            call(datetime.date(2015, 12, 3), campaign),
-            call(datetime.date(2015, 12, 4), campaign),
-            call(datetime.date(2015, 12, 5), campaign),
-        ]
-        mock_refresh_contentadstats.assert_has_calls(calls, any_order=True)
         mock_delete_messages.assert_called_once_with(settings.CAMPAIGN_CHANGE_QUEUE, [message1, message2])
+
+
+class RefreshB1PublisherDataTestCase(test.TestCase):
+
+    fixtures = ['test_api_contentads.yaml']
+
+    @patch.object(s3helpers.S3Helper, 'list')
+    def test_get_latest_b1_pub_data_s3_key(self, s3_helper_list_mock):
+        s3_helper_list_mock.return_value = [
+            boto.s3.key.Key(name='b1_publishers_raw/2016-01-01-2016-01-01--1451296802070761934'),
+            boto.s3.key.Key(name='b1_publishers_raw/2016-01-01-2016-01-01--1451282401204254907')
+        ]
+
+        ret = refresh._get_latest_b1_pub_data_s3_key(datetime.date(2016, 1, 1))
+
+        s3_helper_list_mock.assert_called_once_with('b1_publishers_raw/2016-01-01-2016-01-01')
+        self.assertEqual('b1_publishers_raw/2016-01-01-2016-01-01--1451296802070761934', ret)
+
+    @patch.object(s3helpers.S3Helper, 'get')
+    @patch('reports.refresh._get_latest_b1_pub_data_s3_key')
+    def test_get_latest_b1_pub_data(self, mock_get_s3_key, mock_s3_get):
+        raw_b1_data = '2016-01-01,1,adiant,adiant.com,10,1000,20000000,1000000\n'\
+                      '2016-01-01,1,adsnative,adsnative.com,5,800,800000,200000'
+        mock_get_s3_key.return_value = 'some_key'
+        mock_s3_get.return_value = raw_b1_data
+
+        data = refresh._get_latest_b1_pub_data(datetime.date(2016, 1, 1))
+        expected = [
+            {
+                'date': datetime.date(2016, 1, 1),
+                'adgroup_id': 1,
+                'exchange': 'adiant',
+                'domain': 'adiant.com',
+                'clicks': 10,
+                'impressions': 1000,
+                'cost_micro': 20000000,
+                'data_cost_micro': 1000000
+            },
+            {
+                'date': datetime.date(2016, 1, 1),
+                'adgroup_id': 1,
+                'exchange': 'adsnative',
+                'domain': 'adsnative.com',
+                'clicks': 5,
+                'impressions': 800,
+                'cost_micro': 800000,
+                'data_cost_micro': 200000
+            }
+        ]
+
+        self.assertEqual(expected, data)
+
+    @patch('reports.daily_statements.get_effective_spend_pcts')
+    def test_augment_b1_pub_data_with_budgets(self, mock_effective_spend_pcts):
+        mock_effective_spend_pcts.return_value = (0.5, 0.1)
+        publisher_data = [
+            {
+                'date': datetime.date(2016, 1, 1),
+                'ad_group_id': 1,
+                'exchange': 'adiant',
+                'domain': 'adiant.com',
+                'clicks': 10,
+                'impressions': 1000,
+                'cost_micro': 20000000,
+                'data_cost_micro': 1000000
+            },
+            {
+                'date': datetime.date(2016, 1, 1),
+                'ad_group_id': 1,
+                'exchange': 'adsnative',
+                'domain': 'adsnative.com',
+                'clicks': 5,
+                'impressions': 800,
+                'cost_micro': 800000,
+                'data_cost_micro': 200000
+            }
+        ]
+
+        refresh._augment_b1_pub_data_with_budgets(publisher_data)
+        expected = [
+            {
+                'date': datetime.date(2016, 1, 1),
+                'ad_group_id': 1,
+                'exchange': 'adiant',
+                'domain': 'adiant.com',
+                'clicks': 10,
+                'impressions': 1000,
+                'cost_micro': 20000000,
+                'data_cost_micro': 1000000,
+                'effective_cost_nano': 10000000000,
+                'effective_data_cost_nano': 500000000,
+                'license_fee_nano': 1050000000,
+            },
+            {
+                'date': datetime.date(2016, 1, 1),
+                'ad_group_id': 1,
+                'exchange': 'adsnative',
+                'domain': 'adsnative.com',
+                'clicks': 5,
+                'impressions': 800,
+                'cost_micro': 800000,
+                'data_cost_micro': 200000,
+                'effective_cost_nano': 400000000,
+                'effective_data_cost_nano': 100000000,
+                'license_fee_nano': 50000000,
+            }
+        ]
+
+        self.assertEqual(publisher_data, expected)
+
+    @patch('reports.refresh.time')
+    @patch('reports.refresh._get_latest_b1_pub_data')
+    @patch('reports.refresh._augment_b1_pub_data_with_budgets')
+    @patch('utils.s3helpers.S3Helper')
+    def test_process_b1_publisher_stats(self, mock_s3_helper, mock_augment, mock_get_latest, mock_time):
+        mock_time.time.return_value = time.mktime(datetime.datetime(2016, 1, 1).timetuple())
+        mock_get_latest.return_value = [
+            {
+                'date': datetime.date(2016, 1, 1),
+                'ad_group_id': 1,
+                'exchange': 'adiant',
+                'domain': 'adiant.com',
+                'clicks': 10,
+                'impressions': 1000,
+                'cost_micro': 20000000,
+                'data_cost_micro': 1000000,
+                'effective_cost_nano': 10000000000,
+                'effective_data_cost_nano': 500000000,
+                'license_fee_nano': 1050000000,
+            },
+            {
+                'date': datetime.date(2016, 1, 1),
+                'ad_group_id': 1,
+                'exchange': 'adsnative',
+                'domain': 'adsnative.com',
+                'clicks': 5,
+                'impressions': 800,
+                'cost_micro': 800000,
+                'data_cost_micro': 200000,
+                'effective_cost_nano': 400000000,
+                'effective_data_cost_nano': 100000000,
+                'license_fee_nano': 50000000,
+            }
+        ]
+
+        refresh.process_b1_publishers_stats(datetime.date(2016, 1, 1))
+
+        expected_key = 'b1_publishers_load/2016/1/1/1451606400000.json'
+        expected_json = '{"domain": "adiant.com", "ad_group_id": 1, "exchange": "adiant", "date": "2016-01-01", '\
+                        '"impressions": 1000, "license_fee_nano": 1050000000, "data_cost_micro": 1000000, '\
+                        '"effective_cost_nano": 10000000000, "cost_micro": 20000000, '\
+                        '"effective_data_cost_nano": 500000000, "clicks": 10}\n{"domain": "adsnative.com", '\
+                        '"ad_group_id": 1, "exchange": "adsnative", "date": "2016-01-01", "impressions": 800, '\
+                        '"license_fee_nano": 50000000, "data_cost_micro": 200000, "effective_cost_nano": 400000000, '\
+                        '"cost_micro": 800000, "effective_data_cost_nano": 100000000, "clicks": 5}'
+        mock_s3_helper.return_value.put.assert_called_once_with(expected_key, expected_json)
+
+    @patch('reports.redshift.delete_publishers_b1')
+    @patch('reports.redshift.load_publishers_b1')
+    @patch('reports.refresh.process_b1_publishers_stats')
+    def test_refresh_b1_publishers_data(self, mock_process_stats, mock_load_pubs_b1, mock_delete_pubs_b1):
+        mock_process_stats.return_value = 's3_key'
+
+        date = datetime.date(2016, 1, 1)
+        refresh.refresh_b1_publishers_data(date)
+
+        mock_delete_pubs_b1.assert_called_once_with(date)
+        mock_load_pubs_b1.assert_called_once_with('s3_key')
 
 
 class PutContentAdStatsToS3TestCase(test.TestCase):
@@ -638,7 +845,7 @@ class PutContentAdStatsToS3TestCase(test.TestCase):
 
         refresh.put_contentadstats_to_s3(date, campaign, test_rows)
 
-        expected_key = 'contentadstats_load/2015/2/1/1/1451606400000.json'
+        expected_key = 'contentadstats_load/2015/02/01/1/1451606400000.json'
         expected_json =\
             '{"conversions": "{\\"omniture__transaction 2\\": 20, \\"ga__goal 1\\": 10}", "license_fee_nano": 0, '\
             '"cost_cc": 150000, "pageviews": 1500, "account_id": 1, "content_ad_id": 1, "new_visits": 100, '\
