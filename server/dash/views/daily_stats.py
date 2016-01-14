@@ -301,7 +301,6 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                 constants.PublisherBlacklistFilter.SHOW_ACTIVE,
                 constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
 
-                from pudb import set_trace; set_trace()
                 adg_blacklisted_publishers = publisher_helpers.prepare_publishers_for_rs_query(
                     ad_group
                 )

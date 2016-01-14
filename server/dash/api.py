@@ -271,7 +271,7 @@ def refresh_publisher_blacklist(ad_group_source, request):
             # create and send blacklist actions
             campaign_blacklisted_publishers.append({
                 'domain': blacklist_entry.name,
-                'exchange': source.tracking_slug.replace('b1_', ''),
+                'exchange': publisher_helpers.publisher_exchange(source),
                 'source_id': source.id,
                 'ad_group_id': ad_group.id
             })
@@ -304,7 +304,7 @@ def refresh_publisher_blacklist(ad_group_source, request):
         # create and send blacklist actions
         new_publ = {
             'domain': blacklist_entry.name,
-            'exchange': source.tracking_slug.replace('b1_', ''),
+            'exchange': publisher_helpers.publisher_exchange(source),
             'source_id': source.id,
             'ad_group_id': ad_group.id,
         }
@@ -909,7 +909,7 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
         for pub in filtered_blacklist:
             kv_pub = {
                 'domain': pub['domain'],
-                'exchange': pub['source'].tracking_slug.replace('b1_', ''),
+                'exchange': publisher_helpers.publisher_exchange(pub['source']),
                 'source_id': pub['source'].id,
                 'ad_group_id': pub['ad_group_id'],
             }

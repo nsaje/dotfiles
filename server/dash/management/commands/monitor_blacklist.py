@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand
 import reports.api_publishers
 import dash.constants
 import dash.models
+import dash.publisher_helpers
 
 from utils import statsd_helper
 from utils.command_helpers import ExceptionCommand
@@ -126,12 +127,12 @@ class Command(ExceptionCommand):
 
     def generate_adgroup_blacklist_hash(self, blacklisted_before):
         adgroup_blacklist = set(
-            [(pub[0], pub[1], pub[2].replace('b1_', ''),)
+            [(pub.name, pub.ad_group.id, dash.publisher_helpers.publisher_exchange(pub.source),)
              for pub in dash.models.PublisherBlacklist.objects.filter(
                  ad_group__isnull=False,
                  status=dash.constants.PublisherStatus.BLACKLISTED,
                  created_dt__lte=blacklisted_before,
-             ).values_list('name', 'ad_group__id', 'source__tracking_slug')]
+             ).iterator()]
         )
 
         campaign_account_blacklist = []
@@ -148,7 +149,7 @@ class Command(ExceptionCommand):
                     (
                         pub.name,
                         adgroup_id,
-                        pub.source.tracking_slug.replace('b1_', ''),
+                        dash.publisher_helpers.publisher_exchange(pub.source),
                     )
                 )
 
@@ -164,7 +165,7 @@ class Command(ExceptionCommand):
                 campaign_account_blacklist.append((
                         pub.name,
                         adgroup_id,
-                        pub.source.tracking_slug.replace('b1_', ''),
+                        dash.publisher_helpers.publisher_exchange(pub.source),
                     ))
         return adgroup_blacklist.union(set(campaign_account_blacklist))
 
