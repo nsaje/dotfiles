@@ -19,7 +19,10 @@ class Command(BaseCommand):
     help = "Monitor blacklisted publishers by checking for publisher statistics in Redshift that should not exist."
 
     option_list = BaseCommand.option_list + (
-        make_option('--blacklisted_before', help='Iso formatted date. All pub. blacklist entries after this date will be ignored'),
+        make_option(
+            '--blacklisted_before',
+            help='Iso formatted date. All pub. blacklist entries after this date will be ignored'
+        ),
     )
 
     @statsd_helper.statsd_timer('dash.commands', 'monitor_blacklist')
