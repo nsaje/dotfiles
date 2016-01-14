@@ -7,6 +7,7 @@ from dash import constants
 from dash import scheduled_report
 from dash import export_plus
 
+from utils.command_helpers import ExceptionCommand
 from utils.statsd_helper import statsd_timer
 from utils.statsd_helper import statsd_gauge
 from utils import email_helper
@@ -14,7 +15,7 @@ from utils import email_helper
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
     @statsd_timer('dash.scheduled_reports', 'send_scheduled_export_reports_job')
     def handle(self, *args, **options):
         logger.info('Sending Scheduled Export Report Emails')

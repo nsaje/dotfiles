@@ -2,7 +2,21 @@ import logging
 import datetime
 import dateutil.parser
 
+from django.core.management.base import BaseCommand
+
 import dash.models
+
+logger = logging.getLogger(__name__)
+
+
+class ExceptionCommand(BaseCommand):
+    # execute in BaseCommand calls handle()
+    # this is extended here to catch exceptions
+    def execute(self, *args, **options):
+        try:
+            return super(ExceptionCommand, self).execute(*args, **options)
+        except:
+            logging.getLogger(self.__class__.__module__).exception("Uncaught exception in command")
 
 
 def last_n_days(n):

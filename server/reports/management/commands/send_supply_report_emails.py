@@ -10,11 +10,12 @@ import dash.models
 import reports.models
 import reports.api
 import utils.email_helper
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
     def handle(self, *args, **options):
         today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
         today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)

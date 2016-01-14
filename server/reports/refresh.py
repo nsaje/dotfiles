@@ -1,7 +1,10 @@
 from collections import defaultdict
+import unicodecsv as csv
 import datetime
+import dateutil.parser
 import json
 import logging
+import StringIO
 import time
 
 from django.db.models import Sum, Max
@@ -9,6 +12,7 @@ from django.db import connection, transaction
 from django.conf import settings
 
 import reports.models
+from reports import exc
 from reports.db_raw_helpers import dictfetchall
 from reports import redshift
 from reports import daily_statements
@@ -21,9 +25,15 @@ import dash.models
 
 logger = logging.getLogger(__name__)
 
+B1_RAW_PUB_DATA_S3_URI_PREFIX = 'b1_publishers_raw/{start_date}-{end_date}'
+B1_RAW_PUB_DATA_FILE = 'part-00000'
+
+MICRO_TO_NANO = 1000
 CC_TO_NANO = 100000
 
-LOAD_CONTENTADS_KEY_FORMAT = 'contentadstats_load/{year}/{month:02d}/{day:02d}/{campaign_id}/{ts}.json'
+LOAD_CONTENTADS_KEY_FMT = 'contentadstats_load/{year}/{month:02d}/{day:02d}/{campaign_id}/{ts}.json'
+LOAD_B1_PUB_STATS_KEY_FMT = 'b1_publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
+
 MAX_DATES_TO_REFRESH = 200
 
 
@@ -202,7 +212,7 @@ def _get_s3_file_content_json(rows):
 
 def put_contentadstats_to_s3(date, campaign, rows):
     rows_json = _get_s3_file_content_json(rows)
-    s3_key = LOAD_CONTENTADS_KEY_FORMAT.format(
+    s3_key = LOAD_CONTENTADS_KEY_FMT.format(
         year=date.year,
         month=date.month,
         day=date.day,
@@ -211,6 +221,84 @@ def put_contentadstats_to_s3(date, campaign, rows):
     )
     s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).put(s3_key, rows_json)
     return s3_key
+
+
+def put_b1_pub_stats_to_s3(date, rows):
+    rows_json = _get_s3_file_content_json(rows)
+    s3_key = LOAD_B1_PUB_STATS_KEY_FMT.format(
+        year=date.year,
+        month=date.month,
+        day=date.day,
+        ts=int(time.time()*1000)
+    )
+    s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).put(s3_key, rows_json)
+    return s3_key
+
+
+def _extract_timestamp(publisher):
+    start = publisher.name.find('--') + 2
+    return publisher.name[start:]
+
+
+def _get_latest_b1_pub_data_s3_key(date):
+    prefix_publishers = B1_RAW_PUB_DATA_S3_URI_PREFIX.format(start_date=date.isoformat(), end_date=date.isoformat())
+    publishers = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).list(prefix_publishers)
+    publishers = [publisher for publisher in publishers if publisher.name.endswith(B1_RAW_PUB_DATA_FILE)]
+    if not publishers:
+        raise exc.S3FileNotFoundError()
+
+    latest_publisher = max(publishers, key=_extract_timestamp)
+    return latest_publisher.name
+
+
+def _augment_b1_pub_data_with_budgets(rows):
+    pcts_lookup = {}
+    for row in rows:
+        campaign = dash.models.AdGroup.objects.select_related('campaign').get(id=row['adgroup_id']).campaign
+        if (row['date'], campaign.id) not in pcts_lookup:
+            pcts_lookup[(row['date'], campaign.id)] = daily_statements.get_effective_spend_pcts(row['date'], campaign)
+        pct_actual_spend, pct_license_fee = pcts_lookup[(row['date'], campaign.id)]
+        row['effective_cost_nano'] = int(pct_actual_spend * row['cost_micro'] * MICRO_TO_NANO)
+        row['effective_data_cost_nano'] = int(pct_actual_spend * row['data_cost_micro'] * MICRO_TO_NANO)
+        row['license_fee_nano'] = int(pct_license_fee * (row['effective_cost_nano'] + row['effective_data_cost_nano']))
+
+
+def _parse_raw_b1_pub_data(f):
+    r = csv.reader(StringIO.StringIO(f))
+
+    rows = []
+    for row in r:
+        rows.append({
+            'date': dateutil.parser.parse(row[0]).date(),
+            'adgroup_id': int(row[1]),
+            'exchange': row[2],
+            'domain': row[3],
+            'clicks': int(row[4]),
+            'impressions': int(row[5]),
+            'cost_micro': int(row[6]),
+            'data_cost_micro': int(row[7]),
+        })
+
+    return rows
+
+
+def _get_latest_b1_pub_data(date):
+    s3_key = _get_latest_b1_pub_data_s3_key(date)
+    csv_data = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).get(s3_key)
+    return _parse_raw_b1_pub_data(csv_data)
+
+
+def process_b1_publishers_stats(date):
+    data = _get_latest_b1_pub_data(date)
+    _augment_b1_pub_data_with_budgets(data)
+    return put_b1_pub_stats_to_s3(date, data)
+
+
+def refresh_b1_publishers_data(date):
+    s3_key = process_b1_publishers_stats(date)
+    with transaction.atomic(using=settings.STATS_DB_NAME):
+        redshift.delete_publishers_b1(date)
+        redshift.load_publishers_b1(s3_key)
 
 
 def refresh_contentadstats(date, campaign):
@@ -391,4 +479,3 @@ def refresh_adgroup_conversion_stats(**constraints):
                 adgroup_conversion_stats = reports.models.AdGroupGoalConversionStats(**row)
 
             adgroup_conversion_stats.save()
-
