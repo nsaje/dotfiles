@@ -102,7 +102,6 @@ class Command(BaseCommand):
             [(pub[0], pub[1], pub[2].replace('b1_', ''),)
              for pub in dash.models.PublisherBlacklist.objects.filter(
                  ad_group__isnull=False,
-                 source__source_type__type=dash.constants.SourceType.B1,
                  status=dash.constants.PublisherStatus.BLACKLISTED,
                  created_dt__lte=blacklisted_before,
              ).values_list('name', 'ad_group__id', 'source__tracking_slug')]
@@ -111,7 +110,6 @@ class Command(BaseCommand):
         campaign_account_blacklist = []
         for pub in dash.models.PublisherBlacklist.objects.filter(
              campaign__isnull=False,
-             source__source_type__type=dash.constants.SourceType.B1,
              status=dash.constants.PublisherStatus.BLACKLISTED,
              created_dt__lte=blacklisted_before,
         ).iterator():
