@@ -58,7 +58,7 @@ test:
             pwd: server
         - coverage xml:
             pwd: server
-        - cat coverage/lcov/*/lcov.info | node_modules/codeclimate-test-reporter/bin/codeclimate.js
+        - cat coverage/lcov/*/lcov.info | node_modules/codeclimate-test-reporter/bin/codeclimate.js:
             pwd: client
         - test "$CIRCLE_BRANCH" == "master" && pushci --debug || exit 0
 
