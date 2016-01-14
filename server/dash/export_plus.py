@@ -2,6 +2,7 @@ import unicodecsv
 import StringIO
 import slugify
 import collections
+import time
 from collections import OrderedDict
 
 from dash import models
@@ -59,13 +60,12 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
 
 FORMAT_1_DECIMAL = ['avg_tos']
 
-FORMAT_2_DECIMALS = ['ctr', 'click_discrepancy', 'pv_per_visit',
-                     'avg_tos', 'cost', 'data_cost', 'media_cost', 'e_media_cost', 'e_data_cost',
+FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'cost', 'data_cost', 'media_cost', 'e_media_cost', 'e_data_cost',
                      'total_cost', 'billing_cost', 'budget', 'available_budget', 'unspent_budget']
 
 FORMAT_3_DECIMALS = ['cpc']
 
-FORMAT_DIVIDE_100 = ['percent_new_users', 'bounce_rate']
+FORMAT_DIVIDE_100 = ['percent_new_users', 'bounce_rate', 'ctr', 'click_discrepancy']
 
 FORMAT_EMPTY_TO_0 = [
     'data_cost', 'cost', 'cpc',
@@ -75,8 +75,8 @@ FORMAT_EMPTY_TO_0 = [
 ]
 
 
-def _generate_rows(dimensions, start_date, end_date, user, ordering,
-                   ignore_diff_rows, conversion_goals, include_budgets=False, **constraints):
+def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
+                   conversion_goals, include_budgets=False, include_statuses=False, **constraints):
     stats = stats_helper.get_stats_with_conversions(
         user,
         start_date,
@@ -86,8 +86,6 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering,
         conversion_goals=conversion_goals,
         constraints=constraints
     )
-    ordering = _adjust_ordering(ordering, dimensions)
-    include_statuses = ordering in ['status', '-status']
     prefetched_data, budgets, statuses = _prefetch_rows_data(
         dimensions,
         constraints,
@@ -140,9 +138,8 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets, include
         data = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
     elif 'account' in dimensions:
         level = 'account'
-        accounts = constraints['account'] if isinstance(
-            constraints['account'], collections.Iterable) else [constraints['account']]
-        data = {account.id: account for account in accounts}
+        acounts = set(stat['account'] for stat in stats)
+        data = models.Account.objects.filter(id__in=acounts)
 
     if level in ['account', 'campaign', 'ad_group']:
         statuses = None if not include_statuses else _prefetch_statuses(data, level, by_source)
@@ -241,7 +238,7 @@ def _populate_account_stat(stat, prefetched_data, statuses=None, budgets=None):
         stat['status'] = statuses[stat['account']]
         if 'source' in stat:
             stat['status'] = stat['status'].get(stat['source'])
-    stat['account'] = prefetched_data.get(stat['account']).name
+    stat['account'] = prefetched_data.get(id=stat['account']).name
     return stat
 
 
@@ -310,9 +307,7 @@ def get_csv_content(fieldnames, data):
                 value = '{:.4f}'.format(value / 100)
 
             formatted_value = _format_decimals(value, field)
-
-            if field == 'date':
-                formatted_value = value.strftime('%Y-%m-%d')
+            formatted_value = _format_statuses_and_dates(formatted_value, field)
 
             if ';' in repr(formatted_value):
                 formatted_value = '"' + formatted_value + '"'
@@ -322,6 +317,14 @@ def get_csv_content(fieldnames, data):
         writer.writerow(row)
 
     return output.getvalue()
+
+
+def _format_statuses_and_dates(value, field):
+    if field == 'date':
+        return value.strftime('%Y-%m-%d')
+    elif field == 'status':
+        return 'Active' if value == constants.AdGroupSourceSettingsState.ACTIVE else 'Inactive'
+    return value
 
 
 def _format_decimals(value, field):
@@ -334,9 +337,13 @@ def _format_decimals(value, field):
     return value
 
 
-def _get_fieldnames(required_fields, additional_fields, exclude=[]):
+def _get_fieldnames(required_fields, additional_fields, exclude=[], include_statuses=False):
+    fieldname_pairs = FIELDNAMES
+    if include_statuses:
+        required_fields.extend(['status'])
+        fieldname_pairs['status'] = 'Status (' + time.strftime('%Y-%m-%d') + ')'
     fields = [field for field in (required_fields + additional_fields) if field not in (UNEXPORTABLE_FIELDS + exclude)]
-    fieldnames = OrderedDict([(k, FIELDNAMES.get(k) or k) for k in fields])
+    fieldnames = OrderedDict([(k, fieldname_pairs.get(k) or k) for k in fields])
     return fieldnames
 
 
@@ -404,8 +411,10 @@ class AllAccountsExport(object):
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
-
-        fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
+        order = _adjust_ordering(order, dimensions)
+        include_statuses = order in ['status', '-status']
+        fieldnames = _get_fieldnames(required_fields, additional_fields,
+                                     exclude=exclude_fields, include_statuses=include_statuses)
 
         results = _generate_rows(
             dimensions,
@@ -416,6 +425,7 @@ class AllAccountsExport(object):
             False,
             [],
             include_budgets=include_budgets,
+            include_statuses=include_statuses,
             account=accounts,
             source=filtered_sources)
 
@@ -446,8 +456,10 @@ class AccountExport(object):
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
-
-        fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
+        order = _adjust_ordering(order, dimensions)
+        include_statuses = order in ['status', '-status']
+        fieldnames = _get_fieldnames(required_fields, additional_fields,
+                                     exclude=exclude_fields, include_statuses=include_statuses)
         include_budgets = any(
             [field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']]) and not by_day
 
@@ -460,6 +472,7 @@ class AccountExport(object):
             breakdown == 'content_ad',
             [],
             include_budgets=include_budgets,
+            include_statuses=include_statuses,
             account=account,
             source=filtered_sources)
 
@@ -482,8 +495,9 @@ class CampaignExport(object):
             dimensions.extend(['ad_group', 'content_ad'])
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
-
-        fieldnames = _get_fieldnames(required_fields, additional_fields)
+        order = _adjust_ordering(order, dimensions)
+        include_statuses = order in ['status', '-status']
+        fieldnames = _get_fieldnames(required_fields, additional_fields, include_statuses=include_statuses)
         conversion_goals = _get_conversion_goals(user, campaign)
         for conversion_goal in conversion_goals:
             if conversion_goal.get_view_key(conversion_goals) in additional_fields:
@@ -497,6 +511,7 @@ class CampaignExport(object):
             order,
             breakdown == 'content_ad',
             conversion_goals,
+            include_statuses=include_statuses,
             campaign=campaign,
             source=filtered_sources)
 
@@ -519,7 +534,9 @@ class AdGroupExport(object):
             dimensions.extend(['content_ad'])
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
-        fieldnames = _get_fieldnames(required_fields, additional_fields)
+        order = _adjust_ordering(order, dimensions)
+        include_statuses = order in ['status', '-status']
+        fieldnames = _get_fieldnames(required_fields, additional_fields, include_statuses=include_statuses)
 
         conversion_goals = _get_conversion_goals(user, ad_group.campaign)
         for conversion_goal in conversion_goals:
@@ -534,6 +551,7 @@ class AdGroupExport(object):
             order,
             breakdown == 'content_ad',
             conversion_goals,
+            include_statuses=include_statuses,
             ad_group=ad_group,
             source=filtered_sources)
 
