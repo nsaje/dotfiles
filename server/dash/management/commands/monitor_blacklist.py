@@ -50,10 +50,12 @@ class Command(BaseCommand):
     def monitor_adgroup_level(self, blacklisted_before):
         blacklisted_set = self.generate_adgroup_blacklist_hash(blacklisted_before)
 
+        constraints = {'impressions__gt': 0}
         data = reports.api_publishers.query(
             datetime.datetime.utcnow().date() - datetime.timedelta(days=1),
             datetime.datetime.utcnow().date(),
             breakdown_fields=['domain', 'ad_group', 'exchange'],
+            constraints=constraints
         )
         # hashmap data
         redshift_stats = {}
@@ -75,10 +77,12 @@ class Command(BaseCommand):
     def monitor_global_level(self, blacklisted_before):
         blacklisted_set = self.generate_global_blacklist_hash(blacklisted_before)
 
+        constraints = {'impressions__gt': 0}
         data = reports.api_publishers.query(
             datetime.datetime.utcnow().date() - datetime.timedelta(days=1),
             datetime.datetime.utcnow().date(),
-            breakdown_fields=['domain', 'exchange']
+            breakdown_fields=['domain', 'exchange'],
+            constraints=constraints
         )
 
         # hashmap data
