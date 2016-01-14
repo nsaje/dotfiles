@@ -10,11 +10,12 @@ import dash.constants
 import dash.models
 
 from utils import statsd_helper
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
 
     help = "Monitor blacklisted publishers by checking for publisher statistics in Redshift that should not exist."
 

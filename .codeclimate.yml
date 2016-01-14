@@ -12,10 +12,13 @@ engines:
     config:
       languages:
       - python
+  eslint:
+    enabled: true
 
 ratings:
    paths:
    - "**.py"
+   - "**.js"
 
 exclude_paths:
 - client/lib/**/*
