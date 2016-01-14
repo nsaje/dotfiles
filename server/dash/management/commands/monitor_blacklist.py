@@ -50,6 +50,9 @@ class Command(BaseCommand):
     def monitor_adgroup_level(self, blacklisted_before):
         blacklisted_set = self.generate_adgroup_blacklist_hash(blacklisted_before)
 
+        # since we usually only have statistics for yesterday
+        # we need to take into account publisher statistics the day before
+        # yesterday
         data = reports.api_publishers.query(
             datetime.datetime.utcnow().date() - datetime.timedelta(days=1),
             datetime.datetime.utcnow().date(),
