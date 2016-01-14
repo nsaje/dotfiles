@@ -19,8 +19,6 @@ def get_useractiontype(level):
 
 
 def get_key(ad_group, level):
-    if level == constants.PublisherBlacklistLevel.GLOBAL:
-        return True
     if level == constants.PublisherBlacklistLevel.ACCOUNT:
         return ad_group.campaign.account
     if level == constants.PublisherBlacklistLevel.CAMPAIGN:
@@ -64,11 +62,11 @@ def prepare_publishers_for_rs_query(ad_group):
         Q(campaign=ad_group.campaign) |
         Q(account=ad_group.campaign.account)
     )
-    adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source')
+    adg_blacklisted_publishers = adg_pub_blacklist_qs.iterator()
     adg_blacklisted_publishers = map(lambda entry: {
-        'domain': entry['name'],
+        'domain': entry.name,
         'adgroup_id': ad_group.id,
-        'exchange': publisher_exchange(entry['source']),
+        'exchange': publisher_exchange(entry.source),
     }, adg_blacklisted_publishers)
 
     # include global, campaign and account stats if they exist
