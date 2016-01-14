@@ -36,7 +36,7 @@ test:
         - 'python manage.py collectstatic --noinput':
             pwd: server
             parallel: true
-        - rm -r coverage/lcov/*
+        - rm -r coverage/lcov/*:
             pwd: client
     override:
         - 'case $CIRCLE_NODE_INDEX in 0) cd server && coverage run manage.py test ;; 1) cd client && grunt test --build-number ${CIRCLE_BUILD_NUM} && cd .. && ./run_e2e.sh ;; esac':
