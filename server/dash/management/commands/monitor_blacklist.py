@@ -69,13 +69,20 @@ class Command(ExceptionCommand):
             )] = (row['impressions'], row['clicks'])
         # do set intersection
         redshift_stats_keys = set(redshift_stats.keys())
+
+        aggregated_clicks = 0
+        aggregated_impressions = 0
         for key in blacklisted_set.intersection(redshift_stats_keys):
             logger.warning(
-                'monitor_blacklist: Found publisher statistics for blacklisted publisher %s',
-                key
+                'monitor_blacklist: Found publisher statistics for blacklisted publisher %s - stats: %s',
+                key,
+                redshift_stats[key]
             )
-            statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.impressions', redshift_stats[key][0])
-            statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.clicks', redshift_stats[key][1])
+            aggregated_impressions += redshift_stats[key][0]
+            aggregated_clicks += redshift_stats[key][1]
+
+        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.impressions', aggregated_impressions)
+        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.clicks', aggregated_clicks)
 
     def monitor_global_level(self, blacklisted_before):
         blacklisted_set = self.generate_global_blacklist_hash(blacklisted_before)
@@ -91,20 +98,31 @@ class Command(ExceptionCommand):
         for row in data:
             if row['exchange'].lower() == 'outbrain':
                 continue
-            redshift_stats[(
+            existing_impressions, existing_clicks = redshift_stats.get(
                 row['domain'],
-                row['exchange'].lower(),
-            )] = (row['impressions'], row['clicks'])
+                (0, 0)
+            )
+            redshift_stats[(
+                row['domain']
+            )] = (
+                existing_impressions + row['impressions'],
+                existing_clicks + row['clicks']
+            )
 
         # do set intersection
+        aggregated_clicks = 0
+        aggregated_impressions = 0
         redshift_stats_keys = set(redshift_stats.keys())
         for key in blacklisted_set.intersection(redshift_stats_keys):
             logger.warning(
-                'monitor_blacklist: Found publisher statistics for globally blacklisted publisher. %s',
-                key
+                'monitor_blacklist: Found publisher statistics for globally blacklisted publisher. %s - stats %s',
+                key,
+                redshift_stats[key]
             )
-            statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_impressions', redshift_stats[key][0])
-            statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_clicks', redshift_stats[key][1])
+            aggregated_impressions += redshift_stats[key][0]
+            aggregated_clicks += redshift_stats[key][1]
+        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_impressions', aggregated_impressions)
+        statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_clicks', aggregated_clicks)
 
     def generate_adgroup_blacklist_hash(self, blacklisted_before):
         adgroup_blacklist = set(
@@ -152,10 +170,9 @@ class Command(ExceptionCommand):
 
     def generate_global_blacklist_hash(self, blacklisted_before):
         return set(
-            [(pub.name, pub.source.tracking_slug.replace('b1_', ''),)
+            [pub.name
              for pub in dash.models.PublisherBlacklist.objects.filter(
                  everywhere=True,
-                 source__source_type__type=dash.constants.SourceType.B1,
                  status=dash.constants.PublisherStatus.BLACKLISTED,
                  created_dt__lte=blacklisted_before,
              ).iterator()]
