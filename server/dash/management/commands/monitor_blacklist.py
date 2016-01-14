@@ -50,12 +50,10 @@ class Command(BaseCommand):
     def monitor_adgroup_level(self, blacklisted_before):
         blacklisted_set = self.generate_adgroup_blacklist_hash(blacklisted_before)
 
-        constraints = {'impressions__gt': 0}
         data = reports.api_publishers.query(
             datetime.datetime.utcnow().date() - datetime.timedelta(days=1),
             datetime.datetime.utcnow().date(),
             breakdown_fields=['domain', 'ad_group', 'exchange'],
-            constraints=constraints
         )
         # hashmap data
         redshift_stats = {}
@@ -69,8 +67,8 @@ class Command(BaseCommand):
         redshift_stats_keys = set(redshift_stats.keys())
         for key in blacklisted_set.intersection(redshift_stats_keys):
             logger.warning(
-                'monitor_blacklist: Found publisher statistics for globally blacklisted publisher',
-                extra={'key': key}
+                'monitor_blacklist: Found publisher statistics for blacklisted publisher %s',
+                key
             )
             statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.impressions', redshift_stats[key][0])
             statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.clicks', redshift_stats[key][1])
@@ -98,8 +96,8 @@ class Command(BaseCommand):
         redshift_stats_keys = set(redshift_stats.keys())
         for key in blacklisted_set.intersection(redshift_stats_keys):
             logger.warning(
-                'monitor_blacklist: Found publisher statistics for globally blacklisted publisher.',
-                extra={'key': key}
+                'monitor_blacklist: Found publisher statistics for globally blacklisted publisher. %s',
+                key
             )
             statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_impressions', redshift_stats[key][0])
             statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_clicks', redshift_stats[key][1])
