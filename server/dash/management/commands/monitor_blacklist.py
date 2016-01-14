@@ -121,7 +121,6 @@ class Command(BaseCommand):
              status=dash.constants.PublisherStatus.BLACKLISTED,
              created_dt__lte=blacklisted_before,
         ).iterator():
-            # fetch campaign level blacklist
             adgroup_ids = dash.models.AdGroup.objects.filter(
                 campaign=pub.campaign
             ).values_list('id', flat=True)
@@ -139,7 +138,6 @@ class Command(BaseCommand):
              status=dash.constants.PublisherStatus.BLACKLISTED,
              created_dt__lte=blacklisted_before,
         ).iterator():
-            # fetch campaign level blacklist
             adgroup_ids = dash.models.AdGroup.objects.filter(
                 campaign__account=pub.account
             ).values_list('id', flat=True)
