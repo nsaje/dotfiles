@@ -64,7 +64,7 @@ class Command(BaseCommand):
                 row['domain'],
                 row['ad_group'],
                 row['exchange'].lower(),
-            )] = row['impressions']
+            )] = (row['impressions'], row['clicks'])
         # do set intersection
         redshift_stats_keys = set(redshift_stats.keys())
         for key in blacklisted_set.intersection(redshift_stats_keys):
@@ -72,17 +72,16 @@ class Command(BaseCommand):
                 'monitor_blacklist: Found publisher statistics for globally blacklisted publisher',
                 extra={'key': key}
             )
-            statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.impressions', redshift_stats[key])
+            statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.impressions', redshift_stats[key][0])
+            statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.clicks', redshift_stats[key][1])
 
     def monitor_global_level(self, blacklisted_before):
         blacklisted_set = self.generate_global_blacklist_hash(blacklisted_before)
 
-        constraints = {'impressions__gt': 0}
         data = reports.api_publishers.query(
             datetime.datetime.utcnow().date() - datetime.timedelta(days=1),
             datetime.datetime.utcnow().date(),
             breakdown_fields=['domain', 'exchange'],
-            constraints=constraints
         )
 
         # hashmap data
@@ -93,7 +92,7 @@ class Command(BaseCommand):
             redshift_stats[(
                 row['domain'],
                 row['exchange'].lower(),
-            )] = row['impressions']
+            )] = (row['impressions'], row['clicks'])
 
         # do set intersection
         redshift_stats_keys = set(redshift_stats.keys())
@@ -102,7 +101,8 @@ class Command(BaseCommand):
                 'monitor_blacklist: Found publisher statistics for globally blacklisted publisher.',
                 extra={'key': key}
             )
-            statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_impressions', redshift_stats[key])
+            statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_impressions', redshift_stats[key][0])
+            statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_clicks', redshift_stats[key][1])
 
     def generate_adgroup_blacklist_hash(self, blacklisted_before):
         adgroup_blacklist = set(
