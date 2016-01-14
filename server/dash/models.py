@@ -1992,25 +1992,19 @@ class PublisherBlacklist(models.Model):
         return level
 
     def fill_keys(self, ad_group, level):
+        self.everywhere = False
+        self.account = None
+        self.campaign = None
+        self.ad_group = None
+
         if level == constants.PublisherBlacklistLevel.GLOBAL:
             self.everywhere = True
-        else:
-            self.everywhere = False
-
         if level == constants.PublisherBlacklistLevel.ACCOUNT:
             self.account = ad_group.campaign.account
-        else:
-            self.account = None
-
         if level == constants.PublisherBlacklistLevel.CAMPAIGN:
             self.campaign = ad_group.campaign
-        else:
-            self.campaign = None
-
         if level == constants.PublisherBlacklistLevel.ADGROUP:
             self.ad_group = ad_group
-        else:
-            self.ad_group = None
 
     class Meta:
         unique_together = (('name', 'everywhere', 'account', 'campaign', 'ad_group', 'source'), )
