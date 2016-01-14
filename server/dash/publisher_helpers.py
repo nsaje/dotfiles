@@ -35,24 +35,21 @@ def get_key(ad_group, level):
 
 
 def create_queryset_by_key(ad_group, level):
+    blacklist_account = None
+    blacklist_campaign = None
+    blacklist_adgroup = None
+
     blacklist_global = level == constants.PublisherBlacklistLevel.GLOBAL
     if level == constants.PublisherBlacklistLevel.ACCOUNT:
         blacklist_account = ad_group.campaign.account
-    else:
-        blacklist_account = None
     if level == constants.PublisherBlacklistLevel.CAMPAIGN:
         blacklist_campaign = ad_group.campaign
-    else:
-        blacklist_campaign = None
-
     if level == constants.PublisherBlacklistLevel.ADGROUP:
         blacklist_adgroup = ad_group
-    else:
-        blacklist_adgroup = None
+
     return Q(
         everywhere=blacklist_global,
         account=blacklist_account,
         campaign=blacklist_campaign,
         ad_group=blacklist_adgroup
     )
-
