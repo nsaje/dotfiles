@@ -48,7 +48,7 @@ class Command(BaseCommand):
         blacklisted_set = self.generate_adgroup_blacklist_hash(blacklisted_before)
 
         data = reports.api_publishers.query(
-            datetime.datetime.utcnow().date() - datetime.timedelta(days=100),
+            datetime.datetime.utcnow().date() - datetime.timedelta(days=1),
             datetime.datetime.utcnow().date(),
             breakdown_fields=['domain', 'ad_group', 'exchange'],
         )
