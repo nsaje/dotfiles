@@ -316,17 +316,19 @@ def _get_raw_ob_pub_data(s3_keys):
 
         source = dash.models.Source.objects.get(source_type__type=dash.constants.SourceType.OUTBRAIN)
         ret = reports.api.get_day_cost(date, ad_group=ad_group_id, source=source)
+
         total_cost = 0
         if ret['cost'] is not None:
             total_cost = ret['cost']
-        total_clicks = sum(row['clicks'] for row in rows)
+        total_clicks = sum(row['clicks'] for row in json_data)
 
         for row in json_data:
             row['adgroup_id'] = ad_group_id
             row['date'] = date
             row['exchange'] = 'outbrain'
-            row['cost_micro'] = float(row['clicks']) / total_clicks * total_cost
-            row['impressions'] = None
+            row['cost_micro'] = 0
+            if total_clicks * total_cost > 0:
+                row['cost_micro'] = float(row['clicks']) / total_clicks * total_cost
             rows.append(row)
 
     return rows
