@@ -21,13 +21,10 @@ def get_useractiontype(level):
 def get_key(ad_group, level):
     if level == constants.PublisherBlacklistLevel.GLOBAL:
         return True
-
     if level == constants.PublisherBlacklistLevel.ACCOUNT:
         return ad_group.campaign.account
-
     if level == constants.PublisherBlacklistLevel.CAMPAIGN:
         return ad_group.campaign
-
     if level == constants.PublisherBlacklistLevel.ADGROUP:
         return ad_group
 
