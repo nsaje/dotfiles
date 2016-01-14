@@ -705,7 +705,7 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
             }
         ]
 
-        refresh._augment_b1_pub_data_with_budgets(publisher_data)
+        refresh._augment_pub_data_with_budgets(publisher_data)
         expected = [
             {
                 'date': datetime.date(2016, 1, 1),
@@ -739,7 +739,7 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
 
     @patch('reports.refresh.time')
     @patch('reports.refresh._get_latest_b1_pub_data')
-    @patch('reports.refresh._augment_b1_pub_data_with_budgets')
+    @patch('reports.refresh._augment_pub_data_with_budgets')
     @patch('utils.s3helpers.S3Helper')
     def test_process_b1_publisher_stats(self, mock_s3_helper, mock_augment, mock_get_latest, mock_time):
         mock_time.time.return_value = time.mktime(datetime.datetime(2016, 1, 1).timetuple())
@@ -795,6 +795,23 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
 
         mock_delete_pubs_b1.assert_called_once_with(date)
         mock_load_pubs_b1.assert_called_once_with('s3_key')
+
+
+class RefreshOBPubDataTestCase(test.TestCase):
+
+    fixtures = ['test_api_contentads.yaml']
+
+    @patch('reports.redshift.delete_publishers_ob')
+    @patch('reports.redshift.load_publishers_ob')
+    @patch('reports.refresh.process_ob_publishers_stats')
+    def test_refresh_ob_publisher_data(self, mock_process_stats, mock_load_pubs_ob, mock_delete_pubs_ob):
+        mock_process_stats.return_value = 's3_key'
+
+        date = datetime.date(2016, 1, 1)
+        refresh.refresh_ob_publishers_data(date)
+
+        mock_delete_pubs_ob.assert_called_once_with(date)
+        mock_load_pubs_ob.assert_called_once_with('s3_key')
 
 
 class PutContentAdStatsToS3TestCase(test.TestCase):
