@@ -605,6 +605,7 @@ class CampaignAdGroups(api_common.BaseApiView):
             )
             ad_group.save(request)
             ad_group_settings = self._create_new_settings(ad_group, request)
+            # Insert newly created setting into redirector
             actions_settings = api.order_ad_group_settings_update(ad_group, models.AdGroupSettings(),
                                                                   ad_group_settings, request, send=False)
             actions.extend(actions_settings)
@@ -643,9 +644,9 @@ class CampaignAdGroups(api_common.BaseApiView):
             try:
                 source_default_settings = helpers.get_source_default_settings(source)
             except exc.MissingDataError as e:
-                logger.warning(
-                        "Adding source ({}) to ad-group (pk={}) failed due to missing data. Original error message: {}"
-                            .format(source.name, ad_group.pk, e.message))
+                logger.exception(
+                        "Adding source ({}) to ad-group (pk={}) failed due to missing data error."
+                            .format(source.name, ad_group.pk))
                 continue
 
             ad_group_source = self._create_ad_group_source(request, source_default_settings, ad_group_settings)
@@ -969,15 +970,14 @@ class AdGroupSources(api_common.BaseApiView):
         source_id = json.loads(request.body)['source_id']
         source = models.Source.objects.get(id=source_id)
 
-        default_settings = helpers.get_source_default_settings()
-
         if models.AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
-            raise exc.ForbiddenError('{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
+            raise exc.ValidationError('{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
 
         if not region_targeting_helper.can_target_existing_regions(source, ad_group.get_current_settings()):
             raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'\
                                       .format(source.name))
 
+        default_settings = helpers.get_source_default_settings(source)
         ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
         ad_group_source.save(request)
 

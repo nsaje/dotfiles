@@ -1267,6 +1267,10 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
 class AdGroupSourcesTest(TestCase):
     fixtures = ['test_api', 'test_views']
 
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username=User.objects.get(pk=1).email, password='secret')
+
     def test_get_name(self):
         request = HttpRequest()
         request.user = User(id=1)
@@ -1389,6 +1393,28 @@ class AdGroupSourcesTest(TestCase):
             {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False},  # should return False when DMAs used
             {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
         ])
+
+    def test_put(self):
+        response = self.client.put(
+                reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
+                data=json.dumps({'source_id': '9'})
+        )
+        self.assertEqual(response.status_code, 200)
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        source = models.Source.objects.get(pk=9)
+        ad_group_sources = ad_group.sources.all()
+        waiting_sources = (ad_group_source.source for ad_group_source
+                           in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
+        self.assertIn(source, ad_group_sources)
+        self.assertIn(source, waiting_sources)
+
+    def test_put_existing_source(self):
+        response = self.client.put(
+                reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
+                data=json.dumps({'source_id': '1'})
+        )
+        self.assertEqual(response.status_code, 400)
 
 
 @patch('dash.views.views.actionlog.api_contentads.init_update_content_ad_action')
