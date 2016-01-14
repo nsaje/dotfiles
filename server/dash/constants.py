@@ -1148,7 +1148,7 @@ class UserActionType(ConstantBase):
         SCHEDULE_REPORT: 'Schedule report',
         DELETE_SCHEDULED_REPORT: 'Delete scheduled report',
         DOWNLOAD_REPORT: 'Direct report download',
-        SET_ADGROUP_PUBLISHER_BLACKLIST: 'Set Adgroup Publisher Blacklist',
+        SET_ADGROUP_PUBLISHER_BLACKLIST: 'Set Ad Group Publisher Blacklist',
         SET_CAMPAIGN_PUBLISHER_BLACKLIST: 'Set Campaign Publisher Blacklist',
         SET_ACCOUNT_PUBLISHER_BLACKLIST: 'Set Account Publisher Blacklist',
         SET_GLOBAL_PUBLISHER_BLACKLIST: 'Set Global Publisher Blacklist'
