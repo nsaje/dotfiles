@@ -33,7 +33,7 @@ class MonitorPublisherBlacklistTest(TestCase):
                 'exchange': u'adiant',
                 'billing_cost_nano_sum': 0.0,
                 'impressions_sum': 1000,
-                'clicks_sum': 0L,
+                'clicks_sum': 5L,
                 'ctr': 0.0,
                 'external_id': u'1234567890',
              }
@@ -42,7 +42,8 @@ class MonitorPublisherBlacklistTest(TestCase):
         management.call_command('monitor_blacklist', blacklisted_before=tomorrow.date().isoformat())
         statsd_gauge_mock.assert_has_calls(
             [
-                mock.call('dash.blacklisted_publisher_stats.impressions', 1000)
+                mock.call('dash.blacklisted_publisher_stats.impressions', 1000),
+                mock.call('dash.blacklisted_publisher_stats.clicks', 5),
             ]
         )
 
@@ -62,7 +63,7 @@ class MonitorPublisherBlacklistTest(TestCase):
                 'exchange': u'adiant',
                 'billing_cost_nano_sum': 0.0,
                 'impressions_sum': 1000,
-                'clicks_sum': 0L,
+                'clicks_sum': 5L,
                 'ctr': 0.0,
                 'external_id': u'1234567890',
              }
@@ -74,7 +75,8 @@ class MonitorPublisherBlacklistTest(TestCase):
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         statsd_gauge_mock.assert_has_calls(
             [
-                mock.call('dash.blacklisted_publisher_stats.global_impressions', 1000)
+                mock.call('dash.blacklisted_publisher_stats.global_impressions', 1000),
+                mock.call('dash.blacklisted_publisher_stats.global_clicks', 5),
             ]
         )
 
