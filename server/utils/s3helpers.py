@@ -45,7 +45,6 @@ class S3Helper(object):
             return [name for name in os.listdir(prefix) if os.path.isdir(os.path.join(prefix, name))]
 
 
-
 def generate_safe_filename(filename, content):
     filename = filename.lower().replace(' ', '_')
     basefnm, extension = os.path.splitext(filename)

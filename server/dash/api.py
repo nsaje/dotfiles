@@ -21,6 +21,7 @@ from dash import models
 from dash import constants
 from dash import consistency
 from dash import region_targeting_helper
+from dash import views
 
 import utils.url_helper
 import utils.statsd_helper
@@ -921,8 +922,8 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
             key = None
             if level == constants.PublisherBlacklistLevel.ACCOUNT:
                 key = [ad_group.campaign.account.id]
-                if source_type_id == constants.SourceType.OUTBRAIN:
-                    key.append(ad_group.campaign.account.outbrain_marketer_id)
+                if source_type_cache[source_type_id].type == constants.SourceType.OUTBRAIN:
+                    key.append(ad_group.campaign.account.outbrain_marketer_id or '')
             elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
                 key = [ad_group.campaign.id]
             elif level == constants.PublisherBlacklistLevel.ADGROUP:
@@ -1089,20 +1090,37 @@ def update_content_ads_state(content_ads, state, request):
     actionlog.zwei_actions.send(actions)
 
 
-def add_content_ads_state_change_to_history(ad_group, content_ads, state, request):
+def add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request):
     description = 'Content ad(s) {{ids}} set to {}.'.format(constants.ContentAdSourceState.get_text(state))
 
     description = format_bulk_ids_into_description([ad.id for ad in content_ads], description)
 
     save_change_to_history(ad_group, description, request)
 
+    email_helper.send_ad_group_notification_email(ad_group, request, description)
 
-def add_content_ads_archived_change_to_history(ad_group, content_ads, archived, request):
+
+def add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, archived, request):
     description = 'Content ad(s) {{ids}} {}.'.format('Archived' if archived else 'Restored')
 
     description = format_bulk_ids_into_description([ad.id for ad in content_ads], description)
 
     save_change_to_history(ad_group, description, request)
+
+    email_helper.send_ad_group_notification_email(ad_group, request, description)
+
+
+def update_content_ads_archived_state(request, content_ads, ad_group, archived):
+    if content_ads.exists():
+        add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, archived, request)
+
+        views.helpers.log_useraction_if_necessary(
+            request, constants.UserActionType.ARCHIVE_RESTORE_CONTENT_AD, ad_group=ad_group)
+
+        with transaction.atomic():
+            for content_ad in content_ads:
+                content_ad.archived = archived
+                content_ad.save()
 
 
 def save_change_to_history(ad_group, description, request):
@@ -1165,10 +1183,7 @@ class AdGroupSourceSettingsWriter(object):
                 new_settings.daily_budget_cc = daily_budget_cc
             new_settings.save(request)
 
-            self.add_to_history(settings_obj, old_settings_obj, request)
-
-            if request:
-                email_helper.send_ad_group_notification_email(self.ad_group_source.ad_group, request)
+            self.add_to_history_and_notify(settings_obj, old_settings_obj, request)
 
             if send_action:
                 filtered_settings_obj = {k: v for k, v in settings_obj.iteritems() if k != 'autopilot_state'}
@@ -1197,7 +1212,7 @@ class AdGroupSourceSettingsWriter(object):
         ad_group_settings = self.ad_group_source.ad_group.get_current_settings()
         return models.AdGroup.is_ad_group_active(ad_group_settings)
 
-    def add_to_history(self, change_obj, old_change_obj, request):
+    def add_to_history_and_notify(self, change_obj, old_change_obj, request):
         changes_text_parts = []
         for key, val in change_obj.items():
             if val is None:
@@ -1217,11 +1232,13 @@ class AdGroupSourceSettingsWriter(object):
 
             changes_text_parts.append(text)
 
-        changes_text = ', '.join(changes_text_parts)
-
         settings = self.ad_group_source.ad_group.get_current_settings().copy_settings()
-        settings.changes_text = changes_text
+        settings.changes_text = ', '.join(changes_text_parts)
         settings.save(request)
+
+        if request:
+            email_helper.send_ad_group_notification_email(
+                self.ad_group_source.ad_group, request, '\n'.join(changes_text_parts))
 
 
 def get_content_ad(content_ad_id):

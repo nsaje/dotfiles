@@ -3,10 +3,11 @@ from django.db.models import Sum
 
 import reports.models
 
+from utils.command_helpers import ExceptionCommand
 from utils.statsd_helper import statsd_gauge
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
 
     def handle(self, *args, **options):
         n_imps = reports.models.ArticleStats.objects\

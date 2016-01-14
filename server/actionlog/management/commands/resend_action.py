@@ -2,13 +2,13 @@ import logging
 import actionlog
 
 from django.core.management.base import BaseCommand
-from utils.command_helpers import parse_id_list
+from utils.command_helpers import parse_id_list, ExceptionCommand
 from optparse import make_option
 
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
 
     option_list = BaseCommand.option_list + (
         make_option('--ids', help='Comma separated list of action logs'),

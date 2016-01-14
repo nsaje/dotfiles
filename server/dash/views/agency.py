@@ -53,7 +53,6 @@ class AdGroupSettings(api_common.BaseApiView):
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
         }
-
         return self.create_api_response(response)
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_put')
@@ -96,7 +95,10 @@ class AdGroupSettings(api_common.BaseApiView):
 
         changes = current_settings.get_setting_changes(new_settings)
         if changes:
-            email_helper.send_ad_group_notification_email(ad_group, request)
+            changes_text = models.AdGroupSettings.get_changes_text(
+                current_settings, new_settings, request.user, separator='\n')
+
+            email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
             helpers.log_useraction_if_necessary(request, user_action_type, ad_group=ad_group)
 
         response = {
@@ -269,21 +271,16 @@ class CampaignAgency(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        prev_settings = campaign.get_current_settings()
-        settings = prev_settings.copy_settings()
-        self.set_settings(settings, campaign, form.cleaned_data)
+        old_settings = campaign.get_current_settings()
+        new_settings = old_settings.copy_settings()
+        self.set_settings(new_settings, campaign, form.cleaned_data)
 
-        self.propagate_and_save(campaign, settings, request)
-
-        changes = prev_settings.get_setting_changes(settings)
-        if changes:
-            email_helper.send_campaign_notification_email(campaign, request)
-            helpers.log_useraction_if_necessary(request,
-                                                constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS,
-                                                campaign=campaign)
+        helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
+        helpers.log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request,
+                                                        constants.UserActionType.SET_CAMPAIGN_AGENCY_SETTINGS)
 
         response = {
-            'settings': self.get_dict(settings, campaign),
+            'settings': self.get_dict(new_settings, campaign),
             'history': self.get_history(campaign),
             'can_archive': campaign.can_archive(),
             'can_restore': campaign.can_restore(),
@@ -291,54 +288,20 @@ class CampaignAgency(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    @classmethod
-    def propagate_and_save(cls, campaign, settings, request):
-        actions = []
-
-        with transaction.atomic():
-            campaign.save(request)
-            settings.save(request)
-
-            # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
-            campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-
-            for ad_group in campaign_ad_groups:
-                adgroup_settings = ad_group.get_current_settings()
-                actions.extend(
-                    api.order_ad_group_settings_update(
-                        ad_group,
-                        adgroup_settings,
-                        adgroup_settings,
-                        request,
-                        send=False,
-                        iab_update=True
-                    )
-                )
-
-        zwei_actions.send(actions)
-
     def get_history(self, campaign):
         settings = models.CampaignSettings.objects.\
             filter(campaign=campaign).\
             order_by('created_dt')
 
         history = []
+
         for i in range(0, len(settings)):
             old_settings = settings[i - 1] if i > 0 else None
             new_settings = settings[i]
 
-            changes = old_settings.get_setting_changes(new_settings) \
-                if old_settings is not None else None
+            changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings)
 
             settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
-
-            if new_settings.changes_text is not None:
-                changes_text = new_settings.changes_text
-            else:
-                changes_text = self.convert_changes_to_string(changes, settings_dict)
-
-            if i > 0 and not changes_text:
-                continue
 
             history.append({
                 'datetime': new_settings.created_dt,
@@ -351,76 +314,20 @@ class CampaignAgency(api_common.BaseApiView):
         return history
 
     def convert_settings_to_dict(self, old_settings, new_settings):
-        settings_dict = OrderedDict([
-            ('name', {
-                'name': 'Name',
-                'value': new_settings.name.encode('utf-8')
-            }),
-            ('campaign_manager', {
-                'name': 'Campaign Manager',
-                'value': helpers.get_user_full_name_or_email(new_settings.campaign_manager)
-            }),
-            ('iab_category', {
-                'name': 'IAB Category',
-                'value': constants.IABCategory.get_text(new_settings.iab_category)
-            }),
-            ('campaign_goal', {
-                'name': 'Campaign goal',
-                'value': constants.CampaignGoal.get_text(new_settings.campaign_goal),
-            }),
-            ('goal_quantity', {
-                'name': 'Goal quantity',
-                'value': new_settings.goal_quantity,
-            }),
-            ('service_fee', {
-                'name': 'Service Fee',
-                'value': helpers.format_decimal_to_percent(new_settings.service_fee) + '%'
-            }),
-            ('promotion_goal', {
-                'name': 'Promotion Goal',
-                'value': constants.PromotionGoal.get_text(new_settings.promotion_goal)
-            }),
-            ('archived', {
-                'name': 'Archived',
-                'value': str(new_settings.archived)
-            }),
-            ('target_devices', {
-                'name': 'Target Devices',
-                'value': ', '.join(constants.AdTargetDevice.get_text(x) for x in new_settings.target_devices)
-            }),
-            ('target_regions', {
-                'name': 'Target Devices',
-                'value': helpers.get_target_regions_string(new_settings.target_regions)
-            })
-        ])
+        settings_dict = OrderedDict()
 
-        if old_settings is not None:
-            settings_dict['name']['old_value'] = old_settings.name.encode('utf-8')
+        for field in models.CampaignSettings._settings_fields:
+            settings_dict[field] = {
+                'name': models.CampaignSettings.get_human_prop_name(field),
+                'value': models.CampaignSettings.get_human_value(
+                    field, getattr(new_settings, field, models.CampaignSettings.get_default_value(field)))
+            }
 
-            if old_settings.campaign_manager is not None:
-                settings_dict['campaign_manager']['old_value'] = \
-                    helpers.get_user_full_name_or_email(old_settings.campaign_manager)
-
-            settings_dict['iab_category']['old_value'] = \
-                constants.IABCategory.get_text(old_settings.iab_category)
-
-            settings_dict['archived']['old_value'] = str(old_settings.archived)
+            if old_settings is not None:
+                settings_dict[field]['old_value'] = models.CampaignSettings.get_human_value(
+                    field, getattr(old_settings, field, models.CampaignSettings.get_default_value(field)))
 
         return settings_dict
-
-    def convert_changes_to_string(self, changes, settings_dict):
-        if changes is None:
-            return 'Created settings'
-
-        change_strings = []
-
-        for key in changes:
-            setting = settings_dict[key]
-            change_strings.append(
-                '{} set to "{}"'.format(setting['name'], setting['value'])
-            )
-
-        return ', '.join(change_strings)
 
     def get_dict(self, settings, campaign):
         result = {}
@@ -620,12 +527,9 @@ class CampaignSettings(api_common.BaseApiView):
         self.set_settings(request, new_settings, campaign, form.cleaned_data)
         self.set_campaign(campaign, form.cleaned_data)
 
-        CampaignAgency.propagate_and_save(campaign, new_settings, request)
-
-        changes = current_settings.get_setting_changes(new_settings)
-        if changes:
-            email_helper.send_campaign_notification_email(campaign, request)
-            helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_SETTINGS, campaign=campaign)
+        helpers.save_campaign_settings_and_propagate(campaign, new_settings, request)
+        helpers.log_and_notify_campaign_settings_change(campaign, current_settings, new_settings, request,
+                                                        constants.UserActionType.SET_CAMPAIGN_SETTINGS)
 
         response = {
             'settings': self.get_dict(request, new_settings, campaign)
@@ -696,9 +600,10 @@ class CampaignBudget(api_common.BaseApiView):
             request=request,
         )
 
-        email_helper.send_campaign_notification_email(campaign, request)
-
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_BUDGET, campaign=campaign)
+        current_budget_settings = campaign.get_current_budget_settings()
+        if current_budget_settings:
+            email_helper.send_budget_notification_email(campaign, request, current_budget_settings.comment)
+            helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_BUDGET, campaign=campaign)
 
         response = self.get_response(campaign)
         return self.create_api_response(response)
@@ -897,17 +802,19 @@ class AccountAgency(api_common.BaseApiView):
 
                 settings = models.AccountSettings()
                 self.set_settings(settings, account, form.cleaned_data)
-            
+
             if 'allowed_sources' in form.cleaned_data \
-                and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+                    and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
                 raise exc.MissingDataError()
 
-            if 'allowed_sources' in form.cleaned_data:    
+            if 'allowed_sources' in form.cleaned_data:
                 self.set_allowed_sources(
+                    settings,
                     account,
                     request.user.has_perm('zemauth.can_see_all_available_sources'),
                     form
                 )
+
             if not form.is_valid():
                 data = self.get_validation_error_data(request, account)
                 raise exc.ValidationError(errors=dict(form.errors), data=data)
@@ -940,28 +847,6 @@ class AccountAgency(api_common.BaseApiView):
     def set_account(self, account, resource):
         account.name = resource['name']
 
-    def get_allowed_sources_list_from_dict(self, allowed_sources_dict):
-        allowed_sources_ids = []
-        for k, v in allowed_sources_dict.iteritems():
-            if v.get('allowed', False):
-                allowed_sources_ids.append(k)
-
-        return allowed_sources_ids
-
-    def get_current_allowed_sources_list(self, account, can_see_all_available_sources):  
-        queryset = account.allowed_sources.all()
-        if not can_see_all_available_sources:
-            queryset = queryset.filter(released=True)
-
-        return [source.id for source in queryset]
-
-    def filter_allowed_sources_list(self, allowed_sources_list, can_see_all_available_sources):
-        queryset = models.Source.objects.filter(id__in=allowed_sources_list)
-        if not can_see_all_available_sources:
-            queryset = queryset.filter(released=True)
-
-        return [source.id for source in queryset]    
-
     def get_non_removable_sources(self, account, sources_to_be_removed):
         non_removable_source_ids_list = []
 
@@ -981,7 +866,7 @@ class AccountAgency(api_common.BaseApiView):
 
     def add_error_to_account_agency_form(self, form, to_be_removed):
         source_names = [source.name for source in models.Source.objects.filter(id__in=to_be_removed)]
-        media_sources = ', '.join(source_names)    
+        media_sources = ', '.join(source_names)
         if len(source_names) > 1:
             msg = 'Can\'t save changes because media sources {} are still used on this account.'.format(media_sources)
         else:
@@ -989,33 +874,55 @@ class AccountAgency(api_common.BaseApiView):
 
         form.add_error('allowed_sources', msg)
 
-    def set_allowed_sources(self, account, can_see_all_available_sources, account_agency_form):
+    def set_allowed_sources(self, settings, account, can_see_all_available_sources, account_agency_form):
         allowed_sources_dict = account_agency_form.cleaned_data.get('allowed_sources')
 
         if not allowed_sources_dict:
             return
 
-        new_allowed_sources_list = self.get_allowed_sources_list_from_dict(allowed_sources_dict)
-        new_allowed_sources_list = self.filter_allowed_sources_list(
-            new_allowed_sources_list, 
-            can_see_all_available_sources
-        )
-        current_allowed_sources_list = self.get_current_allowed_sources_list(account, can_see_all_available_sources)
-        
-        new_allowed_sources_set = set(new_allowed_sources_list)
-        current_allowed_sources_set = set(current_allowed_sources_list)
+        all_available_sources = self.get_all_media_sources(can_see_all_available_sources)
+        current_allowed_sources = self.get_allowed_media_sources(account, can_see_all_available_sources)
+        new_allowed_sources = self.filter_allowed_sources_dict(all_available_sources, allowed_sources_dict)
+
+        new_allowed_sources_set = set(new_allowed_sources)
+        current_allowed_sources_set = set(current_allowed_sources)
 
         to_be_removed = current_allowed_sources_set.difference(new_allowed_sources_set)
+        to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
 
         non_removable_sources = self.get_non_removable_sources(account, to_be_removed)
         if len(non_removable_sources) > 0:
             self.add_error_to_account_agency_form(account_agency_form, non_removable_sources)
             return
 
-        to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
+        if to_be_added or to_be_removed:
+            settings.changes_text = self.get_changes_text_for_media_sources(to_be_added, to_be_removed)
+            account.allowed_sources.add(*list(to_be_added))
+            account.allowed_sources.remove(*list(to_be_removed))
 
-        account.allowed_sources.add(*list(to_be_added))
-        account.allowed_sources.remove(*list(to_be_removed))
+    def get_all_media_sources(self, can_see_all_available_sources):
+        qs_sources = models.Source.objects.all()
+        if not can_see_all_available_sources:
+            qs_sources = qs_sources.filter(released=True)
+
+        return list(qs_sources)
+
+    def get_allowed_media_sources(self, account, can_see_all_available_sources):
+        qs_allowed_sources = account.allowed_sources.all()
+        if not can_see_all_available_sources:
+            qs_allowed_sources = qs_allowed_sources.filter(released=True)
+
+        return list(qs_allowed_sources)
+
+    def filter_allowed_sources_dict(self, sources, allowed_sources_dict):
+        allowed_sources = []
+        for source in sources:
+            if source.id in allowed_sources_dict:
+                value = allowed_sources_dict[source.id]
+                if value.get('allowed', False):
+                    allowed_sources.append(source)
+
+        return allowed_sources
 
     def set_settings(self, settings, account, resource):
         settings.account = account
@@ -1024,16 +931,9 @@ class AccountAgency(api_common.BaseApiView):
         settings.default_sales_representative = resource['default_sales_representative']
         settings.service_fee = helpers.format_percent_to_decimal(resource['service_fee'])
 
-    def add_unreleased_label_to_names(self, allowed_sources_dict, all_sources):
-        for source in all_sources:
-            if source.id in allowed_sources_dict and not source.released:
-                name = allowed_sources_dict[source.id]['name'] 
-                allowed_sources_dict[source.id]['name'] = '{} (unreleased)'.format(name)
-        return allowed_sources_dict
-
     def get_allowed_sources(self, include_unreleased_sources, allowed_sources_ids_list):
         allowed_sources_dict = {}
-        
+
         all_sources_queryset = models.Source.objects.filter(deprecated=False)
         if not include_unreleased_sources:
             all_sources_queryset = all_sources_queryset.filter(released=True)
@@ -1044,9 +944,9 @@ class AccountAgency(api_common.BaseApiView):
             source_settings = {'name': source.name}
             if source.id in allowed_sources_ids_list:
                 source_settings['allowed'] = True
+            source_settings['released'] = source.released
             allowed_sources_dict[source.id] = source_settings
-        allowed_sources_dict = self.add_unreleased_label_to_names(allowed_sources_dict, all_sources)
-        
+
         return allowed_sources_dict
 
     def get_dict(self, request, settings, account):
@@ -1083,17 +983,11 @@ class AccountAgency(api_common.BaseApiView):
             old_settings = settings[i - 1] if i > 0 else None
             new_settings = settings[i]
 
-            settings_dict = self.convert_settings_to_dict(old_settings, new_settings)
+            settings_dict = self.convert_settings_to_dict(new_settings, old_settings)
+            changes_text = self.get_changes_text(new_settings, old_settings)
 
-            changes_text = new_settings.changes_text
-            if changes_text is None:
-                changes = old_settings.get_setting_changes(new_settings) \
-                    if old_settings is not None else None
-
-                if i > 0 and not changes:
-                    continue
-
-                changes_text = self.convert_changes_to_string(changes, settings_dict)
+            if not changes_text:
+                continue
 
             history.append({
                 'datetime': new_settings.created_dt,
@@ -1105,21 +999,7 @@ class AccountAgency(api_common.BaseApiView):
 
         return history
 
-    def convert_changes_to_string(self, changes, settings_dict):
-        if changes is None:
-            return 'Created settings'
-
-        change_strings = []
-
-        for key in changes:
-            setting = settings_dict[key]
-            change_strings.append(
-                '{} set to "{}"'.format(setting['name'], setting['value'])
-            )
-
-        return ', '.join(change_strings)
-
-    def convert_settings_to_dict(self, old_settings, new_settings):
+    def convert_settings_to_dict(self, new_settings, old_settings):
         settings_dict = OrderedDict([
             ('name', {
                 'name': 'Name',
@@ -1160,6 +1040,44 @@ class AccountAgency(api_common.BaseApiView):
 
         return settings_dict
 
+    def get_changes_text(self, new_settings, old_settings):
+        if not old_settings:
+            return 'Created settings'
+
+        changes_text = ', '.join(filter(None, [
+            self.get_changes_text_for_settings(new_settings, old_settings),
+            new_settings.changes_text
+        ]))
+
+        return changes_text
+
+    def get_changes_text_for_settings(self, new_settings, old_settings):
+        change_strings = []
+        changes = old_settings.get_setting_changes(new_settings)
+        settings_dict = self.convert_settings_to_dict(new_settings, None)
+
+        for key in changes:
+            setting = settings_dict[key]
+            change_strings.append(
+                '{} set to "{}"'.format(setting['name'], setting['value'])
+            )
+
+        return ', '.join(change_strings)
+
+    def get_changes_text_for_media_sources(self, added_sources, removed_sources):
+        sources_text_list = []
+        if added_sources:
+            added_sources_names = [source.name for source in added_sources]
+            added_sources_text = u'Added allowed media sources ({})'.format(', '.join(added_sources_names))
+            sources_text_list.append(added_sources_text)
+
+        if removed_sources:
+            removed_sources_names = [source.name for source in removed_sources]
+            removed_sources_text = u'Removed allowed media sources ({})'.format(', '.join(removed_sources_names))
+            sources_text_list.append(removed_sources_text)
+
+        return ', '.join(sources_text_list)
+
     def get_user_list(self, settings, perm_name):
         users = list(ZemUser.objects.get_users_with_perm(perm_name))
 
@@ -1198,13 +1116,7 @@ class AdGroupAgency(api_common.BaseApiView):
             old_settings = ad_group_settings[i - 1] if i > 0 else None
             new_settings = ad_group_settings[i]
 
-            changes = old_settings.get_setting_changes(new_settings) \
-                if old_settings is not None else None
-
-            if new_settings.changes_text is not None:
-                changes_text = new_settings.changes_text
-            else:
-                changes_text = self.convert_changes_to_string(changes, user)
+            changes_text = models.AdGroupSettings.get_changes_text(old_settings, new_settings, user)
 
             if i > 0 and not len(changes_text):
                 continue
@@ -1223,26 +1135,6 @@ class AdGroupAgency(api_common.BaseApiView):
             })
 
         return history
-
-    @newrelic.agent.function_trace()
-    def convert_changes_to_string(self, changes, user):
-        if changes is None:
-            return 'Created settings'
-
-        change_strings = []
-
-        for key, value in changes.iteritems():
-            if key in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
-                    not user.has_perm('zemauth.new_content_ads_tab'):
-                continue
-
-            prop = models.AdGroupSettings.get_human_prop_name(key)
-            val = models.AdGroupSettings.get_human_value(key, value)
-            change_strings.append(
-                u'{} set to "{}"'.format(prop, val)
-            )
-
-        return ', '.join(change_strings)
 
     @newrelic.agent.function_trace()
     def convert_settings_to_dict(self, old_settings, new_settings, user):
@@ -1319,7 +1211,10 @@ class AccountUsers(api_common.BaseApiView):
             else:
                 self._raise_validation_error(
                     form.errors,
-                    message=u'The user with e-mail {} is already registred as \"{}\". Please contact technical support if you want to change the user\'s name or leave first and last names blank if you just want to add access to the account for this user.'.format(user.email, user.get_full_name())
+                    message=u'The user with e-mail {} is already registred as \"{}\". '
+                            u'Please contact technical support if you want to change the user\'s '
+                            u'name or leave first and last names blank if you just want to add '
+                            u'access to the account for this user.'.format(user.email, user.get_full_name())
                 )
         except ZemUser.DoesNotExist:
             if not is_valid:

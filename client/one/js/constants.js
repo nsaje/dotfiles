@@ -1,3 +1,5 @@
+/*exported defaults, options*/
+
 var constants = {
     adGroupSettingsState: {
         ACTIVE: 1,
@@ -520,6 +522,16 @@ var constants = {
         CAMPAIGN: 'campaign',
         ACCOUNT: 'account',
         GLOBAL: 'global'
+    },
+    /* source type names are string values of dash.SourceType */
+    sourceTypeName: {
+        ADBLADE: 'AdBlade',
+        GRAVITY: 'Gravity',
+        NRELATE: 'nRelate',
+        OUTBRAIN: 'Outbrain',
+        YAHOO: 'Yahoo',
+        ZEMANTA: 'Zemanta',
+        B1: 'B1'
     }
 };
 var options = {

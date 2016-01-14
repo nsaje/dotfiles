@@ -822,22 +822,14 @@ class FetchReportsByPublisherTestCase(TestCase):
             'data': [article_row]
         }
 
-        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
         response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 6, 4), zwei_response_data)
-        ob_insert_adgroup_date.assert_has_calls ([mock.call(
-                                              datetime.date(2014,6,4),
-                                              1,
-                                              "Outbrain",
-                                              [article_row],
-                                              1.9043	# daily cost
-                                              )])
-
+        ob_insert_adgroup_date.assert_called_once_with(datetime.date(2014, 6, 4), 1, "outbrain", [article_row], 0)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.SUCCESS
         )
-
 
     def _execute_action(self, ad_group_source, date, zwei_response_data):
         action_log = actionlog.models.ActionLog(

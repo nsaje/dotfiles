@@ -1,10 +1,11 @@
 import datetime
+import time
 
 import mock
 from django.test import TestCase
 
-from reports import api_publishers
 import dash.models
+from reports import api_publishers
 
 
 class ApiPublishersTest(TestCase):
@@ -243,6 +244,51 @@ class ApiPublishersTest(TestCase):
 
         self.assertIn(' OR '.join(['(domain=%s AND adgroup_id=%s AND exchange=%s)'] * 2), self._get_query())
 
+    def test_query_blacklisted_joined(self):
+        # this doesn't really test blacklisting but runs the functions to make
+        # sure blacklisting condition creation executes
+        # setup some test data
+        self.get_cursor().dictfetchall.return_value = [
+        {
+            'domain': u'zemanta.com',
+            'ctr': 0.0,
+            'exchange': 'gumgum',
+            'cpc_micro': 0,
+            'cost_micro_sum': 1e-05,
+            'impressions_sum': 1000L,
+            'clicks_sum': 0L,
+        },
+        ]
+
+        # setup some blacklisted publisher entries
+        blacklist = [
+            {
+                'domain': 'test.com',
+                'adgroup_id': 1,
+                'exchange': 'triplelift'
+            },
+            {
+                'domain': 'test1.com',
+                'adgroup_id': 1,
+                'exchange': 'triplelift',
+            },
+        ]
+
+        constraints = {'ad_group': 1}
+
+        start_date = datetime.datetime.utcnow()
+        end_date = start_date = datetime.timedelta(days=31)
+
+        publishers_data = api_publishers.query_blacklisted_publishers(
+            start_date, end_date,
+            breakdown_fields=['domain', 'exchange'],
+            order_fields=['-cost'],
+            constraints=constraints,
+            blacklist=blacklist
+        )
+
+        self.assertIn('(domain IN (%s,%s) AND adgroup_id=%s AND exchange=%s)', self._get_query())
+
 
 @mock.patch('reports.redshift.get_cursor')
 class ApiPublishersInsertTest(TestCase):
@@ -303,8 +349,7 @@ class ApiPublishersMapperTest(TestCase):
     def test_map_rowdict_to_output_transforms(self):
         input = {'cpc_micro': 100000,
                  'cost_micro_sum': 200000,
-                 'ctr': 0.2,
-                }
+                 'ctr': 0.2}
         result = api_publishers.rs_pub.map_result_to_app(input, json_fields=[])
         self.assertEqual(result, {'cost': 0.0002,
                                   'cpc': 0.0001,
@@ -312,6 +357,35 @@ class ApiPublishersMapperTest(TestCase):
                                   })
 
     def test_map_unknown_row(self):
-        input = {'bah': 100000,}
+        input = {'bah': 100000}
         self.assertRaises(KeyError, api_publishers.rs_pub.map_result_to_app, input, json_fields=[])
 
+
+class ApiPublishersObToS3TestCase(TestCase):
+
+    fixtures = ['test_reports_base.yaml']
+
+    @mock.patch('utils.s3helpers.S3Helper')
+    @mock.patch('reports.api_publishers.time')
+    def test_put_ob_data_to_s3(self, mock_time, mock_s3helper):
+        mock_time.time.return_value = time.mktime(datetime.datetime(2016, 1, 1).timetuple())
+        ad_group = dash.models.AdGroup.objects.get(id=1)
+        date = datetime.date(2016, 1, 1)
+
+        test_rows = [{
+            "ob_id": "AAAABBBBB",
+            "clicks": 20,
+            "name": "CNN money",
+        }, {
+            "ob_id": "AAAABBBBB",
+            "clicks": 80,
+            "name": "How Stuff Works (Blucora)",
+        }]
+
+        api_publishers.put_ob_data_to_s3(date, ad_group, test_rows)
+
+        expected_key = 'ob_publishers_raw/2016/01/01/1/1451606400000.json'
+        expected_json = '[{"ob_id": "AAAABBBBB", "clicks": 20, "name": "CNN money"}, '\
+                        '{"ob_id": "AAAABBBBB", "clicks": 80, "name": "How Stuff Works (Blucora)"}]'
+
+        mock_s3helper.return_value.put.assert_called_once_with(expected_key, expected_json)
