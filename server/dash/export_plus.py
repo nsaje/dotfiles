@@ -245,8 +245,8 @@ def _populate_account_stat(stat, prefetched_data, statuses=None, budgets=None):
 def _get_sources_state(ad_group_sources):
     if any(s.state == constants.AdGroupSourceSettingsState.ACTIVE
             for s in helpers.get_ad_group_sources_states(ad_group_sources)):
-        return constants.AdGroupSourceSettingsState.ACTIVE
-    return constants.AdGroupSourceSettingsState.INACTIVE
+        return constants.ExportPlusStatus.ACTIVE
+    return constants.ExportPlusStatus.INACTIVE
 
 
 def _prefetch_content_ad_data(constraints):
@@ -323,7 +323,7 @@ def _format_statuses_and_dates(value, field):
     if field == 'date':
         return value.strftime('%Y-%m-%d')
     elif field == 'status':
-        return 'Active' if value == constants.AdGroupSourceSettingsState.ACTIVE else 'Inactive'
+        return constants.ExportPlusStatus.get_text(value)
     return value
 
 
