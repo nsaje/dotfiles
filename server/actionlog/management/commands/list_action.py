@@ -6,10 +6,12 @@ from optparse import make_option
 from utils.command_helpers import parse_id_list
 from django.core.management.base import BaseCommand
 
+from utils.command_helpers import ExceptionCommand
+
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
     option_list = BaseCommand.option_list + (
         make_option('--state', help='Action state.'),
         make_option('--name', help='Action name filter.'),

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import jsonfield
 import binascii
 import datetime
@@ -647,10 +648,8 @@ class CampaignSettings(SettingsBase):
 
     @classmethod
     def get_human_value(cls, prop_name, value):
-        if prop_name == 'name':
-            value = value.encode('utf-8')
-        elif prop_name == 'campaign_manager':
-            value = views.helpers.get_user_full_name_or_email(value)
+        if prop_name == 'campaign_manager':
+            value = views.helpers.get_user_full_name_or_email(value).decode('utf-8')
         elif prop_name == 'iab_category':
             value = constants.IABCategory.get_text(value)
         elif prop_name == 'campaign_goal':
@@ -1993,6 +1992,21 @@ class PublisherBlacklist(models.Model):
         elif self.everywhere:
             level = constants.PublisherBlacklistLevel.GLOBAL
         return level
+
+    def fill_keys(self, ad_group, level):
+        self.everywhere = False
+        self.account = None
+        self.campaign = None
+        self.ad_group = None
+
+        if level == constants.PublisherBlacklistLevel.GLOBAL:
+            self.everywhere = True
+        if level == constants.PublisherBlacklistLevel.ACCOUNT:
+            self.account = ad_group.campaign.account
+        if level == constants.PublisherBlacklistLevel.CAMPAIGN:
+            self.campaign = ad_group.campaign
+        if level == constants.PublisherBlacklistLevel.ADGROUP:
+            self.ad_group = ad_group
 
     class Meta:
         unique_together = (('name', 'everywhere', 'account', 'campaign', 'ad_group', 'source'), )

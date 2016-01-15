@@ -59,7 +59,7 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
 
 FORMAT_1_DECIMAL = ['avg_tos']
 
-FORMAT_2_DECIMALS = ['ctr', 'click_discrepancy', 'percent_new_users', 'bounce_rate', 'pv_per_visit',
+FORMAT_2_DECIMALS = ['ctr', 'click_discrepancy', 'pv_per_visit',
                      'avg_tos', 'cost', 'data_cost', 'media_cost', 'e_media_cost', 'e_data_cost',
                      'total_cost', 'billing_cost', 'budget', 'available_budget', 'unspent_budget']
 
@@ -307,7 +307,7 @@ def get_csv_content(fieldnames, data):
             elif not value and field not in FORMAT_EMPTY_TO_0:
                 formatted_value = ''
             elif field in FORMAT_DIVIDE_100:
-                value = value / 100
+                value = '{:.4f}'.format(value / 100)
 
             formatted_value = _format_decimals(value, field)
 

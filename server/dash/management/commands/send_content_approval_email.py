@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 
 from dash import models
 from dash import constants
-from utils.command_helpers import set_logger_verbosity
+from utils.command_helpers import set_logger_verbosity, ExceptionCommand
 from utils.url_helper import get_full_z1_url
 
 
@@ -38,7 +38,7 @@ def get_ad_group_sources(source):
     return ad_group_sources
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
 
     help = "Sends email with ad groups that had content ads added recently"
 

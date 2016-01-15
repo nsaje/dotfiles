@@ -8,6 +8,7 @@ from django.db.models import Q
 
 import dash.models
 import zemauth.models
+from utils.command_helpers import ExceptionCommand
 
 HANDLE_MODIFYBY = (
     'dash_demo_adgroup',
@@ -17,7 +18,7 @@ HANDLE_MODIFYBY = (
 
 DEMO_ID_OFFSET = 1000000
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
     option_list = BaseCommand.option_list + (
 	make_option('--format', dest='format', default='json', help='Output format'),
     )
@@ -29,7 +30,7 @@ class Command(BaseCommand):
         real2demo = {}
         for d2r in dash.models.DemoAdGroupRealAdGroup.objects.all():
             real2demo[d2r.real_ad_group_id] = d2r.demo_ad_group_id
-        
+
         app_list['zemauth_user'] = zemauth.models.User.objects.filter(
             Q(email__in=settings.DEMO_USERS) | Q(email='protractor@zemanta.com')
         )
@@ -73,11 +74,11 @@ class Command(BaseCommand):
 
         for obj in app_list['dash_demo_account']:
             obj.users = app_list['zemauth_user']
-        
+
         for model_name in HANDLE_MODIFYBY:
             for obj in app_list[model_name]:
                 obj.modified_by = demo_user
-        
+
         data = serializers.serialize(options['format'], serializers.sort_dependencies(
             app_list.items(),
         ), use_natural_foreign_keys=True)

@@ -9,6 +9,7 @@ import actionlog.sync
 from dash.views import helpers
 from dash import models
 from dash import constants
+from dash import publisher_helpers
 from utils import exc
 from mock import patch
 from zemauth.models import User
@@ -784,7 +785,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
         ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
         allowed_sources = set([ad_group_source.source_id])
-        
+
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         ad_group_settings.target_regions = ['693']
 
@@ -1247,3 +1248,102 @@ class LogUserActionHelperTestCase(TestCase):
 
         user_actions = models.UserActionLog.objects.all()
         self.assertEqual(user_actions.count(), 0)
+
+
+class PublisherHelpersTest(TestCase):
+    fixtures = ['test_api']
+
+    def test_get_useractiontype(self):
+        self.assertEqual(
+            publisher_helpers.get_useractiontype(
+                constants.PublisherBlacklistLevel.ACCOUNT
+            ),
+            constants.UserActionType.SET_ACCOUNT_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(
+            publisher_helpers.get_useractiontype(
+                constants.PublisherBlacklistLevel.CAMPAIGN
+            ),
+            constants.UserActionType.SET_CAMPAIGN_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(
+            publisher_helpers.get_useractiontype(
+                constants.PublisherBlacklistLevel.ADGROUP
+            ),
+            constants.UserActionType.SET_ADGROUP_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(
+            publisher_helpers.get_useractiontype(
+                constants.PublisherBlacklistLevel.GLOBAL
+            ),
+            constants.UserActionType.SET_GLOBAL_PUBLISHER_BLACKLIST
+        )
+        with self.assertRaises(Exception):
+            publisher_helpers.get_useractiontype(
+                'and now for something completely different'
+            )
+
+    def test_get_key(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        self.assertEqual(
+            publisher_helpers.get_key(
+                ad_group,
+                constants.PublisherBlacklistLevel.ACCOUNT
+            ),
+            ad_group.campaign.account
+        )
+        self.assertEqual(
+            publisher_helpers.get_key(
+                ad_group,
+                constants.PublisherBlacklistLevel.CAMPAIGN
+            ),
+            ad_group.campaign
+        )
+        self.assertEqual(
+            publisher_helpers.get_key(
+                ad_group,
+                constants.PublisherBlacklistLevel.ADGROUP
+            ),
+            ad_group
+        )
+
+        with self.assertRaises(Exception):
+            publisher_helpers.get_key(
+                ad_group,
+                constants.PublisherBlacklistLevel.GLOBAL
+            )
+        with self.assertRaises(Exception):
+            publisher_helpers.get_key(
+                ad_group,
+                'rabndom'
+            )
+
+    def test_prepare_publishers_for_rs_query(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        source = models.Source.objects.first()
+
+        models.PublisherBlacklist.objects.create(
+            name='test.com',
+            ad_group=ad_group,
+            source=source,
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+        models.PublisherBlacklist.objects.create(
+            name='test.com',
+            campaign=ad_group.campaign,
+            source=source,
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+        models.PublisherBlacklist.objects.create(
+            name='test.com',
+            campaign=ad_group.campaign,
+            source=source,
+            status=constants.PublisherStatus.BLACKLISTED
+        )
+        prepared_pubs = publisher_helpers.prepare_publishers_for_rs_query(ad_group)
+        self.assertEqual(3, len(prepared_pubs))
+
+    def test_publisher_exchange(self):
+        pass
+        # def publisher_exchange(source):

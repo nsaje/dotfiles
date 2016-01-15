@@ -6,6 +6,7 @@ from dash import stats_helper
 from dash.views import helpers
 from dash import models
 from dash import constants
+from dash import publisher_helpers
 
 from utils import statsd_helper
 from utils import api_common
@@ -300,26 +301,8 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                 constants.PublisherBlacklistFilter.SHOW_ACTIVE,
                 constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
 
-                # fetch blacklisted status from db
-                adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
-                    Q(ad_group=ad_group) |
-                    Q(campaign=ad_group.campaign) |
-                    Q(account=ad_group.campaign.account)
-                )
-                adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
-                adg_blacklisted_publishers = map(lambda entry: {
-                    'domain': entry['name'],
-                    'adgroup_id': ad_group.id,
-                    'exchange': entry['source__tracking_slug'].replace('b1_', ''),
-                }, adg_blacklisted_publishers)
-
-                # include global, campaign and account stats if they exist
-                global_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
-                    everywhere=True
-                )
-                adg_blacklisted_publishers.extend(map(lambda pub_bl: {
-                        'domain': pub_bl.name
-                    }, global_pub_blacklist_qs)
+                adg_blacklisted_publishers = publisher_helpers.prepare_publishers_for_rs_query(
+                    ad_group
                 )
 
                 query_func = None

@@ -22,6 +22,7 @@ from dash import constants
 from dash import consistency
 from dash import region_targeting_helper
 from dash import views
+from dash import publisher_helpers
 
 import utils.url_helper
 import utils.statsd_helper
@@ -253,26 +254,26 @@ def refresh_publisher_blacklist(ad_group_source, request):
 
     actions = []
 
-    campaign = ad_group_source.ad_group.campaign
+    ad_group = ad_group_source.ad_group
+    campaign = ad_group.campaign
     source = ad_group_source.source
-    if ad_group_source.source.source_type != dash.constants.SourceType.OUTBRAIN:
-        currentCampaignBlacklist = dash.models.PublisherBlacklist.objects.filter(
-            source=ad_group_source.source,
-            everywhere=False,
-            account=None,
-            campaign=campaign,
-            ad_group=None,
+    if source.source_type != dash.constants.SourceType.OUTBRAIN:
+        current_campaign_blacklist = dash.models.PublisherBlacklist.objects.filter(
+            source=source,
             status=dash.constants.PublisherStatus.BLACKLISTED
-        )
+        ).filter(publisher_helpers.create_queryset_by_key(
+            ad_group,
+            constants.PublisherBlacklistLevel.CAMPAIGN
+        ))
         campaign_blacklisted_publishers = []
-        for blacklistEntry in currentCampaignBlacklist:
+        for blacklist_entry in current_campaign_blacklist:
             # setup pending entries
             # create and send blacklist actions
             campaign_blacklisted_publishers.append({
-                'domain': blacklistEntry.name,
-                'exchange': source.tracking_slug.replace('b1_', ''),
+                'domain': blacklist_entry.name,
+                'exchange': publisher_helpers.publisher_exchange(source),
                 'source_id': source.id,
-                'ad_group_id': ad_group_source.ad_group.id
+                'ad_group_id': ad_group.id
             })
 
         key = [campaign.id]
@@ -283,35 +284,36 @@ def refresh_publisher_blacklist(ad_group_source, request):
                 dash.constants.PublisherStatus.BLACKLISTED,
                 campaign_blacklisted_publishers,
                 request,
-                ad_group_source.source.source_type,
+                source.source_type,
                 ad_group_source,
                 send=False
             )
         )
 
-    account = campaign.account
-    currentAccountBlacklist = dash.models.PublisherBlacklist.objects.filter(
-        source=ad_group_source.source,
-        everywhere=False,
-        account=account,
-        campaign=None,
-        ad_group=None,
+    current_account_blacklist = dash.models.PublisherBlacklist.objects.filter(
+        source=source,
         status=dash.constants.PublisherStatus.BLACKLISTED
-    )
+    ).filter(publisher_helpers.create_queryset_by_key(
+        ad_group,
+        constants.PublisherBlacklistLevel.ACCOUNT
+    ))
 
     accountBlacklistedPublishers = []
-    for blacklistEntry in currentAccountBlacklist:
+    for blacklist_entry in current_account_blacklist:
         # setup pending entries
         # create and send blacklist actions
-        accountBlacklistedPublishers.append({
-            'domain': blacklistEntry.name,
-            'exchange': source.tracking_slug.replace('b1_', ''),
+        new_publ = {
+            'domain': blacklist_entry.name,
+            'exchange': publisher_helpers.publisher_exchange(source),
             'source_id': source.id,
-            'ad_group_id': ad_group_source.ad_group.id
-        })
+            'ad_group_id': ad_group.id,
+        }
+        if blacklist_entry.external_id is not None:
+            new_publ['external_id'] = blacklist_entry.external_id
+        accountBlacklistedPublishers.append(new_publ)
 
-    key = [ad_group_source.ad_group.campaign.account.id]
-    if ad_group_source.source.source_type == constants.SourceType.OUTBRAIN:
+    key = [campaign.account.id]
+    if source.source_type == constants.SourceType.OUTBRAIN:
         key.append(campaign.account.outbrain_marketer_id)
 
     actions.extend(
@@ -321,7 +323,7 @@ def refresh_publisher_blacklist(ad_group_source, request):
             dash.constants.PublisherStatus.BLACKLISTED,
             accountBlacklistedPublishers,
             request,
-            ad_group_source.source.source_type,
+            source.source_type,
             ad_group_source,
             send=False
         )
@@ -907,7 +909,7 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
         for pub in filtered_blacklist:
             kv_pub = {
                 'domain': pub['domain'],
-                'exchange': pub['source'].tracking_slug.replace('b1_', ''),
+                'exchange': publisher_helpers.publisher_exchange(pub['source']),
                 'source_id': pub['source'].id,
                 'ad_group_id': pub['ad_group_id'],
             }
@@ -919,15 +921,11 @@ def create_publisher_blacklist_actions(ad_group, state, level, publishers, reque
 
     if blacklisted_publishers != {}:
         for source_type_id, blacklist in blacklisted_publishers.iteritems():
-            key = None
+
+            key = [publisher_helpers.get_key(ad_group, level).id]
             if level == constants.PublisherBlacklistLevel.ACCOUNT:
-                key = [ad_group.campaign.account.id]
                 if source_type_cache[source_type_id].type == constants.SourceType.OUTBRAIN:
                     key.append(ad_group.campaign.account.outbrain_marketer_id or '')
-            elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
-                key = [ad_group.campaign.id]
-            elif level == constants.PublisherBlacklistLevel.ADGROUP:
-                key = [ad_group.id]
 
             actions.extend(
                 actionlog.api.set_publisher_blacklist(

@@ -6,13 +6,15 @@ from reports import models
 
 from django.core.management import BaseCommand
 
+from utils.command_helpers import ExceptionCommand
+
 logger = logging.getLogger(__name__)
 
 DELIMITER = '|'
 BATCH_SIZE = 100000
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
     option_list = BaseCommand.option_list + (
         make_option('--start_id', dest='start_id', default=0, help='Dump ArticleStats starting with id.'),
         make_option('--end_date', dest='end_date', default=None, help='Dump ArticleStats up to date.'),

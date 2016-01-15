@@ -49,6 +49,7 @@ from dash import api
 from dash import forms
 from dash import upload
 from dash import infobox_helpers
+from dash import publisher_helpers
 
 import reports.api_publishers
 import reports.api
@@ -1612,10 +1613,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                     )
                 )
             actionlog.zwei_actions.send(actionlogs_to_send)
-            self._add_adgroup_log_to_history(
+            self._write_adgroup_history(
                 request,
                 publisher_blacklist + related_publisher_blacklist,
-                state
+                state,
+                level
             )
 
     def _create_campaign_and_account_blacklist(self, ad_group, level, publishers):
@@ -1691,7 +1693,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         for publisher in publishers:
             domain = publisher['domain']
             if domain not in source_cache:
-               source_cache[domain]  = models.Source.objects.filter(id=publisher['source_id']).first()
+               source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
             source = source_cache[domain]
 
             if not source:
@@ -1727,28 +1729,12 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                     count_ob_blacklisted_publishers < constants.MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT:
                 count_ob_blacklisted_publishers += 1
 
-            blacklist_global = False
-            if level == constants.PublisherBlacklistLevel.GLOBAL:
-                blacklist_global = True
-            blacklist_account = None
-            if level == constants.PublisherBlacklistLevel.ACCOUNT:
-                blacklist_account = ad_group.campaign.account
-            blacklist_campaign = None
-            if level == constants.PublisherBlacklistLevel.CAMPAIGN:
-                blacklist_campaign = ad_group.campaign
-            blacklist_ad_group = None
-            if level == constants.PublisherBlacklistLevel.ADGROUP:
-                blacklist_ad_group = ad_group
-
             # store blacklisted publishers and push to other sources
             existing_entry = models.PublisherBlacklist.objects.filter(
                 name=publisher['domain'],
-                source=source,
-                everywhere=blacklist_global,
-                account=blacklist_account,
-                campaign=blacklist_campaign,
-                ad_group=blacklist_ad_group
-            ).first()
+                source=source).filter(
+                    publisher_helpers.create_queryset_by_key(ad_group, level)
+                ).first()
 
             # don't create pending pub. blacklist entry
             if existing_entry is not None and existing_entry.status == state:
@@ -1761,15 +1747,13 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 existing_entry.status = constants.PublisherStatus.PENDING
                 existing_entry.save()
             else:
-                models.PublisherBlacklist.objects.create(
+                new_publ = models.PublisherBlacklist(
                     name=publisher['domain'],
-                    everywhere=blacklist_global,
-                    account=blacklist_account,
-                    campaign=blacklist_campaign,
-                    ad_group=blacklist_ad_group,
                     source=source,
                     status=constants.PublisherStatus.PENDING
                 )
+                new_publ.fill_keys(ad_group, level)
+                new_publ.save()
 
             external_id = publisher.get('external_id')
             adgroup_blacklist.add(
@@ -1828,11 +1812,12 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                     )
                 )
             actionlog.zwei_actions.send(actionlogs_to_send)
-            self._add_to_history(
+            self._write_history(
                 request,
                 ad_group,
                 state,
-                global_blacklist
+                global_blacklist,
+                constants.PublisherBlacklistLevel.GLOBAL
             )
 
     def _create_global_blacklist(self, ad_group, publishers, state, existing_blacklisted_publishers, ignored_publishers):
@@ -1894,7 +1879,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         ]
         return ret
 
-    def _add_adgroup_log_to_history(self, request, publishers, state):
+    def _write_adgroup_history(self, request, publishers, state, level):
         history_entries = {}
         for publisher in publishers:
             adgid = publisher['ad_group_id']
@@ -1903,10 +1888,18 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
         for adgid, adg_publishers in history_entries.iteritems():
             ad_group = models.AdGroup.objects.get(pk=adgid)
-            self._add_to_history(request, ad_group, state, adg_publishers)
+            self._write_history(request, ad_group, state, adg_publishers, level)
 
-    def _add_to_history(self, request, ad_group, state, blacklist):
+    def _write_history(self, request, ad_group, state, blacklist, level):
         action_string = "Blacklisted" if state == constants.PublisherStatus.BLACKLISTED else "Enabled"
+
+        level_description = ""
+        if level == constants.PublisherBlacklistLevel.GLOBAL:
+            level_description = 'globally'
+        else:
+            level_description = 'on {level} level'.format(
+                level=constants.PublisherBlacklistLevel.get_text(level).lower()
+            )
 
         pub_strings = [u"{pub} on {slug}".format(
                         pub=pub_bl['domain'],
@@ -1914,13 +1907,24 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                       ) for pub_bl in blacklist]
         pubs_string = u", ".join(pub_strings)
 
-        changes_text = u'{action} the following publishers {pubs}.'.format(
+        changes_text = u'{action} the following publishers {level_description}: {pubs}.'.format(
             action=action_string,
+            level_description=level_description,
             pubs=pubs_string
         )
         settings = ad_group.get_current_settings().copy_settings()
         settings.changes_text = changes_text
         settings.save(request)
+
+        # at the moment we only have the publishers view on adgroup level
+        # which means all blacklisting actions are stored in the settings
+        # changes text of the current adgroup
+        # TODO: revise this if making separate views per level
+        helpers.log_useraction_if_necessary(
+            request,
+            publisher_helpers.get_useractiontype(level),
+            ad_group=ad_group
+        )
 
         email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
 
