@@ -28,6 +28,13 @@ class SettingsStateConsistenceTestCase(test.TestCase):
         consistent = self.settings_state_consistency.is_consistent()
         self.assertFalse(consistent)
 
+        settings = self.ad_group_source.get_current_settings()
+        state = models.AdGroupSourceState.objects.get(pk=2)
+        state.created_dt = settings.created_dt - datetime.timedelta(days=1)
+        mock_get_latest_state.return_value = state
+        consistent = self.settings_state_consistency.is_consistent()
+        self.assertTrue(consistent)
+
         state = None
         mock_get_latest_state.return_value = state
         consistent = self.settings_state_consistency.is_consistent()

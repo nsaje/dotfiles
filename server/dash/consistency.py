@@ -19,8 +19,10 @@ class SettingsStateConsistence(object):
         if latest_settings is None:
             return False
 
-        changes = self._get_state_changes(latest_state, latest_settings)
-        return not changes
+        if latest_settings.created_dt > latest_state.created_dt:
+            return True
+
+        return not self._get_state_changes(latest_state, latest_settings)
 
     def get_needed_state_updates(self):
         latest_state = self._get_latest_state()
