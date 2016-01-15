@@ -597,25 +597,7 @@ class CampaignAdGroups(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
-
-        actions = []
-        with transaction.atomic():
-            ad_group = models.AdGroup(
-                    name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
-                    campaign=campaign
-            )
-            ad_group.save(request)
-            ad_group_settings = self._create_new_settings(ad_group, request)
-            # Insert newly created setting into redirector
-            actions_settings = api.order_ad_group_settings_update(ad_group, models.AdGroupSettings(),
-                                                                  ad_group_settings, request, send=False)
-            actions.extend(actions_settings)
-
-            actions_media_sources = self._add_media_sources(request, ad_group, ad_group_settings)
-            actions.extend(actions_media_sources)
-
-        actionlog.zwei_actions.send(actions)
-
+        ad_group = self._create_ad_group_and_propagate(campaign, request)
         helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_AD_GROUP,
                                             ad_group=ad_group, campaign=campaign)
 
@@ -627,6 +609,20 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
+    def _create_ad_group_and_propagate(self, campaign, request):
+        with transaction.atomic():
+            ad_group = models.AdGroup(
+                    name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
+                    campaign=campaign
+            )
+            ad_group.save(request)
+            ad_group_settings = self._create_new_settings(ad_group, request)
+            actions = self._add_media_sources(ad_group, ad_group_settings, request)
+            actions.extend(api.order_ad_group_settings_update(ad_group, models.AdGroupSettings(),
+                                                              ad_group_settings, request, send=False))
+        actionlog.zwei_actions.send(actions)
+        return ad_group
+
     def _create_new_settings(self, ad_group, request):
         settings = ad_group.get_current_settings()  # get default ad group settings
         campaign_settings = ad_group.campaign.get_current_settings()
@@ -636,18 +632,16 @@ class CampaignAdGroups(api_common.BaseApiView):
         settings.save(request)
         return settings
 
-    def _add_media_sources(self, request, ad_group, ad_group_settings):
-        sources = list(ad_group.campaign.account.allowed_sources.all())
+    def _add_media_sources(self, ad_group, ad_group_settings, request):
+        sources = ad_group.campaign.account.allowed_sources.all()
         actions = []
         added_sources = []
 
         for source in sources:
             try:
                 source_default_settings = helpers.get_source_default_settings(source)
-            except exc.MissingDataError as e:
-                logger.exception(
-                        "Adding source ({}) to ad-group (pk={}) failed due to missing data error."
-                            .format(source.name, ad_group.pk))
+            except exc.MissingDataError:
+                logger.exception('Exception occurred on campaign with id %s', ad_group.campaign.pk)
                 continue
 
             ad_group_source = self._create_ad_group_source(request, source_default_settings, ad_group_settings)

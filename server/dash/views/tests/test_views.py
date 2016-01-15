@@ -258,7 +258,7 @@ class CampaignAdGroups(TestCase):
         request = None
 
         view = views.CampaignAdGroups()
-        actions = view._add_media_sources(request, ad_group, ad_group_settings)
+        actions = view._add_media_sources(ad_group, ad_group_settings, request)
 
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
         waiting_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)

@@ -1091,35 +1091,37 @@ class SetAdGroupSourceTest(TestCase):
         ad_group_source = ad_group_sources[0]
         self.assertEqual(ad_group_source.source, default_settings.source)
 
-    def test_set_ad_group_source_settings(self):
+    def prepare_ad_group_source(self):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=6)
-        # target mobile
-        ad_group_settings.target_devices = ['mobile']
-        ad_group_settings.save(self.request)
+        source_settings = models.DefaultSourceSettings.objects.get(pk=1)
+        ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group_settings.ad_group)
+        ad_group_source.save(self.request)
+        return ad_group_source, source_settings
 
-        default_settings = models.DefaultSourceSettings.objects.get(pk=1)
-
-        ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group_settings.ad_group)
-        ad_group_source.save()
-
-        helpers.set_ad_group_source_settings(self.request, ad_group_source, default_settings,
+    def test_set_ad_group_source_settings_mobile(self):
+        ad_group_source, source_settings = self.prepare_ad_group_source()
+        helpers.set_ad_group_source_settings(self.request, ad_group_source, source_settings,
                                              mobile_only=True, active=True, send_action=False)
 
         ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
         self.assertEqual(ad_group_source_settings.count(), 2)
 
         ad_group_source_settings = ad_group_source_settings.latest()
-        self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
-        self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.mobile_cpc_cc)
+        self.assertEqual(ad_group_source_settings.daily_budget_cc, source_settings.daily_budget_cc)
+        self.assertEqual(ad_group_source_settings.cpc_cc, source_settings.mobile_cpc_cc)
         self.assertEqual(ad_group_source_settings.state, constants.AdGroupSourceSettingsState.ACTIVE)
 
-        helpers.set_ad_group_source_settings(self.request, ad_group_source, default_settings,
+    def test_set_ad_group_source_settings_desktop(self):
+        ad_group_source, source_settings = self.prepare_ad_group_source()
+        helpers.set_ad_group_source_settings(self.request, ad_group_source, source_settings,
                                              mobile_only=False, active=False, send_action=False)
+
         ad_group_source_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source)
-        self.assertEqual(ad_group_source_settings.count(), 3)
+        self.assertEqual(ad_group_source_settings.count(), 2)
+
         ad_group_source_settings = ad_group_source_settings.latest()
-        self.assertEqual(ad_group_source_settings.daily_budget_cc, default_settings.daily_budget_cc)
-        self.assertEqual(ad_group_source_settings.cpc_cc, default_settings.default_cpc_cc)
+        self.assertEqual(ad_group_source_settings.daily_budget_cc, source_settings.daily_budget_cc)
+        self.assertEqual(ad_group_source_settings.cpc_cc, source_settings.default_cpc_cc)
         self.assertEqual(ad_group_source_settings.state, constants.AdGroupSourceSettingsState.INACTIVE)
 
 
