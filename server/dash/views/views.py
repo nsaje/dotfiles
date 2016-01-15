@@ -1899,7 +1899,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         # TODO: revise this if making separate views per level
         helpers.log_useraction_if_necessary(
             request,
-            constants.PublisherBlacklistLevel.ADGROUP,
+            publisher_helpers.get_useractiontype(level),
             ad_group=ad_group
         )
 
