@@ -1,6 +1,7 @@
 import collections
 import datetime
 import pytz
+import re
 from slugify import slugify
 from django.conf import settings
 from django.db.models import Q
@@ -1865,13 +1866,15 @@ class PublishersTable(object):
         return result
 
     def get_rows(self, user, map_exchange_to_source_name, publishers_data):
-
         rows = []
         for publisher_data in publishers_data:
             exchange = publisher_data.get('exchange', None)
             source_name = map_exchange_to_source_name.get(exchange, exchange)
             domain = publisher_data.get('domain', None)
-            if domain:
+
+            if not publisher_helpers.is_publisher_domain(domain):
+                domain_link = None
+            elif domain:
                 domain_link = "http://" + domain
             else:
                 domain_link = ""
@@ -1911,3 +1914,10 @@ class PublishersTable(object):
             rows.append(row)
 
         return rows
+
+    def _is_publisher_domain(self, raw_str):
+        match = re.search(r"\.[a-z]$", raw_str.lower())
+        if match:
+            return True
+        else:
+            return False

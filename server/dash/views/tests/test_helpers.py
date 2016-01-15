@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import datetime
 import pytz
 
@@ -1334,5 +1335,19 @@ class PublisherHelpersTest(TestCase):
         self.assertEqual(3, len(prepared_pubs))
 
     def test_publisher_exchange(self):
-        pass
-        # def publisher_exchange(source):
+        adiant_source = models.Source.objects.get(pk=7)
+        self.assertEqual('b1_adiant', adiant_source.tracking_slug)
+        self.assertEqual('adiant', publisher_helpers.publisher_exchange(adiant_source))
+
+        outbrain_source = models.Source.objects.get(pk=3)
+        self.assertEqual('outbrain', outbrain_source.tracking_slug)
+        self.assertEqual('outbrain', publisher_helpers.publisher_exchange(outbrain_source))
+
+    def test_publisher_domain(self):
+        self.assertTrue(publisher_helpers.is_publisher_domain('test.com'))
+        self.assertTrue(publisher_helpers.is_publisher_domain('funky.co.uk'))
+
+        self.assertFalse(publisher_helpers.is_publisher_domain('Happy Faces'))
+        self.assertFalse(publisher_helpers.is_publisher_domain('贝客悦读 • 天涯之家HD'))
+        self.assertFalse(publisher_helpers.is_publisher_domain('BS Local (CBS Local)'))
+        self.assertFalse(publisher_helpers.is_publisher_domain('CNN Money (Turner U.S.)'))
