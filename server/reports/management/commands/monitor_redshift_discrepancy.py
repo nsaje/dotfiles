@@ -1,4 +1,3 @@
-from django.core.management.base import BaseCommand
 from django.db.models import Sum
 
 import reports.models
@@ -9,6 +8,20 @@ from utils.statsd_helper import statsd_gauge
 
 
 class Command(ExceptionCommand):
+
+    def _post_metrics(self, prefix, stats, redshift_sums):
+        for stats_key, stats_val in stats.keys():
+            cads_total_name = '{prefix}.{stat_name}_total'.format(
+                prefix=prefix,
+                stat_name=stats_key
+            )
+            statsd_gauge(cads_total_name, stats_val)
+
+            redshift_stat_name = '{prefix}.{stat_name}_total_aggr'.format(
+                prefix=prefix,
+                stat_name=stats_key
+            )
+            statsd_gauge(redshift_stat_name, redshift_sums[stats_key])
 
     def handle(self, *args, **options):
 
@@ -27,34 +40,14 @@ class Command(ExceptionCommand):
             total_time_on_site=Sum('total_time_on_site'),
         )
 
+        ds_stats = reports.models.BudgetDailyStatement.objects.aggregate(
+            effective_cost_nano=Sum('media_spend_nano'),
+            effective_data_cost_nano=Sum('data_spend_nano'),
+            license_fee_nano=Sum('license_fee_nano')
+        )
+
         redshift_sums = redshift.sum_of_stats()
 
-        stats_field_keys = cad_stats.keys()
-        for stats_field_key in stats_field_keys:
-            prefix = 'reports.contentadstats'
-            cads_total_name = '{prefix}.{stat_name}_total'.format(
-                prefix=prefix,
-                stat_name=stats_field_key
-            )
-            statsd_gauge(cads_total_name, cad_stats.get(stats_field_key, 0))
-
-            cads_redshift_name = '{prefix}.{stat_name}_total_aggr'.format(
-                prefix=prefix,
-                stat_name=stats_field_key
-            )
-            statsd_gauge(cads_redshift_name, redshift_sums[stats_field_key])
-
-        post_stats_field_keys = cad_post_stats.keys()
-        for post_stats_field_key in post_stats_field_keys:
-            prefix = 'reports.contentadstats'
-            cads_total_name = '{prefix}.{stat_name}_total'.format(
-                prefix=prefix,
-                stat_name=post_stats_field_key
-            )
-            statsd_gauge(cads_total_name, cad_post_stats.get(post_stats_field_key, 0))
-
-            cads_redshift_name = '{prefix}.{stat_name}_total_aggr'.format(
-                prefix=prefix,
-                stat_name=post_stats_field_key
-            )
-            statsd_gauge(cads_redshift_name, redshift_sums[post_stats_field_key])
+        self._post_metrics('reports.contentadstats', cad_stats, redshift_sums)
+        self._post_metrics('reports.contentadstats', cad_post_stats, redshift_sums)
+        self._post_metrics('reports.daily_statements', ds_stats, redshift_sums)
