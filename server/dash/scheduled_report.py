@@ -15,9 +15,15 @@ logger = logging.getLogger(__name__)
 
 
 def get_due_scheduled_reports():
-    today = datetime.date.today()
+    today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
+    today = today_utc.astimezone(
+        pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
     due_reports = models.ScheduledExportReport.objects.select_related('report').filter(
         state=constants.ScheduledReportState.ACTIVE)
+    yesterday = today - datetime.timedelta(days=1, hours=-1)
+
+    reports_sent_today = models.ScheduledExportReportLog.objects.filter(created_dt__gte=yesterday).all()
+    due_reports = due_reports.exclude(id__in=[rep.scheduled_report.id for rep in reports_sent_today])
 
     if today.isoweekday() != 1:  # weekly reports are only sent on Mondays
         due_reports = due_reports.exclude(
