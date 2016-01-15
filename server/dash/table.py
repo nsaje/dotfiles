@@ -1914,10 +1914,3 @@ class PublishersTable(object):
             rows.append(row)
 
         return rows
-
-    def _is_publisher_domain(self, raw_str):
-        match = re.search(r"\.[a-z]$", raw_str.lower())
-        if match:
-            return True
-        else:
-            return False
