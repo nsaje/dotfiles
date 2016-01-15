@@ -222,7 +222,6 @@ class ExportPlusTestCase(test.TestCase):
             '-status',
             True,
             [],
-            include_statuses=True,
             source=sources,
             ad_group=ad_group
         )

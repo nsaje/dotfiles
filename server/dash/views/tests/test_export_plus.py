@@ -264,7 +264,6 @@ class AccountCampaignsExportTestCase(AssertRowMixin, test.TestCase):
 2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 1 \xc4\x8c\xc5\xbe\xc5\xa1,Inactive,10.230,103,100000\r
 2014-06-30,2014-07-01,test account 1 \xc4\x8c\xc5\xbe\xc5\xa1,test campaign 2,Inactive,20.230,203,200000\r\n'''
 
-
         filename = '{0}_-_by_campaign_report_2014-06-30_2014-07-01.csv'.format(
             slugify.slugify(self.account_name)
         )
