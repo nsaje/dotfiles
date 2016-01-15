@@ -1872,9 +1872,7 @@ class PublishersTable(object):
             source_name = map_exchange_to_source_name.get(exchange, exchange)
             domain = publisher_data.get('domain', None)
 
-            if not publisher_helpers.is_publisher_domain(domain):
-                domain_link = None
-            elif domain:
+            if publisher_helpers.is_publisher_domain(domain):
                 domain_link = "http://" + domain
             else:
                 domain_link = ""
