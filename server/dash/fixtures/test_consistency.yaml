@@ -1,0 +1,53 @@
+# AdGroup
+-   fields:
+        name: 'test adgroup 1'
+        campaign: 1
+        modified_by_id: 1
+        created_dt: '2016-01-01T00:00:00'
+        modified_dt: '2016-01-01T00:00:00'
+    model: dash.adgroup
+    pk: 1
+
+# AdGroup Settings
+-   fields:
+        ad_group: 1
+        state: 1
+        created_dt: '2016-01-01T00:00:00'
+    model: dash.adgroupsettings
+    pk: 1
+
+# AdGroup Source
+-   fields:
+        source: 1
+        ad_group: 1
+    model: dash.adgroupsource
+    pk: 1
+
+# AdGroup Source Settings
+-   fields:
+        ad_group_source: 1
+        cpc_cc: '0.11'
+        daily_budget_cc: '11.'
+        state: 1
+        created_dt: '2016-01-01T00:11:00'
+    model: dash.adgroupsourcesettings
+    pk: 1
+
+# AdGroup Source States
+-   fields:
+        ad_group_source: 1
+        cpc_cc: '0.11'
+        daily_budget_cc: '11.'
+        state: 1
+        created_dt: '2016-01-01T00:10:00'
+    model: dash.adgroupsourcestate
+    pk: 1
+
+-   fields:
+        ad_group_source: 1
+        cpc_cc: '0.22'
+        daily_budget_cc: '22.'
+        state: 2
+        created_dt: '2016-01-01T00:12:00'
+    model: dash.adgroupsourcestate
+    pk: 2
