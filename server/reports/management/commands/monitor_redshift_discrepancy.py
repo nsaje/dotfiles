@@ -40,7 +40,7 @@ class Command(ExceptionCommand):
             total_time_on_site=Sum('total_time_on_site'),
         )
 
-        ds_stats = reports.models.BudgetDailyStatement.objects.aggregaet(
+        ds_stats = reports.models.BudgetDailyStatement.objects.aggregate(
             effective_cost_nano=Sum('media_spend_nano'),
             effective_data_cost_nano=Sum('data_spend_nano'),
             license_fee_nano=Sum('license_fee_nano')
