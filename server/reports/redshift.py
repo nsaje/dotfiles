@@ -119,7 +119,10 @@ def sum_of_stats():
     SUM(new_visits) as new_visits,
     SUM(bounced_visits) as bounced_visits,
     SUM(pageviews) as pageviews,
-    SUM(total_time_on_site) as total_time_on_site
+    SUM(total_time_on_site) as total_time_on_site,
+    SUM(effective_cost_nano) as effective_cost_nano,
+    SUM(effective_data_cost_nano) as effective_data_cost_nano,
+    SUM(license_fee_nano) as license_fee_nano
     FROM contentadstats WHERE content_ad_id != %s'''
     params = [REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
 
