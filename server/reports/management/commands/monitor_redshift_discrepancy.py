@@ -10,7 +10,7 @@ from utils.statsd_helper import statsd_gauge
 class Command(ExceptionCommand):
 
     def _post_metrics(self, prefix, stats, redshift_sums):
-        for stats_key, stats_val in stats.keys():
+        for stats_key, stats_val in stats.iteritems():
             cads_total_name = '{prefix}.{stat_name}_total'.format(
                 prefix=prefix,
                 stat_name=stats_key
