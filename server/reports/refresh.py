@@ -35,6 +35,7 @@ B1_RAW_PUB_DATA_FILE = 'part-00000'
 LOAD_CONTENTADS_KEY_FMT = 'contentadstats_load/{year}/{month:02d}/{day:02d}/{campaign_id}/{ts}.json'
 LOAD_B1_PUB_STATS_KEY_FMT = 'b1_publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
 LOAD_OB_PUB_STATS_KEY_FMT = 'ob_publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
+LOAD_PUB_STATS_KEY_FMT = 'publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
 
 MICRO_TO_NANO = 1000
 CC_TO_NANO = 100000
@@ -370,7 +371,7 @@ def process_ob_publishers_stats(date):
 def process_publishers_stats(date):
     data = _get_latest_pub_data(date)
     _augment_pub_data_with_budgets(data)
-    return put_pub_stats_to_s3(date, data, LOAD_OB_PUB_STATS_KEY_FMT)
+    return put_pub_stats_to_s3(date, data, LOAD_PUB_STATS_KEY_FMT)
 
 
 def refresh_b1_publishers_data(date):

@@ -151,6 +151,32 @@ class RedshiftTest(TestCase):
                   'aws_access_key_id=access_key;aws_secret_access_key=secret_access_key']
         mock_cursor.execute.assert_called_with(query, params)
 
+    def test_delete_publishers(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = MyCursor(mock_cursor)
+
+        date = datetime.date(2015, 1, 1)
+        redshift.delete_publishers(date)
+
+        query = 'DELETE FROM publishers_1 WHERE date = %s'
+        params = ['2015-01-01']
+        mock_cursor.execute.assert_called_with(query, params)
+
+    @override_settings(AWS_ACCESS_KEY_ID='access_key')
+    @override_settings(AWS_SECRET_ACCESS_KEY='secret_access_key')
+    @override_settings(S3_BUCKET_STATS='test-bucket-stats')
+    def test_load_publishers(self, mock_get_cursor):
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = MyCursor(mock_cursor)
+
+        s3_key = 'publishers/2015-01-01-2015-01-31--123456789/part-00000'
+        redshift.load_publishers(s3_key)
+
+        query = "COPY publishers_1 FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
+        params = ['s3://test-bucket-stats/' + s3_key,
+                  'aws_access_key_id=access_key;aws_secret_access_key=secret_access_key']
+        mock_cursor.execute.assert_called_with(query, params)
+
     def test_vacuum_touchpoint_conversions(self, mock_get_cursor):
         mock_cursor = Mock()
         mock_get_cursor.return_value = MyCursor(mock_cursor)

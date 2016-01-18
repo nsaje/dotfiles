@@ -722,6 +722,8 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
                 'adgroup_id': 1,
                 'exchange': 'adiant',
                 'domain': 'adiant.com',
+                'name': 'adiant.com',
+                'external_id': '',
                 'clicks': 10,
                 'impressions': 1000,
                 'cost_micro': 20000000,
@@ -732,6 +734,8 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
                 'adgroup_id': 1,
                 'exchange': 'adsnative',
                 'domain': 'adsnative.com',
+                'name': 'adsnative.com',
+                'external_id': '',
                 'clicks': 5,
                 'impressions': 800,
                 'cost_micro': 800000,
@@ -842,6 +846,7 @@ class RefreshOBPubDataTestCase(test.TestCase):
             'cost_micro': 750.0,
             'date': datetime.date(2016, 1, 1),
             'ob_id': 'ABCD1234',
+            'external_id': 'ABCD1234',
             'clicks': 1500,
             'adgroup_id': 123
         }, {
@@ -850,6 +855,7 @@ class RefreshOBPubDataTestCase(test.TestCase):
             'cost_micro': 250.0,
             'date': datetime.date(2016, 1, 1),
             'ob_id': '4321DCBA',
+            'external_id': '4321DCBA',
             'clicks': 500,
             'adgroup_id': 123
         }, {
@@ -859,6 +865,7 @@ class RefreshOBPubDataTestCase(test.TestCase):
             'cost_micro': 2000.0,
             'date': datetime.date(2016, 1, 1),
             'ob_id': '4321DCBA',
+            'external_id': '4321DCBA',
             'clicks': 2000,
             'adgroup_id': 124
         }]
