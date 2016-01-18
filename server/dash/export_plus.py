@@ -149,9 +149,9 @@ def _prefetch_budgets(data, level):
     if level == 'account':
         all_accounts_budget = budget.GlobalBudget().get_total_by_account()
         all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
-        return {acc:
-                {'budget': all_accounts_budget.get(acc, 0),
-                 'spent_budget': all_accounts_total_spend.get(acc, 0)}
+        return {acc.id:
+                {'budget': all_accounts_budget.get(acc.id, 0),
+                 'spent_budget': all_accounts_total_spend.get(acc.id, 0)}
                 for acc in data}
     elif level == 'campaign':
         return {camp.id:
