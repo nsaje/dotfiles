@@ -393,22 +393,22 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         });
     };
 
-    $scope.getInfoboxData = function() {
+    $scope.getInfoboxData = function () {
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
 
         api.campaignOverview.get($state.params.id).then(
-            function(data) {
+            function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxSettings = data.settings;
             },
-            function(data) {}
+            function (data) {}
         );
     };
 
-    $scope.$watch('$parent.infoboxVisible', function(newValue, oldValue) {
-        $timeout(function() {
+    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
+        $timeout(function () {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     });
@@ -490,7 +490,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 options.effectiveCostChartMetrics,
                 $scope.isPermissionInternal('zemauth.can_view_effective_costs')
             );
-        } else if (! $scope.hasPermission('zemauth.can_view_actual_costs')) {
+        } else if (!$scope.hasPermission('zemauth.can_view_actual_costs')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
                 $scope.chartMetricOptions,
                 options.legacyCostChartMetrics,
@@ -590,13 +590,13 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     var pollSyncStatus = function () {
-        if ($scope.isSyncInProgress){
+        if ($scope.isSyncInProgress) {
             $timeout(function () {
                 api.checkCampaignSyncProgress.get($state.params.id).then(
                     function (data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                        if (!$scope.isSyncInProgress){
+                        if (!$scope.isSyncInProgress) {
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             getTableData();
@@ -607,7 +607,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                         // error
                         $scope.isSyncInProgress = false;
                     }
-                ).finally(function() {
+                ).finally(function () {
                     pollSyncStatus();
                 });
             }, 5000);
@@ -618,7 +618,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         $scope.chartHidden = !$scope.chartHidden;
         $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
-        $timeout(function() {
+        $timeout(function () {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     };
@@ -636,7 +636,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         if (adGroupIds) {
             adGroupIds.split(',').forEach(function (id) {
-                 $scope.updateSelectedAdGroups(id);
+                $scope.updateSelectedAdGroups(id);
             });
             $location.search('ad_group_ids', adGroupIds);
         }
@@ -657,7 +657,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         $location.search('ad_group_totals', null);
     });
 
-    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
+    $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
         if (newValue === true && oldValue === false) {
             pollSyncStatus();
         }

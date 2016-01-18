@@ -25,8 +25,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.adGroupHasFreshSettings = function () {
         return freshSettings.promise;
     };
-    
-    $scope.closeAlert = function(index) {
+
+    $scope.closeAlert = function (index) {
         $scope.alerts.splice(index, 1);
     };
 
@@ -55,8 +55,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.defaultSettings = data.defaultSettings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
-                freshSettings.resolve(data.settings.name == 'New ad group');
-                goToContentAds = data.settings.name == 'New ad group';
+                freshSettings.resolve(data.settings.name === 'New ad group');
+                goToContentAds = data.settings.name === 'New ad group';
             },
             function (data) {
                 // error
@@ -101,7 +101,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                     adGroupToEdit = null,
                     status = getAdGroupStatus($scope.settings);
                 $scope.errors = {};
-                if (prevAdGroup != currAdGroup) {
+                if (prevAdGroup !== currAdGroup) {
                     adGroupToEdit = $scope.getAdGroup(prevAdGroup);
                     adGroupToEdit.name = data.settings.name;
                     adGroupToEdit.state = data.settings.state === stateActive ? 'enabled' : 'paused';
@@ -109,7 +109,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                     $scope.settings = data.settings;
                     $scope.defaultSettings = data.defaultSettings;
                     $scope.actionIsWaiting = data.actionIsWaiting;
-                    
+
                     $scope.updateAccounts(data.settings.name, data.settings.state, status);
                     $scope.updateBreadcrumbAndTitle();
                     $scope.setAdGroupPaused(
@@ -121,7 +121,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.saved = true;
 
                 if ($scope.user.showOnboardingGuidance && goToContentAds) {
-                    $timeout(function() {
+                    $timeout(function () {
                         $state.go('main.adGroups.adsPlus', {id: $scope.settings.id});
                     }, 100);
                 }

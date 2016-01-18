@@ -1,11 +1,11 @@
 /*global $,oneApp*/
-"use strict";
+'use strict';
 
-oneApp.directive('zemSelect2ModelTransform', ['$compile', function($compile) {
-    return { 
+oneApp.directive('zemSelect2ModelTransform', ['$compile', function ($compile) {
+    return {
         restrict: 'A',
         require: 'ngModel',
-        link: function(scope, element, attr, ngModel) {
+        link: function (scope, element, attr, ngModel) {
             if (!ngModel) {
                 return;
             }
@@ -13,10 +13,10 @@ oneApp.directive('zemSelect2ModelTransform', ['$compile', function($compile) {
             ngModel.$parsers.push(function (value) {
                 return value ? value.id : '';
             });
-            
+
             ngModel.$formatters.push(function (value) {
                 var text;
-                if (attr.zemSelect2ModelTransform == "percentage") {
+                if (attr.zemSelect2ModelTransform === 'percentage') {
                     text = isNaN(value) ? '' : value + '%';
                 } else { text = value; }
                 return {id: value, text: text};

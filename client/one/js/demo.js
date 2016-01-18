@@ -1,5 +1,5 @@
 /*globals angular,oneApp,constants,options,moment*/
-"use strict";
+'use strict';
 
 oneApp.config(['$provide', function ($provide) {
     ///////////////////////////
@@ -27,11 +27,11 @@ oneApp.config(['$provide', function ($provide) {
                 };
             },
             defaultGetWrapper = function (cacheIdTemplate, wrappedFn, httpErrorFn, dataFilterFn) {
-                if (! dataFilterFn) { dataFilterFn = function (x) { return x; }; }
-                if (! httpErrorFn) { httpErrorFn = function () {}; }
-                return function demo(id) {
+                if (!dataFilterFn) { dataFilterFn = function (x) { return x; }; }
+                if (!httpErrorFn) { httpErrorFn = function () {}; }
+                return function demo (id) {
                     var deferred = $q.defer(),
-                         promise = null,
+                        promise = null,
                         cacheId = cacheIdTemplate.replace('{id}', id),
                         cachedResponse = zemDemoCacheService.get(cacheId);
                     if (cachedResponse !== undefined) {
@@ -63,17 +63,17 @@ oneApp.config(['$provide', function ($provide) {
             },
             tableMerge = function (original, additional) {
                 var additionalRows = additional.rows.slice();
-                if (! original.rows.length) {
+                if (!original.rows.length) {
                     original.rows = additional.rows;
                     return original;
                 }
                 additionalRows.reverse();
-                if (original.pagination.currentPage == 1) {
+                if (original.pagination.currentPage === 1) {
                     angular.forEach(additionalRows, function (r) {
                         original.rows.unshift(r);
                         original.rows.pop();
                     });
-                } else if (original.pagination.currentPage == 2 && original.pagination.size < additionalRows.length) {
+                } else if (original.pagination.currentPage === 2 && original.pagination.size < additionalRows.length) {
                     angular.forEach(additionalRows.slice(6, additional.rows.length), function (r) {
                         original.rows.unshift(r);
                         original.rows.pop();
@@ -104,10 +104,10 @@ oneApp.config(['$provide', function ($provide) {
         $window.onbeforeunload = confirmOnPageExit;
 
         zemDemoSourcesService.setApi($delegate.adGroupSourcesTable.get);
-        
+
         /* CAMPAIGNS */
         $delegate.accountCampaignsTable.get = (function (backup) {
-            return function demo() {
+            return function demo () {
                 return backup.apply(null, arguments).then(function (data) {
                     data.is_sync_recent = true;
                     angular.forEach(newCampaigns, function (_, campaignId) {
@@ -119,9 +119,9 @@ oneApp.config(['$provide', function ($provide) {
             };
         }($delegate.accountCampaignsTable.get));
 
-        
+
         /* ADD CAMPAIGN */
-        $delegate.accountCampaigns.create = function demo(id) {
+        $delegate.accountCampaigns.create = function demo (id) {
             var deferred = $q.defer(),
                 settings = defaults.newCampaignSettings(zemDemoCacheService.generateId('campaign')),
                 campaign = angular.extend({}, {
@@ -151,10 +151,10 @@ oneApp.config(['$provide', function ($provide) {
                 }; }
             )
         );
-        $delegate.campaignSettings.save = function demo(settings) {
+        $delegate.campaignSettings.save = function demo (settings) {
             var deferred = $q.defer(),
                 cacheId = '/api/campaigns/' + settings.id + '/settings/';
-            deferred.resolve({ settings: settings });
+            deferred.resolve({settings: settings});
             zemDemoCacheService.update(cacheId, 'settings', settings);
             return deferred.promise;
         };
@@ -168,7 +168,7 @@ oneApp.config(['$provide', function ($provide) {
                 }; }
             )
         );
-        $delegate.campaignAgency.save = function demo(settings) {
+        $delegate.campaignAgency.save = function demo (settings) {
             var deferred = $q.defer(),
                 cacheId = '/api/campaigns/' + settings.id + '/agency/',
                 history = (zemDemoCacheService.get(cacheId) || {}).history,
@@ -178,7 +178,7 @@ oneApp.config(['$provide', function ($provide) {
                     canArchive: false,
                     canRestore: false
                 };
-            response.history.push({ changedBy: 'test.account@zemanta.si', changesText: 'Updated settings', showOldSettings: false, datetime: (new Date()).toISOString() });
+            response.history.push({changedBy: 'test.account@zemanta.si', changesText: 'Updated settings', showOldSettings: false, datetime: (new Date()).toISOString()});
             deferred.resolve(response);
             zemDemoCacheService.update(cacheId, 'settings', settings);
             return deferred.promise;
@@ -200,7 +200,7 @@ oneApp.config(['$provide', function ($provide) {
             )
         );
 
-        $delegate.campaignBudget.save = function demo(id, data) {
+        $delegate.campaignBudget.save = function demo (id, data) {
             var deferred = $q.defer(),
                 cacheId = '/api/campaigns/' + id + '/budget/',
                 cachedResponse = zemDemoCacheService.get(cacheId),
@@ -215,12 +215,12 @@ oneApp.config(['$provide', function ($provide) {
                 };
             actions[data.action](data.amount);
             newData.history.push({
-                allocate: data.action == 'allocate' ? parseFloat(data.amount) : 0,
+                allocate: data.action === 'allocate' ? parseFloat(data.amount) : 0,
                 comment: capitalize(data.action) + 'd $' + data.amount +  '  to the campaign.',
                 datetime: (new Date()).toISOString(),
-                revoke: data.action == 'revoke' ? parseFloat(data.amount) : 0,
+                revoke: data.action === 'revoke' ? parseFloat(data.amount) : 0,
                 total: newData.total,
-                user: "test.account@zemanta.si"
+                user: 'test.account@zemanta.si'
             });
             newData.available = parseFloat(newData.total) - parseFloat(newData.spend);
             zemDemoCacheService.set(cacheId, newData);
@@ -229,7 +229,7 @@ oneApp.config(['$provide', function ($provide) {
         };
 
         /* ADD ADGROUP */
-        $delegate.campaignAdGroups.create = function demo(id) {
+        $delegate.campaignAdGroups.create = function demo (id) {
             var deferred = $q.defer(),
                 today = new Date(),
                 todayMonth = today.getMonth() + 1,
@@ -239,14 +239,14 @@ oneApp.config(['$provide', function ($provide) {
                     settings: settings
                 });
             settings.startDate = moment(
-                today.getFullYear() + "-" +
-                (todayMonth < 10 ? "0" : "") + todayMonth + "-" +
+                today.getFullYear() + '-' +
+                (todayMonth < 10 ? '0' : '') + todayMonth + '-' +
                 today.getDate()
             ).toDate();
-            
+
             zemDemoCacheService.set('/api/ad_groups/' + settings.id + '/settings/', campaign);
             zemDemoAdGroupsService.newAdGroup(id, settings.id);
-            
+
             $delegate.availableSources.list().then(function (data) {
                 zemDemoCacheService.set('/api/ad_groups/' + settings.id + '/sources/', {
                     sources: defaults.newAdGroupSources(data.data.sources),
@@ -256,18 +256,18 @@ oneApp.config(['$provide', function ($provide) {
             });
 
             demoInUse = true;
-            
+
             return deferred.promise;
         };
 
-        $delegate.sourcesTable.get = (function demo(backup) {
+        $delegate.sourcesTable.get = (function demo (backup) {
             return function (level, id) {
                 var deferred = null;
-                if (level == 'campaigns' && newCampaigns[id]) {
+                if (level === 'campaigns' && newCampaigns[id]) {
                     deferred = $q.defer();
                     deferred.resolve(defaults.emptySourcesTable());
                     return deferred.promise;
-                } else if (level == 'ad_groups' && zemDemoAdGroupsService.isNew(id)) {
+                } else if (level === 'ad_groups' && zemDemoAdGroupsService.isNew(id)) {
                     deferred = $q.defer();
                     deferred.resolve(defaults.emptySourcesTable());
                     return deferred.promise;
@@ -281,7 +281,7 @@ oneApp.config(['$provide', function ($provide) {
 
         /* AD GORUPS */
         $delegate.campaignAdGroupsTable.get = (function (backup) {
-            return function demo(id, startDate, endDate, order) {
+            return function demo (id, startDate, endDate, order) {
                 var deferred = $q.defer(),
                     adGroups = null;
                 if (newCampaigns[id]) {
@@ -318,7 +318,7 @@ oneApp.config(['$provide', function ($provide) {
         $delegate.adGroupSettings.get = resetIfErrorWrapper(
             defaultGetWrapper('/api/ad_groups/{id}/settings/', $delegate.adGroupSettings.get)
         );
-        $delegate.adGroupSettings.save = function demo(settings) {
+        $delegate.adGroupSettings.save = function demo (settings) {
             var deferred = $q.defer(),
                 cacheId = '/api/ad_groups/' + settings.id + '/settings/',
                 cacheHistoryId = '/api/ad_groups/' + settings.id + '/agency/',
@@ -328,24 +328,24 @@ oneApp.config(['$provide', function ($provide) {
                     actionIsWaiting: false,
                     settings: settings,
                     history: [
-                        { changedBy: "test.account@zemanta.si",
-                          changesText: "Created settings",
+                        {changedBy: 'test.account@zemanta.si',
+                          changesText: 'Created settings',
                           showOldSettings: false,
-                          datetime: (new Date()).toISOString() }
+                          datetime: (new Date()).toISOString()}
                     ]
                 };
             zemDemoCacheService.update(cacheId, 'settings', settings);
             if (oldSettings) {
                 agency.history.push({
-                    changedBy: "test.account@zemanta.si",
-                    changesText: "Updated settings",
+                    changedBy: 'test.account@zemanta.si',
+                    changesText: 'Updated settings',
                     showOldSettings: false,
                     datetime: (new Date()).toISOString()
                 });
             }
             zemDemoCacheService.update(cacheHistoryId, 'history', agency.history);
             zemDemoCacheService.update(cacheHistoryId, 'settings', agency.settings);
-            
+
             zemDemoCacheService.set(cacheStateId, 'settings', agency);
 
             zemDemoAdGroupsService.update(settings.id, settings);
@@ -369,9 +369,9 @@ oneApp.config(['$provide', function ($provide) {
         /* Ad group media sources */
         $delegate.availableSources.list = defaultGetWrapper('/api/sources/',
                                                             $delegate.availableSources.list);
-        
-        
-        $delegate.adGroupSourceSettings.save = function demo(adGroupId, sourceId, data) {
+
+
+        $delegate.adGroupSourceSettings.save = function demo (adGroupId, sourceId, data) {
             var deferred = $q.defer(),
                 mapped = {
                     cpc_cc: 'bid_cpc',
@@ -386,9 +386,9 @@ oneApp.config(['$provide', function ($provide) {
                 if (field.match(/_cc$/)) {
                     newData[field.replace(/_cc$/, '')] = value;
                 }
-                if (field == 'state') {
+                if (field === 'state') {
                     newData.status_setting = value;
-                    newData.status = value == 1 ? 'Active' : 'Paused';
+                    newData.status = value === 1 ? 'Active' : 'Paused';
                 }
             });
             newData.id = sourceId;
@@ -396,17 +396,17 @@ oneApp.config(['$provide', function ($provide) {
             deferred.resolve(true);
             return deferred.promise;
         };
-        
+
         $delegate.adGroupSources.get = resetIfErrorWrapper(
             defaultGetWrapper('/api/ad_groups/{id}/sources/', $delegate.adGroupSources.get)
         );
-        
-        $delegate.adGroupSources.add = function demo(adGroupId, sourceId) {
+
+        $delegate.adGroupSources.add = function demo (adGroupId, sourceId) {
             var deferred = $q.defer(),
                 allSources = zemDemoCacheService.get('/api/sources/'), // this is always called before
                 newSource = null;
             angular.forEach(allSources.data.sources || [], function (s) {
-                if (s.id == sourceId) { newSource = s; }
+                if (s.id === sourceId) { newSource = s; }
             });
             if (newSource) {
                 zemDemoSourcesService.create(adGroupId, newSource);
@@ -421,7 +421,7 @@ oneApp.config(['$provide', function ($provide) {
         };
 
         $delegate.adGroupSourcesTable.get = (function (backup) {
-            return function demo(id, startDate, endDate, order) {
+            return function demo (id, startDate, endDate, order) {
                 lastSourcesArgs = [id, startDate, endDate, order];
                 var deferred = $q.defer();
                 zemLocalStorageService.set('columns',
@@ -441,12 +441,12 @@ oneApp.config(['$provide', function ($provide) {
                 });
                 return deferred.promise;
             };
-            
+
         }(resetIfErrorWrapper($delegate.adGroupSourcesTable.get)));
 
         /* Content ads */
 
-        $delegate.adGroupAdsPlusUpload.getDefaults = function demo() {
+        $delegate.adGroupAdsPlusUpload.getDefaults = function demo () {
             var deferred = $q.defer(),
                 now = new Date();
             deferred.resolve({
@@ -460,15 +460,15 @@ oneApp.config(['$provide', function ($provide) {
             });
             return deferred.promise;
         };
-        
-        $delegate.adGroupAdsPlusUpload.upload = function demo(adGroupId, data) {
+
+        $delegate.adGroupAdsPlusUpload.upload = function demo (adGroupId, data) {
             var deferred = $q.defer(),
                 convertFromApi = function (row) {
                     row.titleLink = {
                         text: row.title,
                         url: row.url !== '' ? row.url : null
                     };
-                    
+
                     row.urlLink = {
                         text: row.url !== '' ? row.url : 'N/A',
                         url: row.url !== '' ? row.url : null
@@ -502,9 +502,9 @@ oneApp.config(['$provide', function ($provide) {
         };
 
         $delegate.adGroupAdsPlusUpload.checkStatus = (function (backup) {
-            return function demo(adGroupId, batchId) {
+            return function demo (adGroupId, batchId) {
                 var deferred = null;
-                if (batchId == 'demo') {
+                if (batchId === 'demo') {
                     deferred = $q.defer();
                     deferred.resolve({
                         status: constants.uploadBatchStatus.DONE
@@ -515,7 +515,7 @@ oneApp.config(['$provide', function ($provide) {
                 }
             };
         }($delegate.adGroupAdsPlusUpload.checkStatus));
-        
+
         $delegate.adGroupAdsPlusTable.get = (function (backup) {
             var applyChanges = function (id, data) {
                 angular.forEach(data.rows, function (r) {
@@ -524,8 +524,8 @@ oneApp.config(['$provide', function ($provide) {
                 });
                 return data;
             };
-            return function demo(id, page, size, startDate, endDate, order) {
-                var config = { params: {} },
+            return function demo (id, page, size, startDate, endDate, order) {
+                var config = {params: {}},
                     deferred = $q.defer(),
                     cacheId = '/api/ad_groups/' + id + '/contentadsplus/table/',
                     cachedResponse = zemDemoCacheService.get(cacheId);
@@ -557,12 +557,12 @@ oneApp.config(['$provide', function ($provide) {
                             deferred.resolve(data);
                         });
                     } else {
-                        // error : refresh 
+                        // error : refresh
                         zemDemoSourcesService.refresh(id).then(function () {
                             deferred.resolve(defaults.emptyTable());
                         });
-                    };
-                    
+                    }
+
                 } else {
                     backup(id, page, size, startDate, endDate, order).then(function (data) {
                         zemDemoSourcesService.refresh(id).then(function () {
@@ -580,7 +580,7 @@ oneApp.config(['$provide', function ($provide) {
         }(resetIfErrorWrapper($delegate.adGroupAdsPlusTable.get)));
 
         $delegate.adGroupAdsPlusTable.getUpdates = (function (backup) {
-            return function demo(id, lastChange) {
+            return function demo (id, lastChange) {
                 var deferred = null,
                     cacheId = '/api/ad_groups/' + id + '/contentadsplus/table/updates/',
                     cachedResponse = zemDemoCacheService.get(cacheId);
@@ -602,16 +602,16 @@ oneApp.config(['$provide', function ($provide) {
             var deferred = $q.defer();
             zemDemoContentAdsService.setBulk(
                 adGroupId, contentAdIdsSelected, contentAdIdsNotSelected, selectedAll,
-                { status_setting: state }
+                {status_setting: state}
             );
-            
-            deferred.resolve({ success: true });
+
+            deferred.resolve({success: true});
             return deferred.promise;
         };
 
         /* Graphs */
         $delegate.dailyStats.listContentAdStats = (function (backup) {
-            return function demo(id, startDate, endDate, metrics) {
+            return function demo (id, startDate, endDate, metrics) {
                 var deferred = null;
                 if (zemDemoAdGroupsService.isNew(id)) {
                     deferred = $q.defer();
@@ -623,14 +623,14 @@ oneApp.config(['$provide', function ($provide) {
         }($delegate.dailyStats.listContentAdStats));
 
         $delegate.dailyStats.list = (function (backup) {
-            return function demo(level, id) {
+            return function demo (level, id) {
                 var deferred = null;
-                if (level == 'campaigns' && newCampaigns[id]) {
+                if (level === 'campaigns' && newCampaigns[id]) {
                     deferred = $q.defer();
                     deferred.resolve(defaults.emptyChart);
                     return deferred.promise;
                 }
-                if (level == 'ad_groups' && zemDemoAdGroupsService.isNew(id)) {
+                if (level === 'ad_groups' && zemDemoAdGroupsService.isNew(id)) {
                     deferred = $q.defer();
                     deferred.resolve(defaults.emptyChart);
                     return deferred.promise;
@@ -638,7 +638,7 @@ oneApp.config(['$provide', function ($provide) {
                 return backup.apply(null, arguments);
             };
         }($delegate.dailyStats.list));
-        
+
         return $delegate;
 
     }]);

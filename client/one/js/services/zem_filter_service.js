@@ -1,7 +1,7 @@
 /* globals JSON */
-"use strict"
+'use strict';
 
-oneApp.factory('zemFilterService', ['$location', function($location) {
+oneApp.factory('zemFilterService', ['$location', function ($location) {
     // Because filteredSources is being watched (through getFilteredSources function) from
     // different controllers, it has to always point to the same array. Special care is taken
     // to never replace the reference (no assignments to this variable) so the array is
@@ -11,7 +11,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
     var showBlacklistedPublisher = false;
     var blacklistedPublisherFilter = null;
 
-    function init(user) {
+    function init (user) {
         if ('zemauth.filter_sources' in user.permissions) {
             var filteredSourcesLocation = $location.search().filtered_sources;
             if (filteredSourcesLocation) {
@@ -29,7 +29,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
     }
 
-    function setFilteredSourcesLocation() {
+    function setFilteredSourcesLocation () {
         if (filteredSources.length > 0) {
             $location.search('filtered_sources', filteredSources.join(','));
         } else {
@@ -37,7 +37,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
     }
 
-    function setShowArchivedLocation() {
+    function setShowArchivedLocation () {
         if (showArchived) {
             $location.search('show_archived', showArchived);
         } else {
@@ -45,7 +45,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
     }
 
-    function setBlacklistedPublishersLocation() {
+    function setBlacklistedPublishersLocation () {
         if (blacklistedPublisherFilter) {
             $location.search('show_blacklisted_publishers', blacklistedPublisherFilter);
         } else {
@@ -53,7 +53,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         }
     }
 
-    function getFilteredSources() {
+    function getFilteredSources () {
         return filteredSources;
     }
 
@@ -67,7 +67,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         return false;
     }
 
-    function isArchivedFilterOn() {
+    function isArchivedFilterOn () {
         return showArchived;
     }
 
@@ -79,7 +79,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         return filteredSources.length > 0;
     }
 
-    function addFilteredSource(sourceId) {
+    function addFilteredSource (sourceId) {
         if (filteredSources.indexOf(sourceId) === -1) {
             filteredSources.push(sourceId);
             filteredSources.sort(function (a, b) { return parseInt(a) - parseInt(b); });
@@ -88,7 +88,7 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         setFilteredSourcesLocation();
     }
 
-    function removeFilteredSource(sourceId) {
+    function removeFilteredSource (sourceId) {
         var ix = filteredSources.indexOf(sourceId);
         if (ix > -1) {
             filteredSources.splice(ix, 1);
@@ -97,13 +97,13 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         setFilteredSourcesLocation();
     }
 
-    function exclusivelyFilterSource(sourceId) {
+    function exclusivelyFilterSource (sourceId) {
         filteredSources.splice(0, filteredSources.length, sourceId);
 
         setFilteredSourcesLocation();
     }
 
-    function removeFiltering() {
+    function removeFiltering () {
         filteredSources.splice(0, filteredSources.length);
 
         setFilteredSourcesLocation();
@@ -113,29 +113,29 @@ oneApp.factory('zemFilterService', ['$location', function($location) {
         setBlacklistedPublishers(null);
     }
 
-    function getShowArchived() {
+    function getShowArchived () {
         return showArchived;
     }
 
-    function setShowArchived(newValue) {
+    function setShowArchived (newValue) {
         showArchived = newValue;
         setShowArchivedLocation();
     }
-    
-    function getBlacklistedPublishers() {
+
+    function getBlacklistedPublishers () {
         return blacklistedPublisherFilter;
     }
 
-    function setBlacklistedPublishers(newValue) {
+    function setBlacklistedPublishers (newValue) {
         blacklistedPublisherFilter = newValue;
         setBlacklistedPublishersLocation();
     }
 
-    function getShowBlacklistedPublishers() {
+    function getShowBlacklistedPublishers () {
         return showBlacklistedPublisher;
     }
 
-    function setShowBlacklistedPublishers(newValue) {
+    function setShowBlacklistedPublishers (newValue) {
         showBlacklistedPublisher = newValue;
     }
 

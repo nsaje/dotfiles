@@ -1,7 +1,7 @@
 /*globals angular,oneApp,constants,options,moment*/
-"use strict";
+'use strict';
 
-oneApp.factory("zemDemoSourcesService", ['$q', '$window', 'demoDefaults', 'zemDemoCacheService', 'zemDemoAdGroupsService', function($q, $window, demoDefaults, zemDemoCacheService, zemDemoAdGroupsService) {
+oneApp.factory('zemDemoSourcesService', ['$q', '$window', 'demoDefaults', 'zemDemoCacheService', 'zemDemoAdGroupsService', function ($q, $window, demoDefaults, zemDemoCacheService, zemDemoAdGroupsService) {
     var adGroupSourcesDelta = {},
         adGroupSourcesTableRows = {},
         apiGetSourcesTable = null,
@@ -14,7 +14,7 @@ oneApp.factory("zemDemoSourcesService", ['$q', '$window', 'demoDefaults', 'zemDe
         },
         refreshAdSources = function (adGroup, rows) {
             var deferred = $q.defer();
-            if (! apiGetSourcesTable) {
+            if (!apiGetSourcesTable) {
                 deferred.reject();
                 return deferred.promise;
             }
@@ -54,24 +54,24 @@ oneApp.factory("zemDemoSourcesService", ['$q', '$window', 'demoDefaults', 'zemDe
             }
         },
         getForAd: function (adGroup, row) {
-            if (! adGroupSourcesTableRows[adGroup]) { return false; }
+            if (!adGroupSourcesTableRows[adGroup]) { return false; }
             row.submission_status = [];
             angular.forEach(adGroupSourcesTableRows[adGroup], function (s) {
                 row.submission_status.push({
-                    status: s.status_setting == 1 ? 2 : 1,
+                    status: s.status_setting === 1 ? 2 : 1,
                     name: s.name,
-                    text: s.status_setting == 1 ? 'Approved / Enabled' : 'Paused'
+                    text: s.status_setting === 1 ? 'Approved / Enabled' : 'Paused'
                 });
             });
             return row;
         },
         get: function (adGroup, sid) {
-            if (! adGroupSourcesDelta[adGroup]) { adGroupSourcesDelta[adGroup] = {}; }
+            if (!adGroupSourcesDelta[adGroup]) { adGroupSourcesDelta[adGroup] = {}; }
             return sid ? adGroupSourcesDelta[adGroup][sid] : adGroupSourcesDelta[adGroup];
         },
         add: function (adGroup, sid, data) {
-            if (! adGroupSourcesDelta[adGroup]) { adGroupSourcesDelta[adGroup] = {}; }
-            if (! adGroupSourcesDelta[adGroup][sid]) { adGroupSourcesDelta[adGroup][sid] = {}; }
+            if (!adGroupSourcesDelta[adGroup]) { adGroupSourcesDelta[adGroup] = {}; }
+            if (!adGroupSourcesDelta[adGroup][sid]) { adGroupSourcesDelta[adGroup][sid] = {}; }
             angular.forEach(data, function (v, k) {
                 adGroupSourcesDelta[adGroup][sid][k] = v;
             });
@@ -84,13 +84,13 @@ oneApp.factory("zemDemoSourcesService", ['$q', '$window', 'demoDefaults', 'zemDe
                 if (!source[k]) { source[k] = v; }
             });
 
-            if (! adGroupSourcesDelta[adGroup]) adGroupSourcesDelta[adGroup] = {};
+            if (!adGroupSourcesDelta[adGroup]) adGroupSourcesDelta[adGroup] = {};
             adGroupSourcesDelta[adGroup][source.id] = source;
 
             allSources = cachedData.sources;
             cachedData.sources = [];
             angular.forEach(allSources, function (s) {
-                if (s.id != source.id) {
+                if (s.id !== source.id) {
                     cachedData.sources.push(s);
                 }
             });
@@ -116,7 +116,7 @@ oneApp.factory("zemDemoSourcesService", ['$q', '$window', 'demoDefaults', 'zemDe
                     pops += 1; // count added items so we can remove them
                 } else {
                     angular.forEach(v, function (value, field) {
-                        if (field == 'id') { return; }
+                        if (field === 'id') { return; }
                         mapper[v.id][field] = value;
                     });
                 }

@@ -1,31 +1,31 @@
 'use strict';
 
-describe('AdGroupSettingsCtrlSpec', function() {
+describe('AdGroupSettingsCtrlSpec', function () {
     var $scope;
 
     beforeEach(module('one'));
 
-    beforeEach(inject(function($rootScope, $controller, _$timeout_, $state) {
+    beforeEach(inject(function ($rootScope, $controller, _$timeout_, $state) {
         $scope = $rootScope.$new();
         $scope.adGroup = {archived: false};
 
         $controller('AdGroupSettingsCtrl', {$scope: $scope});
     }));
 
-    describe('isDefaultTargetRegions', function() {
+    describe('isDefaultTargetRegions', function () {
         beforeEach(function () {
             $scope.settings = {targetRegions: []};
             $scope.defaultSettings = {targetRegions: []};
         });
 
-        it('return true if targetRegions are equal to default targetRegions', function() {
+        it('return true if targetRegions are equal to default targetRegions', function () {
             $scope.settings.targetRegions = ['US', '501'];
             $scope.defaultSettings.targetRegions = ['US', '501'];
 
             expect($scope.isDefaultTargetRegions()).toBe(true);
         });
 
-        it('return true if targetRegions are equal to default targetRegions', function() {
+        it('return true if targetRegions are equal to default targetRegions', function () {
             $scope.settings.targetRegions = ['US', '501'];
             $scope.defaultSettings.targetRegions = ['US', '501', '502'];
 
@@ -33,13 +33,13 @@ describe('AdGroupSettingsCtrlSpec', function() {
         });
     });
 
-    describe('isDefaultTargetDevices', function() {
+    describe('isDefaultTargetDevices', function () {
         beforeEach(function () {
             $scope.settings = {targetDevices: []};
             $scope.defaultSettings = {targetDevices: []};
         });
 
-        it('return true if targetDevices are equal to default targetDevices', function() {
+        it('return true if targetDevices are equal to default targetDevices', function () {
             $scope.settings.targetDevices = [
                 {value: 'mobile', checked: true},
                 {value: 'desktop', checked: false}
@@ -52,7 +52,7 @@ describe('AdGroupSettingsCtrlSpec', function() {
             expect($scope.isDefaultTargetDevices()).toBe(true);
         });
 
-        it('return true if targetDevices are equal to default targetDevices', function() {
+        it('return true if targetDevices are equal to default targetDevices', function () {
             $scope.settings.targetDevices = [
                 {value: 'mobile', checked: true},
                 {value: 'desktop', checked: false}
