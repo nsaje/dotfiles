@@ -51,7 +51,7 @@ def get_reports_api_module(user):
     return reports.api
 
 
-def calculate_flight_time(start_date, end_date):
+def format_flight_time(start_date, end_date):
     start_date_str = start_date.strftime('%m/%d') if start_date else ''
     end_date_str = end_date.strftime('%m/%d') if end_date else ''
 
@@ -69,10 +69,10 @@ def calculate_flight_time(start_date, end_date):
     return flight_time, flight_time_left_days
 
 
-def get_ideal_campaign_spend(user, campaign):
-    today = datetime.datetime.today().date()
+def get_ideal_campaign_spend(user, campaign, until_date=None):
+    at_date = until_date or datetime.datetime.today().date()
     budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
-    return sum( [b.get_ideal_budget_spend(today) for b in budgets] )
+    return sum( [b.get_ideal_budget_spend(at_date) for b in budgets] )
 
 
 def get_total_campaign_spend(user, campaign, until_date=None):

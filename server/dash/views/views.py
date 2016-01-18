@@ -396,7 +396,7 @@ class AdGroupOverview(api_common.BaseApiView):
         settings = []
 
         flight_time, flight_time_left_days =\
-            infobox_helpers.calculate_flight_time(
+            infobox_helpers.format_flight_time(
                 ad_group_settings.start_date,
                 ad_group_settings.end_date
             )
@@ -745,7 +745,7 @@ class CampaignOverview(api_common.BaseApiView):
             end_date = None
 
         flight_time, flight_time_left_days =\
-            infobox_helpers.calculate_flight_time(
+            infobox_helpers.format_flight_time(
                 start_date,
                 end_date
             )
