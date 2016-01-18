@@ -75,20 +75,14 @@ def get_ideal_campaign_spend(user, campaign):
     return sum( [b.get_ideal_budget_spend(today) for b in budgets] )
 
 
-def get_total_campaign_spend(user, campaign):
+def get_total_campaign_spend(user, campaign, until_date=None):
     campaign_budget = dash.budget.CampaignBudget(campaign)
-    return campaign_budget.get_spend()
+    return campaign_budget.get_spend(until_date=until_date)
 
 
 def get_yesterday_total_cost(user, campaign):
-    yesterday_cost = get_reports_api_module(
-        user
-    ).get_yesterday_cost(dict(campaign=campaign))
-    yesterday_total_cost = None
-    if yesterday_cost:
-        yesterday_total_cost = sum(yesterday_cost.values())
-    return yesterday_total_cost
-
+    yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
+    return get_total_campaign_spend(user, campaign, until_date=yesterday)
 
 def get_goal_value(user, campaign, campaign_settings, goal_type):
     # we are interested in reaching the goal by today

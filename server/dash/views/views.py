@@ -501,7 +501,6 @@ class AdGroupOverview(api_common.BaseApiView):
             filled_daily_ratio = min(
                 (yesterday_cost - float(ad_group_daily_budget)) / float(ad_group_daily_budget),
                 1)
-
         yesterday_spend_settings = infobox_helpers.OverviewSetting(
             'Yesterday spend:',
             '${:.2f}'.format(yesterday_cost),
@@ -517,7 +516,6 @@ class AdGroupOverview(api_common.BaseApiView):
             ratio = min(
                 (total_campaign_spend_to_date - ideal_campaign_spend_to_date) / ideal_campaign_spend_to_date,
                 1)
-
         campaign_pacing_settings = infobox_helpers.OverviewSetting(
             'Campaign pacing:',
             '{:.2f}%'.format(ratio * 100),
