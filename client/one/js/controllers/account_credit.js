@@ -1,4 +1,4 @@
-/*globals oneApp*/
+/*globals oneApp, moment*/
 oneApp.controller('AccountCreditCtrl', ['$scope', '$state', '$modal', '$location', 'api', 'zemMoment', function ($scope, $state, $modal, $location, api, zemMoment) {
     function error() {}
     function refresh(updatedId) {
