@@ -2322,7 +2322,7 @@ class AdGroupOverviewTest(TestCase):
 
         tracking_setting = self._get_setting(settings, 'tracking')
         self.assertEqual(tracking_setting['value'], 'Yes')
-        self.assertEqual(tracking_setting['detailsContent'], 'param1=foo&param2=bar')
+        self.assertEqual(tracking_setting['details_content'], 'param1=foo&param2=bar')
 
         yesterday_spend = self._get_setting(settings, 'yesterday')
         self.assertEqual('$0.00', yesterday_spend['value'])
