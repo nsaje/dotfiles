@@ -121,4 +121,4 @@ class Command(ExceptionCommand):
                 )
             )
 
-            zwei_actions.send(actionlogs_to_send)
+        zwei_actions.send(actionlogs_to_send)
