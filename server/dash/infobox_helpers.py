@@ -16,15 +16,15 @@ class OverviewSetting(object):
         self.name = name
         self.value = value
         self.description = description
-        self.detailsLabel = None
-        self.detailsContent = None
+        self.details_label = None
+        self.details_content = None
         self.icon = None
         self.type = setting_type
 
     def comment(self, details_label, details_description):
         ret = copy.deepcopy(self)
-        ret.detailsLabel = details_label
-        ret.detailsContent = details_description
+        ret.details_label = details_label
+        ret.details_content = details_description
         return ret
 
     def performance(self, ok):
