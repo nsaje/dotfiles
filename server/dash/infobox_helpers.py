@@ -76,8 +76,8 @@ def get_ideal_campaign_spend(user, campaign):
 
 
 def get_total_campaign_spend(user, campaign):
-    budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
-    return sum( [budget.get_spend() for budget in budgets] )
+    campaign_budget = dash.budget.CampaignBudget(campaign)
+    return campaign_budget.get_spend()
 
 
 def get_yesterday_total_cost(user, campaign):

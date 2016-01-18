@@ -368,7 +368,6 @@ class AdGroupOverview(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_see_infobox'):
             raise exc.AuthorizationError()
 
-        from pudb import set_trace; set_trace()
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         ad_group_settings = ad_group.get_current_settings()
