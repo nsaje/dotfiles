@@ -34,9 +34,7 @@ oneApp.controller('AccountCreditCtrl', ['$scope', '$state', '$modal', '$location
         creditStartDate = moment(creditStartDate, 'MM/DD/YYYY').toDate();
         creditEndDate = moment(creditEndDate, 'MM/DD/YYYY').toDate();
 
-        if (urlStartDate > creditEndDate) { return false; }
-        if (urlEndDate < creditStartDate) { return false; }
-        return true;
+        return urlStartDate <= creditEndDate && urlEndDate >= creditStartDate;
     };
 
     $scope.$watch('dateRange', function(newValue, oldValue) {
