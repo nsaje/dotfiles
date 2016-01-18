@@ -290,39 +290,6 @@ class ApiPublishersTest(TestCase):
         self.assertIn('(domain IN (%s,%s) AND adgroup_id=%s AND exchange=%s)', self._get_query())
 
 
-@mock.patch('reports.redshift.get_cursor')
-class ApiPublishersInsertTest(TestCase):
-    def test_ob_insert_adgroup_date(self, mock_get_cursor):
-        mock_cursor = mock.Mock()
-        mock_get_cursor.return_value = mock_cursor
-
-        api_publishers.ob_insert_adgroup_date(datetime.date(2015,2,1),
-                                              3,
-                                              "outbrain",
-                                              [
-                                                  {
-                                                      "ob_id": "AAAABBBBB",
-                                                      "clicks": 20,
-                                                      "name": "CNN money",
-                                                      "url": "http://money.cnn.com",
-                                                  },
-                                                  {
-                                                      "ob_id": "AAAABBBBB",
-                                                      "clicks": 80,
-                                                      "name": "CNN money",
-                                                      "url": "http://money.cnn.com",
-                                                  }
-                                              ],
-                                              200
-                                              )
-
-        mock_cursor.execute.assert_has_calls([
-            mock.call('DELETE FROM "ob_publishers_2" WHERE (adgroup_id=%s AND date=%s AND exchange=%s)', [3, datetime.date(2015, 2, 1), 'outbrain']),
-            mock.call('INSERT INTO ob_publishers_2 (date,adgroup_id,exchange,name,clicks,cost_micro,ob_id) VALUES (%s,%s,%s,%s,%s,%s,%s),(%s,%s,%s,%s,%s,%s,%s)',
-                      [datetime.date(2015, 2, 1), 3, 'outbrain', 'CNN money', 20, 40000000000.0, 'AAAABBBBB', datetime.date(2015, 2, 1), 3, 'outbrain', 'CNN money', 80, 160000000000.0, 'AAAABBBBB'])
-        ])
-
-
 class ApiPublishersMapperTest(TestCase):
     def test_map_rowdict_to_output_nones(self):
         input = {'impressions_sum': None,
