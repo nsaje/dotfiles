@@ -832,7 +832,6 @@ class CampaignOverview(api_common.BaseApiView):
         return settings, is_delivering
 
     def get_campaign_status(self, campaign):
-        # TODO: Duplicate from account campaigns view
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)
         ad_groups_settings = models.AdGroupSettings.objects.filter(
             ad_group__in=ad_groups
