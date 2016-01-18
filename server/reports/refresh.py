@@ -297,6 +297,8 @@ def _get_raw_b1_pub_data(s3_key):
             'adgroup_id': int(row[1]),
             'exchange': row[2],
             'domain': row[3],
+            'name': row[3],
+            'external_id': '',
             'clicks': int(row[4]),
             'impressions': int(row[5]),
             'cost_micro': int(row[6]),
@@ -326,6 +328,7 @@ def _get_raw_ob_pub_data(s3_keys):
             row['adgroup_id'] = ad_group_id
             row['date'] = date
             row['exchange'] = 'outbrain'
+            row['external_id'] = row['ob_id']
             row['cost_micro'] = 0
             if total_clicks * total_cost > 0:
                 row['cost_micro'] = float(row['clicks']) / total_clicks * total_cost
@@ -344,19 +347,34 @@ def _get_latest_ob_pub_data(date):
     return _get_raw_ob_pub_data(s3_keys)
 
 
+def _get_latest_pub_data(date):
+    ob_data = _get_latest_ob_pub_data(date)
+    b1_data = _get_latest_b1_pub_data(date)
+    return ob_data + b1_data
+
+
 def process_b1_publishers_stats(date):
+    # TODO: remove when sure that data written to the single new table is ok
     data = _get_latest_b1_pub_data(date)
     _augment_pub_data_with_budgets(data)
     return put_pub_stats_to_s3(date, data, LOAD_B1_PUB_STATS_KEY_FMT)
 
 
 def process_ob_publishers_stats(date):
+    # TODO: remove when sure that data written to the single new table is ok
     data = _get_latest_ob_pub_data(date)
     _augment_pub_data_with_budgets(data)
     return put_pub_stats_to_s3(date, data, LOAD_OB_PUB_STATS_KEY_FMT)
 
 
+def process_publishers_stats(date):
+    data = _get_latest_pub_data(date)
+    _augment_pub_data_with_budgets(data)
+    return put_pub_stats_to_s3(date, data, LOAD_OB_PUB_STATS_KEY_FMT)
+
+
 def refresh_b1_publishers_data(date):
+    # TODO: remove when sure that data written to the single new table is ok
     s3_key = process_b1_publishers_stats(date)
     with transaction.atomic(using=settings.STATS_DB_NAME):
         redshift.delete_publishers_b1(date)
@@ -364,10 +382,18 @@ def refresh_b1_publishers_data(date):
 
 
 def refresh_ob_publishers_data(date):
+    # TODO: remove when sure that data written to the single new table is ok
     s3_key = process_ob_publishers_stats(date)
     with transaction.atomic(using=settings.STATS_DB_NAME):
         redshift.delete_publishers_ob(date)
         redshift.load_publishers_ob(s3_key)
+
+
+def refresh_publishers_data(date):
+    s3_key = process_publishers_stats(date)
+    with transaction.atomic(using=settings.STATS_DB_NAME):
+        redshift.delete_publishers(date)
+        redshift.load_publishers(s3_key)
 
 
 def refresh_contentadstats(date, campaign):
