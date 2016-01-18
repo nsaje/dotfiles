@@ -224,8 +224,7 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'source',
-        'credentials_',
-        'auto_add'
+        'credentials_'
     )
 
     def credentials_(self, obj):
