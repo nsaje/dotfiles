@@ -1,0 +1,30 @@
+CREATE VIEW joint_publishers_1_4 AS
+SELECT
+	b1_publishers_1.date,
+	b1_publishers_1.adgroup_id,
+	b1_publishers_1.exchange,
+	b1_publishers_1.domain,
+	b1_publishers_1.domain AS external_id,
+	b1_publishers_1.clicks,
+	b1_publishers_1.impressions,
+	b1_publishers_1.cost_micro,
+	b1_publishers_1.data_cost_micro,
+	b1_publishers_1.license_fee_nano as license_fee_nano,
+	b1_publishers_1.effective_cost_nano as effective_cost_nano,
+	b1_publishers_1.effective_data_cost_nano as effective_data_cost_nano
+FROM b1_publishers_1
+UNION
+SELECT
+	ob_publishers_2.date,
+	ob_publishers_2.adgroup_id,
+	ob_publishers_2.exchange,
+	ob_publishers_2.name,
+	ob_publishers_2.ob_id AS external_id,
+	ob_publishers_2.clicks,
+	ob_publishers_2.impressions,
+	ob_publishers_2.cost_micro,
+	0 as data_cost_micro,
+	ob_publishers_2.license_fee_nano as license_fee_nano,
+	ob_publishers_2.effective_cost_nano as effective_cost_nano,
+	ob_publishers_2.effective_data_cost_nano as effective_data_cost_nano
+FROM ob_publishers_2;

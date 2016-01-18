@@ -26,7 +26,8 @@
     "protractor": "~1.5.0",
     "grunt-bower-concat": "~0.4.0",
     "grunt-contrib-cssmin": "~0.10.0",
-    "grunt-jslint": "~1.1.14"
+    "grunt-jslint": "~1.1.14",
+    "codeclimate-test-reporter": "~0.1.1"
   },
   "scripts": {
     "postinstall": "node node_modules/protractor/bin/webdriver-manager update"
