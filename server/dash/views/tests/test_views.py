@@ -1927,7 +1927,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         settings1 = adg1.get_current_settings()
 
         self.assertEqual(
-            'Blacklisted the following publishers zemanta.com on Adiant.',
+            'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
             settings1.changes_text
         )
 
@@ -1935,9 +1935,17 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         settings9 = adg9.get_current_settings()
 
         self.assertEqual(
-            'Blacklisted the following publishers zemanta.com on Adiant.',
+            'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
             settings9.changes_text
         )
+
+        useractionlogs = models.UserActionLog.objects.filter(
+            action_type=constants.UserActionType.SET_CAMPAIGN_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(2, useractionlogs.count())
+        for useractionlog in useractionlogs:
+            self.assertTrue(useractionlog.ad_group.id in (1, 9))
+
 
     @patch('reports.redshift.get_cursor')
     def test_post_campaign_all_but_blacklist_1(self, cursor):

@@ -1,3 +1,5 @@
+/*exported defaults, options*/
+
 var constants = {
     adGroupSettingsState: {
         ACTIVE: 1,

@@ -39,7 +39,7 @@ class RSPublishersModel(redshift.RSModel):
 
     ]
     # fields that are allowed for breakdowns (app-based naming)
-    ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'date'])
+    ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'ad_group', 'date'])
 
     # 	SQL NAME                           APP NAME            OUTPUT TRANSFORM        AGGREGATE                                  ORDER BY function
     FIELDS = [
