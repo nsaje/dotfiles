@@ -64,7 +64,7 @@ module.exports = function(config) {
             {
                 type: 'text-summary',
                 dir: 'coverage/text/',
-                file: 'coverage.txt'
+                file: 'coverage.txt',
             },
             {
                 type: 'html',
@@ -73,10 +73,13 @@ module.exports = function(config) {
             {
                 type: 'cobertura',
                 dir: 'coverage/cobertura',
-                file: 'cobertura.xml'
-            }
-
-        ]
+                file: 'cobertura.xml',
+            },
+            {
+                type: 'lcov',
+                dir: 'coverage/lcov',
+            },
+        ],
     },
 
 
@@ -84,7 +87,7 @@ module.exports = function(config) {
         'karma-jasmine',
         'karma-chrome-launcher',
         'karma-coverage',
-        'karma-junit-reporter'
-    ]
+        'karma-junit-reporter',
+    ],
   });
 };
