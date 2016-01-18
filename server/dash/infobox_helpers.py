@@ -70,21 +70,14 @@ def calculate_flight_time(start_date, end_date):
 
 
 def get_ideal_campaign_spend(user, campaign):
-    # I use campaign budget line items here
-    # (which aren't yet in production - 2015/12/09)
     today = datetime.datetime.today().date()
     budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
     return sum( [b.get_ideal_budget_spend(today) for b in budgets] )
 
 
 def get_total_campaign_spend(user, campaign):
-    # TODO: this depends on new budget system to come in place
-    # so it's disabled for the moment
-    # today = datetime.datetime.today().date()
-    # budgets = models.BudgetLineItem.objects.filter(campaign=campaign)
-    # return sum( [budget.get_spend() for budget in budgets] )
-    campaign_budget = dash.budget.CampaignBudget(campaign)
-    return campaign_budget.get_spend()
+    budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
+    return sum( [budget.get_spend() for budget in budgets] )
 
 
 def get_yesterday_total_cost(user, campaign):
