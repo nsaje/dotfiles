@@ -9,7 +9,7 @@ from dash import constants
 from dash import consistency
 
 
-class SettingsStateConsistenceTestCase(test.TestCase):
+class SettingsStateConsistencyTestCase(test.TestCase):
     fixtures = ['test_models', 'test_consistency']
 
     def setUp(self):
@@ -17,17 +17,21 @@ class SettingsStateConsistenceTestCase(test.TestCase):
         self.settings_state_consistency = consistency.SettingsStateConsistence(self.ad_group_source)
 
     @patch('dash.consistency.SettingsStateConsistence._get_latest_state')
-    def test_is_consistent(self, mock_get_latest_state):
+    def test_is_consistent_equivalent_state(self, mock_get_latest_state):
         state = models.AdGroupSourceState.objects.get(pk=1)
         mock_get_latest_state.return_value = state
         consistent = self.settings_state_consistency.is_consistent()
         self.assertTrue(consistent)
 
+    @patch('dash.consistency.SettingsStateConsistence._get_latest_state')
+    def test_is_consistent_different_state(self, mock_get_latest_state):
         state = models.AdGroupSourceState.objects.get(pk=2)
         mock_get_latest_state.return_value = state
         consistent = self.settings_state_consistency.is_consistent()
         self.assertFalse(consistent)
 
+    @patch('dash.consistency.SettingsStateConsistence._get_latest_state')
+    def test_is_consistent_equivalent_and_older_state(self, mock_get_latest_state):
         settings = self.ad_group_source.get_current_settings()
         state = models.AdGroupSourceState.objects.get(pk=2)
         state.created_dt = settings.created_dt - datetime.timedelta(days=1)
@@ -35,6 +39,8 @@ class SettingsStateConsistenceTestCase(test.TestCase):
         consistent = self.settings_state_consistency.is_consistent()
         self.assertTrue(consistent)
 
+    @patch('dash.consistency.SettingsStateConsistence._get_latest_state')
+    def test_is_consistent_no_state(self, mock_get_latest_state):
         state = None
         mock_get_latest_state.return_value = state
         consistent = self.settings_state_consistency.is_consistent()
@@ -51,7 +57,7 @@ class SettingsStateConsistenceTestCase(test.TestCase):
     def test_get_needed_state_updates_with_adgroup_inactive(self):
         ad_group_settings = self.ad_group_source.ad_group.get_current_settings()
         ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
-        ad_group_settings.save({})
+        ad_group_settings.save(None)
 
         changes = self.settings_state_consistency.get_needed_state_updates()
         settings = self.ad_group_source.get_current_settings()
@@ -61,7 +67,7 @@ class SettingsStateConsistenceTestCase(test.TestCase):
 
     def test_get_state_changes(self):
         state = models.AdGroupSourceState.objects.get(pk=1)
-        settings = models.AdGroupSourceState.objects.get(pk=1)
+        settings = models.AdGroupSourceSettings.objects.get(pk=1)
         changes = self.settings_state_consistency._get_state_changes(state, settings)
         self.assertEqual(changes, {})
 
@@ -72,7 +78,6 @@ class SettingsStateConsistenceTestCase(test.TestCase):
         self.assertNotIn('state', changes)
 
         state = models.AdGroupSourceState.objects.get(pk=2)
-        settings = models.AdGroupSourceState.objects.get(pk=1)
         changes = self.settings_state_consistency._get_state_changes(state, settings)
         self.assertEqual(changes['cpc_cc'], settings.cpc_cc)
         self.assertEqual(changes['daily_budget_cc'], settings.daily_budget_cc)
