@@ -613,6 +613,7 @@ class CampaignAdGroups(api_common.BaseApiView):
         return self.create_api_response(response)
 
     def _create_ad_group(self, campaign, request):
+        actions = []
         with transaction.atomic():
             ad_group = models.AdGroup(
                     name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
@@ -620,7 +621,9 @@ class CampaignAdGroups(api_common.BaseApiView):
             )
             ad_group.save(request)
             ad_group_settings = self._create_new_settings(ad_group, request)
-            actions = self._add_media_sources(ad_group, ad_group_settings, request)
+            if request.user.has_perm('zemauth.add_media_sources_automatically'):
+                media_sources_actions = self._add_media_sources(ad_group, ad_group_settings, request)
+                actions.extend(media_sources_actions)
 
         return ad_group, ad_group_settings, actions
 

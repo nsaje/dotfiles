@@ -219,8 +219,8 @@ class CampaignAdGroups(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.get(pk=1)
-        self.client.login(username=self.user.email, password='secret')
+        user = User.objects.get(pk=1)
+        self.client.login(username=user.email, password='secret')
 
     @patch('utils.redirector_helper.insert_adgroup')
     @patch('actionlog.zwei_actions.send')
@@ -255,13 +255,24 @@ class CampaignAdGroups(TestCase):
     def test_create_ad_group(self):
         campaign = models.Campaign.objects.get(pk=1)
         request = HttpRequest()
-        request.user = self.user
+        request.user = User.objects.get(pk=1)
         view = views.CampaignAdGroups()
         ad_group, ad_group_settings, actions = view._create_ad_group(campaign, request)
 
         self.assertIsNotNone(ad_group)
         self.assertIsNotNone(ad_group_settings)
         self.assertEqual(len(actions), 1)
+
+    def test_create_ad_group_no_add_media_sources_automatically_permission(self):
+        campaign = models.Campaign.objects.get(pk=1)
+        request = HttpRequest()
+        request.user = User.objects.get(pk=2)
+        view = views.CampaignAdGroups()
+        ad_group, ad_group_settings, actions = view._create_ad_group(campaign, request)
+
+        self.assertIsNotNone(ad_group)
+        self.assertIsNotNone(ad_group_settings)
+        self.assertEqual(len(actions), 0)
 
 
     @patch('actionlog.api.create_campaign')
