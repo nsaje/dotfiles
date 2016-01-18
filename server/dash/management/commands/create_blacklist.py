@@ -78,7 +78,8 @@ class Command(ExceptionCommand):
                 clean_domain = clean_domain[:-1]
 
             if clean_domain != domain:
-                print("Changing {} to {}, accept by pressing enter, or enter a correction:".format(domain, clean_domain))
+                print("Changing {} to {}, accept by pressing enter, or enter a correction:".format(domain,
+                                                                                                   clean_domain))
 
                 response = raw_input()
 
@@ -92,7 +93,9 @@ class Command(ExceptionCommand):
     def get_sources(self, ad_group):
         ad_group_sources = AdGroupSource.objects.filter(ad_group=ad_group)
 
-        return [ad_group_source.source for ad_group_source in ad_group_sources if not ad_group_source.source.source_type.type in UNSUPPORTED_SOURCES]
+        return [ad_group_source.source
+                for ad_group_source in ad_group_sources
+                if ad_group_source.source.source_type.type not in UNSUPPORTED_SOURCES]
 
     def combine(self, ad_group, domains, sources):
         combination = []
