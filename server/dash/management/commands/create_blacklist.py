@@ -11,11 +11,12 @@ from actionlog import zwei_actions
 from dash import api
 from dash.constants import PublisherStatus
 from dash.constants import PublisherBlacklistLevel
+from dash.constants import SourceType
 from dash.models import AdGroup
 from dash.models import AdGroupSource
 
 
-UNSUPPORTED_SOURCES = ['Gravity', 'Outbrian', 'Yahoo']
+UNSUPPORTED_SOURCES = [SourceType.GRAVITY, SourceType.OUTBRAIN, SourceType.YAHOO]
 
 
 class Command(ExceptionCommand):
@@ -80,7 +81,7 @@ class Command(ExceptionCommand):
                 print("Changing {} to {}, accept by pressing enter, or enter a correction:".format(domain, clean_domain))
 
                 response = raw_input()
- 
+
                 if len(response) > 0:
                     clean_domain = response
 
@@ -91,7 +92,7 @@ class Command(ExceptionCommand):
     def get_sources(self, ad_group):
         ad_group_sources = AdGroupSource.objects.filter(ad_group=ad_group)
 
-        return [ad_group_source.source for ad_group_source in ad_group_sources if not ad_group_source.source.name in UNSUPPORTED_SOURCES]
+        return [ad_group_source.source for ad_group_source in ad_group_sources if not ad_group_source.source.source_type.type in UNSUPPORTED_SOURCES]
 
     def combine(self, ad_group, domains, sources):
         combination = []
