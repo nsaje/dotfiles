@@ -676,6 +676,14 @@ def update_content_ad_source_state(content_ad_source, data):
     content_ad_source.save()
 
 
+def update_ad_group_redirector_settings(ad_group, ad_group_settings):
+    redirector_helper.insert_adgroup(ad_group.id,
+                                     ad_group_settings.get_tracking_codes(),
+                                     ad_group_settings.enable_ga_tracking,
+                                     ad_group_settings.enable_adobe_tracking,
+                                     ad_group_settings.adobe_tracking_param)
+
+
 def order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=True, iab_update=False):
     changes = current_settings.get_setting_changes(new_settings)
 
@@ -692,10 +700,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     # this way the ad groups settings are kept consistent between external sources, z1 and
     # redirector
     if current_settings.id is None or has_tracking_changes:
-        redirector_helper.insert_adgroup(ad_group.id, new_settings.get_tracking_codes(),
-                                         new_settings.enable_ga_tracking,
-                                         new_settings.enable_adobe_tracking,
-                                         new_settings.adobe_tracking_param)
+        update_ad_group_redirector_settings(ad_group, new_settings)
 
     # add tracking_code key if any change in tracking settings, so that the tracking codes
     # get recalculated and propagated to external sources

@@ -33,7 +33,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="item in activeCredit" ng-class="{ 'row-updated': item.id == updatedId }">
+                <tr ng-repeat="item in activeCredit" ng-class="{ 'row-updated': item.id == updatedId, 'row-not-selected': !isSelected(item.startDate, item.endDate) }">
                     <td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>
@@ -79,7 +79,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="item in pastCredit">
+                <tr ng-repeat="item in pastCredit" ng-class="{ 'row-not-selected': !isSelected(item.startDate, item.endDate) }">
                     <td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>

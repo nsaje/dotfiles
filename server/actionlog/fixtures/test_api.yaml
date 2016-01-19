@@ -436,7 +436,7 @@
         modified_dt: '2015-07-14T09:58:21'
         modified_by: 1
         campaign: 1
-        name: 'test adgroup 7'
+        name: 'test adgroup 9'
     model: dash.adgroup
     pk: 9
 
@@ -795,6 +795,16 @@
         daily_budget_cc: 23
     model: dash.defaultsourcesettings
     pk: 3
+
+-   fields:
+        source: 9
+        credentials: 3
+        auto_add: False
+        params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
+        mobile_cpc_cc: 0.24
+        daily_budget_cc: 24
+    model: dash.defaultsourcesettings
+    pk: 4
 
 
 # test article
