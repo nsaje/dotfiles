@@ -12,7 +12,7 @@ import reports.api_contentads
 
 class OverviewSetting(object):
 
-    def __init__(self, name, value, description, tooltip=None, setting_type='setting'):
+    def __init__(self, name='', value='', description='', tooltip=None, setting_type='setting'):
         self.name = name
         self.value = value
         self.description = description
@@ -72,7 +72,7 @@ def format_flight_time(start_date, end_date):
 def get_ideal_campaign_spend(user, campaign, until_date=None):
     at_date = until_date or datetime.datetime.today().date()
     budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
-    return sum( [b.get_ideal_budget_spend(at_date) for b in budgets] )
+    return sum([b.get_ideal_budget_spend(at_date) for b in budgets])
 
 
 def get_total_campaign_spend(user, campaign, until_date=None):
@@ -83,6 +83,7 @@ def get_total_campaign_spend(user, campaign, until_date=None):
 def get_yesterday_total_cost(user, campaign):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
     return get_total_campaign_spend(user, campaign, until_date=yesterday)
+
 
 def get_goal_value(user, campaign, campaign_settings, goal_type):
     # we are interested in reaching the goal by today
