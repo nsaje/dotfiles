@@ -72,7 +72,10 @@ def format_flight_time(start_date, end_date):
 def get_ideal_campaign_spend(user, campaign, until_date=None):
     at_date = until_date or datetime.datetime.today().date()
     budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
-    return sum([b.get_ideal_budget_spend(at_date) for b in budgets])
+
+    all_budget_spends_at_date = [b.get_ideal_budget_spend(at_date) for b in budgets]
+    print all_budget_spends_at_date
+    return sum(all_budget_spends_at_date)
 
 
 def get_total_campaign_spend(user, campaign, until_date=None):

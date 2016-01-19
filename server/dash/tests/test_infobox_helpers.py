@@ -23,27 +23,114 @@ class InfoBoxHelpersTest(TestCase):
 
     def test_get_ideal_campaign_spend(self):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
+        campaign = ad_group.campaign
+        user = zemauth.models.User.objects.get(pk=1)
 
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=100)
 
         credit = dash.models.CreditLineItem.objects.create(
-            account=ad_group.campaign.account,
+            account=campaign.account,
             start_date=start_date,
             end_date=end_date,
             amount=100,
             status=dash.constants.CreditLineItemStatus.SIGNED,
-            created_by=zemauth.models.User.objects.get(pk=1)
+            created_by=user,
         )
 
         budget = dash.models.BudgetLineItem.objects.create(
-            campaign=ad_group.campaign,
+            campaign=campaign,
             credit=credit,
             amount=100,
             start_date=start_date,
             end_date=end_date,
-            created_by=zemauth.models.User.objects.get(pk=1)
+            created_by=user,
         )
+
+        # ideal spend should be 0, 50% at half and 100% at the end
+        # of credit
+
+        self.assertEqual(
+            0,
+            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, start_date)
+        )
+
+        middle = (start_date + (end_date - start_date) / 2)
+
+        self.assertEqual(
+            budget.amount / 2,
+            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, middle)
+        )
+
+        self.assertEqual(
+            budget.amount,
+            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, end_date)
+        )
+
+    def test_get_ideal_campaign_spend_multiple_nonoverlapping_budgets(self):
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        campaign = ad_group.campaign
+        user = zemauth.models.User.objects.get(pk=1)
+
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=100)
+
+        credit = dash.models.CreditLineItem.objects.create(
+            account=campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=30,
+            start_date=start_date,
+            end_date=start_date + datetime.timedelta(days=30),
+            created_by=user,
+        )
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=30,
+            start_date=start_date + datetime.timedelta(days=31),
+            end_date=start_date + datetime.timedelta(days=61),
+            created_by=user,
+        )
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=40,
+            start_date=start_date + datetime.timedelta(days=62),
+            end_date=start_date + datetime.timedelta(days=100),
+            created_by=user,
+        )
+
+        # ideal spend should be 0, 50% at half and 100% at the end
+        # of credit
+
+        self.assertEqual(
+            0,
+            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, start_date)
+        )
+
+        middle = (start_date + (end_date - start_date) / 2)
+
+        self.assertEqual(
+            50,
+            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, middle)
+        )
+
+        self.assertEqual(
+            100,
+            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, end_date)
+        )
+
 
     def test_get_total_campaign_spend(self):
         pass
