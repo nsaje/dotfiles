@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 oneApp.directive('zemSelectionMenu', function () {
     return {
@@ -10,7 +10,7 @@ oneApp.directive('zemSelectionMenu', function () {
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
             var selectAllCheckbox = $element.find('#zem-all-checkbox')[0];
 
-            $scope.$watch('config.partialSelection', function (newVal, oldVal) {
+            $scope.$watch('config.partialSelection', function(newVal, oldVal) {
                 if (newVal === oldVal) {
                     return;
                 }
@@ -18,7 +18,7 @@ oneApp.directive('zemSelectionMenu', function () {
                 selectAllCheckbox.indeterminate = newVal;
             });
 
-            $scope.selectAll = function (ev) {
+            $scope.selectAll = function(ev) {
                 if ($scope.config.partialSelection) {
                     // if checkbox is in ideterminate state,
                     // clear selection upon click

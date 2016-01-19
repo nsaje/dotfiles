@@ -10,9 +10,9 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', 'api', function ($s
     $scope.comment = '';
     $scope.requestInProgress = false;
 
-    $scope.getBudget = function () {
+    $scope.getBudget = function() {
         $scope.requestInProgress = true;
-
+        
         api.campaignBudget.get($state.params.id).then(
             function (data) {
                 $scope.total = data.total;
@@ -22,19 +22,19 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', 'api', function ($s
             },
             function (data) {
                 // error
-                return;
+                return
             }
         ).finally(function () {
             $scope.requestInProgress = false;
         });
     };
 
-    $scope.saveBudget = function () {
+    $scope.saveBudget = function() {
         $scope.requestInProgress = true;
 
         api.campaignBudget.save($state.params.id, {
-            amount: $scope.amount,
-            action: $scope.action,
+            amount: $scope.amount, 
+            action: $scope.action, 
             comment: $scope.comment
         }).then(
             function (data) {
@@ -56,15 +56,15 @@ oneApp.controller('CampaignBudgetCtrl', ['$scope', '$state', 'api', function ($s
         });
     };
 
-    $scope.allocateBudget = function () {
+    $scope.allocateBudget = function() {
         $scope.action = 'allocate';
         $scope.saveBudget();
     };
 
-    $scope.revokeBudget = function () {
+    $scope.revokeBudget = function() {
         $scope.action = 'revoke';
         $scope.saveBudget();
-    };
+    }
 
     $scope.getBudget();
 

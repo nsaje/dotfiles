@@ -11,11 +11,11 @@ describe('CampaignAgencyCtrl', function () {
             $q = _$q_;
             $scope = $rootScope.$new();
 
-            var mockApiFunc = function () {
+            var mockApiFunc = function() {
                 return {
-                    then: function () {
+                    then: function() {
                         return {
-                            finally: function () {}
+                            finally: function() {}
                         };
                     }
                 };

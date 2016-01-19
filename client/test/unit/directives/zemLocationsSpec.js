@@ -1,6 +1,6 @@
 'use strict';
 
-describe('zemLocations', function () {
+describe('zemLocations', function() {
     var $scope, element, isolate;
     var data = [];
 
@@ -8,11 +8,11 @@ describe('zemLocations', function () {
 
     beforeEach(module('one'));
 
-    beforeEach(inject(function ($compile, $rootScope) {
+    beforeEach(inject(function($compile, $rootScope) {
         $scope = $rootScope.$new();
 
         $scope.selectedCodes = [];
-        $scope.hasPermission = function () { return true; };
+        $scope.hasPermission = function() { return true; };
 
         element = $compile(template)($scope);
 
@@ -20,26 +20,26 @@ describe('zemLocations', function () {
         isolate = element.isolateScope();
     }));
 
-    var addLocation = function (code) {
+    var addLocation = function(code) {
         isolate.selectedLocationCode = code;
         isolate.addLocation();
         $scope.$digest();
     };
 
-    it('adds a new location', function () {
+    it('adds a new location', function() {
         addLocation('US');
         addLocation('GB');
         expect($scope.selectedCodes).toEqual(['US', 'GB']);
     });
 
-    it('removes a location', function () {
+    it('removes a location', function() {
         $scope.selectedCodes = ['US', 'GB'];
         $scope.$digest();
         isolate.removeSelectedLocation({code: 'GB'});
         expect($scope.selectedCodes).toEqual(['US']);
     });
 
-    it('can undo when DMA is added and US is already selected', function () {
+    it('can undo when DMA is added and US is already selected', function() {
         $scope.selectedCodes = ['US', 'GB', 'SI'];
         $scope.$digest();
         expect($scope.selectedCodes).toEqual(['US', 'GB', 'SI']);
@@ -57,7 +57,7 @@ describe('zemLocations', function () {
         expect($scope.selectedCodes).toEqual(['US', 'GB', 'SI']);
     });
 
-    it('can undo when US is added and DMA\'s are already selected', function () {
+    it('can undo when US is added and DMA\'s are already selected', function() {
         $scope.selectedCodes = ['693', 'GB', 'SI'];
         $scope.$digest();
         expect($scope.selectedCodes).toEqual(['693', 'GB', 'SI']);
@@ -75,7 +75,7 @@ describe('zemLocations', function () {
         expect($scope.selectedCodes).toEqual(['693', 'GB', 'SI']);
     });
 
-    it('can undo when a US state is added and US is already selected', function () {
+    it('can undo when a US state is added and US is already selected', function() {
         $scope.selectedCodes = ['US', 'GB', 'SI'];
         $scope.$digest();
         expect($scope.selectedCodes).toEqual(['US', 'GB', 'SI']);
@@ -93,7 +93,7 @@ describe('zemLocations', function () {
         expect($scope.selectedCodes).toEqual(['US', 'GB', 'SI']);
     });
 
-    it('can undo when US is added and US States are already selected', function () {
+    it('can undo when US is added and US States are already selected', function() {
         $scope.selectedCodes = ['US-AL', 'GB', 'SI'];
         $scope.$digest();
         expect($scope.selectedCodes).toEqual(['US-AL', 'GB', 'SI']);

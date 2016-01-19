@@ -1,8 +1,8 @@
 /*global $,oneApp*/
-'use strict';
+"use strict";
 
 $zemLazyPopoverDirective.$inject = ['$http', '$templateCache', '$compile', '$parse', '$timeout', '$position', '$document'];
-function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $timeout, $position, $document) {
+function $zemLazyPopoverDirective($http, $templateCache, $compile, $parse, $timeout, $position, $document) {
     // zem-lazy-popover-template = path to template (evaluated)
     // zem-lazy-popover-text = text content (safe by default, evaulated)
     // zem-lazy-popover-html-unsafe = html (evaluated)
@@ -11,19 +11,19 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
     // zem-lazy-popover-animation-class = fade
     // zem-lazy-popover-append-to-body = true/false
     // zem-lazy-popover-event = mouseleave/click (mouseleave by default)
-
+    
     var entityMap = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
     };
 
-    function sanitizeString (str) {
+    function sanitizeString(str) {
         return String(str).replace(/[&<>]/g, function (s) {
             return entityMap[s];
-        });
+        });    
     }
-
+    
     // We have a global one-popup policy, so here's the previous one to close
     var closeExisting = null;
     var transitionTimeout = null;
@@ -33,7 +33,7 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
             var appendToBody = false;
             var ttScope = null;
             var tooltip = null;
-            var event = attrs.zemLazyPopoverEvent || 'mouseleave';
+            var event = attrs.zemLazyPopoverEvent || "mouseleave";
 
             var positionTooltip = function () {
                 if (!tooltip) { return; }
@@ -44,7 +44,7 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
                 tooltip.css( ttPosition );
             };
 
-            function removeTooltip () {
+            function removeTooltip() {
                 transitionTimeout = null;
                 if (tooltip) {
                     tooltip.remove();
@@ -55,58 +55,58 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
                     ttScope = null;
                 }
             }
-
-            var hide = function () {
+            
+            var hide = function() {
                 // This function hides the tooltip
                 // it's implemented by removing the tooltip entirely from DOM and angular
                 // Add fade commands
                 if (tooltip) {
-                    tooltip.removeClass('in');
-                    tooltip.addClass('out');
+                    tooltip.removeClass("in");
+                    tooltip.addClass("out");
                 }
 
-
-                // Last thing before destorying the scope is removing the
-
+                
+                // Last thing before destorying the scope is removing the 
+                        
                 if (ttScope) {
                     // If there's fadeout or similar animation, wait a bit with removal
                     if (ttScope.animationClass) {
                         // If transition-out has already been initiated, we are on the way out anyway
                         if ( !transitionTimeout ) {
                            // We save the function for closing the current tooltip, so if we're displaying a different one we can close it earlier han timeout
-                            transitionTimeout = $timeout(removeTooltip, 500);
+                           transitionTimeout = $timeout(removeTooltip, 500);
                         }
                     } else {
                         removeTooltip();
                     }
-                }
+                };
                 element.off(event, hide);
             };
 
             element.on('$destroy', hide);
-
-            element.on('mouseenter', function () {
+            
+            element.on("mouseenter", function() {
                 // If we have a timeout set, cancel it and add in classes
                 if ( transitionTimeout ) {
                     $timeout.cancel( transitionTimeout );
                     transitionTimeout = null;
-                }                                    // If there's any other popup active, close it immediately
+                }                                    // If there's any other popup active, close it immediately   
                 if (closeExisting) {
-                    closeExisting();
+                  closeExisting();
                 }
                 closeExisting = removeTooltip;
-
+ 
                 // If the scope already exists, do nothing
                 if (ttScope) {
-                    return;
+                    return
                 }
                 // Before we start creating a new popup, check if there's any content
                 var templateUrl, templateHtml;
                 if (angular.isDefined(attrs.zemLazyPopoverTemplate)) {
-                    templateUrl = $parse(attrs.zemLazyPopoverTemplate)(scope);
-                }
+                    templateUrl = $parse(attrs.zemLazyPopoverTemplate)(scope);               
+                } 
                 if (angular.isDefined(attrs.zemLazyPopoverHtmlUnsafe)) {
-                    templateHtml = attrs.zemLazyPopoverHtmlUnsafe;
+                    templateHtml = attrs.zemLazyPopoverHtmlUnsafe;              
                 }
                 if (angular.isDefined(attrs.zemLazyPopoverText)) {
                     templateHtml = sanitizeString(attrs.zemLazyPopoverText);
@@ -120,26 +120,26 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
 
                 element.on(event, hide);
 
-                function haveTemplateContent (templateContent) {
+                function haveTemplateContent(templateContent) {
                     if (!ttScope) {
                         // Mouseleave might have happened already
                         return;
                     }
-                    ttScope.placement = angular.isDefined(attrs.zemLazyPopoverPlacement) ? attrs.zemLazyPopoverPlacement : '';
+                    ttScope.placement = angular.isDefined(attrs.zemLazyPopoverPlacement) ? attrs.zemLazyPopoverPlacement : "";
                     ttScope.appendToBody = angular.isDefined(attrs.zemLazyPopoverAppendToBody) ? scope.$parent.$eval(attrs.zemLazyPopoverAppendToBody) : false;
                     ttScope.animationClass = angular.isDefined(attrs.zemLazyPopoverAnimationClass) ? attrs.zemLazyPopoverAnimationClass : false;
                     var content = '<div class="popover {{ placement }} {{animationClass }}">' +
-                                  '<div class="arrow"></div>' +
+                                  '<div class="arrow"></div>' + 
                                   '<div class="popover-inner">' +
                                   '<div class="popover-content">' +
-                                  templateContent +
+                                  templateContent + 
                                   '</div>' +
                                   '</div>' +
                                   '</div>';
-
+                                  
                     tooltip = $compile(content)(ttScope, function (tooltipNew) {
                         // Place it somewhere out of the view, so we can render & get the size first
-                        tooltipNew.css({top: -5000, left: 0, display: 'block'});
+                        tooltipNew.css({ top: -5000, left: 0, display: 'block' });
                         if (ttScope.appendToBody) {
                             $document.find( 'body' ).append( tooltipNew );
                         } else {
@@ -150,10 +150,10 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
                     $timeout(function () {
                         // By the time we reach this, we might have already moved the mouse away
                         if (tooltip) {
-                            tooltip.addClass('in');
-                            positionTooltip();
+                            tooltip.addClass("in");
+                            positionTooltip();                                  
                         }
-
+                    
                         if (ttScope) {
                             ttScope.$watch(positionTooltip, 0, false);
                         }
@@ -162,20 +162,20 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
                 }
 
                 if (templateUrl) {
-                    $http.get(templateUrl, {cache: $templateCache})
+                    $http.get(templateUrl, {cache: $templateCache })
                         .success(haveTemplateContent);
                 } else if (templateHtml) {
                     haveTemplateContent(templateHtml);
                 } else {
                     // Should an error be thrown?
                 }
-
+                
                 ttScope.$apply();
 
             });
         }
     };
-}
+};
 
 angular.module('one')
   .directive('zemLazyPopoverTemplate', $zemLazyPopoverDirective)

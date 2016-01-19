@@ -1,7 +1,7 @@
 /*global $,oneApp,constants*/
-'use strict';
+"use strict";
 
-oneApp.directive('zemFilter', ['config', function (config) {
+oneApp.directive('zemFilter', ['config', function(config) {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_filter.html',
@@ -12,7 +12,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
             showPublisherSelected: '=showPublisherSelected'
         },
         link: function ($scope, element) {
-            element.on('click', function (e) {
+            element.on('click', function(e) {
                 e.stopPropagation();
             });
         },
@@ -20,7 +20,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
             $scope.availableSources = [];
             $scope.config = config;
             $scope.enablePublisherFilter = false;
-            $scope.showPublisherSelected = 'all';
+            $scope.showPublisherSelected = "all";
 
             $scope.refreshAvailableSources = function () {
                 api.availableSources.list().then(function (data) {
@@ -98,7 +98,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 $scope.showPublisherSelected = zemFilterService.getBlacklistedPublishers();
             });
 
-            $scope.$on('$locationChangeStart', function () {
+            $scope.$on('$locationChangeStart', function() {
                 // ui-bootstrap registers a listener on $locationChangeSuccess event
                 // which closes the dropdown when the event triggers.
                 // We don't want the dropdown to close upon changing the query string
@@ -109,7 +109,7 @@ oneApp.directive('zemFilter', ['config', function (config) {
                 $scope.$$listeners.$locationChangeSuccess = [];
             });
 
-            $scope.$on('$stateChangeSuccess', function () {
+            $scope.$on('$stateChangeSuccess', function() {
                 // Upon state change we do want to close the dropdown.
                 $scope.isFilterOpen = false;
             });

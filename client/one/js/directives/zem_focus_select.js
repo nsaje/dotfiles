@@ -1,5 +1,5 @@
 /*global $,oneApp,moment,constants*/
-'use strict';
+"use strict";
 
 oneApp.directive('zemFocusSelect', ['$window', function ($window) {
     return {

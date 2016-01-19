@@ -1,8 +1,8 @@
 /*globals angular,oneApp,options,moment*/
-'use strict';
+"use strict";
 
-oneApp.factory('zemPostclickMetricsService', function () {
-    function insertAcquisitionColumns (columns, position, isShown, isInternal) {
+oneApp.factory('zemPostclickMetricsService', function() {
+    function insertAcquisitionColumns(columns, position, isShown, isInternal) {
         columns.splice(position, 0, {
             name: 'Visits',
             field: 'visits',
@@ -39,7 +39,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
         });
     }
 
-    function insertEngagementColumns (columns, position, isShown, isInternal) {
+    function insertEngagementColumns(columns, position, isShown, isInternal) {
         columns.splice(position, 0, {
             name: '% New Users',
             field: 'percent_new_users',
@@ -88,7 +88,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
         });
     }
 
-    function insertConversionGoalColumns (columns, position, isShown, isInternal) {
+    function insertConversionGoalColumns(columns, position, isShown, isInternal) {
         columns.splice(position, 0, {
             name: 'Conversion Goal 1',
             field: 'conversion_goal_1',
@@ -114,7 +114,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
         });
     }
 
-    function concatAcquisitionChartOptions (chartOptions, isInternal) {
+    function concatAcquisitionChartOptions(chartOptions, isInternal) {
         return concatChartOptions(
             chartOptions,
             options.adGroupAcquisitionChartPostClickMetrics,
@@ -123,7 +123,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
         );
     }
 
-    function concatEngagementChartOptions (chartOptions, isInternal) {
+    function concatEngagementChartOptions(chartOptions, isInternal) {
         return concatChartOptions(
             chartOptions,
             options.adGroupEngagementChartPostClickMetrics,
@@ -132,7 +132,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
         );
     }
 
-    function concatChartOptions (chartOptions, newOptions, isInternal, isHidden) {
+    function concatChartOptions(chartOptions, newOptions, isInternal, isHidden) {
         return chartOptions.concat(newOptions.map(function (option) {
             option.internal = isInternal;
             options.hidden = isHidden;
@@ -140,7 +140,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
         }));
     }
 
-    function getValidChartMetrics (chartMetric1, chartMetric2, conversionGoals) {
+    function getValidChartMetrics(chartMetric1, chartMetric2, conversionGoals) {
         conversionGoals = conversionGoals || [];
         var cg1Exists = conversionGoals.some(function (conversionGoal) {
             return conversionGoal.id === constants.chartMetric.CONVERSION_GOAL1;
@@ -166,12 +166,12 @@ oneApp.factory('zemPostclickMetricsService', function () {
         };
     }
 
-    function setConversionGoalChartOptions (chartOptions, conversionGoals, isShown) {
+    function setConversionGoalChartOptions(chartOptions, conversionGoals, isShown) {
         if (!conversionGoals || !conversionGoals.length) {
             return;
         }
 
-        conversionGoals.forEach(function (el, ix) {
+        conversionGoals.forEach(function(el, ix) {
             for (var i = 0; i < chartOptions.length; i++) {
                 if (chartOptions[i].value === el.id) {
                     chartOptions[i].name = el.name;
@@ -181,12 +181,12 @@ oneApp.factory('zemPostclickMetricsService', function () {
         });
     }
 
-    function setConversionGoalColumnsDefaults (cols, conversionGoals, isShown) {
+    function setConversionGoalColumnsDefaults(cols, conversionGoals, isShown) {
         if (!conversionGoals || !conversionGoals.length) {
             return;
         }
 
-        conversionGoals.forEach(function (el, ix) {
+        conversionGoals.forEach(function(el, ix) {
             for (var i = 0; i < cols.length; i++) {
                 if (cols[i].field === el.id) {
                     cols[i].name = el.name;

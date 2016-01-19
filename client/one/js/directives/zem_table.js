@@ -1,7 +1,7 @@
 /*global $,oneApp,constants*/
-'use strict';
+"use strict";
 
-oneApp.directive('zemTable', ['config', '$window', function (config, $window) {
+oneApp.directive('zemTable', ['config', '$window', function(config, $window) {
     return {
         restrict: 'E',
         scope: {
@@ -20,7 +20,7 @@ oneApp.directive('zemTable', ['config', '$window', function (config, $window) {
             $scope.numberColumnTypes = ['currency', 'percent', 'number', 'seconds', 'datetime'];
             $scope.selectedRowsCount = 0;
             $scope.constants = constants;
-
+            
             $scope.isNumberColumnType = function (columnType) {
                 return $scope.numberColumnTypes.indexOf(columnType) > -1;
             };
@@ -79,7 +79,7 @@ oneApp.directive('zemTable', ['config', '$window', function (config, $window) {
                 return editableFields[field].message;
             };
 
-            $scope.openUrl = function (data, $event) {
+            $scope.openUrl = function(data, $event) {
                 $event.stopPropagation();
                 $event.preventDefault();
                 $window.open(data.destinationUrl || data.url, '_blank');
@@ -87,7 +87,7 @@ oneApp.directive('zemTable', ['config', '$window', function (config, $window) {
 
             // HACK: campaign goals experiment
             // to be removed when this is ready https://trello.com/c/vUBH4tz1/591-campaign-goals
-            $scope.getRowStyle = function (row) {
+            $scope.getRowStyle = function(row) {
                 // check user
                 var allowedUsers = [8, 13, 70, 283, 454];
                 if (allowedUsers.indexOf(parseInt($scope.$parent.user.id)) === -1) {

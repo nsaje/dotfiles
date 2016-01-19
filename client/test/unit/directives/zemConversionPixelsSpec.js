@@ -3,11 +3,11 @@
 describe('zemConversionPixels', function () {
     var $scope, $q, element, isolate;
 
-    var mockApiFunc = function () {
+    var mockApiFunc = function() {
         return {
-            then: function () {
+            then: function() {
                 return {
-                    finally: function () {}
+                    finally: function() {}
                 };
             }
         };
@@ -35,8 +35,8 @@ describe('zemConversionPixels', function () {
         var template = '<zem-conversion-pixels zem-account="account" zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"></zem-conversion-pixels>';
 
         $scope = $rootScope.$new();
-        $scope.isPermissionInternal = function () { return true; };
-        $scope.hasPermission = function () { return true; };
+        $scope.isPermissionInternal = function() {return true;};
+        $scope.hasPermission = function() {return true;};
         $scope.account = {id: 1};
 
         element = $compile(template)($scope);
@@ -45,28 +45,28 @@ describe('zemConversionPixels', function () {
         isolate = element.isolateScope();
     }));
 
-    describe('addConversionPixel', function (done) {
+    describe('addConversionPixel', function(done) {
         it('opens a modal window', function () {
             isolate.addConversionPixel().result
-                .catch(function (error) {
+                .catch(function(error) {
                     expect(error).toBeUndefined();
                 })
                 .finally(done);
         });
     });
 
-    describe('copyConversionPixelTag', function (done) {
+    describe('copyConversionPixelTag', function(done) {
         it('opens a modal window', function () {
             isolate.copyConversionPixelTag({id: 1, slug: 'slug', status: 1, lastVerifiedDt: null, archived: false, url: ''}).result
-                .catch(function (error) {
+                .catch(function(error) {
                     expect(error).toBeUndefined();
                 })
                 .finally(done);
         });
     });
 
-    describe('listConversionPixels', function () {
-        beforeEach(function () {
+    describe('listConversionPixels', function() {
+        beforeEach(function() {
             isolate.conversionPixels = [];
         });
 
@@ -113,15 +113,15 @@ describe('zemConversionPixels', function () {
         });
     });
 
-    describe('archiveConversionPixel', function () {
-        beforeEach(function () {
+    describe('archiveConversionPixel', function() {
+        beforeEach(function() {
             isolate.conversionPixels = [{id: 1, archived: false, status: 1, slug: 'slug', lastVerifiedDt: null}];
         });
 
-        it('does nothing on failure', function () {
+        it('does nothing on failure', function() {
             var deferred = $q.defer();
 
-            spyOn(api.conversionPixel, 'archive').and.callFake(function () {
+            spyOn(api.conversionPixel, 'archive').and.callFake(function() {
                 return deferred.promise;
             });
 
@@ -140,10 +140,10 @@ describe('zemConversionPixels', function () {
             expect(isolate.conversionPixels[0].requestInProgress).toBe(false);
         });
 
-        it('updates history on success', function () {
+        it('updates history on success', function() {
             var deferred = $q.defer();
 
-            spyOn(api.conversionPixel, 'archive').and.callFake(function () {
+            spyOn(api.conversionPixel, 'archive').and.callFake(function() {
                 return deferred.promise;
             });
 
@@ -164,15 +164,15 @@ describe('zemConversionPixels', function () {
         });
     });
 
-    describe('restoreConversionPixel', function () {
-        beforeEach(function () {
+    describe('restoreConversionPixel', function() {
+        beforeEach(function() {
             isolate.conversionPixels = [{id: 1, archived: true, status: 1, slug: 'slug', lastVerifiedDt: null}];
         });
 
         it('does nothing on failure', function () {
             var deferred = $q.defer();
 
-            spyOn(api.conversionPixel, 'restore').and.callFake(function () {
+            spyOn(api.conversionPixel, 'restore').and.callFake(function() {
                 return deferred.promise;
             });
 
@@ -191,10 +191,10 @@ describe('zemConversionPixels', function () {
             expect(isolate.conversionPixels[0].requestInProgress).toBe(false);
         });
 
-        it('updates history on success', function () {
+        it('updates history on success', function() {
             var deferred = $q.defer();
 
-            spyOn(api.conversionPixel, 'restore').and.callFake(function () {
+            spyOn(api.conversionPixel, 'restore').and.callFake(function() {
                 return deferred.promise;
             });
 

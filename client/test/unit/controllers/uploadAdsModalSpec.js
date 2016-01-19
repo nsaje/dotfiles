@@ -1,28 +1,28 @@
-'use strict';
+'use strict'
 
-describe('UploadAdsModalCtrl', function () {
+describe('UploadAdsModalCtrl', function() {
     var $scope, $modalInstance, api, $state, $q, $timeout, openedDeferred;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(inject(function ($controller, $rootScope, _$q_, _$timeout_, _$state_) {
+    beforeEach(inject(function($controller, $rootScope, _$q_, _$timeout_, _$state_) {
         $q = _$q_;
         $timeout = _$timeout_;
         $scope = $rootScope.$new();
 
         openedDeferred = $q.defer();
         $modalInstance = {
-            close: function () {},
+            close: function(){},
             opened: openedDeferred.promise
         };
         api = {
             adGroupAdsPlusUpload: {
-                upload: function () {},
-                checkStatus: function () {},
-                getDefaults: function () {
+                upload: function() {},
+                checkStatus: function() {},
+                getDefaults: function() {
                     return {
-                        then: function () {}
+                        then: function() {}
                     };
                 }
             }
@@ -41,8 +41,8 @@ describe('UploadAdsModalCtrl', function () {
         );
     }));
 
-    describe('upload', function () {
-        it('calls api and polls for updates on success', function () {
+    describe('upload', function() {
+        it('calls api and polls for updates on success', function() {
             var deferred = $q.defer();
             var batchId = 123;
 
@@ -51,7 +51,7 @@ describe('UploadAdsModalCtrl', function () {
                 batchName: 'testname'
             };
 
-            spyOn(api.adGroupAdsPlusUpload, 'upload').and.callFake(function () {
+            spyOn(api.adGroupAdsPlusUpload, 'upload').and.callFake(function() {
                 return deferred.promise;
             });
             spyOn($scope, 'pollBatchStatus');
@@ -68,16 +68,16 @@ describe('UploadAdsModalCtrl', function () {
             expect($scope.isInProgress).toBe(true);
         });
 
-        it('sets errors in case of validation error', function () {
+        it('sets errors in case of validation error', function() {
             var deferred = $q.defer();
             var data = {
                 errors: {'batchName': ['This is required']},
-            };
+            }
 
-            spyOn(api.adGroupAdsPlusUpload, 'upload').and.callFake(function () {
+            spyOn(api.adGroupAdsPlusUpload, 'upload').and.callFake(function() {
                 return deferred.promise;
             });
-
+            
             $scope.upload();
             deferred.reject(data);
             $scope.$root.$digest();
@@ -86,8 +86,8 @@ describe('UploadAdsModalCtrl', function () {
         });
     });
 
-    describe('pollBatchStatus', function () {
-        it('does nothing if polling is not in progress', function () {
+    describe('pollBatchStatus', function() {
+        it('does nothing if polling is not in progress', function() {
             $scope.isInProgress = false;
             spyOn(api.adGroupAdsPlusUpload, 'checkStatus');
 
@@ -96,10 +96,10 @@ describe('UploadAdsModalCtrl', function () {
             expect(api.adGroupAdsPlusUpload.checkStatus).not.toHaveBeenCalled();
         });
 
-        it('stops polling in case of error', function () {
+        it('stops polling in case of error', function() {
             var deferred = $q.defer();
 
-            spyOn(api.adGroupAdsPlusUpload, 'checkStatus').and.callFake(function () {
+            spyOn(api.adGroupAdsPlusUpload, 'checkStatus').and.callFake(function() {
                 return deferred.promise;
             });
 
@@ -114,10 +114,10 @@ describe('UploadAdsModalCtrl', function () {
             expect($scope.isInProgress).toBe(false);
         });
 
-        it('schedules another poll', function () {
+        it('schedules another poll', function() {
             var deferred = $q.defer();
 
-            spyOn(api.adGroupAdsPlusUpload, 'checkStatus').and.callFake(function () {
+            spyOn(api.adGroupAdsPlusUpload, 'checkStatus').and.callFake(function() {
                 return deferred.promise;
             });
 
@@ -134,11 +134,11 @@ describe('UploadAdsModalCtrl', function () {
             expect($scope.pollBatchStatus).toHaveBeenCalled();
         });
 
-        it('closes dialog on success', function () {
+        it('closes dialog on success', function() {
             var deferred = $q.defer();
             var batchId = 123;
 
-            spyOn(api.adGroupAdsPlusUpload, 'checkStatus').and.callFake(function () {
+            spyOn(api.adGroupAdsPlusUpload, 'checkStatus').and.callFake(function() {
                 return deferred.promise;
             });
             spyOn($modalInstance, 'close');
@@ -158,7 +158,7 @@ describe('UploadAdsModalCtrl', function () {
             expect($modalInstance.close).toHaveBeenCalled();
         });
 
-        it('sets errors in case of failed upload', function () {
+        it('sets errors in case of failed upload', function() {
             var deferred = $q.defer();
             var batchId = 123;
             var data = {
@@ -166,7 +166,7 @@ describe('UploadAdsModalCtrl', function () {
                 errors: ['some error']
             };
 
-            spyOn(api.adGroupAdsPlusUpload, 'checkStatus').and.callFake(function () {
+            spyOn(api.adGroupAdsPlusUpload, 'checkStatus').and.callFake(function() {
                 return deferred.promise;
             });
             spyOn($modalInstance, 'close');

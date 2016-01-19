@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 oneApp.directive('zemPagingDropdown', function () {
     return {
@@ -12,7 +12,7 @@ oneApp.directive('zemPagingDropdown', function () {
         templateUrl: '/partials/zem_paging_dropdown.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
             $scope.selectAllCount = 4294967295;
-            $scope.$watch('selection', function (newValue, oldValue) {
+            $scope.$watch('selection', function(newValue, oldValue) {
                 if (newValue === $scope.selectAllCount) {
                     $scope.selectionText = 'Show All';
                 } else {

@@ -1,7 +1,7 @@
 /*globals oneApp*/
 'use strict';
 
-oneApp.directive('zemEditableCurrencyField', function () {
+oneApp.directive('zemEditableCurrencyField', function() {
     return {
         restrict: 'E',
         scope: {
@@ -33,7 +33,7 @@ oneApp.directive('zemEditableCurrencyField', function () {
                 });
             };
 
-            inputElement.on('touchend', function (e) {
+            inputElement.on('touchend', function(e) {
                 // This prevents the form to be autoclosed
                 // on focus in iOS Safari
                 e.preventDefault();
@@ -60,18 +60,18 @@ oneApp.directive('zemEditableCurrencyField', function () {
                     $scope.onError
                 );
             };
-
+            
             function keyupHandler (e) {
-                if (e.keyCode === 27) {
+                if (e.keyCode == 27) {
                     // escape
                     $scope.close();
-                } else if (e.keyCode === 13) {
+                } else if (e.keyCode == 13) {
                     // enter
                     $scope.save();
                 }
             }
 
-            function closeFormClickHandler (event) {
+            function closeFormClickHandler(event) {
                 var isClickedElementChildOfPopup = $element
                     .find('.edit-form')
                     .find(event.target)

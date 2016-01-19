@@ -11,15 +11,15 @@ describe('AccountAgencyCtrl', function () {
             $q = _$q_;
             $scope = $rootScope.$new();
 
-            $scope.isPermissionInternal = function () { return true; };
-            $scope.hasPermission = function () { return true; };
+            $scope.isPermissionInternal = function() {return true;};
+            $scope.hasPermission = function() {return true;};
             $scope.account = {id: 1};
 
-            var mockApiFunc = function () {
+            var mockApiFunc = function() {
                 return {
-                    then: function () {
+                    then: function() {
                         return {
-                            finally: function () {}
+                            finally: function() {}
                         };
                     }
                 };

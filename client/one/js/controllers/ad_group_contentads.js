@@ -65,7 +65,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
             checked: true,
             type: 'currency',
             shown: true,
-            help: 'The amount spent per creative.',
+            help: "The amount spent per creative.",
             totalRow: true,
             order: true,
             initialOrder: 'desc'
@@ -77,7 +77,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
             type: 'currency',
             shown: true,
             fractionSize: 3,
-            help: 'The average CPC for each content ad.',
+            help: "The average CPC for each content ad.",
             totalRow: true,
             order: true,
             initialOrder: 'desc'
@@ -121,7 +121,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         {
             'name': 'Traffic Acquisition',
             'fields': [
-                'urlLink', 'cost', 'cpc', 'clicks', 'impressions', 'ctr'
+               'urlLink', 'cost', 'cpc', 'clicks', 'impressions', 'ctr'
             ]
         },
         {
@@ -157,7 +157,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
 
         api.adGroupAdsTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
             function (data) {
-                if ($scope.hasPermission('zemauth.content_ads_postclick_engagement')) {
+                if($scope.hasPermission('zemauth.content_ads_postclick_engagement')) {
                     zemPostclickMetricsService.insertConversionGoalColumns(
                         $scope.columns,
                         $scope.columns.length - 1,
@@ -187,7 +187,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         });
     };
 
-    $scope.orderTableData = function (order) {
+    $scope.orderTableData = function(order) {
         $scope.order = order;
 
         $location.search('order', $scope.order);
@@ -241,7 +241,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
                         name: goals[goalId].name + ': ' + typeName,
                         value: goalId,
                         internal: $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
-                    };
+                    }
                 }).filter(function (option) {
                     return option !== undefined;
                 }));
@@ -268,7 +268,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         $scope.chartHidden = !$scope.chartHidden;
         $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
-        $timeout(function () {
+        $timeout(function() {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     };
@@ -296,8 +296,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         }
     });
 
-    $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
-        if (newValue === true && oldValue === false) {
+    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
+        if(newValue === true && oldValue === false){
             pollSyncStatus();
         }
     });
@@ -313,7 +313,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         setDisabledExportOptions();
     });
 
-    $scope.init = function () {
+    $scope.init = function() {
         if ($scope.adGroup.contentAdsTabWithCMS) {
             $state.go('main.adGroups.adsPlus', {id: $scope.adGroup.id});
             return;
@@ -321,7 +321,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
 
         var data = $scope.adGroupData[$state.params.id];
 
-        var page = parseInt($location.search().page);
+        var page = parseInt($location.search().page)
         if (isNaN(page)) {
             page = data && data.page;
         }
@@ -354,8 +354,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         setDisabledExportOptions();
     };
 
-    $scope.loadPage = function (page) {
-        if (page && page > 0 && page <= $scope.pagination.numPages) {
+    $scope.loadPage = function(page) {
+        if(page && page > 0 && page <= $scope.pagination.numPages) {
             $scope.pagination.currentPage = page;
         }
 
@@ -368,7 +368,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         }
     };
 
-    $scope.$watch('size', function (newValue, oldValue) {
+    $scope.$watch('size', function(newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.loadPage();
         }
@@ -391,32 +391,32 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
         getTableData();
     });
 
-    var pollSyncStatus = function () {
-        if ($scope.isSyncInProgress) {
-            $timeout(function () {
+    var pollSyncStatus = function() {
+        if($scope.isSyncInProgress){
+            $timeout(function() {
                 api.checkSyncProgress.get($state.params.id).then(
-                    function (data) {
+                    function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                        if ($scope.isSyncInProgress === false) {
+                        if($scope.isSyncInProgress === false){
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             getTableData();
                             getDailyStats();
                         }
                     },
-                    function (data) {
+                    function(data) {
                         // error
                         $scope.isSyncInProgress = false;
                     }
-                ).finally(function () {
+                ).finally(function() {
                     pollSyncStatus();
                 });
             }, 5000);
         }
     };
 
-    var setDisabledExportOptions = function () {
+    var setDisabledExportOptions = function() {
         api.adGroupAdsExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
                 var option = null;
@@ -437,7 +437,7 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
     };
 
     // trigger sync
-    $scope.triggerSync = function () {
+    $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id);
     };

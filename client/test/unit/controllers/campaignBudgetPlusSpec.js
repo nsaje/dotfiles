@@ -11,15 +11,15 @@ describe('CampaignBudgetPlusCtrl', function () {
             $q = _$q_;
             $scope = $rootScope.$new();
 
-            $scope.isPermissionInternal = function () { return true; };
-            $scope.hasPermission = function () { return true; };
+            $scope.isPermissionInternal = function() {return true;};
+            $scope.hasPermission = function() {return true;};
             $scope.campaign = {id: 1};
 
-            var mockApiFunc = function () {
+            var mockApiFunc = function() {
                 return {
-                    then: function () {
+                    then: function() {
                         return {
-                            finally: function () {}
+                            finally: function() {}
                         };
                     }
                 };
@@ -32,7 +32,7 @@ describe('CampaignBudgetPlusCtrl', function () {
                     create: mockApiFunc,
                     get: mockApiFunc,
                     delete: mockApiFunc,
-                    convert: {errors: function (obj) { return obj; }}
+                    convert: { errors: function (obj) { return obj; } }
                 }
             };
 
@@ -41,7 +41,7 @@ describe('CampaignBudgetPlusCtrl', function () {
 
             $modalStack = _$modalStack_;
 
-            $controller('CampaignBudgetPlusCtrl', {$scope: $scope, api: api});
+            $controller('CampaignBudgetPlusCtrl', { $scope: $scope, api: api });
         });
     });
 
@@ -52,7 +52,7 @@ describe('CampaignBudgetPlusCtrl', function () {
         });
 
         it('opens a modal', function () {
-            $scope.addBudgetItem().result.catch(function (error) {
+            $scope.addBudgetItem().result.catch(function(error) {
                 expect(error).toBeUndefined();
             }).finally(done);
         });
@@ -65,7 +65,7 @@ describe('CampaignBudgetPlusCtrl', function () {
         });
 
         it('opens a modal', function () {
-            $scope.editBudgetItem(10).result.catch(function (error) {
+            $scope.editBudgetItem(10).result.catch(function(error) {
                 expect(error).toBeUndefined();
             }).finally(done);
         });

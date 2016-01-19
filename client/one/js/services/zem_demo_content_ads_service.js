@@ -1,15 +1,15 @@
 /*globals angular,oneApp,constants,options,moment*/
-'use strict';
+"use strict";
 
-oneApp.factory('zemDemoContentAdsService', ['$q', function ($q) {
+oneApp.factory("zemDemoContentAdsService", ['$q', function ($q) {
     var contentAdDeltas = {},
         adGroupAds = {},
         adGroupBulkDeltas = {},
         adGroupExcludedContentAds = {},
         pub = {
             set: function (adGroupId, contentAdId, data) {
-                if (!adGroupAds[adGroupId]) { adGroupAds[adGroupId] = []; }
-                if (!contentAdDeltas[contentAdId]) { contentAdDeltas[contentAdId] = {}; }
+                if (! adGroupAds[adGroupId]) { adGroupAds[adGroupId] = []; }
+                if (! contentAdDeltas[contentAdId]) { contentAdDeltas[contentAdId] = {}; }
                 if (adGroupAds[adGroupId].indexOf(contentAdId) === -1) {
                     adGroupAds[adGroupId].push(contentAdId);
                 }
@@ -18,10 +18,10 @@ oneApp.factory('zemDemoContentAdsService', ['$q', function ($q) {
                 });
             },
             setBulk: function (adGroupId, includeIds, excludeIds, all, data) {
-                if (!adGroupExcludedContentAds[adGroupId]) {
+                if (! adGroupExcludedContentAds[adGroupId]) {
                     adGroupExcludedContentAds[adGroupId] = {};
                 }
-                if (!adGroupBulkDeltas[adGroupId]) { adGroupBulkDeltas[adGroupId] = {}; }
+                if (! adGroupBulkDeltas[adGroupId]) { adGroupBulkDeltas[adGroupId] = {}; }
                 if (all) {
                     angular.forEach(data, function (v, k) {
                         adGroupExcludedContentAds[adGroupId][k] = excludeIds || [];

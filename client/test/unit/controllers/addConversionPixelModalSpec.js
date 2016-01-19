@@ -1,12 +1,12 @@
 'use strict';
 
-describe('AddConversionPixelModalCtrl', function () {
+describe('AddConversionPixelModalCtrl', function() {
     var $scope, $modalInstance, api, $q, $timeout, openedDeferred;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(inject(function ($controller, $rootScope, _$q_, _$timeout_) {
+    beforeEach(inject(function($controller, $rootScope, _$q_, _$timeout_) {
         $q = _$q_;
         $timeout = _$timeout_;
         $scope = $rootScope.$new();
@@ -16,15 +16,15 @@ describe('AddConversionPixelModalCtrl', function () {
 
         openedDeferred = $q.defer();
         $modalInstance = {
-            close: function () {},
+            close: function(){},
             opened: openedDeferred.promise
         };
 
-        var mockApiFunc = function () {
+        var mockApiFunc = function() {
             return {
-                then: function () {
+                then: function() {
                     return {
-                        finally: function () {}
+                        finally: function() {}
                     };
                 }
             };
@@ -42,11 +42,11 @@ describe('AddConversionPixelModalCtrl', function () {
         );
     }));
 
-    describe('addConversionPixel', function () {
-        it('updates error message on failure', function () {
+    describe('addConversionPixel', function() {
+        it('updates error message on failure', function() {
             var deferred = $q.defer();
 
-            spyOn(api.conversionPixel, 'post').and.callFake(function () {
+            spyOn(api.conversionPixel, 'post').and.callFake(function() {
                 return deferred.promise;
             });
 
@@ -70,10 +70,10 @@ describe('AddConversionPixelModalCtrl', function () {
             expect($scope.errorMessage).toEqual('error message');
         });
 
-        it('closes the modal window on success', function () {
+        it('closes the modal window on success', function() {
             var deferred = $q.defer();
 
-            spyOn(api.conversionPixel, 'post').and.callFake(function () {
+            spyOn(api.conversionPixel, 'post').and.callFake(function() {
                 return deferred.promise;
             });
 

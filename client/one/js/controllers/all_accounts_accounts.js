@@ -25,7 +25,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.exportOptions = [
            {name: 'By Day (CSV)', value: 'csv'},
            {name: 'By Day (Excel)', value: 'excel'}
-    ];
+       ];
 
     $scope.exportPlusOptions = [
       {name: 'Current View', value: 'account-csv'},
@@ -102,7 +102,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             field: 'cost',
             checked: true,
             type: 'currency',
-            help: 'Amount spent per account',
+            help: "Amount spent per account",
             totalRow: true,
             order: true,
             initialOrder: 'desc',
@@ -199,7 +199,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             type: 'currency',
             shown: true,
             fractionSize: 3,
-            help: 'The average CPC.',
+            help: "The average CPC.",
             totalRow: true,
             order: true,
             initialOrder: 'desc'
@@ -359,7 +359,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                 options.effectiveCostChartMetrics,
                 $scope.isPermissionInternal('zemauth.can_view_effective_costs')
             );
-        } else if (!$scope.hasPermission('zemauth.can_view_actual_costs')) {
+        } else if (! $scope.hasPermission('zemauth.can_view_actual_costs')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
                 $scope.chartMetricOptions,
                 options.legacyCostChartMetrics,
@@ -447,8 +447,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     });
 
-    $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
-        if (newValue === true && oldValue === false) {
+    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
+        if(newValue === true && oldValue === false){
             pollSyncStatus();
         }
     });
@@ -476,38 +476,38 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         getTableData();
     });
 
-    var pollSyncStatus = function () {
-        if ($scope.isSyncInProgress) {
-            $timeout(function () {
+    var pollSyncStatus = function() {
+        if($scope.isSyncInProgress){
+            $timeout(function() {
                 api.checkAccountsSyncProgress.get().then(
-                    function (data) {
+                    function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                        if ($scope.isSyncInProgress === false) {
+                        if($scope.isSyncInProgress == false){
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             getTableData();
                             getDailyStats();
                         }
                     },
-                    function (data) {
+                    function(data) {
                         // error
                         $scope.isSyncInProgress = false;
                     }
-                ).finally(function () {
+                ).finally(function() {
                     pollSyncStatus();
                 });
             }, 5000);
         }
     };
 
-    $scope.triggerSync = function () {
+    $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
         api.accountSync.get();
     };
 
-    $scope.loadPage = function (page) {
-        if (page && page > 0 && page <= $scope.pagination.numPages) {
+    $scope.loadPage = function(page) {
+        if(page && page > 0 && page <= $scope.pagination.numPages) {
             $scope.pagination.currentPage = page;
         }
 
@@ -518,7 +518,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     };
 
-    $scope.$watch('size', function (newValue, oldValue) {
+    $scope.$watch('size', function(newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.loadPage();
         }
@@ -528,12 +528,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $scope.chartHidden = !$scope.chartHidden;
         $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
-        $timeout(function () {
+        $timeout(function() {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     };
 
-    $scope.init = function () {
+    $scope.init = function() {
         var page = parseInt($location.search().page || '1');
         var size = parseInt($location.search().size || '0');
 
@@ -563,7 +563,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         initColumns();
     };
 
-    $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
+    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);
     });
 

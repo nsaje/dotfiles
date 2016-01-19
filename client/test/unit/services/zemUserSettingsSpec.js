@@ -1,55 +1,55 @@
-'use strict';
+'use strict'
 
-describe('zemUserSettings', function () {
+describe('zemUserSettings', function() {
     var zemUserSettings;
     var userSettings;
     var $scope;
     var zemLocalStorageServiceMock;
     var $locationMock;
 
-    beforeEach(function () {
-        zemLocalStorageServiceMock = (function () {
+    beforeEach(function() {
+        zemLocalStorageServiceMock = (function() {
             var data = {};
 
-            function get (key, namespace) {
+            function get(key, namespace) {
                 return data[namespace + key];
             }
 
-            function set (key, value, namespace) {
+            function set(key, value, namespace) {
                 data[namespace + key] = value;
             }
-
+            
             return {
                 get: get,
                 set: set
-            };
+            }
         })();
 
-        $locationMock = (function () {
+        $locationMock = (function() {
             var data = {};
 
-            function search (key, value) {
+            function search(key, value) {
                 if (key === undefined) {
                     return data;
                 }
-
+                
                 data[key] = value;
             }
 
             return {
                 search: search,
-                url: function () { return ''; }
-            };
+                url: function() { return ''; }
+            }
         })();
 
         module('one');
 
-        module(function ($provide) {
+        module(function($provide) {
             $provide.value('zemLocalStorageService', zemLocalStorageServiceMock);
             $provide.value('$location', $locationMock);
         });
 
-        angular.mock.inject(function ($rootScope, _zemUserSettings_) {
+        angular.mock.inject(function($rootScope, _zemUserSettings_) {
             zemUserSettings = _zemUserSettings_;
             $scope = $rootScope.$new();
         });
@@ -57,12 +57,12 @@ describe('zemUserSettings', function () {
         userSettings = zemUserSettings.getInstance($scope, 'test');
     });
 
-    it('returns a new instance every time it is called', function () {
+    it('returns a new instance every time it is called', function() {
         var anotherUserSettings = zemUserSettings.getInstance($scope, 'test');
         expect(userSettings).not.toBe(anotherUserSettings);
     });
 
-    it('correctly inits a setting that is not in url or local storage', function () {
+    it('correctly inits a setting that is not in url or local storage', function() {
         $scope.setting = false;
         userSettings.register('setting');
 
@@ -70,7 +70,7 @@ describe('zemUserSettings', function () {
         expect($locationMock.search()['setting']).toBe(undefined);
     });
 
-    it('correctly inits a setting that is in local storage, but not in url (same as default value)', function () {
+    it('correctly inits a setting that is in local storage, but not in url (same as default value)', function() {
         zemLocalStorageServiceMock.set('setting', false, 'test');
 
         $scope.setting = false;
@@ -81,7 +81,7 @@ describe('zemUserSettings', function () {
         expect($locationMock.search()['setting']).toBe(undefined);
     });
 
-    it('correctly inits a setting that is in local storage, but not in url (different than default value)', function () {
+    it('correctly inits a setting that is in local storage, but not in url (different than default value)', function() {
         zemLocalStorageServiceMock.set('setting', true, 'test');
 
         $scope.setting = false;
@@ -92,7 +92,7 @@ describe('zemUserSettings', function () {
         expect($locationMock.search()['setting']).toBe(undefined);
     });
 
-    it('correctly inits a setting that is in url, but not in local storage (same as default value)', function () {
+    it('correctly inits a setting that is in url, but not in local storage (same as default value)', function() {
         $locationMock.search('setting', false);
 
         $scope.setting = false;
@@ -103,7 +103,7 @@ describe('zemUserSettings', function () {
         expect($locationMock.search()['setting']).toBe(false);
     });
 
-    it('correctly inits a setting that is in url, but not in local storage (different than default value)', function () {
+    it('correctly inits a setting that is in url, but not in local storage (different than default value)', function() {
         $locationMock.search('setting', true);
 
         $scope.setting = false;
@@ -114,7 +114,7 @@ describe('zemUserSettings', function () {
         expect($locationMock.search()['setting']).toBe(true);
     });
 
-    it('correctly inits a setting that is different in url than it is in local storage', function () {
+    it('correctly inits a setting that is different in url than it is in local storage', function() {
         $locationMock.search('setting', true);
         zemLocalStorageServiceMock.set('setting', false, 'test');
 
@@ -126,7 +126,7 @@ describe('zemUserSettings', function () {
         expect($locationMock.search()['setting']).toBe(true);
     });
 
-    it('correctly updates registered setting', function () {
+    it('correctly updates registered setting', function() {
         $scope.setting = false;
 
         userSettings.register('setting');
@@ -162,7 +162,7 @@ describe('zemUserSettings', function () {
         expect($locationMock.search()['setting']).toBe(undefined);
     });
 
-    it('removes params from url on state change', function () {
+    it('removes params from url on state change', function() {
         $scope.setting = false;
         userSettings.register('setting');
         $scope.$digest();
@@ -175,7 +175,7 @@ describe('zemUserSettings', function () {
         expect($locationMock.search()['setting']).toBe(null);
     });
 
-    it('removes params from url on state change on register without watch', function () {
+    it('removes params from url on state change on register without watch', function() {
         $scope.setting = false;
         userSettings.registerWithoutWatch('setting');
         $scope.$digest();
@@ -188,7 +188,7 @@ describe('zemUserSettings', function () {
         expect($locationMock.search()['setting']).toBe(null);
     });
 
-    it('correctly transforms camel case names to underscore', function () {
+    it('correctly transforms camel case names to underscore', function() {
         $scope.testSetting = false;
         userSettings.register('testSetting');
         $scope.$digest();

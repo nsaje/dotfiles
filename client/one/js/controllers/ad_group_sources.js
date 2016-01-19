@@ -341,7 +341,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             field: 'cost',
             checked: true,
             type: 'currency',
-            help: 'Amount spent per media source.',
+            help: "Amount spent per media source.",
             totalRow: true,
             order: true,
             initialOrder: 'desc',
@@ -438,7 +438,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             type: 'currency',
             shown: true,
             fractionSize: 3,
-            help: 'The average CPC.',
+            help: "The average CPC.",
             totalRow: true,
             order: true,
             initialOrder: 'desc'
@@ -527,7 +527,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
     $scope.loadRequestInProgress = false;
 
-    $scope.orderTableData = function (order) {
+    $scope.orderTableData = function(order) {
         $scope.order = order;
         getTableData();
     };
@@ -624,7 +624,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 options.effectiveCostChartMetrics,
                 $scope.isPermissionInternal('zemauth.can_view_effective_costs')
             );
-        } else if (!$scope.hasPermission('zemauth.can_view_actual_costs')) {
+        } else if (! $scope.hasPermission('zemauth.can_view_actual_costs')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
                 $scope.chartMetricOptions,
                 options.legacyCostChartMetrics,
@@ -670,7 +670,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.chartHidden = !$scope.chartHidden;
         $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
-        $timeout(function () {
+        $timeout(function() {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     };
@@ -708,8 +708,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         }
     });
 
-    $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
-        if (newValue === true && oldValue === false) {
+    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
+        if(newValue === true && oldValue === false){
             pollSyncStatus();
         }
     });
@@ -736,7 +736,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.getDailyStats();
     }, true);
 
-    $scope.init = function () {
+    $scope.init = function() {
         var data = $scope.adGroupData[$state.params.id];
         var sourceIds = $location.search().source_ids || (data && data.sourceIds && data.sourceIds.join(','));
         var sourceTotals = $location.search().source_totals || (data && data.sourceTotals ? 1 : null);
@@ -780,14 +780,14 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         api.adGroupSources.get($state.params.id).then(
             function (data) {
                 var sources = [];
-                for (var source, i = 0; i < data.sources.length; i++) {
+                for (var source, i=0; i<data.sources.length; i++) {
                     source = data.sources[i];
                     sources.push({
                         name: source.name,
                         value: source.id,
                         hasPermission: true,
                         disabled: !source.canTargetExistingRegions,
-                        notification: (!source.canTargetExistingRegions ? source.name + ' doesn\'t support DMA targeting. Turn off DMA targeting to add ' + source.name + '.' : undefined)
+                        notification: (!source.canTargetExistingRegions ? source.name + " doesn't support DMA targeting. Turn off DMA targeting to add " + source.name + '.' : undefined)
                     });
                 }
 
@@ -819,25 +819,25 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.sourceIdToAdd = '';
     };
 
-    var pollSyncStatus = function () {
-        if ($scope.isSyncInProgress) {
-            $timeout(function () {
+    var pollSyncStatus = function() {
+        if($scope.isSyncInProgress){
+            $timeout(function() {
                 api.checkSyncProgress.get($state.params.id).then(
-                    function (data) {
+                    function(data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                        if ($scope.isSyncInProgress === false) {
+                        if($scope.isSyncInProgress === false){
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             getTableData();
                             $scope.getDailyStats();
                         }
                     },
-                    function (data) {
+                    function(data) {
                         // error
                         $scope.isSyncInProgress = false;
                     }
-                ).finally(function () {
+                ).finally(function() {
                     pollSyncStatus();
                 });
             }, 10000);
@@ -895,7 +895,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     });
 
     // trigger sync
-    $scope.triggerSync = function () {
+    $scope.triggerSync = function() {
         $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id);
     };

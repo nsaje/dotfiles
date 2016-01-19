@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-oneApp.directive('zemExport', function () {
+oneApp.directive('zemExport', function() {
     return {
         restrict: 'E',
         scope: {
@@ -11,12 +11,12 @@ oneApp.directive('zemExport', function () {
             options: '='
         },
         templateUrl: '/partials/zem_export.html',
-        controller: ['$scope', '$window', '$compile', 'zemFilterService', function ($scope, $window, $compile, zemFilterService) {
+        controller: ['$scope', '$window', '$compile', 'zemFilterService', function($scope, $window, $compile, zemFilterService) {
             $scope.exportType = '';
 
-            function getOptionByValue (value) {
+            function getOptionByValue(value) {
                 var option = null;
-                $scope.options.forEach(function (opt) {
+                $scope.options.forEach(function(opt) {
                     if (opt.value === value) {
                         option = opt;
                     }
@@ -27,7 +27,7 @@ oneApp.directive('zemExport', function () {
 
             $scope.config = {
                 minimumResultsForSearch: -1,
-                formatResult: function (object) {
+                formatResult: function(object) {
                     if (!object.disabled) {
                         return angular.element(document.createElement('span')).text(object.text);
                     }
@@ -55,11 +55,11 @@ oneApp.directive('zemExport', function () {
 
                     return $compile(popoverEl)($scope);
                 },
-                sortResults: function (results) {
+                sortResults: function(results) {
                     var option = null;
 
                     // used to set disabled property on results
-                    results = results.map(function (result) {
+                    results = results.map(function(result) {
                         option = getOptionByValue(result.id);
 
                         if (option.disabled) {
@@ -73,7 +73,7 @@ oneApp.directive('zemExport', function () {
                 width: '12em'
             };
 
-            $scope.downloadReport = function () {
+            $scope.downloadReport = function() {
                 var url = $scope.baseUrl + 'export/?type=' + $scope.exportType + '&start_date=' + $scope.startDate.format() + '&end_date=' + $scope.endDate.format();
 
                 if (zemFilterService.isSourceFilterOn()) {

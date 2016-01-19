@@ -15,7 +15,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         ];
     };
     $scope.setActiveTab = function () {
-        $scope.tabs.forEach(function (tab) {
+        $scope.tabs.forEach(function(tab) {
             tab.active = $state.is(tab.route);
         });
     };
@@ -39,16 +39,16 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
             return;
         }
         $scope.setBreadcrumbAndTitle([{
-            name: $scope.account.name,
-            state: $scope.getDefaultAccountState(),
-            params: {id: $scope.account.id},
-            disabled: !$scope.canAccessAccounts()
-        }, {
-            name: $scope.campaign.name,
-            state: $scope.getDefaultCampaignState(),
-            params: {id: $scope.campaign.id},
-            disabled: true
-        }],
+                name: $scope.account.name,
+                state: $scope.getDefaultAccountState(),
+                params: {id: $scope.account.id},
+                disabled: !$scope.canAccessAccounts()
+            }, {
+                name: $scope.campaign.name,
+                state: $scope.getDefaultCampaignState(),
+                params: {id: $scope.campaign.id},
+                disabled: true
+            }],
             $scope.campaign.name
         );
     };
@@ -60,7 +60,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         $scope.campaign.name = newCampaignName;
     };
 
-    $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
+    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);
     });
 

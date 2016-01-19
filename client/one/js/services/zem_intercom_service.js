@@ -1,10 +1,10 @@
 /*globals Intercom*/
 'use strict';
 
-oneApp.factory('zemIntercomService', ['$window', function ($window) {
+oneApp.factory('zemIntercomService', ['$window', function($window) {
     var INTERCOM_APP_ID = 'anyekw96';
 
-    function boot (user) {
+    function boot(user) {
         var userDict, companyObject;
         if ($window.Intercom === undefined) {
             return;
@@ -17,14 +17,14 @@ oneApp.factory('zemIntercomService', ['$window', function ($window) {
         };
 
         companyObject = getCompanyObjectFromEmail(user.email);
-        if (companyObject) {
+        if (companyObject){
             userDict['company'] = companyObject;
         }
 
-        $window.Intercom('boot', userDict);
+        $window.Intercom('boot',userDict);
     }
 
-    function getCompanyObjectFromEmail (email) {
+    function getCompanyObjectFromEmail(email) {
         var splitEmail = email.split('@'), companyName;
         if (splitEmail.length !== 2) {
             return false;
@@ -36,7 +36,7 @@ oneApp.factory('zemIntercomService', ['$window', function ($window) {
         };
     }
 
-    function update () {
+    function update() {
         if ($window.Intercom !== undefined) {
             $window.Intercom('update');
         }

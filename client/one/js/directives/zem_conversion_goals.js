@@ -1,7 +1,7 @@
 /*global $,oneApp,constants*/
-'use strict';
+"use strict";
 
-oneApp.directive('zemConversionGoals', ['config', '$window', function (config, $window) {
+oneApp.directive('zemConversionGoals', ['config', '$window', function(config, $window) {
 
     return {
         restrict: 'E',
@@ -61,7 +61,7 @@ oneApp.directive('zemConversionGoals', ['config', '$window', function (config, $
                 }
 
                 return ret;
-            }
+            };
 
             $scope.getConversionGoals = function () {
                 $scope.requestInProgress = true;
@@ -87,7 +87,7 @@ oneApp.directive('zemConversionGoals', ['config', '$window', function (config, $
                     scope: $scope
                 });
 
-                modalInstance.result.then(function () {
+                modalInstance.result.then(function() {
                     $scope.getConversionGoals();
                 });
 
@@ -110,7 +110,7 @@ oneApp.directive('zemConversionGoals', ['config', '$window', function (config, $
                     function () {
                         $scope.error = true;
                     }
-                ).finally(function () {
+                ).finally(function() {
                     $scope.removeInProgress = false;
                 });
             };

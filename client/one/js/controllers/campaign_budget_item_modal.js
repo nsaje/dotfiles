@@ -1,9 +1,9 @@
 /* globals angular,oneApp,defaults,moment */
-oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$timeout', 'api', function ($scope, $modalInstance, $timeout, api) {
+oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$timeout', 'api', function($scope, $modalInstance, $timeout, api) {
     $scope.today = moment().format('M/D/YYYY');
     $scope.isNew = true;
-    $scope.startDatePicker = {isOpen: false};
-    $scope.endDatePicker = {isOpen: false};
+    $scope.startDatePicker = { isOpen: false };
+    $scope.endDatePicker = { isOpen: false };
     $scope.isLoadingInProgress = false;
     $scope.canDelete = false;
     $scope.budgetItem = {};
@@ -11,11 +11,11 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
     $scope.minDate = null;
     $scope.maxDate = null;
     $scope.saveRequestInProgress = false;
-
-    $scope.initStartDate = null;
-    $scope.endStartDate = null;
-
-    $scope.getLicenseFees = function (search) {
+    
+    $scope.initStartDate = null; 
+    $scope.endStartDate = null; 
+    
+    $scope.getLicenseFees = function(search) {
         // use fresh instance because we modify the collection on the fly
         var fees = ['15', '20', '25'];
 
@@ -39,7 +39,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
             var id = $scope.budgetItem.credit.id;
             $scope.getAvailableCredit().forEach(function (obj) {
                 if (obj.id !== id) { return; }
-
+            
                 $scope.minDate = obj.startDate;
                 $scope.maxDate = obj.endDate;
                 $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
@@ -49,7 +49,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
                 $scope.budgetItem.endDate = $scope.initEndDate;
             });
         }, 100); // to be sure that the selected id is correct
-
+        
     };
 
     $scope.upsertBudgetItem = function () {
@@ -74,7 +74,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
     };
 
     $scope.deleteBudgetItem = function () {
-        if (!confirm('Are you sure you want to delete the budget line item?')) { return; }
+        if (!confirm("Are you sure you want to delete the budget line item?")) { return; }
         api.campaignBudgetPlus.delete($scope.campaign.id, $scope.selectedBudgetId).then(function () {
             closeModal();
         });
@@ -87,40 +87,40 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
 
         if ($scope.isNew) {
             $scope.availableCredit = $scope.getAvailableCredit(false);
-
+            
             $scope.minDate = $scope.availableCredit[0].startDate;
             $scope.maxDate = $scope.availableCredit[0].endDate;
             $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
             $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
-
+            
             $scope.budgetItem.isEditable = true;
             $scope.budgetItem.startDate = $scope.initStartDate;
             $scope.budgetItem.endDate = $scope.initEndDate;
-
-            $scope.budgetItem.credit = $scope.availableCredit[0];
-
+            
+            $scope.budgetItem.credit = $scope.availableCredit[0]; 
+            
             $scope.budgetItem.amount = $scope.getAvailableCredit()[0].total;
-
+            
         } else {
             api.campaignBudgetPlus.get(
                 $scope.campaign.id,
                 $scope.selectedBudgetId
             ).then(function (data) {
                 $scope.budgetItem = data;
-
+                
                 $scope.minDate = data.startDate;
                 $scope.maxDate = data.endDate;
                 $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
                 $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
 
-                $scope.canDelete = data.state === constants.budgetLineItemStatus.PENDING;
+                $scope.canDelete = data.state == constants.budgetLineItemStatus.PENDING;
                 $scope.availableCredit = $scope.getAvailableCredit(false, data.credit.id);
             });
         }
     };
 
-    function closeModal (data) {
-        $timeout(function () {
+    function closeModal(data) {
+        $timeout(function() {
             $scope.saveRequestInProgress = false;
             $modalInstance.close(data);
         }, 1000);

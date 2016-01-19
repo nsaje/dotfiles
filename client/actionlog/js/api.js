@@ -1,8 +1,8 @@
 /*globals angular,oneApp,constants,options,moment*/
-'use strict';
+"use strict";
 
-actionLogApp.factory('api', ['$http', '$q', function ($http, $q) {
-    function ActionLog () {
+actionLogApp.factory("api", ["$http", "$q", function($http, $q) {
+    function ActionLog() {
         this.list = function (filters) {
             var deferred = $q.defer();
             var url = '/action_log/api/';
@@ -20,7 +20,7 @@ actionLogApp.factory('api', ['$http', '$q', function ($http, $q) {
                     }
                     deferred.resolve(resource);
                 }).
-                error(function (data, status, headers, config) {
+                error(function(data, status, headers, config) {
                     deferred.reject(data);
                 });
 
@@ -46,7 +46,7 @@ actionLogApp.factory('api', ['$http', '$q', function ($http, $q) {
                     }
                     deferred.resolve(resource);
                 }).
-                error(function (data, status, headers, config) {
+                error(function(data, status, headers, config) {
                     deferred.reject(data);
                 });
 

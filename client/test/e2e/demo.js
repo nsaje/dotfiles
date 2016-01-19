@@ -32,18 +32,18 @@ var nav, chart, tabs,
         };
     };
 
-function $toFloat (str) {
+function $toFloat(str) {
     return parseFloat(str.substr(1).replace(',', ''));
 }
 
-function selectCell (parent, i, j, after) {
+function selectCell(parent, i, j, after) {
     after = after ? (' ' + after) : '';
     return element(
         by.css(parent + ' table tbody tr:nth-child(' + i + ') td:nth-child(' + j + ')' + after)
     );
 }
 
-function selectCellAll (parent, i, j, after) {
+function selectCellAll(parent, i, j, after) {
     return element.all(
         by.css(parent + ' table tbody tr:nth-child(' + i + ') td:nth-child(' + j + ') ' + after)
     );
@@ -71,13 +71,13 @@ describe('Demo loading', function () {
 
 describe('Campaign management', function () {
     var elt = null;
-    function newCampaign () {
+    function newCampaign() {
         element(by.css('#nav div .account-name')).click();
         expect(browser.getLocationAbsUrl()).toMatch(/accounts\/[0-9]+\/campaigns/);
         element(by.cssContainingText('.btn-add', '+ Campaign')).click();
     }
 
-    function renameCampaign () {
+    function renameCampaign() {
         tabs.campaign.settings.click();
         element(by.id('name-input')).isPresent();
         expect(browser.getLocationAbsUrl()).toMatch(/campaigns\/[0-9]+\/settings/);
@@ -91,10 +91,10 @@ describe('Campaign management', function () {
         expect(
             element(by.cssContainingText('.campaign-group.list-group-item a',
                                          'New demo campaign')).getText()
-        ).toEqual('New demo campaign 123');
+        ).toEqual('New demo campaign 123');        
     }
 
-    function addAdGroup () {
+    function addAdGroup() {
         element(by.cssContainingText('.btn-add', '+ Ad group')).click();
         expect(browser.getLocationAbsUrl()).toMatch(/ad_groups\/[0-9]+\/settings/);
         expect(
@@ -103,18 +103,18 @@ describe('Campaign management', function () {
         ).toEqual('New demo ad group');
     }
 
-    function enableAdGroup () {
+    function enableAdGroup() {
         element(by.cssContainingText('.btn-success', 'Enabled')).click();
         element(by.css('#nav div .account-name')).click();
     }
 
-    function checkIfPresentInLists () {
-        elt = by.cssContainingText('td span a', 'New demo campaign');
+    function checkIfPresentInLists() {
+        elt = by.cssContainingText('td span a','New demo campaign');
         browser.wait(function () {
             return element(elt).isPresent();
         }, 50000).then(function () {
             expect(element(elt).getText()).toEqual('New demo campaign 123');
-
+            
             element(by.cssContainingText('td span a', 'New demo campaign')).click();
 
             expect(
@@ -126,7 +126,7 @@ describe('Campaign management', function () {
         });
     }
 
-    function selectFirstCampaignBudget () {
+    function selectFirstCampaignBudget() {
         var firstCampaign = element.all(by.css('.campaign-group a.campaign-name')).first();
         firstCampaign.getAttribute('href').then(function (url) {
             firstCampaign.click();
@@ -138,19 +138,19 @@ describe('Campaign management', function () {
         });
     }
 
-    function editCampaignBudget () {
+    function editCampaignBudget() {
         var deferred = protractor.promise.defer(),
             total = 0;
 
-        function addBudget () {
+        function addBudget() {
             element(by.id('manage-budget')).clear().sendKeys('200');
             element(by.cssContainingText('.btn-default', 'Allocate')).click();
         }
-        function revokeBudget () {
+        function revokeBudget() {
             element(by.id('manage-budget')).clear().sendKeys('100');
             element(by.cssContainingText('.btn-red', 'Revoke')).click();
         }
-        function testBudget () {
+        function testBudget() {
             element(by.id('total-budget')).getText().then(function (val) {
                 expect($toFloat(val)).toBe(total + 100);
                 deferred.fulfill();
@@ -163,7 +163,7 @@ describe('Campaign management', function () {
             testBudget();
         });
     }
-
+    
     it ('new campaign with a new ad group', function () {
         expect(demoLoaded).toBe(true);
         newCampaign();
@@ -182,7 +182,7 @@ describe('Campaign management', function () {
 });
 
 describe('Media sources and ads', function () {
-    function selectAdGroupWithContentAds (i) {
+    function selectAdGroupWithContentAds(i) {
         i = i || 0;
         element(by.cssContainingText('#nav .ad-group-name', {
             0: config.testAdGroup1,
@@ -191,11 +191,11 @@ describe('Media sources and ads', function () {
         }[i])).click();
         tabs.adGroup.ads.click();
     }
-    function checkSourcesForAds (running, paused) {
+    function checkSourcesForAds(running, paused) {
         var sep = running && paused ? ' ' : '';
         running = running || '';
         paused = paused || '';
-
+        
         tabs.adGroup.ads.click();
         expect(
             element(by.css('table tbody tr:nth-child(2) td:nth-child(4)')).getText()
@@ -207,7 +207,7 @@ describe('Media sources and ads', function () {
             element(by.css('table tbody tr:nth-child(4) td:nth-child(4)')).getText()
         ).toBe(running + sep + paused);
     }
-    function addThreeSources () {
+    function addThreeSources() {
         var deferred = protractor.promise.defer(),
             source = 0,
             sourcesAdded = [],
@@ -232,12 +232,12 @@ describe('Media sources and ads', function () {
         clickSource();
         return deferred.promise;
     }
-    function createAdGroup () {
+    function createAdGroup() {
         element(by.cssContainingText('#nav .campaign-name', config.testCampaign)).click();
         tabs.campaign.adGroups.click();
         element(by.cssContainingText('.btn-add', '+ Ad group')).click();
     }
-    function uploadAds () {
+    function uploadAds() {
         tabs.adGroup.ads.click();
         element(by.cssContainingText('.btn-add', '+ Content Ads')).click();
         element(by.id('display-url-input')).sendKeys('Example.com');
@@ -265,13 +265,13 @@ describe('Media sources and ads', function () {
         checkSourcesForAds(5, 0);
         addThreeSources();
         checkSourcesForAds(8, 0);
-
+        
         selectAdGroupWithContentAds(2);
         uploadAds();
         checkSourcesForAds(0, 4);
     });
 
-
+    
     it('new ad group sources management', function () {
         var page = '.page-ad-group-sources';
         expect(demoLoaded).toBe(true);
@@ -369,19 +369,19 @@ describe('Media sources and ads', function () {
 
     });
 
-
+    
 });
 
 describe('bulk actions', function () {
-    function bulkPause () {
+    function bulkPause() {
         element(by.css('zem-dropdown > span > .show-rows a')).click();
         element(by.css('#select2-drop ul li:nth-child(1)')).click();
     }
-    function bulkResume () {
+    function bulkResume() {
         element(by.css('zem-dropdown > span > .show-rows a')).click();
         element(by.css('#select2-drop ul li:nth-child(2)')).click();
     }
-    function checkRowPaused (row) {
+    function checkRowPaused(row) {
         expect(
             selectCellAll('.page-ad-group-ads-plus', row, 3, 'div button .active-circle-icon').count()
         ).toBe(0);
@@ -389,7 +389,7 @@ describe('bulk actions', function () {
             selectCellAll('.page-ad-group-ads-plus', row, 3, 'div button .pause-icon').count()
         ).toBe(1);
     }
-    function checkRowActive (row) {
+    function checkRowActive(row) {
         expect(
             selectCellAll('.page-ad-group-ads-plus', row, 3, 'div button .active-circle-icon').count()
         ).toBe(1);
@@ -397,7 +397,7 @@ describe('bulk actions', function () {
             selectCellAll('.page-ad-group-ads-plus', row, 3, 'div button .pause-icon').count()
         ).toBe(0);
     }
-
+    
     it('bulk pausing and enabling specific content ads', function () {
         expect(demoLoaded).toBe(true);
         element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup1)).click();
@@ -406,14 +406,14 @@ describe('bulk actions', function () {
         // Bulk button disabled and second ad unckecked
         expect(element.all(by.css('zem-dropdown span div.select2-container-disabled')).count()).toBe(1);
         expect(selectCellAll('.page-ad-group-ads-plus', 2, 1, 'input:checked').count()).toBe(0);
-
+        
         // Select first ad
         selectCell('.page-ad-group-ads-plus', 2, 1, 'input').click();
 
         // Bulk button enabled and ad selected
         expect(element.all(by.css('zem-dropdown span div.select2-container-disabled')).count()).toBe(0);
         expect(selectCellAll('.page-ad-group-ads-plus', 2, 1, 'input:checked').count()).toBe(1);
-
+        
         checkRowActive(2);
         bulkPause();
         checkRowPaused(2);
@@ -446,7 +446,7 @@ describe('bulk actions', function () {
         element(by.cssContainingText('#nav .ad-group-name', config.testAdGroup1)).click();
         tabs.adGroup.ads.click();
 
-
+        
         expect(selectCellAll('.page-ad-group-ads-plus', 2, 1, 'input:checked').count()).toBe(0);
         expect(selectCellAll('.page-ad-group-ads-plus', 3, 1, 'input:checked').count()).toBe(0);
         expect(selectCellAll('.page-ad-group-ads-plus', 4, 1, 'input:checked').count()).toBe(0);
@@ -459,21 +459,21 @@ describe('bulk actions', function () {
         checkRowActive(3);
         checkRowActive(4);
         checkRowActive(5);
-
+        
         bulkPause();
-
+        
         checkRowPaused(2);
         checkRowPaused(3);
         checkRowPaused(4);
         checkRowPaused(5);
 
         bulkResume();
-
+        
         checkRowActive(2);
         checkRowActive(3);
         checkRowActive(4);
         checkRowActive(5);
-
+        
         element(by.id('zem-all-checkbox')).click();
         expect(selectCellAll('.page-ad-group-ads-plus', 2, 1, 'input:checked').count()).toBe(0);
         expect(selectCellAll('.page-ad-group-ads-plus', 3, 1, 'input:checked').count()).toBe(0);

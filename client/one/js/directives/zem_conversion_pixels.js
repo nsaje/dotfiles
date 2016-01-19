@@ -1,7 +1,7 @@
 /*global $,oneApp,constants*/
-'use strict';
+"use strict";
 
-oneApp.directive('zemConversionPixels', ['config', '$window', function (config, $window) {
+oneApp.directive('zemConversionPixels', ['config', '$window', function(config, $window) {
 
     return {
         restrict: 'E',
@@ -42,7 +42,7 @@ oneApp.directive('zemConversionPixels', ['config', '$window', function (config, 
                     scope: $scope
                 });
 
-                modalInstance.result.then(function (conversionPixel) {
+                modalInstance.result.then(function(conversionPixel) {
                     $scope.conversionPixels.push(conversionPixel);
                 });
 

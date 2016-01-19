@@ -1,6 +1,6 @@
 'use strict';
 
-describe('zemStateSelector', function () {
+describe('zemStateSelector', function() {
     var $scope, element, isolate;
     var data = [];
 
@@ -9,7 +9,7 @@ describe('zemStateSelector', function () {
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(inject(function ($compile, $rootScope) {
+    beforeEach(inject(function($compile, $rootScope) {
         $scope = $rootScope.$new();
         element = $compile(template)($scope);
 
@@ -17,7 +17,7 @@ describe('zemStateSelector', function () {
         isolate = element.isolateScope();
     }));
 
-    it('calls onChange when state is changed', function () {
+    it('calls onChange when state is changed', function() {
         isolate.id = 123;
         isolate.isEditable = true;
         isolate.autopilotShown = true;
@@ -25,7 +25,7 @@ describe('zemStateSelector', function () {
         isolate.pausedValue = 2;
         isolate.autopilotEnabledValue = 1;
         isolate.autopilotPausedValue = 2;
-        isolate.onChange = function () {};
+        isolate.onChange = function() {};
 
         $scope.$digest();
 
@@ -41,7 +41,7 @@ describe('zemStateSelector', function () {
             [1, 2, '.enabled a div.pause-icon', isolate.pausedValue, undefined]
         ];
 
-        testValues.forEach(function (testRow) {
+        testValues.forEach(function(testRow) {
             isolate.value = testRow[0];
             isolate.autopilotValue = testRow[1];
             element.find(testRow[2]).click();

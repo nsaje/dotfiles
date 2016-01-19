@@ -23,8 +23,8 @@ exports.config = {
         browser.driver.findElement(By.id('id_password')).sendKeys('testPr0tr4ct0r');
         browser.driver.findElement(By.id('id_signin_btn')).click();
 
-        return browser.driver.wait(function () {
-            return browser.driver.getCurrentUrl().then(function (url) {
+        return browser.driver.wait(function() {
+            return browser.driver.getCurrentUrl().then(function(url) {
                 return /all_accounts\/accounts/.test(url);
             });
         }, 10000);

@@ -23,8 +23,8 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
 
     $scope.getAllowedMediaSources = function () {
         var list = [];
-        angular.forEach($scope.settings.allowedSources, function (value, key) {
-            if (value.allowed) {
+        angular.forEach($scope.settings.allowedSources, function(value, key) {
+            if(value.allowed){
                 value.value = key;
                 this.push(value);
             }
@@ -34,8 +34,8 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
 
     $scope.getAvailableMediaSources = function () {
         var list = [];
-        angular.forEach($scope.settings.allowedSources, function (value, key) {
-            if (!value.allowed) {
+        angular.forEach($scope.settings.allowedSources, function(value, key) {
+            if(!value.allowed){
                 value.value = key;
                 this.push(value);
             }
@@ -59,7 +59,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         $scope.selectedMediaSouces.allowed.length = 0;
     };
 
-    $scope.getServiceFees = function (search) {
+    $scope.getServiceFees = function(search) {
         // use fresh instance because we modify the collection on the fly
         var fees = ['15', '20', '25'];
 

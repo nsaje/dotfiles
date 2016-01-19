@@ -1,6 +1,6 @@
 'use strict';
 
-describe('AdGroupAdsPlusCtrl', function () {
+describe('AdGroupAdsPlusCtrl', function() {
     var $scope, api, $q, $state, $window, $httpBackend;
     var zemFilterServiceMock;
 
@@ -9,41 +9,41 @@ describe('AdGroupAdsPlusCtrl', function () {
 
     beforeEach(module(function ($provide) {
         zemFilterServiceMock = {
-            getShowArchived: function () { return true; },
-            getFilteredSources: function () {}
+            getShowArchived: function() { return true; },
+            getFilteredSources: function() {}
         };
 
-        $provide.value('zemLocalStorageService', {get: function () {}});
+        $provide.value('zemLocalStorageService', {get: function(){}});
         $provide.value('zemFilterService', zemFilterServiceMock);
         $provide.value('zemCustomTableColsService', {
-            load: function () { return []; },
-            save: function () { return []; }
+            load: function() {return [];},
+            save: function() {return [];}
         });
     }));
 
-    beforeEach(inject(function ($controller, $rootScope, _$state_, _$window_, _$q_) {
+    beforeEach(inject(function($controller, $rootScope, _$state_, _$window_, _$q_) {
         $q = _$q_;
         $scope = $rootScope.$new();
 
-        $scope.isPermissionInternal = function () { return true; };
-        $scope.hasPermission = function () { return true; };
-        $scope.getAdGroupState = function () {};
+        $scope.isPermissionInternal = function() {return true;};
+        $scope.hasPermission = function() {return true;};
+        $scope.getAdGroupState = function() {};
         $scope.dateRange = {
             startDate: {
-                isSame: function () {}
+                    isSame: function() {}
             },
             endDate: {
-                isSame: function () {}
+                    isSame: function() {}
             }
         };
 
         $scope.adGroup = {contentAdsTabWithCMS: false};
 
-        var mockApiFunc = function () {
+        var mockApiFunc = function() {
             return {
-                then: function () {
+                then: function() {
                     return {
-                        finally: function () {}
+                        finally: function() {}
                     };
                 }
             };
@@ -88,24 +88,24 @@ describe('AdGroupAdsPlusCtrl', function () {
         $controller('AdGroupAdsPlusCtrl', {$scope: $scope, api: api});
     }));
 
-    describe('addContentAds', function (done) {
-        it('opens a modal window when called', function () {
+    describe('addContentAds', function(done) {
+        it('opens a modal window when called', function() {
             $scope.addContentAds().result
-                .catch(function (error) {
+                .catch(function(error) {
                     expect(error).toBeUndefined();
                 })
                 .finally(done);
         });
     });
 
-    describe('archiveContentAds', function (done) {
-        beforeEach(function () {
+    describe('archiveContentAds', function(done) {
+        beforeEach(function() {
             $scope.selectedAll = true;
         });
-        it('does nothing on failure', function () {
+        it('does nothing on failure', function() {
             var deferred = $q.defer();
 
-            spyOn(api.adGroupContentAdArchive, 'archive').and.callFake(function () {
+            spyOn(api.adGroupContentAdArchive, 'archive').and.callFake(function() {
                 return deferred.promise;
             });
 
@@ -119,10 +119,10 @@ describe('AdGroupAdsPlusCtrl', function () {
             expect(api.adGroupContentAdArchive.archive).toHaveBeenCalled();
             expect($scope.updateTableAfterArchiving).not.toHaveBeenCalled();
         });
-        it('updates table on success', function () {
+        it('updates table on success', function() {
             var deferred = $q.defer();
 
-            spyOn(api.adGroupContentAdArchive, 'archive').and.callFake(function () {
+            spyOn(api.adGroupContentAdArchive, 'archive').and.callFake(function() {
                 return deferred.promise;
             });
 
@@ -138,15 +138,15 @@ describe('AdGroupAdsPlusCtrl', function () {
         });
     });
 
-    describe('restoreContentAds', function (done) {
-        beforeEach(function () {
+    describe('restoreContentAds', function(done) {
+        beforeEach(function() {
             $scope.selectedAll = true;
         });
 
-        it('does nothing on failure', function () {
+        it('does nothing on failure', function() {
             var deferred = $q.defer();
 
-            spyOn(api.adGroupContentAdArchive, 'restore').and.callFake(function () {
+            spyOn(api.adGroupContentAdArchive, 'restore').and.callFake(function() {
                 return deferred.promise;
             });
 
@@ -160,10 +160,10 @@ describe('AdGroupAdsPlusCtrl', function () {
             expect(api.adGroupContentAdArchive.restore).toHaveBeenCalled();
             expect($scope.updateTableAfterArchiving).not.toHaveBeenCalled();
         });
-        it('updates table on success', function () {
+        it('updates table on success', function() {
             var deferred = $q.defer();
 
-            spyOn(api.adGroupContentAdArchive, 'restore').and.callFake(function () {
+            spyOn(api.adGroupContentAdArchive, 'restore').and.callFake(function() {
                 return deferred.promise;
             });
 
@@ -179,14 +179,14 @@ describe('AdGroupAdsPlusCtrl', function () {
         });
     });
 
-    describe('selectedAdsChanged', function () {
-        it('sets correct partialSelection to true if necessary', function () {
+    describe('selectedAdsChanged', function() {
+        it('sets correct partialSelection to true if necessary', function() {
             $scope.selectedAdsChanged({id: 1}, true);
 
             expect($scope.selectionMenuConfig.partialSelection).toBe(true);
         });
 
-        it('sets correct partialSelection to false if necessary', function () {
+        it('sets correct partialSelection to false if necessary', function() {
             $scope.selectedContentAdsStatus = {1: true, 2: true};
 
             $scope.selectedAdsChanged({id: 1}, false);
@@ -195,7 +195,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             $scope.selectedAdsChanged({id: 2}, false);
             expect($scope.selectionMenuConfig.partialSelection).toBe(false);
         });
-        it('acknowledges selection changed when something is selected', function () {
+        it('acknowledges selection changed when something is selected', function() {
             $scope.selectedContentAdsStatus = {1: true, 2: false};
             $scope.selectedAll = false;
             $scope.selectedBatchId = false;
@@ -220,8 +220,8 @@ describe('AdGroupAdsPlusCtrl', function () {
         });
     });
 
-    describe('selectAllCallback', function () {
-        it('sets selection and calls updateContentAdSelection if checked', function () {
+    describe('selectAllCallback', function() {
+        it('sets selection and calls updateContentAdSelection if checked', function() {
             $scope.selectionMenuConfig.partialSelection = true;
 
             spyOn($scope, 'updateContentAdSelection');
@@ -234,7 +234,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             expect($scope.selectionMenuConfig.partialSelection).toBe(false);
         });
 
-        it('sets selection and calls clearContentAdSelection if not checked', function () {
+        it('sets selection and calls clearContentAdSelection if not checked', function() {
             $scope.selectionMenuConfig.partialSelection = true;
 
             spyOn($scope, 'clearContentAdSelection');
@@ -248,8 +248,8 @@ describe('AdGroupAdsPlusCtrl', function () {
         });
     });
 
-    describe('selectBatchCallback', function () {
-        it('sets selection and calls updateContentAdSelection', function () {
+    describe('selectBatchCallback', function() {
+        it('sets selection and calls updateContentAdSelection', function() {
             var batchId = 1;
 
             spyOn($scope, 'updateContentAdSelection');
@@ -264,8 +264,8 @@ describe('AdGroupAdsPlusCtrl', function () {
         });
     });
 
-    describe('clearContentAdSelection', function () {
-        it('unchecks all selected rows', function () {
+    describe('clearContentAdSelection', function() {
+        it('unchecks all selected rows', function() {
             $scope.rows = [
                 {id: 1, ad_selected: true},
                 {id: 2, ad_selected: true},
@@ -274,14 +274,14 @@ describe('AdGroupAdsPlusCtrl', function () {
 
             $scope.clearContentAdSelection();
 
-            $scope.rows.forEach(function (row) {
+            $scope.rows.forEach(function(row) {
                 expect(row.ad_selected).toBe(false);
             });
         });
     });
 
-    describe('updateContentAdSelection', function () {
-        beforeEach(function () {
+    describe('updateContentAdSelection', function() {
+        beforeEach(function() {
             $scope.rows = [
                 {id: 1, ad_selected: false, batch_id: 1},
                 {id: 2, ad_selected: false, batch_id: 1},
@@ -289,17 +289,17 @@ describe('AdGroupAdsPlusCtrl', function () {
             ];
         });
 
-        it('checks all if selectedAll is true', function () {
+        it('checks all if selectedAll is true', function() {
             $scope.selectedAll = true;
 
             $scope.updateContentAdSelection();
 
-            $scope.rows.forEach(function (row) {
+            $scope.rows.forEach(function(row) {
                 expect(row.ad_selected).toBe(true);
             });
         });
 
-        it('checks all if selectedAll is true except for ads that were unchecked', function () {
+        it('checks all if selectedAll is true except for ads that were unchecked', function() {
             $scope.selectedAll = true;
             $scope.selectedContentAdsStatus[3] = false;
 
@@ -310,7 +310,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             expect($scope.rows[2].ad_selected).toBe(false);
         });
 
-        it('checks all if selectedAll is true except for ads that were unchecked', function () {
+        it('checks all if selectedAll is true except for ads that were unchecked', function() {
             $scope.selectedAll = true;
             $scope.selectedContentAdsStatus[3] = false;
 
@@ -321,7 +321,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             expect($scope.rows[2].ad_selected).toBe(false);
         });
 
-        it('checks batch if selectedBatchId', function () {
+        it('checks batch if selectedBatchId', function() {
             $scope.selectedBatchId = 1;
 
             $scope.updateContentAdSelection();
@@ -331,7 +331,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             expect($scope.rows[2].ad_selected).toBe(false);
         });
 
-        it('checks batch if selectedBatchId expect for ads that were unchecked', function () {
+        it('checks batch if selectedBatchId expect for ads that were unchecked', function() {
             $scope.selectedBatchId = 1;
             $scope.selectedContentAdsStatus[2] = false;
 
@@ -342,7 +342,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             expect($scope.rows[2].ad_selected).toBe(false);
         });
 
-        it('checks batch if selectedBatchId plus all other checked ads', function () {
+        it('checks batch if selectedBatchId plus all other checked ads', function() {
             $scope.selectedBatchId = 2;
             $scope.selectedContentAdsStatus[1] = true;
 
@@ -353,7 +353,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             expect($scope.rows[2].ad_selected).toBe(true);
         });
 
-        it('checks all checked ads', function () {
+        it('checks all checked ads', function() {
             $scope.selectedContentAdsStatus[1] = true;
             $scope.selectedContentAdsStatus[2] = true;
 
@@ -365,8 +365,8 @@ describe('AdGroupAdsPlusCtrl', function () {
         });
     });
 
-    describe('executeBulkAction', function () {
-        it('pauses all selected content ads if executeBulkAction(\'pause\')', function () {
+    describe('executeBulkAction', function() {
+        it('pauses all selected content ads if executeBulkAction(\'pause\')', function() {
             $scope.rows = [
                 {id: 1, ad_selected: true, batch_id: 1, status_setting: constants.contentAdSourceState.ACTIVE},
                 {id: 2, ad_selected: true, batch_id: 1, status_setting: constants.contentAdSourceState.ACTIVE},
@@ -396,7 +396,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             );
         });
 
-        it('enables all selected content ads if executeBulkAction(\'resume\')', function () {
+        it('enables all selected content ads if executeBulkAction(\'resume\')', function() {
             $scope.rows = [
                 {id: 1, ad_selected: true, batch_id: 1, status_setting: constants.contentAdSourceState.INACTIVE},
                 {id: 2, ad_selected: true, batch_id: 1, status_setting: constants.contentAdSourceState.INACTIVE},
@@ -426,7 +426,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             );
         });
 
-        it('downloads csv with selected content ads if executeBulkAction(\'download\')', function () {
+        it('downloads csv with selected content ads if executeBulkAction(\'download\')', function() {
             $scope.rows = [
                 {id: 1, ad_selected: true, batch_id: 1},
                 {id: 2, ad_selected: true, batch_id: 1},
@@ -449,7 +449,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             );
         });
 
-        it('archives all selected content ads if executeBulkAction(\'archive\')', function () {
+        it('archives all selected content ads if executeBulkAction(\'archive\')', function() {
             $scope.rows = [
                 {id: 1, ad_selected: true, batch_id: 1, archived: false},
                 {id: 2, ad_selected: true, batch_id: 1, archived: false},
@@ -473,7 +473,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             );
         });
 
-        it('restores all selected content ads if executeBulkAction(\'restore\')', function () {
+        it('restores all selected content ads if executeBulkAction(\'restore\')', function() {
             $scope.rows = [
                 {id: 1, ad_selected: true, batch_id: 1, archived: false},
                 {id: 2, ad_selected: true, batch_id: 1, archived: false},
@@ -497,7 +497,7 @@ describe('AdGroupAdsPlusCtrl', function () {
             );
         });
 
-        it ('does not execute a bulk action when no content ads are selected', function () {
+        it ('does not execute a bulk action when no content ads are selected', function() {
             $scope.rows = [
                 {id: 1, ad_selected: false, batch_id: 1, archived: false},
                 {id: 2, ad_selected: false, batch_id: 1, archived: false},

@@ -1,10 +1,10 @@
 /* globals JSON */
-'use strict';
+"use strict"
 
-oneApp.factory('zemLocalStorageService', function () {
+oneApp.factory('zemLocalStorageService', function() {
     var user = null;
 
-    function getKey (key, namespace) {
+    function getKey(key, namespace) {
         var components = ['oneApp', user.id];
 
         if (namespace) {
@@ -15,14 +15,14 @@ oneApp.factory('zemLocalStorageService', function () {
         return components.join('.');
     }
 
-    function set (key, value, namespace) {
+    function set(key, value, namespace) {
         localStorage.setItem(
             getKey(key, namespace),
             JSON.stringify(value)
         );
     }
 
-    function get (key, namespace) {
+    function get(key, namespace) {
         var value = localStorage.getItem(
             getKey(key, namespace)
         );
@@ -34,13 +34,13 @@ oneApp.factory('zemLocalStorageService', function () {
         return JSON.parse(value);
     }
 
-    function init (currentUser) {
+    function init(currentUser) {
         user = currentUser;
     }
 
     return {
-        init: init,
+        init: init, 
         get: get,
         set: set
-    };
+    }
 });

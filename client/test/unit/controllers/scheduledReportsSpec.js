@@ -11,16 +11,16 @@ describe('ScheduledReportsCtrl', function () {
             $q = _$q_;
             $scope = $rootScope.$new();
 
-            $scope.isPermissionInternal = function () { return true; };
-            $scope.hasPermission = function () { return true; };
+            $scope.isPermissionInternal = function() {return true;};
+            $scope.hasPermission = function() {return true;};
             $scope.account = {id: 1};
             $scope.reports = [];
 
-            var mockApiFunc = function () {
+            var mockApiFunc = function() {
                 return {
-                    then: function () {
+                    then: function() {
                         return {
-                            finally: function () {}
+                            finally: function() {}
                         };
                     }
                 };
@@ -41,8 +41,8 @@ describe('ScheduledReportsCtrl', function () {
     });
 
 
-    describe('getReports', function () {
-        beforeEach(function () {
+    describe('getReports', function() {
+        beforeEach(function() {
             $scope.reports = [];
         });
 
@@ -80,18 +80,18 @@ describe('ScheduledReportsCtrl', function () {
             expect($scope.requestInProgress).toBe(true);
             var reports = {reports: [
                 {
-                    frequency: 'Daily',
-                    granularity: 'Content Ad, by Media Source',
-                    level: 'Ad Group',
-                    name: 'Rep1',
-                    recipients: 'test@zemanta.com',
+                    frequency: "Daily",
+                    granularity: "Content Ad, by Media Source",
+                    level: "Ad Group",
+                    name: "Rep1",
+                    recipients: "test@zemanta.com",
                     scheduled_report_id: 1
-                }, {
-                    frequency: 'Weekly',
-                    granularity: 'Ad Group',
-                    level: 'Campaign',
-                    name: 'Rep2',
-                    recipients: 'test2@zemanta.com,test3@zemanta.com',
+                },{
+                    frequency: "Weekly",
+                    granularity: "Ad Group",
+                    level: "Campaign",
+                    name: "Rep2",
+                    recipients: "test2@zemanta.com,test3@zemanta.com",
                     scheduled_report_id: 2
                 }
             ]};

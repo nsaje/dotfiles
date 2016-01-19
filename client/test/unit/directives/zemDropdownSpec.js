@@ -1,6 +1,6 @@
 'use strict';
 
-describe('zemDropdown', function () {
+describe('zemDropdown', function() {
     var $scope, element, isolate;
     var data = [];
 
@@ -8,12 +8,12 @@ describe('zemDropdown', function () {
 
     beforeEach(module('one'));
 
-    beforeEach(inject(function ($compile, $rootScope) {
+    beforeEach(inject(function($compile, $rootScope) {
         $scope = $rootScope.$new();
 
-        $scope.onSelectTest = function () {};
+        $scope.onSelectTest = function() {};
         $scope.disabled = false;
-        $scope.checkDisabledTest = function () { return $scope.disabled; };
+        $scope.checkDisabledTest = function() { return $scope.disabled; };
         $scope.options = [{
             name: 'D1',
             value: 'd1',
@@ -34,7 +34,7 @@ describe('zemDropdown', function () {
         isolate = element.isolateScope();
     }));
 
-    it('fires onSelect', function () {
+    it('fires onSelect', function() {
         spyOn($scope, 'onSelectTest');
 
         isolate.selectedItem = 'd1';
@@ -43,7 +43,7 @@ describe('zemDropdown', function () {
         expect($scope.onSelectTest).toHaveBeenCalledWith('d1');
     });
 
-    it('adds popover when disabled', function () {
+    it('adds popover when disabled', function() {
         $scope.disabled = true;
         $scope.$digest();
 

@@ -1,7 +1,7 @@
 /*global $,oneApp*/
-'use strict';
+"use strict";
 
-oneApp.directive('zemTutorialPopover', ['$compile', '$timeout', function ($compile, $timeout) {
+oneApp.directive('zemTutorialPopover', ['$compile', '$timeout', function($compile, $timeout) {
     return {
         restrict: 'A',
         compile: function (tElem, tAttrs) {
@@ -10,7 +10,7 @@ oneApp.directive('zemTutorialPopover', ['$compile', '$timeout', function ($compi
                     condition = attrs.zemTutorialPopoverConditionPromise,
                     openPopover = function () {
                         element.trigger('openTutorial');
-                        element.on('click', function (e) {
+                        element.on('click', function(e) {
                             element.trigger('closeTutorial');
                         });
                         element.parent().on('click', '.popover', function (e) {
@@ -19,7 +19,7 @@ oneApp.directive('zemTutorialPopover', ['$compile', '$timeout', function ($compi
                     };
 
                 if (!scope.user.showOnboardingGuidance) { return; }
-
+                
                 element.attr('popover', attrs.zemTutorialPopover);
                 element.attr('popover-placement', attrs.zemTutorialPopoverPlacement);
                 element.attr('popover-trigger', 'openTutorial');

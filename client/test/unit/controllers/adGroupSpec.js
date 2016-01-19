@@ -36,24 +36,24 @@ describe('AdGroupCtrl', function () {
                 $state: $state,
                 user: user,
                 accounts: accounts,
-                zemFullStoryService: {identify: function () {}}
+                zemFullStoryService: {identify: function(){}}
             });
             $controller('AdGroupCtrl', {$scope: $scope, $state: $state});
         });
     });
 
-    it('shows Content Ads+ tab when ad group has cms turned on', function () {
+    it('shows Content Ads+ tab when ad group has cms turned on', function() {
         $scope.adGroup.contentAdsTabWithCMS = true;
         var tabs = $scope.getTabs();
         expect(tabs[0].route, 'main.adGroups.adsPlus');
     });
 
-    it('hides Content Ads+ tab when no permission', function () {
+    it('hides Content Ads+ tab when no permission', function() {
         var tabs = $scope.getTabs();
         expect(tabs.length).toEqual(5);
     });
 
-    it('sets hidden and internal for Content Ads+ tab', function () {
+    it('sets hidden and internal for Content Ads+ tab', function() {
         $scope.user.permissions['zemauth.new_content_ads_tab'] = false;
 
         var tabs = $scope.getTabs();
@@ -64,7 +64,7 @@ describe('AdGroupCtrl', function () {
 
     describe('setAdGroupData', function () {
         it('should add key-value pair for the current ad group', function () {
-            $scope.adGroupData = {1: {key1: 'value1'}};
+            $scope.adGroupData = { 1: { key1: 'value1' } };
             $scope.setAdGroupData('key2', 'value2');
             expect($scope.adGroupData).toEqual({
                 1: {

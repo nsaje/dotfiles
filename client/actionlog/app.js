@@ -12,7 +12,7 @@ actionLogApp.config(['$httpProvider', function ($httpProvider) {
 }]);
 
 var locationSearch;
-actionLogApp.run(['$rootScope', 'config', function ($rootScope, config) {
+actionLogApp.run(['$rootScope', 'config', function($rootScope, config) {
     $rootScope.config = config;
 }]);
 

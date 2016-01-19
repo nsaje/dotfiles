@@ -7,7 +7,7 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
     $scope.requestInProgress = false;
     $scope.saved = null;
     $scope.discarded = null;
-
+    
     $scope.campaignHasFreshSettings = function () {
         return campaignFreshSettings.promise;
     };
@@ -49,7 +49,7 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
                 if ($scope.user.automaticallyCreateAdGroup && $scope.user.showOnboardingGuidance) {
                     $scope.user.automaticallyCreateAdGroup = false;
                     api.campaignAdGroups.create($scope.campaign.id).then(function (adGroupData) {
-
+                        
                         $scope.campaign.adGroups.push({
                             id: adGroupData.id,
                             name: adGroupData.name,
