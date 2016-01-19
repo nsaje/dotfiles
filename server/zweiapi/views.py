@@ -407,22 +407,4 @@ def _fetch_reports_by_publisher_callback(action, data):
     if source.source_type.type != dash.constants.SourceType.OUTBRAIN:
         raise Exception('Fetch reports by publisher supported only on Outbrain')
 
-    # centralize in order to reduce possibility of mistakes
-    # if you want everything to run again, just increase the number
-    change_unique_key = "reports_by_publisher_2"
-
-    ret = get_day_cost(date, ad_group=ad_group, source=source)
-    cost = ret['cost']
-    if cost is None:
-        cost = 0
-
     reports.api_publishers.put_ob_data_to_s3(date, ad_group, rows_raw)
-    reports.api_publishers.ob_insert_adgroup_date(
-        date,
-        ad_group.id,
-        "outbrain",  # Hardcoding this at the time, the problem is that source.name can change
-        rows_raw,
-        cost
-    )
-
-    _set_reports_cache(data, ad_group, source, date, change_unique_key)

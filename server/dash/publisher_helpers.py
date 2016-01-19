@@ -1,3 +1,5 @@
+import re
+
 from dash import constants
 from dash import models
 
@@ -87,3 +89,7 @@ def publisher_exchange(source):
     instead of exchange strings
     """
     return source.tracking_slug.replace('b1_', '')
+
+
+def is_publisher_domain(raw_str):
+    return re.search("\.[a-z]+$", raw_str.lower()) is not None

@@ -1,5 +1,5 @@
-/*globals oneApp*/
-oneApp.controller('AccountCreditCtrl', ['$scope', '$state', '$modal', 'api', function ($scope, $state, $modal, api) {
+/*globals oneApp, moment*/
+oneApp.controller('AccountCreditCtrl', ['$scope', '$state', '$modal', '$location', 'api', 'zemMoment', function ($scope, $state, $modal, $location, api, zemMoment) {
     function error() {}
     function refresh(updatedId) {
         $scope.updatedId = updatedId;
@@ -26,6 +26,23 @@ oneApp.controller('AccountCreditCtrl', ['$scope', '$state', '$modal', 'api', fun
     $scope.creditTotals = {};
     $scope.activeCredit = [];
     $scope.pastCredit = [];
+
+    $scope.isSelected = function (creditStartDate, creditEndDate) {
+        var urlStartDate = moment($location.search().start_date).toDate(),
+            urlEndDate = moment($location.search().end_date).toDate();
+
+        creditStartDate = moment(creditStartDate, 'MM/DD/YYYY').toDate();
+        creditEndDate = moment(creditEndDate, 'MM/DD/YYYY').toDate();
+
+        return urlStartDate <= creditEndDate && urlEndDate >= creditStartDate;
+    };
+
+    $scope.$watch('dateRange', function(newValue, oldValue) {
+        if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
+            return;
+        }
+        refresh();
+    });
 
     $scope.addCreditItem = function () {
         $scope.selectedCreditItemId = null;

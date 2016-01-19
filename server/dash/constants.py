@@ -48,6 +48,16 @@ class AdGroupSourceSettingsAutopilotState(ConstantBase):
     }
 
 
+class ExportPlusStatus(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+
+    _VALUES = {
+        ACTIVE: 'Active',
+        INACTIVE: 'Inactive'
+    }
+
+
 class AdTargetDevice(ConstantBase):
     DESKTOP = 'desktop'
     MOBILE = 'mobile'

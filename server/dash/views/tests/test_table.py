@@ -1206,7 +1206,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'source_id': 3,
             u'impressions': 10560,
             u'domain': 'test_1',
-            u'domain_link': 'http://test_1',
+            u'domain_link': '',
         }
 
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)

@@ -809,8 +809,8 @@ class FetchReportsByPublisherTestCase(TestCase):
 
     fixtures = ['test_zwei_api.yaml', 'test_article_stats_ob.yaml']
 
-    @mock.patch('reports.api_publishers.ob_insert_adgroup_date')
-    def test_fetch_reports_by_publisher(self, ob_insert_adgroup_date):
+    @patch('reports.api_publishers.put_ob_data_to_s3')
+    def test_fetch_reports_by_publisher(self, mock_put_to_s3):
         article_row = {
             'url': 'http://money.cnn.com',
             'name': 'Some publisher',
@@ -824,7 +824,7 @@ class FetchReportsByPublisherTestCase(TestCase):
 
         ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
         response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 6, 4), zwei_response_data)
-        ob_insert_adgroup_date.assert_called_once_with(datetime.date(2014, 6, 4), 1, "outbrain", [article_row], 0)
+        mock_put_to_s3.assert_called_once_with(datetime.date(2014, 6, 4), ad_group_source.ad_group, [article_row])
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
