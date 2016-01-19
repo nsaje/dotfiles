@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 describe('zemChart', function () {
     var scope, chart, isolate;
@@ -59,7 +59,7 @@ describe('zemChart', function () {
         ]);
     });
 
-    it('should add a null datapoint on the first date without data', function() {
+    it('should add a null datapoint on the first date without data', function () {
         scope.startDate = moment('2014-07-01');
         scope.endDate = moment('2014-07-30');
         isolate.data = [{

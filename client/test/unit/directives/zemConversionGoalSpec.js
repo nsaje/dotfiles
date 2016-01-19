@@ -3,11 +3,11 @@
 describe('zemConversionGoals', function () {
     var $scope, $q, element, isolate;
 
-    var mockApiFunc = function() {
+    var mockApiFunc = function () {
         return {
-            then: function() {
+            then: function () {
                 return {
-                    finally: function() {}
+                    finally: function () {}
                 };
             }
         };
@@ -34,8 +34,8 @@ describe('zemConversionGoals', function () {
         var template = '<zem-conversion-goals zem-campaign="campaign" zem-has-permission="hasPermission" zem-is-permission-internal="isPermissionInternal"></zem-conversion-goals>';
 
         $scope = $rootScope.$new();
-        $scope.isPermissionInternal = function() {return true;};
-        $scope.hasPermission = function() {return true;};
+        $scope.isPermissionInternal = function () { return true; };
+        $scope.hasPermission = function () { return true; };
         $scope.campaign = {id: 1};
 
         element = $compile(template)($scope);
@@ -44,18 +44,18 @@ describe('zemConversionGoals', function () {
         isolate = element.isolateScope();
     }));
 
-    describe('addConversionGoal', function(done) {
+    describe('addConversionGoal', function (done) {
         it('opens a modal window', function () {
             isolate.addConversionGoal().result
-                .catch(function(error) {
+                .catch(function (error) {
                     expect(error).toBeUndefined();
                 })
                 .finally(done);
         });
     });
 
-    describe('listConversionGoals', function() {
-        beforeEach(function() {
+    describe('listConversionGoals', function () {
+        beforeEach(function () {
             isolate.conversionPixels = [];
         });
 
@@ -109,11 +109,11 @@ describe('zemConversionGoals', function () {
         });
     });
 
-    describe('removeConversionGoal', function() {
+    describe('removeConversionGoal', function () {
         it('sets error flag on failure', function () {
             var deferred = $q.defer();
 
-            spyOn(api.conversionGoal, 'delete').and.callFake(function() {
+            spyOn(api.conversionGoal, 'delete').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -132,10 +132,10 @@ describe('zemConversionGoals', function () {
             expect(angular.equals(isolate.conversionGoals, expectedRows)).toEqual(true);
         });
 
-        it('updates history on success', function() {
+        it('updates history on success', function () {
             var deferred = $q.defer();
 
-            spyOn(api.conversionGoal, 'delete').and.callFake(function() {
+            spyOn(api.conversionGoal, 'delete').and.callFake(function () {
                 return deferred.promise;
             });
 

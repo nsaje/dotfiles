@@ -1,10 +1,10 @@
 /*globals angular,oneApp,options,moment,JSON*/
-"use strict";
+'use strict';
 
-oneApp.factory("zemCustomTableColsService", ['zemLocalStorageService', function(zemLocalStorageService) {
+oneApp.factory('zemCustomTableColsService', ['zemLocalStorageService', function (zemLocalStorageService) {
     var key = 'columns';
 
-    function load(namespace, columns) {
+    function load (namespace, columns) {
         var cols = zemLocalStorageService.get(key, namespace);
         if (cols) {
             columns.forEach(function (x) {
@@ -15,7 +15,7 @@ oneApp.factory("zemCustomTableColsService", ['zemLocalStorageService', function(
         }
     }
 
-    function save(namespace, columns) {
+    function save (namespace, columns) {
         var cols = [];
         columns.forEach(function (x) {
             if (x.checked) {

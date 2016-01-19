@@ -8,7 +8,7 @@ oneApp.controller('AllAccountsCtrl', ['$scope', '$state', function ($scope, $sta
         {heading: 'Reports', route: 'main.allAccounts.scheduled_reports', active: false, hidden: !$scope.hasPermission('zemauth.exports_plus'), internal: true},
     ];
 
-    $scope.tabs.forEach(function(tab) {
+    $scope.tabs.forEach(function (tab) {
         tab.active = $state.is(tab.route);
     });
 

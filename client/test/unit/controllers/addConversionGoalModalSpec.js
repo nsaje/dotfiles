@@ -1,12 +1,12 @@
 'use strict';
 
-describe('AddConversionGoalModalCtrl', function() {
+describe('AddConversionGoalModalCtrl', function () {
     var $scope, $modalInstance, api, $q, $timeout, openedDeferred;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(inject(function($controller, $rootScope, _$q_, _$timeout_) {
+    beforeEach(inject(function ($controller, $rootScope, _$q_, _$timeout_) {
         $q = _$q_;
         $timeout = _$timeout_;
         $scope = $rootScope.$new();
@@ -16,15 +16,15 @@ describe('AddConversionGoalModalCtrl', function() {
 
         openedDeferred = $q.defer();
         $modalInstance = {
-            close: function(){},
+            close: function () {},
             opened: openedDeferred.promise
         };
 
-        var mockApiFunc = function() {
+        var mockApiFunc = function () {
             return {
-                then: function() {
+                then: function () {
                     return {
-                        finally: function() {}
+                        finally: function () {}
                     };
                 }
             };
@@ -42,11 +42,11 @@ describe('AddConversionGoalModalCtrl', function() {
         );
     }));
 
-    describe('addConversionGoal', function() {
-        it('updates errors object on known errors', function() {
+    describe('addConversionGoal', function () {
+        it('updates errors object on known errors', function () {
             var deferred = $q.defer();
 
-            spyOn(api.conversionGoal, 'post').and.callFake(function() {
+            spyOn(api.conversionGoal, 'post').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -73,7 +73,7 @@ describe('AddConversionGoalModalCtrl', function() {
         it('updates error flag on unknown error', function () {
             var deferred = $q.defer();
 
-            spyOn(api.conversionGoal, 'post').and.callFake(function() {
+            spyOn(api.conversionGoal, 'post').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -97,10 +97,10 @@ describe('AddConversionGoalModalCtrl', function() {
             expect($scope.errors).toEqual({});
         });
 
-        it('closes the modal window on success', function() {
+        it('closes the modal window on success', function () {
             var deferred = $q.defer();
 
-            spyOn(api.conversionGoal, 'post').and.callFake(function() {
+            spyOn(api.conversionGoal, 'post').and.callFake(function () {
                 return deferred.promise;
             });
 
