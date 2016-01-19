@@ -1,7 +1,7 @@
 /*global $,oneApp*/
-"use strict";
+'use strict';
 
-oneApp.directive('zemCustomTableCols', ['config', function(config) {
+oneApp.directive('zemCustomTableCols', ['config', function (config) {
     return {
         restrict: 'E',
         scope: {
@@ -10,15 +10,15 @@ oneApp.directive('zemCustomTableCols', ['config', function(config) {
             localStoragePrefix: '='
         },
         templateUrl: '/partials/zem_custom_table_cols.html',
-        compile: function compile(tElement, tAttrs, transclude) {
+        compile: function compile (tElement, tAttrs, transclude) {
             // Prevent closing of dropdown-menu when checkbox is clicked.
-            $(tElement).on('click', function(e) {
+            $(tElement).on('click', function (e) {
                 e.stopPropagation();
             });
 
             return {
-              pre: function preLink(scope, iElement, iAttrs, controller) {return;},
-              post: function postLink(scope, iElement, iAttrs, controller) {return;}
+                pre: function preLink (scope, iElement, iAttrs, controller) { return; },
+                post: function postLink (scope, iElement, iAttrs, controller) { return; }
             };
         },
         controller: ['$scope', '$element', '$attrs', 'zemCustomTableColsService', function ($scope, $element, $attrs, zemCustomTableColsService) {
@@ -27,22 +27,22 @@ oneApp.directive('zemCustomTableCols', ['config', function(config) {
 
             zemCustomTableColsService.load($scope.localStoragePrefix, $scope.columns);
 
-            $scope.filterColumns = function(col) {
+            $scope.filterColumns = function (col) {
                 return !col.unselectable;
             };
 
-            var updateCategories = function() {
+            var updateCategories = function () {
                 $scope.categoryColumns = [];
                 $scope.hasCategories = false;
 
-                for(var i = 0; i < $scope.categories.length; i++) {
+                for (var i = 0; i < $scope.categories.length; i++) {
                     var cat = $scope.categories[i];
 
-                    var cols = $scope.columns.filter(function(col) {
+                    var cols = $scope.columns.filter(function (col) {
                         return cat.fields.indexOf(col.field) !== -1 && col.shown;
                     });
 
-                    if(cols.length > 0) {
+                    if (cols.length > 0) {
                         $scope.categoryColumns.push({
                             'columns': cols,
                             'name': cat.name
@@ -57,13 +57,13 @@ oneApp.directive('zemCustomTableCols', ['config', function(config) {
             };
 
             $scope.$watch('categories', function (newValue, oldValue) {
-                if(newValue) {
+                if (newValue) {
                     updateCategories();
                 }
             }, true);
 
             $scope.$watch('columns', function (newValue, oldValue) {
-                if(newValue) {
+                if (newValue) {
                     updateCategories();
                 }
             }, true);

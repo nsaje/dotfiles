@@ -1,11 +1,11 @@
 /* globals oneApp,options */
 oneApp.controller('DownloadExportReportModalCtrl',
   ['$scope', '$modalInstance', 'api', 'zemFilterService', '$window', '$state',
-  function($scope, $modalInstance, api, zemFilterService, $window, $state) {
-    $scope.showInProgress = false;
-    $scope.export = {};
+  function ($scope, $modalInstance, api, zemFilterService, $window, $state) {
+      $scope.showInProgress = false;
+      $scope.export = {};
 
-    $scope.setDisabledExportOptions = function() {
+      $scope.setDisabledExportOptions = function () {
         $scope.showInProgress = true;
         api.exportPlusAllowed.get($state.params.id, $scope.level, $scope.exportSources, $scope.startDate, $scope.endDate).then(
             function (data) {
@@ -29,12 +29,12 @@ oneApp.controller('DownloadExportReportModalCtrl',
                 });
             }
          ).finally( function () {
-            $scope.checkDownloadAllowed();
-            $scope.showInProgress = false;
+             $scope.checkDownloadAllowed();
+             $scope.showInProgress = false;
          });
     };
 
-    $scope.checkDownloadAllowed = function () {
+      $scope.checkDownloadAllowed = function () {
         var option = getOptionByValue($scope.export.type.value);
         $scope.downloadAllowed = true;
         $scope.downloadNotAllowedMessage = '';
@@ -49,7 +49,7 @@ oneApp.controller('DownloadExportReportModalCtrl',
         }
     };
 
-    $scope.downloadReport = function() {
+      $scope.downloadReport = function () {
         var url = $scope.baseUrl + 'export_plus/?type=' + $scope.export.type.value +
                   '&start_date=' + $scope.startDate.format() +
                   '&end_date=' + $scope.endDate.format() +
@@ -64,19 +64,19 @@ oneApp.controller('DownloadExportReportModalCtrl',
         $modalInstance.close();
     };
 
-    $scope.init = function () {
+      $scope.init = function () {
         $scope.export.type = $scope.options[0];
         $scope.setDisabledExportOptions();
     };
-    $scope.init();
+      $scope.init();
 
-    function getOptionByValue(value) {
+      function getOptionByValue (value) {
         var option = null;
-        $scope.options.forEach(function(opt) {
+        $scope.options.forEach(function (opt) {
             if (opt.value === value) {
                 option = opt;
             }
         });
         return option;
     }
-}]);
+  }]);

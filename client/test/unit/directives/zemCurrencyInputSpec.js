@@ -19,7 +19,7 @@ describe('zemCurrencyInput', function () {
     };
 
     beforeEach(module('one'));
-    
+
     // $state needs to be mocked because of
     // some strange issues with ui-router
     // https://github.com/angular-ui/ui-router/issues/212

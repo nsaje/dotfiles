@@ -1,7 +1,7 @@
 /*globals angular,oneApp,constants,options,moment*/
-"use strict";
+'use strict';
 
-oneApp.factory("zemDemoCacheService", function() {
+oneApp.factory('zemDemoCacheService', function () {
     var FIRST_ID = 1000000,
         cache = {},
         ids = {};
