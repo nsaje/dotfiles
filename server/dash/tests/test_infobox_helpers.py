@@ -10,7 +10,7 @@ import dash.infobox_helpers
 
 
 class InfoBoxHelpersTest(TestCase):
-    fixtures = ['test_io.yaml']
+    fixtures = ['test_models.yaml']
 
     def test_format_flight_time(self):
         start_date = datetime.datetime(2016, 1, 1).date()
@@ -33,7 +33,7 @@ class InfoBoxHelpersTest(TestCase):
             end_date=end_date,
             amount=100,
             status=dash.constants.CreditLineItemStatus.SIGNED,
-            created_by=zemauth.models.User.objects.get(pk=3)
+            created_by=zemauth.models.User.objects.get(pk=1)
         )
 
         budget = dash.models.BudgetLineItem.objects.create(
@@ -42,7 +42,7 @@ class InfoBoxHelpersTest(TestCase):
             amount=100,
             start_date=start_date,
             end_date=end_date,
-            created_by=zemauth.models.User.objects.get(pk=3)
+            created_by=zemauth.models.User.objects.get(pk=1)
         )
 
     def test_get_total_campaign_spend(self):
