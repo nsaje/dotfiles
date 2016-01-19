@@ -74,7 +74,6 @@ def get_ideal_campaign_spend(user, campaign, until_date=None):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
 
     all_budget_spends_at_date = [b.get_ideal_budget_spend(at_date) for b in budgets]
-    print all_budget_spends_at_date
     return sum(all_budget_spends_at_date)
 
 

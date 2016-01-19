@@ -1,6 +1,6 @@
 import datetime
 
-from django.test import TestCase
+from django.test import TestCase, mock
 
 import zemauth.models
 
@@ -27,7 +27,7 @@ class InfoBoxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
 
         start_date = datetime.datetime.today().date()
-        end_date = start_date + datetime.timedelta(days=100)
+        end_date = start_date + datetime.timedelta(days=99)
 
         credit = dash.models.CreditLineItem.objects.create(
             account=campaign.account,
@@ -51,11 +51,11 @@ class InfoBoxHelpersTest(TestCase):
         # of credit
 
         self.assertEqual(
-            0,
+            1,
             dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, start_date)
         )
 
-        middle = (start_date + (end_date - start_date) / 2)
+        middle = (start_date + datetime.timedelta(days=49))
 
         self.assertEqual(
             budget.amount / 2,
@@ -89,7 +89,7 @@ class InfoBoxHelpersTest(TestCase):
             credit=credit,
             amount=30,
             start_date=start_date,
-            end_date=start_date + datetime.timedelta(days=30),
+            end_date=start_date + datetime.timedelta(days=29),
             created_by=user,
         )
 
@@ -97,8 +97,8 @@ class InfoBoxHelpersTest(TestCase):
             campaign=campaign,
             credit=credit,
             amount=30,
-            start_date=start_date + datetime.timedelta(days=31),
-            end_date=start_date + datetime.timedelta(days=61),
+            start_date=start_date + datetime.timedelta(days=30),
+            end_date=start_date + datetime.timedelta(days=59),
             created_by=user,
         )
 
@@ -106,8 +106,8 @@ class InfoBoxHelpersTest(TestCase):
             campaign=campaign,
             credit=credit,
             amount=40,
-            start_date=start_date + datetime.timedelta(days=62),
-            end_date=start_date + datetime.timedelta(days=100),
+            start_date=start_date + datetime.timedelta(days=60),
+            end_date=start_date + datetime.timedelta(days=99),
             created_by=user,
         )
 
@@ -115,15 +115,26 @@ class InfoBoxHelpersTest(TestCase):
         # of credit
 
         self.assertEqual(
-            0,
+            1,
             dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, start_date)
         )
 
-        middle = (start_date + (end_date - start_date) / 2)
-
+        middle = (start_date + datetime.timedelta(days=49))
         self.assertEqual(
             50,
-            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, middle)
+            round(dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, middle))
+        )
+
+        middle_1_1 = (start_date + datetime.timedelta(days=29))
+        self.assertEqual(
+            30,
+            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, middle_1_1)
+        )
+
+        middle_1_2 = (start_date + datetime.timedelta(days=30))
+        self.assertEqual(
+            31,
+            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, middle_1_2)
         )
 
         self.assertEqual(
@@ -153,7 +164,7 @@ class InfoBoxHelpersTest(TestCase):
             credit=credit,
             amount=60,
             start_date=start_date,
-            end_date=start_date + datetime.timedelta(days=80),
+            end_date=start_date + datetime.timedelta(days=79),
             created_by=user,
         )
 
@@ -161,7 +172,7 @@ class InfoBoxHelpersTest(TestCase):
             campaign=campaign,
             credit=credit,
             amount=60,
-            start_date=start_date + datetime.timedelta(days=20),
+            start_date=start_date + datetime.timedelta(days=21),
             end_date=start_date + datetime.timedelta(days=100),
             created_by=user,
         )
@@ -170,13 +181,13 @@ class InfoBoxHelpersTest(TestCase):
         # of credit
 
         self.assertEqual(
-            0,
+            0.75,
             dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, start_date)
         )
 
         end_of_budget_1 = start_date + datetime.timedelta(days=80)
         self.assertEqual(
-            60 + 60 / 5 * 4,
+            60 + 60 / 4 * 3,
             dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, end_of_budget_1)
         )
 
@@ -185,9 +196,21 @@ class InfoBoxHelpersTest(TestCase):
             dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, end_date)
         )
 
+    @mock.patch('reports.api.query')
+    def test_get_total_campaign_spend(self, mock_query):
+        # very simple test since target func just retrieves data from Redshift
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        campaign = ad_group.campaign
+        user = zemauth.models.User.objects.get(pk=1)
 
-    def test_get_total_campaign_spend(self):
-        pass
+        mock_query.return_value = {
+            'cost': 50
+        }
+
+        self.assertEqual(
+            50,
+            dash.infobox_helpers.get_total_campaign_spend(user, campaign)
+        )
 
     def test_get_yesterday_total_cost(self):
         pass
