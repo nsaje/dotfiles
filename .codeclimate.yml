@@ -5,13 +5,6 @@ engines:
     enabled: true
     config: 
       threshold: "C"
-  fixme:
-    enabled: true
-  duplication:
-    enabled: false
-    config:
-      languages:
-      - python
   eslint:
     enabled: true
 
