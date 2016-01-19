@@ -2,6 +2,7 @@ from collections import defaultdict
 import unicodecsv as csv
 import datetime
 import dateutil.parser
+from decimal import Decimal
 import json
 import logging
 import re
@@ -282,8 +283,10 @@ def _augment_pub_data_with_budgets(rows):
             pcts_lookup[(row['date'], campaign.id)] = daily_statements.get_effective_spend_pcts(row['date'], campaign)
         pct_actual_spend, pct_license_fee = pcts_lookup[(row['date'], campaign.id)]
         row['effective_cost_nano'] = int(pct_actual_spend * row['cost_micro'] * MICRO_TO_NANO)
-        row['effective_data_cost_nano'] = int(pct_actual_spend * row['data_cost_micro'] * MICRO_TO_NANO)
-        row['license_fee_nano'] = int(pct_license_fee * (row['effective_cost_nano'] + row['effective_data_cost_nano']))
+        if 'data_cost_micro' in row:
+            row['effective_data_cost_nano'] = int(pct_actual_spend * row['data_cost_micro'] * MICRO_TO_NANO)
+        row['license_fee_nano'] = int(
+            pct_license_fee * (row['effective_cost_nano'] + row.get('effective_data_cost_nano', 0)))
 
 
 def _get_raw_b1_pub_data(s3_key):
@@ -328,7 +331,7 @@ def _get_raw_ob_pub_data(s3_keys):
             row['exchange'] = 'outbrain'
             row['cost_micro'] = 0
             if total_clicks * total_cost > 0:
-                row['cost_micro'] = float(row['clicks']) / total_clicks * total_cost
+                row['cost_micro'] = Decimal(row['clicks']) / total_clicks * total_cost
             rows.append(row)
 
     return rows
@@ -340,7 +343,7 @@ def _get_latest_b1_pub_data(date):
 
 
 def _get_latest_ob_pub_data(date):
-    s3_keys = _get_latest_ob_pub_data_s3_keys()
+    s3_keys = _get_latest_ob_pub_data_s3_keys(date)
     return _get_raw_ob_pub_data(s3_keys)
 
 

@@ -768,7 +768,6 @@
 -   fields:
         source: 2
         credentials: 2
-        auto_add: True
         params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
         default_cpc_cc: 0.18
         mobile_cpc_cc: 0.22
@@ -779,7 +778,6 @@
 -   fields:
         source: 3
         credentials: 3
-        auto_add: False
         params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
         mobile_cpc_cc: 0.22
         daily_budget_cc: 22
@@ -789,7 +787,6 @@
 -   fields:
         source: 4
         credentials: 3
-        auto_add: True
         params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
         mobile_cpc_cc: 0.23
         daily_budget_cc: 23
@@ -799,7 +796,6 @@
 -   fields:
         source: 9
         credentials: 3
-        auto_add: False
         params: '{"create_campaign": {"exclusive_blog_ids": [123456]}}'
         mobile_cpc_cc: 0.24
         daily_budget_cc: 24
