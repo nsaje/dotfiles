@@ -2,6 +2,7 @@ from collections import defaultdict
 import unicodecsv as csv
 import datetime
 import dateutil.parser
+from decimal import Decimal
 import json
 import logging
 import re
@@ -330,7 +331,7 @@ def _get_raw_ob_pub_data(s3_keys):
             row['exchange'] = 'outbrain'
             row['cost_micro'] = 0
             if total_clicks * total_cost > 0:
-                row['cost_micro'] = float(row['clicks']) / total_clicks * total_cost
+                row['cost_micro'] = Decimal(row['clicks']) / total_clicks * total_cost
             rows.append(row)
 
     return rows
