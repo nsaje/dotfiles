@@ -2346,12 +2346,6 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
             action_type=actionlog.constants.ActionType.MANUAL
         )
 
-    def _get_set_campaign_state_actions(self, ad_group_source):
-        return actionlog.models.ActionLog.objects.filter(
-            action=actionlog.constants.Action.SET_CAMPAIGN_STATE,
-            ad_group_source=ad_group_source
-        )
-
     def test_manual_update_after_campaign_creation_manual_dma_targeting(self):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
@@ -2420,20 +2414,20 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
         # should not create manual actions
         self.assertFalse(manual_actions.exists())
 
-    def test_source_settings_update_after_campaign_creation_no_action(self):
+    @mock.patch('actionlog.api.set_ad_group_source_settings')
+    @mock.patch('actionlog.api.init_fetch_ad_group_source_settings')
+    def test_source_settings_update_after_campaign_creation_no_action(self, mock_fetch_settings, mock_set_settings):
         ad_group_source = models.AdGroupSource.objects.get(id=5)
 
         api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
+        self.assertFalse(mock_set_settings.called)
+        self.assertTrue(mock_fetch_settings.called)
 
-        self.assertFalse(self._get_set_campaign_state_actions(ad_group_source).exists())
-
-    def test_source_settings_update_after_campaign_creation_create_action(self):
+    @mock.patch('actionlog.api.set_ad_group_source_settings')
+    @mock.patch('actionlog.api.init_fetch_ad_group_source_settings')
+    def test_source_settings_update_after_campaign_creation_create_action(self, mock_fetch_settings, mock_set_settings):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
         api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
-
-        actions = self._get_set_campaign_state_actions(ad_group_source)
-        self.assertEqual(actions.count(), 1)
-        self.assertDictEqual(actions.first().payload['args']['conf'], {
-            'cpc_cc': 1200
-        })
+        self.assertTrue(mock_set_settings.called)
+        self.assertFalse(mock_fetch_settings.called)
