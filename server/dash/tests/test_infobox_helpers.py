@@ -131,6 +131,60 @@ class InfoBoxHelpersTest(TestCase):
             dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, end_date)
         )
 
+    def test_get_ideal_campaign_spend_multiple_overlapping_budgets(self):
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        campaign = ad_group.campaign
+        user = zemauth.models.User.objects.get(pk=1)
+
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=100)
+
+        credit = dash.models.CreditLineItem.objects.create(
+            account=campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=120,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=60,
+            start_date=start_date,
+            end_date=start_date + datetime.timedelta(days=80),
+            created_by=user,
+        )
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=60,
+            start_date=start_date + datetime.timedelta(days=20),
+            end_date=start_date + datetime.timedelta(days=100),
+            created_by=user,
+        )
+
+        # ideal spend should be 0, 50% at half and 100% at the end
+        # of credit
+
+        self.assertEqual(
+            0,
+            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, start_date)
+        )
+
+        end_of_budget_1 = start_date + datetime.timedelta(days=80)
+        self.assertEqual(
+            60 + 60 / 5 * 4,
+            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, end_of_budget_1)
+        )
+
+        self.assertEqual(
+            120,
+            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, end_date)
+        )
+
 
     def test_get_total_campaign_spend(self):
         pass
