@@ -322,7 +322,7 @@ def _get_raw_ob_pub_data(s3_keys):
 
         total_cost = 0
         if ret['cost'] is not None:
-            total_cost = ret['cost']
+            total_cost = Decimal(ret['cost'])
         total_clicks = sum(row['clicks'] for row in json_data)
 
         for row in json_data:
