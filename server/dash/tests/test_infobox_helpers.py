@@ -212,11 +212,73 @@ class InfoBoxHelpersTest(TestCase):
             dash.infobox_helpers.get_total_campaign_spend(user, campaign)
         )
 
-    def test_get_yesterday_total_cost(self):
-        pass
+    @mock.patch('reports.api.query')
+    def test_get_yesterday_total_cost(self, mock_query):
+        # very simple test since target func just retrieves data from Redshift
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        user = zemauth.models.User.objects.get(pk=1)
 
-    def test_get_goal_value(self):
-        pass
+        mock_query.return_value = {
+            'cost': 50
+        }
+
+        self.assertEqual(
+            50,
+            dash.infobox_helpers.get_yesterday_total_cost(user, campaign)
+        )
+
+    @mock.patch('reports.api_contentads.query')
+    def test_get_goal_value(self, mock_query):
+        # very simple test since target func just retrieves data from Redshift
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        user = zemauth.models.User.objects.get(pk=1)
+
+        mock_query.return_value = {
+            'bounce_rate': 0.01,
+            'new_visits': 100,
+            'avg_tos': 5,
+            'pv_per_visit': 10,
+        }
+
+        self.assertEqual(
+            0.01,
+            dash.infobox_helpers.get_goal_value(
+                user,
+                campaign,
+                campaign.get_current_settings(),
+                dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE
+            )
+        )
+
+        self.assertEqual(
+            100,
+            dash.infobox_helpers.get_goal_value(
+                user,
+                campaign,
+                campaign.get_current_settings(),
+                dash.constants.CampaignGoal.NEW_UNIQUE_VISITORS
+            )
+        )
+
+        self.assertEqual(
+            5,
+            dash.infobox_helpers.get_goal_value(
+                user,
+                campaign,
+                campaign.get_current_settings(),
+                dash.constants.CampaignGoal.SECONDS_TIME_ON_SITE
+            )
+        )
+
+        self.assertEqual(
+            10,
+            dash.infobox_helpers.get_goal_value(
+                user,
+                campaign,
+                campaign.get_current_settings(),
+                dash.constants.CampaignGoal.PAGES_PER_SESSION
+            )
+        )
 
     def test_get_goal_difference(self):
         pass

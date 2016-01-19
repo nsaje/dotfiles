@@ -90,24 +90,22 @@ def get_yesterday_total_cost(user, campaign):
 def get_goal_value(user, campaign, campaign_settings, goal_type):
     # we are interested in reaching the goal by today
     end_date = datetime.datetime.today().date()
-
     totals_stats = reports.api_helpers.filter_by_permissions(
         get_reports_api_module(user).query(
             campaign.created_dt,
             end_date,
             campaign=campaign,
         ), user)
-
     if goal_type == dash.constants.CampaignGoal.CPA:
         # CPA is still being implemented via Conversion&Goals epic
         return 0  # TODO implement this properly
     elif goal_type == dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE:
         return totals_stats.get('bounce_rate', 0) or 0
     elif goal_type == dash.constants.CampaignGoal.NEW_UNIQUE_VISITORS:
-        return totals_stats.get('new_visits_sum', 0) or 0
+        return totals_stats.get('new_visits', 0) or 0
     elif goal_type == dash.constants.CampaignGoal.SECONDS_TIME_ON_SITE:
         return totals_stats.get('avg_tos', 0) or 0
-    elif goal_type == dash.constants.Campaigngoal.PAGES_PER_SESSION:
+    elif goal_type == dash.constants.CampaignGoal.PAGES_PER_SESSION:
         return totals_stats.get('pv_per_visit', 0) or 0
 
     # assuming we will add moar campaign goals in the future
@@ -116,7 +114,7 @@ def get_goal_value(user, campaign, campaign_settings, goal_type):
 
 def get_goal_difference(goal_type, target, actual):
     """
-    Returns difference in value, description and success tuple
+    Returns difference as (value, description, success) tuple
     """
     if actual is None:
         return 0, "N/A", False
