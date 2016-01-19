@@ -340,7 +340,7 @@ def _get_latest_b1_pub_data(date):
 
 
 def _get_latest_ob_pub_data(date):
-    s3_keys = _get_latest_ob_pub_data_s3_keys()
+    s3_keys = _get_latest_ob_pub_data_s3_keys(date)
     return _get_raw_ob_pub_data(s3_keys)
 
 
