@@ -315,7 +315,3 @@ class InfoBoxHelpersTest(TestCase):
                 20
             )
         )
-
-
-    def test_get_goal_difference(self):
-        pass
