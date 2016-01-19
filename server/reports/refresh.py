@@ -325,15 +325,20 @@ def _get_raw_ob_pub_data(s3_keys):
         total_clicks = sum(row['clicks'] for row in json_data)
 
         for row in json_data:
-            row['adgroup_id'] = ad_group_id
-            row['date'] = date
-            row['domain'] = row['name']
-            row['exchange'] = 'outbrain'
-            row['external_id'] = row['ob_id']
-            row['cost_micro'] = 0
+            new_row = {
+                'adgroup_id': ad_group_id,
+                'date': date,
+                'domain': row['name'],
+                'exchange': 'outbrain',
+                'external_id': row['ob_id'],
+                'clicks': row['clicks'],
+                'cost_micro': 0
+            }
+
             if total_clicks * total_cost > 0:
-                row['cost_micro'] = float(row['clicks']) / total_clicks * total_cost
-            rows.append(row)
+                new_row['cost_micro'] = float(row['clicks']) / total_clicks * total_cost
+
+            rows.append(new_row)
 
     return rows
 

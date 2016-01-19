@@ -840,34 +840,28 @@ class RefreshOBPubDataTestCase(test.TestCase):
         raw_data = refresh._get_raw_ob_pub_data(s3_keys)
         expected = [
             {
-                'name': 'CNN money',
                 'domain': 'CNN money',
                 'exchange': 'outbrain',
                 'cost_micro': 750.0,
                 'date': datetime.date(2016, 1, 1),
-                'ob_id': 'ABCD1234',
                 'external_id': 'ABCD1234',
                 'clicks': 1500,
                 'adgroup_id': 123
             },
             {
-                'name': 'CNN weather',
                 'domain': 'CNN weather',
                 'exchange': 'outbrain',
                 'cost_micro': 250.0,
                 'date': datetime.date(2016, 1, 1),
-                'ob_id': '4321DCBA',
                 'external_id': '4321DCBA',
                 'clicks': 500,
                 'adgroup_id': 123
             },
             {
-                'name': 'CNN weather',
                 'domain': 'CNN weather',
                 'exchange': 'outbrain',
                 'cost_micro': 2000.0,
                 'date': datetime.date(2016, 1, 1),
-                'ob_id': '4321DCBA',
                 'external_id': '4321DCBA',
                 'clicks': 2000,
                 'adgroup_id': 124
@@ -959,34 +953,28 @@ class RefreshDataTestCase(test.TestCase):
         raw_data = refresh._get_raw_ob_pub_data(s3_keys)
         expected = [
             {
-                'name': 'CNN money',
                 'domain': 'CNN money',
                 'exchange': 'outbrain',
                 'cost_micro': 750.0,
                 'date': datetime.date(2016, 1, 1),
-                'ob_id': 'ABCD1234',
                 'external_id': 'ABCD1234',
                 'clicks': 1500,
                 'adgroup_id': 123
             },
             {
-                'name': 'CNN weather',
                 'domain': 'CNN weather',
                 'exchange': 'outbrain',
                 'cost_micro': 250.0,
                 'date': datetime.date(2016, 1, 1),
-                'ob_id': '4321DCBA',
                 'external_id': '4321DCBA',
                 'clicks': 500,
                 'adgroup_id': 123
             },
             {
-                'name': 'CNN weather',
                 'domain': 'CNN weather',
                 'exchange': 'outbrain',
                 'cost_micro': 2000.0,
                 'date': datetime.date(2016, 1, 1),
-                'ob_id': '4321DCBA',
                 'external_id': '4321DCBA',
                 'clicks': 2000,
                 'adgroup_id': 124
