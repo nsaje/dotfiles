@@ -298,7 +298,6 @@ def _get_raw_b1_pub_data(s3_key):
             'adgroup_id': int(row[1]),
             'exchange': row[2],
             'domain': row[3],
-            'name': row[3],
             'external_id': '',
             'clicks': int(row[4]),
             'impressions': int(row[5]),
@@ -328,6 +327,7 @@ def _get_raw_ob_pub_data(s3_keys):
         for row in json_data:
             row['adgroup_id'] = ad_group_id
             row['date'] = date
+            row['domain'] = row['name']
             row['exchange'] = 'outbrain'
             row['external_id'] = row['ob_id']
             row['cost_micro'] = 0

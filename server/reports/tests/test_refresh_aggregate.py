@@ -722,7 +722,6 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
                 'adgroup_id': 1,
                 'exchange': 'adiant',
                 'domain': 'adiant.com',
-                'name': 'adiant.com',
                 'external_id': '',
                 'clicks': 10,
                 'impressions': 1000,
@@ -734,7 +733,6 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
                 'adgroup_id': 1,
                 'exchange': 'adsnative',
                 'domain': 'adsnative.com',
-                'name': 'adsnative.com',
                 'external_id': '',
                 'clicks': 5,
                 'impressions': 800,
@@ -840,35 +838,41 @@ class RefreshOBPubDataTestCase(test.TestCase):
             (datetime.date(2016, 1, 1), 124): 'ob_publishers_raw/2016/01/01/124/12346.json',
         }
         raw_data = refresh._get_raw_ob_pub_data(s3_keys)
-        expected = [{
-            'name': 'CNN money',
-            'exchange': 'outbrain',
-            'cost_micro': 750.0,
-            'date': datetime.date(2016, 1, 1),
-            'ob_id': 'ABCD1234',
-            'external_id': 'ABCD1234',
-            'clicks': 1500,
-            'adgroup_id': 123
-        }, {
-            'name': 'CNN weather',
-            'exchange': 'outbrain',
-            'cost_micro': 250.0,
-            'date': datetime.date(2016, 1, 1),
-            'ob_id': '4321DCBA',
-            'external_id': '4321DCBA',
-            'clicks': 500,
-            'adgroup_id': 123
-        }, {
-            'name':
-            'CNN weather',
-            'exchange': 'outbrain',
-            'cost_micro': 2000.0,
-            'date': datetime.date(2016, 1, 1),
-            'ob_id': '4321DCBA',
-            'external_id': '4321DCBA',
-            'clicks': 2000,
-            'adgroup_id': 124
-        }]
+        expected = [
+            {
+                'name': 'CNN money',
+                'domain': 'CNN money',
+                'exchange': 'outbrain',
+                'cost_micro': 750.0,
+                'date': datetime.date(2016, 1, 1),
+                'ob_id': 'ABCD1234',
+                'external_id': 'ABCD1234',
+                'clicks': 1500,
+                'adgroup_id': 123
+            },
+            {
+                'name': 'CNN weather',
+                'domain': 'CNN weather',
+                'exchange': 'outbrain',
+                'cost_micro': 250.0,
+                'date': datetime.date(2016, 1, 1),
+                'ob_id': '4321DCBA',
+                'external_id': '4321DCBA',
+                'clicks': 500,
+                'adgroup_id': 123
+            },
+            {
+                'name': 'CNN weather',
+                'domain': 'CNN weather',
+                'exchange': 'outbrain',
+                'cost_micro': 2000.0,
+                'date': datetime.date(2016, 1, 1),
+                'ob_id': '4321DCBA',
+                'external_id': '4321DCBA',
+                'clicks': 2000,
+                'adgroup_id': 124
+            }
+        ]
         self.assertEqual(expected, raw_data)
 
     @patch('reports.refresh.time')
@@ -956,6 +960,7 @@ class RefreshDataTestCase(test.TestCase):
         expected = [
             {
                 'name': 'CNN money',
+                'domain': 'CNN money',
                 'exchange': 'outbrain',
                 'cost_micro': 750.0,
                 'date': datetime.date(2016, 1, 1),
@@ -966,6 +971,7 @@ class RefreshDataTestCase(test.TestCase):
             },
             {
                 'name': 'CNN weather',
+                'domain': 'CNN weather',
                 'exchange': 'outbrain',
                 'cost_micro': 250.0,
                 'date': datetime.date(2016, 1, 1),
@@ -975,8 +981,8 @@ class RefreshDataTestCase(test.TestCase):
                 'adgroup_id': 123
             },
             {
-                'name':
-                'CNN weather',
+                'name': 'CNN weather',
+                'domain': 'CNN weather',
                 'exchange': 'outbrain',
                 'cost_micro': 2000.0,
                 'date': datetime.date(2016, 1, 1),
@@ -1022,7 +1028,6 @@ class RefreshDataTestCase(test.TestCase):
                 'adgroup_id': 1,
                 'exchange': 'adiant',
                 'domain': 'adiant.com',
-                'name': 'adiant.com',
                 'external_id': '',
                 'clicks': 10,
                 'impressions': 1000,
@@ -1034,7 +1039,6 @@ class RefreshDataTestCase(test.TestCase):
                 'adgroup_id': 1,
                 'exchange': 'adsnative',
                 'domain': 'adsnative.com',
-                'name': 'adsnative.com',
                 'external_id': '',
                 'clicks': 5,
                 'impressions': 800,
