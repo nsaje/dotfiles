@@ -2415,7 +2415,7 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
         self.assertFalse(manual_actions.exists())
 
     @mock.patch('actionlog.api.set_ad_group_source_settings')
-    @mock.patch('actionlog.api.fetch_ad_group_source_settings')
+    @mock.patch('actionlog.api.init_fetch_ad_group_source_settings')
     def test_source_settings_update_after_campaign_creation_no_action(self, mock_fetch_settings, mock_set_settings):
         ad_group_source = models.AdGroupSource.objects.get(id=5)
 
@@ -2424,7 +2424,7 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
         self.assertTrue(mock_fetch_settings.called)
 
     @mock.patch('actionlog.api.set_ad_group_source_settings')
-    @mock.patch('actionlog.api.fetch_ad_group_source_settings')
+    @mock.patch('actionlog.api.init_fetch_ad_group_source_settings')
     def test_source_settings_update_after_campaign_creation_create_action(self, mock_fetch_settings, mock_set_settings):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
