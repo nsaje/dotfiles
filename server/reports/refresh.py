@@ -284,7 +284,8 @@ def _augment_pub_data_with_budgets(rows):
         row['effective_cost_nano'] = int(pct_actual_spend * row['cost_micro'] * MICRO_TO_NANO)
         if 'data_cost_micro' in row:
             row['effective_data_cost_nano'] = int(pct_actual_spend * row['data_cost_micro'] * MICRO_TO_NANO)
-        row['license_fee_nano'] = int(pct_license_fee * (row['effective_cost_nano'] + row['effective_data_cost_nano']))
+        row['license_fee_nano'] = int(
+            pct_license_fee * (row['effective_cost_nano'] + row.get('effective_data_cost_nano', 0)))
 
 
 def _get_raw_b1_pub_data(s3_key):
