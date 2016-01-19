@@ -1,6 +1,8 @@
 import argparse
 import unicodecsv
 
+from sets import Set
+
 from django.core.management.base import CommandError
 from django.db import transaction
 
@@ -36,16 +38,12 @@ class Command(ExceptionCommand):
         ad_group_id = options['ad_group_id'][0]
         csv_file = options['csv_file'][0]
 
-        domains = self.parse_csv(csv_file)
-        domains = self.clean_domains(domains)
-
         ad_group = AdGroup.objects.get(id=ad_group_id)
+        domains = self.parse_csv(csv_file)
 
-        sources = self.get_sources(ad_group)
+        actionlogs = self.create_actionlogs_for_domains(ad_group, domains)
 
-        combination = self.combine(ad_group, domains, sources)
-
-        self.create_publisher_blacklist(ad_group, combination)
+        zwei_actions.send(actionlogs)
 
     def parse_csv(self, csv_file):
         lines = unicodecsv.reader(csv_file)
@@ -61,6 +59,14 @@ class Command(ExceptionCommand):
             )
 
         return [line[0] for line in lines]
+
+    def create_actionlogs_for_domains(self, ad_group, domains):
+        domains = self.clean_domains(domains)
+        sources = self.get_sources(ad_group)
+        blacklist = self.combine(ad_group, domains, sources)
+        actionlogs = self.create_actionlogs_for_blacklist(ad_group, blacklist)
+
+        return actionlogs
 
     def clean_domains(self, domains):
         clean_domains = []
@@ -92,10 +98,11 @@ class Command(ExceptionCommand):
 
     def get_sources(self, ad_group):
         ad_group_sources = AdGroupSource.objects.filter(ad_group=ad_group)
+        sources = [ad_group_source.source
+                   for ad_group_source in ad_group_sources
+                   if ad_group_source.source.source_type.type not in UNSUPPORTED_SOURCES]
 
-        return [ad_group_source.source
-                for ad_group_source in ad_group_sources
-                if ad_group_source.source.source_type.type not in UNSUPPORTED_SOURCES]
+        return Set(sources)
 
     def combine(self, ad_group, domains, sources):
         combination = []
@@ -106,11 +113,11 @@ class Command(ExceptionCommand):
 
         return combination
 
-    def create_publisher_blacklist(self, ad_group, blacklist):
-        actionlogs_to_send = []
+    def create_actionlogs_for_blacklist(self, ad_group, blacklist):
+        actionlogs = []
 
         with transaction.atomic():
-            actionlogs_to_send.extend(
+            actionlogs.extend(
                 api.create_publisher_blacklist_actions(
                     ad_group,
                     PublisherStatus.BLACKLISTED,
@@ -121,4 +128,4 @@ class Command(ExceptionCommand):
                 )
             )
 
-        zwei_actions.send(actionlogs_to_send)
+        return actionlogs
