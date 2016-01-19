@@ -251,12 +251,30 @@ class InfoBoxHelpersTest(TestCase):
         )
 
         self.assertEqual(
+            (-0.01, '-1.00% below planned', True),
+            dash.infobox_helpers.get_goal_difference(
+                dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE,
+                0.01,
+                0.02
+            )
+        )
+
+        self.assertEqual(
             100,
             dash.infobox_helpers.get_goal_value(
                 user,
                 campaign,
                 campaign.get_current_settings(),
                 dash.constants.CampaignGoal.NEW_UNIQUE_VISITORS
+            )
+        )
+
+        self.assertEqual(
+            (20, '20 below planned', False),
+            dash.infobox_helpers.get_goal_difference(
+                dash.constants.CampaignGoal.NEW_UNIQUE_VISITORS,
+                100,
+                80
             )
         )
 
@@ -271,6 +289,15 @@ class InfoBoxHelpersTest(TestCase):
         )
 
         self.assertEqual(
+            (4, '4 below planned', False),
+            dash.infobox_helpers.get_goal_difference(
+                dash.constants.CampaignGoal.SECONDS_TIME_ON_SITE,
+                5,
+                1
+            )
+        )
+
+        self.assertEqual(
             10,
             dash.infobox_helpers.get_goal_value(
                 user,
@@ -279,6 +306,16 @@ class InfoBoxHelpersTest(TestCase):
                 dash.constants.CampaignGoal.PAGES_PER_SESSION
             )
         )
+
+        self.assertEqual(
+            (-10, '10 above planned', True),
+            dash.infobox_helpers.get_goal_difference(
+                dash.constants.CampaignGoal.PAGES_PER_SESSION,
+                10,
+                20
+            )
+        )
+
 
     def test_get_goal_difference(self):
         pass

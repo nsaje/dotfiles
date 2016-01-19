@@ -131,8 +131,8 @@ def get_goal_difference(goal_type, target, actual):
     else:
         diff = target - actual
         description = '{diff} {word} planned'.format(
-            diff=diff,
-            word='above' if diff > 0 else 'below',
+            diff=abs(diff),
+            word='above' if diff < 0 else 'below',
         )
-        success = diff >= 0
+        success = diff < 0
         return diff, description, success
