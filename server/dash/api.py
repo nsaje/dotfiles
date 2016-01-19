@@ -333,9 +333,8 @@ def refresh_publisher_blacklist(ad_group_source, request):
 
 def order_additional_updates_after_campaign_creation(ad_group_source, request):
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
-    source = ad_group_source.source
 
-    _set_target_region_manual_property_if_needed(source, ad_group_settings)
+    _set_target_region_manual_property_if_needed(ad_group_source, ad_group_settings, request)
 
     # update ad group source with initial settings (daily_budget, cpc)
     # or fetch external settings (initial settings are not set)
@@ -344,7 +343,7 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
     if settings_changes:
         actionlog.api.set_ad_group_source_settings(settings_changes, ad_group_source, request=request, send=True)
     else:
-        _fetch_ad_group_source_status(ad_group_source, request)
+        actionlog.api.fetch_ad_group_source_settings(ad_group_source, request, send=True)
 
     # copy all currently blacklisted entries on campaign creation
     actionlogs_to_send = refresh_publisher_blacklist(ad_group_source, request)
@@ -369,21 +368,6 @@ def _set_target_region_manual_property_if_needed(ad_group_source, ad_group_setti
                 'target_regions',
                 new_field_value
         )
-
-
-def _fetch_ad_group_source_status (ad_group_source, request):
-    order = actionlog.models.ActionLogOrder.objects.create(
-            order_type=actionlog.constants.ActionLogOrderType.FETCH_STATUS
-    )
-    try:
-        action = actionlog.api._init_fetch_status(ad_group_source, order, request=request)
-    except actionlog.exceptions.InsertActionException:
-        # Exception is already logged
-        return
-
-    actionlog.zwei_actions.send(action)
-
-
 
 
 def insert_content_ad_callback(
