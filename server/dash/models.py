@@ -1306,6 +1306,7 @@ class AdGroupSettings(SettingsBase):
         'end_date',
         'cpc_cc',
         'daily_budget_cc',
+        'max_cpc_cc',
         'target_devices',
         'target_regions',
         'tracking_code',
@@ -1344,6 +1345,14 @@ class AdGroupSettings(SettingsBase):
         null=True,
         verbose_name='Daily budget'
     )
+    max_cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Maximum CPC'
+    )
+
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)

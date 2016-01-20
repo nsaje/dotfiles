@@ -72,6 +72,16 @@ class AdGroupSettingsForm(forms.Form):
             'min_value': 'Please provide budget of at least $10.00.'
         }
     )
+    max_cpc_cc = forms.DecimalField(
+            min_value=0.03,
+            max_value=2,
+            decimal_places=4,
+            required=False,
+            error_messages={
+                'min_value': 'Minimum CPC is $0.03.',
+                'max_value': 'Maximum CPC is $2.00.'
+            }
+    )
     target_devices = forms.MultipleChoiceField(
         choices=constants.AdTargetDevice.get_choices(),
         error_messages={
