@@ -12,7 +12,7 @@ import reports.api_contentads
 
 class OverviewSetting(object):
 
-    def __init__(self, name='', value='', description='', tooltip=None, setting_type='setting'):
+    def __init__(self, name='', value='', description=None, tooltip=None, setting_type='setting'):
         self.name = name
         self.value = value
         self.description = description
@@ -179,7 +179,6 @@ def goals_and_spend_settings(user, campaign):
     total_campaign_spend_to_date = get_total_campaign_spend(user, campaign)
     ideal_campaign_spend_to_date = get_ideal_campaign_spend(user, campaign)
 
-    from pudb import set_trace; set_trace()
     ratio = 0
     if ideal_campaign_spend_to_date > 0:
         ratio = min(

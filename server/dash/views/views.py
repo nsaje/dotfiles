@@ -403,7 +403,7 @@ class AdGroupOverview(api_common.BaseApiView):
         flight_time_setting = infobox_helpers.OverviewSetting(
             'Flight time',
             flight_time,
-            flight_time_left_days
+            "{} days left".format(flight_time_left_days)
         )
         settings.append(flight_time_setting.as_dict())
 
@@ -411,7 +411,7 @@ class AdGroupOverview(api_common.BaseApiView):
         campaign_target_devices = campaign_settings.target_devices
 
         if set(campaign_target_devices) == set(ad_group_settings.target_devices):
-            device_comment = ''
+            device_comment = None
         else:
             device_comment = 'Differ from campaign default'
 
@@ -428,7 +428,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         campaign_target_regions = campaign_settings.target_regions
         if set(campaign_target_regions) == set(ad_group_settings.target_regions):
-            region_comment = ''
+            region_comment = None
         else:
             region_comment = 'Differ from campaign default'
 
@@ -445,7 +445,6 @@ class AdGroupOverview(api_common.BaseApiView):
             'Daily cap',
             '${:.2f}'.format(ad_group_settings.daily_budget_cc)\
                 if ad_group_settings.daily_budget_cc is not None else '',
-            ''
         )
         settings.append(daily_cap.as_dict())
 
@@ -463,7 +462,6 @@ class AdGroupOverview(api_common.BaseApiView):
         tracking_code_settings = infobox_helpers.OverviewSetting(
             'Tracking codes',
             'Yes' if ad_group_settings.tracking_code else 'No',
-            ''
         )
         if ad_group_settings.tracking_code:
             tracking_code_settings = tracking_code_settings.comment(
@@ -484,7 +482,6 @@ class AdGroupOverview(api_common.BaseApiView):
         post_click_tracking_setting = infobox_helpers.OverviewSetting(
             'Post click tracking',
             ', '.join(post_click_tracking),
-            '',
         )
         settings.append(post_click_tracking_setting.as_dict())
         return settings
@@ -695,7 +692,7 @@ class CampaignOverview(api_common.BaseApiView):
         flight_time_setting = infobox_helpers.OverviewSetting(
             'Flight time',
             flight_time,
-            flight_time_left_days
+            "{} days left".format(flight_time_left_days)
         )
         settings.append(flight_time_setting.as_dict())
 
@@ -736,7 +733,7 @@ class CampaignOverview(api_common.BaseApiView):
         campaign_budget_setting = infobox_helpers.OverviewSetting(
             'Campaign budget:',
             '${:.2f}'.format(total),
-            '${:.2f}'.format(total - spend),
+            '${:.2f} remaining'.format(total - spend),
         )
         settings.append(campaign_budget_setting.as_dict())
 
