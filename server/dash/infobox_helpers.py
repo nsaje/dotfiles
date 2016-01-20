@@ -88,7 +88,6 @@ def get_yesterday_total_cost(user, campaign):
 
 
 def get_goal_value(user, campaign, campaign_settings, goal_type):
-    from pudb import set_trace; set_trace()
     # we are interested in reaching the goal by today
     end_date = datetime.datetime.today().date()
     totals_stats = reports.api_helpers.filter_by_permissions(
@@ -179,9 +178,9 @@ def goals_and_spend_settings(user, campaign):
         goal_setting = OverviewSetting(
             name,
             '{actual_goal} {value} (planned {description})'.format(
-                actual_goal=goal_value,
+                actual_goal=format_goal_value(goal_value, goal),
                 value=text,
-                description=quantity or 'N/A'
+                description=format_goal_value(campaign_settings.goal_quantity, goal)
             ),
             description
         ).performance(success)
@@ -189,3 +188,12 @@ def goals_and_spend_settings(user, campaign):
 
     is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
     return settings, is_delivering
+
+
+def format_goal_value(goal_value, goal_type):
+    if not goal_value:
+        return 0
+    if goal_type in (dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE,):
+        return float(goal_value)
+    else:
+        return int(goal_value)
