@@ -345,9 +345,20 @@ class InfoBoxHelpersTest(TestCase):
 
         self.assertEqual(0, dash.infobox_helpers.calculate_daily_cap(campaign))
 
+    @mock.patch('reports.api_contentads.query')
+    def test_goals_and_spend_settings(self, mock_query):
+        mock_query.return_value = {
+            'bounce_rate': 0.01,
+            'new_visits': 100,
+            'avg_tos': 5,
+            'pv_per_visit': 10,
+        }
 
-    def test_goals_and_spend_settings(self):
-        pass
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        user = zemauth.models.User.objects.get(pk=1)
+        settings, is_delivering = dash.infobox_helpers.goals_and_spend_settings(user, campaign)
+
+        self.assertEqual(3, len(settings))
 
     def test_format_goal_value(self):
         self.assertEqual(
