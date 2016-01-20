@@ -891,7 +891,7 @@ class RefreshOBPubDataTestCase(test.TestCase):
         expected = [{
             'name': 'CNN money',
             'exchange': 'outbrain',
-            'cost_micro': 750.0,
+            'cost_micro': 750000000000,
             'date': datetime.date(2016, 1, 1),
             'ob_id': 'ABCD1234',
             'clicks': 1500,
@@ -899,7 +899,7 @@ class RefreshOBPubDataTestCase(test.TestCase):
         }, {
             'name': 'CNN weather',
             'exchange': 'outbrain',
-            'cost_micro': 250.0,
+            'cost_micro': 250000000000,
             'date': datetime.date(2016, 1, 1),
             'ob_id': '4321DCBA',
             'clicks': 500,
@@ -908,7 +908,7 @@ class RefreshOBPubDataTestCase(test.TestCase):
             'name':
             'CNN weather',
             'exchange': 'outbrain',
-            'cost_micro': 2000.0,
+            'cost_micro': 2000000000000,
             'date': datetime.date(2016, 1, 1),
             'ob_id': '4321DCBA',
             'clicks': 2000,

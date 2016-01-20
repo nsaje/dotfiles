@@ -1,7 +1,7 @@
 /*global $,oneApp,constants*/
-"use strict";
+'use strict';
 
-oneApp.directive('zemInfobox', ['config', '$window', function(config, $window) {
+oneApp.directive('zemInfobox', ['config', '$window', function (config, $window) {
 
     return {
         restrict: 'E',

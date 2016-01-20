@@ -1,7 +1,7 @@
 /*globals $,oneApp,constants,options*/
-"use strict";
+'use strict';
 
-oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
+oneApp.directive('zemNavSearch', ['config', '$state', function (config, $state) {
     return {
         restrict: 'E',
         templateUrl: '/partials/zem_nav_search.html',
@@ -62,7 +62,7 @@ oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
                     });
                 });
 
-                function sortEntities(a, b) {
+                function sortEntities (a, b) {
                     return a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase());
                 }
 
@@ -75,7 +75,7 @@ oneApp.directive('zemNavSearch', ['config', '$state', function(config, $state) {
                 $scope.computeOptions();
             });
 
-            $scope.$watch('showArchived', function (newValue){
+            $scope.$watch('showArchived', function (newValue) {
                 $scope.computeOptions();
             });
 

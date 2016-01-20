@@ -11,15 +11,15 @@ describe('AccountCreditCtrl', function () {
             $q = _$q_;
             $scope = $rootScope.$new();
 
-            $scope.isPermissionInternal = function() {return true;};
-            $scope.hasPermission = function() {return true;};
+            $scope.isPermissionInternal = function () { return true; };
+            $scope.hasPermission = function () { return true; };
             $scope.account = {id: 1};
 
-            var mockApiFunc = function() {
+            var mockApiFunc = function () {
                 return {
-                    then: function() {
+                    then: function () {
                         return {
-                            finally: function() {}
+                            finally: function () {}
                         };
                     }
                 };
@@ -32,7 +32,7 @@ describe('AccountCreditCtrl', function () {
                     create: mockApiFunc,
                     get: mockApiFunc,
                     delete: mockApiFunc,
-                    convert: { errors: function (obj) { return obj; } }
+                    convert: {errors: function (obj) { return obj; }}
                 }
             };
 
@@ -41,7 +41,7 @@ describe('AccountCreditCtrl', function () {
 
             $modalStack = _$modalStack_;
 
-            $controller('AccountCreditCtrl', { $scope: $scope, api: api });
+            $controller('AccountCreditCtrl', {$scope: $scope, api: api});
         });
     });
 
@@ -52,7 +52,7 @@ describe('AccountCreditCtrl', function () {
         });
 
         it('opens a modal', function () {
-            $scope.addCreditItem().result.catch(function(error) {
+            $scope.addCreditItem().result.catch(function (error) {
                 expect(error).toBeUndefined();
             }).finally(done);
         });
@@ -65,7 +65,7 @@ describe('AccountCreditCtrl', function () {
         });
 
         it('opens a modal', function () {
-            $scope.editCreditItem(10).result.catch(function(error) {
+            $scope.editCreditItem(10).result.catch(function (error) {
                 expect(error).toBeUndefined();
             }).finally(done);
         });
