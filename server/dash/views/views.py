@@ -655,7 +655,6 @@ class CampaignOverview(api_common.BaseApiView):
         never_finishes = False
 
         daily_cap_cc = infobox_helpers.calculate_daily_cap(campaign)
-        0
 
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)
         for ad_group in ad_groups:
@@ -663,8 +662,6 @@ class CampaignOverview(api_common.BaseApiView):
                 continue
 
             ad_group_settings = ad_group.get_current_settings()
-
-            daily_cap_cc += float(ad_group_settings.daily_budget_cc or 0)
 
             adg_start_date = ad_group_settings.start_date
             adg_end_date = ad_group_settings.end_date
@@ -715,7 +712,6 @@ class CampaignOverview(api_common.BaseApiView):
         settings.append(targeting_region.as_dict())
 
         # take the num
-
         daily_cap = infobox_helpers.OverviewSetting(
             'Daily cap',
             '${:.2f}'.format(daily_cap_cc)\

@@ -165,15 +165,15 @@ def goals_and_spend_settings(user, campaign):
     campaign_daily_budget = calculate_daily_cap(campaign)
 
     if campaign_daily_budget > 0:
-        filled_daily_ratio = min(
-            (yesterday_cost - float(campaign_daily_budget)) / float(campaign_daily_budget),
-            1)
+        filled_daily_ratio = min(yesterday_cost / float(campaign_daily_budget), 1)
 
     yesterday_spend_settings = OverviewSetting(
         'Yesterday spend:',
         '${:.2f}'.format(yesterday_cost),
         description='{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100),
-    ).performance(True)
+    ).performance(
+        filled_daily_ratio >= 1.0
+    )
     settings.append(yesterday_spend_settings.as_dict())
 
     total_campaign_spend_to_date = get_total_campaign_spend(user, campaign)
