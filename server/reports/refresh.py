@@ -36,7 +36,6 @@ LOAD_CONTENTADS_KEY_FMT = 'contentadstats_load/{year}/{month:02d}/{day:02d}/{cam
 LOAD_B1_PUB_STATS_KEY_FMT = 'b1_publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
 LOAD_OB_PUB_STATS_KEY_FMT = 'ob_publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
 
-TO_MICRO = 1000000000
 MICRO_TO_NANO = 1000
 CC_TO_NANO = 100000
 
