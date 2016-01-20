@@ -17,6 +17,7 @@ from zemauth.models import User
 from dash import models
 from dash import constants
 from dash import api
+from dash import budget
 from dash.views import views
 
 from reports import redshift
@@ -2322,7 +2323,7 @@ class AdGroupOverviewTest(TestCase):
 
         tracking_setting = self._get_setting(settings, 'tracking')
         self.assertEqual(tracking_setting['value'], 'Yes')
-        self.assertEqual(tracking_setting['detailsContent'], 'param1=foo&param2=bar')
+        self.assertEqual(tracking_setting['details_content'], 'param1=foo&param2=bar')
 
         yesterday_spend = self._get_setting(settings, 'yesterday')
         self.assertEqual('$0.00', yesterday_spend['value'])
@@ -2339,8 +2340,9 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('0.0 below planned', goal_setting['description'])
         self.assertEqual('happy', goal_setting['icon'])
 
+    @patch('dash.budget.CampaignBudget.get_spend')
     @patch('reports.redshift.get_cursor')
-    def test_run_mid(self, cursor):
+    def test_run_mid(self, cursor, get_spend):
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
 
@@ -2370,10 +2372,12 @@ class AdGroupOverviewTest(TestCase):
             created_by=User.objects.get(pk=3)
         )
 
-        cursor().dictfetchall.return_value = [{
-            'source_id': 9,
-            'cost_cc_sum': 500000.0
-        }]
+        cursor().diftfetchall.return_value = [{
+                'source_id': 9,
+                'cost_cc_sum': 500000.0,
+            }]
+
+        get_spend.return_value = 50
 
         response = self._get_ad_group_overview(1)
 
@@ -2395,14 +2399,10 @@ class AdGroupOverviewTest(TestCase):
         flight_setting = self._get_setting(settings, 'daily')
         self.assertEqual('$100.00', flight_setting['value'])
 
-        flight_setting = self._get_setting(settings, 'yesterday')
-        self.assertEqual('$50.00', flight_setting['value'])
-        self.assertEqual('50.00% of daily cap', flight_setting['description'])
 
-        # TODO: Waiting for the new budget system to come in place
-        #pacing_setting = self._get_setting(settings, 'pacing')
-        #self.assertEqual('50.00%', pacing_setting['value'])
-        #self.assertEqual('happy', pacing_setting['icon'])
+        yesterday_setting = self._get_setting(settings, 'yesterday')
+        self.assertEqual('$50.00', yesterday_setting['value'])
+        self.assertEqual('50.00% of daily cap', yesterday_setting['description'])
 
 
 class CampaignOverviewTest(TestCase):

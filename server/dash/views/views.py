@@ -396,7 +396,7 @@ class AdGroupOverview(api_common.BaseApiView):
         settings = []
 
         flight_time, flight_time_left_days =\
-            infobox_helpers.calculate_flight_time(
+            infobox_helpers.format_flight_time(
                 ad_group_settings.start_date,
                 ad_group_settings.end_date
             )
@@ -501,7 +501,6 @@ class AdGroupOverview(api_common.BaseApiView):
             filled_daily_ratio = min(
                 (yesterday_cost - float(ad_group_daily_budget)) / float(ad_group_daily_budget),
                 1)
-
         yesterday_spend_settings = infobox_helpers.OverviewSetting(
             'Yesterday spend:',
             '${:.2f}'.format(yesterday_cost),
@@ -517,7 +516,6 @@ class AdGroupOverview(api_common.BaseApiView):
             ratio = min(
                 (total_campaign_spend_to_date - ideal_campaign_spend_to_date) / ideal_campaign_spend_to_date,
                 1)
-
         campaign_pacing_settings = infobox_helpers.OverviewSetting(
             'Campaign pacing:',
             '{:.2f}%'.format(ratio * 100),
@@ -747,7 +745,7 @@ class CampaignOverview(api_common.BaseApiView):
             end_date = None
 
         flight_time, flight_time_left_days =\
-            infobox_helpers.calculate_flight_time(
+            infobox_helpers.format_flight_time(
                 start_date,
                 end_date
             )
@@ -864,7 +862,6 @@ class CampaignOverview(api_common.BaseApiView):
         return settings, is_delivering
 
     def get_campaign_status(self, campaign):
-        # TODO: Duplicate from account campaigns view
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)
         ad_groups_settings = models.AdGroupSettings.objects.filter(
             ad_group__in=ad_groups

@@ -9,7 +9,7 @@ oneApp.directive('zemInfobox', ['config', '$window', function (config, $window) 
             header: '=',
             settings: '=',
             linkTo: '=',
-            elementId: '='
+            stateId: '='
         },
         templateUrl: '/partials/zem_infobox.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
