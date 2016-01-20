@@ -490,30 +490,9 @@ class AdGroupOverview(api_common.BaseApiView):
         return settings
 
     def _performance_settings(self, ad_group, user, ad_group_settings):
-        settings = []
-
-        yesterday_cost = infobox_helpers.get_yesterday_total_cost(user, ad_group.campaign) or 0
-        filled_daily_ratio = 0
-
-        ad_group_daily_budget = ad_group_settings.daily_budget_cc or 0
-
-        if ad_group_daily_budget > 0:
-            filled_daily_ratio = min(
-                (yesterday_cost - float(ad_group_daily_budget)) / float(ad_group_daily_budget),
-                1)
-        yesterday_spend_settings = infobox_helpers.OverviewSetting(
-            'Yesterday spend:',
-            '${:.2f}'.format(yesterday_cost),
-            '{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100),
-        ).performance(True)
-        settings.append(yesterday_spend_settings.as_dict())
-
-
-        goals_and_spend, is_delivering = infobox_helpers.goals_and_spend_settings(
+        return infobox_helpers.goals_and_spend_settings(
             user, ad_group.campaign
         )
-        settings.extend(goals_and_spend)
-        return goals_and_spend, is_delivering
 
 
 class AdGroupArchive(api_common.BaseApiView):
@@ -678,7 +657,8 @@ class CampaignOverview(api_common.BaseApiView):
         end_date = None
         never_finishes = False
 
-        daily_cap_cc = 0
+        daily_cap_cc = infobox_helpers.calculate_daily_cap(campaign)
+        0
 
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)
         for ad_group in ad_groups:
@@ -763,79 +743,9 @@ class CampaignOverview(api_common.BaseApiView):
         return settings, daily_cap_cc
 
     def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc):
-        settings = []
-
-        yesterday_cost = infobox_helpers.get_yesterday_total_cost(user, campaign) or 0
-        filled_daily_ratio = 0
-
-        campaign_daily_budget = daily_cap_cc or 0
-
-        if campaign_daily_budget > 0:
-            filled_daily_ratio = min(
-                (yesterday_cost - float(campaign_daily_budget)) / float(campaign_daily_budget),
-                1)
-
-        yesterday_spend_settings = infobox_helpers.OverviewSetting(
-            'Yesterday spend:',
-            '${:.2f}'.format(yesterday_cost),
-            '{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100),
-        ).performance(True)
-        settings.append(yesterday_spend_settings.as_dict())
-
-
-        goals_and_spend, is_delivering = infobox_helpers.goals_and_spend_settings(
+        return infobox_helpers.goals_and_spend_settings(
             user, campaign
         )
-        settings.extend(goals_and_spend)
-        return goals_and_spend, is_delivering
-
-        """
-        total_campaign_spend_to_date = infobox_helpers.get_total_campaign_spend(user, campaign)
-        ideal_campaign_spend_to_date = infobox_helpers.get_ideal_campaign_spend(user, campaign)
-
-        ratio = 0
-        if ideal_campaign_spend_to_date > 0:
-            ratio = min(
-                (total_campaign_spend_to_date - ideal_campaign_spend_to_date) / ideal_campaign_spend_to_date,
-                1)
-
-        campaign_pacing_settings = infobox_helpers.OverviewSetting(
-            'Campaign pacing:',
-            '{:.2f}%'.format(ratio * 100),
-            '${:.2f}'.format(total_campaign_spend_to_date)
-        ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
-        settings.append(campaign_pacing_settings.as_dict())
-
-        campaign_goals = [(
-            campaign_settings.campaign_goal,
-            campaign_settings.goal_quantity,
-        )
-        ]
-        for i, (goal, quantity) in enumerate(campaign_goals):
-            text = constants.CampaignGoal.get_text(goal)
-            name = 'Campaign goals:' if i == 0 else ''
-
-            goal_value = infobox_helpers.get_goal_value(user, campaign, campaign_settings, goal)
-            goal_diff, description, success = infobox_helpers.get_goal_difference(
-                goal,
-                float(quantity),
-                goal_value
-            )
-
-            goal_setting = infobox_helpers.OverviewSetting(
-                name,
-                '{quantity} {value} (planned {description})'.format(
-                    quantity=quantity,
-                    value=text,
-                    description=goal_value
-                ),
-                description
-            ).performance(success)
-            settings.append(goal_setting.as_dict())
-
-        is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
-        return settings, is_delivering
-        """
 
     def get_campaign_status(self, campaign):
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)

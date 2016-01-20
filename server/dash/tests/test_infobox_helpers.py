@@ -213,7 +213,7 @@ class InfoBoxHelpersTest(TestCase):
         )
 
     @mock.patch('reports.api.query')
-    def test_get_yesterday_total_cost(self, mock_query):
+    def test_get_yesterday_total_spend(self, mock_query):
         # very simple test since target func just retrieves data from Redshift
         campaign = dash.models.Campaign.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
@@ -224,7 +224,7 @@ class InfoBoxHelpersTest(TestCase):
 
         self.assertEqual(
             50,
-            dash.infobox_helpers.get_yesterday_total_cost(user, campaign)
+            dash.infobox_helpers.get_yesterday_total_spend(user, campaign)
         )
 
     @mock.patch('reports.api_contentads.query')

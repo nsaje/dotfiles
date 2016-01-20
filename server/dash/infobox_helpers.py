@@ -20,6 +20,7 @@ class OverviewSetting(object):
         self.details_content = None
         self.icon = None
         self.type = setting_type
+        self.tooltip = tooltip
 
     def comment(self, details_label, details_description):
         ret = copy.deepcopy(self)
@@ -82,9 +83,14 @@ def get_total_campaign_spend(user, campaign, until_date=None):
     return campaign_budget.get_spend(until_date=until_date)
 
 
-def get_yesterday_total_cost(user, campaign):
+def get_yesterday_spend(user, campaign):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
-    return get_total_campaign_spend(user, campaign, until_date=yesterday)
+    budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
+
+    all_budget_spends_at_date = [
+        b.get_spend_data(date=yesterday, use_decimal=True)['total_cc'] for b in budgets
+    ]
+    return sum(all_budget_spends_at_date)
 
 
 def get_goal_value(user, campaign, campaign_settings, goal_type):
@@ -138,12 +144,42 @@ def get_goal_difference(goal_type, target, actual):
         return diff, description, success
 
 
+def calculate_daily_cap(campaign):
+    daily_cap_cc = 0
+    ad_groups = dash.models.AdGroup.objects.filter(campaign=campaign)
+    for ad_group in ad_groups:
+        if ad_group.is_archived():
+            continue
+
+        ad_group_settings = ad_group.get_current_settings()
+
+        daily_cap_cc += float(ad_group_settings.daily_budget_cc or 0)
+    return daily_cap_cc
+
+
 def goals_and_spend_settings(user, campaign):
     settings = []
+
+    filled_daily_ratio = 0
+    yesterday_cost = get_yesterday_spend(user, campaign) or 0
+    campaign_daily_budget = calculate_daily_cap(campaign)
+
+    if campaign_daily_budget > 0:
+        filled_daily_ratio = min(
+            (yesterday_cost - float(campaign_daily_budget)) / float(campaign_daily_budget),
+            1)
+
+    yesterday_spend_settings = OverviewSetting(
+        'Yesterday spend:',
+        '${:.2f}'.format(yesterday_cost),
+        description='{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100),
+    ).performance(True)
+    settings.append(yesterday_spend_settings.as_dict())
 
     total_campaign_spend_to_date = get_total_campaign_spend(user, campaign)
     ideal_campaign_spend_to_date = get_ideal_campaign_spend(user, campaign)
 
+    from pudb import set_trace; set_trace()
     ratio = 0
     if ideal_campaign_spend_to_date > 0:
         ratio = min(
@@ -152,7 +188,7 @@ def goals_and_spend_settings(user, campaign):
     campaign_pacing_settings = OverviewSetting(
         'Campaign pacing:',
         '{:.2f}%'.format(ratio * 100),
-        '${:.2f}'.format(total_campaign_spend_to_date)
+        description='${:.2f}'.format(total_campaign_spend_to_date)
     ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
     settings.append(campaign_pacing_settings.as_dict())
 
@@ -177,10 +213,9 @@ def goals_and_spend_settings(user, campaign):
         )
         goal_setting = OverviewSetting(
             name,
-            '{actual_goal} {value} (planned {description})'.format(
+            '{actual_goal} {value}'.format(
                 actual_goal=format_goal_value(goal_value, goal),
-                value=text,
-                description=format_goal_value(campaign_settings.goal_quantity, goal)
+                value=text
             ),
             description
         ).performance(success)
