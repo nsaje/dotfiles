@@ -334,3 +334,34 @@ class InfoBoxHelpersTest(TestCase):
                 20
             )
         )
+
+    def test_calculate_daily_cap(self):
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        self.assertEqual(50, dash.infobox_helpers.calculate_daily_cap(campaign))
+
+        for adgs in dash.models.AdGroupSettings.objects.all():
+            adgs.daily_budget_cc = 0
+            adgs.save(None)
+
+        self.assertEqual(0, dash.infobox_helpers.calculate_daily_cap(campaign))
+
+
+    def test_goals_and_spend_settings(self):
+        pass
+
+    def test_format_goal_value(self):
+        self.assertEqual(
+            10,
+            dash.infobox_helpers.format_goal_value(
+                10.00,
+                dash.constants.CampaignGoal.SECONDS_TIME_ON_SITE,
+            )
+        )
+
+        self.assertEqual(
+            0.15,
+            dash.infobox_helpers.format_goal_value(
+                0.15,
+                dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE,
+            )
+        )
