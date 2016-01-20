@@ -1,5 +1,5 @@
 /* globals oneApp,options */
-oneApp.controller('AddConversionGoalModalCtrl', ['$scope', '$modalInstance', 'api', function($scope, $modalInstance, api) {
+oneApp.controller('AddConversionGoalModalCtrl', ['$scope', '$modalInstance', 'api', function ($scope, $modalInstance, api) {
     $scope.conversionGoalTypes = options.conversionGoalTypes;
     $scope.conversionWindows = options.conversionWindows;
     $scope.addConversionGoalInProgress = false;
@@ -12,22 +12,22 @@ oneApp.controller('AddConversionGoalModalCtrl', ['$scope', '$modalInstance', 'ap
         $scope.addConversionGoalInProgress = true;
         $scope.error = false;
         api.conversionGoal.post($scope.campaign.id, $scope.conversionGoal).then(
-            function() {
+            function () {
                 $modalInstance.close();
             },
-            function(errors) {
+            function (errors) {
                 if (errors) {
                     $scope.errors = errors;
                 } else {
                     $scope.error = true;
                 }
             }
-        ).finally(function() {
+        ).finally(function () {
             $scope.addConversionGoalInProgress = false;
         });
     };
 
-    $scope.clearErrors = function(name) {
+    $scope.clearErrors = function (name) {
         if (!$scope.errors) {
             return;
         }

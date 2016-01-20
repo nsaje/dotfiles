@@ -685,6 +685,58 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
 
         self.assertEqual(publisher_data, expected)
 
+    @patch('reports.daily_statements.get_effective_spend_pcts')
+    def test_augment_pub_data_with_budgets_no_data_cost_micro(self, mock_effective_spend_pcts):
+        mock_effective_spend_pcts.return_value = (0.5, 0.1)
+        publisher_data = [
+            {
+                'date': datetime.date(2016, 1, 1),
+                'adgroup_id': 1,
+                'exchange': 'adiant',
+                'domain': 'adiant.com',
+                'clicks': 10,
+                'impressions': 1000,
+                'cost_micro': 20000000,
+            },
+            {
+                'date': datetime.date(2016, 1, 1),
+                'adgroup_id': 1,
+                'exchange': 'adsnative',
+                'domain': 'adsnative.com',
+                'clicks': 5,
+                'impressions': 800,
+                'cost_micro': 800000,
+            }
+        ]
+
+        refresh._augment_pub_data_with_budgets(publisher_data)
+        expected = [
+            {
+                'date': datetime.date(2016, 1, 1),
+                'adgroup_id': 1,
+                'exchange': 'adiant',
+                'domain': 'adiant.com',
+                'clicks': 10,
+                'impressions': 1000,
+                'cost_micro': 20000000,
+                'effective_cost_nano': 10000000000,
+                'license_fee_nano': 1000000000,
+            },
+            {
+                'date': datetime.date(2016, 1, 1),
+                'adgroup_id': 1,
+                'exchange': 'adsnative',
+                'domain': 'adsnative.com',
+                'clicks': 5,
+                'impressions': 800,
+                'cost_micro': 800000,
+                'effective_cost_nano': 400000000,
+                'license_fee_nano': 40000000,
+            }
+        ]
+
+        self.assertEqual(publisher_data, expected)
+
 
 class RefreshB1PublisherDataTestCase(test.TestCase):
 
@@ -842,7 +894,7 @@ class RefreshOBPubDataTestCase(test.TestCase):
             {
                 'domain': 'CNN money',
                 'exchange': 'outbrain',
-                'cost_micro': 750.0,
+                'cost_micro': 750000000000,
                 'date': datetime.date(2016, 1, 1),
                 'external_id': 'ABCD1234',
                 'clicks': 1500,
@@ -851,16 +903,17 @@ class RefreshOBPubDataTestCase(test.TestCase):
             {
                 'domain': 'CNN weather',
                 'exchange': 'outbrain',
-                'cost_micro': 250.0,
+                'cost_micro': 250000000000,
                 'date': datetime.date(2016, 1, 1),
                 'external_id': '4321DCBA',
                 'clicks': 500,
                 'adgroup_id': 123
             },
             {
-                'domain': 'CNN weather',
+                'domain':
+                'CNN weather',
                 'exchange': 'outbrain',
-                'cost_micro': 2000.0,
+                'cost_micro': 2000000000000,
                 'date': datetime.date(2016, 1, 1),
                 'external_id': '4321DCBA',
                 'clicks': 2000,
@@ -955,7 +1008,7 @@ class RefreshDataTestCase(test.TestCase):
             {
                 'domain': 'CNN money',
                 'exchange': 'outbrain',
-                'cost_micro': 750.0,
+                'cost_micro': 750000000000,
                 'date': datetime.date(2016, 1, 1),
                 'external_id': 'ABCD1234',
                 'clicks': 1500,
@@ -964,7 +1017,7 @@ class RefreshDataTestCase(test.TestCase):
             {
                 'domain': 'CNN weather',
                 'exchange': 'outbrain',
-                'cost_micro': 250.0,
+                'cost_micro': 250000000000,
                 'date': datetime.date(2016, 1, 1),
                 'external_id': '4321DCBA',
                 'clicks': 500,
@@ -973,7 +1026,7 @@ class RefreshDataTestCase(test.TestCase):
             {
                 'domain': 'CNN weather',
                 'exchange': 'outbrain',
-                'cost_micro': 2000.0,
+                'cost_micro': 2000000000000,
                 'date': datetime.date(2016, 1, 1),
                 'external_id': '4321DCBA',
                 'clicks': 2000,

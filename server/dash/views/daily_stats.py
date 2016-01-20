@@ -260,7 +260,7 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
             if s.bidder_slug:
                 exchange_name = s.bidder_slug
             else:
-                exchange_name = s.name
+                exchange_name = s.name.lower()
             map_exchange_to_source_name[exchange_name] = s.name
 
         if totals:

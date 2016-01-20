@@ -332,35 +332,50 @@ def refresh_publisher_blacklist(ad_group_source, request):
 
 
 def order_additional_updates_after_campaign_creation(ad_group_source, request):
+    actions = []
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
-    source = ad_group_source.source
 
-    # if we could not select target regions automatically, see if we can select them manually
-    if not region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) and\
-       region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings):
-        new_field_value = _get_manual_action_target_regions_value(
-            ad_group_source,
-            None,
-            ad_group_settings
-        )
+    manual_actions = _set_target_region_manual_property_if_needed(ad_group_source, ad_group_settings, request)
+    actions.extend(manual_actions)
 
-        actionlog.api.init_set_ad_group_manual_property(
-            ad_group_source,
-            request,
-            'target_regions',
-            new_field_value
-        )
-
-    # update ad group source settings
+    # update ad group source with initial settings (daily_budget, cpc)
+    # or fetch external settings (initial settings are not set)
     cons = consistency.SettingsStateConsistence(ad_group_source)
     settings_changes = cons.get_needed_state_updates()
     if settings_changes:
-        actionlog.api.set_ad_group_source_settings(settings_changes, ad_group_source, request=request, send=True)
+        settings_actions = actionlog.api.set_ad_group_source_settings(settings_changes, ad_group_source,
+                                                                      request=request, send=False)
+        actions.extend(settings_actions)
+    else:
+        fetch_action = actionlog.api.init_fetch_ad_group_source_settings(ad_group_source, request)
+        actions.append(fetch_action)
 
     # copy all currently blacklisted entries on campaign creation
-    actionlogs_to_send = refresh_publisher_blacklist(ad_group_source, request)
-    if actionlogs_to_send != []:
-        actionlog.zwei_actions.send(actionlogs_to_send)
+    blacklist_actions = refresh_publisher_blacklist(ad_group_source, request)
+    actions.extend(blacklist_actions)
+
+    actionlog.zwei_actions.send(actions)
+
+
+def _set_target_region_manual_property_if_needed(ad_group_source, ad_group_settings, request):
+    source = ad_group_source.source
+    # if we could not select target regions automatically, see if we can select them manually
+    if not region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) and \
+            region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings):
+        new_field_value = _get_manual_action_target_regions_value(
+                ad_group_source,
+                None,
+                ad_group_settings
+        )
+
+        actionlog.api.init_set_ad_group_manual_property(
+                ad_group_source,
+                request,
+                'target_regions',
+                new_field_value
+        )
+
+    return actionlog.api.send_delayed_actionlogs([ad_group_source], send=False)
 
 
 def insert_content_ad_callback(

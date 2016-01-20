@@ -283,8 +283,10 @@ def _augment_pub_data_with_budgets(rows):
             pcts_lookup[(row['date'], campaign.id)] = daily_statements.get_effective_spend_pcts(row['date'], campaign)
         pct_actual_spend, pct_license_fee = pcts_lookup[(row['date'], campaign.id)]
         row['effective_cost_nano'] = int(pct_actual_spend * row['cost_micro'] * MICRO_TO_NANO)
-        row['effective_data_cost_nano'] = int(pct_actual_spend * row['data_cost_micro'] * MICRO_TO_NANO)
-        row['license_fee_nano'] = int(pct_license_fee * (row['effective_cost_nano'] + row['effective_data_cost_nano']))
+        if 'data_cost_micro' in row:
+            row['effective_data_cost_nano'] = int(pct_actual_spend * row['data_cost_micro'] * MICRO_TO_NANO)
+        row['license_fee_nano'] = int(
+            pct_license_fee * (row['effective_cost_nano'] + row.get('effective_data_cost_nano', 0)))
 
 
 def _get_raw_b1_pub_data(s3_key):
@@ -336,7 +338,9 @@ def _get_raw_ob_pub_data(s3_keys):
             }
 
             if total_clicks * total_cost > 0:
-                new_row['cost_micro'] = float(row['clicks']) / total_clicks * total_cost
+                # this field has a confusing name since the number in redshift is intended to represent
+                # cost in micro per 1000 impressions (cpm)
+                new_row['cost_micro'] = int(round(float(row['clicks']) / total_clicks * total_cost)) * 1000000000
 
             rows.append(new_row)
 
@@ -349,7 +353,7 @@ def _get_latest_b1_pub_data(date):
 
 
 def _get_latest_ob_pub_data(date):
-    s3_keys = _get_latest_ob_pub_data_s3_keys()
+    s3_keys = _get_latest_ob_pub_data_s3_keys(date)
     return _get_raw_ob_pub_data(s3_keys)
 
 
