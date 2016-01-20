@@ -330,11 +330,12 @@ def _get_raw_ob_pub_data(s3_keys):
         total_clicks = sum(row['clicks'] for row in json_data)
 
         for row in json_data:
+            # impressions are missing because we only get clicks from outbrain
             new_row = {
                 'adgroup_id': ad_group_id,
                 'date': date,
                 'domain': row['name'],
-                'exchange': 'outbrain',
+                'exchange': source.tracking_slug,  # code in publisher views assumes this
                 'external_id': row['ob_id'],
                 'clicks': row['clicks'],
                 'cost_micro': 0,
