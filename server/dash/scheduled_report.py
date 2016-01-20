@@ -15,9 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_due_scheduled_reports():
-    today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
-    today = today_utc.astimezone(
-        pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
+    today = pytz.UTC.localize(datetime.datetime.utcnow())
 
     due_reports = models.ScheduledExportReport.objects.select_related('report').filter(
         state=constants.ScheduledReportState.ACTIVE)
