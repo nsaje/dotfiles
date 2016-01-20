@@ -18,6 +18,7 @@ from zemauth.models import User
 
 
 class DatetimeMock(datetime.datetime):
+
     @classmethod
     def utcnow(cls):
         return datetime.datetime(2014, 06, 05, 9, 58, 25)
@@ -95,13 +96,13 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(mail.outbox[0].to, ['test@zemanta.com'])
 
     def test_get_active_ad_groups(self):
-            campaign1 = models.Campaign.objects.get(id=1)
-            actives = helpers.get_active_ad_groups(campaign1)
-            self.assertEqual(len(actives), 1)
+        campaign1 = models.Campaign.objects.get(id=1)
+        actives = helpers.get_active_ad_groups(campaign1)
+        self.assertEqual(len(actives), 1)
 
-            campaign2 = models.Campaign.objects.get(id=2)
-            actives = helpers.get_active_ad_groups(campaign2)
-            self.assertEqual(len(actives), 0)
+        campaign2 = models.Campaign.objects.get(id=2)
+        actives = helpers.get_active_ad_groups(campaign2)
+        self.assertEqual(len(actives), 0)
 
     def test_persist_cpc_change_to_admin_log(self):
         autopilot.persist_cpc_change_to_admin_log(
@@ -124,9 +125,11 @@ class BudgetDepletionTestCase(test.TestCase):
 
     @patch('datetime.datetime', DatetimeMock)
     def test_ad_group_sources_daily_budget_was_changed_recently(self):
-        self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=1)))
+        self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(
+            models.AdGroupSource.objects.get(id=1)))
 
-        self.assertFalse(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=2)))
+        self.assertFalse(autopilot.ad_group_sources_daily_budget_was_changed_recently(
+            models.AdGroupSource.objects.get(id=2)))
         settings_writer = dash.api.AdGroupSourceSettingsWriter(models.AdGroupSource.objects.get(id=2))
         resource = dict()
         resource['daily_budget_cc'] = decimal.Decimal(60.00)
@@ -137,13 +140,17 @@ class BudgetDepletionTestCase(test.TestCase):
         request.user = User.objects.create_user('test@example.com')
 
         settings_writer.set(resource, request)
-        self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(models.AdGroupSource.objects.get(id=2)))
+        self.assertTrue(autopilot.ad_group_sources_daily_budget_was_changed_recently(
+            models.AdGroupSource.objects.get(id=2)))
 
     @patch('automation.settings.AUTOPILOT_CPC_CHANGE_TABLE', (
-        {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.5, 'bid_cpc_procentual_increase': decimal.Decimal('0.1')},
-        {'underspend_upper_limit': -0.5, 'underspend_lower_limit': -0.1, 'bid_cpc_procentual_increase': decimal.Decimal('0.5')},
-        {'underspend_upper_limit': -0.1, 'underspend_lower_limit': 0, 'bid_cpc_procentual_increase': decimal.Decimal('-0.5')}
-        )
+        {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.5,
+            'bid_cpc_procentual_increase': decimal.Decimal('0.1')},
+        {'underspend_upper_limit': -0.5, 'underspend_lower_limit': -
+            0.1, 'bid_cpc_procentual_increase': decimal.Decimal('0.5')},
+        {'underspend_upper_limit': -0.1, 'underspend_lower_limit': 0,
+            'bid_cpc_procentual_increase': decimal.Decimal('-0.5')}
+    )
     )
     @patch('automation.settings.AUTOPILOT_MIN_CPC', decimal.Decimal('0.1'))
     @patch('automation.settings.AUTOPILOT_MAX_CPC', decimal.Decimal('3'))
@@ -154,7 +161,8 @@ class BudgetDepletionTestCase(test.TestCase):
     def test_calculate_new_autopilot_cpc(self):
         test_cases = (
             #  cpc, daily_budget, yesterday_spend, new_cpc, comments
-            ('0', '10', '5', '0', [automation.constants.CpcChangeComment.CPC_NOT_SET, automation.constants.CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('0', '10', '5', '0', [automation.constants.CpcChangeComment.CPC_NOT_SET,
+                                   automation.constants.CpcChangeComment.CURRENT_CPC_TOO_LOW]),
             ('0.5', '10', '8', '0.75', []),
             ('2.5', '10', '8', '2.75', []),
             ('0.5', '10', '10', '0.25', []),
@@ -165,7 +173,8 @@ class BudgetDepletionTestCase(test.TestCase):
             ('0.5', '10', '0', '0.5', [automation.constants.CpcChangeComment.NO_YESTERDAY_SPEND]),
             ('0.5', '-10', '5', '0.5', [automation.constants.CpcChangeComment.BUDGET_NOT_SET]),
             ('0.5', '10', '-5', '0.5', [automation.constants.CpcChangeComment.NO_YESTERDAY_SPEND]),
-            ('-0.5', '10', '5', '-0.5', [automation.constants.CpcChangeComment.CPC_NOT_SET, automation.constants.CpcChangeComment.CURRENT_CPC_TOO_LOW]),
+            ('-0.5', '10', '5', '-0.5', [automation.constants.CpcChangeComment.CPC_NOT_SET,
+                                         automation.constants.CpcChangeComment.CURRENT_CPC_TOO_LOW]),
             ('0.35', '10', '9.96', '0.15', []),
             ('2.8', '10', '9.96', '2.5', []),
             ('3.5', '10', '1', '3.5', [automation.constants.CpcChangeComment.CURRENT_CPC_TOO_HIGH]),
@@ -234,3 +243,56 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertTrue(len(helpers.get_active_ad_groups(camp)) > 0)
         helpers.stop_campaign(camp)
         self.assertEqual(len(helpers.get_active_ad_groups(camp)), 0)
+
+
+class BCMDepletionTestCase(test.TestCase):
+
+    fixtures = ['test_automation.yaml']
+
+    def setUp(self):
+        self.campaigns = models.Campaign.objects.all()
+        self.request = HttpRequest()
+        self.request.user = User.objects.get(pk=1)
+        refresh.refresh_adgroup_stats()
+
+    def test_split_legacy_campaigns(self):
+        bcm_campaigns, legacy_campaigns = helpers.split_legacy_campaigns(
+            self.campaigns
+        )
+        self.assertEqual(
+            set((1, 2, )),
+            set(c.pk for c in legacy_campaigns)
+        )
+        self.assertEqual(
+            set((3, 4, )),
+            set(c.pk for c in bcm_campaigns)
+        )
+
+    @patch('datetime.datetime', DatetimeMock)
+    def test_get_yesterdays_spends(self):
+        with patch('reports.api.get_yesterday_cost') as get_yesterday_coost:
+            get_yesterday_coost.return_value = {'test': 100.0}
+            self.assertEqual(
+                helpers.get_yesterdays_spends(self.campaigns),
+                {1: 100.0, 2: 100.0, 3: 121.0, 4: 77.0},
+            )
+
+    @patch('datetime.datetime', DatetimeMock)
+    def test_get_available_budgets(self):
+        models.CampaignBudgetSettings(
+            campaign_id=1,
+            total=decimal.Decimal('200.0000'),
+            created_by_id=1,
+        ).save(self.request)
+        models.CampaignBudgetSettings(
+            campaign_id=2,
+            total=decimal.Decimal('300.0000'),
+            created_by_id=1,
+        ).save(self.request)
+
+        with patch('reports.api.query') as query:
+            query.return_value = {'cost': 200.0}
+            self.assertEqual(
+                helpers.get_available_budgets(self.campaigns),
+                {1: 0.0, 2: 100.0, 3: 49879.0, 4: 49923.0},
+            )
