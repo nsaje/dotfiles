@@ -212,19 +212,38 @@ class InfoBoxHelpersTest(TestCase):
             dash.infobox_helpers.get_total_campaign_spend(user, campaign)
         )
 
-    @mock.patch('reports.api.query')
-    def test_get_yesterday_total_spend(self, mock_query):
+    @mock.patch('dash.models.BudgetLineItem.get_spend_data')
+    def test_get_yesterday_total_spend(self, mock_get_spend_data):
         # very simple test since target func just retrieves data from Redshift
         campaign = dash.models.Campaign.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
 
-        mock_query.return_value = {
-            'cost': 50
-        }
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
 
+        credit = dash.models.CreditLineItem.objects.create(
+            account=campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+        budget = dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=100,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+        )
+
+        mock_get_spend_data.return_value = {
+            'total': 50
+        }
         self.assertEqual(
             50,
-            dash.infobox_helpers.get_yesterday_total_spend(user, campaign)
+            dash.infobox_helpers.get_yesterday_spend(user, campaign)
         )
 
     @mock.patch('reports.api_contentads.query')
