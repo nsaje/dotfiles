@@ -669,6 +669,7 @@ class AdGroupSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'ad_group',
         'state',
         'cpc_cc',
+        'max_cpc_cc',
         'daily_budget_cc',
         'start_date',
         'end_date',

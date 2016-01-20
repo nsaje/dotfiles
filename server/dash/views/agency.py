@@ -146,6 +146,7 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
         settings.cpc_cc = resource['cpc_cc']
+        settings.max_cpc_cc = resource['max_cpc_cc']
         settings.daily_budget_cc = resource['daily_budget_cc']
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']

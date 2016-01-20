@@ -1338,19 +1338,19 @@ class AdGroupSettings(SettingsBase):
         null=True,
         verbose_name='CPC'
     )
+    max_cpc_cc = models.DecimalField(
+            max_digits=10,
+            decimal_places=4,
+            blank=True,
+            null=True,
+            verbose_name='Maximum CPC'
+    )
     daily_budget_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
         null=True,
         verbose_name='Daily budget'
-    )
-    max_cpc_cc = models.DecimalField(
-        max_digits=10,
-        decimal_places=4,
-        blank=True,
-        null=True,
-        verbose_name='Maximum CPC'
     )
 
     target_devices = jsonfield.JSONField(blank=True, default=[])
