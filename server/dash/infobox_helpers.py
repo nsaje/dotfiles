@@ -88,6 +88,7 @@ def get_yesterday_total_cost(user, campaign):
 
 
 def get_goal_value(user, campaign, campaign_settings, goal_type):
+    from pudb import set_trace; set_trace()
     # we are interested in reaching the goal by today
     end_date = datetime.datetime.today().date()
     totals_stats = reports.api_helpers.filter_by_permissions(
@@ -136,3 +137,55 @@ def get_goal_difference(goal_type, target, actual):
         )
         success = diff <= 0
         return diff, description, success
+
+
+def goals_and_spend_settings(user, campaign):
+    settings = []
+
+    total_campaign_spend_to_date = get_total_campaign_spend(user, campaign)
+    ideal_campaign_spend_to_date = get_ideal_campaign_spend(user, campaign)
+
+    ratio = 0
+    if ideal_campaign_spend_to_date > 0:
+        ratio = min(
+            (total_campaign_spend_to_date - ideal_campaign_spend_to_date) / ideal_campaign_spend_to_date,
+            1)
+    campaign_pacing_settings = OverviewSetting(
+        'Campaign pacing:',
+        '{:.2f}%'.format(ratio * 100),
+        '${:.2f}'.format(total_campaign_spend_to_date)
+    ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
+    settings.append(campaign_pacing_settings.as_dict())
+
+    campaign_settings = campaign.get_current_settings()
+    campaign_goals = [(
+        campaign_settings.campaign_goal,
+        campaign_settings.goal_quantity,
+    )
+    ]
+    for i, (goal, quantity) in enumerate(campaign_goals):
+        text = dash.constants.CampaignGoal.get_text(goal)
+        name = 'Campaign goals:' if i == 0 else ''
+
+        try:
+            goal_value = get_goal_value(user, campaign, campaign_settings, goal)
+        except NotImplementedError:
+            goal_value = None
+        goal_diff, description, success = get_goal_difference(
+            goal,
+            float(quantity),
+            goal_value
+        )
+        goal_setting = OverviewSetting(
+            name,
+            '{actual_goal} {value} (planned {description})'.format(
+                actual_goal=goal_value,
+                value=text,
+                description=quantity or 'N/A'
+            ),
+            description
+        ).performance(success)
+        settings.append(goal_setting.as_dict())
+
+    is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
+    return settings, is_delivering
