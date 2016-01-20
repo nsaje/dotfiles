@@ -88,7 +88,7 @@ def get_yesterday_spend(user, campaign):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
 
     all_budget_spends_at_date = [
-        b.get_spend_data(date=yesterday, use_decimal=True)['total_cc'] for b in budgets
+        b.get_spend_data(date=yesterday, use_decimal=True)['total'] for b in budgets
     ]
     return sum(all_budget_spends_at_date)
 
