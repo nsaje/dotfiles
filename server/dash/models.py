@@ -1306,7 +1306,6 @@ class AdGroupSettings(SettingsBase):
         'end_date',
         'cpc_cc',
         'daily_budget_cc',
-        'max_cpc_cc',
         'target_devices',
         'target_regions',
         'tracking_code',
@@ -1337,13 +1336,6 @@ class AdGroupSettings(SettingsBase):
         blank=True,
         null=True,
         verbose_name='CPC'
-    )
-    max_cpc_cc = models.DecimalField(
-            max_digits=10,
-            decimal_places=4,
-            blank=True,
-            null=True,
-            verbose_name='Maximum CPC'
     )
     daily_budget_cc = models.DecimalField(
         max_digits=10,

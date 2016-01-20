@@ -125,9 +125,6 @@ class AdGroupSettings(api_common.BaseApiView):
                 'daily_budget_cc':
                     '{:.2f}'.format(settings.daily_budget_cc)
                     if settings.daily_budget_cc is not None else '',
-                'max_cpc_cc':
-                    '{:.2f}'.format(settings.max_cpc_cc)
-                    if settings.max_cpc_cc is not None else '',
                 'target_devices': settings.target_devices,
                 'target_regions': settings.target_regions,
                 'tracking_code': settings.tracking_code,
@@ -146,7 +143,6 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
         settings.cpc_cc = resource['cpc_cc']
-        settings.max_cpc_cc = resource['max_cpc_cc']
         settings.daily_budget_cc = resource['daily_budget_cc']
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
