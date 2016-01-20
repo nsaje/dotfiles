@@ -702,8 +702,7 @@ class CampaignOverview(api_common.BaseApiView):
                 devices=', '.join(
                     [w[0].upper() + w[1:] for w in campaign_settings.target_devices]
                 )
-            ),
-            ''
+            )
         )
         settings.append(targeting_device.as_dict())
 
@@ -711,8 +710,7 @@ class CampaignOverview(api_common.BaseApiView):
             '',
             'Location: {regions}'.format(
                 regions=', '.join(campaign_settings.target_regions)
-            ),
-            '',
+            )
         )
         settings.append(targeting_region.as_dict())
 
@@ -721,8 +719,7 @@ class CampaignOverview(api_common.BaseApiView):
         daily_cap = infobox_helpers.OverviewSetting(
             'Daily cap',
             '${:.2f}'.format(daily_cap_cc)\
-                if daily_cap_cc > 0 else 'N/A',
-            ''
+                if daily_cap_cc > 0 else 'N/A'
         )
         settings.append(daily_cap.as_dict())
 
