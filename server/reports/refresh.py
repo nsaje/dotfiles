@@ -39,6 +39,7 @@ LOAD_PUB_STATS_KEY_FMT = 'publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json
 
 MICRO_TO_NANO = 1000
 CC_TO_NANO = 100000
+TO_NANO = 1000000000
 
 MAX_DATES_TO_REFRESH = 200
 
@@ -282,9 +283,9 @@ def _augment_pub_data_with_budgets(rows):
         if (row['date'], campaign.id) not in pcts_lookup:
             pcts_lookup[(row['date'], campaign.id)] = daily_statements.get_effective_spend_pcts(row['date'], campaign)
         pct_actual_spend, pct_license_fee = pcts_lookup[(row['date'], campaign.id)]
-        row['effective_cost_nano'] = int(pct_actual_spend * row['cost_micro'] * MICRO_TO_NANO)
-        if 'data_cost_micro' in row:
-            row['effective_data_cost_nano'] = int(pct_actual_spend * row['data_cost_micro'] * MICRO_TO_NANO)
+        row['effective_cost_nano'] = int(pct_actual_spend * row['cost_nano'])
+        if 'data_cost_nano' in row:
+            row['effective_data_cost_nano'] = int(pct_actual_spend * row['data_cost_nano'])
         row['license_fee_nano'] = int(
             pct_license_fee * (row['effective_cost_nano'] + row.get('effective_data_cost_nano', 0)))
 
@@ -304,7 +305,9 @@ def _get_raw_b1_pub_data(s3_key):
             'clicks': int(row[4]),
             'impressions': int(row[5]),
             'cost_micro': int(row[6]),
+            'cost_nano': int(row[6]),
             'data_cost_micro': int(row[7]),
+            'data_cost_nano': int(row[7]),
         })
 
     return rows
@@ -334,13 +337,13 @@ def _get_raw_ob_pub_data(s3_keys):
                 'exchange': 'outbrain',
                 'external_id': row['ob_id'],
                 'clicks': row['clicks'],
-                'cost_micro': 0
+                'cost_micro': 0,
+                'cost_nano': 0
             }
 
             if total_clicks * total_cost > 0:
-                # this field has a confusing name since the number in redshift is intended to represent
-                # cost in micro per 1000 impressions (cpm)
-                new_row['cost_micro'] = int(round(float(row['clicks']) / total_clicks * total_cost)) * 1000000000
+                new_row['cost_micro'] = int(round(float(row['clicks']) / total_clicks * total_cost)) * TO_NANO
+                new_row['cost_nano'] = new_row['cost_micro']
 
             rows.append(new_row)
 

@@ -638,8 +638,8 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adiant.com',
                 'clicks': 10,
                 'impressions': 1000,
-                'cost_micro': 20000000,
-                'data_cost_micro': 1000000
+                'cost_nano': 20000000000,
+                'data_cost_nano': 1000000000
             },
             {
                 'date': datetime.date(2016, 1, 1),
@@ -648,8 +648,8 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adsnative.com',
                 'clicks': 5,
                 'impressions': 800,
-                'cost_micro': 800000,
-                'data_cost_micro': 200000
+                'cost_nano': 800000000,
+                'data_cost_nano': 200000000
             }
         ]
 
@@ -662,8 +662,8 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adiant.com',
                 'clicks': 10,
                 'impressions': 1000,
-                'cost_micro': 20000000,
-                'data_cost_micro': 1000000,
+                'cost_nano': 20000000000,
+                'data_cost_nano': 1000000000,
                 'effective_cost_nano': 10000000000,
                 'effective_data_cost_nano': 500000000,
                 'license_fee_nano': 1050000000,
@@ -675,8 +675,8 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adsnative.com',
                 'clicks': 5,
                 'impressions': 800,
-                'cost_micro': 800000,
-                'data_cost_micro': 200000,
+                'cost_nano': 800000000,
+                'data_cost_nano': 200000000,
                 'effective_cost_nano': 400000000,
                 'effective_data_cost_nano': 100000000,
                 'license_fee_nano': 50000000,
@@ -686,7 +686,7 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
         self.assertEqual(publisher_data, expected)
 
     @patch('reports.daily_statements.get_effective_spend_pcts')
-    def test_augment_pub_data_with_budgets_no_data_cost_micro(self, mock_effective_spend_pcts):
+    def test_augment_pub_data_with_budgets_no_data_cost_nano(self, mock_effective_spend_pcts):
         mock_effective_spend_pcts.return_value = (0.5, 0.1)
         publisher_data = [
             {
@@ -696,7 +696,7 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adiant.com',
                 'clicks': 10,
                 'impressions': 1000,
-                'cost_micro': 20000000,
+                'cost_nano': 20000000000,
             },
             {
                 'date': datetime.date(2016, 1, 1),
@@ -705,7 +705,7 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adsnative.com',
                 'clicks': 5,
                 'impressions': 800,
-                'cost_micro': 800000,
+                'cost_nano': 800000000,
             }
         ]
 
@@ -718,7 +718,7 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adiant.com',
                 'clicks': 10,
                 'impressions': 1000,
-                'cost_micro': 20000000,
+                'cost_nano': 20000000000,
                 'effective_cost_nano': 10000000000,
                 'license_fee_nano': 1000000000,
             },
@@ -729,7 +729,7 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adsnative.com',
                 'clicks': 5,
                 'impressions': 800,
-                'cost_micro': 800000,
+                'cost_nano': 800000000,
                 'effective_cost_nano': 400000000,
                 'license_fee_nano': 40000000,
             }
@@ -778,7 +778,9 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
                 'clicks': 10,
                 'impressions': 1000,
                 'cost_micro': 20000000,
-                'data_cost_micro': 1000000
+                'cost_nano': 20000000,
+                'data_cost_micro': 1000000,
+                'data_cost_nano': 1000000,
             },
             {
                 'date': datetime.date(2016, 1, 1),
@@ -789,7 +791,9 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
                 'clicks': 5,
                 'impressions': 800,
                 'cost_micro': 800000,
-                'data_cost_micro': 200000
+                'cost_nano': 800000,
+                'data_cost_micro': 200000,
+                'data_cost_nano': 200000
             }
         ]
 
@@ -895,6 +899,7 @@ class RefreshOBPubDataTestCase(test.TestCase):
                 'domain': 'CNN money',
                 'exchange': 'outbrain',
                 'cost_micro': 750000000000,
+                'cost_nano': 750000000000,
                 'date': datetime.date(2016, 1, 1),
                 'external_id': 'ABCD1234',
                 'clicks': 1500,
@@ -904,6 +909,7 @@ class RefreshOBPubDataTestCase(test.TestCase):
                 'domain': 'CNN weather',
                 'exchange': 'outbrain',
                 'cost_micro': 250000000000,
+                'cost_nano': 250000000000,
                 'date': datetime.date(2016, 1, 1),
                 'external_id': '4321DCBA',
                 'clicks': 500,
@@ -914,6 +920,7 @@ class RefreshOBPubDataTestCase(test.TestCase):
                 'CNN weather',
                 'exchange': 'outbrain',
                 'cost_micro': 2000000000000,
+                'cost_nano': 2000000000000,
                 'date': datetime.date(2016, 1, 1),
                 'external_id': '4321DCBA',
                 'clicks': 2000,
@@ -1009,6 +1016,7 @@ class RefreshDataTestCase(test.TestCase):
                 'domain': 'CNN money',
                 'exchange': 'outbrain',
                 'cost_micro': 750000000000,
+                'cost_nano': 750000000000,
                 'date': datetime.date(2016, 1, 1),
                 'external_id': 'ABCD1234',
                 'clicks': 1500,
@@ -1018,6 +1026,7 @@ class RefreshDataTestCase(test.TestCase):
                 'domain': 'CNN weather',
                 'exchange': 'outbrain',
                 'cost_micro': 250000000000,
+                'cost_nano': 250000000000,
                 'date': datetime.date(2016, 1, 1),
                 'external_id': '4321DCBA',
                 'clicks': 500,
@@ -1027,6 +1036,7 @@ class RefreshDataTestCase(test.TestCase):
                 'domain': 'CNN weather',
                 'exchange': 'outbrain',
                 'cost_micro': 2000000000000,
+                'cost_nano': 2000000000000,
                 'date': datetime.date(2016, 1, 1),
                 'external_id': '4321DCBA',
                 'clicks': 2000,
@@ -1073,7 +1083,9 @@ class RefreshDataTestCase(test.TestCase):
                 'clicks': 10,
                 'impressions': 1000,
                 'cost_micro': 20000000,
-                'data_cost_micro': 1000000
+                'cost_nano': 20000000,
+                'data_cost_micro': 1000000,
+                'data_cost_nano': 1000000,
             },
             {
                 'date': datetime.date(2016, 1, 1),
@@ -1084,7 +1096,9 @@ class RefreshDataTestCase(test.TestCase):
                 'clicks': 5,
                 'impressions': 800,
                 'cost_micro': 800000,
-                'data_cost_micro': 200000
+                'cost_nano': 800000,
+                'data_cost_micro': 200000,
+                'data_cost_nano': 200000,
             }
         ]
 
