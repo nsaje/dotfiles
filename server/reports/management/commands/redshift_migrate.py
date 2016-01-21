@@ -4,7 +4,7 @@ import logging
 
 from django.core.management.base import BaseCommand
 
-from utils.command_helpers import set_logger_verbosity
+from utils.command_helpers import set_logger_verbosity, ExceptionCommand
 from reports import redshift
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def _get_migrations(start_index=0):
     return migration_files
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--list', help='Lists all of the available migrations', action='store_true')

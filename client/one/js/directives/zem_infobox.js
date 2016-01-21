@@ -1,7 +1,7 @@
 /*global $,oneApp,constants*/
-"use strict";
+'use strict';
 
-oneApp.directive('zemInfobox', ['config', '$window', function(config, $window) {
+oneApp.directive('zemInfobox', ['config', '$window', function (config, $window) {
 
     return {
         restrict: 'E',
@@ -9,7 +9,7 @@ oneApp.directive('zemInfobox', ['config', '$window', function(config, $window) {
             header: '=',
             settings: '=',
             linkTo: '=',
-            elementId: '='
+            stateId: '='
         },
         templateUrl: '/partials/zem_infobox.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {

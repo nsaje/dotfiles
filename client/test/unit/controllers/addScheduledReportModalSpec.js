@@ -1,6 +1,6 @@
 'use strict';
 
-describe('AddScheduledReportModalCtrl', function() {
+describe('AddScheduledReportModalCtrl', function () {
     var $scope, $modalInstance, api, $q, openedDeferred;
     var zemFilterServiceMock;
 
@@ -9,15 +9,15 @@ describe('AddScheduledReportModalCtrl', function() {
 
     beforeEach(module(function ($provide) {
         zemFilterServiceMock = {
-            getShowArchived: function() { return true; },
-            isSourceFilterOn: function() { return false; },
-            getFilteredSources: function() {}
+            getShowArchived: function () { return true; },
+            isSourceFilterOn: function () { return false; },
+            getFilteredSources: function () {}
         };
         $provide.value('zemFilterService', zemFilterServiceMock);
     }));
 
 
-    beforeEach(inject(function($controller, $rootScope, _$q_) {
+    beforeEach(inject(function ($controller, $rootScope, _$q_) {
         $q = _$q_;
         $scope = $rootScope.$new();
         $scope.startDate = moment('2015-01-12');
@@ -27,23 +27,23 @@ describe('AddScheduledReportModalCtrl', function() {
         $scope.exportSchedulingFrequencies = [{value: 'weekly'}];
         $scope.options = [{value: 'view-csv'}];
         $scope.columns = [
-            { field: 'cost', shown: true, checked: true, unselectable: false },
-            { field: 'impressions', shown: true, checked: true, unselectable: false }
+            {field: 'cost', shown: true, checked: true, unselectable: false},
+            {field: 'impressions', shown: true, checked: true, unselectable: false}
         ];
-        var $state = { params: { id: 1 } };
+        var $state = {params: {id: 1}};
         $scope.level = 0;
         $scope.exportSources = undefined;
         openedDeferred = $q.defer();
         $modalInstance = {
-            close: function(){},
+            close: function () {},
             opened: openedDeferred.promise
         };
         $scope.getAdditionalColumns = function () { return []; };
-        var mockApiFunc = function() {
+        var mockApiFunc = function () {
             return {
-                then: function() {
+                then: function () {
                     return {
-                        finally: function() {}
+                        finally: function () {}
                     };
                 }
             };
@@ -64,11 +64,11 @@ describe('AddScheduledReportModalCtrl', function() {
         );
     }));
 
-    describe('addScheduledReport', function() {
-        it('updates validationErrors object on known errors', function() {
+    describe('addScheduledReport', function () {
+        it('updates validationErrors object on known errors', function () {
             var deferred = $q.defer();
 
-            spyOn(api.scheduledReports, 'addScheduledReport').and.callFake(function() {
+            spyOn(api.scheduledReports, 'addScheduledReport').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -109,7 +109,7 @@ describe('AddScheduledReportModalCtrl', function() {
         it('updates error flag on unknown error', function () {
             var deferred = $q.defer();
 
-            spyOn(api.scheduledReports, 'addScheduledReport').and.callFake(function() {
+            spyOn(api.scheduledReports, 'addScheduledReport').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -121,18 +121,18 @@ describe('AddScheduledReportModalCtrl', function() {
 
             expect(api.scheduledReports.addScheduledReport).toHaveBeenCalledWith(
               'test/export_plus/',
-              {
-                  type: 'view-csv',
-                  start_date : moment('2015-01-12').format(),
-                  end_date : moment('2015-01-19').format(),
-                  order: '-cost',
-                  by_day: false,
-                  additional_fields: '',
-                  filtered_sources: '',
-                  frequency: 'daily',
-                  recipient_emails: undefined,
-                  report_name: undefined
-              }
+                {
+                    type: 'view-csv',
+                    start_date : moment('2015-01-12').format(),
+                    end_date : moment('2015-01-19').format(),
+                    order: '-cost',
+                    by_day: false,
+                    additional_fields: '',
+                    filtered_sources: '',
+                    frequency: 'daily',
+                    recipient_emails: undefined,
+                    report_name: undefined
+                }
             );
             expect($scope.showInProgress).toBe(true);
             expect($modalInstance.close).not.toHaveBeenCalled();
@@ -148,10 +148,10 @@ describe('AddScheduledReportModalCtrl', function() {
             expect($scope.validationErrors).toEqual({});
         });
 
-        it('closes the modal window on success', function() {
+        it('closes the modal window on success', function () {
             var deferred = $q.defer();
 
-            spyOn(api.scheduledReports, 'addScheduledReport').and.callFake(function() {
+            spyOn(api.scheduledReports, 'addScheduledReport').and.callFake(function () {
                 return deferred.promise;
             });
 
@@ -163,18 +163,18 @@ describe('AddScheduledReportModalCtrl', function() {
 
             expect(api.scheduledReports.addScheduledReport).toHaveBeenCalledWith(
               'test/export_plus/',
-              {
-                  type: 'view-csv',
-                  start_date : moment('2015-01-12').format(),
-                  end_date : moment('2015-01-19').format(),
-                  order: '-cost',
-                  by_day: false,
-                  additional_fields: '',
-                  filtered_sources: '',
-                  frequency: 'daily',
-                  recipient_emails: undefined,
-                  report_name: undefined
-              }
+                {
+                    type: 'view-csv',
+                    start_date : moment('2015-01-12').format(),
+                    end_date : moment('2015-01-19').format(),
+                    order: '-cost',
+                    by_day: false,
+                    additional_fields: '',
+                    filtered_sources: '',
+                    frequency: 'daily',
+                    recipient_emails: undefined,
+                    report_name: undefined
+                }
 
             );
             expect($scope.showInProgress).toBe(true);

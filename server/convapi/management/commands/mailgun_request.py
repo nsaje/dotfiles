@@ -9,9 +9,10 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from optparse import make_option
+from utils.command_helpers import ExceptionCommand
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
     args = '<filepath>'
     help = 'Sends a fake mailgun request to convapi.'
 

@@ -1,0 +1,18 @@
+engines:
+  pep8:
+    enabled: true
+  radon:
+    enabled: true
+    config: 
+      threshold: "C"
+  eslint:
+    enabled: true
+
+ratings:
+   paths:
+   - "**.py"
+   - "**.js"
+
+exclude_paths:
+- client/lib/**/*
+- server/**/migrations/*.py

@@ -1163,6 +1163,43 @@ class PublisherCallbackTest(TransactionTestCase):
         self.assertEqual('b1_sharethrough', second_blacklist.source.tracking_slug)
         self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, second_blacklist.status)
 
+    def test_update_outbrain_publisher_blacklist(self):
+        # ad_group_source = models.AdGroupSource.objects.get(id=1)
+        args = {
+            'key': [1],
+            'level': dash.constants.PublisherBlacklistLevel.ACCOUNT,
+            'state': dash.constants.PublisherStatus.BLACKLISTED,
+            'publishers': [{
+                'domain': 'Awesome publisher',
+                'exchange': 'adiant',
+                'external_id': '12345',
+                'source_id': 3
+            },
+            {
+                'domain': 'Happy little publisher',
+                'exchange': 'outbrain',
+                'external_id': '67890',
+                'source_id': 3
+            }]
+        }
+
+        api.update_publisher_blacklist_state(args)
+        allblacklist = dash.models.PublisherBlacklist.objects.all()
+        self.assertEqual(2, allblacklist.count())
+
+        first_blacklist = allblacklist[0]
+        # self.assertEqual(ad_group_source.ad_group.id, first_blacklist.ad_group.id)
+        self.assertEqual(u'Awesome publisher', first_blacklist.name)
+        self.assertEqual('outbrain', first_blacklist.source.tracking_slug)
+        self.assertEqual('12345', first_blacklist.external_id)
+        self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, first_blacklist.status)
+
+        second_blacklist = allblacklist[1]
+        #self.assertEqual(ad_group_source.ad_group.id, second_blacklist.ad_group.id)
+        self.assertEqual(u'Happy little publisher', second_blacklist.name)
+        self.assertEqual('outbrain', second_blacklist.source.tracking_slug)
+        self.assertEqual('67890', second_blacklist.external_id)
+        self.assertEqual(dash.constants.PublisherStatus.BLACKLISTED, second_blacklist.status)
 
     def test_hiearchy_publisher_blacklist(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -1404,7 +1441,8 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertTrue(latest_settings.daily_budget_cc is None)
         self.assertFalse(set_ad_group_source_settings.called)
 
-        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request)
+        mock_send_mail.assert_called_with(
+            self.ad_group_source.ad_group, request, 'AdsNative State set to Enabled')
 
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
@@ -1429,7 +1467,8 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
         self.assertTrue(set_ad_group_source_settings.called)
 
-        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request)
+        mock_send_mail.assert_called_with(
+            self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $0.10')
 
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
@@ -1478,7 +1517,7 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
         self.assertFalse(set_ad_group_source_settings.called)
 
-        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request)
+        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $0.10')
 
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
@@ -2307,12 +2346,6 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
             action_type=actionlog.constants.ActionType.MANUAL
         )
 
-    def _get_set_campaign_state_actions(self, ad_group_source):
-        return actionlog.models.ActionLog.objects.filter(
-            action=actionlog.constants.Action.SET_CAMPAIGN_STATE,
-            ad_group_source=ad_group_source
-        )
-
     def test_manual_update_after_campaign_creation_manual_dma_targeting(self):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
@@ -2381,20 +2414,20 @@ class CreateCampaignAdditionalUpdatesCallbackTest(TestCase):
         # should not create manual actions
         self.assertFalse(manual_actions.exists())
 
-    def test_source_settings_update_after_campaign_creation_no_action(self):
+    @mock.patch('actionlog.api.set_ad_group_source_settings')
+    @mock.patch('actionlog.api.init_fetch_ad_group_source_settings')
+    def test_source_settings_update_after_campaign_creation_no_action(self, mock_fetch_settings, mock_set_settings):
         ad_group_source = models.AdGroupSource.objects.get(id=5)
 
         api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
+        self.assertFalse(mock_set_settings.called)
+        self.assertTrue(mock_fetch_settings.called)
 
-        self.assertFalse(self._get_set_campaign_state_actions(ad_group_source).exists())
-
-    def test_source_settings_update_after_campaign_creation_create_action(self):
+    @mock.patch('actionlog.api.set_ad_group_source_settings')
+    @mock.patch('actionlog.api.init_fetch_ad_group_source_settings')
+    def test_source_settings_update_after_campaign_creation_create_action(self, mock_fetch_settings, mock_set_settings):
         ad_group_source = models.AdGroupSource.objects.get(id=3)
 
         api.order_additional_updates_after_campaign_creation(ad_group_source, self.request)
-
-        actions = self._get_set_campaign_state_actions(ad_group_source)
-        self.assertEqual(actions.count(), 1)
-        self.assertDictEqual(actions.first().payload['args']['conf'], {
-            'cpc_cc': 1200
-        })
+        self.assertTrue(mock_set_settings.called)
+        self.assertFalse(mock_fetch_settings.called)

@@ -10,12 +10,12 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
             {heading: 'Budget', route: 'main.campaigns.budget', active: false, hidden: !$scope.hasPermission('zemauth.campaign_budget_management_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_budget_management_view')},
             // this tab is only shown for archived campaigns
             {heading: 'Settings', route: 'main.campaigns.archived', active: false, hidden: $scope.hasPermission('zemauth.campaign_settings_view') || !$scope.hasPermission('zemauth.view_archived_entities') || !$scope.campaign || !$scope.campaign.archived, internal: false},
-            {heading: 'Campaign', route: 'main.campaigns.settings', active: false, hidden: !$scope.hasPermission('zemauth.campaign_settings_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_settings_view')},
+            {heading: 'Settings', route: 'main.campaigns.settings', active: false, hidden: !$scope.hasPermission('zemauth.campaign_settings_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_settings_view')},
             {heading: 'Budget +', route: 'main.campaigns.budget_plus', active: false, hidden: !$scope.hasPermission('zemauth.campaign_budget_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_budget_view')}
         ];
     };
     $scope.setActiveTab = function () {
-        $scope.tabs.forEach(function(tab) {
+        $scope.tabs.forEach(function (tab) {
             tab.active = $state.is(tab.route);
         });
     };
@@ -25,11 +25,11 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
             return;
         }
         $scope.setBreadcrumbAndTitle([{
-                name: $scope.account.name,
-                state: $scope.getDefaultAccountState(),
-                params: {id: $scope.account.id},
-                disabled: !$scope.canAccessAccounts()
-            }, {
+            name: $scope.account.name,
+            state: $scope.getDefaultAccountState(),
+            params: {id: $scope.account.id},
+            disabled: !$scope.canAccessAccounts()
+        }, {
                 name: $scope.campaign.name,
                 state: $scope.getDefaultCampaignState(),
                 params: {id: $scope.campaign.id},

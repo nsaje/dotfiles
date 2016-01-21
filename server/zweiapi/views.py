@@ -21,6 +21,7 @@ import actionlog.sync
 import actionlog.zwei_actions
 
 import dash.api
+import dash.constants
 import dash.models
 import reports.daily_statements
 import reports.refresh
@@ -275,9 +276,9 @@ def _has_changed(data, ad_group, source, date, key_type):
     old_val = cache.get(key)
 
     if old_val is None or val != old_val:
-        logger.info('Change of data for ad group: {}, source: {}, date: {}, key type {}'.format(
-            ad_group.id, source.id, date, key_type))
-        logger.info("Old key {}, new key {}".format(old_val, val))
+        logger.debug(
+            'Change of data for ad group: {}, source: {}, date: {}, key type {}, old key {}, new key {}'.format(
+                ad_group.id, source.id, date, key_type, old_val, val))
 
         return True
 
@@ -403,43 +404,7 @@ def _fetch_reports_by_publisher_callback(action, data):
 
     rows_raw = data['data']
 
-    valid_response = True
-    empty_response = False
+    if source.source_type.type != dash.constants.SourceType.OUTBRAIN:
+        raise Exception('Fetch reports by publisher supported only on Outbrain')
 
-    # centralize in order to reduce possibility of mistakes, if you want everything to run again, just increase the number
-    change_unique_key = "reports_by_publisher_2"
-
-    if valid_response:  # and _has_changed(data, ad_group, source, date, change_unique_key):
-        ret = get_day_cost(date, ad_group=ad_group, source=source)
-        cost = ret['cost']
-        if cost is None:
-            cost = 0
-
-        reports.api_publishers.ob_insert_adgroup_date(date,
-                                                      ad_group.id,
-                                                      "Outbrain",  # Hardcoding this at the time, the problem is that source.name can change
-                                                      rows_raw,
-                                                      cost)
-        _set_reports_cache(data, ad_group, source, date, change_unique_key)
-
-    if not valid_response:
-        msg = 'Update of publishers for adgroup %d, source %d, datetime '\
-              '%s skipped due to report not being valid (empty response).'
-
-        action.state = actionlog.constants.ActionState.FAILED
-        action.message = msg % (ad_group.id, source.id, date)
-        action.save()
-
-        logger.debug(msg, ad_group.id, source.id, date)
-
-    if empty_response:
-        logger.debug(
-            'Empty report received for adgroup %d, source %d, datetime %s',
-            ad_group.id,
-            source.id,
-            date
-        )
-        statsd_helper.statsd_incr('reports.update.update_traffic_metrics_skipped')
-        statsd_helper.statsd_incr(
-            'reports.update.update_traffic_metrics_skipped.%s' % (source.source_type.type)
-        )
+    reports.api_publishers.put_ob_data_to_s3(date, ad_group, rows_raw)

@@ -418,6 +418,27 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
                 $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
             );
         }
+
+        if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.effectiveCostChartMetrics,
+                $scope.isPermissionInternal('zemauth.can_view_effective_costs')
+            );
+        } else if (!$scope.hasPermission('zemauth.can_view_actual_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.legacyCostChartMetrics,
+                false
+            );
+        }
+        if ($scope.hasPermission('zemauth.can_view_actual_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.actualCostChartMetrics,
+                $scope.isPermissionInternal('zemauth.can_view_actual_costs')
+            );
+        }
     };
 
     var getDailyStats = function () {
@@ -498,36 +519,36 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         });
     };
 
-    $scope.orderTableData = function(order) {
+    $scope.orderTableData = function (order) {
         $scope.order = order;
 
         getTableData();
     };
 
-    $scope.triggerSync = function() {
+    $scope.triggerSync = function () {
         $scope.isSyncInProgress = true;
         api.campaignSync.get(null, $state.params.id);
     };
 
-    var pollSyncStatus = function() {
-        if ($scope.isSyncInProgress){
-            $timeout(function() {
+    var pollSyncStatus = function () {
+        if ($scope.isSyncInProgress) {
+            $timeout(function () {
                 api.checkCampaignSyncProgress.get(null, $state.params.id).then(
-                    function(data) {
+                    function (data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                        if (!$scope.isSyncInProgress){
+                        if (!$scope.isSyncInProgress) {
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             getTableData();
                             getDailyStats();
                         }
                     },
-                    function(data) {
+                    function (data) {
                         // error
                         $scope.isSyncInProgress = false;
                     }
-                ).finally(function() {
+                ).finally(function () {
                     pollSyncStatus();
                 });
             }, 5000);
@@ -538,7 +559,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         $scope.chartHidden = !$scope.chartHidden;
         $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
-        $timeout(function() {
+        $timeout(function () {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     };
@@ -557,30 +578,9 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
         );
-
-        if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
-                $scope.chartMetricOptions,
-                options.effectiveCostChartMetrics,
-                $scope.isPermissionInternal('zemauth.can_view_effective_costs')
-            );
-        } else if (! $scope.hasPermission('zemauth.can_view_actual_costs')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
-                $scope.chartMetricOptions,
-                options.legacyCostChartMetrics,
-                false
-            );
-        }
-        if ($scope.hasPermission('zemauth.can_view_actual_costs')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
-                $scope.chartMetricOptions,
-                options.actualCostChartMetrics,
-                $scope.isPermissionInternal('zemauth.can_view_actual_costs')
-            );
-        }
     };
 
-    $scope.init = function() {
+    $scope.init = function () {
         var campaignIds = $location.search().campaign_ids;
         var campaignTotals = $location.search().campaign_totals;
 
@@ -593,7 +593,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
         if (campaignIds) {
             campaignIds.split(',').forEach(function (id) {
-                 $scope.updateSelectedCampaigns(id);
+                $scope.updateSelectedCampaigns(id);
             });
             $location.search('campaign_ids', campaignIds);
 
@@ -611,13 +611,13 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         getDailyStats();
     };
 
-    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+    $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         $location.search('campaign_ids', null);
         $location.search('campaign_totals', null);
     });
 
-    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
-        if(newValue === true && oldValue === false){
+    $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
+        if (newValue === true && oldValue === false) {
             pollSyncStatus();
         }
     });

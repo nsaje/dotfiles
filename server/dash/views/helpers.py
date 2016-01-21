@@ -6,17 +6,20 @@ import pytz
 from decimal import Decimal
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models import Q, Max
 
 import actionlog.api
 import actionlog.constants
 import actionlog.models
+import actionlog.zwei_actions
 from dash import models
 from dash import constants
 from dash import api
 from dash import budget
 from utils import exc
 from utils import statsd_helper
+from utils import email_helper
 import automation.autopilot
 
 STATS_START_DELTA = 30
@@ -971,24 +974,16 @@ def add_source_to_ad_group(default_source_settings, ad_group):
     return ad_group_source
 
 
-def set_ad_group_source_defaults(default_source_settings, ad_group_settings, ad_group_source,
-                                 request, send_action=False):
+def set_ad_group_source_settings(request, ad_group_source, source_settings,
+                                 mobile_only=False, active=False, send_action=False):
+    resource = {
+        'daily_budget_cc': source_settings.daily_budget_cc,
+        'cpc_cc': source_settings.mobile_cpc_cc if mobile_only else source_settings.default_cpc_cc,
+        'state': constants.ContentAdSourceState.ACTIVE if active else constants.ContentAdSourceState.INACTIVE
+    }
 
-    # set defaults if available
-    cpc_cc = default_source_settings.mobile_cpc_cc if ad_group_settings.is_mobile_only() else\
-        default_source_settings.default_cpc_cc
-
-    daily_budget_cc = default_source_settings.daily_budget_cc
-
-    resource = {}
-    if daily_budget_cc is not None:
-        resource['daily_budget_cc'] = daily_budget_cc
-    if cpc_cc is not None:
-        resource['cpc_cc'] = cpc_cc
-
-    if resource:
-        settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
-        settings_writer.set(resource, request, send_action=send_action)
+    settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
+    settings_writer.set(resource, request, send_action=send_action)
 
 
 def format_decimal_to_percent(num):
@@ -1024,3 +1019,49 @@ def ad_group_has_available_budget(ad_group):
     available = total - spend
 
     return bool(available)
+
+
+def get_source_default_settings(source):
+    try:
+        default_settings = models.DefaultSourceSettings.objects.get(source=source)
+    except models.DefaultSourceSettings.DoesNotExist:
+        raise exc.MissingDataError('No default settings set for {}.'.format(source.name))
+
+    if not default_settings.credentials:
+        raise exc.MissingDataError('No default credentials set in {}.'.format(default_settings))
+
+    return default_settings
+
+
+def save_campaign_settings_and_propagate(campaign, settings, request):
+    actions = []
+
+    with transaction.atomic():
+        campaign.save(request)
+        settings.save(request)
+
+        # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
+        campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+
+        for ad_group in campaign_ad_groups:
+            adgroup_settings = ad_group.get_current_settings()
+            actions.extend(
+                api.order_ad_group_settings_update(
+                    ad_group,
+                    adgroup_settings,
+                    adgroup_settings,
+                    request,
+                    send=False,
+                    iab_update=True
+                )
+            )
+
+    actionlog.zwei_actions.send(actions)
+
+
+def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request, user_action_type):
+    changes = old_settings.get_setting_changes(new_settings)
+    if changes:
+        changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator='\n')
+        email_helper.send_campaign_notification_email(campaign, request, changes_text)
+        log_useraction_if_necessary(request, user_action_type, campaign=campaign)

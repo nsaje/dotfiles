@@ -1,4 +1,5 @@
 import datetime
+import mock
 from mock import patch
 
 from django import test
@@ -8,6 +9,7 @@ from dash import constants
 from dash import scheduled_report
 
 import zemauth.models
+
 
 class ScheduledReportTestCase(test.TestCase):
     fixtures = ['test_api']
@@ -21,7 +23,11 @@ class ScheduledReportTestCase(test.TestCase):
         def utcnow(cls):
             return datetime.datetime(2016, 6, 8, 8, 8)
 
+    def mock_yesterday(today):
+        return today - datetime.timedelta(days=1, hours=-1)
+
     @patch('dash.scheduled_report.datetime')
+    @mock.patch("dash.scheduled_report._get_yesterday", mock_yesterday)
     def test_get_due_scheduled_reports(self, datetime_mock):
         datetime_mock.datetime = self.MockDatetime()
 

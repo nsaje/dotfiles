@@ -25,8 +25,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.adGroupHasFreshSettings = function () {
         return freshSettings.promise;
     };
-    
-    $scope.closeAlert = function(index) {
+
+    $scope.closeAlert = function (index) {
         $scope.alerts.splice(index, 1);
     };
 
@@ -127,7 +127,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.saved = true;
 
                 if ($scope.user.showOnboardingGuidance && goToContentAds) {
-                    $timeout(function() {
+                    $timeout(function () {
                         $state.go('main.adGroups.adsPlus', {id: $scope.settings.id});
                     }, 100);
                 }

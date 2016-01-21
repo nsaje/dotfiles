@@ -7,7 +7,7 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
     $scope.requestInProgress = false;
     $scope.saved = null;
     $scope.discarded = null;
-    
+
     $scope.campaignHasFreshSettings = function () {
         return campaignFreshSettings.promise;
     };

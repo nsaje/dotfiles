@@ -118,3 +118,14 @@ class JsonHelperTestCase(unittest.TestCase):
 
         expected = '{"test": "something", "id": 100, "datetime": "18:00:00"}'
         self.assertEqual(json.dumps(test_obj, cls=json_helper.JSONEncoder), expected)
+
+
+class DateJSONEncoderTestCase(unittest.TestCase):
+
+    def test_encode_date(self):
+        result = json.dumps({'date': datetime.date(2016, 1, 1)}, cls=json_helper.DateJSONEncoder)
+        self.assertEqual('{"date": "2016-01-01"}', result)
+
+    def test_encode_datetime_fail(self):
+        with self.assertRaises(TypeError):
+            json.dumps({'date': datetime.datetime(2016, 1, 1)}, cls=json_helper.DateJSONEncoder)

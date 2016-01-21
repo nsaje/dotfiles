@@ -15,12 +15,12 @@ describe('MainCtrl', function () {
         inject(function ($rootScope, $controller, _$state_) {
             $scope = $rootScope.$new();
             $state = _$state_;
-            zemFullStoryService = {identify: function(user) {}};
+            zemFullStoryService = {identify: function (user) {}};
             zemUserSettings = {
-                getInstance: function() {
+                getInstance: function () {
                     return {
-                        register: function() {},
-                        registerGlobal: function() {}
+                        register: function () {},
+                        registerGlobal: function () {}
                     };
                 }
             };
@@ -48,7 +48,7 @@ describe('MainCtrl', function () {
 
     describe('hasPermission', function () {
         beforeEach(function () {
-            $scope.user = { permissions: {} };
+            $scope.user = {permissions: {}};
         });
 
         it('should return true if user has the specified permission', function () {

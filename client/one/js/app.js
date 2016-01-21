@@ -15,7 +15,7 @@ oneApp.config(['$httpProvider', function ($httpProvider) {
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
 }]);
 
-oneApp.config(["$locationProvider", function($locationProvider) {
+oneApp.config(['$locationProvider', function ($locationProvider) {
     $locationProvider.html5Mode(true);
     $locationProvider.hashPrefix('!');
 }]);
@@ -112,13 +112,13 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/account_agency.html',
             controller: 'AccountAgencyCtrl'
         })
-        .state('main.accounts.account', {
-            url: '/account',
+        .state('main.accounts.settings', {
+            url: '/settings',
             templateUrl: '/partials/account_account.html',
             controller: 'AccountAccountCtrl'
         })
-        .state('main.accounts.settings', {
-            url: '/settings',
+        .state('main.accounts.archived', {
+            url: '/archived',
             templateUrl: '/partials/account_settings.html'
         }).state('main.accounts.credit', {
             url: '/credit',
@@ -223,18 +223,18 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
 }]);
 
 oneApp.config(['datepickerConfig', 'datepickerPopupConfig', function (datepickerConfig, datepickerPopupConfig) {
-  datepickerConfig.showWeeks = false;
-  datepickerConfig.formatDayHeader = 'EEE';
-  datepickerPopupConfig.showButtonBar = false;
+    datepickerConfig.showWeeks = false;
+    datepickerConfig.formatDayHeader = 'EEE';
+    datepickerPopupConfig.showButtonBar = false;
 }]);
 
-oneApp.config(['$tooltipProvider', function($tooltipProvider) {
+oneApp.config(['$tooltipProvider', function ($tooltipProvider) {
     $tooltipProvider.setTriggers({'openTutorial': 'closeTutorial'});
 }]);
 
 var locationSearch;
 // Fixes https://github.com/angular-ui/ui-router/issues/679
-oneApp.run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService', function($state, $rootScope, $location, config, zemIntercomService) {
+oneApp.run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService', function ($state, $rootScope, $location, config, zemIntercomService) {
     $rootScope.config = config;
     $rootScope.$state = $state;
 
@@ -250,14 +250,14 @@ oneApp.run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService',
         zemIntercomService.update();
     });
 
-    $rootScope.tabClick = function(event) {
+    $rootScope.tabClick = function (event) {
         // Function to fix opening tabs in new tab when clicking with the middle button
         // This is effectively a workaround for a bug in bootstrap-ui
-        if (event.which === 2 || (event.which ===1 && (event.metaKey || event.ctrlKey))) {
+        if (event.which === 2 || (event.which === 1 && (event.metaKey || event.ctrlKey))) {
            // MIDDLE CLICK or CMD+LEFTCLICK
            // the regular link will open in new tab if we stop the event propagation
-           event.stopPropagation();
+            event.stopPropagation();
         }
-    }
+    };
 
 }]);

@@ -15,7 +15,7 @@ from actionlog import zwei_actions
 
 def get_yesterdays_spends(campaigns):
     return {campaign.id:
-            sum(reports.api.get_yesterday_cost(campaign=campaign).values())
+            sum(reports.api.get_yesterday_cost(dict(campaign=campaign)).values())
             for campaign in campaigns}
 
 

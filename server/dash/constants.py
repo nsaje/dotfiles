@@ -2,6 +2,11 @@ from utils.constant_base import ConstantBase
 from dash import regions
 
 
+# Outbrain supports only 10 blocked publisher per marketer id
+# which corresponds to 10 blacklisted publishers per Z1 account
+MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 10
+
+
 class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
@@ -40,6 +45,16 @@ class AdGroupSourceSettingsAutopilotState(ConstantBase):
     _VALUES = {
         ACTIVE: 'Enabled',
         INACTIVE: 'Paused'
+    }
+
+
+class ExportPlusStatus(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+
+    _VALUES = {
+        ACTIVE: 'Active',
+        INACTIVE: 'Inactive'
     }
 
 
@@ -1113,6 +1128,11 @@ class UserActionType(ConstantBase):
     DELETE_SCHEDULED_REPORT = 23
     DOWNLOAD_REPORT = 24
 
+    SET_ADGROUP_PUBLISHER_BLACKLIST = 25
+    SET_CAMPAIGN_PUBLISHER_BLACKLIST = 26
+    SET_ACCOUNT_PUBLISHER_BLACKLIST = 27
+    SET_GLOBAL_PUBLISHER_BLACKLIST = 28
+
     _VALUES = {
         UPLOAD_CONTENT_ADS: 'Upload Content Ads',
         SET_CONTENT_AD_STATE: 'Set Content Ad(s) State',
@@ -1137,7 +1157,11 @@ class UserActionType(ConstantBase):
         SET_MEDIA_SOURCE_SETTINGS: 'Set Media Source Settings',
         SCHEDULE_REPORT: 'Schedule report',
         DELETE_SCHEDULED_REPORT: 'Delete scheduled report',
-        DOWNLOAD_REPORT: 'Direct report download'
+        DOWNLOAD_REPORT: 'Direct report download',
+        SET_ADGROUP_PUBLISHER_BLACKLIST: 'Set Ad Group Publisher Blacklist',
+        SET_CAMPAIGN_PUBLISHER_BLACKLIST: 'Set Campaign Publisher Blacklist',
+        SET_ACCOUNT_PUBLISHER_BLACKLIST: 'Set Account Publisher Blacklist',
+        SET_GLOBAL_PUBLISHER_BLACKLIST: 'Set Global Publisher Blacklist'
     }
 
 

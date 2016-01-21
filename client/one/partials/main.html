@@ -49,7 +49,7 @@
             </div>
         </div>
         <div class="content" ng-show="accountsAccess.hasAccounts">
-            <form id="datepicker" class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.*.agency') || $state.includes('*.*.settings') || $state.includes('*.*.budget') || $state.includes('*.*.budget_plus') || $state.includes('*.*.credit')">
+            <form id="datepicker" class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.*.agency') || $state.includes('*.*.settings') || $state.includes('*.*.budget') || $state.includes('*.*.budget_plus')">
                 <div class="input-group calendar">
                     <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/calendar.svg"></i>
                     <input type="daterange" class="form-control" ng-model="dateRange" max-date="{{ maxDateStr }}" format="{{ inputDateFormat }}" ranges="{{ dateRanges }}" opens="left">

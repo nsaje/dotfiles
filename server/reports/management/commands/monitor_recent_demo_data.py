@@ -7,10 +7,10 @@ import reports.api
 import dash.models
 
 from utils.statsd_helper import statsd_gauge
-from utils.command_helpers import last_n_days
+from utils.command_helpers import last_n_days, ExceptionCommand
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
     option_list = BaseCommand.option_list + (
         make_option('--start_date', help='Iso format. Default is three days ago'),
         make_option('--end_date', help='Iso format. Default is today')

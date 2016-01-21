@@ -25,7 +25,7 @@ var Tabs = function () {
         adGroups: element(by.cssContainingText('.nav-tabs .tab-title', 'AD GROUPS')),
         agency: element(by.cssContainingText('.nav-tabs .tab-title', 'AGENCY')),
         budget: element(by.cssContainingText('.nav-tabs .tab-title', 'BUDGET'))
-    }
+    };
 };
 
 var nav = new Nav();
@@ -64,7 +64,7 @@ describe('Campaigns', function () {
 
 describe('All Accounts', function () {
     describe('Accounts Tab', function () {
-        var url = '/all_accounts/accounts'
+        var url = '/all_accounts/accounts';
 
         beforeEach(function () {
             browser.get(url);

@@ -20,6 +20,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.pagination = {
         currentPage: 1
     };
+    $scope.obBlacklistedCount = 0;
+    $scope.obBlacklistedSelected = 0;
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
@@ -101,31 +103,47 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         var numNotSelected = 0;
 
         $scope.selectedPublisherStatus[$scope.calculatePublisherHash(row)] = {
-            "checked": checked,
-            "source_id": row.source_id,
-            "domain": row.domain,
-            "blacklisted": row.blacklisted,
-            "blacklisted_level": row.blacklisted_level
+            'checked': checked,
+            'source_id': row.source_id,
+            'domain': row.domain,
+            'exchange': row.exchange,
+            'external_id': row.external_id,
+            'blacklisted': row.blacklisted,
+            'blacklisted_level': row.blacklisted_level
         };
 
         Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
-            if (!$scope.selectedPublisherStatus[publisherId].checked) {
+            var pubStatus = $scope.selectedPublisherStatus[publisherId];
+            if (!pubStatus.checked) {
                 numNotSelected += 1;
             }
         });
+        $scope.recountOutbrainPublishers();
 
         $scope.updatePublisherBlacklistCombo();
 
         if ($scope.selectedAll) {
             $scope.selectionMenuConfig.partialSelection = numNotSelected > 0;
         }
+
+        if (row.exchange === constants.sourceTypeName.OUTBRAIN) {
+            $scope.updateOutbrainPublisherSelection();
+            $scope.updateRowBlacklistInfo();
+        }
+    };
+
+    $scope.recountOutbrainPublishers = function () {
+        $scope.obBlacklistedSelected = 0;
+        Object.keys($scope.selectedPublisherStatus).forEach(function (publisherId) {
+            var pubStatus = $scope.selectedPublisherStatus[publisherId];
+            if (pubStatus.exchange === constants.sourceTypeName.OUTBRAIN && pubStatus.checked && pubStatus.blacklisted !== 'Blacklisted') {
+                $scope.obBlacklistedSelected += 1;
+            }
+        });
     };
 
     $scope.updatePublisherBlacklistCombo = function () {
-        var countBlacklistedSelected = 0,
-            countNonBlacklistedSelected = 0,
-            countAllSelected = 0,
-            maxBlacklistedLevel = null,
+        var count = {},
             levels = [
                 constants.publisherBlacklistLevel.ADGROUP,
                 constants.publisherBlacklistLevel.CAMPAIGN,
@@ -133,44 +151,35 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 constants.publisherBlacklistLevel.GLOBAL
             ];
 
+        count.countBlacklistedSelected = 0;
+        count.countNonBlacklistedSelected = 0;
+        count.countOutbrainSelected = 0;
+        count.countAllSelected = 0;
+        count.maxBlacklistedLevel = null;
+
         Object.keys($scope.selectedPublisherStatus).forEach(function (key) {
             var entry = $scope.selectedPublisherStatus[key];
             if (entry.checked) {
-                if (entry.blacklisted === 'Blacklisted') {
-                    countBlacklistedSelected += 1;
-                    if (maxBlacklistedLevel === null || $scope.levelGt(entry.blacklisted_level, maxBlacklistedLevel)) {
-                        maxBlacklistedLevel = entry.blacklisted_level;
-                    }
-                } else if (entry.blacklisted === 'Active') {
-                    countNonBlacklistedSelected += 1;
-                }
+                count = $scope.countPublisherBlacklistEntry(count, entry);
             }
         });
 
         if ($scope.selectedAll) {
             $scope.rows.forEach(function (row) {
-                if (row.blacklisted === 'Blacklisted') {
-                    countBlacklistedSelected += 1;
-                    if (maxBlacklistedLevel === null || $scope.levelGt(row.blacklisted_level, maxBlacklistedLevel)) {
-                        maxBlacklistedLevel = row.blacklisted_level;
-                    }
-                }
-                else if (row.blacklisted === 'Active') {
-                    countNonBlacklistedSelected += 1;
-                }
+                count = $scope.countPublisherBlacklistEntry(count, row);
             });
         }
 
-        countAllSelected = countBlacklistedSelected + countNonBlacklistedSelected;
-        if (maxBlacklistedLevel !== null) {
-            if (countBlacklistedSelected > 0 || $scope.selectedAll) {
+        count.countAllSelected = count.countBlacklistedSelected + count.countNonBlacklistedSelected;
+        if (count.maxBlacklistedLevel !== null) {
+            if (count.countBlacklistedSelected > 0 || $scope.selectedAll) {
                 levels.forEach(function (level) {
                     // user can only enable blacklist on currently
                     // blacklisted level
-                    var enabled = $scope.levelEq(level, maxBlacklistedLevel);
+                    var enabled = $scope.levelEq(level, count.maxBlacklistedLevel);
                     $scope.setBulkAction(level, 'enable', enabled);
 
-                    var blacklistedEnabled = $scope.levelGt(level, maxBlacklistedLevel);
+                    var blacklistedEnabled = $scope.levelGt(level, count.maxBlacklistedLevel);
                     // user can always blacklist on higher level
                     // than currently blacklisted
                     $scope.setBulkAction(level, 'blacklist', blacklistedEnabled);
@@ -178,14 +187,46 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             }
         }
 
-        if (countNonBlacklistedSelected > 0) {
+        if (count.countNonBlacklistedSelected > 0) {
             levels.forEach(function (level) {
-                var enabled = $scope.levelGt(level, maxBlacklistedLevel);
+                var enabled = $scope.levelGt(level, count.maxBlacklistedLevel);
                 // user can always blacklist on higher level
                 // than currently blacklisted
                 $scope.setBulkAction(level, 'blacklist', enabled);
             });
         }
+
+        if (count.countOutbrainSelected > 0) {
+            // user can always blacklist on higher level
+            // than currently blacklisted
+            var disabledOutbrainLevels = [
+                constants.publisherBlacklistLevel.ADGROUP,
+                constants.publisherBlacklistLevel.CAMPAIGN,
+                constants.publisherBlacklistLevel.GLOBAL
+            ];
+            disabledOutbrainLevels.forEach(function (level) {
+                $scope.setBulkAction(level, 'blacklist', false);
+                $scope.setBulkAction(level, 'enable', false);
+            });
+        }
+    };
+
+    $scope.countPublisherBlacklistEntry = function (count, entry) {
+        var newCount = angular.copy(count);
+
+        if (entry.blacklisted === 'Blacklisted') {
+            newCount.countBlacklistedSelected += 1;
+            if (newCount.maxBlacklistedLevel === null || $scope.levelGt(entry.blacklisted_level, newCount.maxBlacklistedLevel)) {
+                newCount.maxBlacklistedLevel = entry.blacklisted_level;
+            }
+        } else if (entry.blacklisted === 'Active') {
+            newCount.countNonBlacklistedSelected += 1;
+        }
+        if (entry.exchange === 'Outbrain') {
+            newCount.countOutbrainSelected += 1;
+        }
+
+        return newCount;
     };
 
     $scope.compareLevels = function (level1, level2) {
@@ -218,8 +259,11 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         if (selected) {
             $scope.updatePublisherSelection();
+            $scope.updateOutbrainPublisherSelection();
+            $scope.updateRowBlacklistInfo();
         } else {
             $scope.clearPublisherSelection();
+            $scope.updateOutbrainPublisherSelection();
         }
 
         $scope.updatePublisherBlacklistCombo();
@@ -229,28 +273,57 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.rows.forEach(function (row) {
             row.publisherSelected = false;
         });
+
+        $scope.obBlacklistedSelected = 0;
     };
 
     $scope.updatePublisherSelection = function () {
         $scope.rows.forEach(function (row) {
+            if (row === undefined) {
+                return;
+            }
+            row.disabledSelection = !row.can_blacklist_publisher;
+            if (row.can_blacklist_publisher) {
+                var rowId = $scope.calculatePublisherHash(row);
+                if ($scope.selectedPublisherStatus[rowId] !== undefined) {
+                    row.publisherSelected = $scope.selectedPublisherStatus[rowId].checked;
+                } else if ($scope.selectedAll) {
+                    row.publisherSelected = true;
+                } else {
+                    row.publisherSelected = false;
+                }
+            }
+        });
+    };
+
+    $scope.updateOutbrainPublisherSelection = function () {
+        $scope.rows.forEach(function (row) {
             if (row !== undefined) {
-                row.disabledSelection = !row.can_blacklist_publisher;
+                if (row.exchange === constants.sourceTypeName.OUTBRAIN) {
+                    if (!row.publisherSelected && row.blacklisted !== 'Blacklisted') {
+                        if ($scope.obBlacklistedCount + $scope.obBlacklistedSelected >= 10) {
+                            row.can_blacklist_publisher = false;
+                        }
+                    }
+
+                    if ($scope.obBlacklistedCount + $scope.obBlacklistedSelected < 10) {
+                        row.can_blacklist_publisher = true;
+                    }
+
+                    row.disabledSelection = !row.can_blacklist_publisher;
+                }
+            }
+        });
+    };
+
+    $scope.updateRowBlacklistInfo = function () {
+        $scope.rows.forEach(function (row) {
+            if (row !== undefined) {
                 if (!row.can_blacklist_publisher) {
-                    row.blacklistInfo = "This publisher can't be blacklisted because the media source doesn't support publisher blacklisting. ";
-                    row.blacklistInfo = row.blacklistInfo.concat("Contact your account manager for further details.");
+                    row.blacklistInfo = 'This publisher can\'t be blacklisted because the media source doesn\'t support publisher blacklisting or the limit of max blacklisted publisher on this particular media source has been reached. ';
+                    row.blacklistInfo = row.blacklistInfo.concat('Contact your account manager for further details.');
                 } else {
                     row.blacklistInfo = null;
-                }
-
-                if (row.can_blacklist_publisher) {
-                    var rowId = $scope.calculatePublisherHash(row);
-                    if ($scope.selectedPublisherStatus[rowId] !== undefined) {
-                        row.publisherSelected = $scope.selectedPublisherStatus[rowId].checked;
-                    } else if ($scope.selectedAll) {
-                        row.publisherSelected = true;
-                    } else {
-                        row.publisherSelected = false;
-                    }
                 }
             }
         });
@@ -264,8 +337,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
 
         for (publisherId in $scope.selectedPublisherStatus) {
-            if ($scope.selectedPublisherStatus.hasOwnProperty(publisherId)
-                    && $scope.selectedPublisherStatus[publisherId].checked) {
+            if ($scope.selectedPublisherStatus.hasOwnProperty(publisherId) &&
+                    $scope.selectedPublisherStatus[publisherId].checked) {
                 return true;
             }
         }
@@ -297,7 +370,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
     };
 
-    $scope.triggerSync = function() {
+    $scope.triggerSync = function () {
         $scope.isSyncInProgress = true;
     };
 
@@ -314,7 +387,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             state = null;
 
         if (level === constants.publisherBlacklistLevel.GLOBAL) {
-            if (!confirm("This action will affect all accounts. Are you sure you want to proceed?")) {
+            if (!confirm('This action will affect all accounts. Are you sure you want to proceed?')) {
                 return;
             }
         }
@@ -352,7 +425,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 'impressions',
                 'ctr',
                 'media_cost',
-                'data_cost',                
+                'data_cost',
                 'e_media_cost',
                 'e_data_cost',
                 'total_cost',
@@ -363,218 +436,218 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     ];
 
     $scope.columns = [{
-            name: '',
-            field: 'publisherSelected',
-            type: 'checkbox',
-            showSelectionMenu: true,
-            shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
-            hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status'),
-            checked: true,
-            totalRow: false,
-            unselectable: true,
-            order: false,
-            popupField: 'blacklistInfo',
-            selectCallback: $scope.selectedPublisherChanged,
-            disabled: false,
-            selectionMenuConfig: $scope.selectionMenuConfig
-        },
-        {
+        name: '',
+        field: 'publisherSelected',
+        type: 'checkbox',
+        showSelectionMenu: true,
+        shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
+        hasPermission: $scope.hasPermission('zemauth.can_modify_publisher_blacklist_status'),
+        checked: true,
+        totalRow: false,
+        unselectable: true,
+        order: false,
+        popupField: 'blacklistInfo',
+        selectCallback: $scope.selectedPublisherChanged,
+        disabled: false,
+        selectionMenuConfig: $scope.selectionMenuConfig
+    },
+    {
 
-            name: 'Status',
-            field: 'blacklisted',
-            checked: true,
-            extraTdCss: 'no-wrap',
-            type: 'textWithPopup',
-            popupField: 'blacklisted_level_description',
-            shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
-            help: 'Blacklisted status of a publisher.',
-            totalRow: false,
-            order: false,
-            initialOrder: 'asc'
-        },
-        {
-            name: 'Domain',
-            field: 'domain',
-            unselectable: false,
-            checked: true,
-            type: 'clickPermissionOrText',
-            shown: true,
-            hasTotalsLabel: true,
-            totalRow: false,
-            help: 'A publisher where your content is being promoted.',
-            order: true,
-            initialOrder: 'asc'
-        },
-        {
-            name: 'Link',
-            field: 'domain_link',
-            unselectable: false,
-            checked: true,
-            type: 'link',
-            shown: true,
-            totalRow: false,
-            help: 'Link to a publisher where your content is being promoted.',
-            order: false,
-            initialOrder: 'asc'
-        },
-        {
-            name: 'Media Source',
-            field: 'exchange',
-            unselectable: false,
-            checked: true,
-            type: 'clickPermissionOrText',
-            shown: true,
-            totalRow: false,
-            help: 'An exchange where your content is being promoted.',
-            order: true,
-            initialOrder: 'asc'
-        },
-        {
-            name: 'Spend',
-            field: 'cost',
-            checked: true,
-            type: 'currency',
-            help: "Amount spent per publisher.",
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc',
-            shown: !$scope.hasPermission('zemauth.can_view_effective_costs') && !$scope.hasPermission('zemauth.can_view_actual_costs')
-        },
-        {
-            name: 'Actual Media Spend',
-            field: 'media_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Amount spent per media source, including overspend.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
-        },
-        {
-            name: 'Media Spend',
-            field: 'e_media_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Amount spent per media source.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
-            name: 'Actual Data Cost',
-            field: 'data_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Additional targeting/segmenting costs, including overspend.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
-        },
-        {
-            name: 'Data Cost',
-            field: 'e_data_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Additional targeting/segmenting costs.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
-            name: 'Actual Total Spend',
-            field: 'total_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee, including overspend.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
-        },
-        {
-            name: 'Total Spend',
-            field: 'billing_cost',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Sum of media spend, data cost and license fee.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
-            name: 'License Fee',
-            field: 'license_fee',
-            checked: false,
-            type: 'currency',
-            totalRow: true,
-            help: 'Zemanta One platform usage cost.',
-            order: true,
-            initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
-            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
-        },
-        {
-            name: 'Avg. CPC',
-            field: 'cpc',
-            checked: true,
-            type: 'currency',
-            shown: true,
-            fractionSize: 3,
-            help: "The average CPC.",
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc'
-        },
-        {
-            name: 'Clicks',
-            field: 'clicks',
-            checked: true,
-            type: 'number',
-            shown: true,
-            help: 'The number of times a content ad has been clicked.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc'
-        },
-        {
-            name: 'Impressions',
-            field: 'impressions',
-            checked: true,
-            type: 'number',
-            shown: true,
-            help: 'The number of times a content ad has been displayed.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc'
-        },
-        {
-            name: 'CTR',
-            field: 'ctr',
-            checked: true,
-            type: 'percent',
-            shown: true,
-            defaultValue: '0.0%',
-            help: 'The number of clicks divided by the number of impressions.',
-            totalRow: true,
-            order: true,
-            initialOrder: 'desc'
-        }
+        name: 'Status',
+        field: 'blacklisted',
+        checked: true,
+        extraTdCss: 'no-wrap',
+        type: 'textWithPopup',
+        popupField: 'blacklisted_level_description',
+        shown: $scope.hasPermission('zemauth.can_see_publisher_blacklist_status'),
+        help: 'Blacklisted status of a publisher.',
+        totalRow: false,
+        order: false,
+        initialOrder: 'asc'
+    },
+    {
+        name: 'Domain',
+        field: 'domain',
+        unselectable: false,
+        checked: true,
+        type: 'clickPermissionOrText',
+        shown: true,
+        hasTotalsLabel: true,
+        totalRow: false,
+        help: 'A publisher where your content is being promoted.',
+        order: true,
+        initialOrder: 'asc'
+    },
+    {
+        name: 'Link',
+        field: 'domain_link',
+        unselectable: false,
+        checked: true,
+        type: 'visibleLink',
+        shown: true,
+        totalRow: false,
+        help: 'Link to a publisher where your content is being promoted.',
+        order: false,
+        initialOrder: 'asc'
+    },
+    {
+        name: 'Media Source',
+        field: 'exchange',
+        unselectable: false,
+        checked: true,
+        type: 'clickPermissionOrText',
+        shown: true,
+        totalRow: false,
+        help: 'An exchange where your content is being promoted.',
+        order: true,
+        initialOrder: 'asc'
+    },
+    {
+        name: 'Spend',
+        field: 'cost',
+        checked: true,
+        type: 'currency',
+        help: 'Amount spent per publisher.',
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc',
+        shown: !$scope.hasPermission('zemauth.can_view_effective_costs') && !$scope.hasPermission('zemauth.can_view_actual_costs')
+    },
+    {
+        name: 'Actual Media Spend',
+        field: 'media_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Amount spent per media source, including overspend.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+    },
+    {
+        name: 'Media Spend',
+        field: 'e_media_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Amount spent per media source.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+    },
+    {
+        name: 'Actual Data Cost',
+        field: 'data_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Additional targeting/segmenting costs, including overspend.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+    },
+    {
+        name: 'Data Cost',
+        field: 'e_data_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Additional targeting/segmenting costs.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+    },
+    {
+        name: 'Actual Total Spend',
+        field: 'total_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Sum of media spend, data cost and license fee, including overspend.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+    },
+    {
+        name: 'Total Spend',
+        field: 'billing_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Sum of media spend, data cost and license fee.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+    },
+    {
+        name: 'License Fee',
+        field: 'license_fee',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Zemanta One platform usage cost.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+    },
+    {
+        name: 'Avg. CPC',
+        field: 'cpc',
+        checked: true,
+        type: 'currency',
+        shown: true,
+        fractionSize: 3,
+        help: 'The average CPC.',
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
+    },
+    {
+        name: 'Clicks',
+        field: 'clicks',
+        checked: true,
+        type: 'number',
+        shown: true,
+        help: 'The number of times a content ad has been clicked.',
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
+    },
+    {
+        name: 'Impressions',
+        field: 'impressions',
+        checked: true,
+        type: 'number',
+        shown: true,
+        help: 'The number of times a content ad has been displayed.',
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
+    },
+    {
+        name: 'CTR',
+        field: 'ctr',
+        checked: true,
+        type: 'percent',
+        shown: true,
+        defaultValue: '0.0%',
+        help: 'The number of clicks divided by the number of impressions.',
+        totalRow: true,
+        order: true,
+        initialOrder: 'desc'
+    }
     ];
 
     $scope.loadRequestInProgress = false;
 
-    $scope.orderTableData = function(order) {
+    $scope.orderTableData = function (order) {
         $scope.order = order;
         getTableData();
     };
@@ -613,8 +686,12 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.totals.checked = $scope.selectedTotals;
                 $scope.lastChange = data.lastChange;
                 $scope.pagination = data.pagination;
+                $scope.obBlacklistedCount = data.obBlacklistedCount;
 
+                $scope.recountOutbrainPublishers();
                 $scope.updatePublisherSelection();
+                $scope.updateOutbrainPublisherSelection();
+                $scope.updateRowBlacklistInfo();
             },
             function (data) {
                 // error
@@ -659,7 +736,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 options.effectiveCostChartMetrics,
                 $scope.isPermissionInternal('zemauth.can_view_effective_costs')
             );
-        } else if (! $scope.hasPermission('zemauth.can_view_actual_costs')) {
+        } else if (!$scope.hasPermission('zemauth.can_view_actual_costs')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
                 $scope.chartMetricOptions,
                 options.legacyCostChartMetrics,
@@ -696,7 +773,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         $scope.chartHidden = !$scope.chartHidden;
         $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
-        $timeout(function() {
+        $timeout(function () {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     };
@@ -764,7 +841,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     }, true);
 
 
-    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
+    $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
         if (newValue === true && oldValue === false) {
             pollSyncStatus();
         }
@@ -804,7 +881,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         $scope.loadPage();
 
-        $scope.getAdGroupState();	// To display message if the adgroup is paused
+        $scope.getAdGroupState();    // To display message if the adgroup is paused
 
         getTableData();
         getDailyStats();
@@ -812,8 +889,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     };
 
 
-    $scope.loadPage = function(page) {
-        if(page && page > 0 && page <= $scope.pagination.numPages) {
+    $scope.loadPage = function (page) {
+        if (page && page > 0 && page <= $scope.pagination.numPages) {
             $scope.pagination.currentPage = page;
         }
 
@@ -825,7 +902,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
     };
 
-    $scope.$watch('size', function(newValue, oldValue) {
+    $scope.$watch('size', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.loadPage();
         }

@@ -1,6 +1,6 @@
 'use strict';
 
-describe('DownloadExportReportModalCtrl', function() {
+describe('DownloadExportReportModalCtrl', function () {
     var $scope, $modalInstance, api, $q, openedDeferred, $window;
     var zemFilterServiceMock;
 
@@ -9,15 +9,15 @@ describe('DownloadExportReportModalCtrl', function() {
 
     beforeEach(module(function ($provide) {
         zemFilterServiceMock = {
-            getShowArchived: function() { return true; },
-            isSourceFilterOn: function() { return false; },
-            getFilteredSources: function() {}
+            getShowArchived: function () { return true; },
+            isSourceFilterOn: function () { return false; },
+            getFilteredSources: function () {}
         };
         $provide.value('zemFilterService', zemFilterServiceMock);
     }));
 
 
-    beforeEach(inject(function($controller, $rootScope, _$q_) {
+    beforeEach(inject(function ($controller, $rootScope, _$q_) {
         $q = _$q_;
         $scope = $rootScope.$new();
         $scope.startDate = moment.utc('2015-01-12');
@@ -25,24 +25,24 @@ describe('DownloadExportReportModalCtrl', function() {
         $scope.order = '-cost';
         $scope.baseUrl = 'test/';
         $scope.options = [{value: 'view-csv'}];
-        var $state = { params: { id: 1 } };
+        var $state = {params: {id: 1}};
         $scope.level = 0;
         $scope.exportSources = undefined;
         openedDeferred = $q.defer();
         $modalInstance = {
-            close: function(){},
+            close: function () {},
             opened: openedDeferred.promise
         };
         $window = {
-            open: function(){}
+            open: function () {}
         };
         $scope.getAdditionalColumns = function () { return []; };
 
-        var mockApiFunc = function() {
+        var mockApiFunc = function () {
             return {
-                then: function() {
+                then: function () {
                     return {
-                        finally: function() {}
+                        finally: function () {}
                     };
                 }
             };
@@ -60,8 +60,8 @@ describe('DownloadExportReportModalCtrl', function() {
         );
     }));
 
-    describe('DownloadExportReportModalCtrl', function() {
-        it('closes the modal window on download', function() {
+    describe('DownloadExportReportModalCtrl', function () {
+        it('closes the modal window on download', function () {
             var deferred = $q.defer();
 
             spyOn($modalInstance, 'close');
@@ -73,7 +73,7 @@ describe('DownloadExportReportModalCtrl', function() {
             expect($modalInstance.close).toHaveBeenCalled();
         });
 
-        it('tests checkDownloadAllowed', function() {
+        it('tests checkDownloadAllowed', function () {
             $scope.options = [
                 {value: 'allOk', disabled: false, disabledByDay: false},
                 {value: 'disabledByDay', disabled: false, disabledByDay: true},
@@ -107,7 +107,7 @@ describe('DownloadExportReportModalCtrl', function() {
             expect($scope.downloadNotAllowedMessage).toEqual('This report is not available for download due to the volume of content. Please select shorter date range or different granularity.');
             expect($scope.downloadAllowed).toBe(false);
         });
-        it('tests downloadReport', function() {
+        it('tests downloadReport', function () {
             var deferred = $q.defer();
             spyOn($window, 'open');
             $scope.init();

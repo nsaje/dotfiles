@@ -13,7 +13,11 @@ import reports.rs_helpers as rsh
 import dash.models
 import dash.constants
 
+from utils.sort_helper import map_by_breakdown
+
+
 logger = logging.getLogger(__name__)
+
 
 class RSContentAdStatsModel(redshift.RSModel):
     TABLE_NAME = 'contentadstats'
@@ -253,27 +257,38 @@ def row_has_postclick_data(row):
     return api.row_has_postclick_data(row)
 
 
-def get_yesterday_cost(**constraints):
+def get_yesterday_cost(constraints, breakdown=None):
+
+    # default breakdown
+    if breakdown is None:
+        breakdown = ['source']
+
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
     today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
     today = datetime.datetime(today.year, today.month, today.day)
     yesterday = today - datetime.timedelta(days=1)
 
-    rs = get_day_cost(yesterday, breakdown=['source'], **constraints)
+    rs = get_day_cost(yesterday, breakdown=breakdown, **constraints)
 
-    result = {row['source']: row.get('e_media_cost', row['cost']) or 0.0 for row in rs}
+    result = map_by_breakdown(rs, breakdown, lambda row: row.get('e_media_cost', row['cost']) or 0.0)
+
     return result
 
 
-def get_actual_yesterday_cost(**constraints):
+def get_actual_yesterday_cost(constraints, breakdown=None):
+
+    if breakdown is None:
+        breakdown = ['source']
+
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
     today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
     today = datetime.datetime(today.year, today.month, today.day)
     yesterday = today - datetime.timedelta(days=1)
 
-    rs = get_day_cost(yesterday, breakdown=['source'], **constraints)
+    rs = get_day_cost(yesterday, breakdown=breakdown, **constraints)
 
-    result = {row['source']: row.get('media_cost', row['cost']) or 0.0 for row in rs}
+    result = map_by_breakdown(rs, breakdown, lambda row: row.get('media_cost', row['cost']) or 0.0)
+
     return result
 
 def get_day_cost(day, breakdown=None, **constraints):

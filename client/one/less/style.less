@@ -146,6 +146,7 @@ a:visited {
 
         label.control-label {
             color: #c70000;
+            font-weight: normal;
 
             a {
                 color: #c70000;
@@ -678,11 +679,6 @@ div[datepicker] {
 .graph-container-short {
     display: inline-block;
     width: 70%;
-}
-
-.graph-container-full {
-    display: inline-block;
-    width: 100%;
 }
 
 .infobox-container-full {
@@ -1903,6 +1899,10 @@ div[datepicker] {
         tr.row-updated {
             animation-name: show-updated;
             animation-duration: 2s;
+        }
+
+        tr.row-not-selected td {
+            color: #d2d2d2;
         }
     }
     .scrollable {

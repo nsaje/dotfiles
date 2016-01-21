@@ -1,7 +1,7 @@
 /*global $,oneApp,moment,constants*/
-"use strict";
+'use strict';
 
-oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
+oneApp.directive('zemChart', ['config', '$compile', function (config, $compile) {
     return {
         restrict: 'E',
         scope: {
@@ -42,7 +42,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 metric2: $scope.metric2
             };
 
-            $scope.$watch('metrics.metric1', function(newValue) {
+            $scope.$watch('metrics.metric1', function (newValue) {
                 // we use $scope.metrics because ui-select doesn't work well with
                 // simple variables on scope as ng-model, it is recommended to use a
                 // property on an object on scope
@@ -50,7 +50,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 $scope.metric1 = newValue;
             }, true);
 
-            $scope.$watch('metrics.metric2', function(newValue) {
+            $scope.$watch('metrics.metric2', function (newValue) {
                 // we use $scope.metrics because ui-select doesn't work well with
                 // simple variables on scope as ng-model, it is recommended to use a
                 // property on an object on scope
@@ -58,19 +58,19 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 $scope.metric2 = newValue;
             }, true);
 
-            $scope.$watch('metric1', function(newValue) {
+            $scope.$watch('metric1', function (newValue) {
                 $scope.metrics.metric1 = newValue;
             }, true);
 
-            $scope.$watch('metric2', function(newValue) {
+            $scope.$watch('metric2', function (newValue) {
                 $scope.metrics.metric2 = newValue;
             }, true);
 
-            $scope.$watch('metricOptions', function(newValue) {
+            $scope.$watch('metricOptions', function (newValue) {
                 $scope.metric2Options = getMetric2Options($scope.metricOptions);
             }, true);
 
-            $scope.getSelectedName = function(selected) {
+            $scope.getSelectedName = function (selected) {
                 // Returns the name of the selected item. ui-select doesn't update the name correctly when choices change
                 // so the right name is returned here.
                 if (!selected) {
@@ -156,7 +156,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 }
             };
 
-            $scope.$watch('data', function(newValue, oldValue) {
+            $scope.$watch('data', function (newValue, oldValue) {
                 var i = 0;
                 var data = newValue;
                 var color = null;
@@ -258,6 +258,13 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
             var metricFormats = {};
             metricFormats[constants.chartMetric.CPC] = {'type': 'currency', 'fractionSize': 3};
             metricFormats[constants.chartMetric.COST] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.DATA_COST] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.EFFECTIVE_DATA_COST] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.MEDIA_COST] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.EFFECTIVE_MEDIA_COST] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.TOTAL_COST] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.BILLING_COST] = {'type': 'currency', 'fractionSize': 2};
+            metricFormats[constants.chartMetric.LICENSE_FEE] = {'type': 'currency', 'fractionSize': 2};
             metricFormats[constants.chartMetric.CTR] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.NEW_USERS] = {'type': 'percent', 'fractionSize': 2};
             metricFormats[constants.chartMetric.BOUNCE_RATE] = {'type': 'percent', 'fractionSize': 2};
@@ -330,7 +337,7 @@ oneApp.directive('zemChart', ['config', '$compile', function(config, $compile) {
                 });
             };
 
-            var fillGaps = function(stats) {
+            var fillGaps = function (stats) {
                 if (stats.length < 2) {
                     return stats;
                 }

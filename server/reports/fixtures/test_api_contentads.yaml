@@ -155,6 +155,22 @@
     model: dash.source
     pk: 2
 
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Outbrain
+        tracking_slug: 'outbrain'
+        maintenance: false
+        source_type: 1
+    model: dash.source
+    pk: 3
+
+# test source types
+- fields:
+    type: 'outbrain'
+  model: dash.sourcetype
+  pk: 1
+
 # test contentadsource
 
 -   fields:

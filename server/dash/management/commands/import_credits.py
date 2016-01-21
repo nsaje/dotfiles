@@ -8,6 +8,11 @@ import dash.models
 import reports.models
 import dash.bcm_helpers
 from django.db.models import Sum
+from utils.command_helpers import ExceptionCommand
+
+
+LINE_CORRECTIONS, LINE_IN_Z1, LINE_CREDIT_ID, LINE_ACCOUNT_ID, LINE_VALID_FROM, LINE_VALID_TO, LINE_DATE_SIGNED, LINE_TOTAL_AMOUNT, LINE_LICENSE_TYPE, LINE_LICENSE_PERCENT, LINE_LICENSE_TOTAL, LINE_MEDIA_AMOUNT, LINE_NOTES, LINE_PDF = range(14)
+
 
 def are_date_ranges_overlaping(dates):
     if len(dates) <= 1:
@@ -21,10 +26,11 @@ def are_date_ranges_overlaping(dates):
         prev_e = e
     return False
 
-class Command(BaseCommand):
+
+class Command(ExceptionCommand):
     def add_arguments(self, parser):
         parser.add_argument('csv_file', nargs=1, type=str)
-        
+
     def handle(self, *args, **options):
         all_credits = []
         skipped = 0
@@ -33,22 +39,23 @@ class Command(BaseCommand):
                 if not num:
                     continue
                 credit = dict(
-                    account=line[0],
-                    valid_from=line[1],
-                    valid_to=line[2],
-                    amount=line[4],
-                    notes=line[8] + ' ' + line[9],
+                    account=line[LINE_ACCOUNT_ID],
+                    valid_from=line[LINE_VALID_FROM],
+                    valid_to=line[LINE_VALID_TO],
+                    amount=line[LINE_TOTAL_AMOUNT],
+                    notes=line[LINE_NOTES] + ' ' + line[LINE_PDF],
                 )
-                credit_license_type = line[5]
+                credit_license_type = line[LINE_LICENSE_TYPE]
 
                 if 'Flat' in credit_license_type:
                     credit['license_fee'] = 0
+                    credit['amount'] = line[LINE_MEDIA_AMOUNT]
                 elif '%' in credit_license_type:
-                    credit['total_license_fee'] = line[6]
+                    credit['license_fee'] = line[LINE_LICENSE_PERCENT]
                 else:
                     skipped += 1
                     continue
-                
+
                 all_credits.append(dash.bcm_helpers.clean_credit_input(**credit))
         ok, duplicates, with_errors, budgets = 0, 0, 0, 0
         finished_accounts = set()
@@ -85,7 +92,7 @@ class Command(BaseCommand):
 
             if imported_credit.is_active():
                 continue
-                    
+
             if len(campaigns) == 1:
                 dash.models.BudgetLineItem.objects.create(
                     credit=imported_credit,
@@ -101,7 +108,7 @@ class Command(BaseCommand):
                 )
                 finished_accounts.add(imported_credit.account.pk)
                 continue
-            
+
         accounts_without_credits = set()
         for account in dash.models.Account.objects.all():
             account_credits = account.credits.all()
@@ -109,7 +116,7 @@ class Command(BaseCommand):
             if account.pk in finished_accounts:
                 continue
             if 'New account' in account.name:
-                continue            
+                continue
             if not account_credits:
                 accounts_without_credits.add(account.pk)
                 continue
@@ -125,7 +132,7 @@ class Command(BaseCommand):
                                                          .filter(content_ad__ad_group__campaign_id=campaign.id)\
                                                          .aggregate(cost_cc_sum=Sum('cost_cc'),
                                                                     data_cost_cc_sum=Sum('data_cost_cc'))
-                    
+
                     if stats['cost_cc_sum'] is None:
                         continue
                     cost = (stats['cost_cc_sum'] or 0) + (stats['data_cost_cc_sum'] or 0)
@@ -148,7 +155,7 @@ class Command(BaseCommand):
                     )
                     budgets += 1
                     finished_accounts.add(credit.account.pk)
-            
+
         all_accounts = set([acc.pk for acc in dash.models.Account.objects.all()])
         accounts_without_budgets = all_accounts - accounts_without_credits - finished_accounts
         print 'Account IDS without credits:', ', '.join(map(str, accounts_without_credits))
@@ -163,4 +170,3 @@ class Command(BaseCommand):
         print ' Accounts without credits:', len(accounts_without_credits)
         print ' Accounts with credits but no budgets:', len(accounts_without_budgets)
         print '============================================='
-        

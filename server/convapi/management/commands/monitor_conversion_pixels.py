@@ -5,11 +5,12 @@ from django.core.management import BaseCommand
 
 import dash.models
 from utils import statsd_helper
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
 
     def handle(self, *args, **options):
         logger.info('Conversion pixel monitoring')
