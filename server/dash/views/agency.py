@@ -1018,7 +1018,7 @@ class AccountAgency(api_common.BaseApiView):
                 '{} set to "{}"'.format(setting['name'], setting['value'])
             )
 
-        return u', '.join(change_strings)
+        return ', '.join(change_strings)
 
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):
         sources_text_list = []
