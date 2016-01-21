@@ -181,8 +181,9 @@ def goals_and_spend_settings(user, campaign):
     ratio = 0
     if ideal_campaign_spend_to_date > 0:
         ratio = min(
-            (total_campaign_spend_to_date - ideal_campaign_spend_to_date) / ideal_campaign_spend_to_date,
-            1)
+            total_campaign_spend_to_date / ideal_campaign_spend_to_date,
+            1
+        )
     campaign_pacing_settings = OverviewSetting(
         'Campaign pacing:',
         '{:.2f}%'.format(ratio * 100),
