@@ -1,5 +1,5 @@
 /*globals oneApp,$,moment*/
-oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'api', function ($scope, $state, $window, $location, api) {
+oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'api', 'zemNavigationService', 'adGroupData', function ($scope, $state, $window, $location, api, zemNavigationService, adGroupData) {
     $scope.level = constants.level.AD_GROUPS;
     $scope.getTabs = function() {
         var tabs = [{
@@ -69,51 +69,12 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
     // this function is used by ad_grou_ conrollers to set $scope.$scope.isAdGroupPaused
     $scope.setAdGroupPaused = function(val) {
         $scope.isAdGroupPaused = val;
-        
     };
 
-    $scope.getAdGroup = function (id) {
-        var selectedAdGroup = null;
-        $scope.accounts.forEach(function (account) {
-            account.campaigns.forEach(function (campaign) {
-                campaign.adGroups.forEach(function (adGroup) {
-                    if (adGroup.id === id) {
-                        selectedAdGroup = adGroup;
-                    }
-                });
-            });
-        });
-        return selectedAdGroup;
-    };
-    
     $scope.setAdGroupData = function (key, value) {
         var data = $scope.adGroupData[$state.params.id] || {};
         data[key] = value;
         $scope.adGroupData[$state.params.id] = data;
-    };
-
-    $scope.getModels = function () {
-        $scope.accounts.forEach(function (account) {
-            account.campaigns.forEach(function (campaign) {
-                campaign.adGroups.forEach(function (adGroup) {
-                    if (adGroup.id.toString() === $state.params.id.toString()) {
-                        $scope.setAccount(account);
-                        $scope.setCampaign(campaign);
-                        $scope.setAdGroup(adGroup);
-                    }
-                });
-            });
-        });
-    };
-
-    $scope.updateAccounts = function (newAdGroupName, newAdGroupState, newAdGroupStatus) {
-        if (!$scope.accounts || !newAdGroupName) {
-            return;
-        }
-        $scope.adGroup.name = newAdGroupName;
-        $scope.adGroup.state = newAdGroupState === constants.adGroupSourceSettingsState.ACTIVE ?
-            'enabled' : 'paused';
-        $scope.adGroup.status = newAdGroupStatus;
     };
 
     $scope.updateBreadcrumbAndTitle = function () {
@@ -162,7 +123,7 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         );
     };
 
-    $scope.getModels();
+    $scope.setModels(adGroupData);
     $scope.tabs = $scope.getTabs();
     $scope.setActiveTab();
 
@@ -174,10 +135,11 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         }
     }
 
-    $scope.$watch('accounts', function (newValue, oldValue) {
-        if (newValue !== oldValue) {
-            $scope.getModels();
-        }
+    $scope.$watch(zemNavigationService.lastSyncTS, function (newValue, oldValue) {
+        zemNavigationService.getAdGroup($state.params.id).then(function(adGroupData) {
+            $scope.setModels(adGroupData);
+            $scope.updateBreadcrumbAndTitle();
+        });
     });
 
     $scope.$watch('adGroup.archived', function (newValue, oldValue) {

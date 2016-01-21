@@ -1,6 +1,6 @@
 /*globals oneApp*/
 
-oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) {
+oneApp.controller('AccountCtrl', ['$scope', '$state', 'zemNavigationService', 'accountData', function ($scope, $state, zemNavigationService, accountData) {
     $scope.level = constants.level.ACCOUNTS;
     $scope.getTabs = function () {
         return [
@@ -19,16 +19,6 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
         });
     };
 
-    $scope.setAccount(null);
-
-    $scope.getAccount = function () {
-        $scope.accounts.forEach(function (account) {
-            if (account.id.toString() === $state.params.id.toString()) {
-                $scope.setAccount(account);
-            }
-        });
-    };
-
     $scope.updateBreadcrumbAndTitle = function () {
         if (!$scope.account) {
             return;
@@ -43,14 +33,7 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
         );
     };
 
-    $scope.updateAccounts = function (newAccountName) {
-        if (!newAccountName) {
-            return;
-        }
-        $scope.account.name = newAccountName;
-    };
-
-    $scope.getAccount();
+    $scope.setModels(accountData);
 
     $scope.tabs = $scope.getTabs();
     $scope.setActiveTab();
@@ -63,10 +46,11 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
         }
     }
 
-    $scope.$watch('accounts', function (newValue, oldValue) {
-        if (newValue !== oldValue) {
-            $scope.getAccount();
-        }
+    $scope.$watch(zemNavigationService.lastSyncTS, function (newValue, oldValue) {
+        zemNavigationService.getAccount($state.params.id).then(function(accountData) {
+            $scope.setModels(accountData);
+            $scope.updateBreadcrumbAndTitle();
+        });
     });
 
     $scope.$watch('account.archived', function (newValue, oldValue) {

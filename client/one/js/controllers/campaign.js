@@ -1,5 +1,5 @@
 /*globals oneApp,$,moment*/
-oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($scope, $state, $location) {
+oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigationService', 'campaignData', function ($scope, $state, $location, zemNavigationService, campaignData) {
     $scope.level = constants.level.CAMPAIGNS;
     $scope.getTabs = function ()
     {
@@ -20,22 +20,8 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         });
     };
 
-    $scope.setAccount(null);
-    $scope.setCampaign(null);
-
-    $scope.getModels = function () {
-        $scope.accounts.forEach(function (account) {
-            account.campaigns.forEach(function (campaign) {
-                if (campaign.id.toString() === $state.params.id.toString()) {
-                    $scope.setAccount(account);
-                    $scope.setCampaign(campaign);
-                }
-            });
-        });
-    };
-
     $scope.updateBreadcrumbAndTitle = function () {
-        if (!$scope.accounts) {
+        if (!$scope.account || !$scope.campaign) {
             return;
         }
         $scope.setBreadcrumbAndTitle([{
@@ -53,13 +39,6 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         );
     };
 
-    $scope.updateAccounts = function (newCampaignName) {
-        if (!$scope.accounts || !newCampaignName) {
-            return;
-        }
-        $scope.campaign.name = newCampaignName;
-    };
-
     $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);
     });
@@ -68,7 +47,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         $scope.updateBreadcrumbAndTitle();
     });
 
-    $scope.getModels();
+    $scope.setModels(campaignData);
     $scope.tabs = $scope.getTabs();
     $scope.setActiveTab();
 
@@ -82,10 +61,11 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         }
     }
 
-    $scope.$watch('accounts', function (newValue, oldValue) {
-        if (newValue !== oldValue) {
-            $scope.getModels();
-        }
+    $scope.$watch(zemNavigationService.lastSyncTS, function (newValue, oldValue) {
+        zemNavigationService.getCampaign($state.params.id).then(function(campaignData) {
+            $scope.setModels(campaignData);
+            $scope.updateBreadcrumbAndTitle();
+        });
     });
 
     $scope.$watch('campaign.archived', function (newValue, oldValue) {

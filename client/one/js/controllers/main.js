@@ -9,11 +9,12 @@ oneApp.controller('MainCtrl',
      'zemMoment',
      'user',
      'zemUserSettings',
-     'accounts',
      'api',
      'zemFilterService',
      'zemFullStoryService',
      'zemIntercomService',
+     'zemNavigationService',
+     'accountsAccess',
       function (
         $scope,
         $state,
@@ -24,13 +25,16 @@ oneApp.controller('MainCtrl',
         zemMoment,
         user,
         zemUserSettings,
-        accounts,
         api,
         zemFilterService,
         zemFullStoryService,
-        zemIntercomService
+        zemIntercomService,
+        zemNavigationService,
+        accountsAccess
 ) {
-    $scope.accounts = accounts;
+    $scope.accountsAccess = accountsAccess;
+    $scope.accounts = [];
+
     $scope.user = user;
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
@@ -51,10 +55,6 @@ oneApp.controller('MainCtrl',
     $scope.adGroup = null;
 
     $scope.user.automaticallyCreateAdGroup = false;
-
-    $scope.refreshNavData = function (accounts) {
-        $scope.accounts = accounts;
-    };
 
     $scope.hasPermission = function (permissions) {
         if (!permissions) {
@@ -247,23 +247,30 @@ oneApp.controller('MainCtrl',
 
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
         $scope.breadcrumb = breadcrumb;
-        if ($scope.canAccessAllAccounts() && $scope.accounts.length) {
+        if ($scope.canAccessAllAccounts() && $scope.accountsAccess.hasAccounts) {
             $scope.breadcrumb.unshift({name: 'All accounts', state: $scope.getDefaultAllAccountsState(), disabled: !$scope.canAccessAllAccounts()});
         }
 
         $document.prop('title', title + ' | Zemanta');
     };
 
-    $scope.setAccount = function (account) {
-        $scope.account = account;
-    };
+    $scope.setModels = function (models) {
 
-    $scope.setCampaign = function (campaign) {
-        $scope.campaign = campaign;
-    };
-
-    $scope.setAdGroup = function (adGroup) {
-        $scope.adGroup = adGroup;
+        if (models) {
+            if (models.hasOwnProperty('account')) {
+                $scope.account = models.account;
+            }
+            if (models.hasOwnProperty('campaign')) {
+                $scope.campaign = models.campaign;
+            }
+            if (models.hasOwnProperty('adGroup')) {
+                $scope.adGroup = models.adGroup;
+            }
+        } else {
+            $scope.account = null;
+            $scope.campaign = null;
+            $scope.adGroup = null;
+        }
     };
 
     $scope.setPublisherFilterVisible = function (visible) {
@@ -286,29 +293,19 @@ oneApp.controller('MainCtrl',
         // Redirect from default state
         var state = null;
         var id = $state.params.id;
-
-        if ($state.is('main.allAccounts')) { 
+        if ($state.is('main.allAccounts')) {
             state = $scope.getDefaultAllAccountsState();
-        } else if ($state.is('main.accounts')) { 
+        } else if ($state.is('main.accounts')) {
             state = $scope.getDefaultAccountState();
-        } else if ($state.is('main.campaigns')) { 
+        } else if ($state.is('main.campaigns')) {
             state = $scope.getDefaultCampaignState();
-        } else if ($state.is('main.adGroups')) { 
+        } else if ($state.is('main.adGroups')) {
             state = $scope.getDefaultAdGroupState();
-        } else if ($state.is('main') && $scope.accounts && $scope.accounts.length) {
+        } else if ($state.is('main') && $scope.accountsAccess.hasAccounts) {
             if ($scope.canAccessAllAccounts()) {
                 state = 'main.allAccounts.accounts';
             } else {
-                $scope.accounts.some(function (account) {
-                    id = account.id;
-
-                    if (id && account.archived === false) {
-                        return true;
-                    }
-
-                    return false;
-                });
-
+                id = $scope.accountsAccess.defaultAccountId;  // TODO: translate api
                 state = $scope.getDefaultAccountState();
             }
         }
@@ -356,18 +353,20 @@ oneApp.controller('MainCtrl',
         return zemFilterService.getShowArchived();
     };
 
+    $scope.$watch(zemNavigationService.lastSyncTS, function (newValue, oldValue) {
+        $scope.accounts = zemNavigationService.getAccounts();
+    });
+
+    $scope.$watch(zemNavigationService.isLoadInProgress, function (newValue, oldValue) {
+        $scope.loadSidebarInProgress = newValue;
+    });
+
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         if (angular.equals(newValue, oldValue)) {
             return;
         }
 
-        $scope.loadSidebarInProgress = true;
-        api.navData.list().then(function (accounts) {
-            $scope.refreshNavData(accounts);
-        })
-        .finally(function () {
-            $scope.loadSidebarInProgress = false;
-        });
+        zemNavigationService.reload();
     }, true);
 
     $scope.$watch(zemFilterService.getShowBlacklistedPublishers, function (newValue, oldValue) {
@@ -379,5 +378,5 @@ oneApp.controller('MainCtrl',
 
     zemFullStoryService.identify($scope.user);
     zemIntercomService.boot($scope.user);
-
+    zemNavigationService.reload();
 }]);
