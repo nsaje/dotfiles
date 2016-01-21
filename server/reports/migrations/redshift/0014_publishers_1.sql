@@ -2,7 +2,7 @@ create table publishers_1(
   date date not null,
   adgroup_id integer not null,
   exchange varchar(255),
-  name varchar(255),
+  domain varchar(255),
   external_id varchar(255),
   clicks int,
   impressions int,
