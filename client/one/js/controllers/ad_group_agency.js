@@ -1,5 +1,5 @@
 /*globals oneApp,moment*/
-oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
+oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigationService', function ($scope, $state, api, zemNavigationService) {
     $scope.alerts = [];
     $scope.history = [];
     $scope.canArchive = false;
@@ -26,10 +26,7 @@ oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     };
 
     $scope.refreshPage = function () {
-        api.navData.list().then(function (accounts) {
-            $scope.refreshNavData(accounts);
-            $scope.getModels();
-        });
+        zemNavigationService.reloadAdGroup($state.params.id);
         $scope.getSettings($state.params.id);
     };
 

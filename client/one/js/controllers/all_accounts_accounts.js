@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', function ($scope, $state, $location, $timeout, api, zemFilterService, zemPostclickMetricsService, zemUserSettings) {
+oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', 'zemNavigationService', function ($scope, $state, $location, $timeout, api, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.requestInProgress = false;
@@ -261,9 +261,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     ];
 
-    $scope.setAccount(null);
-    $scope.setCampaign(null);
-    $scope.setAdGroup(null);
+    $scope.setModels(null);
 
     var initColumns = function () {
         zemPostclickMetricsService.insertAcquisitionColumns(
@@ -286,10 +284,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         api.account.create().then(
             function (data) {
-                $scope.accounts.push({
-                    'name': data.name,
-                    'id': data.id,
-                    'campaigns': []
+                zemNavigationService.updateAllAccountsCache(function(accounts) {
+                    accounts.push({
+                        'name': data.name,
+                        'id': data.id,
+                        'campaigns': []
+                    });
                 });
 
                 $state.go('main.accounts.agency', {id: data.id});

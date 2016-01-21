@@ -1,5 +1,5 @@
 /*globals oneApp,constants,options,moment*/
-oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', function ($scope, $state, $modal, api) {
+oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'zemNavigationService', function ($scope, $state, $modal, api, zemNavigationService) {
     $scope.settings = {};
     $scope.history = [];
     $scope.canArchive = false;
@@ -69,10 +69,7 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', fu
     };
 
     $scope.refreshPage = function () {
-        api.navData.list().then(function (accounts) {
-            $scope.refreshNavData(accounts);
-            $scope.getModels();
-        });
+        zemNavigationService.reloadCampaign($scope.campaign.id);
         $scope.getSettings();
     };
 

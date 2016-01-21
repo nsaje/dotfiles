@@ -1,5 +1,5 @@
 /*globals oneApp,constants,options,moment*/
-oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', function ($scope, $state, $q, $timeout, api) {
+oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, zemNavigationService) {
     var campaignFreshSettings = $q.defer();
     $scope.settings = {};
     $scope.errors = {};
@@ -41,21 +41,23 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
             function (data) {
                 $scope.errors = {};
                 $scope.settings = data.settings;
-                $scope.updateAccounts(data.settings.name);
-                $scope.updateBreadcrumbAndTitle();
+
+                zemNavigationService.updateCampaignCache($scope.campaign.id, {name: data.settings.name});
+
                 $scope.requestInProgress = false;
                 $scope.saved = true;
 
                 if ($scope.user.automaticallyCreateAdGroup && $scope.user.showOnboardingGuidance) {
                     $scope.user.automaticallyCreateAdGroup = false;
                     api.campaignAdGroups.create($scope.campaign.id).then(function (adGroupData) {
-                        
-                        $scope.campaign.adGroups.push({
-                            id: adGroupData.id,
-                            name: adGroupData.name,
-                            contentAdsTabWithCMS: data.contentAdsTabWithCMS,
-                            status: 'stopped',
-                            state: 'paused'
+                        zemNavigationService.updateCampaignCache($scope.campaign.id, function(campaign) {
+                            campaign.adGroups.push({
+                                id: adGroupData.id,
+                                name: adGroupData.name,
+                                contentAdsTabWithCMS: data.contentAdsTabWithCMS,
+                                status: 'stopped',
+                                state: 'paused'
+                            });
                         });
                         $timeout(function () {
                             $state.go('main.adGroups.settings', {id: adGroupData.id});
@@ -70,14 +72,6 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
         ).finally(function () {
             $scope.requestInProgress = false;
         });
-    };
-
-    $scope.refreshPage = function () {
-        api.navData.list().then(function (accounts) {
-            $scope.refreshNavData(accounts);
-            $scope.getModels();
-        });
-        $scope.getSettings();
     };
 
     $scope.getSettings();
