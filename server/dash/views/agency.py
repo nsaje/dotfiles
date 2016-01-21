@@ -1015,7 +1015,7 @@ class AccountAgency(api_common.BaseApiView):
         for key in changes:
             setting = settings_dict[key]
             change_strings.append(
-                u'{} set to "{}"'.format(setting['name'], setting['value'])
+                '{} set to "{}"'.format(setting['name'], setting['value'])
             )
 
         return u', '.join(change_strings)
