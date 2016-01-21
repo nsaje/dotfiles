@@ -50,8 +50,10 @@ oneApp.factory('zemNavigationService', ['$q', '$location', 'api', function($q, $
         return undefined;
     }
 
-    function _findHasAccountsInNavTree() {
-        return !!accounts;
+    function _findAccountsAccessInNavTree() {
+        return {
+            hasAccounts: !!accounts
+        };
     };
 
     function _loadData(id, apiFunc, searchCacheFunc) {
@@ -109,7 +111,7 @@ oneApp.factory('zemNavigationService', ['$q', '$location', 'api', function($q, $
         return _loadData(
             null,
             api.navigation.getAccountsAccess,
-            _findHasAccountsInNavTree
+            _findAccountsAccessInNavTree
         );
     };
 
@@ -224,11 +226,6 @@ oneApp.factory('zemNavigationService', ['$q', '$location', 'api', function($q, $
 
         getAccounts: function() {
             return accounts;
-        },
-
-        // used for demo only
-        setAccounts: function(accs) {
-            accounts = accs;
         },
 
         lastSyncTS: function() {

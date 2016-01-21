@@ -305,7 +305,7 @@ oneApp.controller('MainCtrl',
             if ($scope.canAccessAllAccounts()) {
                 state = 'main.allAccounts.accounts';
             } else {
-                id = $scope.accountsAccess.defaultAccountId;  // TODO: translate api
+                id = $scope.accountsAccess.defaultAccountId;
                 state = $scope.getDefaultAccountState();
             }
         }
