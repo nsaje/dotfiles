@@ -1000,9 +1000,9 @@ class AccountAgency(api_common.BaseApiView):
         if not old_settings:
             return 'Created settings'
 
-        changes_text = u', '.join(filter(None, [
+        changes_text = ', '.join(filter(None, [
             self.get_changes_text_for_settings(new_settings, old_settings),
-            new_settings.changes_text
+            new_settings.changes_text.encode('utf-8') if new_settings.changes_text is not None else ''
         ]))
 
         return changes_text
