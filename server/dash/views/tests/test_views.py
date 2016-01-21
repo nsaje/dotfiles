@@ -2340,9 +2340,9 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('0.0 below planned', goal_setting['description'])
         self.assertEqual('happy', goal_setting['icon'])
 
-    @patch('dash.budget.CampaignBudget.get_spend')
+    @patch('dash.models.BudgetLineItem.get_spend_data')
     @patch('reports.redshift.get_cursor')
-    def test_run_mid(self, cursor, get_spend):
+    def test_run_mid(self, cursor, get_spend_data):
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
 
@@ -2377,7 +2377,9 @@ class AdGroupOverviewTest(TestCase):
                 'cost_cc_sum': 500000.0,
             }]
 
-        get_spend.return_value = 50
+        get_spend_data.return_value = {
+            'total': 60
+        }
 
         response = self._get_ad_group_overview(1)
 
@@ -2399,9 +2401,8 @@ class AdGroupOverviewTest(TestCase):
         flight_setting = self._get_setting(settings, 'daily')
         self.assertEqual('$100.00', flight_setting['value'])
 
-
         yesterday_setting = self._get_setting(settings, 'yesterday')
-        self.assertEqual('$50.00', yesterday_setting['value'])
+        self.assertEqual('$60.00', yesterday_setting['value'])
         self.assertEqual('50.00% of daily cap', yesterday_setting['description'])
 
 

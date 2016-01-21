@@ -204,27 +204,46 @@ class InfoBoxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
 
         mock_query.return_value = {
-            'cost': 50
+            'cost': 500
         }
 
         self.assertEqual(
-            50,
+            500,
             dash.infobox_helpers.get_total_campaign_spend(user, campaign)
         )
 
-    @mock.patch('reports.api.query')
-    def test_get_yesterday_total_cost(self, mock_query):
+    @mock.patch('dash.models.BudgetLineItem.get_spend_data')
+    def test_get_yesterday_total_spend(self, mock_get_spend_data):
         # very simple test since target func just retrieves data from Redshift
         campaign = dash.models.Campaign.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
 
-        mock_query.return_value = {
-            'cost': 50
-        }
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
 
+        credit = dash.models.CreditLineItem.objects.create(
+            account=campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+        budget = dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=100,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+        )
+
+        mock_get_spend_data.return_value = {
+            'total': 50
+        }
         self.assertEqual(
             50,
-            dash.infobox_helpers.get_yesterday_total_cost(user, campaign)
+            dash.infobox_helpers.get_yesterday_spend(user, campaign)
         )
 
     @mock.patch('reports.api_contentads.query')
@@ -313,5 +332,47 @@ class InfoBoxHelpersTest(TestCase):
                 dash.constants.CampaignGoal.PAGES_PER_SESSION,
                 10,
                 20
+            )
+        )
+
+    def test_calculate_daily_cap(self):
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        self.assertEqual(50, dash.infobox_helpers.calculate_daily_cap(campaign))
+
+        for adgs in dash.models.AdGroupSettings.objects.all():
+            adgs.daily_budget_cc = 0
+            adgs.save(None)
+
+        self.assertEqual(0, dash.infobox_helpers.calculate_daily_cap(campaign))
+
+    @mock.patch('reports.api_contentads.query')
+    def test_goals_and_spend_settings(self, mock_query):
+        mock_query.return_value = {
+            'bounce_rate': 0.01,
+            'new_visits': 100,
+            'avg_tos': 5,
+            'pv_per_visit': 10,
+        }
+
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        user = zemauth.models.User.objects.get(pk=1)
+        settings, is_delivering = dash.infobox_helpers.goals_and_spend_settings(user, campaign)
+
+        self.assertEqual(3, len(settings))
+
+    def test_format_goal_value(self):
+        self.assertEqual(
+            10,
+            dash.infobox_helpers.format_goal_value(
+                10.00,
+                dash.constants.CampaignGoal.SECONDS_TIME_ON_SITE,
+            )
+        )
+
+        self.assertEqual(
+            0.15,
+            dash.infobox_helpers.format_goal_value(
+                0.15,
+                dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE,
             )
         )

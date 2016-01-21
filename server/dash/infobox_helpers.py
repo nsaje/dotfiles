@@ -9,10 +9,12 @@ import dash.budget
 import dash.models
 import reports.api_contentads
 
+from decimal import Decimal
+
 
 class OverviewSetting(object):
 
-    def __init__(self, name='', value='', description='', tooltip=None, setting_type='setting'):
+    def __init__(self, name='', value='', description=None, tooltip=None, setting_type='setting'):
         self.name = name
         self.value = value
         self.description = description
@@ -20,6 +22,7 @@ class OverviewSetting(object):
         self.details_content = None
         self.icon = None
         self.type = setting_type
+        self.tooltip = tooltip
 
     def comment(self, details_label, details_description):
         ret = copy.deepcopy(self)
@@ -82,9 +85,14 @@ def get_total_campaign_spend(user, campaign, until_date=None):
     return campaign_budget.get_spend(until_date=until_date)
 
 
-def get_yesterday_total_cost(user, campaign):
+def get_yesterday_spend(user, campaign):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
-    return get_total_campaign_spend(user, campaign, until_date=yesterday)
+    budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
+
+    all_budget_spends_at_date = [
+        b.get_spend_data(date=yesterday, use_decimal=True)['total'] for b in budgets
+    ]
+    return sum(all_budget_spends_at_date)
 
 
 def get_goal_value(user, campaign, campaign_settings, goal_type):
@@ -136,3 +144,89 @@ def get_goal_difference(goal_type, target, actual):
         )
         success = diff <= 0
         return diff, description, success
+
+
+def calculate_daily_cap(campaign):
+    daily_cap = Decimal(0)
+    ad_groups = dash.models.AdGroup.objects.filter(campaign=campaign).exclude_archived()
+    for ad_group in ad_groups:
+        ad_group_settings = ad_group.get_current_settings()
+        # daily_budget_cc is in fact not cc
+        daily_cap = daily_cap + Decimal(ad_group_settings.daily_budget_cc) or Decimal(0)
+    return int(daily_cap)
+
+
+def goals_and_spend_settings(user, campaign):
+    settings = []
+
+    filled_daily_ratio = 0
+    yesterday_cost = get_yesterday_spend(user, campaign) or 0
+    campaign_daily_budget = calculate_daily_cap(campaign)
+
+    if campaign_daily_budget > 0:
+        filled_daily_ratio = min(yesterday_cost / float(campaign_daily_budget), 1)
+
+    yesterday_spend_settings = OverviewSetting(
+        'Yesterday spend:',
+        '${:.2f}'.format(yesterday_cost),
+        description='{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100),
+    ).performance(
+        filled_daily_ratio >= 1.0
+    )
+    settings.append(yesterday_spend_settings.as_dict())
+
+    total_campaign_spend_to_date = get_total_campaign_spend(user, campaign)
+    ideal_campaign_spend_to_date = get_ideal_campaign_spend(user, campaign)
+
+    ratio = 0
+    if ideal_campaign_spend_to_date > 0:
+        ratio = min(
+            (total_campaign_spend_to_date - ideal_campaign_spend_to_date) / ideal_campaign_spend_to_date,
+            1)
+    campaign_pacing_settings = OverviewSetting(
+        'Campaign pacing:',
+        '{:.2f}%'.format(ratio * 100),
+        description='${:.2f}'.format(total_campaign_spend_to_date)
+    ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
+    settings.append(campaign_pacing_settings.as_dict())
+
+    campaign_settings = campaign.get_current_settings()
+    campaign_goals = [(
+        campaign_settings.campaign_goal,
+        campaign_settings.goal_quantity,
+    )
+    ]
+    for i, (goal, quantity) in enumerate(campaign_goals):
+        text = dash.constants.CampaignGoal.get_text(goal)
+        name = 'Campaign goals:' if i == 0 else ''
+
+        try:
+            goal_value = get_goal_value(user, campaign, campaign_settings, goal)
+        except NotImplementedError:
+            goal_value = None
+        goal_diff, description, success = get_goal_difference(
+            goal,
+            float(quantity),
+            goal_value
+        )
+        goal_setting = OverviewSetting(
+            name,
+            '{actual_goal} {value}'.format(
+                actual_goal=format_goal_value(goal_value, goal),
+                value=text
+            ),
+            description
+        ).performance(success)
+        settings.append(goal_setting.as_dict())
+
+    is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
+    return settings, is_delivering
+
+
+def format_goal_value(goal_value, goal_type):
+    if not goal_value:
+        return 0
+    if goal_type in (dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE,):
+        return float(goal_value)
+    else:
+        return int(goal_value)
