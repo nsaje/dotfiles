@@ -153,7 +153,7 @@ def calculate_daily_cap(campaign):
         ad_group_settings = ad_group.get_current_settings()
         # daily_budget_cc is in fact not cc
         daily_cap = daily_cap + Decimal(ad_group_settings.daily_budget_cc) or Decimal(0)
-    return int(daily_cap)
+    return float(daily_cap)
 
 
 def goals_and_spend_settings(user, campaign):
@@ -164,7 +164,7 @@ def goals_and_spend_settings(user, campaign):
     campaign_daily_budget = calculate_daily_cap(campaign)
 
     if campaign_daily_budget > 0:
-        filled_daily_ratio = min(yesterday_cost / float(campaign_daily_budget), 1)
+        filled_daily_ratio = min(float(yesterday_cost) / float(campaign_daily_budget), 1)
 
     yesterday_spend_settings = OverviewSetting(
         'Yesterday spend:',
