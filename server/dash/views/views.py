@@ -400,10 +400,13 @@ class AdGroupOverview(api_common.BaseApiView):
                 ad_group_settings.start_date,
                 ad_group_settings.end_date
             )
+        days_left_description = None
+        if flight_time_left_days is not None:
+           days_left_description = "{} days left".format(flight_time_left_days)
         flight_time_setting = infobox_helpers.OverviewSetting(
             'Flight time',
             flight_time,
-            "{} days left".format(flight_time_left_days)
+            days_left_description
         )
         settings.append(flight_time_setting.as_dict())
 
@@ -686,10 +689,13 @@ class CampaignOverview(api_common.BaseApiView):
                 start_date,
                 end_date
             )
+        flight_time_left_description = None
+        if flight_time_left_days is not None:
+           flight_time_left_description = "{} days left".format(flight_time_left_days)
         flight_time_setting = infobox_helpers.OverviewSetting(
             'Flight time',
             flight_time,
-            "{} days left".format(flight_time_left_days)
+            flight_time_left_description
         )
         settings.append(flight_time_setting.as_dict())
 
