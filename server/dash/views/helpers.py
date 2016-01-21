@@ -83,9 +83,13 @@ def get_additional_columns(additional_columns):
     return []
 
 
-def get_account(user, account_id, select_related=False):
+def get_account(user, account_id, select_related=False, sources=None):
     try:
         account = models.Account.objects.all().filter_by_user(user)
+
+        if sources:
+            account = account.filter_by_sources(sources)
+
         if select_related:
             account = account.select_related('campaign_set')
 
@@ -94,10 +98,13 @@ def get_account(user, account_id, select_related=False):
         raise exc.MissingDataError('Account does not exist')
 
 
-def get_ad_group(user, ad_group_id, select_related=False):
+def get_ad_group(user, ad_group_id, select_related=False, sources=None):
     try:
         ad_group = models.AdGroup.objects.all().filter_by_user(user).\
             filter(id=int(ad_group_id))
+
+        if sources:
+            ad_group = ad_group.filter_by_sources(sources)
 
         if select_related:
             ad_group = ad_group.select_related('campaign__account')
@@ -107,10 +114,15 @@ def get_ad_group(user, ad_group_id, select_related=False):
         raise exc.MissingDataError('Ad Group does not exist')
 
 
-def get_campaign(user, campaign_id):
+def get_campaign(user, campaign_id, sources=None):
     try:
-        return models.Campaign.objects.all().filter_by_user(user).\
-            filter(id=int(campaign_id)).get()
+        campaign = models.Campaign.objects.all()\
+                                          .filter_by_user(user)\
+                                          .filter(id=int(campaign_id))
+        if sources:
+            campaign = campaign.filter_by_sources(sources)
+
+        return campaign.get()
     except models.Campaign.DoesNotExist:
         raise exc.MissingDataError('Campaign does not exist')
 
