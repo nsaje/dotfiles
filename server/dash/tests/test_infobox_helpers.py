@@ -212,7 +212,7 @@ class InfoBoxHelpersTest(TestCase):
             dash.infobox_helpers.get_total_campaign_spend(user, campaign)
         )
 
-    @mock.patch('dash.models.BudgetLineItem.get_spend_data')
+    @mock.patch('dash.models.BudgetLineItem.get_daily_spend')
     def test_get_yesterday_total_spend(self, mock_get_spend_data):
         # very simple test since target func just retrieves data from Redshift
         campaign = dash.models.Campaign.objects.get(pk=1)

@@ -2340,7 +2340,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('0.0 below planned', goal_setting['description'])
         self.assertEqual('happy', goal_setting['icon'])
 
-    @patch('dash.models.BudgetLineItem.get_spend_data')
+    @patch('dash.models.BudgetLineItem.get_daily_spend')
     @patch('reports.redshift.get_cursor')
     def test_run_mid(self, cursor, get_spend_data):
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
