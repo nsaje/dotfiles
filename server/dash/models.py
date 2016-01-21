@@ -671,6 +671,22 @@ class CampaignSettings(SettingsBase):
         return value
 
 
+class CampaignGoal(models.Model):
+    campaign = models.ForeignKey(Campaign)
+    type = models.PositiveSmallIntegerField(
+        default=constants.CampaignGoalKPI.TIME_ON_SITE,
+        choices=constants.CampaignGoalKPI.get_choices(),
+    )
+
+    class Meta:
+        unique_together = ('campaign', 'type')
+
+
+class CampaignGoalValue(models.Model):
+    campaign_goal = models.ForeignKey(CampaignGoal)
+    value = models.DecimalField(max_digits=15, decimal_places=5)
+
+
 class SourceType(models.Model):
     type = models.CharField(
         max_length=127,
