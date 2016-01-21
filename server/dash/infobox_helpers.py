@@ -147,13 +147,13 @@ def get_goal_difference(goal_type, target, actual):
 
 
 def calculate_daily_cap(campaign):
-    daily_cap_cc = Decimal(0)
+    daily_cap = Decimal(0)
     ad_groups = dash.models.AdGroup.objects.filter(campaign=campaign).exclude_archived()
     for ad_group in ad_groups:
         ad_group_settings = ad_group.get_current_settings()
-        daily_cap_cc = daily_cap_cc + Decimal(ad_group_settings.daily_budget_cc) or Decimal(0)
-    # TODO: daily_cap_cc IS NOT CC
-    return int(daily_cap_cc)
+        # daily_budget_cc is in fact not cc
+        daily_cap = daily_cap + Decimal(ad_group_settings.daily_budget_cc) or Decimal(0)
+    return int(daily_cap)
 
 
 def goals_and_spend_settings(user, campaign):
