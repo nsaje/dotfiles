@@ -204,11 +204,11 @@ class InfoBoxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
 
         mock_query.return_value = {
-            'cost': 50
+            'cost': 500
         }
 
         self.assertEqual(
-            50,
+            500,
             dash.infobox_helpers.get_total_campaign_spend(user, campaign)
         )
 
@@ -337,7 +337,7 @@ class InfoBoxHelpersTest(TestCase):
 
     def test_calculate_daily_cap(self):
         campaign = dash.models.Campaign.objects.get(pk=1)
-        self.assertEqual(50, dash.infobox_helpers.calculate_daily_cap(campaign))
+        self.assertEqual(0.005, dash.infobox_helpers.calculate_daily_cap(campaign))
 
         for adgs in dash.models.AdGroupSettings.objects.all():
             adgs.daily_budget_cc = 0
