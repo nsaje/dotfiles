@@ -37,9 +37,8 @@ LOAD_B1_PUB_STATS_KEY_FMT = 'b1_publishers_load/{year}/{month:02d}/{day:02d}/{ts
 LOAD_OB_PUB_STATS_KEY_FMT = 'ob_publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
 LOAD_PUB_STATS_KEY_FMT = 'publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
 
-MICRO_TO_NANO = 1000
 CC_TO_NANO = 100000
-TO_NANO = 1000000000
+DOLLAR_TO_NANO = 1000000000
 
 MAX_DATES_TO_REFRESH = 200
 
@@ -343,7 +342,7 @@ def _get_raw_ob_pub_data(s3_keys):
             }
 
             if total_clicks * total_cost > 0:
-                new_row['cost_micro'] = int(round(float(row['clicks']) / total_clicks * total_cost)) * TO_NANO
+                new_row['cost_micro'] = int(round(float(row['clicks']) / total_clicks * total_cost)) * DOLLAR_TO_NANO
                 new_row['cost_nano'] = new_row['cost_micro']
 
             rows.append(new_row)
