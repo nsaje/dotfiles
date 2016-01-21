@@ -11,15 +11,6 @@ describe('AdGroupCtrl', function () {
             $scope = parentScope.$new();
 
             $scope.adGroupData = {};
-            $scope.accounts = [{
-                id: 1,
-                campaigns: [{
-                    id: 1,
-                    adGroups: [{
-                        id: 1
-                    }]
-                }]
-            }];
 
             $state = _$state_;
             $state.params.id = 1;
@@ -35,11 +26,33 @@ describe('AdGroupCtrl', function () {
                 $scope: parentScope,
                 $state: $state,
                 user: user,
-                accounts: accounts,
+                accountsAccess: {
+                    hasAccounts: true
+                },
                 zemFullStoryService: {identify: function(){}}
             });
-            $controller('AdGroupCtrl', {$scope: $scope, $state: $state});
+            $controller('AdGroupCtrl', {
+                $scope: $scope,
+                $state: $state,
+                adGroupData: {
+                    account: {
+                        id: 4
+                    },
+                    campaign: {
+                        id: 2
+                    },
+                    adGroup: {
+                        id: 3
+                    }
+                }
+            });
         });
+    });
+
+    it('inits models propery', function() {
+        expect($scope.adGroup.id, 3);
+        expect($scope.campaign.id, 2);
+        expect($scope.account.id, 4);
     });
 
     it('shows Content Ads+ tab when ad group has cms turned on', function() {
