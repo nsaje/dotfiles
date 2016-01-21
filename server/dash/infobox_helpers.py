@@ -4,10 +4,13 @@ import exceptions
 
 import reports.api_helpers
 
+import dash.api
 import dash.constants
 import dash.budget
 import dash.models
 import reports.api_contentads
+
+from decimal import Decimal
 
 
 class OverviewSetting(object):
@@ -145,16 +148,12 @@ def get_goal_difference(goal_type, target, actual):
 
 
 def calculate_daily_cap(campaign):
-    daily_cap_cc = 0
-    ad_groups = dash.models.AdGroup.objects.filter(campaign=campaign)
+    daily_cap_cc = Decimal(0)
+    ad_groups = dash.models.AdGroup.objects.filter(campaign=campaign).exclude_archived()
     for ad_group in ad_groups:
-        if ad_group.is_archived():
-            continue
-
         ad_group_settings = ad_group.get_current_settings()
-
-        daily_cap_cc += float(ad_group_settings.daily_budget_cc or 0)
-    return daily_cap_cc
+        daily_cap_cc = daily_cap_cc + Decimal(ad_group_settings.daily_budget_cc) or Decimal(0)
+    return dash.api.cc_to_decimal(daily_cap_cc)
 
 
 def goals_and_spend_settings(user, campaign):
