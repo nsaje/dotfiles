@@ -1000,7 +1000,7 @@ class AccountAgency(api_common.BaseApiView):
         if not old_settings:
             return 'Created settings'
 
-        changes_text = ', '.join(filter(None, [
+        changes_text = u', '.join(filter(None, [
             self.get_changes_text_for_settings(new_settings, old_settings),
             new_settings.changes_text
         ]))
@@ -1015,10 +1015,10 @@ class AccountAgency(api_common.BaseApiView):
         for key in changes:
             setting = settings_dict[key]
             change_strings.append(
-                '{} set to "{}"'.format(setting['name'], setting['value'])
+                u'{} set to "{}"'.format(setting['name'], setting['value'])
             )
 
-        return ', '.join(change_strings)
+        return u', '.join(change_strings)
 
     def get_changes_text_for_media_sources(self, added_sources, removed_sources):
         sources_text_list = []
