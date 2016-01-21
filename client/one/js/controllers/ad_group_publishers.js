@@ -483,7 +483,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         field: 'domain_link',
         unselectable: false,
         checked: true,
-        type: 'visible-link',
+        type: 'visibleLink',
         shown: true,
         totalRow: false,
         help: 'Link to a publisher where your content is being promoted.',

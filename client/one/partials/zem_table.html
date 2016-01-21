@@ -96,7 +96,7 @@
                                     <a ng-if="row[col.field] !== null" ng-href="{{ row[col.field] }}" target="_blank"><img ng-src="{{ config.static_url }}/one/img/link.svg" class="link-img"></a>
                                     <img ng-if="row[col.field] === null" ng-src="{{ config.static_url }}/one/img/link.svg" class="link-img link-img-disabled" zem-lazy-popover-text="{{row.supply_dash_disabled_message}}" zem-lazy-popover-placement="right" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade">
                                 </span>
-                                <span ng-switch-when="visible-link">
+                                <span ng-switch-when="visibleLink">
                                     <a ng-show="row[col.field] !== null && row[col.field] !== ''" ng-href="{{ row[col.field] }}" target="_blank"><img ng-src="{{ config.static_url }}/one/img/link.svg" class="link-img"></a>
                                 </span>
                                 <span ng-switch-when="linkText">
