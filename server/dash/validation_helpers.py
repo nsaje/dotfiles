@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django import forms
 
+import sys
 import utils.string_helper
 
 
@@ -20,7 +21,7 @@ def validate_daily_budget_cc(daily_budget_cc, source_type):
                                     .format(utils.string_helper.format_decimal(max_daily_budget, 0, 0)))
 
 
-def validate_cpc_cc(cpc_cc, source):
+def validate_source_cpc_cc(cpc_cc, source):
     if cpc_cc < 0:
         raise forms.ValidationError('This value must be positive')
 
@@ -40,6 +41,35 @@ def validate_cpc_cc(cpc_cc, source):
     if max_cpc is not None and cpc_cc > max_cpc:
         raise forms.ValidationError(
             'Maximum CPC is ${}.'.format(utils.string_helper.format_decimal(max_cpc, 2, 3)))
+
+
+def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source):
+    validate_source_cpc_cc(cpc_cc, ad_group_source.source)
+
+    ad_group_settings = ad_group_source.adgroup.get_current_settings()
+    max_cpc = ad_group_settings.cpc_cc
+    if max_cpc is not None and cpc_cc > max_cpc:
+        raise forms.ValidationError(
+                'Maximum ad group CPC is ${}.'.format(utils.string_helper.format_decimal(max_cpc, 2, 3)))
+
+
+def validate_ad_group_cpc_cc(cpc_cc, ad_group):
+    if not cpc_cc:
+        return
+
+    ad_group_sources = ad_group.adgroupsource_set.all()
+    min_possible_cpc_cc = None
+    for ad_group_source in ad_group_sources:
+        settings = ad_group_source.get_current_settings()
+        source_cpc = settings.cpc_cc if settings.cpc_cc \
+            else ad_group_source.source.source_type.min_cpc
+        min_possible_cpc_cc = max(min_possible_cpc_cc, source_cpc)
+
+    if min_possible_cpc_cc > cpc_cc:
+        raise forms.ValidationError(
+            'Maximum CPC can\'t be lower than ${}.'
+            .format(utils.string_helper.format_decimal(min_possible_cpc_cc, 2, 3))
+        )
 
 
 def has_too_many_decimal_places(num, decimal_places):

@@ -212,7 +212,7 @@ class DefaultSourceSettingsForm(forms.ModelForm):
         cpc_cc = self.cleaned_data.get('default_cpc_cc')
         if cpc_cc:
             source = self.instance.source
-            validation_helpers.validate_cpc_cc(cpc_cc, source)
+            validation_helpers.validate_source_cpc_cc(cpc_cc, source)
 
         return cpc_cc
 
@@ -220,7 +220,7 @@ class DefaultSourceSettingsForm(forms.ModelForm):
         cpc_cc = self.cleaned_data.get('mobile_cpc_cc')
         if cpc_cc:
             source = self.instance.source
-            validation_helpers.validate_cpc_cc(cpc_cc, source)
+            validation_helpers.validate_source_cpc_cc(cpc_cc, source)
 
         return cpc_cc
 
