@@ -629,14 +629,14 @@ class CampaignOverview(api_common.BaseApiView):
             'active': False
         }
 
-        basic_settings, daily_cap_cc =\
+        basic_settings, daily_cap =\
             self._basic_settings(campaign, campaign_settings)
 
         performance_settings, is_delivering = self._performance_settings(
             campaign,
             request.user,
             campaign_settings,
-            daily_cap_cc
+            daily_cap
         )
 
         response = {
@@ -657,7 +657,7 @@ class CampaignOverview(api_common.BaseApiView):
         end_date = None
         never_finishes = False
 
-        daily_cap_cc = infobox_helpers.calculate_daily_cap(campaign)
+        daily_cap_value = infobox_helpers.calculate_daily_cap(campaign)
 
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)
         for ad_group in ad_groups:
@@ -720,8 +720,8 @@ class CampaignOverview(api_common.BaseApiView):
         # take the num
         daily_cap = infobox_helpers.OverviewSetting(
             'Daily cap',
-            '${:.2f}'.format(daily_cap_cc)\
-                if daily_cap_cc > 0 else 'N/A'
+            '${:.2f}'.format(daily_cap_value)\
+                if daily_cap_value > 0 else 'N/A'
         )
         settings.append(daily_cap.as_dict())
 
@@ -736,7 +736,7 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(campaign_budget_setting.as_dict())
 
-        return settings, daily_cap_cc
+        return settings, daily_cap_value
 
     def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc):
         return infobox_helpers.goals_and_spend_settings(
