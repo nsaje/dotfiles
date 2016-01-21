@@ -76,7 +76,7 @@
             <div class="col-xs-2">
                 <div class="input-group">
                     <span class="input-group-addon">$</span>
-                    <input id="cpc-input" type="text" class="form-control" ng-model="settings.cpc" zem-currency-input>
+                    <input id="cpc-input" type="text" class="form-control" ng-model="settings.cpc" zem-currency-input empty-text="Unbound">
                 </div>
             </div>
             <label ng-repeat="error in errors.cpc" class="control-label error" for="cpc-input">{{ error }}</label>

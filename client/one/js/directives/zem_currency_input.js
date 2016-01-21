@@ -8,7 +8,8 @@ oneApp.directive('zemCurrencyInput', ['$filter', function ($filter) {
         scope: {
             prefix: '@?',
             fractionSize: '@?',
-            replaceTrailingZeros: '=?'
+            replaceTrailingZeros: '=?',
+            emptyText: '@?'
         },
         compile: function compile (tElem, tAttrs) {
             // add attributes if not present
@@ -93,10 +94,14 @@ oneApp.directive('zemCurrencyInput', ['$filter', function ($filter) {
 
                 function formatValue (value) {
                     if (!value || isNaN(value)) {
+                        if (scope.emptyText) {
+                            return scope.emptyText;
+                        }
                         value = 0;
                     }
 
-                    return $filter('decimalCurrency')(value, '', scope.fractionSize, scope.replaceTrailingZeros);
+                    value = $filter('decimalCurrency')(value, '', scope.fractionSize, scope.replaceTrailingZeros);
+                    return fromDecimal(value)
                 }
 
                 function getCommaCount (value, caretPos) {
@@ -126,6 +131,10 @@ oneApp.directive('zemCurrencyInput', ['$filter', function ($filter) {
                     setTimeout(function () {
                         var el = element[0];
 
+                        if (el.value === scope.emptyText){
+                            el.value = "";
+                        }
+
                         if (el.selectionStart === 0) {
                             setCaretPos(el, scope.prefix.length, el.selectionEnd);
                         }
@@ -141,7 +150,6 @@ oneApp.directive('zemCurrencyInput', ['$filter', function ($filter) {
                     element.val(scope.prefix + value);
                 });
 
-                controller.$formatters.push(fromDecimal);
                 controller.$formatters.push(formatValue);
 
                 controller.$parsers.push(toDecimal);
