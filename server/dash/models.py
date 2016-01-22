@@ -4,7 +4,6 @@ import binascii
 import datetime
 import urlparse
 import newrelic.agent
-import math
 
 from decimal import Decimal
 import pytz

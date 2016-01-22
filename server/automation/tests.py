@@ -260,11 +260,11 @@ class BCMDepletionTestCase(test.TestCase):
             self.campaigns
         )
         self.assertEqual(
-            set((1, 2, )),
+            set((1, 2)),
             set(c.pk for c in legacy_campaigns)
         )
         self.assertEqual(
-            set((3, 4, )),
+            set((3, 4)),
             set(c.pk for c in bcm_campaigns)
         )
 
