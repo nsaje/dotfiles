@@ -982,6 +982,24 @@ class CampaignGoal(ConstantBase):
     }
 
 
+class CampaignGoalKPI(ConstantBase):
+    TIME_ON_SITE = 1
+    MAX_BOUNCE_RATE = 2
+    PAGES_PER_SESSION = 3
+    CPA = 4
+    CPC = 5
+    CPM = 6
+
+    _VALUES = {
+        TIME_ON_SITE: 'time on site in seconds',
+        MAX_BOUNCE_RATE: 'max bounce rate %',
+        PAGES_PER_SESSION: 'pages per session',
+        CPA: '$CPA',
+        CPC: '$CPC',
+        CPM: '$CPM',
+    }
+
+
 class SourceAction(ConstantBase):
     CAN_UPDATE_STATE = 1
     CAN_UPDATE_CPC = 2

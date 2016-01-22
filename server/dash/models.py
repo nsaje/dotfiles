@@ -671,6 +671,32 @@ class CampaignSettings(SettingsBase):
         return value
 
 
+class CampaignGoal(models.Model):
+    campaign = models.ForeignKey(Campaign)
+    type = models.PositiveSmallIntegerField(
+        default=constants.CampaignGoalKPI.TIME_ON_SITE,
+        choices=constants.CampaignGoalKPI.get_choices(),
+    )
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
+                                   verbose_name='Created by',
+                                   on_delete=models.PROTECT, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('campaign', 'type')
+
+
+class CampaignGoalValue(models.Model):
+    campaign_goal = models.ForeignKey(CampaignGoal)
+    value = models.DecimalField(max_digits=15, decimal_places=5)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
+                                   verbose_name='Created by',
+                                   on_delete=models.PROTECT, null=True, blank=True)
+
+
 class SourceType(models.Model):
     type = models.CharField(
         max_length=127,
