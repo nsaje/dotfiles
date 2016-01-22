@@ -2,13 +2,12 @@
     <div class="infobox-setting-label">{{label}}</div>
     
     <div style="display:table; vertical-align:top;">
-        <div class="infobox-setting-icon" ng-if="isSet(icon)">
-            <span ng-if="icon === 'happy'">
-                <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/happy_face.svg"></img>
-            </span>
-            <span ng-if="icon === 'sad'">
-                <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/sad_face.svg"></img>
-            </span>
+        <div ng-show="isSet(icon) && icon === 'happy'" style="" class="infobox-setting-icon">
+            <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/happy_face.svg"></img>
+        </div>
+
+        <div ng-show="isSet(icon) && icon === 'sad'" style="" class="infobox-setting-icon">
+            <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/sad_face.svg"></img>
         </div>
         
         <div class="infobox-setting-value">{{value}}</div>
