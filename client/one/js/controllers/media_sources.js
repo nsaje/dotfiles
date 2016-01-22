@@ -17,6 +17,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.isIncompletePostclickMetrics = false;
     $scope.sources = [];
     $scope.exportOptions = [];
+    $scope.infoboxHeader = null;
+    $scope.infoboxSettings = null;
 
     var userSettings = null;
 
@@ -537,6 +539,21 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         );
     };
 
+    var getInfoboxData = function () {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+
+        api.campaignOverview.get($state.params.id).then(
+            function (data) {
+                console.log($state.params.id);
+                $scope.infoboxHeader = data.header;
+                $scope.infoboxSettings = data.settings;
+            },
+            function (data) {}
+        );
+    };
+
     var setChartOptions = function () {
         $scope.chartMetricOptions = $scope.chartMetrics;
 
@@ -643,6 +660,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         getDailyStats();
         getTableData();
+        getInfoboxData();
         pollSyncStatus();
     };
 
@@ -725,6 +743,12 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             api.campaignSync.get($state.params.id, null);
         }
     };
+
+    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
+        $timeout(function () {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
+    });
 
     init();
 }]);
