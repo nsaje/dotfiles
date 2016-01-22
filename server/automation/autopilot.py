@@ -181,11 +181,22 @@ def _threshold_increasing_cpc(current_cpc, new_cpc):
     return new_cpc
 
 
-def _check_source_constraints(proposed_cpc, source_min_cpc, source_max_cpc):
-    if proposed_cpc > source_max_cpc:
+def _check_source_constraints(proposed_cpc, source):
+    min_cpc = source.source_type.min_cpc
+    max_cpc = source.source_type.max_cpc
+    if proposed_cpc > max_cpc:
         return [automation.constants.CpcChangeComment.OVER_SOURCE_MAX_CPC]
-    if proposed_cpc < source_min_cpc:
+    if proposed_cpc < min_cpc:
         return [automation.constants.CpcChangeComment.UNDER_SOURCE_MIN_CPC]
+    return []
+
+
+def _check_ad_group_constraints(proposed_cpc, ad_group):
+    settings = ad_group.get_current_settings_or_none()
+    if settings and settings.cpc_cc:
+        max_cpc = settings.cpc_cc
+        if proposed_cpc > max_cpc:
+            return [automation.constants.CpcChangeComment.OVER_AD_GROUP_MAX_CPC]
     return []
 
 
@@ -290,9 +301,8 @@ def adjust_autopilot_media_sources_bid_cpcs():
                 yesterday_spend)
             cpc_change_comments += calculation_comments
             cpc_change_comments += _check_source_constraints(
-                proposed_cpc,
-                ad_group_source_settings.ad_group_source.source.source_type.min_cpc,
-                ad_group_source_settings.ad_group_source.source.source_type.max_cpc)
+                proposed_cpc, ad_group_source_settings.ad_group_source.source)
+            cpc_change_comments += _check_ad_group_constraints(proposed_cpc, adgroup)
             new_cpc = proposed_cpc if cpc_change_comments == [] else ad_group_source_settings.cpc_cc
             persist_cpc_change_to_admin_log(
                 ad_group_source_settings.ad_group_source,
