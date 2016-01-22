@@ -2233,7 +2233,7 @@ class BudgetLineItem(FootprintModel):
     def state(self, date=None):
         if date is None:
             date = dates_helper.local_today()
-        if self.get_available_budget(date) <= 0:
+        if self.get_available_amount(date) <= 0:
             return constants.BudgetLineItemState.DEPLETED
         if self.end_date and self.end_date < date:
             return constants.BudgetLineItemState.INACTIVE
