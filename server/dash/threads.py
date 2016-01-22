@@ -42,3 +42,16 @@ class UpdateUploadBatchThread(Thread):
         batch = models.UploadBatch.objects.get(pk=self.batch_id)
         batch.inserted_content_ads = self.inserted_content_ads
         batch.save()
+
+
+class TestableNonBlockingThread(Thread):
+    """
+    Thread that always blocks when testing. Useful for cases
+    when we want a non-blocking thread in production and a
+    blocking thread in tests.
+    """
+
+    def start(self):
+        super(TestableNonBlockingThread, self).start()
+        if settings.TESTING:
+            self.join()

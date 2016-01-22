@@ -23,6 +23,7 @@ from dash import consistency
 from dash import region_targeting_helper
 from dash import views
 from dash import publisher_helpers
+from dash import threads
 
 import utils.url_helper
 import utils.statsd_helper
@@ -1090,9 +1091,18 @@ def update_content_ads_state(content_ads, state, request):
         content_ad_sources = models.ContentAdSource.objects.filter(
             ~Q(state=state) | ~Q(source_state=state),
             content_ad_id__in=[ca.id for ca in content_ads],
-        ).select_related('content_ad__ad_group', 'content_ad__batch', 'source')
+        )
         content_ad_sources.update(state=state)
-        content_ad_sources = content_ad_sources.all()
+
+    content_ad_source_ids = [cas.id for cas in content_ad_sources]
+    t = threads.TestableNonBlockingThread(target=_create_update_content_ads_actions_async, args=(content_ad_source_ids, request))
+    t.start()
+
+
+def _create_update_content_ads_actions_async(content_ad_source_ids, request):
+    with transaction.atomic():
+        content_ad_sources = models.ContentAdSource.objects.filter(id__in=content_ad_source_ids).select_related(
+            'content_ad__ad_group', 'content_ad__batch', 'source')
 
         content_ad_sources_changes = []
         for content_ad_source in content_ad_sources:
