@@ -47,12 +47,12 @@ def get_available_budgets(campaigns):
     total_budgets = _get_total_legacy_budgets(legacy_campaigns)
     total_spends = _get_total_legacy_spends(legacy_campaigns)
     available_budgets.update({
-        k: float(total_budgets[k]) - float(total_spends[k])
+        k: decimal.Decimal(total_budgets[k]) - decimal.Decimal(total_spends[k])
         for k in total_budgets if k in total_spends
     })
 
     available_budgets.update({
-        campaign.id: float(_get_total_available_budget(campaign))
+        campaign.id: decimal.Decimal(_get_total_available_budget(campaign))
         for campaign in bcm_campaigns
     })
 
@@ -80,7 +80,7 @@ def _get_total_available_budget(campaign, date=None):
 def _get_total_campaign_spend(campaign, date=None):
     date = date or utils.dates_helper.local_today()
     return sum(
-        float(budget.get_spend_data(date, use_decimal=True)['total'])
+        decimal.Decimal(budget.get_spend_data(date, use_decimal=True)['total'])
         for budget in campaign.budgets.all()
         if budget.state() == dash.constants.BudgetLineItemState.ACTIVE
     )
