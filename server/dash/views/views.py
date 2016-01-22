@@ -404,7 +404,7 @@ class AdGroupOverview(api_common.BaseApiView):
         if flight_time_left_days is not None:
            days_left_description = "{} days left".format(flight_time_left_days)
         flight_time_setting = infobox_helpers.OverviewSetting(
-            'Flight time',
+            'Flight time:',
             flight_time,
             days_left_description
         )
@@ -419,7 +419,7 @@ class AdGroupOverview(api_common.BaseApiView):
             device_comment = 'Differ from campaign default'
 
         targeting_device = infobox_helpers.OverviewSetting(
-            'Targeting',
+            'Targeting:',
             'Device: {devices}'.format(
                 devices=', '.join(
                     [w[0].upper() + w[1:] for w in ad_group_settings.target_devices]
@@ -445,9 +445,10 @@ class AdGroupOverview(api_common.BaseApiView):
         settings.append(targeting_region.as_dict())
 
         daily_cap = infobox_helpers.OverviewSetting(
-            'Daily cap',
+            'Daily budget:',
             '${:.2f}'.format(ad_group_settings.daily_budget_cc)\
                 if ad_group_settings.daily_budget_cc is not None else '',
+            tooltip='Daily media budget'
         )
         settings.append(daily_cap.as_dict())
 
@@ -463,7 +464,7 @@ class AdGroupOverview(api_common.BaseApiView):
         settings.append(campaign_budget_setting.as_dict())
 
         tracking_code_settings = infobox_helpers.OverviewSetting(
-            'Tracking codes',
+            'Tracking codes:',
             'Yes' if ad_group_settings.tracking_code else 'No',
         )
         if ad_group_settings.tracking_code:
@@ -483,7 +484,7 @@ class AdGroupOverview(api_common.BaseApiView):
             post_click_tracking.append("N/A")
 
         post_click_tracking_setting = infobox_helpers.OverviewSetting(
-            'Post click tracking',
+            'Post click tracking:',
             ', '.join(post_click_tracking),
         )
         settings.append(post_click_tracking_setting.as_dict())
@@ -693,7 +694,7 @@ class CampaignOverview(api_common.BaseApiView):
         if flight_time_left_days is not None:
            flight_time_left_description = "{} days left".format(flight_time_left_days)
         flight_time_setting = infobox_helpers.OverviewSetting(
-            'Flight time',
+            'Flight time:',
             flight_time,
             flight_time_left_description
         )
@@ -719,9 +720,10 @@ class CampaignOverview(api_common.BaseApiView):
 
         # take the num
         daily_cap = infobox_helpers.OverviewSetting(
-            'Daily cap',
+            'Daily budget:',
             '${:.2f}'.format(daily_cap_value)\
-                if daily_cap_value > 0 else 'N/A'
+                if daily_cap_value > 0 else 'N/A',
+            tooltip="Daily media budget"
         )
         settings.append(daily_cap.as_dict())
 
