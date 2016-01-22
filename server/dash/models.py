@@ -672,7 +672,7 @@ class CampaignSettings(SettingsBase):
 
 
 class CampaignGoal(models.Model):
-    campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT)
+    campaign = models.ForeignKey(Campaign)
     type = models.PositiveSmallIntegerField(
         default=constants.CampaignGoalKPI.TIME_ON_SITE,
         choices=constants.CampaignGoalKPI.get_choices(),
@@ -688,7 +688,7 @@ class CampaignGoal(models.Model):
 
 
 class CampaignGoalValue(models.Model):
-    campaign_goal = models.ForeignKey(CampaignGoal, on_delete=models.PROTECT)
+    campaign_goal = models.ForeignKey(CampaignGoal)
     value = models.DecimalField(max_digits=15, decimal_places=5)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
