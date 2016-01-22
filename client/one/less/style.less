@@ -688,6 +688,7 @@ div[datepicker] {
     height: 100%;
     overflow: auto;
     display: visible;
+    background: #f6f6f6;
 }
 
 .infobox-container-short {
@@ -723,8 +724,17 @@ div[datepicker] {
 }
 
 .infobox-header {
-    display: inline-block;
+    display: block;
     width: 100%;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.infobox-header-settings-button {
+	display:inline-block;
+	margin-right: 5px;
+    position: absolute;
+    right: 0;
 }
 
 .infobox-title {
