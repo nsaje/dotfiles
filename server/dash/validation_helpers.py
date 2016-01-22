@@ -46,7 +46,7 @@ def validate_source_cpc_cc(cpc_cc, source):
 def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source):
     validate_source_cpc_cc(cpc_cc, ad_group_source.source)
 
-    ad_group_settings = ad_group_source.adgroup.get_current_settings()
+    ad_group_settings = ad_group_source.ad_group.get_current_settings()
     max_cpc = ad_group_settings.cpc_cc
     if max_cpc is not None and cpc_cc > max_cpc:
         raise forms.ValidationError(

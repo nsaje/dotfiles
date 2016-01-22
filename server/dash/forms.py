@@ -165,9 +165,7 @@ class AdGroupSourceSettingsCpcForm(forms.Form):
 
     def clean_cpc_cc(self):
         cpc_cc = self.cleaned_data.get('cpc_cc')
-        source = self.ad_group_source.source
-
-        validation_helpers.validate_ad_group_source_cpc_cc(cpc_cc, source)
+        validation_helpers.validate_ad_group_source_cpc_cc(cpc_cc, self.ad_group_source)
 
 
 class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
