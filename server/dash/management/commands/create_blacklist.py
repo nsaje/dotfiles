@@ -1,8 +1,6 @@
 import argparse
 import unicodecsv
 
-from sets import Set
-
 from django.core.management.base import CommandError
 from django.db import transaction
 
@@ -22,7 +20,7 @@ UNSUPPORTED_SOURCES = [SourceType.GRAVITY, SourceType.OUTBRAIN, SourceType.YAHOO
 
 
 class Command(ExceptionCommand):
-    """ Blacklists domains for a given ad group.
+    help = """ Blacklists domains for a given ad group.
 
     Takes an id of the ad group and a .csv file of the following format:
 
@@ -102,7 +100,7 @@ class Command(ExceptionCommand):
                    for ad_group_source in ad_group_sources
                    if ad_group_source.source.source_type.type not in UNSUPPORTED_SOURCES]
 
-        return Set(sources)
+        return set(sources)
 
     def combine(self, ad_group, domains, sources):
         combination = []
