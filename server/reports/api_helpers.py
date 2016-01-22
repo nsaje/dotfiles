@@ -7,7 +7,7 @@ TRAFFIC_FIELDS = [
 ]
 POSTCLICK_ACQUISITION_FIELDS = ['visits', 'click_discrepancy', 'pageviews']
 POSTCLICK_ENGAGEMENT_FIELDS = [
-    'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals'
+    'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals', 'new_visits'
 ]
 CONVERSION_GOAL_FIELDS = ['conversions']
 

@@ -126,6 +126,13 @@ def set_ad_group_source_settings(changes, ad_group_source, request, order=None, 
     return send_delayed_actionlogs([ad_group_source], send=send)
 
 
+def init_fetch_ad_group_source_settings(ad_group_source, request):
+    order = models.ActionLogOrder.objects.create(
+            order_type=constants.ActionLogOrderType.FETCH_STATUS
+    )
+    return _init_fetch_status(ad_group_source, order, request=request)
+
+
 def set_publisher_blacklist(key, level, state, publishers, request, source_type, ad_group_source, send=True):
     if not publishers:
         return []

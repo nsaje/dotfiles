@@ -14,7 +14,7 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
         ];
     };
     $scope.setActiveTab = function () {
-        $scope.tabs.forEach(function(tab) {
+        $scope.tabs.forEach(function (tab) {
             tab.active = $state.is(tab.route);
         });
     };
@@ -34,11 +34,11 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
             return;
         }
         $scope.setBreadcrumbAndTitle([{
-                name: $scope.account.name,
-                state: $scope.getDefaultAccountState(),
-                params: {id: $scope.account.id},
-                disabled: true
-            }],
+            name: $scope.account.name,
+            state: $scope.getDefaultAccountState(),
+            params: {id: $scope.account.id},
+            disabled: true
+        }],
             $scope.account.name
         );
     };

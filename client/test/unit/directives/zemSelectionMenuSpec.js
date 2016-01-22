@@ -1,6 +1,6 @@
 'use strict';
 
-describe('zemSelectionMenu', function() {
+describe('zemSelectionMenu', function () {
     var $scope, element;
 
     var template = '<zem-selection-menu config="config"/>';
@@ -8,18 +8,18 @@ describe('zemSelectionMenu', function() {
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(inject(function($compile, $rootScope) {
+    beforeEach(inject(function ($compile, $rootScope) {
         $scope = $rootScope.$new();
 
-        var selectAllCallback = function() {};
+        var selectAllCallback = function () {};
         var selectionOptions = [{
             type: 'link',
             name: 'This page',
-            callback: function() {}
+            callback: function () {}
         }, {
             type: 'link-list',
             name: 'Upload batch',
-            callback: function() {},
+            callback: function () {},
             items: [{id: 1, name: 'batch 1'}]
         }];
 
@@ -33,14 +33,14 @@ describe('zemSelectionMenu', function() {
         $scope.$digest();
     }));
 
-    it('selects all if checkbox is clicked', function() {
+    it('selects all if checkbox is clicked', function () {
         spyOn($scope.config, 'selectAllCallback');
 
         element.find('#zem-all-checkbox').trigger('click');
         expect($scope.config.selectAllCallback).toHaveBeenCalled();
     });
 
-    it('unselects checkbox and calls callback when option is clicked', function() {
+    it('unselects checkbox and calls callback when option is clicked', function () {
         var isolateScope = element.isolateScope();
 
         spyOn($scope.config.selectionOptions[0], 'callback');
@@ -52,7 +52,7 @@ describe('zemSelectionMenu', function() {
         expect($scope.config.selectionOptions[0].callback).toHaveBeenCalled();
     });
 
-    it('unselects checkbox and calls callback when option item is clicked', function() {
+    it('unselects checkbox and calls callback when option item is clicked', function () {
         var isolateScope = element.isolateScope();
 
         spyOn($scope.config.selectionOptions[1], 'callback');
@@ -64,7 +64,7 @@ describe('zemSelectionMenu', function() {
         expect($scope.config.selectionOptions[1].callback).toHaveBeenCalled();
     });
 
-    it('shows indeterminate checkbox when partialSelection', function() {
+    it('shows indeterminate checkbox when partialSelection', function () {
         var selectAllCheckbox = element.find('#zem-all-checkbox')[0];
 
         $scope.config.partialSelection = true;

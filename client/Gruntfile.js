@@ -1,8 +1,8 @@
 module.exports = function (grunt) {
     'use strict';
 
-    function getS3BuildPath() {
-        if(grunt.option('build-number') !== undefined) {
+    function getS3BuildPath () {
+        if (grunt.option('build-number') !== undefined) {
             return 'https://s3.amazonaws.com/z1-static/build-' + grunt.option('build-number');
         }
 
@@ -29,8 +29,8 @@ module.exports = function (grunt) {
             options: {
                 // Replace all 'use strict' statements in the code with a single
                 // one at the top
-                banner: "'use strict';\n",
-                process: function(src, filepath) {
+                banner: '\'use strict\';\n',
+                process: function (src, filepath) {
                     return '// Source: ' + filepath + '\n' +
                         src.replace(/(^|\n)[ \t]*('use strict'|"use strict");?\s*/g, '$1');
                 }
@@ -121,7 +121,7 @@ module.exports = function (grunt) {
             onedev: {
                 files: [
                         {src: 'dist/one/zemanta-one.js', dest: 'dist/one/zemanta-one.min.js'},
-                    ]
+                ]
             },
             one_lib: {
                 files: [
@@ -173,18 +173,18 @@ module.exports = function (grunt) {
         less: {
             options: {
                 cleancss: true,
-                rootpath: getS3BuildPath() !== "" ?
-                    getS3BuildPath() + "/client/one/" :
+                rootpath: getS3BuildPath() !== '' ?
+                    getS3BuildPath() + '/client/one/' :
                     undefined
             },
             one: {
                 files: {
-                    "dist/one/zemanta-one.min.css": "one/less/**/*.less"
+                    'dist/one/zemanta-one.min.css': 'one/less/**/*.less'
                 }
             },
             actionlog: {
                 files: {
-                    "dist/actionlog/zemanta-one.actionlog.min.css": "actionlog/less/**/*.less"
+                    'dist/actionlog/zemanta-one.actionlog.min.css': 'actionlog/less/**/*.less'
                 }
             }
         },
@@ -225,7 +225,7 @@ module.exports = function (grunt) {
                     hostname: '*',
                     debug: true,
                     livereload: true,
-                    protocol: 'http', 
+                    protocol: 'http',
                     middleware: function (connect, options) {
                         return [
                             function (req, res, next) {
@@ -258,7 +258,7 @@ module.exports = function (grunt) {
                         static_url: 'http://localhost:9999',
                         debug: true
                     }
-                } 
+                }
             }
         },
         karma: {
@@ -289,7 +289,7 @@ module.exports = function (grunt) {
         jslint: { // configure the task
             // lint your project's server code
             server: {
-                src: [ 
+                src: [
                     'dist/one/zemanta-one.templates.js',
                     'dist/build/config.js',
                     'one/js/constants.js',
@@ -335,7 +335,7 @@ module.exports = function (grunt) {
     grunt.registerTask('default', ['ngconstant:prod', 'build']);
     grunt.registerTask('test', ['default', 'karma:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
     grunt.registerTask('e2e', ['protractor:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
-    grunt.registerTask('e2e_debug', ['protractor:' + 'debug']);
+    grunt.registerTask('e2e_debug', ['protractor:debug']);
     grunt.registerTask('dev', ['ngconstant:dev', 'build', 'connect:dev', 'watch']);
     grunt.registerTask('lint', ['ngconstant:dev', 'jslint']);
 };

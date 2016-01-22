@@ -1,7 +1,7 @@
 /*globals angular,oneApp,constants,options,moment*/
-"use strict";
+'use strict';
 
-oneApp.factory("zemDemoAdGroupsService", ['zemDemoCacheService', function(zemDemoCacheService) {
+oneApp.factory('zemDemoAdGroupsService', ['zemDemoCacheService', function (zemDemoCacheService) {
     var adGroupData = {},
         campaignToAdGroupsMap = {},
         newAdGroups = []; // new ad groups, form: { adGroupId1: 1, adGroupId2: 1, ...}
@@ -12,11 +12,11 @@ oneApp.factory("zemDemoAdGroupsService", ['zemDemoCacheService', function(zemDem
         update: function (id, data) {
             adGroupData[id] = data;
         },
-        get: function(id) {
+        get: function (id) {
             return adGroupData[id];
         },
         newAdGroup: function (campaignId, adGroupId) {
-            if (! campaignToAdGroupsMap[campaignId]) {
+            if (!campaignToAdGroupsMap[campaignId]) {
                 campaignToAdGroupsMap[campaignId] = [];
             }
             campaignToAdGroupsMap[campaignId].push(adGroupId);

@@ -25,8 +25,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.adGroupHasFreshSettings = function () {
         return freshSettings.promise;
     };
-    
-    $scope.closeAlert = function(index) {
+
+    $scope.closeAlert = function (index) {
         $scope.alerts.splice(index, 1);
     };
 
@@ -109,7 +109,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                     $scope.settings = data.settings;
                     $scope.defaultSettings = data.defaultSettings;
                     $scope.actionIsWaiting = data.actionIsWaiting;
-                    
+
                     $scope.updateAccounts(data.settings.name, data.settings.state, status);
                     $scope.updateBreadcrumbAndTitle();
                     $scope.setAdGroupPaused(
@@ -121,7 +121,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.saved = true;
 
                 if ($scope.user.showOnboardingGuidance && goToContentAds) {
-                    $timeout(function() {
+                    $timeout(function () {
                         $state.go('main.adGroups.adsPlus', {id: $scope.settings.id});
                     }, 100);
                 }

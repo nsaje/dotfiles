@@ -298,7 +298,8 @@ class CreateCampaignManualActionsTest(TestCase):
 
     @patch('dash.consistency.SettingsStateConsistence')
     @patch('actionlog.api.set_ad_group_source_settings')
-    def test_set_ad_group_source_settings_fires(self, mock_set_ad_group_source_settings, mock_consistence):
+    @patch('actionlog.zwei_actions.send')
+    def test_set_ad_group_source_settings_fires(self, mock_send, mock_set_ad_group_source_settings, mock_consistence):
         ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
 
         changes = {
@@ -309,7 +310,8 @@ class CreateCampaignManualActionsTest(TestCase):
 
         self._fire_campaign_creation_callback(ad_group_source)
 
-        mock_set_ad_group_source_settings.assert_called_with(changes, ad_group_source, request=None, send=True)
+        mock_set_ad_group_source_settings.assert_called_with(changes, ad_group_source, request=None, send=False)
+        self.assertTrue(mock_send.called)
 
     def test_manual_update_after_campaign_creation_manual_dma_targeting(self):
         ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
