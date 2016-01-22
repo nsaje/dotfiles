@@ -444,25 +444,6 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(targeting_region.as_dict())
 
-        daily_cap = infobox_helpers.OverviewSetting(
-            'Daily budget:',
-            '${:.2f}'.format(ad_group_settings.daily_budget_cc)\
-                if ad_group_settings.daily_budget_cc is not None else '',
-            tooltip='Daily media budget'
-        )
-        settings.append(daily_cap.as_dict())
-
-        campaign_budget = budget.CampaignBudget(ad_group.campaign)
-        total = campaign_budget.get_total()
-        spend = campaign_budget.get_spend()
-
-        campaign_budget_setting = infobox_helpers.OverviewSetting(
-            'Campaign budget:',
-            '${:.2f}'.format(total),
-            '${:.2f}'.format(total - spend),
-        )
-        settings.append(campaign_budget_setting.as_dict())
-
         tracking_code_settings = infobox_helpers.OverviewSetting(
             'Tracking codes:',
             'Yes' if ad_group_settings.tracking_code else 'No',
@@ -488,6 +469,25 @@ class AdGroupOverview(api_common.BaseApiView):
             ', '.join(post_click_tracking),
         )
         settings.append(post_click_tracking_setting.as_dict())
+
+        daily_cap = infobox_helpers.OverviewSetting(
+            'Daily budget:',
+            '${:.2f}'.format(ad_group_settings.daily_budget_cc)\
+                if ad_group_settings.daily_budget_cc is not None else '',
+            tooltip='Daily media budget'
+        )
+        settings.append(daily_cap.as_dict())
+
+        campaign_budget = budget.CampaignBudget(ad_group.campaign)
+        total = campaign_budget.get_total()
+        spend = campaign_budget.get_spend()
+
+        campaign_budget_setting = infobox_helpers.OverviewSetting(
+            'Campaign budget:',
+            '${:.2f}'.format(total),
+            '${:.2f}'.format(total - spend),
+        )
+        settings.append(campaign_budget_setting.as_dict())
         return settings
 
     def _performance_settings(self, ad_group, user, ad_group_settings):
