@@ -270,8 +270,8 @@ class BCMDepletionTestCase(test.TestCase):
 
     @patch('datetime.datetime', DatetimeMock)
     def test_get_yesterdays_spends(self):
-        with patch('reports.api.get_yesterday_cost') as get_yesterday_coost:
-            get_yesterday_coost.return_value = {'test': 100.0}
+        with patch('reports.api.get_yesterday_cost') as get_yesterday_cost:
+            get_yesterday_cost.return_value = {'test': 100.0}
             self.assertEqual(
                 helpers.get_yesterdays_spends(self.campaigns),
                 {1: 100.0, 2: 100.0, 3: 121.0, 4: 77.0},
