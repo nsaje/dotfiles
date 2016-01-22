@@ -72,7 +72,7 @@ def _get_total_legacy_spends(campaigns):
 def _get_total_available_budget(campaign, date=None):
     date = date or utils.dates_helper.local_today()
     return sum(
-        budget.get_available_budget(date) for budget in campaign.budgets.all()
+        budget.get_available_amount(date) for budget in campaign.budgets.all()
         if budget.state() == dash.constants.BudgetLineItemState.ACTIVE
     )
 

@@ -2224,7 +2224,7 @@ class BudgetLineItem(FootprintModel):
             raise AssertionError('Cannot delete nonpending budgets')
         super(BudgetLineItem, self).delete()
 
-    def get_available_budget(self, date=None):
+    def get_available_amount(self, date=None):
         if date is None:
             date = dates_helper.local_today()
         total_spend = self.get_spend_data(date=date, use_decimal=True)['total']
