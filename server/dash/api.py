@@ -335,8 +335,9 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
     actions = []
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
 
-    manual_actions = _set_target_region_manual_property_if_needed(ad_group_source, ad_group_settings, request)
-    actions.extend(manual_actions)
+    _set_target_region_manual_property_if_needed(ad_group_source, ad_group_settings, request)
+    delayed_actions = actionlog.api.send_delayed_actionlogs([ad_group_source], send=False)
+    actions.append(delayed_actions)
 
     # update ad group source with initial settings (daily_budget, cpc)
     # or fetch external settings (initial settings are not set)
@@ -374,8 +375,6 @@ def _set_target_region_manual_property_if_needed(ad_group_source, ad_group_setti
                 'target_regions',
                 new_field_value
         )
-
-    return actionlog.api.send_delayed_actionlogs([ad_group_source], send=False)
 
 
 def insert_content_ad_callback(
