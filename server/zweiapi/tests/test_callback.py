@@ -124,7 +124,6 @@ class GetContentAdStatusTest(TestCase):
             'data': [{
                 'id': '987654321',
                 'state': dash.constants.ContentAdSourceState.INACTIVE,
-                'submission_status': dash.constants.ContentAdSubmissionStatus.APPROVED
             }]
         }
 
