@@ -618,7 +618,6 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         changed = False
 
-        # TODO: should it only be updated when it is None?
         if data.get('source_content_ad_id'):
             content_ad_source.source_content_ad_id = str(data['source_content_ad_id'])
             changed = True
@@ -631,7 +630,10 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             if _update_content_ad_source_submission_status(content_ad_source, data['submission_status']):
                 changed = True
 
-        if data['state'] != content_ad_source.content_ad.state:
+        if data['state'] != content_ad_source.content_ad.state and content_ad_source.submission_status in \
+           (constants.ContentAdSubmissionStatus.APPROVED, constants.ContentAdSubmissionStatus.PENDING):
+            # content ad state does not match
+            # skip sync for rejected content ads - their status doesn't match always
             logger.debug(
                 ('Found inconsistent content ad state on media source {} for content ad {}: source state={},'
                  'z1 state={}, source submission status={}, z1 submission status={}').format(
@@ -640,14 +642,9 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
                      data.get('submission_status'), content_ad_source.submission_status)
             )
             nr_inconsistent_internal_states += 1
-
-            # content ad state does not match
-            # skip sync for rejected content ads - their status doesn't match always
-            if (content_ad_source.submission_status in
-                (constants.ContentAdSubmissionStatus.APPROVED, constants.ContentAdSubmissionStatus.PENDING)):
-                unsynced_content_ad_sources_actions.append(
-                    (content_ad_source, {'state': content_ad_source.content_ad.state})
-                )
+            unsynced_content_ad_sources_actions.append(
+                (content_ad_source, {'state': content_ad_source.content_ad.state})
+            )
 
         if 'submission_errors' in data and data['submission_errors'] != content_ad_source.submission_errors:
             content_ad_source.submission_errors = data['submission_errors']
