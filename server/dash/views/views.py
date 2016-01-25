@@ -384,8 +384,8 @@ class AdGroupOverview(api_common.BaseApiView):
         response = {
             'header': header,
             'settings': self._basic_settings(ad_group, ad_group_settings) +
-                [infobox_helpers.OverviewSeparator().as_dict()] +
-                performance_settings,
+            [infobox_helpers.OverviewSeparator().as_dict()] +
+            performance_settings,
         }
 
         header['subtitle'] = 'Delivering' if is_delivering else 'Not Delivering'
@@ -402,7 +402,7 @@ class AdGroupOverview(api_common.BaseApiView):
             )
         days_left_description = None
         if flight_time_left_days is not None:
-           days_left_description = "{} days left".format(flight_time_left_days)
+            days_left_description = "{} days left".format(flight_time_left_days)
         flight_time_setting = infobox_helpers.OverviewSetting(
             'Flight time',
             flight_time,
@@ -446,8 +446,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         daily_cap = infobox_helpers.OverviewSetting(
             'Daily cap',
-            '${:.2f}'.format(ad_group_settings.daily_budget_cc)\
-                if ad_group_settings.daily_budget_cc is not None else '',
+            '${:.2f}'.format(ad_group_settings.daily_budget_cc)
+            if ad_group_settings.daily_budget_cc is not None else '',
         )
         settings.append(daily_cap.as_dict())
 
@@ -556,8 +556,8 @@ class CampaignAdGroups(api_common.BaseApiView):
         actions = []
         with transaction.atomic():
             ad_group = models.AdGroup(
-                    name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
-                    campaign=campaign
+                name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
+                campaign=campaign
             )
             ad_group.save(request)
             ad_group_settings = self._create_new_settings(ad_group, request)
@@ -596,7 +596,7 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         if added_sources:
             changes_text = 'Created settings and automatically created campaigns for {} sources ({})'.format(
-                    len(added_sources), ', '.join([source.name for source in added_sources]))
+                len(added_sources), ', '.join([source.name for source in added_sources]))
             ad_group_settings.changes_text = changes_text
             ad_group_settings.save(request)
 
@@ -642,8 +642,8 @@ class CampaignOverview(api_common.BaseApiView):
         response = {
             'header': header,
             'settings':  basic_settings +
-                [infobox_helpers.OverviewSeparator().as_dict()] +
-                performance_settings,
+            [infobox_helpers.OverviewSeparator().as_dict()] +
+            performance_settings,
         }
 
         header['subtitle'] = ''  # 'Delivering' if is_delivering else 'Not Delivering'
@@ -691,7 +691,7 @@ class CampaignOverview(api_common.BaseApiView):
             )
         flight_time_left_description = None
         if flight_time_left_days is not None:
-           flight_time_left_description = "{} days left".format(flight_time_left_days)
+            flight_time_left_description = "{} days left".format(flight_time_left_days)
         flight_time_setting = infobox_helpers.OverviewSetting(
             'Flight time',
             flight_time,
@@ -720,8 +720,7 @@ class CampaignOverview(api_common.BaseApiView):
         # take the num
         daily_cap = infobox_helpers.OverviewSetting(
             'Daily cap',
-            '${:.2f}'.format(daily_cap_value)\
-                if daily_cap_value > 0 else 'N/A'
+            '${:.2f}'.format(daily_cap_value) if daily_cap_value > 0 else 'N/A'
         )
         settings.append(daily_cap.as_dict())
 
@@ -852,7 +851,7 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.ValidationError('{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
 
         if not region_targeting_helper.can_target_existing_regions(source, ad_group.get_current_settings()):
-            raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'\
+            raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'
                                       .format(source.name))
 
         default_settings = helpers.get_source_default_settings(source)
@@ -1459,8 +1458,11 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         return publishers
 
     def _handle_adgroup_blacklist(self, request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected):
-        ignored_publishers = set( [(pub['domain'], ad_group.id, pub['source_id'], )
-            for pub in publishers_not_selected]
+        ignored_publishers = set(
+            [
+                (pub['domain'], ad_group.id, pub['source_id'], )
+                for pub in publishers_not_selected
+            ]
         )
 
         publisher_blacklist = self._create_adgroup_blacklist(
@@ -1536,13 +1538,13 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         for publisher in publishers:
             domain = publisher['domain']
             if domain not in source_cache:
-               source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
+                source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
             source = source_cache[domain]
 
             # don't generate publisher entries on adgroup and campaign level
             # for Outbrain since it only supports account level blacklisting
             if source.source_type.type == constants.SourceType.OUTBRAIN:
-               continue
+                continue
 
             # get all adgroups
             for ad_group in filtered_ad_groups:
@@ -1570,7 +1572,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         for publisher in publishers:
             domain = publisher['domain']
             if domain not in source_cache:
-               source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
+                source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
             source = source_cache[domain]
 
             if not source:
@@ -1648,7 +1650,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 'ad_group_id': adgroup_id,
                 'source': source_val,
                 'external_id': ext_id,
-            }\
+            }
             for (dom, adgroup_id, source_val, ext_id,) in adgroup_blacklist
         ]
 
@@ -1664,8 +1666,8 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             existing_blacklisted_publishers
         ))
 
-        ignored_publishers = set([(pub['domain'], pub['source_id'])
-            for pub in publishers_not_selected]
+        ignored_publishers = set(
+            [(pub['domain'], pub['source_id']) for pub in publishers_not_selected]
         )
 
         global_blacklist = self._create_global_blacklist(
@@ -1751,7 +1753,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             {
                 'domain': pub.name,
                 'source': pub.source
-            }\
+            }
             for pub in blacklist
         ]
         return ret
@@ -1779,9 +1781,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             )
 
         pub_strings = [u"{pub} on {slug}".format(
-                        pub=pub_bl['domain'],
-                        slug=pub_bl['source'].name
-                      ) for pub_bl in blacklist]
+                       pub=pub_bl['domain'],
+                       slug=pub_bl['source'].name
+                       ) for pub_bl in blacklist]
         pubs_string = u", ".join(pub_strings)
 
         changes_text = u'{action} the following publishers {level_description}: {pubs}.'.format(
