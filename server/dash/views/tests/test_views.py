@@ -1420,6 +1420,40 @@ class AdGroupSourcesTest(TestCase):
             {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False},
         ])
 
+    def test_available_sources(self):
+        response = self.client.get(
+                reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
+                follow=True
+        )
+        # Expected sources - 9 (Sharethrough)
+        # Allowed sources 1-9, Sources 1-7 already added, 8 has no default setting
+        response_dict = json.loads(response.content)
+        self.assertEqual(len(response_dict['data']['sources']), 1)
+        self.assertEqual(response_dict['data']['sources'][0]['id'], 9)
+
+    def test_available_sources_with_filter(self):
+        response = self.client.get(
+                reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
+                {'filtered_sources': '7,8,9'},
+                follow=True
+        )
+        # Expected sources - 9 (Sharethrough)
+        # Allowed sources 1-9, Sources 1-7 already added, 8 has no default setting
+        response_dict = json.loads(response.content)
+        self.assertEqual(len(response_dict['data']['sources']), 1)
+        self.assertEqual(response_dict['data']['sources'][0]['id'], 9)
+
+    def test_available_sources_with_filter_empty(self):
+        response = self.client.get(
+                reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
+                {'filtered_sources': '7,8'},
+                follow=True
+        )
+        # Expected sources - none
+        # Allowed sources 1-9, Sources 1-7 already added, 8 has no default setting
+        response_dict = json.loads(response.content)
+        self.assertEqual(len(response_dict['data']['sources']), 0)
+
     def test_put(self):
         response = self.client.put(
                 reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
