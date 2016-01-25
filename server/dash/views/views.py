@@ -118,6 +118,7 @@ def supply_dash_redirect(request):
 
 
 class User(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'user_get')
     def get(self, request, user_id):
         response = {}
@@ -153,6 +154,7 @@ def demo_mode(request):
 
 
 class NavigationDataView(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'navigation_data_view_get')
     def get(self, request):
         include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
@@ -288,6 +290,7 @@ class NavigationDataView(api_common.BaseApiView):
             data[account.id] = {
                 'id': account.id,
                 'name': account.name,
+                'usesBCM': account.uses_credits,
                 'campaigns': {}
             }
 
@@ -301,6 +304,7 @@ class NavigationDataView(api_common.BaseApiView):
 
 
 class AccountArchive(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'account_archive_post')
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -315,6 +319,7 @@ class AccountArchive(api_common.BaseApiView):
 
 
 class AccountRestore(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'account_restore_post')
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -331,6 +336,7 @@ class AccountRestore(api_common.BaseApiView):
 
 
 class CampaignArchive(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'campaign_archive_post')
     def post(self, request, campaign_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -346,6 +352,7 @@ class CampaignArchive(api_common.BaseApiView):
 
 
 class CampaignRestore(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'campaign_restore_post')
     def post(self, request, campaign_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -363,6 +370,7 @@ class CampaignRestore(api_common.BaseApiView):
 
 
 class AdGroupOverview(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_overview')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_see_infobox'):
@@ -384,8 +392,8 @@ class AdGroupOverview(api_common.BaseApiView):
         response = {
             'header': header,
             'settings': self._basic_settings(ad_group, ad_group_settings) +
-                [infobox_helpers.OverviewSeparator().as_dict()] +
-                performance_settings,
+            [infobox_helpers.OverviewSeparator().as_dict()] +
+            performance_settings,
         }
 
         header['subtitle'] = 'Delivering' if is_delivering else 'Not Delivering'
@@ -402,7 +410,7 @@ class AdGroupOverview(api_common.BaseApiView):
             )
         days_left_description = None
         if flight_time_left_days is not None:
-           days_left_description = "{} days left".format(flight_time_left_days)
+            days_left_description = "{} days left".format(flight_time_left_days)
         flight_time_setting = infobox_helpers.OverviewSetting(
             'Flight time:',
             flight_time,
@@ -443,6 +451,24 @@ class AdGroupOverview(api_common.BaseApiView):
             region_comment,
         )
         settings.append(targeting_region.as_dict())
+
+        daily_cap = infobox_helpers.OverviewSetting(
+            'Daily cap',
+            '${:.2f}'.format(ad_group_settings.daily_budget_cc)
+            if ad_group_settings.daily_budget_cc is not None else '',
+        )
+        settings.append(daily_cap.as_dict())
+
+        campaign_budget = budget.CampaignBudget(ad_group.campaign)
+        total = campaign_budget.get_total()
+        spend = campaign_budget.get_spend()
+
+        campaign_budget_setting = infobox_helpers.OverviewSetting(
+            'Campaign budget:',
+            '${:.2f}'.format(total),
+            '${:.2f}'.format(total - spend),
+        )
+        settings.append(campaign_budget_setting.as_dict())
 
         tracking_code_settings = infobox_helpers.OverviewSetting(
             'Tracking codes:',
@@ -497,6 +523,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
 
 class AdGroupArchive(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_archive_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -512,6 +539,7 @@ class AdGroupArchive(api_common.BaseApiView):
 
 
 class AdGroupRestore(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_restore_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -532,6 +560,7 @@ class AdGroupRestore(api_common.BaseApiView):
 
 
 class CampaignAdGroups(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_group_put')
     def put(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_ad_groups_view'):
@@ -557,8 +586,8 @@ class CampaignAdGroups(api_common.BaseApiView):
         actions = []
         with transaction.atomic():
             ad_group = models.AdGroup(
-                    name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
-                    campaign=campaign
+                name=create_name(models.AdGroup.objects.filter(campaign=campaign), 'New ad group'),
+                campaign=campaign
             )
             ad_group.save(request)
             ad_group_settings = self._create_new_settings(ad_group, request)
@@ -597,7 +626,7 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         if added_sources:
             changes_text = 'Created settings and automatically created campaigns for {} sources ({})'.format(
-                    len(added_sources), ', '.join([source.name for source in added_sources]))
+                len(added_sources), ', '.join([source.name for source in added_sources]))
             ad_group_settings.changes_text = changes_text
             ad_group_settings.save(request)
 
@@ -617,6 +646,7 @@ class CampaignAdGroups(api_common.BaseApiView):
 
 
 class CampaignOverview(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'campaign_overview')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.can_see_infobox'):
@@ -643,8 +673,8 @@ class CampaignOverview(api_common.BaseApiView):
         response = {
             'header': header,
             'settings':  basic_settings +
-                [infobox_helpers.OverviewSeparator().as_dict()] +
-                performance_settings,
+            [infobox_helpers.OverviewSeparator().as_dict()] +
+            performance_settings,
         }
 
         header['subtitle'] = ''  # 'Delivering' if is_delivering else 'Not Delivering'
@@ -692,7 +722,7 @@ class CampaignOverview(api_common.BaseApiView):
             )
         flight_time_left_description = None
         if flight_time_left_days is not None:
-           flight_time_left_description = "{} days left".format(flight_time_left_days)
+            flight_time_left_description = "{} days left".format(flight_time_left_days)
         flight_time_setting = infobox_helpers.OverviewSetting(
             'Flight time:',
             flight_time,
@@ -756,6 +786,7 @@ class CampaignOverview(api_common.BaseApiView):
 
 
 class AdGroupState(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_state_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -773,6 +804,7 @@ class AdGroupState(api_common.BaseApiView):
 
 
 class AvailableSources(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'available_sources_get')
     def get(self, request):
         show_archived = request.GET.get('show_archived') == 'true' and\
@@ -801,6 +833,7 @@ class AvailableSources(api_common.BaseApiView):
 
 
 class AdGroupSources(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
@@ -829,7 +862,7 @@ class AdGroupSources(api_common.BaseApiView):
                 'id': source_settings.source.id,
                 'name': source_settings.source.name,
                 'can_target_existing_regions': region_targeting_helper.can_target_existing_regions(
-                        source_settings.source, ad_group_settings)
+                    source_settings.source, ad_group_settings)
             })
 
         sources_waiting = set([ad_group_source.source.name for ad_group_source
@@ -851,10 +884,11 @@ class AdGroupSources(api_common.BaseApiView):
         source = models.Source.objects.get(id=source_id)
 
         if models.AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
-            raise exc.ValidationError('{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
+            raise exc.ValidationError(
+                '{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
 
         if not region_targeting_helper.can_target_existing_regions(source, ad_group.get_current_settings()):
-            raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'\
+            raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'
                                       .format(source.name))
 
         default_settings = helpers.get_source_default_settings(source)
@@ -883,6 +917,7 @@ class AdGroupSources(api_common.BaseApiView):
 
 
 class Account(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'account_put')
     def put(self, request):
         if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
@@ -902,6 +937,7 @@ class Account(api_common.BaseApiView):
 
 
 class AccountCampaigns(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'account_campaigns_put')
     def put(self, request, account_id):
         if not request.user.has_perm('zemauth.account_campaigns_view'):
@@ -936,6 +972,7 @@ class AccountCampaigns(api_common.BaseApiView):
 
 
 class AdGroupSourceSettings(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_source_settings_put')
     def put(self, request, ad_group_id, source_id):
         if not request.user.has_perm('zemauth.set_ad_group_source_settings'):
@@ -1010,6 +1047,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
 
 class AdGroupAdsPlusUpload(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.upload_content_ads'):
@@ -1083,6 +1121,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
 
 
 class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
     def get(self, request, ad_group_id, batch_id):
         if not request.user.has_perm('zemauth.upload_content_ads'):
@@ -1105,6 +1144,7 @@ class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
 
 
 class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
     def get(self, request, ad_group_id, batch_id):
         if not request.user.has_perm('zemauth.upload_content_ads'):
@@ -1157,6 +1197,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
 
 
 class AdGroupContentAdArchive(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_archive_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -1207,6 +1248,7 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
 
 
 class AdGroupContentAdRestore(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_restore_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -1241,6 +1283,7 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
 
 
 class AdGroupContentAdState(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.set_content_ad_status'):
@@ -1289,6 +1332,7 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
 
 
 class AdGroupContentAdCSV(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.get_content_ad_csv'):
@@ -1310,7 +1354,8 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
             request.user.has_perm('zemauth.view_archived_entities')
 
         content_ad_ids_selected = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_selected')
-        content_ad_ids_not_selected = helpers.parse_get_request_content_ad_ids(request.GET, 'content_ad_ids_not_selected')
+        content_ad_ids_not_selected = helpers.parse_get_request_content_ad_ids(
+            request.GET, 'content_ad_ids_not_selected')
 
         content_ads = helpers.get_selected_content_ads(
             ad_group_id,
@@ -1461,9 +1506,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         return publishers
 
     def _handle_adgroup_blacklist(self, request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected):
-        ignored_publishers = set( [(pub['domain'], ad_group.id, pub['source_id'], )
-            for pub in publishers_not_selected]
-        )
+        ignored_publishers = set([(pub['domain'], ad_group.id, pub['source_id'], )
+                                  for pub in publishers_not_selected]
+                                 )
 
         publisher_blacklist = self._create_adgroup_blacklist(
             ad_group,
@@ -1476,7 +1521,8 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         # when blacklisting at campaign or account level we also need
         # to generate blacklist entries on external sources
         # for all adgroups in campaign or account
-        related_publisher_blacklist = self._create_campaign_and_account_blacklist(ad_group, level, publishers + publishers_selected)
+        related_publisher_blacklist = self._create_campaign_and_account_blacklist(
+            ad_group, level, publishers + publishers_selected)
 
         if len(publisher_blacklist) > 0:
             actionlogs_to_send = []
@@ -1538,13 +1584,13 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         for publisher in publishers:
             domain = publisher['domain']
             if domain not in source_cache:
-               source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
+                source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
             source = source_cache[domain]
 
             # don't generate publisher entries on adgroup and campaign level
             # for Outbrain since it only supports account level blacklisting
             if source.source_type.type == constants.SourceType.OUTBRAIN:
-               continue
+                continue
 
             # get all adgroups
             for ad_group in filtered_ad_groups:
@@ -1572,7 +1618,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         for publisher in publishers:
             domain = publisher['domain']
             if domain not in source_cache:
-               source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
+                source_cache[domain] = models.Source.objects.filter(id=publisher['source_id']).first()
             source = source_cache[domain]
 
             if not source:
@@ -1613,7 +1659,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 name=publisher['domain'],
                 source=source).filter(
                     publisher_helpers.create_queryset_by_key(ad_group, level)
-                ).first()
+            ).first()
 
             # don't create pending pub. blacklist entry
             if existing_entry is not None and existing_entry.status == state:
@@ -1650,7 +1696,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
                 'ad_group_id': adgroup_id,
                 'source': source_val,
                 'external_id': ext_id,
-            }\
+            }
             for (dom, adgroup_id, source_val, ext_id,) in adgroup_blacklist
         ]
 
@@ -1667,8 +1713,8 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         ))
 
         ignored_publishers = set([(pub['domain'], pub['source_id'])
-            for pub in publishers_not_selected]
-        )
+                                  for pub in publishers_not_selected]
+                                 )
 
         global_blacklist = self._create_global_blacklist(
             ad_group,
@@ -1753,7 +1799,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             {
                 'domain': pub.name,
                 'source': pub.source
-            }\
+            }
             for pub in blacklist
         ]
         return ret
@@ -1781,9 +1827,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             )
 
         pub_strings = [u"{pub} on {slug}".format(
-                        pub=pub_bl['domain'],
-                        slug=pub_bl['source'].name
-                      ) for pub_bl in blacklist]
+            pub=pub_bl['domain'],
+            slug=pub_bl['source'].name
+        ) for pub_bl in blacklist]
         pubs_string = u", ".join(pub_strings)
 
         changes_text = u'{action} the following publishers {level_description}: {pubs}.'.format(
