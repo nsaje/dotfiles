@@ -35,7 +35,6 @@ def ad_group_specified_errors(csvreport):
     if not is_ad_group_specified:
         errors.extend(ad_group_not_specified)
     return errors
-    from pudb import set_trace; set_trace()
 
 
 def media_source_specified_errors(csvreport):
