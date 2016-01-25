@@ -638,18 +638,14 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             nr_inconsistent_internal_states += 1
 
         if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
-            is_unsynced = all([
-                data['submission_status'] == constants.ContentAdSubmissionStatus.APPROVED,
-                content_ad_source.content_ad.state != data['state'],
-            ])
-            if is_unsynced:
-                # Content ad state was not synced with media source
-                unsynced_content_ad_sources_actions.append(
-                    (content_ad_source, {'state': content_ad_source.content_ad.state})
-                )
-
             if _update_content_ad_source_submission_status(content_ad_source, data['submission_status']):
                 changed = True
+
+        if content_ad_source.content_ad.state != data['state']:
+            # content ad state does not match
+            unsynced_content_ad_sources_actions.append(
+                (content_ad_source, {'state': content_ad_source.content_ad.state})
+            )
 
         if 'submission_errors' in data and data['submission_errors'] != content_ad_source.submission_errors:
             content_ad_source.submission_errors = data['submission_errors']
