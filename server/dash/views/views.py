@@ -383,7 +383,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'settings': self._basic_settings(ad_group, ad_group_settings) +
+            'settings': self._basic_settings(request.user, ad_group, ad_group_settings) +
             [infobox_helpers.OverviewSeparator().as_dict()] +
             performance_settings,
         }
@@ -392,7 +392,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, ad_group, ad_group_settings):
+    def _basic_settings(self, user, ad_group, ad_group_settings):
         settings = []
 
         flight_time, flight_time_left_days =\
@@ -452,14 +452,13 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(daily_cap_setting.as_dict())
 
-        campaign_budget = budget.CampaignBudget(ad_group.campaign)
-        total = campaign_budget.get_total()
-        spend = campaign_budget.get_spend()
+        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(ad_group.campaign)
+        total_media_spend = infobox_helpers.get_media_campaign_spend(user, ad_group.campaign)
 
         campaign_budget_setting = infobox_helpers.OverviewSetting(
             'Campaign budget:',
-            '${:.2f}'.format(total),
-            '${:.2f}'.format(total - spend),
+            '${:.2f}'.format(total_media_spend),
+            '${:.2f}'.format(total_media_available),
         )
         settings.append(campaign_budget_setting.as_dict())
 
@@ -631,7 +630,7 @@ class CampaignOverview(api_common.BaseApiView):
         }
 
         basic_settings, daily_cap =\
-            self._basic_settings(campaign, campaign_settings)
+            self._basic_settings(request.user, campaign, campaign_settings)
 
         performance_settings, is_delivering = self._performance_settings(
             campaign,
@@ -651,7 +650,7 @@ class CampaignOverview(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, campaign, campaign_settings):
+    def _basic_settings(self, user, campaign, campaign_settings):
         settings = []
 
         start_date = None
@@ -725,14 +724,13 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(daily_cap.as_dict())
 
-        campaign_budget = budget.CampaignBudget(campaign)
-        total = campaign_budget.get_total()
-        spend = campaign_budget.get_spend()
+        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(ad_group.campaign)
+        total_media_spend = infobox_helpers.get_media_campaign_spend(user, ad_group.campaign)
 
         campaign_budget_setting = infobox_helpers.OverviewSetting(
             'Campaign budget:',
-            '${:.2f}'.format(total),
-            '${:.2f} remaining'.format(total - spend),
+            '${:.2f}'.format(total_media_spend),
+            '${:.2f}'.format(total_media_available),
         )
         settings.append(campaign_budget_setting.as_dict())
 
