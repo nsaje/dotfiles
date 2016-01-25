@@ -133,7 +133,7 @@ def init_update_content_ad_action(content_ad_source, changes, request, send=True
     return action
 
 
-def init_bulk_update_content_ad_actions(content_ad_sources_changes, request, check_action_exists=False):
+def init_bulk_update_content_ad_actions(content_ad_sources_changes, request, skip_if_action_exists=False):
     ad_group_sources = {
         (ags.ad_group_id, ags.source_id): ags for ags in dash.models.AdGroupSource.objects.filter(
             ad_group_id__in=[cas.content_ad.ad_group_id for cas, _ in content_ad_sources_changes],
@@ -145,7 +145,7 @@ def init_bulk_update_content_ad_actions(content_ad_sources_changes, request, che
     for content_ad_source, changes in content_ad_sources_changes:
         ad_group_source = ad_group_sources.get((content_ad_source.content_ad.ad_group_id, content_ad_source.source_id))
 
-        if check_action_exists and _waiting_action_exists(ad_group_source, content_ad_source):
+        if skip_if_action_exists and _waiting_action_exists(ad_group_source, content_ad_source):
             continue
 
         actions.append(_create_update_content_ad_action(content_ad_source, ad_group_source, changes, request))
