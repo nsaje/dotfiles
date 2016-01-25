@@ -163,6 +163,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_view_effective_costs', 'Can view effective costs'),
             ('can_view_actual_costs', 'Can view actual costs'),
             ('can_modify_outbrain_account_publisher_blacklist_status', 'Can modify Outbrain account publisher blacklist status'),
+            ('can_set_adgroup_to_auto_pilot', 'Can set Ad Group to Auto-Pilot (budget and CPC automation)'),
         )
 
     def get_full_name(self):
