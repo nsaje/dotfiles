@@ -771,6 +771,7 @@ class AccountAgency(api_common.BaseApiView):
                         form
                     )
 
+            # Form is additionally validated in self.set_allowed_sources method
             if not form.is_valid():
                 data = self.get_validation_error_data(request, account)
                 raise exc.ValidationError(errors=dict(form.errors), data=data)
