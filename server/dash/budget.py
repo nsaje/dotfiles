@@ -82,9 +82,9 @@ class CampaignBudget(object):
         cbs_latest = self.campaign.get_current_budget_settings()
         return float(cbs_latest.total) if cbs_latest is not None else 0
 
-    def get_spend(self):
+    def get_spend(self, until_date=None):
         start_date = datetime.date(datetime.MINYEAR, 1, 1)
-        end_date = datetime.datetime.utcnow().date()
+        end_date = until_date or datetime.datetime.utcnow().date()
         r = reports.api.query(start_date=start_date, end_date=end_date, campaign=self.campaign)
         return r.get('cost') or 0
 

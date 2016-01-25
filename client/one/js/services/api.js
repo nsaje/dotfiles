@@ -561,6 +561,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.settings = data.data.settings.map(convertFromApi);
                         deferred.resolve(data.data);
                     }
                 }).
@@ -570,6 +571,12 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             return deferred.promise;
         };
+
+        function convertFromApi (setting) {
+            setting.detailsLabel = setting.details_label;
+            setting.detailsContent = setting.details_content;
+            return setting;
+        }
     }
 
     function AdGroupSync () {
@@ -1101,6 +1108,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.settings = data.data.settings.map(convertFromApi);
                         deferred.resolve(data.data);
                     }
                 }).
@@ -1110,6 +1118,12 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             return deferred.promise;
         };
+
+        function convertFromApi (setting) {
+            setting.detailsLabel = setting.details_label;
+            setting.detailsContent = setting.details_content;
+            return setting;
+        }
     }
 
     function AccountArchive () {

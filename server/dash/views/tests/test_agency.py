@@ -1968,7 +1968,7 @@ class AccountAgencyTest(TestCase):
         expected_changes_strings = [
             'Created settings',
             'Service Fee set to "10%"',
-            'Default Sales Representative set to "superuser@test.com", Service Fee set to "20%"',
+            'Sales Representative set to "superuser@test.com", Service Fee set to "20%"',
             '',
             'some text',
             'Service Fee set to "10%", some text'

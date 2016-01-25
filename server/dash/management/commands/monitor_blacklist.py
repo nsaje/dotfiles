@@ -51,6 +51,7 @@ class Command(ExceptionCommand):
 
     def monitor_adgroup_level(self, blacklisted_before):
         blacklisted_set = self.generate_adgroup_blacklist_hash(blacklisted_before)
+        logger.info('Checking for statistics for blacklisted publishers...')
 
         # since we usually only have statistics for yesterday
         # we need to take into account publisher statistics the day before
@@ -63,6 +64,8 @@ class Command(ExceptionCommand):
         # hashmap data
         redshift_stats = {}
         for row in data:
+            if row['domain'] == 'unknown':
+                continue
             redshift_stats[(
                 row['domain'],
                 row['ad_group'],
@@ -84,10 +87,12 @@ class Command(ExceptionCommand):
 
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.impressions', aggregated_impressions)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.clicks', aggregated_clicks)
+        logger.info('Checking for statistics for blacklisted publishers... Done.')
 
     def monitor_global_level(self, blacklisted_before):
         blacklisted_set = self.generate_global_blacklist_hash(blacklisted_before)
 
+        logger.info('Checking for statistics for globally blacklisted publishers...')
         data = reports.api_publishers.query(
             datetime.datetime.utcnow().date() - datetime.timedelta(days=1),
             datetime.datetime.utcnow().date(),
@@ -98,6 +103,8 @@ class Command(ExceptionCommand):
         redshift_stats = {}
         for row in data:
             if row['exchange'].lower() == 'outbrain':
+                continue
+            if row['domain'] == 'unknown':
                 continue
             existing_impressions, existing_clicks = redshift_stats.get(
                 row['domain'],
@@ -124,17 +131,20 @@ class Command(ExceptionCommand):
             aggregated_clicks += redshift_stats[key][1]
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_impressions', aggregated_impressions)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_clicks', aggregated_clicks)
+        logger.info('Checking for statistics for globally blacklisted publishers... Done.')
 
     def generate_adgroup_blacklist_hash(self, blacklisted_before):
-        adgroup_blacklist = set(
-            [(pub.name, pub.ad_group.id, dash.publisher_helpers.publisher_exchange(pub.source),)
-             for pub in dash.models.PublisherBlacklist.objects.filter(
-                 ad_group__isnull=False,
-                 status=dash.constants.PublisherStatus.BLACKLISTED,
-                 created_dt__lte=blacklisted_before,
-             ).iterator()]
-        )
+        logger.info('Fetching adgroup publisher blacklist entries...')
+        adgroup_blacklist = set([(pub[0], pub[1], pub[2].replace('b1_', ''),)
+            for pub in dash.models.PublisherBlacklist.objects.filter(
+                ad_group__isnull=False,
+                status=dash.constants.PublisherStatus.BLACKLISTED,
+                created_dt__lte=blacklisted_before,
+            ).values_list('name', 'ad_group__id', 'source__tracking_slug')
+        ])
+        logger.info('Fetching adgroup publisher blacklist entries... Done.')
 
+        logger.info('Fetching campaign and account publisher blacklist entries...')
         campaign_account_blacklist = []
         for pub in dash.models.PublisherBlacklist.objects.filter(
              campaign__isnull=False,
@@ -167,6 +177,7 @@ class Command(ExceptionCommand):
                         adgroup_id,
                         dash.publisher_helpers.publisher_exchange(pub.source),
                     ))
+        logger.info('Fetching campaign and account publisher blacklist entries... Done.')
         return adgroup_blacklist.union(set(campaign_account_blacklist))
 
     def generate_global_blacklist_hash(self, blacklisted_before):

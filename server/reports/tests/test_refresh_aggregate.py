@@ -638,8 +638,8 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adiant.com',
                 'clicks': 10,
                 'impressions': 1000,
-                'cost_micro': 20000000,
-                'data_cost_micro': 1000000
+                'cost_nano': 20000000000,
+                'data_cost_nano': 1000000000
             },
             {
                 'date': datetime.date(2016, 1, 1),
@@ -648,8 +648,8 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adsnative.com',
                 'clicks': 5,
                 'impressions': 800,
-                'cost_micro': 800000,
-                'data_cost_micro': 200000
+                'cost_nano': 800000000,
+                'data_cost_nano': 200000000
             }
         ]
 
@@ -662,8 +662,8 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adiant.com',
                 'clicks': 10,
                 'impressions': 1000,
-                'cost_micro': 20000000,
-                'data_cost_micro': 1000000,
+                'cost_nano': 20000000000,
+                'data_cost_nano': 1000000000,
                 'effective_cost_nano': 10000000000,
                 'effective_data_cost_nano': 500000000,
                 'license_fee_nano': 1050000000,
@@ -675,8 +675,8 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adsnative.com',
                 'clicks': 5,
                 'impressions': 800,
-                'cost_micro': 800000,
-                'data_cost_micro': 200000,
+                'cost_nano': 800000000,
+                'data_cost_nano': 200000000,
                 'effective_cost_nano': 400000000,
                 'effective_data_cost_nano': 100000000,
                 'license_fee_nano': 50000000,
@@ -686,7 +686,7 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
         self.assertEqual(publisher_data, expected)
 
     @patch('reports.daily_statements.get_effective_spend_pcts')
-    def test_augment_pub_data_with_budgets_no_data_cost_micro(self, mock_effective_spend_pcts):
+    def test_augment_pub_data_with_budgets_no_data_cost_nano(self, mock_effective_spend_pcts):
         mock_effective_spend_pcts.return_value = (0.5, 0.1)
         publisher_data = [
             {
@@ -696,7 +696,7 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adiant.com',
                 'clicks': 10,
                 'impressions': 1000,
-                'cost_micro': 20000000,
+                'cost_nano': 20000000000,
             },
             {
                 'date': datetime.date(2016, 1, 1),
@@ -705,7 +705,7 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adsnative.com',
                 'clicks': 5,
                 'impressions': 800,
-                'cost_micro': 800000,
+                'cost_nano': 800000000,
             }
         ]
 
@@ -718,7 +718,7 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adiant.com',
                 'clicks': 10,
                 'impressions': 1000,
-                'cost_micro': 20000000,
+                'cost_nano': 20000000000,
                 'effective_cost_nano': 10000000000,
                 'license_fee_nano': 1000000000,
             },
@@ -729,7 +729,7 @@ class AugmentPubDataWithBudgetsTestCase(test.TestCase):
                 'domain': 'adsnative.com',
                 'clicks': 5,
                 'impressions': 800,
-                'cost_micro': 800000,
+                'cost_nano': 800000000,
                 'effective_cost_nano': 400000000,
                 'license_fee_nano': 40000000,
             }
@@ -774,20 +774,26 @@ class RefreshB1PublisherDataTestCase(test.TestCase):
                 'adgroup_id': 1,
                 'exchange': 'adiant',
                 'domain': 'adiant.com',
+                'external_id': '',
                 'clicks': 10,
                 'impressions': 1000,
                 'cost_micro': 20000000,
-                'data_cost_micro': 1000000
+                'cost_nano': 20000000,
+                'data_cost_micro': 1000000,
+                'data_cost_nano': 1000000,
             },
             {
                 'date': datetime.date(2016, 1, 1),
                 'adgroup_id': 1,
                 'exchange': 'adsnative',
                 'domain': 'adsnative.com',
+                'external_id': '',
                 'clicks': 5,
                 'impressions': 800,
                 'cost_micro': 800000,
-                'data_cost_micro': 200000
+                'cost_nano': 800000,
+                'data_cost_micro': 200000,
+                'data_cost_nano': 200000
             }
         ]
 
@@ -888,32 +894,39 @@ class RefreshOBPubDataTestCase(test.TestCase):
             (datetime.date(2016, 1, 1), 124): 'ob_publishers_raw/2016/01/01/124/12346.json',
         }
         raw_data = refresh._get_raw_ob_pub_data(s3_keys)
-        expected = [{
-            'name': 'CNN money',
-            'exchange': 'outbrain',
-            'cost_micro': 750000000000,
-            'date': datetime.date(2016, 1, 1),
-            'ob_id': 'ABCD1234',
-            'clicks': 1500,
-            'adgroup_id': 123
-        }, {
-            'name': 'CNN weather',
-            'exchange': 'outbrain',
-            'cost_micro': 250000000000,
-            'date': datetime.date(2016, 1, 1),
-            'ob_id': '4321DCBA',
-            'clicks': 500,
-            'adgroup_id': 123
-        }, {
-            'name':
-            'CNN weather',
-            'exchange': 'outbrain',
-            'cost_micro': 2000000000000,
-            'date': datetime.date(2016, 1, 1),
-            'ob_id': '4321DCBA',
-            'clicks': 2000,
-            'adgroup_id': 124
-        }]
+        expected = [
+            {
+                'domain': 'CNN money',
+                'exchange': 'outbrain',
+                'cost_micro': 750000000000,
+                'cost_nano': 750000000000,
+                'date': datetime.date(2016, 1, 1),
+                'external_id': 'ABCD1234',
+                'clicks': 1500,
+                'adgroup_id': 123
+            },
+            {
+                'domain': 'CNN weather',
+                'exchange': 'outbrain',
+                'cost_micro': 250000000000,
+                'cost_nano': 250000000000,
+                'date': datetime.date(2016, 1, 1),
+                'external_id': '4321DCBA',
+                'clicks': 500,
+                'adgroup_id': 123
+            },
+            {
+                'domain':
+                'CNN weather',
+                'exchange': 'outbrain',
+                'cost_micro': 2000000000000,
+                'cost_nano': 2000000000000,
+                'date': datetime.date(2016, 1, 1),
+                'external_id': '4321DCBA',
+                'clicks': 2000,
+                'adgroup_id': 124
+            }
+        ]
         self.assertEqual(expected, raw_data)
 
     @patch('reports.refresh.time')
@@ -955,6 +968,263 @@ class RefreshOBPubDataTestCase(test.TestCase):
 
         mock_delete_pubs_ob.assert_called_once_with(date)
         mock_load_pubs_ob.assert_called_once_with('s3_key')
+
+
+class RefreshDataTestCase(test.TestCase):
+
+    fixtures = ['test_api_contentads.yaml']
+
+    @patch('utils.s3helpers.S3Helper')
+    @patch('reports.refresh.OB_RAW_PUB_DATA_S3_PREFIX', 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/')
+    def test_get_latest_ob_pub_data_s3_keys(self, mock_s3_helper):
+        mock_s3_helper.return_value.list.return_value = [
+            boto.s3.key.Key(name='ob_publishers_raw/2016/01/01/123/12345.json'),
+            boto.s3.key.Key(name='ob_publishers_raw/2016/01/01/123/12346.json'),
+            boto.s3.key.Key(name='ob_publishers_raw/2016/01/01/124/12347.json'),
+            boto.s3.key.Key(name='ob_publishers_raw/2016/01/01/124/12342.json'),
+            boto.s3.key.Key(name='ob_publishers_raw/2016/01/01/122/12345.json'),
+        ]
+
+        s3_keys = refresh._get_latest_ob_pub_data_s3_keys(datetime.date(2016, 1, 1))
+        expected = {
+            (datetime.date(2016, 1, 1), 123): 'ob_publishers_raw/2016/01/01/123/12346.json',
+            (datetime.date(2016, 1, 1), 124): 'ob_publishers_raw/2016/01/01/124/12347.json',
+            (datetime.date(2016, 1, 1), 122): 'ob_publishers_raw/2016/01/01/122/12345.json'
+        }
+        self.assertEqual(expected, s3_keys)
+
+    @patch('utils.s3helpers.S3Helper')
+    @patch('reports.api.get_day_cost')
+    def test_get_raw_ob_pub_data(self, mock_get_day_cost, mock_s3_helper):
+        mock_s3_helper.return_value.get.side_effect = [
+            '[{"name": "CNN money", "clicks": 1500, "ob_id": "ABCD1234"},'
+            '{"name": "CNN weather", "clicks": 500, "ob_id": "4321DCBA"}]',
+            '[{"name": "CNN weather", "clicks": 2000, "ob_id": "4321DCBA"}]',
+        ]
+        mock_get_day_cost.side_effect = [
+            {"cost": 1000},
+            {"cost": 2000}
+        ]
+
+        s3_keys = {
+            (datetime.date(2016, 1, 1), 123): 'ob_publishers_raw/2016/01/01/123/12346.json',
+            (datetime.date(2016, 1, 1), 124): 'ob_publishers_raw/2016/01/01/124/12346.json',
+        }
+        raw_data = refresh._get_raw_ob_pub_data(s3_keys)
+        expected = [
+            {
+                'domain': 'CNN money',
+                'exchange': 'outbrain',
+                'cost_micro': 750000000000,
+                'cost_nano': 750000000000,
+                'date': datetime.date(2016, 1, 1),
+                'external_id': 'ABCD1234',
+                'clicks': 1500,
+                'adgroup_id': 123
+            },
+            {
+                'domain': 'CNN weather',
+                'exchange': 'outbrain',
+                'cost_micro': 250000000000,
+                'cost_nano': 250000000000,
+                'date': datetime.date(2016, 1, 1),
+                'external_id': '4321DCBA',
+                'clicks': 500,
+                'adgroup_id': 123
+            },
+            {
+                'domain': 'CNN weather',
+                'exchange': 'outbrain',
+                'cost_micro': 2000000000000,
+                'cost_nano': 2000000000000,
+                'date': datetime.date(2016, 1, 1),
+                'external_id': '4321DCBA',
+                'clicks': 2000,
+                'adgroup_id': 124
+            }
+        ]
+        self.assertEqual(expected, raw_data)
+
+    @patch('utils.s3helpers.S3Helper')
+    def test_get_latest_b1_pub_data_s3_key(self, s3_helpers_mock):
+        s3_helpers_mock.return_value.list.return_value = [
+            boto.s3.key.Key(name='b1_publishers_raw/2016-01-01-2016-01-01--1451296802070761934/part-00000'),
+            boto.s3.key.Key(name='b1_publishers_raw/2016-01-01-2016-01-01--1451282401204254907/part-00000')
+        ]
+
+        ret = refresh._get_latest_b1_pub_data_s3_key(datetime.date(2016, 1, 1))
+
+        s3_helpers_mock.return_value.list.assert_called_once_with('b1_publishers_raw/2016-01-01-2016-01-01')
+        self.assertEqual('b1_publishers_raw/2016-01-01-2016-01-01--1451296802070761934/part-00000', ret)
+
+    @patch('utils.s3helpers.S3Helper')
+    def test_get_latest_b1_pub_data_s3_key_not_found(self, s3_helpers_mock):
+        s3_helpers_mock.return_value.list.return_value = []
+
+        with self.assertRaises(exc.S3FileNotFoundError):
+            refresh._get_latest_b1_pub_data_s3_key(datetime.date(2016, 1, 1))
+
+    @patch('utils.s3helpers.S3Helper')
+    @patch('reports.refresh._get_latest_b1_pub_data_s3_key')
+    def test_get_latest_b1_pub_data(self, mock_get_s3_key, mock_s3_helpers):
+        raw_b1_data = '2016-01-01,1,adiant,adiant.com,10,1000,20000000,1000000\n'\
+                      '2016-01-01,1,adsnative,adsnative.com,5,800,800000,200000'
+        mock_get_s3_key.return_value = 'some_key'
+        mock_s3_helpers.return_value.get.return_value = raw_b1_data
+
+        data = refresh._get_latest_b1_pub_data(datetime.date(2016, 1, 1))
+        expected = [
+            {
+                'date': datetime.date(2016, 1, 1),
+                'adgroup_id': 1,
+                'exchange': 'adiant',
+                'domain': 'adiant.com',
+                'external_id': '',
+                'clicks': 10,
+                'impressions': 1000,
+                'cost_micro': 20000000,
+                'cost_nano': 20000000,
+                'data_cost_micro': 1000000,
+                'data_cost_nano': 1000000,
+            },
+            {
+                'date': datetime.date(2016, 1, 1),
+                'adgroup_id': 1,
+                'exchange': 'adsnative',
+                'domain': 'adsnative.com',
+                'external_id': '',
+                'clicks': 5,
+                'impressions': 800,
+                'cost_micro': 800000,
+                'cost_nano': 800000,
+                'data_cost_micro': 200000,
+                'data_cost_nano': 200000,
+            }
+        ]
+
+        self.assertEqual(expected, data)
+
+    @patch('reports.refresh._get_latest_b1_pub_data')
+    @patch('reports.refresh._get_latest_ob_pub_data')
+    def test_get_latest_pub_data(self, mock_get_latest_ob_data, mock_get_latest_b1_data):
+        b1_data = [
+            {
+                'date': datetime.date(2016, 1, 1),
+                'adgroup_id': 1,
+                'exchange': 'adiant',
+                'domain': 'adiant.com',
+                'name': 'adiant.com',
+                'external_id': '',
+                'clicks': 10,
+                'impressions': 1000,
+                'cost_micro': 20000000,
+                'data_cost_micro': 1000000
+            },
+            {
+                'date': datetime.date(2016, 1, 1),
+                'adgroup_id': 1,
+                'exchange': 'adsnative',
+                'domain': 'adsnative.com',
+                'name': 'adsnative.com',
+                'external_id': '',
+                'clicks': 5,
+                'impressions': 800,
+                'cost_micro': 800000,
+                'data_cost_micro': 200000
+            }
+        ]
+
+        ob_data = [
+            {
+                'name': 'CNN money',
+                'exchange': 'outbrain',
+                'cost_micro': 750.0,
+                'date': datetime.date(2016, 1, 1),
+                'ob_id': 'ABCD1234',
+                'external_id': 'ABCD1234',
+                'clicks': 1500,
+                'adgroup_id': 123
+            },
+            {
+                'name': 'CNN weather',
+                'exchange': 'outbrain',
+                'cost_micro': 250.0,
+                'date': datetime.date(2016, 1, 1),
+                'ob_id': '4321DCBA',
+                'external_id': '4321DCBA',
+                'clicks': 500,
+                'adgroup_id': 123
+            },
+            {
+                'name':
+                'CNN weather',
+                'exchange': 'outbrain',
+                'cost_micro': 2000.0,
+                'date': datetime.date(2016, 1, 1),
+                'ob_id': '4321DCBA',
+                'external_id': '4321DCBA',
+                'clicks': 2000,
+                'adgroup_id': 124
+            }
+        ]
+        mock_get_latest_ob_data.return_value = ob_data
+        mock_get_latest_b1_data.return_value = b1_data
+
+        data = refresh._get_latest_pub_data(datetime.date(2016, 1, 1))
+        self.assertItemsEqual(data, ob_data + b1_data)
+
+    @patch('reports.refresh.time')
+    @patch('reports.refresh._get_latest_pub_data')
+    @patch('reports.refresh._augment_pub_data_with_budgets')
+    @patch('reports.refresh.put_pub_stats_to_s3')
+    def test_process_publisher_stats(self, mock_put_to_s3, mock_augment, mock_get_latest, mock_time):
+        date = datetime.date(2016, 1, 1)
+        mock_time.time.return_value = time.mktime(date.timetuple())
+        mock_get_latest.return_value = [
+            {
+                'date': date,
+                'ad_group_id': 1,
+                'exchange': 'adiant',
+                'domain': 'adiant.com',
+                'clicks': 10,
+                'impressions': 1000,
+                'cost_micro': 20000000,
+                'data_cost_micro': 1000000,
+                'effective_cost_nano': 10000000000,
+                'effective_data_cost_nano': 500000000,
+                'license_fee_nano': 1050000000,
+            },
+            {
+                'date': date,
+                'ad_group_id': 1,
+                'exchange': 'adsnative',
+                'domain': 'adsnative.com',
+                'clicks': 5,
+                'impressions': 800,
+                'cost_micro': 800000,
+                'data_cost_micro': 200000,
+                'effective_cost_nano': 400000000,
+                'effective_data_cost_nano': 100000000,
+                'license_fee_nano': 50000000,
+            }
+        ]
+
+        refresh.process_publishers_stats(date)
+        mock_get_latest.assert_called_once_with(date)
+        mock_augment.assert_called_once_with(mock_get_latest.return_value)
+        mock_put_to_s3.assert_called_once_with(date, mock_get_latest.return_value, refresh.LOAD_PUB_STATS_KEY_FMT)
+
+    @patch('reports.redshift.delete_publishers')
+    @patch('reports.redshift.load_publishers')
+    @patch('reports.refresh.process_publishers_stats')
+    def test_refresh_b1_publishers_data(self, mock_process_stats, mock_load_pubs, mock_delete_pubs):
+        mock_process_stats.return_value = 's3_key'
+
+        date = datetime.date(2016, 1, 1)
+        refresh.refresh_publishers_data(date)
+
+        mock_delete_pubs.assert_called_once_with(date)
+        mock_load_pubs.assert_called_once_with('s3_key')
 
 
 class PutContentAdStatsToS3TestCase(test.TestCase):

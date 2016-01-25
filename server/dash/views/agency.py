@@ -966,11 +966,11 @@ class AccountAgency(api_common.BaseApiView):
                 'value': str(new_settings.archived)
             }),
             ('default_account_manager', {
-                'name': 'Default Account Manager',
+                'name': 'Account Manager',
                 'value': helpers.get_user_full_name_or_email(new_settings.default_account_manager)
             }),
             ('default_sales_representative', {
-                'name': 'Default Sales Representative',
+                'name': 'Sales Representative',
                 'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
             }),
             ('service_fee', {
@@ -1002,7 +1002,7 @@ class AccountAgency(api_common.BaseApiView):
 
         changes_text = ', '.join(filter(None, [
             self.get_changes_text_for_settings(new_settings, old_settings),
-            new_settings.changes_text
+            new_settings.changes_text.encode('utf-8') if new_settings.changes_text is not None else ''
         ]))
 
         return changes_text
