@@ -336,12 +336,21 @@ class InfoBoxHelpersTest(TestCase):
         )
 
     def test_calculate_daily_cap(self):
+        dash.models.AdGroupSourceState.objects.create(
+            ad_group_source=dash.models.AdGroupSource.objects.filter(
+                ad_group__id=1
+            ).first(),
+            state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+            daily_budget_cc=50
+        )
+
         campaign = dash.models.Campaign.objects.get(pk=1)
         self.assertEqual(50, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
-        for adgs in dash.models.AdGroupSettings.objects.all():
-            adgs.daily_budget_cc = 0
-            adgs.save(None)
+        dash.models.AdGroupSourceState.objects.all().delete()
+        for adgss in dash.models.AdGroupSourceState.objects.all():
+            adgss.daily_budget_cc = 0
+            adgss.save(None)
 
         self.assertEqual(0, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 

@@ -1285,7 +1285,9 @@ class AdGroupSource(models.Model):
 
     def get_latest_state(self):
         try:
-            return AdGroupSourceState.objects.filter(ad_group_source=self).latest()
+            return AdGroupSourceState.objects.filter(
+                ad_group_source=self
+            ).latest()
         except AdGroupSourceState.DoesNotExist:
             return None
 
