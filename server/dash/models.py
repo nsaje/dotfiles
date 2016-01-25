@@ -1285,8 +1285,8 @@ class AdGroupSource(models.Model):
 
     def get_latest_state(self):
         try:
-            return models.AdGroupSourceState.objects.filter(ad_group_source=self).latest()
-        except models.AdGroupSourceState.DoesNotExist:
+            return AdGroupSourceState.objects.filter(ad_group_source=self).latest()
+        except AdGroupSourceState.DoesNotExist:
             return None
 
     def _shorten_name(self, name):
