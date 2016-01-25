@@ -671,6 +671,32 @@ class CampaignSettings(SettingsBase):
         return value
 
 
+class CampaignGoal(models.Model):
+    campaign = models.ForeignKey(Campaign)
+    type = models.PositiveSmallIntegerField(
+        default=constants.CampaignGoalKPI.TIME_ON_SITE,
+        choices=constants.CampaignGoalKPI.get_choices(),
+    )
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
+                                   verbose_name='Created by',
+                                   on_delete=models.PROTECT, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('campaign', 'type')
+
+
+class CampaignGoalValue(models.Model):
+    campaign_goal = models.ForeignKey(CampaignGoal)
+    value = models.DecimalField(max_digits=15, decimal_places=5)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
+                                   verbose_name='Created by',
+                                   on_delete=models.PROTECT, null=True, blank=True)
+
+
 class SourceType(models.Model):
     type = models.CharField(
         max_length=127,
@@ -1011,11 +1037,6 @@ class DefaultSourceSettings(models.Model):
         null=True,
         verbose_name='Default daily budget'
     )
-
-    auto_add = models.BooleanField(null=False,
-                                   blank=False,
-                                   default=False,
-                                   verbose_name='Automatically add this source to ad group at creation')
 
     objects = QuerySetManager()
 
@@ -1410,7 +1431,9 @@ class AdGroupSettings(SettingsBase):
         return [regions_of_type[target_region] for target_region in self.target_regions or [] if target_region in regions_of_type]
 
     def is_mobile_only(self):
-        return self.target_devices and len(self.target_devices) == 1 and constants.AdTargetDevice.MOBILE in self.target_devices
+        return bool(self.target_devices) \
+               and len(self.target_devices) == 1 \
+               and constants.AdTargetDevice.MOBILE in self.target_devices
 
     @classmethod
     def get_defaults_dict(cls):
@@ -1991,6 +2014,21 @@ class PublisherBlacklist(models.Model):
             level = constants.PublisherBlacklistLevel.GLOBAL
         return level
 
+    def fill_keys(self, ad_group, level):
+        self.everywhere = False
+        self.account = None
+        self.campaign = None
+        self.ad_group = None
+
+        if level == constants.PublisherBlacklistLevel.GLOBAL:
+            self.everywhere = True
+        if level == constants.PublisherBlacklistLevel.ACCOUNT:
+            self.account = ad_group.campaign.account
+        if level == constants.PublisherBlacklistLevel.CAMPAIGN:
+            self.campaign = ad_group.campaign
+        if level == constants.PublisherBlacklistLevel.ADGROUP:
+            self.ad_group = ad_group
+
     class Meta:
         unique_together = (('name', 'everywhere', 'account', 'campaign', 'ad_group', 'source'), )
 
@@ -2306,13 +2344,16 @@ class BudgetLineItem(FootprintModel):
         }
 
     def get_ideal_budget_spend(self, date):
+        '''
+        Ideal budget spend at END of specified date.
+        '''
         if date < self.start_date:
             return 0
         elif date >= self.end_date:
             return self.amount
 
-        date_start_diff = (date - self.start_date).days
-        date_total_diff = (self.end_date - self.start_date).days
+        date_start_diff = (date - self.start_date).days + 1
+        date_total_diff = (self.end_date - self.start_date).days + 1
 
         return self.amount * float(date_start_diff) / float(date_total_diff)
 

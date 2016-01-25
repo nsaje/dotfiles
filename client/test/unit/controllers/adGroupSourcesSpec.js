@@ -1,62 +1,62 @@
 'use strict';
 
-describe('AdGroupSourcesCtrlSpec', function() {
+describe('AdGroupSourcesCtrlSpec', function () {
     var $scope, api, $timeout;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
     beforeEach(module(function ($provide) {
-        $provide.value('zemLocalStorageService', {get: function(){}});
+        $provide.value('zemLocalStorageService', {get: function () {}});
         $provide.value('zemCustomTableColsService', {
-            load: function() {return [];},
-            save: function() {return [];}
+            load: function () { return []; },
+            save: function () { return []; }
         });
     }));
 
-    beforeEach(inject(function($rootScope, $controller, _$timeout_, $state) {
+    beforeEach(inject(function ($rootScope, $controller, _$timeout_, $state) {
         $scope = $rootScope.$new();
-        $scope.isPermissionInternal = function() {return true;};
-        $scope.hasPermission = function() {return true;};
-        $scope.setAdGroupData = function() {};
-        $scope.getAdGroupState = function() {};
+        $scope.isPermissionInternal = function () { return true; };
+        $scope.hasPermission = function () { return true; };
+        $scope.setAdGroupData = function () {};
+        $scope.getAdGroupState = function () {};
         $scope.adGroupData = {};
         $scope.dateRange = {
-            startDate: {isSame: function() {}},
-            endDate: {isSame: function() {}}
+            startDate: {isSame: function () {}},
+            endDate: {isSame: function () {}}
         };
         $scope.columns = [];
 
         $timeout = _$timeout_;
 
-        var mockApiFunc = function() {
+        var mockApiFunc = function () {
             return {
-                then: function() {
+                then: function () {
                     return {
-                        finally: function() {}
+                        finally: function () {}
                     };
                 }
             };
         };
 
         api = {
-            adGroupSourcesUpdates: {get: function() {}},
-            adGroupSourcesTable: {get: function() {
+            adGroupSourcesUpdates: {get: function () {}},
+            adGroupSourcesTable: {get: function () {
                 return {
-                    then: function() {
-                        return {finally: function() {}};
+                    then: function () {
+                        return {finally: function () {}};
                     }
                 };
             }},
-            dailyStats: {list: function() {
+            dailyStats: {list: function () {
                 return {
-                    then: function() {}
+                    then: function () {}
                 };
             }},
-            adGroupSources: {get: function() {
+            adGroupSources: {get: function () {
                 return {
-                    then: function() {}
-                }
+                    then: function () {}
+                };
             }},
             sourcesExportPlusAllowed: {
                 get: mockApiFunc
@@ -67,9 +67,9 @@ describe('AdGroupSourcesCtrlSpec', function() {
         $controller('AdGroupSourcesCtrl', {$scope: $scope, api: api, $state: $state});
     }));
 
-    describe('pollSourcesTableUpdates', function() {
-        it('returns early if user doesn\'t have permission', function() {
-            $scope.hasPermission = function() {return false;};
+    describe('pollSourcesTableUpdates', function () {
+        it('returns early if user doesn\'t have permission', function () {
+            $scope.hasPermission = function () { return false; };
             spyOn(api, 'adGroupSourcesUpdates');
 
             $scope.pollSourcesTableUpdates();
@@ -77,7 +77,7 @@ describe('AdGroupSourcesCtrlSpec', function() {
             expect(api.adGroupSourcesUpdates).not.toHaveBeenCalled();
         });
 
-        it('returns early if lastChangeTimeout is set', function() {
+        it('returns early if lastChangeTimeout is set', function () {
             spyOn(api, 'adGroupSourcesUpdates');
             $scope.lastChangeTimeout = 123;
 
@@ -86,7 +86,7 @@ describe('AdGroupSourcesCtrlSpec', function() {
             expect(api.adGroupSourcesUpdates).not.toHaveBeenCalled();
         });
 
-        it('updates data if lastChange is received', function() {
+        it('updates data if lastChange is received', function () {
             $scope.rows = [{id: 12, cpc: '0.300'}];
             $scope.totals = {cpc: '1.200'};
 
@@ -99,9 +99,9 @@ describe('AdGroupSourcesCtrlSpec', function() {
             };
 
             api.adGroupSourcesUpdates = {
-                get: function() {
+                get: function () {
                     return {
-                        then: function(handler) {
+                        then: function (handler) {
                             handler(data);
                         }
                     };
@@ -118,16 +118,16 @@ describe('AdGroupSourcesCtrlSpec', function() {
             expect($scope.totals.cpc).toEqual(data.totals.cpc);
         });
 
-        it('schedules another poll if in progress', function() {
+        it('schedules another poll if in progress', function () {
             $scope.rows = [{id: 12, cpc: '0.300'}];
             $scope.totals = {cpc: '1.200'};
 
             var data = {inProgress: true};
 
             api.adGroupSourcesUpdates = {
-                get: function() {
+                get: function () {
                     return {
-                        then: function(handler) {
+                        then: function (handler) {
                             handler(data);
                         }
                     };
@@ -143,7 +143,7 @@ describe('AdGroupSourcesCtrlSpec', function() {
             expect($scope.pollSourcesTableUpdates).toHaveBeenCalled();
         });
 
-        it('should leave selected metrics when they are not conversion goals', function() {
+        it('should leave selected metrics when they are not conversion goals', function () {
             $scope.chartMetric1 = 'ctr';
             $scope.chartMetric2 = 'cpc';
 
@@ -153,7 +153,7 @@ describe('AdGroupSourcesCtrlSpec', function() {
             };
 
             api.dailyStats = {
-                list: function() {
+                list: function () {
                     return {
                         then: function (handler) {
                             handler(data);
@@ -173,7 +173,7 @@ describe('AdGroupSourcesCtrlSpec', function() {
 
     });
 
-    it('should select default metrics when conversion goals don\'t exist', function() {
+    it('should select default metrics when conversion goals don\'t exist', function () {
         $scope.chartMetric1 = 'conversion_goal_1';
         $scope.chartMetric2 = 'conversion_goal_2';
 
@@ -183,7 +183,7 @@ describe('AdGroupSourcesCtrlSpec', function() {
         };
 
         api.dailyStats = {
-            list: function() {
+            list: function () {
                 return {
                     then: function (handler) {
                         handler(data);
@@ -201,14 +201,14 @@ describe('AdGroupSourcesCtrlSpec', function() {
         expect($scope.chartMetricOptions).toContain({value: 'conversion_goal_2', name: '', shown: false, internal: true});
     });
 
-    it('should select conversion goal when one exists', function() {
+    it('should select conversion goal when one exists', function () {
         var data = {
             chartData: [],
             conversionGoals: [{id: 'conversion_goal_2', name: 'test conversion goal'}]
         };
 
         api.dailyStats = {
-            list: function() {
+            list: function () {
                 return {
                     then: function (handler) {
                         handler(data);

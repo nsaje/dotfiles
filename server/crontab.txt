@@ -6,7 +6,7 @@
 10 * * * *        /home/ubuntu/docker-manage-py.sh monitor_ga_reports
 20,50 * * * *     /home/ubuntu/docker-manage-py.sh monitor_aggregate_discrepancy
 20,50 * * * *     /home/ubuntu/docker-manage-py.sh monitor_redshift_discrepancy
-20,50 * * * *     /home/ubuntu/docker-manage-py.sh monitor_blacklist
+0 9,12,15 * * *   /home/ubuntu/docker-manage-py.sh monitor_blacklist
 30 * * * *        /home/ubuntu/docker-manage-py.sh monitor_recent_demo_data
 15,45 * * * *     /home/ubuntu/docker-manage-py.sh monitor_conversion_pixels
 0 11 * * *        /home/ubuntu/docker-manage-py.sh refresh_demo_stats
@@ -24,3 +24,4 @@
 */1 * * * *       /home/ubuntu/docker-manage-py.sh refresh_changed_daily_statements
 29 6,18 * * *     /home/ubuntu/docker-manage-py.sh schedule_old_data_refresh
 30 6,10,12 * * *  /home/ubuntu/docker-manage-py.sh update_publishers_b1
+30 5,7,9,12 * * * /home/ubuntu/docker-manage-py.sh update_publishers_ob

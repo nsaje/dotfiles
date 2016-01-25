@@ -96,8 +96,8 @@ class ExportPlusTestCase(test.TestCase):
         content = export_plus.get_csv_content(fieldnames, self.data)
 
         expected_content = '''Date,Cost,Data Cost,Clicks,CTR\r
-2014-07-01,1000.12,10.10,103,1.03\r
-2014-07-01,2000.12,23.10,203,2.03\r
+2014-07-01,1000.12,10.10,103,0.0103\r
+2014-07-01,2000.12,23.10,203,0.0203\r
 '''
         self.assertEqual(content, expected_content)
 
@@ -116,8 +116,8 @@ class ExportPlusTestCase(test.TestCase):
         content = export_plus.get_csv_content(fieldnames, self.data)
 
         expected_content = '''Date,Cost,Data Cost,Clicks,CTR,Status\r
-2014-07-01,1000.12,10.10,103,1.03,1\r
-2014-07-01,2000.12,23.10,203,2.03,2\r
+2014-07-01,1000.12,10.10,103,0.0103,Active\r
+2014-07-01,2000.12,23.10,203,0.0203,Inactive\r
 '''
         self.assertEqual(content, expected_content)
 
@@ -219,7 +219,7 @@ class ExportPlusTestCase(test.TestCase):
             start_date,
             end_date,
             user,
-            '-state',
+            '-status',
             True,
             [],
             source=sources,
@@ -238,8 +238,8 @@ class ExportPlusTestCase(test.TestCase):
                 'ad_group': ad_group
             }
         )
-        self.assertEqual(rows[0].get('status'), 2)
-        self.assertEqual(rows[1].get('status'), 1)
+        self.assertEqual(rows[0].get('status'), constants.AdGroupSourceSettingsState.INACTIVE)
+        self.assertEqual(rows[1].get('status'), constants.AdGroupSourceSettingsState.ACTIVE)
 
     def test_get_report_filename(self):
         self.assertEqual(

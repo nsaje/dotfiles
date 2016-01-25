@@ -1,7 +1,7 @@
 /*globals oneAll */
-"use strict";
+'use strict';
 
-oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config, $state, regions) {
+oneApp.directive('zemLocations', ['config', '$state', 'regions', function (config, $state, regions) {
     return {
         restrict: 'E',
         scope: {
@@ -28,12 +28,12 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 formatResult: formatSelection
             };
 
-            $scope.selectedLocations = function() {
+            $scope.selectedLocations = function () {
                 if (!$scope.selectedLocationCodes)
                     return [];
 
                 var location, locations = [];
-                for (var i=0; i<$scope.selectedLocationCodes.length; i++) {
+                for (var i = 0; i < $scope.selectedLocationCodes.length; i++) {
                     location = regions.getByCode($scope.selectedLocationCodes[i]);
 
                     if (location) {
@@ -44,7 +44,7 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 return locations;
             };
 
-            $scope.removeSelectedLocation = function(location) {
+            $scope.removeSelectedLocation = function (location) {
                 $scope.resetWarnings();
 
                 var selectedIdx = $scope.selectedLocationCodes.indexOf(location.code);
@@ -53,11 +53,11 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 }
             };
 
-            $scope.showUndo = function() {
+            $scope.showUndo = function () {
                 return $scope.previousSelection && $scope.previousSelection.length > 0;
             };
 
-            $scope.addLocation = function() {
+            $scope.addLocation = function () {
                 if (!$scope.selectedLocationCode) {
                     return;
                 }
@@ -71,7 +71,7 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 if ($scope.selectedLocationCodes.indexOf($scope.selectedLocationCode) < 0) {
 
                     var undoProps = getUndoProperties();
-                    if(undoProps) {
+                    if (undoProps) {
                         setUndo(undoProps);
                     }
 
@@ -80,28 +80,28 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 $scope.selectedLocationCode = '';
             };
 
-            $scope.undo = function() {
-                if($scope.previousSelection) {
+            $scope.undo = function () {
+                if ($scope.previousSelection) {
                     $scope.selectedLocationCodes = $scope.previousSelection;
                     $scope.resetWarnings();
                 }
             };
 
-            $scope.resetWarnings = function() {
+            $scope.resetWarnings = function () {
                 $scope.previousSelection = undefined;
             };
 
-            function formatSelection(object) {
+            function formatSelection (object) {
                 if (!object.id) {
                     return object.text;
-                };
+                }
 
                 var option = regions.getByCode(object.id);
 
                 if (regions.isCountry(option)) {
                     return object.text;
                 }
-     
+
                 var element = angular.element(document.createElement('div'));
                 element.text(object.text);
 
@@ -109,18 +109,18 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 tag.addClass('location-dma-tag');
                 element.append(tag);
 
-                if(regions.isDMA(option)) {
+                if (regions.isDMA(option)) {
                     tag.text('DMA');
                 } else if (regions.isUSState(option)) {
-                    tag.text('U.S. State')
+                    tag.text('U.S. State');
                 }
 
                 return $compile(element)($scope);
-            };
+            }
 
             // return location codes from the currently selected location codes that
             // should be replaced by the given location code and state the reason
-            function getLocationCodesToBeReplacedByLocationCode(locationCode) {
+            function getLocationCodesToBeReplacedByLocationCode (locationCode) {
                 var region = regions.getByCode(locationCode);
 
                 // if the given location is either a DMA or a U.S. State, it should replace the United States
@@ -131,11 +131,11 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                             locationCodes: ['US']
                         };
                     }
-                // if the given location is the United States, it should replace all selected DMAs and U.S. States 
+                // if the given location is the United States, it should replace all selected DMAs and U.S. States
                 } else if (region.code === 'US') {
                     return {
                         reason: 'broader',
-                        locationCodes: $scope.selectedLocationCodes.filter(function(locationCode) {
+                        locationCodes: $scope.selectedLocationCodes.filter(function (locationCode) {
                             var region = regions.getByCode(locationCode);
 
                             return regions.isDMA(region) || regions.isUSState(region);
@@ -143,9 +143,9 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                     };
                 }
             }
-            
+
             // return at most 3 names from the given list of location codes
-            function getSomeNames(locationCodes) {
+            function getSomeNames (locationCodes) {
                 var names = [];
 
                 // get at most 3 names
@@ -161,21 +161,21 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 return names;
             }
 
-            function getUndoProperties() {
+            function getUndoProperties () {
                 var locationCodesToBeReplaced = getLocationCodesToBeReplacedByLocationCode($scope.selectedLocationCode);
-                
+
                 if (locationCodesToBeReplaced) {
                     return {
-                        properSelection: $scope.selectedLocationCodes.filter(function(locationCode) {
+                        properSelection: $scope.selectedLocationCodes.filter(function (locationCode) {
                             return locationCodesToBeReplaced.locationCodes.indexOf(locationCode) === -1;
                         }),
                         reason: locationCodesToBeReplaced.reason,
                         someReplacedNames: getSomeNames(locationCodesToBeReplaced.locationCodes)
                     };
                 }
-            };
+            }
 
-            function setUndo(undoProperties) {
+            function setUndo (undoProperties) {
                 // save previous state
                 $scope.previousSelection = $scope.selectedLocationCodes.slice();
 
@@ -183,7 +183,7 @@ oneApp.directive('zemLocations', ['config', '$state', 'regions', function(config
                 $scope.reason = undoProperties.reason;
                 $scope.someReplacedNames = undoProperties.someReplacedNames;
                 $scope.name = regions.getByCode($scope.selectedLocationCode).name;
-            };
+            }
         }]
     };
 }]);

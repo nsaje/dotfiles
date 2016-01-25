@@ -1,20 +1,20 @@
 'use strict';
 
-describe('zemDemoAdGroupsService', function() {
+describe('zemDemoAdGroupsService', function () {
     var cache, adGroups, defaults;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
-    
-    beforeEach(inject(function(_zemDemoCacheService_, _zemDemoAdGroupsService_, _demoDefaults_) {
+
+    beforeEach(inject(function (_zemDemoCacheService_, _zemDemoAdGroupsService_, _demoDefaults_) {
         adGroups = _zemDemoAdGroupsService_;
         defaults = _demoDefaults_;
         cache = _zemDemoCacheService_;
     }));
 
     it('ad group managament', function () {
-        var newAdGroup = { ad_group: 1, name: 'New demo ad group'   },
-            existingAdGroup = { ad_group: 2, name: 'Demo ad group' },
+        var newAdGroup = {ad_group: 1, name: 'New demo ad group'},
+            existingAdGroup = {ad_group: 2, name: 'Demo ad group'},
             table = defaults.emptyTable();
         adGroups.newAdGroup(1, 1);
         expect(adGroups.isNew(1)).toBe(true);
@@ -40,5 +40,5 @@ describe('zemDemoAdGroupsService', function() {
             ])
         );
     });
-    
+
 });

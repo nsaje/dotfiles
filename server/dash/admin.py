@@ -35,6 +35,7 @@ from utils.admin_common import SaveWithRequestMixin
 # Forms for inline user functionality.
 
 class StrWidget(forms.Widget):
+
     def render(self, name, value, attrs=None):
         return mark_safe(unicode(value))
 
@@ -43,6 +44,7 @@ class StrWidget(forms.Widget):
 
 
 class StrFieldWidget(forms.Widget):
+
     def render(self, name, value, attrs=None):
         return mark_safe('<p>' + unicode(value) + '</p>')
 
@@ -76,6 +78,7 @@ class AbstractUserForm(forms.ModelForm):
 
 
 class PreventEditInlineFormset(forms.BaseInlineFormSet):
+
     def clean(self):
         super(PreventEditInlineFormset, self).clean()
 
@@ -88,6 +91,7 @@ class PreventEditInlineFormset(forms.BaseInlineFormSet):
 
 
 class AdGroupSettingsForm(forms.ModelForm):
+
     class Meta:
         widgets = {
             'target_devices': forms.SelectMultiple(choices=constants.AdTargetDevice.get_choices()),
@@ -160,6 +164,7 @@ class SourceCredentialsForm(forms.ModelForm):
 
 
 class AvailableActionsField(SimpleArrayField):
+
     def to_python(self, value):
         return sorted([int(v) for v in value])
 
@@ -194,6 +199,7 @@ class SourceTypeForm(forms.ModelForm):
 
 
 class DefaultSourceSettingsForm(forms.ModelForm):
+
     def clean_daily_budget_cc(self):
         daily_budget_cc = self.cleaned_data.get('daily_budget_cc')
         if daily_budget_cc:
@@ -224,8 +230,7 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = (
         'source',
-        'credentials_',
-        'auto_add'
+        'credentials_'
     )
 
     def credentials_(self, obj):
@@ -410,6 +415,7 @@ class SourceCredentialsAdmin(admin.ModelAdmin):
 
 
 class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
+
     def get_readonly_fields(self, request, obj=None):
         return list(set(
             [field.name for field in self.opts.local_fields] +
@@ -696,6 +702,7 @@ class AdGroupSourceStateAdmin(admin.ModelAdmin):
 
 
 class UserActionLogResource(resources.ModelResource):
+
     class Meta:
         model = models.UserActionLog
 
@@ -871,6 +878,7 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
         'modified_dt',
     )
 
+
 def reject_content_ad_sources(modeladmin, request, queryset):
     logger.info(
         'BULK REJECT CONTENT AD SOURCES: Bulk reject content ad sources started. Content ad sources: {}'.format(
@@ -961,7 +969,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
             ad_group_url=reverse('admin:dash_adgroup_change', args=(ad_group.id, )),
             ad_group_name=ad_group.name,
             ad_group_id=str(ad_group.id),
-            )
+        )
     ad_group_name.allow_tags = True
 
     def ad_group_settings_status(self, obj):
@@ -989,7 +997,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)
         self.list_display_links = (None, )
 
-        
+
 class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'account',
@@ -1002,8 +1010,9 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'created_by',
     )
     date_hierarchy = 'start_date'
-    list_filter = ['status', 'license_fee', 'created_by']
+    list_filter = ('status', 'license_fee', 'created_by', )
     readonly_fields = ('created_dt', 'created_by',)
+    search_fields = ('account__name', 'amount')
     form = dash_forms.CreditLineItemAdminForm
 
 
@@ -1020,6 +1029,7 @@ class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     date_hierarchy = 'start_date'
     list_filter = ['credit', 'created_by']
     readonly_fields = ('created_dt', 'created_by', 'freed_cc')
+    search_fields = ('campaign__name', 'campaign__account__name', 'amount')
     form = dash_forms.BudgetLineItemAdminForm
 
 
@@ -1171,9 +1181,9 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
         return actions
 
     def get_form(self, request, obj=None, **kwargs):
-         form = super(PublisherBlacklistAdmin, self).get_form(request, **kwargs)
-         form.request = request
-         return form
+        form = super(PublisherBlacklistAdmin, self).get_form(request, **kwargs)
+        form.request = request
+        return form
 
     def reenable_global(modeladmin, request, queryset):
         user = request.user

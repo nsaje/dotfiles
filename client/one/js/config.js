@@ -1,7 +1,7 @@
-angular.module("config", [])
+angular.module('config', [])
 
-.constant("config", {
-	"static_url": "/client"
+.constant('config', {
+	'static_url': '/client'
 })
 
 ;

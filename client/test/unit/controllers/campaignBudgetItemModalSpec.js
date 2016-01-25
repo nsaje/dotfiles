@@ -1,10 +1,10 @@
-describe('CampaignBudgetItemModalCtrl', function() {
+describe('CampaignBudgetItemModalCtrl', function () {
     var $scope, $modalInstance, api, $q, $window, $timeout, openedDeferred;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(inject(function($controller, $rootScope, _$q_, _$timeout_, _$window_) {
+    beforeEach(inject(function ($controller, $rootScope, _$q_, _$timeout_, _$window_) {
         $q = _$q_;
         $timeout = _$timeout_;
         $scope = $rootScope.$new();
@@ -13,7 +13,7 @@ describe('CampaignBudgetItemModalCtrl', function() {
         };
         $scope.getAvailableCredit = function () {
             return [
-                { startDate: '12/1/2015', endDate: '12/31/2015', id: 1, licenseFee: '15%' }
+                {startDate: '12/1/2015', endDate: '12/31/2015', id: 1, licenseFee: '15%'}
             ];
         };
 
@@ -21,15 +21,15 @@ describe('CampaignBudgetItemModalCtrl', function() {
 
         openedDeferred = $q.defer();
         $modalInstance = {
-            close: function(){},
+            close: function () {},
             opened: openedDeferred.promise
         };
 
-        var mockApiFunc = function() {
+        var mockApiFunc = function () {
             return {
-                then: function() {
+                then: function () {
                     return {
-                        finally: function() {}
+                        finally: function () {}
                     };
                 }
             };
@@ -42,7 +42,7 @@ describe('CampaignBudgetItemModalCtrl', function() {
                 create: mockApiFunc,
                 get: mockApiFunc,
                 delete: mockApiFunc,
-                convert: { errors: function (obj) { return obj; } }
+                convert: {errors: function (obj) { return obj; }}
             }
         };
 
@@ -66,14 +66,14 @@ describe('CampaignBudgetItemModalCtrl', function() {
             );
 
             $scope.upsertBudgetItem();
-            
+
             deferred.resolve(1);
             $scope.$digest();
-            
+
             expect(api.campaignBudgetPlus.create).toHaveBeenCalled();
             $timeout(function () {
                 expect($modalInstance.close).toHaveBeenCalled();
-            }, 1500);           
+            }, 1500);
         });
 
         it('calls correct api function on edit and closes the modal', function () {
@@ -89,7 +89,7 @@ describe('CampaignBudgetItemModalCtrl', function() {
             );
 
             $scope.upsertBudgetItem();
-            
+
             deferred.resolve(1);
             $scope.$digest();
 
@@ -97,7 +97,7 @@ describe('CampaignBudgetItemModalCtrl', function() {
             $timeout(function () {
                 expect($modalInstance.close).toHaveBeenCalled();
             }, 1500);
-            
+
         });
     });
 
@@ -107,7 +107,7 @@ describe('CampaignBudgetItemModalCtrl', function() {
             $scope.discardBudgetItem();
             $scope.$digest();
             $timeout(function () {
-                expect($modalInstance.close).toHaveBeenCalled()
+                expect($modalInstance.close).toHaveBeenCalled();
             }, 1200);
         });
     });
@@ -121,7 +121,7 @@ describe('CampaignBudgetItemModalCtrl', function() {
             spyOn(api.campaignBudgetPlus, 'delete').and.callFake(function () {
                 return deferred.promise;
             });
-            
+
             $scope.deleteBudgetItem(10);
             deferred.resolve();
             $scope.$digest();
@@ -140,7 +140,7 @@ describe('CampaignBudgetItemModalCtrl', function() {
             spyOn(api.campaignBudgetPlus, 'delete').and.callFake(function () {
                 return deferred.promise;
             });
-            
+
             $scope.deleteBudgetItem(10);
             $scope.$digest();
 
@@ -173,14 +173,14 @@ describe('CampaignBudgetItemModalCtrl', function() {
             spyOn(api.campaignBudgetPlus, 'get').and.callFake(function () {
                 return deferred.promise;
             });
-            
+
             $scope.init();
 
             deferred.resolve({
                 id: 1,
                 endDate: '12/31/2015',
                 startDate: '12/1/2015',
-                credit: { id: 1 }
+                credit: {id: 1}
             });
 
             $scope.$digest();
