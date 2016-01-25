@@ -25,7 +25,7 @@ import dash.models
 
 logger = logging.getLogger(__name__)
 
-B1_RAW_PUB_DATA_S3_URI = 'b1_publishers_raw/{year}/{month}/{day}/part-00000'
+B1_RAW_PUB_DATA_S3_URI = 'b1_publishers_raw/{year}/{month:02d}/{day:02d}/part-00000'
 
 MICRO_TO_NANO = 1000
 CC_TO_NANO = 100000
