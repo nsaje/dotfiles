@@ -678,8 +678,10 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             ad_group_source.ad_group,
             ', '.join(set(action[0].source.name for action in unsynced_content_ad_sources_actions))
         )
+
+        # do not create actions if actions already exists - prevents flooding
         return actionlog.api_contentads.init_bulk_update_content_ad_actions(
-            unsynced_content_ad_sources_actions, None)
+            unsynced_content_ad_sources_actions, None, check_action_exists=True)
 
     return []
 
