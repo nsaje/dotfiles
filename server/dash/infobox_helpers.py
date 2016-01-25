@@ -188,8 +188,8 @@ def goals_and_spend_settings(user, campaign):
     )
     settings.append(yesterday_spend_settings.as_dict())
 
-    total_campaign_spend_to_date = get_total_campaign_spend(user, campaign)
-    ideal_campaign_spend_to_date = get_ideal_campaign_spend(user, campaign)
+    total_campaign_spend_to_date = Decimal(get_total_campaign_spend(user, campaign))
+    ideal_campaign_spend_to_date = Decimal(get_ideal_campaign_spend(user, campaign))
 
     ratio = 0
     if ideal_campaign_spend_to_date > 0:
