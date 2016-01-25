@@ -658,7 +658,7 @@ class CampaignOverview(api_common.BaseApiView):
         end_date = None
         never_finishes = False
 
-        daily_cap_value = infobox_helpers.calculate_daily_cap(campaign)
+        daily_cap_value = infobox_helpers.calculate_daily_campaign_cap(campaign)
 
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)
         for ad_group in ad_groups:

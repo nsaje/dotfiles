@@ -337,13 +337,13 @@ class InfoBoxHelpersTest(TestCase):
 
     def test_calculate_daily_cap(self):
         campaign = dash.models.Campaign.objects.get(pk=1)
-        self.assertEqual(50, dash.infobox_helpers.calculate_daily_cap(campaign))
+        self.assertEqual(50, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
         for adgs in dash.models.AdGroupSettings.objects.all():
             adgs.daily_budget_cc = 0
             adgs.save(None)
 
-        self.assertEqual(0, dash.infobox_helpers.calculate_daily_cap(campaign))
+        self.assertEqual(0, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
     @mock.patch('reports.api_contentads.query')
     def test_goals_and_spend_settings(self, mock_query):

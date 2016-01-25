@@ -2313,7 +2313,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('03/02 - 04/02', flight_setting['value'])
 
         flight_setting = self._get_setting(settings, 'daily')
-        self.assertEqual('$100.00', flight_setting['value'])
+        self.assertEqual('$50.00', flight_setting['value'])
 
         device_setting = self._get_setting(settings, 'targeting')
         self.assertEqual('Device: Desktop, Mobile', device_setting['value'])
@@ -2399,11 +2399,11 @@ class AdGroupOverviewTest(TestCase):
         ), flight_setting['value'])
 
         flight_setting = self._get_setting(settings, 'daily')
-        self.assertEqual('$100.00', flight_setting['value'])
+        self.assertEqual('$50.00', flight_setting['value'])
 
         yesterday_setting = self._get_setting(settings, 'yesterday')
         self.assertEqual('$60.00', yesterday_setting['value'])
-        self.assertEqual('50.00% of daily cap', yesterday_setting['description'])
+        self.assertEqual('120.00% of daily cap', yesterday_setting['description'])
 
 
 class CampaignOverviewTest(TestCase):

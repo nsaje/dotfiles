@@ -146,25 +146,15 @@ def get_goal_difference(goal_type, target, actual):
         return diff, description, success
 
 
-def calculate_daily_cap(campaign):
-    daily_cap = Decimal(0)
-    ad_groups = dash.models.AdGroup.objects.filter(campaign=campaign).exclude_archived()
-    for ad_group in ad_groups:
-        ad_group_settings = ad_group.get_current_settings()
-        # daily_budget_cc is in fact not cc
-        daily_cap = daily_cap + Decimal(ad_group_settings.daily_budget_cc) or Decimal(0)
-    return float(daily_cap)
-
-
 def goals_and_spend_settings(user, campaign):
     settings = []
 
     filled_daily_ratio = 0
     yesterday_cost = get_yesterday_spend(user, campaign) or 0
-    campaign_daily_budget = calculate_daily_cap(campaign)
+    campaign_daily_budget = calculate_daily_campaign_cap(campaign)
 
     if campaign_daily_budget > 0:
-        filled_daily_ratio = min(float(yesterday_cost) / float(campaign_daily_budget), 1)
+        filled_daily_ratio = float(yesterday_cost) / float(campaign_daily_budget)
 
     yesterday_spend_settings = OverviewSetting(
         'Yesterday spend:',
@@ -237,15 +227,31 @@ def calculate_daily_ad_group_cap(ad_group):
     """
     Daily media cap
     """
-    daily_budget = 0
-    for adgs in dash.models.AdGroupSource.objects.filter(ad_group=ad_group):
-        adgs_state = adgs.get_latest_state()
-        # skip inactive adgroup sources
-        if not adgs_state or adgs_state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
-            continue
-        adgs_settings = adgs.get_current_settings()
-        if not adgs_settings:
-            continue
-        # cc is not actually cc
-        daily_budget += adg_settings.daily_budget_cc or 0
-    return daily_budget
+    return sum(map(
+        _retrieve_daily_cap,
+        dash.models.AdGroupSource.objects.filter(ad_group=ad_group)
+    ))
+
+
+def calculate_daily_campaign_cap(campaign):
+    ad_groups = dash.models.AdGroup.objects.filter(
+        campaign=campaign
+    ).exclude_archived()
+    return sum(map(
+        _retrieve_daily_cap,
+        dash.models.AdGroupSource.objects.filter(
+            ad_group=ad_groups
+        )
+    ))
+
+
+def _retrieve_daily_cap(ad_group_source):
+    adgs_state = ad_group_source.get_latest_state()
+    # skip inactive adgroup sources
+    if not adgs_state or adgs_state.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+        return 0
+    adgs_settings = ad_group_source.get_current_settings()
+    if not adgs_settings:
+        return 0
+    # cc is not actually cc
+    return adgs_settings.daily_budget_cc or 0
