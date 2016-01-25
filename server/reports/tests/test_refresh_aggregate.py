@@ -1047,24 +1047,23 @@ class RefreshDataTestCase(test.TestCase):
     @patch('utils.s3helpers.S3Helper')
     def test_get_latest_b1_pub_data_s3_key(self, s3_helpers_mock):
         s3_helpers_mock.return_value.list.return_value = [
-            boto.s3.key.Key(name='b1_publishers_raw/2016-01-01-2016-01-01--1451296802070761934/part-00000'),
-            boto.s3.key.Key(name='b1_publishers_raw/2016-01-01-2016-01-01--1451282401204254907/part-00000')
+            boto.s3.key.Key(name='b1_publishers_raw/2016/01/01/part-00000')
         ]
 
-        ret = refresh._get_latest_b1_pub_data_s3_key(datetime.date(2016, 1, 1))
+        ret = refresh._get_b1_pub_data_s3_key(datetime.date(2016, 1, 1))
 
-        s3_helpers_mock.return_value.list.assert_called_once_with('b1_publishers_raw/2016-01-01-2016-01-01')
-        self.assertEqual('b1_publishers_raw/2016-01-01-2016-01-01--1451296802070761934/part-00000', ret)
+        s3_helpers_mock.return_value.list.assert_called_once_with('b1_publishers_raw/2016/01/01/part-00000')
+        self.assertEqual('b1_publishers_raw/2016/01/01/part-00000', ret)
 
     @patch('utils.s3helpers.S3Helper')
     def test_get_latest_b1_pub_data_s3_key_not_found(self, s3_helpers_mock):
         s3_helpers_mock.return_value.list.return_value = []
 
         with self.assertRaises(exc.S3FileNotFoundError):
-            refresh._get_latest_b1_pub_data_s3_key(datetime.date(2016, 1, 1))
+            refresh._get_b1_pub_data_s3_key(datetime.date(2016, 1, 1))
 
     @patch('utils.s3helpers.S3Helper')
-    @patch('reports.refresh._get_latest_b1_pub_data_s3_key')
+    @patch('reports.refresh._get_b1_pub_data_s3_key')
     def test_get_latest_b1_pub_data(self, mock_get_s3_key, mock_s3_helpers):
         raw_b1_data = '2016-01-01,1,adiant,adiant.com,10,1000,20000000,1000000\n'\
                       '2016-01-01,1,adsnative,adsnative.com,5,800,800000,200000'
