@@ -295,13 +295,13 @@ def adjust_autopilot_media_sources_bid_cpcs():
 
             yesterday_spend = yesterday_spends.get(ad_group_source_settings.ad_group_source.source_id)
 
+            source = ad_group_source_settings.ad_group_source.source
             proposed_cpc, calculation_comments = calculate_new_autopilot_cpc(
                 ad_group_source_settings.cpc_cc,
                 ad_group_source_settings.daily_budget_cc,
                 yesterday_spend)
             cpc_change_comments += calculation_comments
-            cpc_change_comments += _check_source_constraints(
-                proposed_cpc, ad_group_source_settings.ad_group_source.source)
+            cpc_change_comments += _check_source_constraints(proposed_cpc, source)
             cpc_change_comments += _check_ad_group_constraints(proposed_cpc, adgroup)
             new_cpc = proposed_cpc if cpc_change_comments == [] else ad_group_source_settings.cpc_cc
             persist_cpc_change_to_admin_log(

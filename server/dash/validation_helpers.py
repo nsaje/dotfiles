@@ -58,17 +58,16 @@ def validate_ad_group_cpc_cc(cpc_cc, ad_group):
         return
 
     ad_group_sources = ad_group.adgroupsource_set.all()
-    min_possible_cpc_cc = None
+    sources_with_greater_cpc = []
     for ad_group_source in ad_group_sources:
         settings = ad_group_source.get_current_settings()
-        source_cpc = settings.cpc_cc if settings.cpc_cc \
-            else ad_group_source.source.source_type.min_cpc
-        min_possible_cpc_cc = max(min_possible_cpc_cc, source_cpc)
+        if settings.cpc_cc and settings.cpc_cc > cpc_cc:
+            sources_with_greater_cpc.append(ad_group_source.source.name)
 
-    if min_possible_cpc_cc > cpc_cc:
+    if sources_with_greater_cpc:
         raise forms.ValidationError(
-            'Maximum CPC can\'t be lower than ${}.'
-            .format(utils.string_helper.format_decimal(min_possible_cpc_cc, 2, 3))
+            'Some sources have grater cpc (${}).'
+            .format(", ".join(sources_with_greater_cpc))
         )
 
 
