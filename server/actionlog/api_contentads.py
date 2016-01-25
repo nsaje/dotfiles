@@ -242,7 +242,9 @@ def _get_content_ad_dict(ad_group_source, content_ad_source):
 
 def _waiting_action_exists(ad_group_source, content_ad_source):
     return actionlog.models.ActionLog.objects.filter(
-        action=actionlog.constants.Action.UPDATE_CONTENT_AD,
+        action=[actionlog.constants.Action.UPDATE_CONTENT_AD,
+                actionlog.constants.Action.INSERT_CONTENT_AD,
+                actionlog.constants.Action.INSERT_CONTENT_AD_BATCH],
         state__in=[actionlog.constants.ActionState.FAILED, actionlog.constants.ActionState.WAITING],
         ad_group_source=ad_group_source,
         content_ad_source=content_ad_source,
