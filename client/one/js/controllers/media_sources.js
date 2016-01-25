@@ -546,7 +546,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         api.campaignOverview.get($state.params.id).then(
             function (data) {
-                console.log($state.params.id);
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxSettings = data.settings;
             },
