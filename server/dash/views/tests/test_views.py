@@ -4,7 +4,7 @@
 import json
 from mock import patch, ANY
 import datetime
-import httplib
+import decimal
 
 from django.test import TestCase, Client, TransactionTestCase
 from django.http.request import HttpRequest
@@ -17,6 +17,8 @@ from zemauth.models import User
 from dash import models
 from dash import constants
 from dash import api
+from dash import budget
+from dash.views import views
 
 from reports import redshift
 
@@ -218,10 +220,12 @@ class CampaignAdGroups(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.client.login(username=User.objects.get(pk=1).email, password='secret')
+        user = User.objects.get(pk=1)
+        self.client.login(username=user.email, password='secret')
 
     @patch('utils.redirector_helper.insert_adgroup')
-    def test_put(self, mock_insert_adgroup):
+    @patch('actionlog.zwei_actions.send')
+    def test_put(self, mock_insert_adgroup, mock_zwei_send):
         campaign = models.Campaign.objects.get(pk=1)
 
         response = self.client.put(
@@ -229,18 +233,99 @@ class CampaignAdGroups(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(mock_insert_adgroup.called)
+        self.assertTrue(mock_zwei_send.called)
 
         response_dict = json.loads(response.content)
         self.assertDictContainsSubset({'name': 'New ad group'}, response_dict['data'])
 
         ad_group = models.AdGroup.objects.get(pk=response_dict['data']['id'])
         ad_group_settings = ad_group.get_current_settings()
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        waiting_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
+
         self.assertIsNotNone(ad_group_settings.id)
+        self.assertIsNotNone(ad_group_settings.changes_text)
+        self.assertEqual(len(ad_group_sources), 1)
+        self.assertEqual(len(waiting_sources), 1)
 
         # check if default settings from campaign level are
         # copied to the newly created settings
         self.assertEqual(ad_group_settings.target_devices, ['mobile'])
         self.assertEqual(ad_group_settings.target_regions, ['NC', '501'])
+
+    def test_create_ad_group(self):
+        campaign = models.Campaign.objects.get(pk=1)
+        request = HttpRequest()
+        request.user = User.objects.get(pk=1)
+        view = views.CampaignAdGroups()
+        ad_group, ad_group_settings, actions = view._create_ad_group(campaign, request)
+
+        self.assertIsNotNone(ad_group)
+        self.assertIsNotNone(ad_group_settings)
+        self.assertEqual(len(actions), 1)
+
+    def test_create_ad_group_no_add_media_sources_automatically_permission(self):
+        campaign = models.Campaign.objects.get(pk=1)
+        request = HttpRequest()
+        request.user = User.objects.get(pk=2)
+        view = views.CampaignAdGroups()
+        ad_group, ad_group_settings, actions = view._create_ad_group(campaign, request)
+
+        self.assertIsNotNone(ad_group)
+        self.assertIsNotNone(ad_group_settings)
+        self.assertEqual(len(actions), 0)
+
+
+    @patch('actionlog.api.create_campaign')
+    def test_add_media_sources(self, mock_create_campaign):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        ad_group_settings = ad_group.get_current_settings()
+        request = None
+
+        view = views.CampaignAdGroups()
+        actions = view._add_media_sources(ad_group, ad_group_settings, request)
+
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        waiting_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
+        added_source = models.Source.objects.get(pk=1)
+
+        self.assertEqual(len(actions), 1)
+        self.assertEqual(mock_create_campaign.call_count, 1)
+        self.assertFalse(mock_create_campaign.call_args[1]['send'])
+
+        self.assertEqual(len(ad_group_sources), 1)
+        self.assertEqual(ad_group_sources[0].source, added_source)
+        self.assertEqual(waiting_ad_group_sources, [])
+
+        self.assertEqual(
+                ad_group_settings.changes_text,
+                'Created settings and automatically created campaigns for 1 sources (AdBlade)'
+        )
+
+    @patch('dash.views.helpers.set_ad_group_source_settings')
+    def test_create_ad_group_source(self, mock_set_ad_group_source_settings):
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        source_settings = models.DefaultSourceSettings.objects.get(pk=1)
+        request = None
+        view = views.CampaignAdGroups()
+        ad_group_source = view._create_ad_group_source(request, source_settings, ad_group_settings)
+
+        self.assertIsNotNone(ad_group_source)
+        self.assertTrue(mock_set_ad_group_source_settings.called)
+        named_call_args = mock_set_ad_group_source_settings.call_args[1]
+        self.assertEqual(named_call_args['active'], True)
+        self.assertEqual(named_call_args['mobile_only'], False)
+
+    def test_create_new_settings(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        request = None
+
+        view = views.CampaignAdGroups()
+        settings = view._create_new_settings(ad_group, request)
+        campaign_settings = ad_group.campaign.get_current_settings()
+
+        self.assertEqual(settings.target_devices, campaign_settings.target_devices)
+        self.assertEqual(settings.target_regions, campaign_settings.target_regions)
 
 
 class AdGroupContentAdCSVTest(TestCase):
@@ -1207,6 +1292,10 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
 class AdGroupSourcesTest(TestCase):
     fixtures = ['test_api', 'test_views']
 
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username=User.objects.get(pk=1).email, password='secret')
+
     def test_get_name(self):
         request = HttpRequest()
         request.user = User(id=1)
@@ -1328,7 +1417,30 @@ class AdGroupSourcesTest(TestCase):
         self.assertItemsEqual(response_dict['data']['sources'], [
             {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False},  # should return False when DMAs used
             {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
+            {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False},
         ])
+
+    def test_put(self):
+        response = self.client.put(
+                reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
+                data=json.dumps({'source_id': '9'})
+        )
+        self.assertEqual(response.status_code, 200)
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+        source = models.Source.objects.get(pk=9)
+        ad_group_sources = ad_group.sources.all()
+        waiting_sources = (ad_group_source.source for ad_group_source
+                           in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
+        self.assertIn(source, ad_group_sources)
+        self.assertIn(source, waiting_sources)
+
+    def test_put_existing_source(self):
+        response = self.client.put(
+                reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
+                data=json.dumps({'source_id': '1'})
+        )
+        self.assertEqual(response.status_code, 400)
 
 
 @patch('dash.views.views.actionlog.api_contentads.init_update_content_ad_action')
@@ -1927,7 +2039,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         settings1 = adg1.get_current_settings()
 
         self.assertEqual(
-            'Blacklisted the following publishers zemanta.com on Adiant.',
+            'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
             settings1.changes_text
         )
 
@@ -1935,9 +2047,17 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         settings9 = adg9.get_current_settings()
 
         self.assertEqual(
-            'Blacklisted the following publishers zemanta.com on Adiant.',
+            'Blacklisted the following publishers on campaign level: zemanta.com on Adiant.',
             settings9.changes_text
         )
+
+        useractionlogs = models.UserActionLog.objects.filter(
+            action_type=constants.UserActionType.SET_CAMPAIGN_PUBLISHER_BLACKLIST
+        )
+        self.assertEqual(2, useractionlogs.count())
+        for useractionlog in useractionlogs:
+            self.assertTrue(useractionlog.ad_group.id in (1, 9))
+
 
     @patch('reports.redshift.get_cursor')
     def test_post_campaign_all_but_blacklist_1(self, cursor):
@@ -2203,7 +2323,7 @@ class AdGroupOverviewTest(TestCase):
 
         tracking_setting = self._get_setting(settings, 'tracking')
         self.assertEqual(tracking_setting['value'], 'Yes')
-        self.assertEqual(tracking_setting['detailsContent'], 'param1=foo&param2=bar')
+        self.assertEqual(tracking_setting['details_content'], 'param1=foo&param2=bar')
 
         yesterday_spend = self._get_setting(settings, 'yesterday')
         self.assertEqual('$0.00', yesterday_spend['value'])
@@ -2220,8 +2340,9 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('0.0 below planned', goal_setting['description'])
         self.assertEqual('happy', goal_setting['icon'])
 
+    @patch('dash.models.BudgetLineItem.get_daily_spend')
     @patch('reports.redshift.get_cursor')
-    def test_run_mid(self, cursor):
+    def test_run_mid(self, cursor, get_spend_data):
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
 
@@ -2251,10 +2372,14 @@ class AdGroupOverviewTest(TestCase):
             created_by=User.objects.get(pk=3)
         )
 
-        cursor().dictfetchall.return_value = [{
-            'source_id': 9,
-            'cost_cc_sum': 500000.0
-        }]
+        cursor().diftfetchall.return_value = [{
+                'source_id': 9,
+                'cost_cc_sum': 500000.0,
+            }]
+
+        get_spend_data.return_value = {
+            'total': 60
+        }
 
         response = self._get_ad_group_overview(1)
 
@@ -2276,14 +2401,9 @@ class AdGroupOverviewTest(TestCase):
         flight_setting = self._get_setting(settings, 'daily')
         self.assertEqual('$100.00', flight_setting['value'])
 
-        flight_setting = self._get_setting(settings, 'yesterday')
-        self.assertEqual('$50.00', flight_setting['value'])
-        self.assertEqual('50.00% of daily cap', flight_setting['description'])
-
-        # TODO: Waiting for the new budget system to come in place
-        #pacing_setting = self._get_setting(settings, 'pacing')
-        #self.assertEqual('50.00%', pacing_setting['value'])
-        #self.assertEqual('happy', pacing_setting['icon'])
+        yesterday_setting = self._get_setting(settings, 'yesterday')
+        self.assertEqual('$60.00', yesterday_setting['value'])
+        self.assertEqual('50.00% of daily cap', yesterday_setting['description'])
 
 
 class CampaignOverviewTest(TestCase):

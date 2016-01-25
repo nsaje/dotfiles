@@ -1,10 +1,10 @@
 'use strict';
 
-describe('zemPostclickMetricsServiceSpec', function() {
+describe('zemPostclickMetricsServiceSpec', function () {
     var postclickMetricsService = null;
 
     beforeEach(module('one'));
-    beforeEach(inject(function(_zemPostclickMetricsService_) {
+    beforeEach(inject(function (_zemPostclickMetricsService_) {
         postclickMetricsService = _zemPostclickMetricsService_;
     }));
 

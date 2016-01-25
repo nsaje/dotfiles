@@ -53,9 +53,9 @@ def parse_id_list(options, field_name):
     return [int(aid) for aid in options[field_name].split(',')]
 
 
-def parse_date(options, field_name='date'):
+def parse_date(options, field_name='date', default=None):
     if not options[field_name]:
-        return
+        return default
 
     return dateutil.parser.parse(options[field_name]).date()
 

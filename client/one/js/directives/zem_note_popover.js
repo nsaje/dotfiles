@@ -1,14 +1,14 @@
 /*global $,oneApp*/
-"use strict";
+'use strict';
 
-oneApp.directive('zemNotePopover', ['$window', function($window) {
+oneApp.directive('zemNotePopover', ['$window', function ($window) {
     return {
         restrict: 'E',
         scope: {
             content: '@',
             placement: '@'
         },
-        link: function(scope, element, attrs) {
+        link: function (scope, element, attrs) {
             function attachment (url, fileExt) {
                 var parts;
                 if (!fileExt) {
@@ -24,7 +24,7 @@ oneApp.directive('zemNotePopover', ['$window', function($window) {
                 var a = $window.document.createElement('a');
                 a.href = match;
                 if (a.hostname.match(/trello-attachments\.s3\.amazonaws.com/) !== null) {
-                    
+
                     return '<a target="_blank" href="' + match + '">' + attachment(match) + '</a>';
                 }
                 return '<a target="_blank" href="' + match + '">' + link(a.hostname) + '</a>';

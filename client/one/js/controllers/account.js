@@ -10,11 +10,11 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
             {heading: 'Agency', route: 'main.accounts.agency', active: false, hidden: !$scope.hasPermission('zemauth.account_agency_view'), internal: $scope.isPermissionInternal('zemauth.account_agency_view')},
             {heading: 'Settings', route: 'main.accounts.archived', active: false, hidden: $scope.hasPermission('zemauth.account_agency_view') || !$scope.hasPermission('zemauth.view_archived_entities') || !$scope.account || !$scope.account.archived, internal: false},
             {heading: 'Credit', route: 'main.accounts.credit', active: false, hidden: !$scope.hasPermission('zemauth.account_credit_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.account && $scope.account.archived), internal: true},
-            {heading: 'Reports', route: 'main.accounts.scheduled_reports', active: false, hidden: !$scope.hasPermission('zemauth.exports_plus') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.account && $scope.account.archived), internal: true},
+            {heading: 'Reports', route: 'main.accounts.scheduled_reports', active: false, hidden: !$scope.hasPermission('zemauth.exports_plus') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.account && $scope.account.archived), internal: $scope.isPermissionInternal('zemauth.exports_plus')},
         ];
     };
     $scope.setActiveTab = function () {
-        $scope.tabs.forEach(function(tab) {
+        $scope.tabs.forEach(function (tab) {
             tab.active = $state.is(tab.route);
         });
     };
@@ -34,11 +34,11 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', function ($scope, $state) 
             return;
         }
         $scope.setBreadcrumbAndTitle([{
-                name: $scope.account.name,
-                state: $scope.getDefaultAccountState(),
-                params: {id: $scope.account.id},
-                disabled: true
-            }],
+            name: $scope.account.name,
+            state: $scope.getDefaultAccountState(),
+            params: {id: $scope.account.id},
+            disabled: true
+        }],
             $scope.account.name
         );
     };

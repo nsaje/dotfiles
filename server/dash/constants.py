@@ -48,6 +48,16 @@ class AdGroupSourceSettingsAutopilotState(ConstantBase):
     }
 
 
+class ExportPlusStatus(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+
+    _VALUES = {
+        ACTIVE: 'Active',
+        INACTIVE: 'Inactive'
+    }
+
+
 class AdTargetDevice(ConstantBase):
     DESKTOP = 'desktop'
     MOBILE = 'mobile'
@@ -972,6 +982,24 @@ class CampaignGoal(ConstantBase):
     }
 
 
+class CampaignGoalKPI(ConstantBase):
+    TIME_ON_SITE = 1
+    MAX_BOUNCE_RATE = 2
+    PAGES_PER_SESSION = 3
+    CPA = 4
+    CPC = 5
+    CPM = 6
+
+    _VALUES = {
+        TIME_ON_SITE: 'time on site in seconds',
+        MAX_BOUNCE_RATE: 'max bounce rate %',
+        PAGES_PER_SESSION: 'pages per session',
+        CPA: '$CPA',
+        CPC: '$CPC',
+        CPM: '$CPM',
+    }
+
+
 class SourceAction(ConstantBase):
     CAN_UPDATE_STATE = 1
     CAN_UPDATE_CPC = 2
@@ -1118,6 +1146,11 @@ class UserActionType(ConstantBase):
     DELETE_SCHEDULED_REPORT = 23
     DOWNLOAD_REPORT = 24
 
+    SET_ADGROUP_PUBLISHER_BLACKLIST = 25
+    SET_CAMPAIGN_PUBLISHER_BLACKLIST = 26
+    SET_ACCOUNT_PUBLISHER_BLACKLIST = 27
+    SET_GLOBAL_PUBLISHER_BLACKLIST = 28
+
     _VALUES = {
         UPLOAD_CONTENT_ADS: 'Upload Content Ads',
         SET_CONTENT_AD_STATE: 'Set Content Ad(s) State',
@@ -1142,7 +1175,11 @@ class UserActionType(ConstantBase):
         SET_MEDIA_SOURCE_SETTINGS: 'Set Media Source Settings',
         SCHEDULE_REPORT: 'Schedule report',
         DELETE_SCHEDULED_REPORT: 'Delete scheduled report',
-        DOWNLOAD_REPORT: 'Direct report download'
+        DOWNLOAD_REPORT: 'Direct report download',
+        SET_ADGROUP_PUBLISHER_BLACKLIST: 'Set Ad Group Publisher Blacklist',
+        SET_CAMPAIGN_PUBLISHER_BLACKLIST: 'Set Campaign Publisher Blacklist',
+        SET_ACCOUNT_PUBLISHER_BLACKLIST: 'Set Account Publisher Blacklist',
+        SET_GLOBAL_PUBLISHER_BLACKLIST: 'Set Global Publisher Blacklist'
     }
 
 

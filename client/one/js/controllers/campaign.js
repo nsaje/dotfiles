@@ -7,7 +7,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
             {heading: 'Ad groups', route: 'main.campaigns.ad_groups', active: true, hidden: !$scope.hasPermission('zemauth.campaign_ad_groups_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_ad_groups_view')},
             {heading: 'Media sources', route: 'main.campaigns.sources', active: false, hidden: !$scope.hasPermission('zemauth.campaign_sources_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_sources_view')},
             {heading: 'Agency', route: 'main.campaigns.agency', active: false, hidden: !$scope.hasPermission('zemauth.campaign_agency_view'), internal: $scope.isPermissionInternal('zemauth.campaign_agency_view')},
-            {heading: 'Budget', route: 'main.campaigns.budget', active: false, hidden: !$scope.hasPermission('zemauth.campaign_budget_management_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_budget_management_view')},
+            {heading: 'Budget', route: 'main.campaigns.budget', active: false, hidden: ($scope.account && $scope.account.usesBCM) || !$scope.hasPermission('zemauth.campaign_budget_management_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_budget_management_view')},
             // this tab is only shown for archived campaigns
             {heading: 'Settings', route: 'main.campaigns.archived', active: false, hidden: $scope.hasPermission('zemauth.campaign_settings_view') || !$scope.hasPermission('zemauth.view_archived_entities') || !$scope.campaign || !$scope.campaign.archived, internal: false},
             {heading: 'Settings', route: 'main.campaigns.settings', active: false, hidden: !$scope.hasPermission('zemauth.campaign_settings_view') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived), internal: $scope.isPermissionInternal('zemauth.campaign_settings_view')},
@@ -15,7 +15,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         ];
     };
     $scope.setActiveTab = function () {
-        $scope.tabs.forEach(function(tab) {
+        $scope.tabs.forEach(function (tab) {
             tab.active = $state.is(tab.route);
         });
     };
@@ -39,11 +39,11 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
             return;
         }
         $scope.setBreadcrumbAndTitle([{
-                name: $scope.account.name,
-                state: $scope.getDefaultAccountState(),
-                params: {id: $scope.account.id},
-                disabled: !$scope.canAccessAccounts()
-            }, {
+            name: $scope.account.name,
+            state: $scope.getDefaultAccountState(),
+            params: {id: $scope.account.id},
+            disabled: !$scope.canAccessAccounts()
+        }, {
                 name: $scope.campaign.name,
                 state: $scope.getDefaultCampaignState(),
                 params: {id: $scope.campaign.id},
@@ -60,7 +60,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', function ($s
         $scope.campaign.name = newCampaignName;
     };
 
-    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+    $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);
     });
 

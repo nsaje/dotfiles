@@ -1,35 +1,5 @@
-/*globals oneApp,$,FS*/
-oneApp.controller('MainCtrl',
-    ['$scope',
-     '$state',
-     '$location',
-     '$document',
-     '$q',
-     '$modalStack',
-     'zemMoment',
-     'user',
-     'zemUserSettings',
-     'accounts',
-     'api',
-     'zemFilterService',
-     'zemFullStoryService',
-     'zemIntercomService',
-      function (
-        $scope,
-        $state,
-        $location,
-        $document,
-        $q,
-        $modalStack,
-        zemMoment,
-        user,
-        zemUserSettings,
-        accounts,
-        api,
-        zemFilterService,
-        zemFullStoryService,
-        zemIntercomService
-) {
+/* globals oneApp, $, angular */
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', 'zemMoment', 'user', 'zemUserSettings', 'accounts', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', function ( $scope, $state, $location, $document, $q, $modalStack, zemMoment, user, zemUserSettings, accounts, api, zemFilterService, zemFullStoryService, zemIntercomService) {
     $scope.accounts = accounts;
     $scope.user = user;
     $scope.currentRoute = $scope.current;
@@ -43,7 +13,7 @@ oneApp.controller('MainCtrl',
     $scope.infoboxEnabled = false;
     $scope.infoboxVisible = false;
 
-    $scope.remindToAddBudget = $q.defer(); 
+    $scope.remindToAddBudget = $q.defer();
 
     $scope.adGroupData = {};
     $scope.account = null;
@@ -81,7 +51,7 @@ oneApp.controller('MainCtrl',
 
     $scope.toggleInfoboxVisibility = function () {
         $scope.infoboxVisible = !$scope.infoboxVisible;
-    }
+    };
 
     $scope.getDefaultAllAccountsState = function () {
         // keep the same tab if possible
@@ -202,13 +172,19 @@ oneApp.controller('MainCtrl',
         var formatStr = 'MMMM YYYY';
         var currentMonth = null;
 
-        result['Yesterday'] = [zemMoment().subtract('days', 1).startOf('day'), zemMoment().subtract('days', 1).endOf('day')];
+        result.Yesterday = [
+            zemMoment().subtract('days', 1).startOf('day'),
+            zemMoment().subtract('days', 1).endOf('day'),
+        ];
         result['Last 30 Days'] = [zemMoment().subtract('days', 30), zemMoment().subtract('days', 1)];
         currentMonth = zemMoment().startOf('month');
         result[currentMonth.format(formatStr)] = [currentMonth, zemMoment().subtract('days', 1)];
 
         for (i = 0; i < monthsCount; i++) {
-            result[zemMoment().subtract('month', i+1).format(formatStr)] = [zemMoment().subtract('month', i+1).startOf('month'), zemMoment().subtract('month', i+1).endOf('month')];
+            result[zemMoment().subtract('month', i + 1).format(formatStr)] = [
+                zemMoment().subtract('month', i + 1).startOf('month'),
+                zemMoment().subtract('month', i + 1).endOf('month'),
+            ];
         }
 
         result['Year to date'] = [zemMoment().startOf('year'), zemMoment().subtract('days', 1)];
@@ -237,7 +213,7 @@ oneApp.controller('MainCtrl',
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.dateRange = {
         startDate: zemMoment().subtract('day', 29).hours(0).minutes(0).seconds(0).milliseconds(0),
-        endDate: zemMoment().subtract('day', 1).endOf('day')
+        endDate: zemMoment().subtract('day', 1).endOf('day'),
     };
 
     $scope.setDateRangeFromSearch();
@@ -248,7 +224,11 @@ oneApp.controller('MainCtrl',
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
         $scope.breadcrumb = breadcrumb;
         if ($scope.canAccessAllAccounts() && $scope.accounts.length) {
-            $scope.breadcrumb.unshift({name: 'All accounts', state: $scope.getDefaultAllAccountsState(), disabled: !$scope.canAccessAllAccounts()});
+            $scope.breadcrumb.unshift({
+                name: 'All accounts',
+                state: $scope.getDefaultAllAccountsState(),
+                disabled: !$scope.canAccessAllAccounts(),
+            });
         }
 
         $document.prop('title', title + ' | Zemanta');
@@ -270,30 +250,30 @@ oneApp.controller('MainCtrl',
         $scope.enablePublisherFilter = visible;
     };
 
-    $scope.$on("$stateChangeSuccess", function (event, toState, toParams, fromState, fromParams) {
+    $scope.$on('$stateChangeSuccess', function () {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
 
-        // infobox will be visible only on certain views and 
+        // infobox will be visible only on certain views and
         // is entirely housed within main atm
         if ($state.is('main.adGroups.adsPlus') ||
             $state.is('main.campaigns.ad_groups')) {
-            $scope.infoboxEnabled = true;  
+            $scope.infoboxEnabled = true;
         } else {
-            $scope.infoboxEnabled = false;  
+            $scope.infoboxEnabled = false;
         }
 
         // Redirect from default state
         var state = null;
         var id = $state.params.id;
 
-        if ($state.is('main.allAccounts')) { 
+        if ($state.is('main.allAccounts')) {
             state = $scope.getDefaultAllAccountsState();
-        } else if ($state.is('main.accounts')) { 
+        } else if ($state.is('main.accounts')) {
             state = $scope.getDefaultAccountState();
-        } else if ($state.is('main.campaigns')) { 
+        } else if ($state.is('main.campaigns')) {
             state = $scope.getDefaultCampaignState();
-        } else if ($state.is('main.adGroups')) { 
+        } else if ($state.is('main.adGroups')) {
             state = $scope.getDefaultAdGroupState();
         } else if ($state.is('main') && $scope.accounts && $scope.accounts.length) {
             if ($scope.canAccessAllAccounts()) {
@@ -318,38 +298,52 @@ oneApp.controller('MainCtrl',
         }
     });
 
-    $document.bind('keyup', function (e) {
-        if (e) {
-            if (String.fromCharCode(e.keyCode).toLowerCase() === 'f') {
-                // nav search shortcut
-                var el = $('#nav-search .select2-container');
+    $document.bind('keyup', function (event) {
+        if (!event) {
+            return;
+        }
 
-                if (document.activeElement.tagName.toLowerCase() === 'input' ||
-                    document.activeElement.tagName.toLowerCase() === 'select' ||
-                    document.activeElement.tagName.toLowerCase() === 'textarea') {
-                    // input element in focus
-                    return;
-                }
+        event.preventDefault();
 
-                if (!!$modalStack.getTop()) {
-                    // some modal window exists
-                    return;
-                }
+        if (String.fromCharCode(event.keyCode).toLowerCase() !== 'f') {
+            return;
+        }
 
-                if (el) {
-                    el.select2('open');
-                }
-            }
+        // nav search shortcut
+        var el = $('#nav-search .select2-container');
 
-            e.preventDefault();
+        if (document.activeElement.tagName.toLowerCase() === 'input' ||
+            document.activeElement.tagName.toLowerCase() === 'select' ||
+            document.activeElement.tagName.toLowerCase() === 'textarea') {
+            // input element in focus
+            return;
+        }
+
+        if ($modalStack.getTop()) {
+            // some modal window exists
+            return;
+        }
+
+        if (el) {
+            el.select2('open');
         }
     });
 
     $scope.$watch('dateRange', function (newValue, oldValue) {
-        if (!$.isEmptyObject(newValue) && !$.isEmptyObject(oldValue) && (newValue.startDate.valueOf() !== oldValue.startDate.valueOf() || newValue.endDate.valueOf() !== oldValue.endDate.valueOf())) {
-            $location.search('start_date', $scope.dateRange.startDate ? $scope.dateRange.startDate.format('YYYY-MM-DD') : null);
-            $location.search('end_date', $scope.dateRange.endDate ? $scope.dateRange.endDate.format('YYYY-MM-DD') : null);
+        if ($.isEmptyObject(newValue) || $.isEmptyObject(oldValue)) {
+            return;
         }
+
+        if (newValue.startDate.valueOf() === oldValue.startDate.valueOf() &&
+            newValue.endDate.valueOf() === oldValue.endDate.valueOf()) {
+            return;
+        }
+
+        $location.search('start_date',
+            $scope.dateRange.startDate ? $scope.dateRange.startDate.format('YYYY-MM-DD') : null);
+
+        $location.search('end_date',
+            $scope.dateRange.endDate ? $scope.dateRange.endDate.format('YYYY-MM-DD') : null);
     });
 
     $scope.getShowArchived = function () {

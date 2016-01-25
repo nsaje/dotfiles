@@ -39,7 +39,7 @@ class RSPublishersModel(redshift.RSModel):
 
     ]
     # fields that are allowed for breakdowns (app-based naming)
-    ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'date'])
+    ALLOWED_BREAKDOWN_FIELDS_APP = set(['exchange', 'domain', 'ad_group', 'date'])
 
     # 	SQL NAME                           APP NAME            OUTPUT TRANSFORM        AGGREGATE                                  ORDER BY function
     FIELDS = [
@@ -205,25 +205,6 @@ def query_publisher_list(start_date, end_date, breakdown_fields=[], order_fields
 
     cursor.close()
     return results
-
-
-def ob_insert_adgroup_date(date, ad_group, exchange, datarowdicts, total_cost):
-    fields_sql = ['date', 'adgroup_id', 'exchange', 'name', 'clicks', 'cost_micro', 'ob_id']
-    row_tuples = []
-    total_clicks = 0
-    for row in datarowdicts:
-        total_clicks += row['clicks']
-
-    for row in datarowdicts:
-        cost = 1.0 * row['clicks'] / total_clicks * total_cost
-        newrow = (date, ad_group, exchange, row['name'], row['clicks'], cost * 1000000000, row['ob_id'])
-        row_tuples.append(newrow)
-
-    with transaction.atomic(using=settings.STATS_DB_NAME):
-        cursor = redshift.get_cursor()
-        rs_ob_pub.execute_delete(cursor, {'date__eq': date, 'ad_group__eq': ad_group, 'exchange__eq': exchange})
-        rs_ob_pub.execute_multi_insert_sql(cursor, fields_sql, row_tuples)
-        cursor.close()
 
 
 def put_ob_data_to_s3(date, ad_group, rows):

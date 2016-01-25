@@ -186,50 +186,6 @@ class AdGroupSettings(api_common.BaseApiView):
 
         zwei_actions.send(actionlogs_to_send)
 
-    def _add_media_sources(self, ad_group, new_settings, request):
-        default_sources_settings = models.DefaultSourceSettings.objects.filter(auto_add=True).with_credentials()
-
-        # only select relevant media sources
-        if new_settings.is_mobile_only():
-            default_sources_settings = default_sources_settings.exclude(mobile_cpc_cc=None)
-        else:
-            default_sources_settings = default_sources_settings.exclude(default_cpc_cc=None)
-
-        ad_group_sources_w_defaults = []
-        actionlogs_to_send = []
-        with transaction.atomic():
-            ad_group.save(request)
-            new_settings.save(request)
-
-            for default_settings in default_sources_settings:
-
-                ad_group_source = helpers.add_source_to_ad_group(default_settings, ad_group)
-                ad_group_source.save(request)
-
-                ad_group_sources_w_defaults.append((ad_group_source, default_settings))
-
-                external_name = ad_group_source.get_external_name()
-
-                action = actionlog_api.create_campaign(ad_group_source, external_name, request, send=False)
-                if action:
-                    actionlogs_to_send.append(action)
-
-            # note changes in history. If no changes text is set the default message will be shown.
-            if ad_group_sources_w_defaults:
-                changes_text = 'Created settings and automatically created campaigns for {}'.format(
-                    ', '.join([x.source.name for x, _ in ad_group_sources_w_defaults]))
-                new_settings.changes_text = changes_text
-
-            new_settings.save(request)
-
-        # set defaults for created ad group sources
-        for ad_group_source, default_settings in ad_group_sources_w_defaults:
-
-            # the update campaign actions should be created on create campaign callback
-            helpers.set_ad_group_source_defaults(default_settings, new_settings, ad_group_source, request)
-
-        zwei_actions.send(actionlogs_to_send)
-
     def get_default_settings_dict(self, ad_group):
         settings = ad_group.campaign.get_current_settings()
 
@@ -803,19 +759,19 @@ class AccountAgency(api_common.BaseApiView):
                 settings = models.AccountSettings()
                 self.set_settings(settings, account, form.cleaned_data)
 
-            if 'allowed_sources' in form.cleaned_data \
-                    and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
-                raise exc.MissingDataError()
+                if 'allowed_sources' in form.cleaned_data \
+                        and not request.user.has_perm('zemauth.can_modify_allowed_sources'):
+                    raise exc.MissingDataError()
 
-            if 'allowed_sources' in form.cleaned_data:
-                self.set_allowed_sources(
-                    settings,
-                    account,
-                    request.user.has_perm('zemauth.can_see_all_available_sources'),
-                    form
-                )
+                if 'allowed_sources' in form.cleaned_data:
+                    self.set_allowed_sources(
+                        settings,
+                        account,
+                        request.user.has_perm('zemauth.can_see_all_available_sources'),
+                        form
+                    )
 
-            if not form.is_valid():
+            else:
                 data = self.get_validation_error_data(request, account)
                 raise exc.ValidationError(errors=dict(form.errors), data=data)
 
@@ -1010,11 +966,11 @@ class AccountAgency(api_common.BaseApiView):
                 'value': str(new_settings.archived)
             }),
             ('default_account_manager', {
-                'name': 'Default Account Manager',
+                'name': 'Account Manager',
                 'value': helpers.get_user_full_name_or_email(new_settings.default_account_manager)
             }),
             ('default_sales_representative', {
-                'name': 'Default Sales Representative',
+                'name': 'Sales Representative',
                 'value': helpers.get_user_full_name_or_email(new_settings.default_sales_representative)
             }),
             ('service_fee', {
@@ -1046,7 +1002,7 @@ class AccountAgency(api_common.BaseApiView):
 
         changes_text = ', '.join(filter(None, [
             self.get_changes_text_for_settings(new_settings, old_settings),
-            new_settings.changes_text
+            new_settings.changes_text.encode('utf-8') if new_settings.changes_text is not None else ''
         ]))
 
         return changes_text

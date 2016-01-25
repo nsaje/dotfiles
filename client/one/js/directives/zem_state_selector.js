@@ -1,5 +1,5 @@
 /*globals constants*/
-"use strict";
+'use strict';
 
 oneApp.directive('zemStateSelector', function () {
     return {
@@ -45,10 +45,10 @@ oneApp.directive('zemStateSelector', function () {
 
                 $scope.onChange($scope.id, newState, newAutopilotState);
             };
-            $scope.$watch('value', function(value) {
+            $scope.$watch('value', function (value) {
                 $scope.active = $scope.value === $scope.enabledValue;
             });
-            $scope.$watch('autopilotValue', function(autopilotValue) {
+            $scope.$watch('autopilotValue', function (autopilotValue) {
                 if ($scope.autopilotEnabledValue === undefined) {
                     // autopilot is optional, so if values are not set, do nothing
                     return;

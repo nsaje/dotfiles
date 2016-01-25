@@ -1,6 +1,7 @@
 import collections
 import datetime
 import pytz
+import re
 from slugify import slugify
 from django.conf import settings
 from django.db.models import Q
@@ -11,6 +12,7 @@ from dash import budget
 from dash import constants
 from dash import api
 from dash import stats_helper
+from dash import publisher_helpers
 
 import utils.pagination
 from utils import exc
@@ -1817,26 +1819,8 @@ class PublishersTable(object):
             constants.PublisherBlacklistFilter.SHOW_ACTIVE,
             constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
 
-            # fetch blacklisted status from db
-            adg_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
-                Q(ad_group=adgroup) |
-                Q(campaign=adgroup.campaign) |
-                Q(account=adgroup.campaign.account)
-            )
-            adg_blacklisted_publishers = adg_pub_blacklist_qs.values('name', 'ad_group__id', 'source__tracking_slug')
-            adg_blacklisted_publishers = map(lambda entry: {
-                'domain': entry['name'],
-                'adgroup_id': adgroup.id,
-                'exchange': entry['source__tracking_slug'].replace('b1_', ''),
-            }, adg_blacklisted_publishers)
-
-            # include global, campaign and account stats if they exist
-            global_pub_blacklist_qs = models.PublisherBlacklist.objects.filter(
-                everywhere=True
-            )
-            adg_blacklisted_publishers.extend(map(lambda pub_bl: {
-                    'domain': pub_bl.name,
-                }, global_pub_blacklist_qs)
+            adg_blacklisted_publishers = publisher_helpers.prepare_publishers_for_rs_query(
+                adgroup
             )
 
             query_func = None
@@ -1882,13 +1866,13 @@ class PublishersTable(object):
         return result
 
     def get_rows(self, user, map_exchange_to_source_name, publishers_data):
-
         rows = []
         for publisher_data in publishers_data:
             exchange = publisher_data.get('exchange', None)
             source_name = map_exchange_to_source_name.get(exchange, exchange)
             domain = publisher_data.get('domain', None)
-            if domain:
+
+            if publisher_helpers.is_publisher_domain(domain):
                 domain_link = "http://" + domain
             else:
                 domain_link = ""

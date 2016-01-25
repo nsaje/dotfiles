@@ -622,27 +622,24 @@ class AdGroupAdsPlusTableUpdatesTest(TestCase):
         self.assertEqual(result['data']['in_progress'], True)
 
         self.assertIn('rows', result['data'])
-        self.assertEqual(result['data']['rows'], {
-            '1': {
-                'submission_status': [{
-                    'status': 1,
-                    'source_state': '',
-                    'text': 'Pending / Paused',
-                    'name': 'AdsNative'
-                }, {
-                    'status': 2,
-                    'source_state': '(paused)',
-                    'text': 'Approved / Paused',
-                    'name': 'Gravity'
-                }, {
-                    'status': 1,
-                    'source_state': '',
-                    'text': 'Pending / Paused',
-                    'name': 'Sharethrough'
-                }],
-                'status_setting': 1
-            }
-        })
+        expected_submission_status = [{
+            'status': 1,
+            'source_state': '',
+            'text': 'Pending / Paused',
+            'name': 'AdsNative'
+        }, {
+            'status': 2,
+            'source_state': '(paused)',
+            'text': 'Approved / Paused',
+            'name': 'Gravity'
+        }, {
+            'status': 1,
+            'source_state': '',
+            'text': 'Pending / Paused',
+            'name': 'Sharethrough'
+        }]
+        self.assertItemsEqual(result['data']['rows']['1']['submission_status'], expected_submission_status)
+        self.assertEqual(result['data']['rows']['1']['status_setting'], 1)
 
 
 class AdGroupSourceTableSupplyDashTest(TestCase):
@@ -1209,7 +1206,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'source_id': 3,
             u'impressions': 10560,
             u'domain': 'test_1',
-            u'domain_link': 'http://test_1',
+            u'domain_link': '',
         }
 
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
