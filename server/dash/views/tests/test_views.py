@@ -174,7 +174,7 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_end_date_past(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         settings = ad_group.get_current_settings()
-        settings.end_date = datetime.date.today() - datetime.timedelta(days=1)
+        settings.end_date = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
         settings.save(None)
 
         response = self.client.put(
@@ -188,7 +188,7 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_end_date_future(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         settings = ad_group.get_current_settings()
-        settings.end_date = datetime.date.today() + datetime.timedelta(days=3)
+        settings.end_date = datetime.datetime.utcnow().date() + datetime.timedelta(days=3)
         settings.save(None)
 
         response = self.client.put(
@@ -201,7 +201,7 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_logs_user_action(self, mock_log_useraction):
         ad_group = models.AdGroup.objects.get(pk=1)
         settings = ad_group.get_current_settings()
-        settings.end_date = datetime.date.today()
+        settings.end_date = datetime.datetime.utcnow().date()
         settings.save(None)
 
         response = self.client.put(
