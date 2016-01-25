@@ -444,12 +444,13 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(targeting_region.as_dict())
 
-        daily_cap = infobox_helpers.OverviewSetting(
+        daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
+        daily_cap_setting = infobox_helpers.OverviewSetting(
             'Daily cap',
-            '${:.2f}'.format(ad_group_settings.daily_budget_cc)
-            if ad_group_settings.daily_budget_cc is not None else '',
+            '${:.2f}'.format(daily_cap)
+            if daily_cap is not None else '',
         )
-        settings.append(daily_cap.as_dict())
+        settings.append(daily_cap_setting.as_dict())
 
         campaign_budget = budget.CampaignBudget(ad_group.campaign)
         total = campaign_budget.get_total()

@@ -231,3 +231,21 @@ def format_goal_value(goal_value, goal_type):
         return float(goal_value)
     else:
         return int(goal_value)
+
+
+def calculate_daily_ad_group_cap(ad_group):
+    """
+    Daily media cap
+    """
+    daily_budget = 0
+    for adgs in dash.models.AdGroupSource.objects.filter(ad_group=ad_group):
+        adgs_state = adgs.get_latest_state()
+        # skip inactive adgroup sources
+        if not adgs_state or adgs_state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+            continue
+        adgs_settings = adgs.get_current_settings()
+        if not adgs_settings:
+            continue
+        # cc is not actually cc
+        daily_budget += adg_settings.daily_budget_cc or 0
+    return daily_budget

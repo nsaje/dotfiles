@@ -54,7 +54,7 @@ def update_ad_group_source_state(ad_group_source, conf):
         if key in ('cpc_cc', 'daily_budget_cc'):
             conf[key] = cc_to_decimal(val)
 
-    ad_group_source_state = _get_latest_ad_group_source_state(ad_group_source)
+    ad_group_source_state = ad_group_source.get_latest_state()
 
     # determine if we need to update
     need_update = False
@@ -231,14 +231,6 @@ def _update_publisher_blacklist(key, level, publishers):
 
     if blacklist != []:
         models.PublisherBlacklist.objects.bulk_create(blacklist)
-
-
-def _get_latest_ad_group_source_state(ad_group_source):
-    try:
-        agss = models.AdGroupSourceState.objects.filter(ad_group_source=ad_group_source).latest()
-        return agss
-    except models.AdGroupSourceState.DoesNotExist:
-        return None
 
 
 def create_campaign_callback(ad_group_source, source_campaign_key, request):
