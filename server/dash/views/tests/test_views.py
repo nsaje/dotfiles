@@ -4,7 +4,6 @@
 import json
 from mock import patch, ANY
 import datetime
-import decimal
 
 from django.test import TestCase, Client, TransactionTestCase
 from django.http.request import HttpRequest
@@ -17,7 +16,6 @@ from zemauth.models import User
 from dash import models
 from dash import constants
 from dash import api
-from dash import budget
 from dash.views import views
 
 from reports import redshift
@@ -2411,9 +2409,8 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('0.0 below planned', goal_setting['description'])
         self.assertEqual('happy', goal_setting['icon'])
 
-    #@patch('dash.models.BudgetLineItem.get_daily_spend')
     @patch('reports.redshift.get_cursor')
-    def test_run_mid(self, cursor):  #, get_spend_data):
+    def test_run_mid(self, cursor):
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
 
@@ -2456,9 +2453,6 @@ class AdGroupOverviewTest(TestCase):
                 'cost_cc_sum': 500000.0,
             }]
 
-        #get_spend_data.return_value = {
-        #    'media': 60
-        #}
         response = self._get_ad_group_overview(1)
 
         self.assertTrue(response['success'])
