@@ -111,14 +111,8 @@ class NavigationTreeView(api_common.BaseApiView):
         ad_groups_sources_settings = models.AdGroupSourceSettings.objects.all().group_current_settings().only(
             'ad_group_source_id', 'state')
 
-        map_ad_groups_sources_settings = {}
-        for ad_group_source_settings in ad_groups_sources_settings:
-            ad_group_source_id = ad_group_source_settings.ad_group_source_id
-
-            # filter by ad group and source
-            if ad_group_source_id in map_ad_group_source:
-                ad_group_id = map_ad_group_source[ad_group_source_id]
-                map_ad_groups_sources_settings.setdefault(ad_group_id, []).append(ad_group_source_settings)
+        map_ad_groups_sources_settings = navigation_helpers.map_ad_group_sources_settings(
+            ad_groups_sources_settings, map_ad_group_source)
 
         data_ad_groups = {}
         for ad_group in ad_groups:
