@@ -141,6 +141,7 @@
         start_date: '2014-06-04'
         end_date: '2014-06-05'
         cpc_cc: '0.12'
+        max_cpc_cc: '1.00'
         daily_budget_cc: '50.'
         tracking_code: ''
         archived: false

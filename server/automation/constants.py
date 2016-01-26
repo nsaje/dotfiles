@@ -27,5 +27,5 @@ class CpcChangeComment(ConstantBase):
         CURRENT_CPC_TOO_LOW: 'Auto-Pilot can not operate on such low CPC',
         OVER_SOURCE_MAX_CPC: 'new bid CPC would exceed media source\'s CPC constraints',
         UNDER_SOURCE_MIN_CPC: 'new bid CPC would not meet media source\'s minimum CPC constraint',
-        OVER_AD_GROUP_MAX_CPC: 'new bid CPC would exceed ad group\'s CPC constraints'
+        OVER_AD_GROUP_MAX_CPC: 'new bid CPC would exceed ad group\'s maximum CPC constraints'
     }
