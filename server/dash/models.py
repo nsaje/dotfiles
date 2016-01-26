@@ -2302,7 +2302,7 @@ class BudgetLineItem(FootprintModel):
 
         self.save()
 
-    def get_reserve_amount_cc(self):
+    def get_reserve_amount_cc(self, offset=0):
         try:
             # try to get previous statement that has more solid data
             statement = list(self.statements.all().order_by('-date')[:2])[-1]
@@ -2311,7 +2311,7 @@ class BudgetLineItem(FootprintModel):
         total_cc = nano_to_cc(
             statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
         )
-        return total_cc * settings.BUDGET_RESERVE_FACTOR
+        return total_cc * (offset + settings.BUDGET_RESERVE_FACTOR)
 
     def get_latest_statement(self):
         return self.statements.all().order_by('-date').first()
@@ -2380,12 +2380,8 @@ class BudgetLineItem(FootprintModel):
 
     def clean(self):
         if self.pk:
-            have_changed = any([
-                self.has_changed('start_date'),
-                self.has_changed('amount'),
-            ])
             db_state = self.db_state()
-            if have_changed and not db_state == constants.BudgetLineItemState.PENDING:
+            if self.has_changed('start_date') and not db_state == constants.BudgetLineItemState.PENDING:
                 raise ValidationError('Only pending budgets can change start date and amount.')
             is_reserve_update = all([
                 not self.has_changed('start_date'),
@@ -2441,6 +2437,20 @@ class BudgetLineItem(FootprintModel):
                     -delta.quantize(Decimal('1.00'))
                 )
             )
+
+        if self.previous_value('amount') > self.amount:
+            spend_cc = self.get_spend_data()['total_cc']
+            if not spend_cc:
+                return
+            self.get_reserve_amount_cc(offset=1)
+            reserve = self.get_reserve_amount_cc(offset=1)
+            minimum_amount = int(float(spend_cc + reserve) / TO_CC_MULTIPLIER + 1)
+            if self.amount < minimum_amount:
+                raise ValidationError(
+                    'Budget exceeds the minimum budget amount by ${}.'.format(
+                        Decimal(minimum_amount - self.amount).quantize(Decimal('1.00'))
+                    )
+                )
 
     class QuerySet(models.QuerySet):
 
