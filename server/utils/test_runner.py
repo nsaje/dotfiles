@@ -102,7 +102,7 @@ class SplitTestsRunner(runner.DiscoverRunner):
         if self.test_name is None:
             return ret
 
-        newSuite = unittest.TestSuite()
+        new_suite = unittest.TestSuite()
 
         prefix = self.test_name
         for test in ret._tests:
@@ -112,9 +112,9 @@ class SplitTestsRunner(runner.DiscoverRunner):
             if name != prefix:
                 continue
 
-            newSuite.addTest(test)
+            new_suite.addTest(test)
 
-        return newSuite
+        return new_suite
 
 
 class CustomRunner(XMLTestRunner, SplitTestsRunner):
