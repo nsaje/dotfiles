@@ -2123,7 +2123,8 @@ class CreditLineItem(FootprintModel):
             self.has_changed('start_date'),
             self.has_changed('license_fee'),
         ))
-        if has_changed and not self.is_editable():
+
+        if self.account.uses_credits and has_changed and not self.is_editable():
             raise ValidationError({
                 '__all__': ['Nonpending credit line item cannot change.'],
             })

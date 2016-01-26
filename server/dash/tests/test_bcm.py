@@ -192,7 +192,20 @@ class CreditsTestCase(TestCase):
             c.save()
         self.assertTrue('__all__' in err.exception.error_dict)
 
-        c.start_date = TODAY  # return to previous value
+        request = HttpRequest()
+        request.user = User.objects.get(pk=1)
+        c.account.uses_credits = False  # not migrated
+        c.account.save(request)
+
+        c.start_date = TODAY + datetime.timedelta(1)
+        c.save()  # Editing allowed
+        self.assertEqual(c.start_date, models.CreditLineItem.objects.get(pk=1).start_date)
+
+        # return to previous value
+        c.start_date = TODAY
+        c.save()
+        c.account.uses_credits = True
+        c.account.save(request)
 
         with self.assertRaises(ValidationError) as err:
             c.amount = 111
