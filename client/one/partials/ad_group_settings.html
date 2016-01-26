@@ -68,7 +68,7 @@
             <label ng-repeat="error in errors.endDate" class="control-label error" for="end-date-input">{{ error }}</label>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.cpc}">
+        <div class="form-group" ng-class="{'has-error': !!errors.cpc}" ng-if="hasPermission('zemauth.can_set_ad_group_cpc')">
             <label for="cpc-input" class="col-xs-2 control-label">
                 Maximum CPC
                 <zem-help-popover content="Maximum CPC in this ad group." placement="top"></zem-help-popover>
@@ -76,7 +76,7 @@
             <div class="col-xs-2">
                 <div class="input-group">
                     <span class="input-group-addon">$</span>
-                    <input id="cpc-input" type="text" class="form-control" ng-model="settings.cpc" zem-currency-input empty-text="Unbound">
+                    <input id="cpc-input" type="text" class="form-control" ng-model="settings.cpc" zem-currency-input empty-text="No limit">
                 </div>
             </div>
             <label ng-repeat="error in errors.cpc" class="control-label error" for="cpc-input">{{ error }}</label>
