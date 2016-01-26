@@ -29,7 +29,7 @@ def get_yesterdays_spends(campaigns):
     bcm_campaigns, legacy_campaigns = split_legacy_campaigns(campaigns)
     spends = {}
     spends.update({
-        campaign.id: sum(reports.api.get_yesterday_cost(dict(campaign=campaign)).values())
+        campaign.id: decimal.Decimal(sum(reports.api.get_yesterday_cost(dict(campaign=campaign)).values()))
         for campaign in legacy_campaigns
     })
     spends.update({
