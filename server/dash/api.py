@@ -1099,8 +1099,8 @@ def update_content_ads_state(content_ads, state, request):
         content_ad_sources.update(state=state)
 
     content_ad_source_ids = [cas.id for cas in content_ad_sources]
-    t = threads.TestableNonBlockingThread(target=_create_update_content_ads_actions_async,
-                                          args=(content_ad_source_ids, request))
+    t = threads.CreateUpdateContentAdsActions(target=_create_update_content_ads_actions_async,
+                                              args=(content_ad_source_ids, request))
     t.start()
 
 

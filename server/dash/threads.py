@@ -44,14 +44,11 @@ class UpdateUploadBatchThread(Thread):
         batch.save()
 
 
-class TestableNonBlockingThread(Thread):
-    """
-    Thread that always blocks when testing. Useful for cases
-    when we want a non-blocking thread in production and a
-    blocking thread in tests.
-    """
+class CreateUpdateContentAdsActions(Thread):
 
     def start(self):
-        super(TestableNonBlockingThread, self).start()
+        # block when testing so that results can be verified
+        # else do not block
+        super(CreateUpdateContentAdsActions, self).start()
         if settings.TESTING:
             self.join()
