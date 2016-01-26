@@ -491,7 +491,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         'fields': ['percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'visits', 'pageviews', 'click_discrepancy']
     }, {
         name: 'Conversions',
-        fields: ['conversion_goal_1', 'conversion_goal_2']
+        fields: ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']
     }];
 
     $scope.addContentAds = function () {
