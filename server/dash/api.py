@@ -678,7 +678,7 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         # do not create actions if actions already exists - prevents flooding
         return actionlog.api_contentads.init_bulk_update_content_ad_actions(
-            unsynced_content_ad_sources_actions, None, check_action_exists=True)
+            unsynced_content_ad_sources_actions, None, skip_if_action_exists=True)
 
     return []
 
