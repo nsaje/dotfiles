@@ -76,7 +76,7 @@ def get_ideal_campaign_spend(user, campaign, until_date=None):
     at_date = until_date or datetime.datetime.today().date()
     budgets = _retrieve_active_budgetlineitems(campaign, at_date)
     all_budget_spends_at_date = [b.get_ideal_budget_spend(at_date) for b in budgets]
-    return sum(all_budget_spends_at_date)
+    return Decimal(sum(all_budget_spends_at_date))
 
 
 def get_total_campaign_spend(user, campaign, until_date=None):
@@ -86,7 +86,7 @@ def get_total_campaign_spend(user, campaign, until_date=None):
     all_budget_spends_at_date = [
         b.get_daily_spend(date=at_date, use_decimal=True)['total'] for b in budgets
     ]
-    return sum(all_budget_spends_at_date)
+    return Decimal(sum(all_budget_spends_at_date))
 
 
 def get_media_campaign_spend(user, campaign, until_date=None):
@@ -178,8 +178,8 @@ def goals_and_spend_settings(user, campaign):
     )
     settings.append(yesterday_spend_settings.as_dict())
 
-    total_campaign_spend_to_date = Decimal(get_total_campaign_spend(user, campaign))
-    ideal_campaign_spend_to_date = Decimal(get_ideal_campaign_spend(user, campaign))
+    total_campaign_spend_to_date = get_total_campaign_spend(user, campaign)
+    ideal_campaign_spend_to_date = get_ideal_campaign_spend(user, campaign)
 
     ratio = 0
     if ideal_campaign_spend_to_date > 0:
