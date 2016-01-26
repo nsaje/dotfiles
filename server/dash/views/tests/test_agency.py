@@ -381,7 +381,7 @@ class AdGroupAgencyTest(TestCase):
 
             settings = models.AdGroupSettings(
                 ad_group=ad_group,
-                cpc_cc='0.4000',
+                cpc_cc='1.0000',
                 tracking_code=tracking_code,
             )
             settings.save(request)
@@ -391,7 +391,7 @@ class AdGroupAgencyTest(TestCase):
 
             settings = models.AdGroupSettings(
                 ad_group=ad_group,
-                cpc_cc='0.3000',
+                cpc_cc='2.0000',
                 daily_budget_cc='120.0000',
                 tracking_code=tracking_code,
             )
@@ -417,9 +417,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'State', 'value': 'Paused'},
                         {'name': 'Start date', 'value': None},
                         {'name': 'End date', 'value': 'I\'ll stop it myself'},
-                        {'name': 'Default CPC bid', 'value': '$0.40'},
+                        {'name': 'Max CPC bid', 'value': '$1.00'},
                         {'name': 'Daily budget', 'value': None},
-                        {'name': 'Max CPC bid', 'value': None},
                         {'name': 'Device targeting', 'value': ''},
                         {'name': 'Locations', 'value': 'worldwide'},
                         {'name': 'Tracking code', 'value': 'test tracking code'},
@@ -437,15 +436,14 @@ class AdGroupAgencyTest(TestCase):
                 },
                 {
                     'changed_by': 'superuser@test.com',
-                    'changes_text': 'Daily budget set to "$120.00", Default CPC bid set to "$0.30"',
+                    'changes_text': 'Daily budget set to "$120.00", Max CPC bid set to "$2.00"',
                     'datetime': '2015-06-05T09:22:24',
                     'settings': [
                         {'name': 'State', 'old_value': 'Paused', 'value': 'Paused'},
                         {'name': 'Start date', 'old_value': None, 'value': None},
                         {'name': 'End date', 'old_value': 'I\'ll stop it myself', 'value': 'I\'ll stop it myself'},
-                        {'name': 'Default CPC bid', 'old_value': '$0.40', 'value': '$0.30'},
+                        {'name': 'Max CPC bid', 'old_value': '$1.00', 'value': '$2.00'},
                         {'name': 'Daily budget', 'old_value': None, 'value': '$120.00'},
-                        {'name': 'Max CPC bid', 'old_value': None, 'value': None},
                         {'name': 'Device targeting', 'old_value': '', 'value': ''},
                         {'name': 'Locations', 'old_value': 'worldwide', 'value': 'worldwide'},
                         {'name': 'Tracking code', 'old_value': 'test tracking code', 'value': 'test tracking code'},

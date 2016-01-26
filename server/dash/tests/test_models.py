@@ -38,8 +38,7 @@ class AdGroupSettingsTest(TestCase):
         settings_dict = {
             'archived': False,
             'state': 1,
-            'cpc_cc': Decimal('0.12'),
-            'max_cpc_cc': Decimal('1.00'),
+            'cpc_cc': Decimal('1.00'),
             'daily_budget_cc': Decimal('50'),
             'start_date': datetime.date(2014, 6, 4),
             'end_date': datetime.date(2014, 6, 5),

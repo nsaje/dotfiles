@@ -46,21 +46,21 @@ def validate_ad_group_source_cpc_cc(cpc_cc, ad_group_source):
     validate_source_cpc_cc(cpc_cc, ad_group_source.source)
 
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
-    max_cpc = ad_group_settings.max_cpc_cc
+    max_cpc = ad_group_settings.cpc_cc
     if max_cpc is not None and cpc_cc > max_cpc:
         raise forms.ValidationError(
                 'Maximum ad group CPC is ${}.'.format(utils.string_helper.format_decimal(max_cpc, 2, 3)))
 
 
-def validate_ad_group_max_cpc_cc(max_cpc_cc, ad_group):
-    if not max_cpc_cc:
+def validate_ad_group_cpc_cc(cpc_cc, ad_group):
+    if not cpc_cc:
         return
 
     ad_group_sources = ad_group.adgroupsource_set.all()
     sources_with_greater_cpc = []
     for ad_group_source in ad_group_sources:
         settings = ad_group_source.get_current_settings()
-        if settings.cpc_cc and settings.cpc_cc > max_cpc_cc:
+        if settings.cpc_cc and settings.cpc_cc > cpc_cc:
             sources_with_greater_cpc.append(ad_group_source.source.name)
 
     if sources_with_greater_cpc:

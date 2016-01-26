@@ -1341,7 +1341,6 @@ class AdGroupSettings(SettingsBase):
         'end_date',
         'cpc_cc',
         'daily_budget_cc',
-        'max_cpc_cc',
         'target_devices',
         'target_regions',
         'tracking_code',
@@ -1372,7 +1371,7 @@ class AdGroupSettings(SettingsBase):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='CPC'
+        verbose_name='Maximum CPC'
     )
     daily_budget_cc = models.DecimalField(
         max_digits=10,
@@ -1381,14 +1380,6 @@ class AdGroupSettings(SettingsBase):
         null=True,
         verbose_name='Daily budget'
     )
-    max_cpc_cc = models.DecimalField(
-            max_digits=10,
-            decimal_places=4,
-            blank=True,
-            null=True,
-            verbose_name='Maximum CPC'
-    )
-
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
@@ -1470,9 +1461,8 @@ class AdGroupSettings(SettingsBase):
         NAMES = {
             'start_date': 'Start date',
             'end_date': 'End date',
-            'cpc_cc': 'Default CPC bid',
+            'cpc_cc': 'Max CPC bid',
             'daily_budget_cc': 'Daily budget',
-            'max_cpc_cc': 'Max CPC bid',
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
             'tracking_code': 'Tracking code',

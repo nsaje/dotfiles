@@ -103,8 +103,7 @@ class AdGroupSettingsFormTest(TestCase):
     def setUp(self):
         self.ad_group = models.AdGroup.objects.get(pk=1)
         self.data = {
-            'cpc_cc': '0.40',
-            'max_cpc_cc': '1.00',
+            'cpc_cc': '1.00',
             'daily_budget_cc': '10.00',
             'end_date': '2014-12-31',
             'id': '248',
@@ -122,8 +121,7 @@ class AdGroupSettingsFormTest(TestCase):
 
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data, {
-            'cpc_cc': Decimal('0.40'),
-            'max_cpc_cc': Decimal('1.00'),
+            'cpc_cc': Decimal('1.00'),
             'daily_budget_cc': Decimal('10.00'),
             'end_date': datetime.date(2014, 12, 31),
             'id': 248,
@@ -156,26 +154,26 @@ class AdGroupSettingsFormTest(TestCase):
 
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
-            'cpc_cc': ['Minimum CPC is $0.03.'],
+            'cpc_cc': ['Maximum CPC can\'t be lower than $0.03.'],
             'daily_budget_cc': ['Please provide budget of at least $10.00.']})
 
     def test_max_cpc_setting_min_value(self):
-        self.data['max_cpc_cc'] = 0.01
+        self.data['cpc_cc'] = 0.01
         form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
         self.assertFalse(form.is_valid())
 
     def test_max_cpc_setting_lower_min_source_value(self):
-        self.data['max_cpc_cc'] = 0.1
+        self.data['cpc_cc'] = 0.1
         form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
         self.assertFalse(form.is_valid())
 
     def test_max_cpc_setting_equal_min_source_value(self):
-        self.data['max_cpc_cc'] = 0.12
+        self.data['cpc_cc'] = 0.12
         form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
         self.assertTrue(form.is_valid())
 
     def test_max_cpc_setting_high_value(self):
-        self.data['max_cpc_cc'] = 100
+        self.data['cpc_cc'] = 100
         form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
         self.assertTrue(form.is_valid())
 

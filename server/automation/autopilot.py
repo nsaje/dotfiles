@@ -193,8 +193,8 @@ def _check_source_constraints(proposed_cpc, source):
 
 def _check_ad_group_constraints(proposed_cpc, ad_group):
     settings = ad_group.get_current_settings_or_none()
-    if settings and settings.max_cpc_cc:
-        if proposed_cpc > settings.max_cpc_cc:
+    if settings and settings.cpc_cc:
+        if proposed_cpc > settings.cpc_cc:
             return [automation.constants.CpcChangeComment.OVER_AD_GROUP_MAX_CPC]
     return []
 

@@ -69,17 +69,17 @@
         </div>
 
         <div class="form-group" ng-class="{'has-error': !!errors.cpc}">
-            <label for="max-cpc-input" class="col-xs-2 control-label">
+            <label for="cpc-input" class="col-xs-2 control-label">
                 Maximum CPC
                 <zem-help-popover content="Maximum CPC in this ad group." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
                 <div class="input-group">
                     <span class="input-group-addon">$</span>
-                    <input id="max-cpc-input" type="text" class="form-control" ng-model="settings.max_cpc" zem-currency-input empty-text="Unbound">
+                    <input id="cpc-input" type="text" class="form-control" ng-model="settings.cpc" zem-currency-input empty-text="Unbound">
                 </div>
             </div>
-            <label ng-repeat="error in errors.cpc" class="control-label error" for="max-cpc-input">{{ error }}</label>
+            <label ng-repeat="error in errors.cpc" class="control-label error" for="cpc-input">{{ error }}</label>
         </div>
 
         <div class="form-vertical">

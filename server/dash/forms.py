@@ -56,21 +56,11 @@ class AdGroupSettingsForm(forms.Form):
     end_date = forms.DateField(required=False)
     cpc_cc = forms.DecimalField(
         min_value=0.03,
-        max_value=2,
         decimal_places=4,
         required=False,
         error_messages={
-            'min_value': 'Minimum CPC is $0.03.',
-            'max_value': 'Maximum CPC is $2.00.'
+            'min_value': 'Maximum CPC can\'t be lower than $0.03.',
         }
-    )
-    max_cpc_cc = forms.DecimalField(
-            min_value=0.03,
-            decimal_places=4,
-            required=False,
-            error_messages={
-                'min_value': 'Maximum CPC can\'t be lower than $0.03.',
-            }
     )
     daily_budget_cc = forms.DecimalField(
         min_value=10,
@@ -155,10 +145,10 @@ class AdGroupSettingsForm(forms.Form):
 
         return target_regions
 
-    def clean_max_cpc_cc(self):
-        max_cpc_cc = self.cleaned_data.get('max_cpc_cc')
-        validation_helpers.validate_ad_group_max_cpc_cc(max_cpc_cc, self.ad_group)
-        return max_cpc_cc
+    def clean_cpc_cc(self):
+        cpc_cc = self.cleaned_data.get('cpc_cc')
+        validation_helpers.validate_ad_group_cpc_cc(cpc_cc, self.ad_group)
+        return cpc_cc
 
 
 class AdGroupSourceSettingsCpcForm(forms.Form):
