@@ -345,12 +345,12 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return zemFilterService.getShowArchived();
     };
 
-    $scope.$watch(zemNavigationService.lastSyncTS, function () {
+    zemNavigationService.onUpdate($scope, function () {
         $scope.accounts = zemNavigationService.getAccounts();
     });
 
-    $scope.$watch(zemNavigationService.isLoadInProgress, function (newValue) {
-        $scope.loadSidebarInProgress = newValue;
+    zemNavigationService.onLoading($scope, function (e, isLoading) {
+        $scope.loadSidebarInProgress = isLoading;
     });
 
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {

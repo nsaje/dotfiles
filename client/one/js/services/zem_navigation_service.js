@@ -1,9 +1,9 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemNavigationService', ['$q', '$location', 'api', function ($q, $location, api) {
+oneApp.factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', function ($rootScope, $q, $location, api) {
 
-    var accounts = [], loading = false, lastSyncTS = null;
+    var accounts = [];
 
     function findAccountInNavTree (id) {
         var strId = id.toString();
@@ -129,7 +129,7 @@ oneApp.factory('zemNavigationService', ['$q', '$location', 'api', function ($q, 
     }
 
     function notifyCacheUpdate () {
-        lastSyncTS = Date();
+        $rootScope.$emit('navigation-updated');
     }
 
     function updateAllAccountsCache (dataObjOrFunc) {
@@ -161,14 +161,30 @@ oneApp.factory('zemNavigationService', ['$q', '$location', 'api', function ($q, 
         notifyCacheUpdate();
     }
 
+    function addAccountToCache (data) {
+        accounts.push(data);
+        notifyCacheUpdate();
+    }
+
+    function addCampaignToCache (id, data) {
+        var fromCache = findAccountInNavTree(id);
+        fromCache.account.campaigns.push(data);
+        notifyCacheUpdate();
+    }
+
+    function addAdGroupToCache (id, data) {
+        var fromCache = findCampaignInNavTree(id);
+        fromCache.campaign.adGroups.push(data);
+        notifyCacheUpdate();
+    }
+
     function reload () {
-        loading = true;
+        $rootScope.$emit('navigation-loading', true);
         return api.navigation.list().then(function (data) {
             accounts = data;
 
             notifyCacheUpdate();
-
-            loading = false;
+            $rootScope.$emit('navigation-loading', false);
             return data;
         });
     }
@@ -221,16 +237,22 @@ oneApp.factory('zemNavigationService', ['$q', '$location', 'api', function ($q, 
         updateCampaignCache: updateCampaignCache,
         updateAccountCache: updateAccountCache,
 
-        isLoadInProgress: function () {
-            return loading;
+        addAdGroupToCache: addAdGroupToCache,
+        addCampaignToCache: addCampaignToCache,
+        addAccountToCache: addAccountToCache,
+
+        onUpdate: function (scope, callback) {
+            var handler = $rootScope.$on('navigation-updated', callback);
+            scope.$on('$destroy', handler);
+        },
+
+        onLoading: function (scope, callback) {
+            var handler = $rootScope.$on('navigation-loading', callback);
+            scope.$on('$destroy', handler);
         },
 
         getAccounts: function () {
             return accounts;
-        },
-
-        lastSyncTS: function () {
-            return lastSyncTS;
         },
     };
 }]);

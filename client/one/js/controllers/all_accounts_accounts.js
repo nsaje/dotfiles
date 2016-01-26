@@ -295,12 +295,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         api.account.create().then(
             function (data) {
-                zemNavigationService.updateAllAccountsCache(function (accounts) {
-                    accounts.push({
-                        'name': data.name,
-                        'id': data.id,
-                        'campaigns': [],
-                    });
+                zemNavigationService.addAccountToCache({
+                    'name': data.name,
+                    'id': data.id,
+                    'campaigns': [],
                 });
 
                 $state.go('main.accounts.agency', {id: data.id});

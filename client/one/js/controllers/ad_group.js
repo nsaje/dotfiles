@@ -136,8 +136,8 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         }
     }
 
-    $scope.$watch(zemNavigationService.lastSyncTS, function (newValue, oldValue) {
-        zemNavigationService.getAdGroup($state.params.id).then(function(adGroupData) {
+    zemNavigationService.onUpdate($scope, function () {
+        zemNavigationService.getAdGroup($state.params.id).then(function (adGroupData) {
             $scope.setModels(adGroupData);
             $scope.updateBreadcrumbAndTitle();
         });

@@ -61,7 +61,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
         }
     }
 
-    $scope.$watch(zemNavigationService.lastSyncTS, function (newValue, oldValue) {
+    zemNavigationService.onUpdate($scope, function () {
         zemNavigationService.getCampaign($state.params.id).then(function (campaignData) {
             $scope.setModels(campaignData);
             $scope.updateBreadcrumbAndTitle();
