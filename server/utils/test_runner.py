@@ -32,7 +32,7 @@ class SplitTestsRunner(runner.DiscoverRunner):
         )
 
         parser.add_argument(
-            '--test-name',
+            '-n', '--test-name',
             dest='test_name',
             default=None,
             help='Filter out any tests not matching name.'
