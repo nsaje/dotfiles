@@ -1,6 +1,6 @@
 import decimal
 
-DEPLETING_AVAILABLE_BUDGET_SCALAR = 1.5
+DEPLETING_AVAILABLE_BUDGET_SCALAR = decimal.Decimal(1.5)
 DEPLETING_CAMPAIGN_BUDGET_EMAIL = 'help@zemanta.com'
 AUTOPILOT_CPC_CHANGE_TABLE = (
     {'underspend_upper_limit': -1, 'underspend_lower_limit': -0.8, 'bid_cpc_procentual_increase': decimal.Decimal('0.5')},

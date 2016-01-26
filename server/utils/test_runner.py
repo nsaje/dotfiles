@@ -1,6 +1,8 @@
 import os
 import logging
 
+import unittest
+
 from xmlrunner.extra.djangotestrunner import XMLTestRunner
 
 from django.test import runner
@@ -29,13 +31,21 @@ class SplitTestsRunner(runner.DiscoverRunner):
             help='Run tests for Amazon Redshift.'
         )
 
-    def __init__(self, integration_tests=None, redshift_tests=None, *args, **kwargs):
+        parser.add_argument(
+            '-n', '--test-name',
+            dest='test_name',
+            default=None,
+            help='Filter out any tests not matching name.'
+        )
+
+    def __init__(self, integration_tests=None, redshift_tests=None, test_name=None, *args, **kwargs):
         logging.disable(logging.CRITICAL)
 
         if integration_tests:
             os.environ['INTEGRATION_TESTS'] = '1'
 
         self.redshift_tests = redshift_tests
+        self.test_name = test_name
         settings.RUN_REDSHIFT_UNITTESTS = redshift_tests
 
         super(SplitTestsRunner, self).__init__(*args, **kwargs)
@@ -85,6 +95,26 @@ class SplitTestsRunner(runner.DiscoverRunner):
                          settings.STATS_DB_NAME,
                          settings.STATS_E2E_DB_NAME,
                          verbosity=0)
+
+    def build_suite(self, test_labels=None, extra_tests=None, **kwargs):
+        ret = super(SplitTestsRunner, self).build_suite(test_labels=test_labels, extra_tests=extra_tests, **kwargs)
+
+        if self.test_name is None:
+            return ret
+
+        new_suite = unittest.TestSuite()
+
+        prefix = self.test_name
+        for test in ret._tests:
+            # the next string is <test_name> (<module path>)
+            test_str = str(test).split()
+            name = test_str[0]
+            if name != prefix:
+                continue
+
+            new_suite.addTest(test)
+
+        return new_suite
 
 
 class CustomRunner(XMLTestRunner, SplitTestsRunner):
