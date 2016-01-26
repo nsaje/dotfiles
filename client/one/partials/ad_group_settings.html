@@ -103,7 +103,7 @@
                 <label ng-repeat="error in errors.targetRegions" class="control-label error">{{ error }}</label>
             </div>
 
-            <div class="form-group" ng-if="hasPermission('zemauth.can_view_retargeting_settings')" ng-class="{'has-error': !!errors.targetRegions}">
+            <div class="form-group" ng-if="hasPermission('zemauth.can_view_retargeting_settings')" ng-class="{'has-error': !!errors.retargetingIds}">
                 <label class="col-xs-2 control-label">
                     <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_view_retargeting_settings')" popover-placement="right"></zem-internal-feature>
                     Retargeting
@@ -114,7 +114,7 @@
                     <zem-retargeting zem-selected-adgroup-ids="[]" zem-account="account"></zem-retargeting>
                 </div>
 
-                <label ng-repeat="error in errors.targetRegions" class="control-label error">{{ error }}</label>
+                <label ng-repeat="error in errors.retargetingIds" class="control-label error">{{ error }}</label>
             </div>
 
             <div class="form-group" ng-class="{'has-error': !!errors.trackingCode}">
