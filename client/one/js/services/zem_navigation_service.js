@@ -132,32 +132,28 @@ oneApp.factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', 
         $rootScope.$emit('navigation-updated');
     }
 
-    function updateAllAccountsCache (dataObjOrFunc) {
-        if (typeof dataObjOrFunc === 'function') {
-            dataObjOrFunc(accounts);
-        } else {
-            Object.keys(dataObjOrFunc).forEach(function (key) {
-                accounts[key] = dataObjOrFunc[key];
-            });
-        }
+    function updateAllAccountsCache (data) {
+        Object.keys(data).forEach(function (key) {
+            accounts[key] = data[key];
+        });
         notifyCacheUpdate();
     }
 
-    function updateAccountCache (id, dataObjOrFunc) {
+    function updateAccountCache (id, data) {
         var fromCache = findAccountInNavTree(id);
-        updateModel(fromCache.account, dataObjOrFunc);
+        updateModel(fromCache.account, data);
         notifyCacheUpdate();
     }
 
-    function updateCampaignCache (id, dataObjOrFunc) {
+    function updateCampaignCache (id, data) {
         var fromCache = findCampaignInNavTree(id);
-        updateModel(fromCache.campaign, dataObjOrFunc);
+        updateModel(fromCache.campaign, data);
         notifyCacheUpdate();
     }
 
-    function updateAdGroupCache (id, dataObjOrFunc) {
+    function updateAdGroupCache (id, data) {
         var fromCache = findAdGroupInNavTree(id);
-        updateModel(fromCache.adGroup, dataObjOrFunc);
+        updateModel(fromCache.adGroup, data);
         notifyCacheUpdate();
     }
 
