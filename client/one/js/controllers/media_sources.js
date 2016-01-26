@@ -548,8 +548,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxSettings = data.settings;
-            },
-            function (data) {}
+            }
         );
     };
 

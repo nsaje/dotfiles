@@ -665,8 +665,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxSettings = data.settings;
-            },
-            function (data) {}
+            }
         );
     };
 
