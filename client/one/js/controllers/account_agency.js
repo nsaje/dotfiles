@@ -140,7 +140,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigatio
     };
 
     $scope.refreshPage = function () {
-        zemNavigationService.reloadAccount($scope.account.id);
+        zemNavigationService.reload();
         $scope.getSettings();
     };
 

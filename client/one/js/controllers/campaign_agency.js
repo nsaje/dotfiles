@@ -67,7 +67,7 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'z
     };
 
     $scope.refreshPage = function () {
-        zemNavigationService.reloadCampaign($scope.campaign.id);
+        zemNavigationService.reload();
         $scope.getSettings();
     };
 
