@@ -191,6 +191,8 @@ def goals_and_spend_settings(user, campaign):
     ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
     settings.append(campaign_pacing_settings.as_dict())
 
+    # TODO: Campaign goals will be disabled until Campaign KPI's ticket gets delivered
+    """
     campaign_settings = campaign.get_current_settings()
     campaign_goals = [(
         campaign_settings.campaign_goal,
@@ -219,7 +221,7 @@ def goals_and_spend_settings(user, campaign):
             description
         ).performance(success)
         settings.append(goal_setting.as_dict())
-
+    """
     is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
     return settings, is_delivering
 

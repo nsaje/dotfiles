@@ -688,6 +688,7 @@ div[datepicker] {
     height: 100%;
     overflow: auto;
     display: visible;
+    background: #f6f6f6;
 }
 
 .infobox-container-short {
@@ -723,8 +724,10 @@ div[datepicker] {
 }
 
 .infobox-header {
-    display: inline-block;
+    display: block;
     width: 100%;
+    white-space: nowrap;
+    overflow: visible;
 }
 
 .infobox-title {
@@ -736,6 +739,7 @@ div[datepicker] {
 .infobox-icon {
     width: 10px;
     height: 10px;
+    margin-right: 4px;
 }
 
 .infobox-subtitle {
@@ -745,8 +749,8 @@ div[datepicker] {
 }
 
 .infobox-setting-label {
-    width: 150px;
-    max-width: 150px;
+    width: 140px;
+    max-width: 120px;
     overflow: hidden;
     display: inline-block;
     color: @infobox-gray;
@@ -769,7 +773,7 @@ div[datepicker] {
 .infobox-setting-icon {
     display: inline-block;
     vertical-align: top;
- }
+}
 
 .infobox-details-link {
     cursor: pointer;

@@ -256,6 +256,8 @@ class CampaignAdGroups(TestCase):
     def test_create_ad_group(self):
         campaign = models.Campaign.objects.get(pk=1)
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User.objects.get(pk=1)
         view = views.CampaignAdGroups()
         ad_group, ad_group_settings, actions = view._create_ad_group(campaign, request)
@@ -581,6 +583,8 @@ class AdGroupContentAdStateTest(TestCase):
         state = constants.ContentAdSourceState.ACTIVE
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
@@ -599,6 +603,8 @@ class AdGroupContentAdStateTest(TestCase):
         state = constants.ContentAdSourceState.ACTIVE
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
@@ -885,6 +891,8 @@ class AdGroupContentAdArchive(TestCase):
         self.assertEqual(len(content_ads), 3)
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
@@ -901,6 +909,8 @@ class AdGroupContentAdArchive(TestCase):
         content_ads = list(content_ads) * 4  # need more than 10 ads
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
@@ -1059,6 +1069,8 @@ class AdGroupContentAdRestore(TestCase):
         self.assertEqual(len(content_ads), 3)
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
@@ -1075,6 +1087,8 @@ class AdGroupContentAdRestore(TestCase):
         content_ads = list(content_ads) * 4  # need more than 10 ads
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
@@ -2369,10 +2383,14 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('0.00%', pacing_setting['value'])
         self.assertEqual('happy', pacing_setting['icon'])
 
-        goal_setting = [s for s in settings if 'goal' in s['name'].lower()][0]
+        goal_setting = [s for s in settings if 'goal' in s['name'].lower()]
+        self.assertEqual([], goal_setting)
+        # TODO: reintroduce when Campaign goals are wrapped up
+        """
         goal_setting = self._get_setting(settings, 'goal')
         self.assertEqual('0.0 below planned', goal_setting['description'])
         self.assertEqual('happy', goal_setting['icon'])
+        """
 
     @patch('dash.models.BudgetLineItem.get_daily_spend')
     @patch('reports.redshift.get_cursor')
