@@ -32,8 +32,9 @@ def get_yesterdays_spends(campaigns):
         campaign.id: decimal.Decimal(sum(reports.api.get_yesterday_cost(dict(campaign=campaign)).values()))
         for campaign in legacy_campaigns
     })
+    yesterday = utils.dates_helper.local_today() - datetime.timedelta(1)
     spends.update({
-        campaign.id: _get_total_campaign_spend(campaign)
+        campaign.id: _get_total_campaign_spend(campaign, yesterday)
         for campaign in bcm_campaigns
     })
 
@@ -80,7 +81,7 @@ def _get_total_available_budget(campaign, date=None):
 def _get_total_campaign_spend(campaign, date=None):
     date = date or utils.dates_helper.local_today()
     return sum(
-        decimal.Decimal(budget.get_spend_data(date, use_decimal=True)['total'])
+        decimal.Decimal(budget.get_daily_spend(date, use_decimal=True)['total'])
         for budget in campaign.budgets.all()
         if budget.state() == dash.constants.BudgetLineItemState.ACTIVE
     )
