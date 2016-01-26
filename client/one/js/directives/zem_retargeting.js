@@ -14,18 +14,11 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', function (conf
             $scope.selected = {adgroup: undefined};
 
             $scope.selectedAdgroups = function () {
-                return $scope.selectedAdgroupIds.map(function (id) {
-                    return $scope.getAdgroupById(id);
-                });
-            };
-
-            $scope.getAdgroupById = function (id) {
-                var result;
-
+                var result = [];
                 $scope.account.campaigns.forEach(function (campaign) {
                     campaign.adGroups.forEach(function (adgroup) {
-                        if (adgroup.id === id) {
-                            result = adgroup;
+                        if ($scope.selectedAdgroupIds.indexOf(adgroup.id) >= 0) {
+                            result.push(adgroup);
                         }
                     });
                 });
