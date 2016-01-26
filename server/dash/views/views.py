@@ -599,6 +599,9 @@ class CampaignAdGroups(api_common.BaseApiView):
                 logger.exception('Exception occurred on campaign with id %s', ad_group.campaign.pk)
                 continue
 
+            if not self._can_automatically_add_media_source(source_default_settings):
+                continue
+
             ad_group_source = self._create_ad_group_source(request, source_default_settings, ad_group_settings)
             external_name = ad_group_source.get_external_name()
             action = actionlog.api.create_campaign(ad_group_source, external_name, request, send=False)
@@ -612,6 +615,11 @@ class CampaignAdGroups(api_common.BaseApiView):
             ad_group_settings.save(request)
 
         return actions
+
+    def _can_automatically_add_media_source(self, source_default_settings):
+        return bool(source_default_settings.default_cpc_cc or
+                    source_default_settings.mobile_cpc_cc or
+                    source_default_settings.daily_budget_cc)
 
     def _create_ad_group_source(self, request, source_settings, ad_group_settings):
         source = source_settings.source
@@ -817,8 +825,6 @@ class AdGroupSources(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
             raise exc.MissingDataError()
 
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group_settings = ad_group.get_current_settings()
 
@@ -827,20 +833,23 @@ class AdGroupSources(api_common.BaseApiView):
             if real_ad_groups:
                 ad_group = real_ad_groups[0].real_ad_group
 
-        ad_group_sources = ad_group.sources.all().order_by('name')
+        allowed_sources = ad_group.campaign.account.allowed_sources.all()
+        ad_group_sources = ad_group.sources.all()
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
+        sources_with_credentials = models.DefaultSourceSettings.objects.all().with_credentials().values('source')
+        available_sources = allowed_sources.\
+            exclude(pk__in=ad_group_sources).\
+            filter(pk__in=filtered_sources).\
+            filter(pk__in=sources_with_credentials).\
+            order_by('name')
 
         sources = []
-        for source_settings in models.DefaultSourceSettings.objects.\
-                filter(source__in=filtered_sources).with_credentials():
-
-            if source_settings.source in ad_group_sources:
-                continue
-
+        for source in available_sources:
             sources.append({
-                'id': source_settings.source.id,
-                'name': source_settings.source.name,
+                'id': source.id,
+                'name': source.name,
                 'can_target_existing_regions': region_targeting_helper.can_target_existing_regions(
-                    source_settings.source, ad_group_settings)
+                        source, ad_group_settings)
             })
 
         sources_waiting = set([ad_group_source.source.name for ad_group_source

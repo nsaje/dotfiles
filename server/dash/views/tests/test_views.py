@@ -175,7 +175,7 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_end_date_past(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         settings = ad_group.get_current_settings()
-        settings.end_date = datetime.date.today() - datetime.timedelta(days=1)
+        settings.end_date = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
         settings.save(None)
 
         response = self.client.put(
@@ -189,7 +189,7 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_end_date_future(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         settings = ad_group.get_current_settings()
-        settings.end_date = datetime.date.today() + datetime.timedelta(days=3)
+        settings.end_date = datetime.datetime.utcnow().date() + datetime.timedelta(days=3)
         settings.save(None)
 
         response = self.client.put(
@@ -202,7 +202,7 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_logs_user_action(self, mock_log_useraction):
         ad_group = models.AdGroup.objects.get(pk=1)
         settings = ad_group.get_current_settings()
-        settings.end_date = datetime.date.today()
+        settings.end_date = datetime.datetime.utcnow().date()
         settings.save(None)
 
         response = self.client.put(
@@ -1420,6 +1420,40 @@ class AdGroupSourcesTest(TestCase):
             {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
             {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False},
         ])
+
+    def test_available_sources(self):
+        response = self.client.get(
+                reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
+                follow=True
+        )
+        # Expected sources - 9 (Sharethrough)
+        # Allowed sources 1-9, Sources 1-7 already added, 8 has no default setting
+        response_dict = json.loads(response.content)
+        self.assertEqual(len(response_dict['data']['sources']), 1)
+        self.assertEqual(response_dict['data']['sources'][0]['id'], 9)
+
+    def test_available_sources_with_filter(self):
+        response = self.client.get(
+                reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
+                {'filtered_sources': '7,8,9'},
+                follow=True
+        )
+        # Expected sources - 9 (Sharethrough)
+        # Allowed sources 1-9, Sources 1-7 already added, 8 has no default setting
+        response_dict = json.loads(response.content)
+        self.assertEqual(len(response_dict['data']['sources']), 1)
+        self.assertEqual(response_dict['data']['sources'][0]['id'], 9)
+
+    def test_available_sources_with_filter_empty(self):
+        response = self.client.get(
+                reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
+                {'filtered_sources': '7,8'},
+                follow=True
+        )
+        # Expected sources - none
+        # Allowed sources 1-9, Sources 1-7 already added, 8 has no default setting
+        response_dict = json.loads(response.content)
+        self.assertEqual(len(response_dict['data']['sources']), 0)
 
     def test_put(self):
         response = self.client.put(
