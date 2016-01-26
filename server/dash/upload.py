@@ -212,10 +212,12 @@ def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
             except ValidationError as e:
                 errors.extend(e.messages)
 
+        logger.info("Row validated, errors: {}".format(errors))
         # atomically update counter
         batch.processed_content_ads = F('processed_content_ads') + 1
         batch.save()
 
+        logger.info("Processed content ads count saved")
         return row, data, errors
     except Exception as e:
         logger.exception('Exception in upload._clean_row')
