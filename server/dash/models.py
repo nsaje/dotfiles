@@ -1470,8 +1470,9 @@ class AdGroupSettings(SettingsBase):
         NAMES = {
             'start_date': 'Start date',
             'end_date': 'End date',
-            'cpc_cc': 'Max CPC bid',
+            'cpc_cc': 'Default CPC bid',
             'daily_budget_cc': 'Daily budget',
+            'max_cpc_cc': 'Max CPC bid',
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
             'tracking_code': 'Tracking code',

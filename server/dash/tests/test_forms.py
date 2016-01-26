@@ -104,6 +104,7 @@ class AdGroupSettingsFormTest(TestCase):
         self.ad_group = models.AdGroup.objects.get(pk=1)
         self.data = {
             'cpc_cc': '0.40',
+            'max_cpc_cc': '1.00',
             'daily_budget_cc': '10.00',
             'end_date': '2014-12-31',
             'id': '248',
@@ -122,6 +123,7 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data, {
             'cpc_cc': Decimal('0.40'),
+            'max_cpc_cc': Decimal('1.00'),
             'daily_budget_cc': Decimal('10.00'),
             'end_date': datetime.date(2014, 12, 31),
             'id': 248,
