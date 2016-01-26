@@ -40,7 +40,6 @@ def process_async(content_ads_data, filename, batch, upload_form_cleaned_fields,
     ad_group_sources = [s for s in models.AdGroupSource.objects.filter(ad_group_id=ad_group.id)
                         if s.can_manage_content_ads and s.source.can_manage_content_ads()]
 
-    logger.info("Starting content upload threads with {} ad group sources".format(len(ad_group_sources)))
     pool = ThreadPool(processes=NUM_THREADS)
     pool.map_async(
         partial(_clean_row, batch, upload_form_cleaned_fields, ad_group),
@@ -50,7 +49,6 @@ def process_async(content_ads_data, filename, batch, upload_form_cleaned_fields,
 
 
 def _process_callback(batch, ad_group, ad_group_sources, filename, request, results):
-    logger.info("Executing content upload thread pool callback")
     try:
         # ensure content ads are only commited to DB
         # if all of them are successfully processed
@@ -191,7 +189,6 @@ def _create_objects(data, batch, ad_group_id, ad_group_sources):
 
 
 def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
-    logger.info("Cleaning content upload row {}".format(row))
     try:
         errors = []
         data = {}
