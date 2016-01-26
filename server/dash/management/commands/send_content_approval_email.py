@@ -1,8 +1,8 @@
+import sys
 import datetime
 import logging
 import textwrap
 
-from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.core.mail import send_mail
 
@@ -53,6 +53,10 @@ class Command(ExceptionCommand):
 
         source = models.Source.objects.get(id=options['source_id'])
         ad_group_sources = get_ad_group_sources(source)
+
+        if not ad_group_sources:
+            logger.info("No new content to approve")
+            sys.exit(0)
 
         links = []
         for ad_group_source in ad_group_sources:

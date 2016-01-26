@@ -2404,10 +2404,14 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('0.00%', pacing_setting['value'])
         self.assertEqual('sad', pacing_setting['icon'])
 
-        goal_setting = [s for s in settings if 'goal' in s['name'].lower()][0]
+        goal_setting = [s for s in settings if 'goal' in s['name'].lower()]
+        self.assertEqual([], goal_setting)
+        # TODO: reintroduce when Campaign goals are wrapped up
+        """
         goal_setting = self._get_setting(settings, 'goal')
         self.assertEqual('0.0 below planned', goal_setting['description'])
         self.assertEqual('happy', goal_setting['icon'])
+        """
 
     @patch('reports.redshift.get_cursor')
     def test_run_mid(self, cursor):
