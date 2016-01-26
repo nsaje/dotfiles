@@ -100,6 +100,7 @@ class AccountAgencySettingsFormTest(TestCase):
 
 class AdGroupSettingsFormTest(TestCase):
     fixtures = ['test_models.yaml']
+
     def setUp(self):
         self.ad_group = models.AdGroup.objects.get(pk=1)
         self.data = {

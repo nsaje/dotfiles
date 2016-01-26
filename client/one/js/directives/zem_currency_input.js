@@ -101,7 +101,7 @@ oneApp.directive('zemCurrencyInput', ['$filter', function ($filter) {
                     }
 
                     value = $filter('decimalCurrency')(value, '', scope.fractionSize, scope.replaceTrailingZeros);
-                    return fromDecimal(value)
+                    return fromDecimal(value);
                 }
 
                 function getCommaCount (value, caretPos) {
@@ -131,8 +131,8 @@ oneApp.directive('zemCurrencyInput', ['$filter', function ($filter) {
                     setTimeout(function () {
                         var el = element[0];
 
-                        if (el.value === scope.emptyText){
-                            el.value = "";
+                        if (el.value === scope.emptyText) {
+                            el.value = '';
                         }
 
                         if (el.selectionStart === 0) {
