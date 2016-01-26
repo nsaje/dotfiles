@@ -68,8 +68,9 @@
             <label ng-repeat="error in errors.endDate" class="control-label error" for="end-date-input">{{ error }}</label>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': !!errors.cpc}" ng-if="hasPermission('zemauth.can_set_ad_group_cpc')">
+        <div class="form-group" ng-class="{'has-error': !!errors.cpc}" ng-if="hasPermission('zemauth.can_set_ad_group_max_cpc')">
             <label for="cpc-input" class="col-xs-2 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_ad_group_max_cpc')" popover-placement="right"></zem-internal-feature>
                 Maximum CPC
                 <zem-help-popover content="Maximum CPC in this ad group." placement="top"></zem-help-popover>
             </label>
