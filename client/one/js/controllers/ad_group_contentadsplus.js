@@ -1,5 +1,5 @@
 /* globals oneApp, options, angular */
-oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService) {
+oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemLayoutService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemLayoutService) {
     var contentAdsNotLoaded = $q.defer();
 
     $scope.order = '-upload_time';
@@ -23,7 +23,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.lastSyncDate = null;
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
-
     $scope.selectionMenuConfig = {};
 
     // selection triplet - all, a batch, or specific content ads can be selected
@@ -632,12 +631,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             $scope.getAdGroupState();
         }
     };
-
-    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    });
 
     $scope.$watch('size', function (newValue, oldValue) {
         if (newValue !== oldValue) {

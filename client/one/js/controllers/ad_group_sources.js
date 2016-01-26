@@ -906,12 +906,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         }
     };
 
-    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    });
-
     $scope.$on('$destroy', function () {
         $timeout.cancel($scope.lastChangeTimeout);
     });

@@ -1,5 +1,5 @@
 /* globals oneApp, $, angular */
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', 'zemMoment', 'user', 'zemUserSettings', 'accounts', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', function ( $scope, $state, $location, $document, $q, $modalStack, zemMoment, user, zemUserSettings, accounts, api, zemFilterService, zemFullStoryService, zemIntercomService) {
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', 'zemMoment', 'user', 'zemUserSettings', 'accounts', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemLayoutService', function ( $scope, $state, $location, $document, $q, $modalStack, $timeout, zemMoment, user, zemUserSettings, accounts, api, zemFilterService, zemFullStoryService, zemIntercomService, zemLayoutService) {
     $scope.accounts = accounts;
     $scope.user = user;
     $scope.currentRoute = $scope.current;
@@ -9,16 +9,15 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.enablePublisherFilter = false;
     $scope.showSelectedPublisher = null;
 
-    // TODO: move to localstorage
-    $scope.infoboxEnabled = false;
-    $scope.infoboxVisible = false;
-
     $scope.remindToAddBudget = $q.defer();
 
     $scope.adGroupData = {};
     $scope.account = null;
     $scope.campaign = null;
     $scope.adGroup = null;
+
+    $scope.infoboxEnabled = false;
+    $scope.infoboxVisible = false;
 
     $scope.user.automaticallyCreateAdGroup = false;
 
@@ -49,8 +48,16 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return !$scope.user.permissions[permission];
     };
 
-    $scope.toggleInfoboxVisibility = function () {
-        $scope.infoboxVisible = !$scope.infoboxVisible;
+    $scope.toggleInfobox = function () {
+        zemLayoutService.toggleInfoboxVisible();
+    };
+
+    $scope.toggleGraph = function () {
+        zemLayoutService.toggleGraphVisible();
+    };
+
+    $scope.toggleNavigationPane = function () {
+        zemLayoutService.toggleNavigationPaneVisible();
     };
 
     $scope.getDefaultAllAccountsState = function () {
@@ -330,6 +337,13 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if (el) {
             el.select2('open');
         }
+    });
+
+    $scope.$watch(zemLayoutService.isInfoboxVisible, function (newValue, oldValue) {
+        $scope.infoboxVisible = newValue;
+        $timeout(function () {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
     });
 
     $scope.$watch('dateRange', function (newValue, oldValue) {

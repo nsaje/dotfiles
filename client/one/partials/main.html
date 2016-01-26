@@ -61,10 +61,9 @@
                 enable-publisher-filter="enablePublisherFilter"
                 show-publisher-selected="showPublisherSelected">
             </zem-filter>
-            <div class="btn btn-default infobox-button pull-right" ng-show="hasPermission('zemauth.can_see_infobox') && infoboxEnabled" ng-click="toggleInfoboxVisibility()">I</div>
-            <div class="btn btn-default graph-button pull-right" ng-attr-title="{{ chartBtnTitle }}" ng-click="toggleChart()"><img class="graph-button-image" ng-src="{{ config.static_url }}/one/img/chart.svg"></div>
-            <!-- <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a> -->
-            <div class="btn btn-default navigation-button pull-right" ng-show="true" ng-click="()">N</div>
+            <div class="btn btn-default infobox-button pull-right" ng-show="hasPermission('zemauth.can_see_infobox') && infoboxEnabled" ng-click="toggleInfobox()">I</div>
+            <div class="btn btn-default graph-button pull-right" ng-click="toggleChart()"><img class="graph-button-image" ng-src="{{ config.static_url }}/one/img/chart.svg"></div>
+            <div class="btn btn-default navigation-button pull-right" ng-show="true" ng-click="toggleNavigationPane()">N</div>
             <div ui-view></div>
             
         </div>
