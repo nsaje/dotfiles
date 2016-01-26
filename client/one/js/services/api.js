@@ -2732,6 +2732,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                                                         'YYYY-MM-DD').format('MM/DD/YYYY'),
                     endDate: obj.end_date && moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                     isSigned: obj.is_signed,
+                    isCanceled: obj.is_canceled,
                     account: obj.account_id,
                     licenseFee: obj.license_fee,
                     total: obj.total,
@@ -2806,6 +2807,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         this.delete = function (accountId, itemId) {
             var url = '/api/accounts/' + accountId + '/credit/' + itemId + '/';
             return $http.delete(url).then(processResponse).then(self.convert.dataFromApi);
+        };
+
+        this.cancel = function (accountId, itemIds) {
+            var url = '/api/accounts/' + accountId + '/credit/';
+            return $http.post(url, {
+                'cancel': itemIds
+            }).then(processResponse);
         };
     }
 

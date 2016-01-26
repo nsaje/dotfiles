@@ -1,7 +1,7 @@
 /* globals oneApp, moment */
 oneApp.controller('AccountCreditCtrl',
-    ['$scope', '$state', '$modal', '$location', 'api',
-    function ($scope, $state, $modal, $location, api) {
+    ['$scope', '$state', '$modal', '$location', '$window', 'api',
+    function ($scope, $state, $modal, $location, $window, api) {
         function error () {}
         function refresh (updatedId) {
             $scope.updatedId = updatedId;
@@ -26,6 +26,7 @@ oneApp.controller('AccountCreditCtrl',
         }
 
         $scope.creditTotals = {};
+        $scope.canceledIds = {};
         $scope.activeCredit = [];
         $scope.pastCredit = [];
 
@@ -47,13 +48,26 @@ oneApp.controller('AccountCreditCtrl',
         });
 
         $scope.addCreditItem = function () {
+            $scope.canceledIds = {};
             $scope.selectedCreditItemId = null;
             return openModal();
         };
 
         $scope.editCreditItem = function (id) {
+            $scope.canceledIds = {};
             $scope.selectedCreditItemId = id;
             return openModal();
+        };
+
+        $scope.cancelCreditItem = function (id) {
+            if (!$window.confirm('Are you sure you want to cancel the credit line item?')) { return; }
+            api.accountCredit.cancel($scope.account.id, [id]).then(function (response) {
+                $scope.canceledIds = {};
+                response.canceled.forEach(function (canceledId) {
+                    $scope.canceledIds[canceledId] = true;
+                });
+                refresh();
+            });
         };
 
         $scope.init = function () {

@@ -7,12 +7,29 @@ from dash.views import helpers
 
 
 class AccountCreditView(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'account_credit_get')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
         account = helpers.get_account(request.user, account_id)
         return self._get_response(account.id)
+
+    @statsd_helper.statsd_timer('dash.api', 'account_credit_delete')
+    def post(self, request, account_id):
+        if not request.user.has_perm('zemauth.account_credit_view'):
+            raise exc.AuthorizationError()
+
+        account = helpers.get_account(request.user, account_id)
+        request_data = json.loads(request.body)
+        response_data = {'canceled': []}
+        account_credits_to_cancel = models.CreditLineItem.objects.filter(
+            account_id=account_id, pk__in=request_data['cancel']
+        )
+        for credit in account_credits_to_cancel:
+            credit.cancel()
+            response_data['canceled'].append(credit.pk)
+        return self.create_api_response(response_data)
 
     @statsd_helper.statsd_timer('dash.api', 'account_credit_put')
     def put(self, request, account_id):
@@ -23,7 +40,7 @@ class AccountCreditView(api_common.BaseApiView):
         request_data = json.loads(request.body)
         data = {}
         data.update(request_data)
-        
+
         data['status'] = constants.CreditLineItemStatus.PENDING
         data['account'] = account.id
 
@@ -53,12 +70,13 @@ class AccountCreditView(api_common.BaseApiView):
             'start_date': item.start_date,
             'end_date': item.end_date,
             'is_signed': item.status == constants.CreditLineItemStatus.SIGNED,
+            'is_canceled': item.status == constants.CreditLineItemStatus.CANCELED,
             'license_fee': helpers.format_decimal_to_percent(item.license_fee) + '%',
             'total': item.amount,
             'allocated': allocated,
             'comment': item.comment,
             'budgets': [
-                { 'id': b.pk, 'amount': b.amount } for b in item.budgets.all()
+                {'id': b.pk, 'amount': b.amount} for b in item.budgets.all()
             ],
             'available': item.amount - allocated,
         }
@@ -66,29 +84,26 @@ class AccountCreditView(api_common.BaseApiView):
     def _get_response(self, account_id):
         credit_items = models.CreditLineItem.objects.filter(
             account_id=account_id,
-        ).exclude(
-            status=constants.CreditLineItemStatus.CANCELED
         ).prefetch_related('budgets').order_by('-created_dt')
-        
+
         return self.create_api_response({
             'active': self._get_active_credit(account_id, credit_items),
             'past': self._get_past_credit(account_id, credit_items),
             'totals': self._get_credit_totals(account_id, credit_items),
         })
 
-
     def _get_active_credit(self, account_id, credit_items):
         return [
             self._prepare_item(item)
             for item in credit_items if not item.is_past()
         ]
-    
+
     def _get_past_credit(self, account_id, credit_items):
         return [
             self._prepare_item(item)
             for item in credit_items if item.is_past()
         ]
-    
+
     def _get_credit_totals(self, account_id, credit_items):
         total = sum(credit.amount for credit in credit_items)
         allocated = sum(
@@ -104,6 +119,7 @@ class AccountCreditView(api_common.BaseApiView):
 
 
 class AccountCreditItemView(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'account_credit_item_get')
     def get(self, request, account_id, credit_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
@@ -117,18 +133,18 @@ class AccountCreditItemView(api_common.BaseApiView):
     def delete(self, request, account_id, credit_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
-        
+
         account = helpers.get_account(request.user, account_id)
 
         item = models.CreditLineItem.objects.get(account_id=account.id, pk=credit_id)
         item.delete()
         return self.create_api_response()
-    
+
     @statsd_helper.statsd_timer('dash.api', 'account_credit_item_post')
     def post(self, request, account_id, credit_id):
         if not request.user.has_perm('zemauth.account_credit_view'):
             raise exc.AuthorizationError()
-        
+
         account = helpers.get_account(request.user, account_id)
         item = models.CreditLineItem.objects.get(account_id=account.id, pk=credit_id)
         request_data = json.loads(request.body)
@@ -159,6 +175,7 @@ class AccountCreditItemView(api_common.BaseApiView):
             'start_date': item.start_date,
             'end_date': item.end_date,
             'is_signed': item.status == constants.CreditLineItemStatus.SIGNED,
+            'is_canceled': item.status == constants.CreditLineItemStatus.CANCELED,
             'license_fee': helpers.format_decimal_to_percent(item.license_fee) + '%',
             'amount': item.amount,
             'account_id': item.account_id,
@@ -179,6 +196,7 @@ class AccountCreditItemView(api_common.BaseApiView):
 
 
 class CampaignBudgetView(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_plus_get')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_budget_view'):
@@ -204,7 +222,7 @@ class CampaignBudgetView(api_common.BaseApiView):
 
         item.instance.created_by = request.user
         item.save()
-        
+
         return self.create_api_response(item.instance.pk)
 
     def _prepare_item(self, item):
@@ -257,13 +275,13 @@ class CampaignBudgetView(api_common.BaseApiView):
             constants.BudgetLineItemState.ACTIVE,
             constants.BudgetLineItemState.PENDING,
         )]
-    
+
     def _get_past_budget(self, items):
         return [self._prepare_item(b) for b in items if b.state() in (
             constants.BudgetLineItemState.DEPLETED,
             constants.BudgetLineItemState.INACTIVE,
         )]
-    
+
     def _get_budget_totals(self, campaign):
         data = {
             'current': {
@@ -285,7 +303,7 @@ class CampaignBudgetView(api_common.BaseApiView):
             data['current'][item.is_past() and 'past' or 'available'] += Decimal(allocated)
             if not item.is_past():
                 data['current']['unallocated'] += Decimal(item.amount - allocated)
-            
+
         for item in models.BudgetLineItem.objects.filter(campaign_id=campaign.id):
             spend_data = item.get_spend_data(use_decimal=True)
             if item.state() in (constants.BudgetLineItemState.ACTIVE,
@@ -295,7 +313,7 @@ class CampaignBudgetView(api_common.BaseApiView):
                 data['current']['past'] -= Decimal(spend_data['total'])
             if item.state() == constants.BudgetLineItemState.PENDING:
                 continue
-            
+
             data['lifetime']['campaign_spend'] += spend_data['total']
             data['lifetime']['media_spend'] += spend_data['media']
             data['lifetime']['data_spend'] += spend_data['data']
@@ -304,6 +322,7 @@ class CampaignBudgetView(api_common.BaseApiView):
 
 
 class CampaignBudgetItemView(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_get')
     def get(self, request, campaign_id, budget_id):
         if not request.user.has_perm('zemauth.campaign_budget_view'):
@@ -323,26 +342,26 @@ class CampaignBudgetItemView(api_common.BaseApiView):
         request_data = json.loads(request.body)
         data = {}
         data.update(request_data)
-        
+
         data['campaign'] = campaign.id
 
         item = forms.BudgetLineItemForm(
             data,
             instance=models.BudgetLineItem.objects.get(campaign_id=campaign_id, pk=budget_id)
         )
-        
+
         if item.errors:
             raise exc.ValidationError(errors=item.errors)
 
         item.save()
-        
+
         return self.create_api_response(item.instance.pk)
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_item_delete')
     def delete(self, request, campaign_id, budget_id):
         if not request.user.has_perm('zemauth.campaign_budget_view'):
             raise exc.AuthorizationError()
-        
+
         campaign = helpers.get_campaign(request.user, campaign_id)
         item = models.BudgetLineItem.objects.get(campaign_id=campaign.id, pk=budget_id)
         try:

@@ -87,6 +87,7 @@ def get_conversion_pixels_last_sync(conversion_pixels):
 
 
 class AllAccountsSourcesTable(object):
+
     def __init__(self, user, id_, filtered_sources):
         self.user = user
         self.accounts = models.Account.objects.all().filter_by_user(user)
@@ -146,6 +147,7 @@ class AllAccountsSourcesTable(object):
 
 
 class AccountSourcesTable(object):
+
     def __init__(self, user, id_, filtered_sources):
         self.user = user
         self.account = helpers.get_account(user, id_)
@@ -206,6 +208,7 @@ class AccountSourcesTable(object):
 
 
 class CampaignSourcesTable(object):
+
     def __init__(self, user, id_, filtered_sources):
         self.user = user
         self.campaign = helpers.get_campaign(user, id_)
@@ -269,6 +272,7 @@ class CampaignSourcesTable(object):
 
 
 class AdGroupSourcesTable(object):
+
     def __init__(self, user, id_, filtered_sources):
         self.user = user
         self.ad_group = helpers.get_ad_group(user, id_)
@@ -344,6 +348,7 @@ class AdGroupSourcesTable(object):
 
 
 class AdGroupSourcesTableUpdates(object):
+
     def get(self, user, last_change_dt, filtered_sources, ad_group_id_=None):
         if not user.has_perm('zemauth.set_ad_group_source_settings'):
             raise exc.ForbiddenError('Not allowed')
@@ -428,22 +433,23 @@ class AdGroupSourcesTableUpdates(object):
 
 
 class SourcesTable(object):
+
     def get(self, user, level_, filtered_sources, start_date, end_date, order, id_=None):
         ad_group_level = False
         kwargs = None
         if level_ == 'all_accounts':
             level_sources_table = AllAccountsSourcesTable(user, id_, filtered_sources)
-            kwargs = { 'account': level_sources_table.accounts }
+            kwargs = {'account': level_sources_table.accounts}
         elif level_ == 'accounts':
             level_sources_table = AccountSourcesTable(user, id_, filtered_sources)
-            kwargs = { 'account': level_sources_table.account }
+            kwargs = {'account': level_sources_table.account}
         elif level_ == 'campaigns':
             level_sources_table = CampaignSourcesTable(user, id_, filtered_sources)
-            kwargs = { 'campaign': level_sources_table.campaign }
+            kwargs = {'campaign': level_sources_table.campaign}
         elif level_ == 'ad_groups':
             ad_group_level = True
             level_sources_table = AdGroupSourcesTable(user, id_, filtered_sources)
-            kwargs = { 'ad_group': level_sources_table.ad_group }
+            kwargs = {'ad_group': level_sources_table.ad_group}
         if kwargs:
             e_yesterday_cost, e_yesterday_total_cost = self.get_yesterday_cost(level_sources_table, **kwargs)
             yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(level_sources_table, actual=True, **kwargs)
@@ -460,8 +466,10 @@ class SourcesTable(object):
             ad_group_sources_settings = level_sources_table.ad_group_sources_settings
 
         operational_sources = [source.id for source in sources.filter(maintenance=False, deprecated=False)]
-        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
-        last_success_actions_operational = [v for k, v in last_success_actions_joined.iteritems() if k in operational_sources]
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(
+            user, last_success_actions, last_pixel_sync)
+        last_success_actions_operational = [
+            v for k, v in last_success_actions_joined.iteritems() if k in operational_sources]
         last_sync = helpers.get_last_sync(last_success_actions_operational)
 
         incomplete_postclick_metrics = False
@@ -604,7 +612,8 @@ class SourcesTable(object):
 
         allowed_sources = None
         if ad_group_level:
-            allowed_sources = {source.id for source in level_sources_table.ad_group.campaign.account.allowed_sources.all()}
+            allowed_sources = {
+                source.id for source in level_sources_table.ad_group.campaign.account.allowed_sources.all()}
 
         for i, source in enumerate(sources):
             states = [s for s in sources_states if s.ad_group_source.source_id == source.id]
@@ -726,6 +735,7 @@ class SourcesTable(object):
 
 
 class AccountsAccountsTable(object):
+
     def get(self, user, filtered_sources, start_date, end_date, order, page, size, show_archived):
         # Permission check
         if not user.has_perm('zemauth.all_accounts_accounts_view'):
@@ -736,6 +746,9 @@ class AccountsAccountsTable(object):
             user.has_perm('zemauth.view_archived_entities')
 
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
+        accounts_bcm_status = {
+            acc.id: acc.uses_credits for acc in accounts
+        }
         account_ids = set(acc.id for acc in accounts)
 
         accounts_settings = models.AccountSettings.objects\
@@ -763,10 +776,24 @@ class AccountsAccountsTable(object):
         ), user)
 
         all_accounts_budget = budget.GlobalBudget().get_total_by_account()
-        account_budget = {aid: all_accounts_budget.get(aid, 0) for aid in account_ids}
+        account_budget = {
+            aid: all_accounts_budget.get(aid, 0)
+            for aid in account_ids if not accounts_bcm_status.get(aid)
+        }
+        account_budget.update({  # bcm
+            acc.id: self.get_current_account_media_budget(acc)
+            for acc in accounts if acc.uses_credits
+        })
 
         all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
-        account_total_spend = {aid: all_accounts_total_spend.get(aid, 0) for aid in account_ids}
+        account_total_spend = {
+            aid: all_accounts_total_spend.get(aid, 0)
+            for aid in account_ids if accounts_bcm_status.get(aid)
+        }
+        account_total_spend.update({  # bcm
+            acc.id: self.get_current_account_media_spend(acc)
+            for acc in accounts if acc.uses_credits
+        })
 
         totals_data['budget'] = sum(account_budget.itervalues())
         totals_data['available_budget'] = totals_data['budget'] - sum(account_total_spend.values())
@@ -776,7 +803,8 @@ class AccountsAccountsTable(object):
         last_success_actions = {aid: val for aid, val in last_success_actions.items() if aid in account_ids}
 
         last_pixel_sync = get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False))
-        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(
+            user, last_success_actions, last_pixel_sync)
 
         last_sync_joined = helpers.get_last_sync(last_success_actions_joined.values())
 
@@ -865,6 +893,22 @@ class AccountsAccountsTable(object):
             last_pixel_sync_message=last_pixel_sync_message
         )
 
+    def get_current_account_media_budget(self, account):
+        return sum(
+            budget.get_available_amount() * (1 - budget.credit.license_fee)
+            for campaign in models.Campaign.filter(account=account).select_related('credit')
+            for budget in campaign.budgets.all()
+            if budget.state() == constants.BudgetLineItemState.ACTIVE
+        )
+
+    def get_current_account_media_spend(self, account):
+        return sum(
+            budget.get_spend_data(use_decimal=True)['media']
+            for campaign in models.Campaign.filter(account=account).select_related('credit')
+            for budget in campaign.budgets.all()
+            if budget.state() == constants.BudgetLineItemState.ACTIVE
+        )
+
     def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions, account_budget,
                  account_total_spend, has_view_archived_permission, show_archived, order=None):
         rows = []
@@ -925,6 +969,7 @@ class AccountsAccountsTable(object):
 
 
 class AdGroupAdsTable(object):
+
     def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size):
 
         ad_group = helpers.get_ad_group(user, ad_group_id)
@@ -991,6 +1036,7 @@ class AdGroupAdsTable(object):
 
 
 class AdGroupAdsPlusTableUpdates(object):
+
     def get(self, user, ad_group_id, filtered_sources, last_change_dt):
         ad_group = helpers.get_ad_group(user, ad_group_id)
 
@@ -1042,6 +1088,7 @@ class AdGroupAdsPlusTableUpdates(object):
 
 
 class AdGroupAdsPlusTable(object):
+
     def get(self, user, ad_group_id, filtered_sources, start_date, end_date, order, page, size, show_archived):
 
         ad_group = helpers.get_ad_group(user, ad_group_id)
@@ -1102,7 +1149,8 @@ class AdGroupAdsPlusTable(object):
 
         last_pixel_sync = get_conversion_pixels_last_sync(
             models.ConversionPixel.objects.filter(archived=False, account_id=ad_group.campaign.account_id))
-        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(
+            user, last_success_actions, last_pixel_sync)
 
         last_sync = helpers.get_last_sync(last_success_actions_joined.values())
 
@@ -1254,6 +1302,7 @@ class AdGroupAdsPlusTable(object):
 
 
 class CampaignAdGroupsTable(object):
+
     def get(self, user, campaign_id, filtered_sources, start_date, end_date, order, show_archived):
         campaign = helpers.get_campaign(user, campaign_id)
 
@@ -1288,8 +1337,10 @@ class CampaignAdGroupsTable(object):
         campaign_sync = actionlog.sync.CampaignSync(campaign, sources=filtered_sources)
         last_success_actions = campaign_sync.get_latest_success_by_child()
 
-        last_pixel_sync = get_conversion_pixels_last_sync(models.ConversionPixel.objects.filter(archived=False, account_id=campaign.account_id))
-        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(user, last_success_actions, last_pixel_sync)
+        last_pixel_sync = get_conversion_pixels_last_sync(
+            models.ConversionPixel.objects.filter(archived=False, account_id=campaign.account_id))
+        last_success_actions_joined = helpers.join_last_success_with_pixel_sync(
+            user, last_success_actions, last_pixel_sync)
 
         last_sync = helpers.get_last_sync(last_success_actions_joined.values())
 
@@ -1445,6 +1496,7 @@ class CampaignAdGroupsTable(object):
 
 
 class AccountCampaignsTable(object):
+
     def get(self, user, account_id, filtered_sources, start_date, end_date, order, show_archived):
         account = helpers.get_account(user, account_id)
 
@@ -1662,7 +1714,8 @@ class PublishersTable(object):
         )
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
-        publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(publishers_data, page, size)
+        publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
+            publishers_data, page, size)
 
         # self._annotate_publishers(publishers_data
         self._annotate_publishers(publishers_data, user, adgroup)
@@ -1750,7 +1803,7 @@ class PublishersTable(object):
                     publisher_data,
                     count_ob_blacklisted_publishers,
                     source_cache_by_slug
-                )
+            )
 
             if source_cache_by_slug.get(publisher_exchange) is None:
                 continue
@@ -1816,8 +1869,8 @@ class PublishersTable(object):
                 constraints=constraints,
             )
         elif show_blacklisted_publishers in (
-            constants.PublisherBlacklistFilter.SHOW_ACTIVE,
-            constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
+                constants.PublisherBlacklistFilter.SHOW_ACTIVE,
+                constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
 
             adg_blacklisted_publishers = publisher_helpers.prepare_publishers_for_rs_query(
                 adgroup
@@ -1903,7 +1956,6 @@ class PublishersTable(object):
                 row['total_cost'] = publisher_data.get('total_cost', 0)
                 row['media_cost'] = publisher_data.get('media_cost', 0)
                 row['data_cost'] = publisher_data.get('data_cost', 0)
-
 
             if publisher_data.get('blacklisted_level'):
                 row['blacklisted_level'] = publisher_data['blacklisted_level']
