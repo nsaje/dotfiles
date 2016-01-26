@@ -90,6 +90,21 @@ class AdGroupSettingsForm(forms.Form):
 
     adobe_tracking_param = forms.CharField(max_length=10, required=False)
 
+    autopilot_state = forms.TypedChoiceField(
+        choices=constants.AdGroupSettingsAutopilotState.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+
+    autopilot_daily_budget_cc = forms.DecimalField(
+        min_value=10,
+        decimal_places=4,
+        required=False,
+        error_messages={
+            'min_value': 'Please provide budget of at least $10.00.'
+        }
+    )
+
     def __init__(self, *args, **kwargs):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 

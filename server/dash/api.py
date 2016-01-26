@@ -733,6 +733,8 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     for field_name, field_value in changes.iteritems():
         if field_name in BLOCKED_AD_GROUP_SETTINGS:
             continue
+        if field_name in ['autopilot_state', 'autopilot_daily_budget_cc']:
+            continue
 
         ad_group_sources = ad_group.adgroupsource_set.all()
         for ad_group_source in ad_group_sources:

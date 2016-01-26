@@ -1353,6 +1353,8 @@ class AdGroupSettings(SettingsBase):
         'enable_ga_tracking',
         'enable_adobe_tracking',
         'adobe_tracking_param',
+        'autopilot_state',
+        'autopilot_daily_budget_cc',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -1392,6 +1394,18 @@ class AdGroupSettings(SettingsBase):
     description = models.CharField(max_length=140, blank=True, default='')
     call_to_action = models.CharField(max_length=25, blank=True, default='')
     ad_group_name = models.CharField(max_length=127, blank=True, default='')
+    autopilot_state = models.IntegerField(
+        default=constants.AdGroupSettingsAutopilotState.INACTIVE,
+        choices=constants.AdGroupSettingsAutopilotState.get_choices()
+    )
+    autopilot_daily_budget_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=False,
+        null=False,
+        verbose_name='Auto-Pilot\'s Daily Budget',
+        default=0
+    )
 
     changes_text = models.TextField(blank=True, null=True)
 
@@ -1475,6 +1489,7 @@ class AdGroupSettings(SettingsBase):
             'ad_group_name': 'AdGroup name',
             'enable_ga_tracking': 'Enable GA tracking',
             'autopilot_state': 'Auto-Pilot',
+            'autopilot_daily_budget_cc': 'Auto-Pilot\'s Daily Budget',
             'enable_adobe_tracking': 'Enable Adobe tracking',
             'adobe_tracking_param': 'Adobe tracking parameter'
         }
@@ -1486,7 +1501,9 @@ class AdGroupSettings(SettingsBase):
         if prop_name == 'state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'autopilot_state':
-            value = constants.AdGroupSourceSettingsAutopilotState.get_text(value)
+            value = constants.AdGroupSettingsAutopilotState.get_text(value)
+        elif prop_name == 'autopilot_daily_budget_cc' and value is not None:
+            value = '$' + utils.string_helper.format_decimal(value, 2, 2)
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
