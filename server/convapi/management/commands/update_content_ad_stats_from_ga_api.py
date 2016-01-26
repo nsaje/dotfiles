@@ -39,11 +39,14 @@ class Command(BaseCommand):
         logger.info("Retrieving post click data for publisher from Google Analytics.")
         ga_service = ga_api.get_ga_service()
         ga_reports = GAApiReport(ga_service, ga_date)
-        adgroup_settings_ga_api_enabled = AdGroupSettings.objects.all().group_current_settings() \
-            .filter(enable_ga_tracking=True, ga_tracking_type=GATrackingType.API)
+        adgroup_settings_ga_api_enabled = [current_settings for current_settings in
+                                           AdGroupSettings.objects.all().group_current_settings() if
+                                           current_settings.enable_ga_tracking and
+                                           current_settings.ga_tracking_type == GATrackingType.API]
+
         adgroup_ga_api_enabled = [settings.ad_group for settings in adgroup_settings_ga_api_enabled]
         content_ad_ids_ga_api_enabled = set(
-            ContentAd.objects.filter(ad_group__in=adgroup_ga_api_enabled).values_list('id', flat=True))
+                ContentAd.objects.filter(ad_group__in=adgroup_ga_api_enabled).values_list('id', flat=True))
         accounts_ga_api_enabled = Account.objects.filter(campaign__adgroup__in=adgroup_ga_api_enabled).distinct()
         ga_accounts = GAAnalyticsAccount.objects.filter(account__in=accounts_ga_api_enabled)
         for ga_account in ga_accounts:
