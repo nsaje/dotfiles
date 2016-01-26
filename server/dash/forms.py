@@ -98,12 +98,8 @@ class AdGroupSettingsForm(forms.Form):
     )
 
     autopilot_daily_budget_cc = forms.DecimalField(
-        min_value=10,
         decimal_places=4,
-        required=False,
-        error_messages={
-            'min_value': 'Please provide budget of at least $10.00.'
-        }
+        required=False
     )
 
     def __init__(self, *args, **kwargs):
