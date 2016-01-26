@@ -171,7 +171,6 @@ def get_goal_difference(goal_type, target, actual):
 
 def goals_and_spend_settings(user, campaign):
     settings = []
-
     filled_daily_ratio = 0
     yesterday_cost = get_yesterday_spend(user, campaign) or 0
     campaign_daily_budget = calculate_daily_campaign_cap(campaign)

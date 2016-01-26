@@ -402,7 +402,6 @@ class AdGroupOverview(api_common.BaseApiView):
 
     def _basic_settings(self, user, ad_group, ad_group_settings):
         settings = []
-
         flight_time, flight_time_left_days =\
             infobox_helpers.format_flight_time(
                 ad_group_settings.start_date,
@@ -455,8 +454,8 @@ class AdGroupOverview(api_common.BaseApiView):
         daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
         daily_cap_setting = infobox_helpers.OverviewSetting(
             'Daily cap',
-            '${:.2f}'.format(ad_group_settings.daily_budget_cc)
-            if ad_group_settings.daily_budget_cc is not None else '',
+            '${:.2f}'.format(daily_cap)
+            if daily_cap is not None else '',
         )
         settings.append(daily_cap_setting.as_dict())
 
