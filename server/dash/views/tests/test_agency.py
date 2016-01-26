@@ -35,7 +35,9 @@ class AdGroupSettingsTest(TestCase):
                 'target_devices': ['desktop'],
                 'target_regions': ['693', 'GB'],
                 'name': 'Test ad group name',
-                'id': 1
+                'id': 1,
+                'autopilot_state': 2,
+                'autopilot_daily_budget_cc': '100.0000'
             }
         }
 
@@ -70,7 +72,9 @@ class AdGroupSettingsTest(TestCase):
                     'state': 2,
                     'target_devices': ['desktop', 'mobile'],
                     'target_regions': ['UK', 'US', 'CA'],
-                    'tracking_code': 'param1=foo&param2=bar'
+                    'tracking_code': 'param1=foo&param2=bar',
+                    'autopilot_state': 2,
+                    'autopilot_daily_budget_cc': '0.00'
                 }
             },
             'success': True
@@ -118,7 +122,9 @@ class AdGroupSettingsTest(TestCase):
                     'tracking_code': '',
                     'enable_ga_tracking': True,
                     'enable_adobe_tracking': False,
-                    'adobe_tracking_param': ''
+                    'adobe_tracking_param': '',
+                    'autopilot_state': 2,
+                    'autopilot_daily_budget_cc': '100.00'
                 }
             },
             'success': True
@@ -224,8 +230,9 @@ class AdGroupSettingsTest(TestCase):
                     'tracking_code': '',
                     'enable_ga_tracking': True,
                     'adobe_tracking_param': '',
-                    'enable_adobe_tracking': False
-
+                    'enable_adobe_tracking': False,
+                    'autopilot_state': 2,
+                    'autopilot_daily_budget_cc': '100.00'
                 }
             },
             'success': True
@@ -430,10 +437,11 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Enable GA tracking', 'value': 'True'},
                         {'name': 'Enable Adobe tracking', 'value': 'False'},
                         {'name': 'Adobe tracking parameter', 'value': ''},
+                        {'name': 'Auto-Pilot', 'value': 'Paused'},
+                        {'name': 'Auto-Pilot\'s Daily Budget', 'value': '$0.00'},
                     ],
                     'show_old_settings': False
-                },
-                {
+                }, {
                     'changed_by': 'superuser@test.com',
                     'changes_text': 'Daily budget set to "$120.00", Max CPC bid set to "$0.30"',
                     'datetime': '2015-06-05T09:22:24',
@@ -455,6 +463,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Enable GA tracking', 'old_value': 'True', 'value': 'True'},
                         {'name': 'Enable Adobe tracking', 'old_value': 'False', 'value': 'False'},
                         {'name': 'Adobe tracking parameter', 'old_value': '', 'value': ''},
+                        {'name': 'Auto-Pilot', 'old_value': 'Paused', 'value': 'Paused'},
+                        {'name': 'Auto-Pilot\'s Daily Budget', 'old_value': '$0.00', 'value': '$0.00'},
                     ],
                     'show_old_settings': True
                 }]

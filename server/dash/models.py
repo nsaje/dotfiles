@@ -1395,14 +1395,16 @@ class AdGroupSettings(SettingsBase):
     call_to_action = models.CharField(max_length=25, blank=True, default='')
     ad_group_name = models.CharField(max_length=127, blank=True, default='')
     autopilot_state = models.IntegerField(
+        blank=True,
+        null=True,
         default=constants.AdGroupSettingsAutopilotState.INACTIVE,
         choices=constants.AdGroupSettingsAutopilotState.get_choices()
     )
     autopilot_daily_budget_cc = models.DecimalField(
         max_digits=10,
         decimal_places=4,
-        blank=False,
-        null=False,
+        blank=True,
+        null=True,
         verbose_name='Auto-Pilot\'s Daily Budget',
         default=0
     )
@@ -1467,7 +1469,9 @@ class AdGroupSettings(SettingsBase):
             'cpc_cc': 0.4000,
             'daily_budget_cc': 10.0000,
             'target_devices': constants.AdTargetDevice.get_all(),
-            'target_regions': ['US']
+            'target_regions': ['US'],
+            'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
+            'autopilot_daily_budget_cc': 0.00
         }
 
     @classmethod

@@ -91,6 +91,7 @@ class AdGroupSettingsForm(forms.Form):
     adobe_tracking_param = forms.CharField(max_length=10, required=False)
 
     autopilot_state = forms.TypedChoiceField(
+        required=False,
         choices=constants.AdGroupSettingsAutopilotState.get_choices(),
         coerce=int,
         empty_value=None

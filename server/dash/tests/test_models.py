@@ -52,7 +52,10 @@ class AdGroupSettingsTest(TestCase):
             'ad_group_name': 'AdGroup name',
             'enable_ga_tracking': True,
             'enable_adobe_tracking': False,
-            'adobe_tracking_param': ''
+            'adobe_tracking_param': '',
+            'autopilot_daily_budget_cc': Decimal('0.0000'),
+            'autopilot_state': 2,
+
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -185,7 +188,7 @@ class AdGroupRunningStatusTest(TestCase):
     def test_no_running_by_sources_state_ag_settings_inactive(self):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
-        
+
         ad_group_sources_settings = models.AdGroupSourceSettings.objects\
                                                                 .filter(ad_group_source__source_id__in=[1, 2, 3])\
                                                                 .group_current_settings()

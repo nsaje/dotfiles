@@ -10,7 +10,7 @@ from django.contrib.auth.models import Permission
 from dash import forms
 from dash import models
 from zemauth.models import User
-
+TestCase.maxDiff = None
 
 class AccountAgencySettingsFormTest(TestCase):
     fixtures = ['test_views.yaml']
@@ -63,7 +63,7 @@ class AccountAgencySettingsFormTest(TestCase):
             'allowed_sources': {'1': {'name': 'Source name', 'allowed': False}}
             })
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data['allowed_sources'], 
+        self.assertEqual(form.cleaned_data['allowed_sources'],
             {1: {'name': 'Source name', 'allowed': False}}
         )
 
@@ -112,6 +112,8 @@ class AdGroupSettingsFormTest(TestCase):
             'target_regions': ['US'],
             'tracking_code': 'code=test',
             'enable_ga_tracking': True,
+            'autopilot_state': 2,
+            'autopilot_daily_budget_cc': '100.00'
         }
 
     def test_form(self):
@@ -131,12 +133,16 @@ class AdGroupSettingsFormTest(TestCase):
             'tracking_code': 'code=test',
             'enable_ga_tracking': True,
             'enable_adobe_tracking': False,
-            'adobe_tracking_param': ''
+            'adobe_tracking_param': '',
+            'autopilot_state': 2,
+            'autopilot_daily_budget_cc': Decimal('100.00')
         })
 
     def test_no_non_propagated_fields(self):
         self.data['cpc_cc'] = None
         self.data['daily_budget_cc'] = None
+        self.data['autopilot_state'] = None
+        self.data['autopilot_daily_budget_cc'] = None
 
         form = forms.AdGroupSettingsForm(self.data)
 
@@ -144,6 +150,8 @@ class AdGroupSettingsFormTest(TestCase):
 
         self.assertEqual(form.cleaned_data.get('daily_budget_cc'), None)
         self.assertEqual(form.cleaned_data.get('cpc_cc'), None)
+        self.assertEqual(form.cleaned_data.get('autopilot_state'), None)
+        self.assertEqual(form.cleaned_data.get('autopilot_daily_budget_cc'), None)
 
     def test_errors_on_non_propagated_fields(self):
         self.data['cpc_cc'] = 0.01
@@ -491,7 +499,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
     def test_form_optional_fields_in_csv_alternative_column_names(self):
         # optional fields in csv are present (display url, brand name, description, call to action)
         # they override the ones from the batch upload form for each content ad.
-        # Those optional fields have alternative endings like spaces and (optional) added. 
+        # Those optional fields have alternative endings like spaces and (optional) added.
         csv_file = self._get_csv_file(
             ['Url', 'Title', 'Image Url', 'Crop Areas(optional)', 'Tracker URL', 'Display URL (optional)', 'Brand name  (optional)', 'Description  ', 'Call to action _(optional)_ '],
             [[self.url, self.title, self.image_url, self.crop_areas, self.tracker_urls, self.display_url + "2", self.brand_name + "2", self.description + "2", self.call_to_action + "2"]])
@@ -528,7 +536,7 @@ class AdGroupAdsPlusUploadFormTest(TestCase):
 
         form = self._init_form(csv_file, None)
         self.assertEqual(form.errors, {'content_ads': [u'Column "crop_areas" appears multiple times (2) in the CSV file.']})
-        
+
 
 
 
