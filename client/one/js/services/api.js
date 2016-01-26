@@ -61,21 +61,21 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             }
 
             return models;
-        };
+        }
 
-        this.getAdGroup = function(id) {
+        this.getAdGroup = function (id) {
             return this.get('ad_groups/' + id);
         }.bind(this);
 
-        this.getCampaign = function(id) {
+        this.getCampaign = function (id) {
             return this.get('campaigns/' + id);
         }.bind(this);
 
-        this.getAccount = function(id) {
+        this.getAccount = function (id) {
             return this.get('accounts/' + id);
         }.bind(this);
 
-        this.getAccountsAccess = function() {
+        this.getAccountsAccess = function () {
             return this.get('all_accounts');
         }.bind(this);
 
@@ -83,12 +83,12 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var deferred = $q.defer();
             var url = '/api/' + route + '/nav/';
             var config = {
-                params: {}
+                params: {},
             };
             addFilteredSources(config.params);
 
             $http.get(url, config).
-                success(function (data, status) {
+                success(function (data) {
                     var resource;
 
                     if (data && data.data) {
@@ -96,7 +96,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     }
                     deferred.resolve(convertFromApi(resource));
                 }).
-                error(function(data, status, headers, config) {
+                error(function (data) {
                     deferred.reject(data);
                 });
 
@@ -107,25 +107,25 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var deferred = $q.defer();
             var url = '/api/nav/';
             var config = {
-                params: {}
+                params: {},
             };
             addFilteredSources(config.params);
 
             $http.get(url, config).
-                success(function (data, status) {
+                success(function (data) {
                     var resource;
                     if (data && data.data) {
                         resource = data.data;
                     }
                     deferred.resolve(resource || []);
                 }).
-                error(function (data, status, headers, config) {
+                error(function (data) {
                     deferred.reject(data);
                 });
 
             return deferred.promise;
         };
-    };
+    }
 
     function User () {
         this.get = function (id) {

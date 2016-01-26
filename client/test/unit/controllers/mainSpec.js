@@ -4,7 +4,7 @@ describe('MainCtrl', function () {
     var $scope;
     var ctrl;
     var $state;
-    var user = { permissions: [] };
+    var user = {permissions: []};
     var zemFullStoryService;
     var zemUserSettings;
     var accountsAccess;

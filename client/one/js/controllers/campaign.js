@@ -39,7 +39,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
         );
     };
 
-    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+    $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);
     });
 
@@ -62,7 +62,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     }
 
     $scope.$watch(zemNavigationService.lastSyncTS, function (newValue, oldValue) {
-        zemNavigationService.getCampaign($state.params.id).then(function(campaignData) {
+        zemNavigationService.getCampaign($state.params.id).then(function (campaignData) {
             $scope.setModels(campaignData);
             $scope.updateBreadcrumbAndTitle();
         });

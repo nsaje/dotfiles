@@ -368,13 +368,13 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         api.campaignAdGroups.create(campaignId).then(
             function (data) {
-                zemNavigationService.updateCampaignCache(campaignId, function(campaign) {
+                zemNavigationService.updateCampaignCache(campaignId, function (campaign) {
                     campaign.adGroups.push({
                         id: data.id,
                         name: data.name,
                         contentAdsTabWithCMS: data.contentAdsTabWithCMS,
                         status: 'stopped',
-                        state: 'paused'
+                        state: 'paused',
                     });
                 });
                 $state.go('main.adGroups.settings', {id: data.id});

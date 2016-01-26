@@ -1,7 +1,7 @@
 'use strict';
 
 describe('AdGroupCtrl', function () {
-    var $scope, parentScope, $state, user, accounts;
+    var $scope, parentScope, $state, user;
 
     beforeEach(function () {
         module('one');
@@ -19,15 +19,13 @@ describe('AdGroupCtrl', function () {
                 permissions: {}
             };
 
-            accounts = [];
-
             zemLocalStorageService.init(user);
             $controller('MainCtrl', {
                 $scope: parentScope,
                 $state: $state,
                 user: user,
                 accountsAccess: {
-                    hasAccounts: true
+                    hasAccounts: true,
                 },
                 zemFullStoryService: {identify: function () {}}
             });
@@ -36,20 +34,20 @@ describe('AdGroupCtrl', function () {
                 $state: $state,
                 adGroupData: {
                     account: {
-                        id: 4
+                        id: 4,
                     },
                     campaign: {
-                        id: 2
+                        id: 2,
                     },
                     adGroup: {
-                        id: 3
-                    }
-                }
+                        id: 3,
+                    },
+                },
             });
         });
     });
 
-    it('inits models propery', function() {
+    it('inits models propery', function () {
         expect($scope.adGroup.id, 3);
         expect($scope.campaign.id, 2);
         expect($scope.account.id, 4);

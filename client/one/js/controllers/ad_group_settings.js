@@ -103,10 +103,9 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.errors = {};
                 if (prevAdGroup != currAdGroup) {
                     zemNavigationService.updateAdGroupCache(prevAdGroup, {
-                            name: data.settings.name,
-                            state: data.settings.state === stateActive ? 'enabled' : 'paused'
-                        }
-                    );
+                        name: data.settings.name,
+                        state: data.settings.state === stateActive ? 'enabled' : 'paused',
+                    });
                 } else {
                     $scope.settings = data.settings;
                     $scope.defaultSettings = data.defaultSettings;
@@ -115,7 +114,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                     zemNavigationService.updateAdGroupCache(currAdGroup, {
                         name: data.settings.name,
                         state: data.settings.state === constants.adGroupSourceSettingsState.ACTIVE ? 'enabled' : 'paused',
-                        status: status
+                        status: status,
                     });
 
                     $scope.setAdGroupPaused(

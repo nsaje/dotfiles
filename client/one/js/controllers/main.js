@@ -1,5 +1,5 @@
 /* globals oneApp, $, angular */
-    oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemNavigationService', 'accountsAccess', function ( $scope, $state, $location, $document, $q, $modalStack, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemNavigationService, accountsAccess) {
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemNavigationService', 'accountsAccess', function ( $scope, $state, $location, $document, $q, $modalStack, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemNavigationService, accountsAccess) {
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
@@ -211,7 +211,7 @@
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.dateRange = {
         startDate: zemMoment().subtract('day', 29).hours(0).minutes(0).seconds(0).milliseconds(0),
-        endDate: zemMoment().subtract('day', 1).endOf('day')
+        endDate: zemMoment().subtract('day', 1).endOf('day'),
     };
 
     $scope.setDateRangeFromSearch();
@@ -225,7 +225,7 @@
             $scope.breadcrumb.unshift({
                 name: 'All accounts',
                 state: $scope.getDefaultAllAccountsState(),
-                disabled: !$scope.canAccessAllAccounts()
+                disabled: !$scope.canAccessAllAccounts(),
             });
         }
 
@@ -233,6 +233,9 @@
     };
 
     $scope.setModels = function (models) {
+        $scope.account = null;
+        $scope.campaign = null;
+        $scope.adGroup = null;
 
         if (models) {
             if (models.hasOwnProperty('account')) {
@@ -244,10 +247,6 @@
             if (models.hasOwnProperty('adGroup')) {
                 $scope.adGroup = models.adGroup;
             }
-        } else {
-            $scope.account = null;
-            $scope.campaign = null;
-            $scope.adGroup = null;
         }
     };
 
@@ -346,11 +345,11 @@
         return zemFilterService.getShowArchived();
     };
 
-    $scope.$watch(zemNavigationService.lastSyncTS, function (newValue, oldValue) {
+    $scope.$watch(zemNavigationService.lastSyncTS, function () {
         $scope.accounts = zemNavigationService.getAccounts();
     });
 
-    $scope.$watch(zemNavigationService.isLoadInProgress, function (newValue, oldValue) {
+    $scope.$watch(zemNavigationService.isLoadInProgress, function (newValue) {
         $scope.loadSidebarInProgress = newValue;
     });
 

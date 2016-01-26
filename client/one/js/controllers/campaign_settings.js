@@ -50,13 +50,13 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
                 if ($scope.user.automaticallyCreateAdGroup && $scope.user.showOnboardingGuidance) {
                     $scope.user.automaticallyCreateAdGroup = false;
                     api.campaignAdGroups.create($scope.campaign.id).then(function (adGroupData) {
-                        zemNavigationService.updateCampaignCache($scope.campaign.id, function(campaign) {
+                        zemNavigationService.updateCampaignCache($scope.campaign.id, function (campaign) {
                             campaign.adGroups.push({
                                 id: adGroupData.id,
                                 name: adGroupData.name,
                                 contentAdsTabWithCMS: data.contentAdsTabWithCMS,
                                 status: 'stopped',
-                                state: 'paused'
+                                state: 'paused',
                             });
                         });
                         $timeout(function () {

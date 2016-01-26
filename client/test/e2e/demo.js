@@ -57,7 +57,7 @@ beforeEach(function () {
 
         // wait for navigation to load
         browser.wait(function () {
-            return element(by.css('#nav div .account-name')).isPresent()
+            return element(by.css('#nav div .account-name')).isPresent();
         });
 
         browser.driver.sleep(3000).then(function () {

@@ -346,11 +346,11 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
         api.accountCampaigns.create(accountId).then(
             function (campaignData) {
-                zemNavigationService.updateAccountCache(accountId, function(account) {
+                zemNavigationService.updateAccountCache(accountId, function (account) {
                     account.campaigns.push({
                         id: campaignData.id,
                         name: campaignData.name,
-                        adGroups: []
+                        adGroups: [],
                     });
                 });
                 if ($window.isDemo) {

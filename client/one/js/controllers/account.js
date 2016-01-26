@@ -47,7 +47,7 @@ oneApp.controller('AccountCtrl', ['$scope', '$state', 'zemNavigationService', 'a
     }
 
     $scope.$watch(zemNavigationService.lastSyncTS, function (newValue, oldValue) {
-        zemNavigationService.getAccount($state.params.id).then(function(accountData) {
+        zemNavigationService.getAccount($state.params.id).then(function (accountData) {
             $scope.setModels(accountData);
             $scope.updateBreadcrumbAndTitle();
         });
