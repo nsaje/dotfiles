@@ -965,8 +965,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxSettings = data.settings;
-            },
-            function (data) {}
+            }
         );
     };
 

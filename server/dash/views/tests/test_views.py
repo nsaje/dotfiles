@@ -174,7 +174,7 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_end_date_past(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         settings = ad_group.get_current_settings()
-        settings.end_date = datetime.date.today() - datetime.timedelta(days=1)
+        settings.end_date = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
         settings.save(None)
 
         response = self.client.put(
@@ -188,7 +188,7 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_end_date_future(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         settings = ad_group.get_current_settings()
-        settings.end_date = datetime.date.today() + datetime.timedelta(days=3)
+        settings.end_date = datetime.datetime.utcnow().date() + datetime.timedelta(days=3)
         settings.save(None)
 
         response = self.client.put(
@@ -201,7 +201,7 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_logs_user_action(self, mock_log_useraction):
         ad_group = models.AdGroup.objects.get(pk=1)
         settings = ad_group.get_current_settings()
-        settings.end_date = datetime.date.today()
+        settings.end_date = datetime.datetime.utcnow().date()
         settings.save(None)
 
         response = self.client.put(
@@ -256,6 +256,8 @@ class CampaignAdGroups(TestCase):
     def test_create_ad_group(self):
         campaign = models.Campaign.objects.get(pk=1)
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User.objects.get(pk=1)
         view = views.CampaignAdGroups()
         ad_group, ad_group_settings, actions = view._create_ad_group(campaign, request)
@@ -581,6 +583,8 @@ class AdGroupContentAdStateTest(TestCase):
         state = constants.ContentAdSourceState.ACTIVE
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
@@ -599,6 +603,8 @@ class AdGroupContentAdStateTest(TestCase):
         state = constants.ContentAdSourceState.ACTIVE
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
@@ -885,6 +891,8 @@ class AdGroupContentAdArchive(TestCase):
         self.assertEqual(len(content_ads), 3)
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
@@ -901,6 +909,8 @@ class AdGroupContentAdArchive(TestCase):
         content_ads = list(content_ads) * 4  # need more than 10 ads
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
@@ -1059,6 +1069,8 @@ class AdGroupContentAdRestore(TestCase):
         self.assertEqual(len(content_ads), 3)
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
@@ -1075,6 +1087,8 @@ class AdGroupContentAdRestore(TestCase):
         content_ads = list(content_ads) * 4  # need more than 10 ads
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
@@ -1419,6 +1433,40 @@ class AdGroupSourcesTest(TestCase):
             {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
             {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False},
         ])
+
+    def test_available_sources(self):
+        response = self.client.get(
+                reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
+                follow=True
+        )
+        # Expected sources - 9 (Sharethrough)
+        # Allowed sources 1-9, Sources 1-7 already added, 8 has no default setting
+        response_dict = json.loads(response.content)
+        self.assertEqual(len(response_dict['data']['sources']), 1)
+        self.assertEqual(response_dict['data']['sources'][0]['id'], 9)
+
+    def test_available_sources_with_filter(self):
+        response = self.client.get(
+                reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
+                {'filtered_sources': '7,8,9'},
+                follow=True
+        )
+        # Expected sources - 9 (Sharethrough)
+        # Allowed sources 1-9, Sources 1-7 already added, 8 has no default setting
+        response_dict = json.loads(response.content)
+        self.assertEqual(len(response_dict['data']['sources']), 1)
+        self.assertEqual(response_dict['data']['sources'][0]['id'], 9)
+
+    def test_available_sources_with_filter_empty(self):
+        response = self.client.get(
+                reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
+                {'filtered_sources': '7,8'},
+                follow=True
+        )
+        # Expected sources - none
+        # Allowed sources 1-9, Sources 1-7 already added, 8 has no default setting
+        response_dict = json.loads(response.content)
+        self.assertEqual(len(response_dict['data']['sources']), 0)
 
     def test_put(self):
         response = self.client.put(
@@ -2335,10 +2383,14 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('0.00%', pacing_setting['value'])
         self.assertEqual('happy', pacing_setting['icon'])
 
-        goal_setting = [s for s in settings if 'goal' in s['name'].lower()][0]
+        goal_setting = [s for s in settings if 'goal' in s['name'].lower()]
+        self.assertEqual([], goal_setting)
+        # TODO: reintroduce when Campaign goals are wrapped up
+        """
         goal_setting = self._get_setting(settings, 'goal')
         self.assertEqual('0.0 below planned', goal_setting['description'])
         self.assertEqual('happy', goal_setting['icon'])
+        """
 
     @patch('dash.models.BudgetLineItem.get_daily_spend')
     @patch('reports.redshift.get_cursor')
