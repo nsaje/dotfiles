@@ -498,8 +498,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         daily_cap = infobox_helpers.OverviewSetting(
             'Daily budget:',
-            '${:.2f}'.format(ad_group_settings.daily_budget_cc)\
-                if ad_group_settings.daily_budget_cc is not None else '',
+            '${:.2f}'.format(ad_group_settings.daily_budget_cc)
+            if ad_group_settings.daily_budget_cc is not None else '',
             tooltip='Daily media budget'
         )
         settings.append(daily_cap.as_dict())
@@ -759,8 +759,7 @@ class CampaignOverview(api_common.BaseApiView):
         # take the num
         daily_cap = infobox_helpers.OverviewSetting(
             'Daily budget:',
-            '${:.2f}'.format(daily_cap_value)\
-                if daily_cap_value > 0 else 'N/A',
+            '${:.2f}'.format(daily_cap_value) if daily_cap_value > 0 else 'N/A',
             tooltip="Daily media budget"
         )
         settings.append(daily_cap.as_dict())
