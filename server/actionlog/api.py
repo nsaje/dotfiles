@@ -225,7 +225,9 @@ def send_delayed_actionlogs(ad_group_sources=None, send=True):
         for actionlog in delayed_actionlogs:
             waiting_actionlogs = models.ActionLog.objects.filter(
                 state=constants.ActionState.WAITING,
-                action__in=[constants.Action.SET_CAMPAIGN_STATE, constants.Action.SET_PUBLISHER_BLACKLIST],
+                action__in=[constants.Action.CREATE_CAMPAIGN,
+                            constants.Action.SET_CAMPAIGN_STATE,
+                            constants.Action.SET_PUBLISHER_BLACKLIST],
                 action_type=constants.ActionType.AUTOMATIC,
                 ad_group_source=actionlog.ad_group_source,
             )
