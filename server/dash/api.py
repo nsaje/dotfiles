@@ -630,8 +630,8 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             if _update_content_ad_source_submission_status(content_ad_source, data['submission_status']):
                 changed = True
 
-        if data['state'] != content_ad_source.content_ad.state and content_ad_source.submission_status in \
-           (constants.ContentAdSubmissionStatus.APPROVED, constants.ContentAdSubmissionStatus.PENDING):
+        if data['state'] != content_ad_source.content_ad.state and \
+           content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
             # content ad state does not match
             # skip sync for rejected content ads - their status doesn't match always
             logger.debug(
