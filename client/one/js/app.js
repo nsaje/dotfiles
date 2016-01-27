@@ -51,17 +51,17 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/main.html',
             controller: 'MainCtrl',
             resolve: {
-                user: ['api', function (api) {
-                    return api.user.get('current');
+                user: ['api', 'zemLocalStorageService', 'zemFilterService', function (api, zemLocalStorageService, zemFilterService) {
+                    return api.user.get('current').then(function (user) {
+                        zemLocalStorageService.init(user);
+                        zemFilterService.init(user);
+                        return user;
+                    });
                 }],
-                accounts: ['$location', 'zemLocalStorageService', 'zemFilterService', 'api', 'user', function ($location, zemLocalStorageService, zemFilterService, api, user) {
-                    // init filter service only after we have user
-                    // this way we can get settings from local storage
-                    zemLocalStorageService.init(user);
-                    zemFilterService.init(user);
-                    return api.navData.list();
-                }]
-            }
+                accountsAccess: ['zemNavigationService', function (zemNavigationService) {
+                    return zemNavigationService.getAccountsAccess();
+                }],
+            },
         });
 
     $stateProvider
@@ -90,7 +90,12 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('main.accounts', {
             url: 'accounts/{id}',
             template: basicTemplate,
-            controller: 'AccountCtrl'
+            controller: 'AccountCtrl',
+            resolve: {
+                accountData: ['$stateParams', 'zemNavigationService', function ($stateParams, zemNavigationService) {
+                    return zemNavigationService.getAccount($stateParams.id);
+                }],
+            },
         })
         .state('main.accounts.campaigns', {
             url: '/campaigns',
@@ -129,7 +134,12 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('main.campaigns', {
             url: 'campaigns/{id}',
             template: basicTemplate,
-            controller: 'CampaignCtrl'
+            controller: 'CampaignCtrl',
+            resolve: {
+                campaignData: ['$stateParams', 'zemNavigationService', function ($stateParams, zemNavigationService) {
+                    return zemNavigationService.getCampaign($stateParams.id);
+                }],
+            },
         })
         .state('main.campaigns.ad_groups', {
             url: '/ad_groups',
@@ -170,7 +180,13 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
     $stateProvider
         .state('main.adGroups', {
             url: 'ad_groups/{id}',
-            templateUrl: '/partials/ad_group.html'
+            template: basicTemplate,
+            controller: 'AdGroupCtrl',
+            resolve: {
+                adGroupData: ['$stateParams', 'zemNavigationService', function ($stateParams, zemNavigationService) {
+                    return zemNavigationService.getAdGroup($stateParams.id);
+                }],
+            },
         })
         .state('main.adGroups.ads', {
             url: '/ads',
