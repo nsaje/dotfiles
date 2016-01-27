@@ -102,9 +102,11 @@ describe('zemCurrencyInput', function () {
         expect(element.val()).toEqual('empty');
 
         $scope.value = '';
+        $scope.$digest();
         expect(element.val()).toEqual('empty');
 
         $scope.value = null;
+        $scope.$digest();
         expect(element.val()).toEqual('empty');
 
         setVal(element, '1');
