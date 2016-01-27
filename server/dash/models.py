@@ -1375,6 +1375,7 @@ class AdGroupSettings(SettingsBase):
         'call_to_action',
         'ad_group_name',
         'enable_ga_tracking',
+        'ga_tracking_type',
         'enable_adobe_tracking',
         'adobe_tracking_param',
     ]
@@ -1408,6 +1409,10 @@ class AdGroupSettings(SettingsBase):
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
     enable_ga_tracking = models.BooleanField(default=True)
+    ga_tracking_type = models.IntegerField(
+        default=constants.GATrackingType.EMAIL,
+        choices=constants.GATrackingType.get_choices()
+    )
     enable_adobe_tracking = models.BooleanField(default=False)
     adobe_tracking_param = models.CharField(max_length=10, blank=True, default='')
     archived = models.BooleanField(default=False)
@@ -1498,6 +1503,7 @@ class AdGroupSettings(SettingsBase):
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
             'enable_ga_tracking': 'Enable GA tracking',
+            'ga_tracking_type': 'GA tracking type (via API or e-mail).',
             'autopilot_state': 'Auto-Pilot',
             'enable_adobe_tracking': 'Enable Adobe tracking',
             'adobe_tracking_param': 'Adobe tracking parameter'
@@ -1526,6 +1532,8 @@ class AdGroupSettings(SettingsBase):
                 value = 'worldwide'
         elif prop_name in ('archived', 'enable_ga_tracking', 'enable_adobe_tracking'):
             value = str(value)
+        elif prop_name == 'ga_tracking_type':
+            value = constants.GATrackingType.get_text(value)
 
         return value
 
@@ -2633,3 +2641,11 @@ class ScheduledExportReportLog(models.Model):
             self.errors = error_msg
         else:
             self.errors += '\n\n' + error_msg
+
+
+class GAAnalyticsAccount(models.Model):
+    id = models.AutoField(primary_key=True)
+    account = models.ForeignKey(Account, null=False, blank=False, on_delete=models.PROTECT)
+    ga_account_id = models.CharField(max_length=127, blank=False, null=False)
+    ga_web_property_id = models.CharField(max_length=127, blank=False, null=False)
+

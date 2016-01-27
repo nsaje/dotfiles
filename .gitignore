@@ -130,3 +130,7 @@ DEADJOE
 
 # Tern port file
 .tern-port
+
+# IntelliJ editor
+.idea
+*.iml

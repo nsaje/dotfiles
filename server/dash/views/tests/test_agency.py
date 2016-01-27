@@ -403,7 +403,7 @@ class AdGroupAgencyTest(TestCase):
         )
 
         mock_is_waiting.assert_called_once(ad_group)
-
+        test = json.loads(response.content)
         self.assertEqual(json.loads(response.content), {
             'data': {
                 'can_archive': True,
@@ -428,6 +428,7 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Call to action', 'value': ''},
                         {'name': 'AdGroup name', 'value': ''},
                         {'name': 'Enable GA tracking', 'value': 'True'},
+                        {'name': 'GA tracking type (via API or e-mail).', 'value': 'Email'},
                         {'name': 'Enable Adobe tracking', 'value': 'False'},
                         {'name': 'Adobe tracking parameter', 'value': ''},
                     ],
@@ -453,6 +454,7 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'Call to action', 'old_value': '', 'value': ''},
                         {'name': 'AdGroup name', 'old_value': '', 'value': ''},
                         {'name': 'Enable GA tracking', 'old_value': 'True', 'value': 'True'},
+                        {'name': 'GA tracking type (via API or e-mail).', 'old_value': 'Email', 'value': 'Email'},
                         {'name': 'Enable Adobe tracking', 'old_value': 'False', 'value': 'False'},
                         {'name': 'Adobe tracking parameter', 'old_value': '', 'value': ''},
                     ],
