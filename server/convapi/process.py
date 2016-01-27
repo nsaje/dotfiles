@@ -19,6 +19,13 @@ ADDITIONAL_SYNC_HOURS = 4
 
 NUM_THREADS = 20
 
+# If an account content (campaigns, pixies etc.) was moved,
+# it should be mapped in this dictionary
+MOVED_ACCOUNTS = {  # new-account-id : old-account-id
+    247: 119,
+    249: 119,
+}
+
 
 def _get_dates_to_sync(conversion_pixels):
     pairs = []
@@ -55,8 +62,11 @@ def _update_touchpoint_conversions_date(date_cp_tup):
 
     logger.info('Fetching touchpoint conversions for date %s, account id %s and conversion pixel slug %s.', date,
                 conversion_pixel.account_id, conversion_pixel.slug)
-    redirects_impressions = redirector_helper.fetch_redirects_impressions(date, conversion_pixel.account_id,
-                                                                          conversion_pixel.slug)
+    redirects_impressions = redirector_helper.fetch_redirects_impressions(
+        date,
+        MOVED_ACCOUNTS.get(conversion_pixel.account_id, conversion_pixel.account_id),
+        conversion_pixel.slug
+    )
     touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
     reports.update.update_touchpoint_conversions(date, conversion_pixel.account_id, conversion_pixel.slug,
                                                  touchpoint_conversion_pairs)
