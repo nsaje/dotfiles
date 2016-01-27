@@ -10,7 +10,7 @@ from django.contrib.auth.models import Permission
 from dash import forms
 from dash import models
 from zemauth.models import User
-TestCase.maxDiff = None
+
 
 class AccountAgencySettingsFormTest(TestCase):
     fixtures = ['test_views.yaml']

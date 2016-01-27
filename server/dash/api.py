@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 BLOCKED_AD_GROUP_SETTINGS = [
     'state', 'cpc_cc', 'daily_budget_cc', 'display_url',
     'brand_name', 'description', 'call_to_action',
+    'autopilot_state', 'autopilot_daily_budget_cc'
 ]
 
 AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT = '0082c33a43e59aa0da8849b5af3448bc7b'
@@ -732,8 +733,6 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
     actions = []
     for field_name, field_value in changes.iteritems():
         if field_name in BLOCKED_AD_GROUP_SETTINGS:
-            continue
-        if field_name in ['autopilot_state', 'autopilot_daily_budget_cc']:
             continue
 
         ad_group_sources = ad_group.adgroupsource_set.all()
