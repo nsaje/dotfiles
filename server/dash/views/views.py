@@ -594,8 +594,8 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(daily_cap.as_dict())
 
-        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(ad_group.campaign)
-        total_media_spend = infobox_helpers.get_media_campaign_spend(user, ad_group.campaign)
+        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(campaign)
+        total_media_spend = infobox_helpers.get_media_campaign_spend(user, campaign)
 
         campaign_budget_setting = infobox_helpers.OverviewSetting(
             'Campaign budget:',

@@ -88,7 +88,7 @@ def get_total_campaign_spend(user, campaign, until_date=None):
     if len(budgets) == 0:
         return Decimal(0)
     all_budget_spends_at_date = [
-        b.get_daily_spend(date=at_date, use_decimal=True)['total'] for b in budgets
+        b.get_spend_data(date=at_date, use_decimal=True)['total'] for b in budgets
     ]
     return sum(all_budget_spends_at_date)
 
