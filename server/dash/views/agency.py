@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 CONVERSION_PIXEL_INACTIVE_DAYS = 7
-MAX_CONVERSION_GOALS_PER_CAMPAIGN = 2
+MAX_CONVERSION_GOALS_PER_CAMPAIGN = 5
 
 
 def _get_conversion_pixel_url(account_id, slug):

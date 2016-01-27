@@ -1,4 +1,4 @@
-/*globals angular,oneApp,options,moment*/
+/* globals oneApp,options,constants*/
 'use strict';
 
 oneApp.factory('zemPostclickMetricsService', function () {
@@ -13,7 +13,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
             help: 'Total number of sessions within a date range. A session is the period of time in which a user is actively engaged with your site.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
         }, {
             name: 'Click Discrepancy',
             field: 'click_discrepancy',
@@ -24,7 +24,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
             help: 'Clicks detected only by media source as a percentage of total clicks.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
         }, {
             name: 'Pageviews',
             field: 'pageviews',
@@ -35,7 +35,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
             help: 'Total number of pageviews made during the selected date range. A pageview is a view of a single page. Repeated views are counted.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
         });
     }
 
@@ -50,7 +50,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
             help: 'An estimate of first time visits during the selected date range.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
         }, {
             name: 'Bounce Rate',
             field: 'bounce_rate',
@@ -61,7 +61,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
             help: 'Percantage of visits that resulted in only one page view.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
         }, {
             name: 'PV/Visit',
             field: 'pv_per_visit',
@@ -73,7 +73,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
             help: 'Average number of pageviews per visit.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
         }, {
             name: 'Avg. ToS',
             field: 'avg_tos',
@@ -84,7 +84,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
             help: 'Average time spent on site in seconds during the selected date range.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
         });
     }
 
@@ -99,7 +99,7 @@ oneApp.factory('zemPostclickMetricsService', function () {
             internal: isInternal,
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
         }, {
             name: 'Conversion Goal 2',
             field: 'conversion_goal_2',
@@ -110,7 +110,40 @@ oneApp.factory('zemPostclickMetricsService', function () {
             internal: isInternal,
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
+        }, {
+            name: 'Conversion Goal 3',
+            field: 'conversion_goal_3',
+            checked: false,
+            type: 'number',
+            help: 'Number of completions of the conversion goal',
+            shown: false,
+            internal: isInternal,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        }, {
+            name: 'Conversion Goal 4',
+            field: 'conversion_goal_4',
+            checked: false,
+            type: 'number',
+            help: 'Number of completions of the conversion goal',
+            shown: false,
+            internal: isInternal,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+        }, {
+            name: 'Conversion Goal 5',
+            field: 'conversion_goal_5',
+            checked: false,
+            type: 'number',
+            help: 'Number of completions of the conversion goal',
+            shown: false,
+            internal: isInternal,
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
         });
     }
 
@@ -142,27 +175,30 @@ oneApp.factory('zemPostclickMetricsService', function () {
 
     function getValidChartMetrics (chartMetric1, chartMetric2, conversionGoals) {
         conversionGoals = conversionGoals || [];
-        var cg1Exists = conversionGoals.some(function (conversionGoal) {
-            return conversionGoal.id === constants.chartMetric.CONVERSION_GOAL1;
+
+        var cgIds = conversionGoals.map(function (conversionGoal) {
+            return conversionGoal.id;
         });
 
-        var cg2Exists = conversionGoals.some(function (conversionGoal) {
-            return conversionGoal.id === constants.chartMetric.CONVERSION_GOAL2;
-        });
+        var cgChartMetrics = [
+            constants.chartMetric.CONVERSION_GOAL1,
+            constants.chartMetric.CONVERSION_GOAL2,
+            constants.chartMetric.CONVERSION_GOAL3,
+            constants.chartMetric.CONVERSION_GOAL4,
+            constants.chartMetric.CONVERSION_GOAL5,
+        ];
 
-        if ((chartMetric1 === constants.chartMetric.CONVERSION_GOAL1 && !cg1Exists) ||
-            (chartMetric1 === constants.chartMetric.CONVERSION_GOAL2 && !cg2Exists)) {
+        if (cgChartMetrics.indexOf(chartMetric1) > -1 && cgIds.indexOf(chartMetric1) === -1) {
             chartMetric1 = constants.chartMetric.CLICKS;
         }
 
-        if ((chartMetric2 === constants.chartMetric.CONVERSION_GOAL1 && !cg1Exists) ||
-            (chartMetric2 === constants.chartMetric.CONVERSION_GOAL2 && !cg2Exists)) {
+        if (cgChartMetrics.indexOf(chartMetric2) > -1 && cgIds.indexOf(chartMetric2) === -1) {
             chartMetric2 = constants.chartMetric.IMPRESSIONS;
         }
 
         return {
             chartMetric1: chartMetric1,
-            chartMetric2: chartMetric2
+            chartMetric2: chartMetric2,
         };
     }
 
