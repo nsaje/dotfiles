@@ -153,156 +153,6 @@ def demo_mode(request):
     return redirect('index')
 
 
-class NavigationDataView(api_common.BaseApiView):
-
-    @statsd_helper.statsd_timer('dash.api', 'navigation_data_view_get')
-    def get(self, request):
-        include_archived_flag = request.user.has_perm('zemauth.view_archived_entities')
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-
-        data = {}
-        self.fetch_ad_groups(data, request.user, filtered_sources)
-        self.fetch_campaigns(data, request.user, filtered_sources)
-        self.fetch_accounts(data, request.user, filtered_sources)
-
-        self.add_settings_data(data, include_archived_flag, filtered_sources)
-
-        result = []
-        for account in data.values():
-            account['campaigns'] = account['campaigns'].values()
-            result.append(account)
-
-        return self.create_api_response(result)
-
-    def add_settings_data(self, data, include_archived_flag, filtered_sources):
-
-        account_ids, campaign_ids, ad_group_ids = [], [], []
-
-        # collect only relevant ids, so that we don't unnecessarly fetch
-        # the entire set of account/campaign/ad group settings
-        for account in data.values():
-            account_ids.append(account['id'])
-            for campaign in account['campaigns'].values():
-                campaign_ids.append(campaign['id'])
-                for ad_group in campaign['adGroups']:
-                    ad_group_ids.append(ad_group['id'])
-
-        account_settingss = models.AccountSettings.objects\
-                                                  .filter(account_id__in=account_ids)\
-                                                  .group_current_settings()
-        account_settingss = {acc_settings.account_id: acc_settings for acc_settings in account_settingss}
-
-        campaign_settingss = models.CampaignSettings.objects\
-                                                    .filter(campaign_id__in=campaign_ids)\
-                                                    .group_current_settings()
-        campaign_settingss = {camp_settings.campaign_id: camp_settings for camp_settings in campaign_settingss}
-
-        ad_group_settingss = models.AdGroupSettings.objects\
-                                                   .filter(ad_group_id__in=ad_group_ids)\
-                                                   .group_current_settings()
-        ad_group_settingss = {ag_settings.ad_group_id: ag_settings for ag_settings in ad_group_settingss}
-
-        """ad_group_sources_settingss = models.AdGroupSourceSettings.objects\
-                                                                 .filter(ad_group_source__ad_group_id__in=ad_group_ids)\
-                                                                 .filter_by_sources(filtered_sources)\
-                                                                 .group_current_settings()\
-                                                                 .select_related('ad_group_source')"""
-        """sources_settings = {}
-        for source_settings in ad_group_sources_settingss:
-            key = source_settings.ad_group_source.ad_group_id
-            sources_settings.setdefault(key, [])
-            sources_settings[key].append(source_settings)"""
-
-        for account in data.values():
-            account_settings = account_settingss.get(account['id'])
-
-            if include_archived_flag:
-                account['archived'] = account_settings.archived if account_settings else False
-
-            for campaign in account['campaigns'].values():
-                campaign_settings = campaign_settingss.get(campaign['id'])
-
-                if include_archived_flag:
-                    campaign['archived'] = campaign_settings.archived if campaign_settings else False
-
-                for ad_group in campaign['adGroups']:
-                    ad_group_settings = ad_group_settingss.get(ad_group['id'])
-
-                    if include_archived_flag:
-                        ad_group['archived'] = ad_group_settings.archived if ad_group_settings else False
-
-                    ad_group['state'] = constants.AdGroupSettingsState.get_text(
-                        ad_group_settings.state if ad_group_settings
-                        else constants.AdGroupSettingsState.INACTIVE
-                    ).lower()
-
-                    ad_group['status'] = constants.AdGroupRunningStatus.get_text(
-                        models.AdGroup.get_running_status_by_flight_time(
-                            ad_group_settings
-                        )
-                    ).lower()
-
-    def fetch_ad_groups(self, data, user, sources):
-        ad_groups = models.AdGroup.objects.all().\
-            filter_by_user(user).\
-            filter_by_sources(sources).\
-            select_related('campaign__account')
-
-        for ad_group in ad_groups:
-            campaign = ad_group.campaign
-            account = campaign.account
-
-            self.add_account_dict(data, account)
-
-            campaigns = data[account.id]['campaigns']
-            self.add_campaign_dict(campaigns, campaign)
-
-            campaigns[campaign.id]['adGroups'].append(
-                {
-                    'id': ad_group.id,
-                    'name': ad_group.name,
-                    'contentAdsTabWithCMS': ad_group.content_ads_tab_with_cms,
-                }
-            )
-
-    def fetch_campaigns(self, data, user, sources):
-        campaigns = models.Campaign.objects.all().\
-            filter_by_user(user).\
-            filter_by_sources(sources).\
-            select_related('account')
-
-        for campaign in campaigns:
-            account = campaign.account
-
-            self.add_account_dict(data, account)
-            self.add_campaign_dict(data[account.id]['campaigns'], campaign)
-
-    def fetch_accounts(self, data, user, sources):
-        accounts = models.Account.objects.all().\
-            filter_by_user(user).\
-            filter_by_sources(sources)
-
-        for account in accounts:
-            self.add_account_dict(data, account)
-
-    def add_account_dict(self, data, account):
-        if account.id not in data:
-            data[account.id] = {
-                'id': account.id,
-                'name': account.name,
-                'usesBCM': account.uses_credits,
-                'campaigns': {}
-            }
-
-    def add_campaign_dict(self, data, campaign):
-        if campaign.id not in data:
-            data[campaign.id] = {
-                'id': campaign.id,
-                'name': campaign.name,
-                'adGroups': []
-            }
-
-
 class AccountArchive(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_archive_post')
@@ -391,7 +241,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'settings': self._basic_settings(ad_group, ad_group_settings) +
+            'settings': self._basic_settings(request.user, ad_group, ad_group_settings) +
             [infobox_helpers.OverviewSeparator().as_dict()] +
             performance_settings,
         }
@@ -400,9 +250,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, ad_group, ad_group_settings):
+    def _basic_settings(self, user, ad_group, ad_group_settings):
         settings = []
-
         flight_time, flight_time_left_days =\
             infobox_helpers.format_flight_time(
                 ad_group_settings.start_date,
@@ -412,7 +261,7 @@ class AdGroupOverview(api_common.BaseApiView):
         if flight_time_left_days is not None:
             days_left_description = "{} days left".format(flight_time_left_days)
         flight_time_setting = infobox_helpers.OverviewSetting(
-            'Flight time',
+            'Flight time:',
             flight_time,
             days_left_description
         )
@@ -427,7 +276,7 @@ class AdGroupOverview(api_common.BaseApiView):
             device_comment = 'Differ from campaign default'
 
         targeting_device = infobox_helpers.OverviewSetting(
-            'Targeting',
+            'Targeting:',
             'Device: {devices}'.format(
                 devices=', '.join(
                     [w[0].upper() + w[1:] for w in ad_group_settings.target_devices]
@@ -452,26 +301,8 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(targeting_region.as_dict())
 
-        daily_cap = infobox_helpers.OverviewSetting(
-            'Daily cap',
-            '${:.2f}'.format(ad_group_settings.daily_budget_cc)
-            if ad_group_settings.daily_budget_cc is not None else '',
-        )
-        settings.append(daily_cap.as_dict())
-
-        campaign_budget = budget.CampaignBudget(ad_group.campaign)
-        total = campaign_budget.get_total()
-        spend = campaign_budget.get_spend()
-
-        campaign_budget_setting = infobox_helpers.OverviewSetting(
-            'Campaign budget:',
-            '${:.2f}'.format(total),
-            '${:.2f}'.format(total - spend),
-        )
-        settings.append(campaign_budget_setting.as_dict())
-
         tracking_code_settings = infobox_helpers.OverviewSetting(
-            'Tracking codes',
+            'Tracking codes:',
             'Yes' if ad_group_settings.tracking_code else 'No',
         )
         if ad_group_settings.tracking_code:
@@ -491,10 +322,28 @@ class AdGroupOverview(api_common.BaseApiView):
             post_click_tracking.append("N/A")
 
         post_click_tracking_setting = infobox_helpers.OverviewSetting(
-            'Post click tracking',
+            'Post click tracking:',
             ', '.join(post_click_tracking),
         )
         settings.append(post_click_tracking_setting.as_dict())
+
+        daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
+        daily_cap_setting = infobox_helpers.OverviewSetting(
+            'Daily budget',
+            '${:.2f}'.format(daily_cap) if daily_cap is not None else '',
+            tooltip='Daily media budget'
+        )
+        settings.append(daily_cap_setting.as_dict())
+
+        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(ad_group.campaign)
+        total_media_spend = infobox_helpers.get_media_campaign_spend(user, ad_group.campaign)
+
+        campaign_budget_setting = infobox_helpers.OverviewSetting(
+            'Campaign budget:',
+            '${:.2f}'.format(total_media_spend),
+            '${:.2f}'.format(total_media_available),
+        )
+        settings.append(campaign_budget_setting.as_dict())
         return settings
 
     def _performance_settings(self, ad_group, user, ad_group_settings):
@@ -650,7 +499,7 @@ class CampaignOverview(api_common.BaseApiView):
         }
 
         basic_settings, daily_cap =\
-            self._basic_settings(campaign, campaign_settings)
+            self._basic_settings(request.user, campaign, campaign_settings)
 
         performance_settings, is_delivering = self._performance_settings(
             campaign,
@@ -670,14 +519,14 @@ class CampaignOverview(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, campaign, campaign_settings):
+    def _basic_settings(self, user, campaign, campaign_settings):
         settings = []
 
         start_date = None
         end_date = None
         never_finishes = False
 
-        daily_cap_value = infobox_helpers.calculate_daily_cap(campaign)
+        daily_cap_value = infobox_helpers.calculate_daily_campaign_cap(campaign)
 
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)
         for ad_group in ad_groups:
@@ -713,7 +562,7 @@ class CampaignOverview(api_common.BaseApiView):
         if flight_time_left_days is not None:
             flight_time_left_description = "{} days left".format(flight_time_left_days)
         flight_time_setting = infobox_helpers.OverviewSetting(
-            'Flight time',
+            'Flight time:',
             flight_time,
             flight_time_left_description
         )
@@ -739,20 +588,19 @@ class CampaignOverview(api_common.BaseApiView):
 
         # take the num
         daily_cap = infobox_helpers.OverviewSetting(
-            'Daily cap',
-            '${:.2f}'.format(daily_cap_value)
-            if daily_cap_value > 0 else 'N/A'
+            'Daily budget:',
+            '${:.2f}'.format(daily_cap_value) if daily_cap_value > 0 else 'N/A',
+            tooltip="Daily media budget"
         )
         settings.append(daily_cap.as_dict())
 
-        campaign_budget = budget.CampaignBudget(campaign)
-        total = campaign_budget.get_total()
-        spend = campaign_budget.get_spend()
+        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(campaign)
+        total_media_spend = infobox_helpers.get_media_campaign_spend(user, campaign)
 
         campaign_budget_setting = infobox_helpers.OverviewSetting(
             'Campaign budget:',
-            '${:.2f}'.format(total),
-            '${:.2f} remaining'.format(total - spend),
+            '${:.2f}'.format(total_media_spend),
+            '${:.2f}'.format(total_media_available),
         )
         settings.append(campaign_budget_setting.as_dict())
 
@@ -1495,9 +1343,12 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         return publishers
 
     def _handle_adgroup_blacklist(self, request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected):
-        ignored_publishers = set([(pub['domain'], ad_group.id, pub['source_id'], )
-                                  for pub in publishers_not_selected]
-                                 )
+        ignored_publishers = set(
+            [
+                (pub['domain'], ad_group.id, pub['source_id'], )
+                for pub in publishers_not_selected
+            ]
+        )
 
         publisher_blacklist = self._create_adgroup_blacklist(
             ad_group,
@@ -1701,9 +1552,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             existing_blacklisted_publishers
         ))
 
-        ignored_publishers = set([(pub['domain'], pub['source_id'])
-                                  for pub in publishers_not_selected]
-                                 )
+        ignored_publishers = set(
+            [(pub['domain'], pub['source_id']) for pub in publishers_not_selected]
+        )
 
         global_blacklist = self._create_global_blacklist(
             ad_group,
@@ -1816,9 +1667,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             )
 
         pub_strings = [u"{pub} on {slug}".format(
-            pub=pub_bl['domain'],
-            slug=pub_bl['source'].name
-        ) for pub_bl in blacklist]
+                       pub=pub_bl['domain'],
+                       slug=pub_bl['source'].name
+                       ) for pub_bl in blacklist]
         pubs_string = u", ".join(pub_strings)
 
         changes_text = u'{action} the following publishers {level_description}: {pubs}.'.format(

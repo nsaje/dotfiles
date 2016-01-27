@@ -28,7 +28,7 @@ oneApp.directive('zemInfoboxSetting', ['config', '$window', function (config, $w
                     return false;
                 }
 
-                return val !== null;
+                return val !== null && val !== undefined;
             };
 
             $scope.showDetails = function () {

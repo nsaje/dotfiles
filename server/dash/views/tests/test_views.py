@@ -1,10 +1,8 @@
-
 # -*- coding: utf-8 -*-
 
 import json
 from mock import patch, ANY
 import datetime
-import decimal
 
 from django.test import TestCase, Client, TransactionTestCase
 from django.http.request import HttpRequest
@@ -17,10 +15,10 @@ from zemauth.models import User
 from dash import models
 from dash import constants
 from dash import api
-from dash import budget
 from dash.views import views
 
 from reports import redshift
+import reports.models
 
 import actionlog.models
 import zemauth.models
@@ -268,6 +266,8 @@ class CampaignAdGroups(TestCase):
     def test_create_ad_group(self):
         campaign = models.Campaign.objects.get(pk=1)
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User.objects.get(pk=1)
         view = views.CampaignAdGroups()
         ad_group, ad_group_settings, actions = view._create_ad_group(campaign, request)
@@ -593,6 +593,8 @@ class AdGroupContentAdStateTest(TestCase):
         state = constants.ContentAdSourceState.ACTIVE
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
@@ -611,6 +613,8 @@ class AdGroupContentAdStateTest(TestCase):
         state = constants.ContentAdSourceState.ACTIVE
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
@@ -897,6 +901,8 @@ class AdGroupContentAdArchive(TestCase):
         self.assertEqual(len(content_ads), 3)
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
@@ -913,6 +919,8 @@ class AdGroupContentAdArchive(TestCase):
         content_ads = list(content_ads) * 4  # need more than 10 ads
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, True, request)
@@ -1071,6 +1079,8 @@ class AdGroupContentAdRestore(TestCase):
         self.assertEqual(len(content_ads), 3)
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
@@ -1087,6 +1097,8 @@ class AdGroupContentAdRestore(TestCase):
         content_ads = list(content_ads) * 4  # need more than 10 ads
 
         request = HttpRequest()
+        request.META['SERVER_NAME'] = 'testname'
+        request.META['SERVER_PORT'] = 1234
         request.user = User(id=1)
 
         api.add_content_ads_archived_change_to_history_and_notify(ad_group, content_ads, False, request)
@@ -2347,6 +2359,28 @@ class AdGroupOverviewTest(TestCase):
             'cost_cc_sum': 0.0
         }]
 
+        ad_group = models.AdGroup.objects.get(pk=1)
+        start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
+        end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
+
+        credit = models.CreditLineItem.objects.create(
+            account=ad_group.campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=User.objects.get(pk=3)
+        )
+
+        models.BudgetLineItem.objects.create(
+            campaign=ad_group.campaign,
+            credit=credit,
+            amount=100,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=User.objects.get(pk=3)
+        )
+
         response = self._get_ad_group_overview(1)
 
         self.assertTrue(response['success'])
@@ -2359,7 +2393,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('03/02 - 04/02', flight_setting['value'])
 
         flight_setting = self._get_setting(settings, 'daily')
-        self.assertEqual('$100.00', flight_setting['value'])
+        self.assertEqual('$50.00', flight_setting['value'])
 
         device_setting = self._get_setting(settings, 'targeting')
         self.assertEqual('Device: Desktop, Mobile', device_setting['value'])
@@ -2374,21 +2408,28 @@ class AdGroupOverviewTest(TestCase):
         yesterday_spend = self._get_setting(settings, 'yesterday')
         self.assertEqual('$0.00', yesterday_spend['value'])
 
-        budget_setting = self._get_setting(settings, 'budget')
-        self.assertEqual('$100.00', budget_setting['value'])
+        budget_setting = self._get_setting(settings, 'daily budget')
+        self.assertEqual('$50.00', budget_setting['value'])
+
+        budget_setting = self._get_setting(settings, 'campaign budget')
+        self.assertEqual('$0.00', budget_setting['value'])
+        self.assertEqual('$80.00', budget_setting['description'])
 
         pacing_setting = self._get_setting(settings, 'pacing')
         self.assertEqual('0.00%', pacing_setting['value'])
-        self.assertEqual('happy', pacing_setting['icon'])
+        self.assertEqual('sad', pacing_setting['icon'])
 
-        goal_setting = [s for s in settings if 'goal' in s['name'].lower()][0]
+        goal_setting = [s for s in settings if 'goal' in s['name'].lower()]
+        self.assertEqual([], goal_setting)
+        # TODO: reintroduce when Campaign goals are wrapped up
+        """
         goal_setting = self._get_setting(settings, 'goal')
         self.assertEqual('0.0 below planned', goal_setting['description'])
         self.assertEqual('happy', goal_setting['icon'])
+        """
 
-    @patch('dash.models.BudgetLineItem.get_daily_spend')
     @patch('reports.redshift.get_cursor')
-    def test_run_mid(self, cursor, get_spend_data):
+    def test_run_mid(self, cursor):
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
 
@@ -2418,14 +2459,18 @@ class AdGroupOverviewTest(TestCase):
             created_by=User.objects.get(pk=3)
         )
 
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=budget,
+            date=datetime.datetime.today() - datetime.timedelta(days=1),
+            media_spend_nano=60 * 10**9,
+            data_spend_nano=0,
+            license_fee_nano=0
+        )
+
         cursor().diftfetchall.return_value = [{
                 'source_id': 9,
                 'cost_cc_sum': 500000.0,
             }]
-
-        get_spend_data.return_value = {
-            'total': 60
-        }
 
         response = self._get_ad_group_overview(1)
 
@@ -2445,11 +2490,10 @@ class AdGroupOverviewTest(TestCase):
         ), flight_setting['value'])
 
         flight_setting = self._get_setting(settings, 'daily')
-        self.assertEqual('$100.00', flight_setting['value'])
-
+        self.assertEqual('$50.00', flight_setting['value'])
         yesterday_setting = self._get_setting(settings, 'yesterday')
         self.assertEqual('$60.00', yesterday_setting['value'])
-        self.assertEqual('50.00% of daily cap', yesterday_setting['description'])
+        self.assertEqual('120.00% of daily cap', yesterday_setting['description'])
 
 
 class CampaignOverviewTest(TestCase):

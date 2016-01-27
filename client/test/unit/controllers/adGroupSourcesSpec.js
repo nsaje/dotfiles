@@ -60,6 +60,12 @@ describe('AdGroupSourcesCtrlSpec', function () {
             }},
             sourcesExportPlusAllowed: {
                 get: mockApiFunc
+            },
+            adGroupOverview: {
+                get: mockApiFunc
+            },
+            campaignOverview: {
+                get: mockApiFunc
             }
         };
 

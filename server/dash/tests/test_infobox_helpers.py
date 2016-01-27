@@ -4,6 +4,7 @@ from django.test import TestCase, mock
 
 import zemauth.models
 
+import reports.models
 import dash.constants
 import dash.models
 import dash.infobox_helpers
@@ -121,25 +122,14 @@ class InfoBoxHelpersTest(TestCase):
 
         middle = (start_date + datetime.timedelta(days=49))
         self.assertEqual(
-            50,
+            20,
             round(dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, middle))
         )
 
-        middle_1_1 = (start_date + datetime.timedelta(days=29))
+        end = (start_date + datetime.timedelta(days=29))
         self.assertEqual(
             30,
-            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, middle_1_1)
-        )
-
-        middle_1_2 = (start_date + datetime.timedelta(days=30))
-        self.assertEqual(
-            31,
-            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, middle_1_2)
-        )
-
-        self.assertEqual(
-            100,
-            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, end_date)
+            dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, end)
         )
 
     def test_get_ideal_campaign_spend_multiple_overlapping_budgets(self):
@@ -179,7 +169,6 @@ class InfoBoxHelpersTest(TestCase):
 
         # ideal spend should be 0, 50% at half and 100% at the end
         # of credit
-
         self.assertEqual(
             0.75,
             dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, start_date)
@@ -187,33 +176,55 @@ class InfoBoxHelpersTest(TestCase):
 
         end_of_budget_1 = start_date + datetime.timedelta(days=80)
         self.assertEqual(
-            60 + 60 / 4 * 3,
+            45,
             dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, end_of_budget_1)
         )
 
         self.assertEqual(
-            120,
+            60,
             dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, end_date)
         )
 
-    @mock.patch('reports.api.query')
-    def test_get_total_campaign_spend(self, mock_query):
+    def test_get_total_and_media_campaign_spend(self):
         # very simple test since target func just retrieves data from Redshift
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         campaign = ad_group.campaign
         user = zemauth.models.User.objects.get(pk=1)
 
-        mock_query.return_value = {
-            'cost': 500
-        }
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
 
-        self.assertEqual(
-            500,
-            dash.infobox_helpers.get_total_campaign_spend(user, campaign)
+        credit = dash.models.CreditLineItem.objects.create(
+            account=campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=500,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+        budget = dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=500,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
         )
 
-    @mock.patch('dash.models.BudgetLineItem.get_daily_spend')
-    def test_get_yesterday_total_spend(self, mock_get_spend_data):
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=budget,
+            date=start_date,
+            media_spend_nano=499 * 10**9,
+            data_spend_nano=0,
+            license_fee_nano=0
+        )
+
+        self.assertEqual(
+            (499, 499),
+            dash.infobox_helpers.get_total_and_media_campaign_spend(user, campaign)
+        )
+
+    def test_get_yesterday_total_spend(self):
         # very simple test since target func just retrieves data from Redshift
         campaign = dash.models.Campaign.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
@@ -238,9 +249,14 @@ class InfoBoxHelpersTest(TestCase):
             created_by=user,
         )
 
-        mock_get_spend_data.return_value = {
-            'total': 50
-        }
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=budget,
+            date=datetime.datetime.today() - datetime.timedelta(days=1),
+            media_spend_nano=50 * 10**9,
+            data_spend_nano=0,
+            license_fee_nano=0
+        )
+
         self.assertEqual(
             50,
             dash.infobox_helpers.get_yesterday_spend(user, campaign)
@@ -336,14 +352,23 @@ class InfoBoxHelpersTest(TestCase):
         )
 
     def test_calculate_daily_cap(self):
+        dash.models.AdGroupSourceState.objects.create(
+            ad_group_source=dash.models.AdGroupSource.objects.filter(
+                ad_group__id=1
+            ).first(),
+            state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+            daily_budget_cc=50
+        )
+
         campaign = dash.models.Campaign.objects.get(pk=1)
-        self.assertEqual(50, dash.infobox_helpers.calculate_daily_cap(campaign))
+        self.assertEqual(50, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
-        for adgs in dash.models.AdGroupSettings.objects.all():
-            adgs.daily_budget_cc = 0
-            adgs.save(None)
+        dash.models.AdGroupSourceState.objects.all().delete()
+        for adgss in dash.models.AdGroupSourceState.objects.all():
+            adgss.daily_budget_cc = 0
+            adgss.save(None)
 
-        self.assertEqual(0, dash.infobox_helpers.calculate_daily_cap(campaign))
+        self.assertEqual(0, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
 
     @mock.patch('reports.api_contentads.query')
     def test_goals_and_spend_settings(self, mock_query):
@@ -358,7 +383,7 @@ class InfoBoxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         settings, is_delivering = dash.infobox_helpers.goals_and_spend_settings(user, campaign)
 
-        self.assertEqual(3, len(settings))
+        self.assertEqual(2, len(settings))
 
     def test_format_goal_value(self):
         self.assertEqual(

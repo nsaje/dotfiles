@@ -1233,6 +1233,10 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     actions = [reenable_global]
 
 
+class GAAnalyticsAccount(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)
@@ -1255,3 +1259,4 @@ admin.site.register(models.ScheduledExportReportLog, ScheduledExportReportLogAdm
 admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
 admin.site.register(models.ExportReport, ExportReportAdmin)
 admin.site.register(models.PublisherBlacklist, PublisherBlacklistAdmin)
+admin.site.register(models.GAAnalyticsAccount, GAAnalyticsAccount)

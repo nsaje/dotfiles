@@ -1,0 +1,362 @@
+# source types
+
+-   fields:
+        type: 'adblade'
+    model: dash.sourcetype
+    pk: 1
+
+-   fields:
+        type: 'bidder'
+        available_actions: [19]
+    model: dash.sourcetype
+    pk: 2
+
+
+# sources
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: AdBlade
+        source_type: 1
+    model: dash.source
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Adiant
+        source_type: 2
+        tracking_slug: 'adiant'
+    model: dash.source
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Connatix
+        source_type: 2
+        tracking_slug: 'connatix'
+    model: dash.source
+    pk: 3
+
+
+# test user
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: superuser@test.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: true
+        is_superuser: true
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 1
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: user@test.com
+        first_name: ''
+        groups: []
+        is_active: true
+        is_staff: false
+        is_superuser: false
+        last_login: '2014-06-16T12:21:29'
+        last_name: ''
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 2
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: user2@test.com
+        is_active: true
+        is_staff: false
+        is_superuser: true
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 3
+
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: user3@test.com
+        is_active: true
+        is_staff: false
+        is_superuser: true
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 4
+
+
+# test accounts
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        name: 'test account 1'
+        users: [1]
+    model: dash.account
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 2
+        name: 'test account 2'
+        users: [2]
+    model: dash.account
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 2
+        name: 'test account 3'
+        users: [3]
+    model: dash.account
+    pk: 3
+
+
+# test accountsettings
+
+-   fields:
+        account: 1
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        archived: False
+    model: dash.accountsettings
+    pk: 1
+
+-   fields:
+        account: 2
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 2
+        archived: False
+    model: dash.accountsettings
+    pk: 2
+
+-   fields:
+        account: 3
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 2
+        archived: True
+    model: dash.accountsettings
+    pk: 3
+
+
+# test campaign
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 1 # test account 1
+        name: 'test campaign 1'
+    model: dash.campaign
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 2
+        name: 'test campaign 2'
+    model: dash.campaign
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        account: 3
+        name: 'test campaign 3'
+    model: dash.campaign
+    pk: 3
+
+
+# test campaignsettings
+
+-   fields:
+        campaign: 1
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        archived: False
+    model: dash.campaignsettings
+    pk: 1
+
+-   fields:
+        campaign: 2
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 2
+        archived: False
+    model: dash.campaignsettings
+    pk: 2
+
+-   fields:
+        campaign: 3
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 2
+        archived: True
+    model: dash.campaignsettings
+    pk: 3
+
+
+# test adgroup
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 1'
+    model: dash.adgroup
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 2'
+    model: dash.adgroup
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 3'
+    model: dash.adgroup
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 2
+        name: 'test adgroup 4'
+    model: dash.adgroup
+    pk: 4
+
+
+# test adgroupsettings
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        ad_group: 1
+        state: 1
+        start_date: '2016-01-01'
+        end_date: '2016-01-31'
+        archived: False
+    model: dash.adgroupsettings
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        ad_group: 2
+        state: 1
+        start_date: '2016-12-01'
+        end_date: '2016-12-31'
+        archived: False
+    model: dash.adgroupsettings
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        ad_group: 3
+        state: 2
+        start_date: '2016-01-01'
+        end_date: '2016-01-31'
+        archived: False
+    model: dash.adgroupsettings
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        ad_group: 4
+        state: 2
+        start_date: '2016-01-01'
+        end_date: '2016-01-31'
+        archived: True
+    model: dash.adgroupsettings
+    pk: 4
+
+# test adgroupsource
+
+-   fields:
+        source: 1
+        ad_group: 1
+        source_campaign_key: '["fake"]'
+    model: dash.adgroupsource
+    pk: 1
+
+-   fields:
+        source: 2
+        ad_group: 1
+        source_campaign_key: '["fake"]'
+    model: dash.adgroupsource
+    pk: 2
+
+-   fields:
+        source: 2
+        ad_group: 2
+        source_campaign_key: '["fake"]'
+    model: dash.adgroupsource
+    pk: 3
+
+-   fields:
+        source: 2
+        ad_group: 3
+        source_campaign_key: '["fake"]'
+    model: dash.adgroupsource
+    pk: 4
+
+
+# test adgroupsourcesettings
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 1
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 2
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 2
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 3
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 3
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 4
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 4
+

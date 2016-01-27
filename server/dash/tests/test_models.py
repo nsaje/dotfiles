@@ -9,6 +9,7 @@ from django.http.request import HttpRequest
 from django.conf import settings
 
 from dash import models, constants
+from dash.constants import GATrackingType
 from zemauth import models as zemauthmodels
 from zemauth.models import User
 from utils import exc
@@ -52,7 +53,8 @@ class AdGroupSettingsTest(TestCase):
             'ad_group_name': 'AdGroup name',
             'enable_ga_tracking': True,
             'enable_adobe_tracking': False,
-            'adobe_tracking_param': ''
+            'adobe_tracking_param': '',
+            'ga_tracking_type': GATrackingType.EMAIL,
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
