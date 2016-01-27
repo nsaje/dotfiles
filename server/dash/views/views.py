@@ -301,24 +301,6 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(targeting_region.as_dict())
 
-        daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
-        daily_cap_setting = infobox_helpers.OverviewSetting(
-            'Daily cap',
-            '${:.2f}'.format(daily_cap)
-            if daily_cap is not None else '',
-        )
-        settings.append(daily_cap_setting.as_dict())
-
-        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(ad_group.campaign)
-        total_media_spend = infobox_helpers.get_media_campaign_spend(user, ad_group.campaign)
-
-        campaign_budget_setting = infobox_helpers.OverviewSetting(
-            'Campaign budget:',
-            '${:.2f}'.format(total_media_spend),
-            '${:.2f}'.format(total_media_available),
-        )
-        settings.append(campaign_budget_setting.as_dict())
-
         tracking_code_settings = infobox_helpers.OverviewSetting(
             'Tracking codes:',
             'Yes' if ad_group_settings.tracking_code else 'No',
@@ -345,22 +327,21 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(post_click_tracking_setting.as_dict())
 
-        daily_cap = infobox_helpers.OverviewSetting(
-            'Daily budget:',
-            '${:.2f}'.format(ad_group_settings.daily_budget_cc)
-            if ad_group_settings.daily_budget_cc is not None else '',
+        daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
+        daily_cap_setting = infobox_helpers.OverviewSetting(
+            'Daily budget',
+            '${:.2f}'.format(daily_cap) if daily_cap is not None else '',
             tooltip='Daily media budget'
         )
-        settings.append(daily_cap.as_dict())
+        settings.append(daily_cap_setting.as_dict())
 
-        campaign_budget = budget.CampaignBudget(ad_group.campaign)
-        total = campaign_budget.get_total()
-        spend = campaign_budget.get_spend()
+        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(ad_group.campaign)
+        total_media_spend = infobox_helpers.get_media_campaign_spend(user, ad_group.campaign)
 
         campaign_budget_setting = infobox_helpers.OverviewSetting(
             'Campaign budget:',
-            '${:.2f}'.format(total),
-            '${:.2f}'.format(total - spend),
+            '${:.2f}'.format(total_media_spend),
+            '${:.2f}'.format(total_media_available),
         )
         settings.append(campaign_budget_setting.as_dict())
         return settings

@@ -2396,8 +2396,12 @@ class AdGroupOverviewTest(TestCase):
         yesterday_spend = self._get_setting(settings, 'yesterday')
         self.assertEqual('$0.00', yesterday_spend['value'])
 
-        budget_setting = self._get_setting(settings, 'budget')
-        self.assertEqual('$100.00', budget_setting['value'])
+        budget_setting = self._get_setting(settings, 'daily budget')
+        self.assertEqual('$50.00', budget_setting['value'])
+
+        budget_setting = self._get_setting(settings, 'campaign budget')
+        self.assertEqual('$0.00', budget_setting['value'])
+        self.assertEqual('$80.00', budget_setting['description'])
 
         pacing_setting = self._get_setting(settings, 'pacing')
         self.assertEqual('0.00%', pacing_setting['value'])

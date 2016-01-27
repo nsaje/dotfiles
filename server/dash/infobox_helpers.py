@@ -100,7 +100,7 @@ def get_media_campaign_spend(user, campaign, until_date=None):
     ret = Decimal(0)
     for bli in budgets:
         spend_data = bli.get_spend_data(date=at_date, use_decimal=True)
-        ret += bli.amount - (spend_data['license_fee'] + spend_data['data'])
+        ret += spend_data['media']
     return ret
 
 
@@ -274,7 +274,11 @@ def calculate_available_media_campaign_budget(campaign):
     ret = 0
     for bli in budgets:
         spend_data = bli.get_spend_data(date=today, use_decimal=True)
-        ret += bli.amount - (spend_data['license_fee'] + spend_data['data'])
+
+        available_total_amount = bli.get_available_amount(today)
+        available_media_amount = available_total_amount * (Decimal(1) - bli.credit.license_fee)
+
+        ret += available_media_amount
     return ret
 
 
