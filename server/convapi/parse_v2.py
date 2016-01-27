@@ -243,14 +243,6 @@ class Report(object):
     def add_imported_visits(self, count):
         self._imported_visits += count
 
-    def _parse_z11z_keyword(self, keyword):
-        result = Z11Z_RE.match(keyword)
-        if not result:
-            return None, ''
-        else:
-            content_ad_id, source_param = result.group(1), result.group(2)
-        return int(content_ad_id), source_param
-
     @statsd_timer('convapi.parse_v2', 'validate')
     def validate(self):
         '''
@@ -304,8 +296,50 @@ class Report(object):
                 content_ad_not_specified.add(str(entry))
         return (len(content_ad_not_specified) == 0, list(content_ad_not_specified))
 
+    def _parse_z11z_keyword(self, keyword):
+        result = Z11Z_RE.match(keyword)
+        if not result:
+            return None, ''
+        else:
+            content_ad_id, source_param = result.group(1), result.group(2)
+        return int(content_ad_id), source_param
+
 
 class GAReport(Report):
+    def _parse_landing_page(self, raw_url):
+        url, query_params = url_helper.clean_url(raw_url)
+        # parse caid
+        content_ad_id = None
+        try:
+            if '_z1_caid' in query_params:
+                content_ad_id_raw = query_params['_z1_caid']
+                results = LANDING_PAGE_CAID_RE.search(content_ad_id_raw)
+                if results is not None:
+                    content_ad_id_raw = results.group(0)
+
+                content_ad_id = int(content_ad_id_raw)
+        except ValueError:
+            return None, ''
+
+        source_param = ''
+        if '_z1_msid' in query_params:
+            source_param = query_params['_z1_msid'] or ''
+            results = LANDING_PAGE_MSID_RE.search(source_param)
+            if results is not None:
+                source_param = results.group(0)
+
+        if content_ad_id is None or source_param == '':
+            logger.warning(
+                    'Could not parse landing page url %s. content_ad_id: %s, source_param: %s',
+                    raw_url,
+                    content_ad_id,
+                    source_param
+            )
+            return None, ''
+        return content_ad_id, source_param
+
+
+class GAReportFromCSV(GAReport):
 
     def __init__(self, csv_report_text):
         Report.__init__(self)
@@ -404,38 +438,6 @@ class GAReport(Report):
             return self._parse_landing_page(data)
         else:
             return self._parse_z11z_keyword(data)
-
-    def _parse_landing_page(self, raw_url):
-        url, query_params = url_helper.clean_url(raw_url)
-        # parse caid
-        content_ad_id = None
-        try:
-            if '_z1_caid' in query_params:
-                content_ad_id_raw = query_params['_z1_caid']
-                results = LANDING_PAGE_CAID_RE.search(content_ad_id_raw)
-                if results is not None:
-                    content_ad_id_raw = results.group(0)
-
-                content_ad_id = int(content_ad_id_raw)
-        except ValueError:
-            return None, ''
-
-        source_param = ''
-        if '_z1_msid' in query_params:
-            source_param = query_params['_z1_msid'] or ''
-            results = LANDING_PAGE_MSID_RE.search(source_param)
-            if results is not None:
-                source_param = results.group(0)
-
-        if content_ad_id is None or source_param == '':
-            logger.warning(
-                'Could not parse landing page url %s. content_ad_id: %s, source_param: %s',
-                raw_url,
-                content_ad_id,
-                source_param
-            )
-            return None, ''
-        return content_ad_id, source_param
 
     def _get_goal_name(self, goal_field):
         try:
