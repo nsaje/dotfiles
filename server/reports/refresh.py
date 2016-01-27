@@ -29,8 +29,7 @@ import dash.constants
 logger = logging.getLogger(__name__)
 
 OB_RAW_PUB_DATA_S3_PREFIX = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/'
-B1_RAW_PUB_DATA_S3_URI_PREFIX = 'b1_publishers_raw/{start_date}-{end_date}'
-B1_RAW_PUB_DATA_FILE = 'part-00000'
+B1_RAW_PUB_DATA_S3_URI = 'b1_publishers_raw/{year}/{month:02d}/{day:02d}/part-00000'
 
 LOAD_CONTENTADS_KEY_FMT = 'contentadstats_load/{year}/{month:02d}/{day:02d}/{campaign_id}/{ts}.json'
 LOAD_B1_PUB_STATS_KEY_FMT = 'b1_publishers_load/{year}/{month:02d}/{day:02d}/{ts}.json'
@@ -241,20 +240,13 @@ def put_pub_stats_to_s3(date, rows, key_fmt):
     return s3_key
 
 
-def _extract_b1_raw_timestamp(publisher):
-    start = publisher.name.find('--') + 2
-    return publisher.name[start:]
-
-
-def _get_latest_b1_pub_data_s3_key(date):
-    prefix_publishers = B1_RAW_PUB_DATA_S3_URI_PREFIX.format(start_date=date.isoformat(), end_date=date.isoformat())
-    publishers = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).list(prefix_publishers)
-    publishers = [publisher for publisher in publishers if publisher.name.endswith(B1_RAW_PUB_DATA_FILE)]
-    if not publishers:
+def _get_b1_pub_data_s3_key(date):
+    pub_data_url = B1_RAW_PUB_DATA_S3_URI.format(year=date.year, month=date.month, day=date.day)
+    pub_data = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS).list(pub_data_url)
+    if not pub_data:
         raise exc.S3FileNotFoundError()
-
-    latest_publisher = max(publishers, key=_extract_b1_raw_timestamp)
-    return latest_publisher.name
+    pub_data = next(iter(pub_data))
+    return pub_data.name
 
 
 def _extract_ob_raw_timestamp(s3_key):
@@ -351,7 +343,7 @@ def _get_raw_ob_pub_data(s3_keys):
 
 
 def _get_latest_b1_pub_data(date):
-    s3_key = _get_latest_b1_pub_data_s3_key(date)
+    s3_key = _get_b1_pub_data_s3_key(date)
     return _get_raw_b1_pub_data(s3_key)
 
 
