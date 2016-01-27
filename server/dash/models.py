@@ -2399,7 +2399,7 @@ class BudgetLineItem(FootprintModel):
         date_start_diff = (date - self.start_date).days + 1
         date_total_diff = (self.end_date - self.start_date).days + 1
 
-        return self.amount * float(date_start_diff) / float(date_total_diff)
+        return self.amount * Decimal(date_start_diff) / Decimal(date_total_diff)
 
     def clean(self):
         if self.pk:

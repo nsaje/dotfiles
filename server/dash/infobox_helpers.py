@@ -75,25 +75,29 @@ def format_flight_time(start_date, end_date):
 def get_ideal_campaign_spend(user, campaign, until_date=None):
     at_date = until_date or datetime.datetime.today().date()
     budgets = _retrieve_active_budgetlineitems(campaign, at_date)
+    if len(budgets) == 0:
+        return Decimal(0)
     all_budget_spends_at_date = [b.get_ideal_budget_spend(at_date) for b in budgets]
-    return Decimal(sum(all_budget_spends_at_date))
+    return sum(all_budget_spends_at_date)
 
 
 def get_total_campaign_spend(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()
     budgets = _retrieve_active_budgetlineitems(campaign, at_date)
+    if len(budgets) == 0:
+        return Decimal(0)
     all_budget_spends_at_date = [
         b.get_daily_spend(date=at_date, use_decimal=True)['total'] for b in budgets
     ]
-    return Decimal(sum(all_budget_spends_at_date))
+    return sum(all_budget_spends_at_date)
 
 
 def get_media_campaign_spend(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()
     budgets = _retrieve_active_budgetlineitems(campaign, at_date)
-    ret = 0
+    ret = Decimal(0)
     for bli in budgets:
         spend_data = bli.get_spend_data(date=at_date, use_decimal=True)
         ret += bli.amount - (spend_data['license_fee'] + spend_data['data'])
@@ -103,6 +107,8 @@ def get_media_campaign_spend(user, campaign, until_date=None):
 def get_yesterday_spend(user, campaign):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
     budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
+    if len(budgets) == 0:
+        return Decimal(0)
     all_budget_spends_at_date = [
         b.get_daily_spend(date=yesterday, use_decimal=True).get('media', 0) for b in budgets
     ]
