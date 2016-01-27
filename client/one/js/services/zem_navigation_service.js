@@ -180,8 +180,9 @@ oneApp.factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', 
             accounts = data;
 
             notifyCacheUpdate();
-            $rootScope.$emit('navigation-loading', false);
             return data;
+        }).finally(function () {
+            $rootScope.$emit('navigation-loading', false);
         });
     }
 

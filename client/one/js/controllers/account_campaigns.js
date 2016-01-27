@@ -346,7 +346,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
 
         api.accountCampaigns.create(accountId).then(
             function (campaignData) {
-                
                 zemNavigationService.addCampaignToCache(accountId, {
                     id: campaignData.id,
                     name: campaignData.name,
