@@ -4,7 +4,7 @@ import pytz
 import re
 from slugify import slugify
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q, Sum, F, DecimalField
 
 from dash.views import helpers
 from dash import models
@@ -24,6 +24,7 @@ import reports.api_contentads
 import reports.api_touchpointconversions
 import reports.api_publishers
 import reports.constants
+import reports.models
 import actionlog.sync
 
 
@@ -746,9 +747,6 @@ class AccountsAccountsTable(object):
             user.has_perm('zemauth.view_archived_entities')
 
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
-        accounts_bcm_status = {
-            acc.id: acc.uses_credits for acc in accounts
-        }
         account_ids = set(acc.id for acc in accounts)
 
         accounts_settings = models.AccountSettings.objects\
@@ -775,25 +773,7 @@ class AccountsAccountsTable(object):
             source=filtered_sources
         ), user)
 
-        all_accounts_budget = budget.GlobalBudget().get_total_by_account()
-        account_budget = {
-            aid: all_accounts_budget.get(aid, 0)
-            for aid in account_ids if not accounts_bcm_status.get(aid)
-        }
-        account_budget.update({  # bcm
-            acc.id: self.get_current_account_media_budget(acc)
-            for acc in accounts if acc.uses_credits
-        })
-
-        all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
-        account_total_spend = {
-            aid: all_accounts_total_spend.get(aid, 0)
-            for aid in account_ids if accounts_bcm_status.get(aid)
-        }
-        account_total_spend.update({  # bcm
-            acc.id: self.get_current_account_media_spend(acc)
-            for acc in accounts if acc.uses_credits
-        })
+        account_budget, account_total_spend = self.get_budgets(accounts)
 
         totals_data['budget'] = sum(account_budget.itervalues())
         totals_data['available_budget'] = totals_data['budget'] - sum(account_total_spend.values())
@@ -893,21 +873,57 @@ class AccountsAccountsTable(object):
             last_pixel_sync_message=last_pixel_sync_message
         )
 
-    def get_current_account_media_budget(self, account):
-        return sum(
-            budget.get_available_amount() * (1 - budget.credit.license_fee)
-            for campaign in models.Campaign.filter(account=account).select_related('credit')
-            for budget in campaign.budgets.all()
-            if budget.state() == constants.BudgetLineItemState.ACTIVE
+    def get_budgets(self, accounts):
+        bcm_account_ids = set(acc.pk for acc in accounts if acc.uses_credits)
+        legacy_account_ids = set(acc.pk for acc in accounts if not acc.uses_credits)
+
+        all_accounts_budget = budget.GlobalBudget().get_total_by_account()
+        account_budget = {
+            aid: all_accounts_budget.get(aid, 0)
+            for aid in legacy_account_ids
+        }
+        account_budget.update(
+            self.get_accounts_media_budget(
+                aid for aid in bcm_account_ids
+            )
         )
 
-    def get_current_account_media_spend(self, account):
-        return sum(
-            budget.get_spend_data(use_decimal=True)['media']
-            for campaign in models.Campaign.filter(account=account).select_related('credit')
-            for budget in campaign.budgets.all()
-            if budget.state() == constants.BudgetLineItemState.ACTIVE
+        all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
+        account_total_spend = {
+            aid: all_accounts_total_spend.get(aid, 0)
+            for aid in legacy_account_ids
+        }
+        account_total_spend.update(
+            self.get_accounts_media_spend(
+                aid for aid in bcm_account_ids
+            )
         )
+        return account_budget, account_total_spend
+
+    def get_accounts_media_budget(self, account_ids):
+        budget_data = models.BudgetLineItem.objects.filter(
+            credit__account__id__in=account_ids
+        ).values('credit__account_id').order_by().annotate(
+            media=Sum(
+                F('amount') * (1 - F('credit__license_fee')),
+                output_field=DecimalField(max_digits=10, decimal_places=4)
+            )
+        )
+        return {
+            row['credit__account_id']: row['media']
+            for row in budget_data
+        }
+
+    def get_accounts_media_spend(self, account_ids):
+        media_spend_data = reports.models.BudgetDailyStatement.objects.filter(
+            budget__credit__account_id__in=account_ids
+        ).values('budget__credit__account_id').order_by().annotate(
+            media_nano=Sum('media_spend_nano')
+        )
+        return {
+            row['budget__credit__account_id']: models.nano_to_dec(row['media_nano'])
+            for row in media_spend_data
+        }
 
     def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions, account_budget,
                  account_total_spend, has_view_archived_permission, show_archived, order=None):
