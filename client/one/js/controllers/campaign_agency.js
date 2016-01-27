@@ -1,5 +1,5 @@
-/*globals oneApp,constants,options,moment*/
-oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', function ($scope, $state, $modal, api) {
+/* globals oneApp, options */
+oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'zemNavigationService', function ($scope, $state, $modal, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.settings = {};
     $scope.history = [];
     $scope.canArchive = false;
@@ -67,10 +67,7 @@ oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', fu
     };
 
     $scope.refreshPage = function () {
-        api.navData.list().then(function (accounts) {
-            $scope.refreshNavData(accounts);
-            $scope.getModels();
-        });
+        zemNavigationService.reload();
         $scope.getSettings();
     };
 

@@ -51,6 +51,13 @@ def validate(*validators):
         raise ValidationError(errors)
 
 
+def should_filter_by_sources(sources):
+    if sources is None:
+        return False
+
+    return Source.objects.exclude(id__in=[s.id for s in sources]).exists()
+
+
 class PermissionMixin(object):
     USERS_FIELD = ''
 
@@ -271,7 +278,7 @@ class Account(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             return self.filter(
@@ -411,7 +418,7 @@ class Campaign(models.Model, PermissionMixin):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             return self.filter(
@@ -1216,7 +1223,7 @@ class AdGroup(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             return self.filter(
@@ -1254,6 +1261,15 @@ class AdGroupSource(models.Model):
         blank=True,
         null=True
     )
+
+    objects = QuerySetManager()
+
+    class QuerySet(models.QuerySet):
+        def filter_by_sources(self, sources):
+            if not should_filter_by_sources(sources):
+                return self
+
+            return self.filter(source__in=sources)
 
     def get_tracking_ids(self):
         msid = self.source.tracking_slug or ''
@@ -1697,7 +1713,7 @@ class AdGroupSourceSettings(models.Model):
             return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
 
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             return self.filter(
@@ -1812,7 +1828,7 @@ class ContentAd(models.Model):
     class QuerySet(models.QuerySet):
 
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             content_ad_ids = ContentAdSource.objects.filter(source=sources).select_related(
