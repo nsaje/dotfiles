@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 CONVERSION_PIXEL_INACTIVE_DAYS = 7
-MAX_CONVERSION_GOALS_PER_CAMPAIGN = 2
+MAX_CONVERSION_GOALS_PER_CAMPAIGN = 5
 
 
 def _get_conversion_pixel_url(account_id, slug):
@@ -771,7 +771,8 @@ class AccountAgency(api_common.BaseApiView):
                         form
                     )
 
-            else:
+            # Form is additionally validated in self.set_allowed_sources method
+            if not form.is_valid():
                 data = self.get_validation_error_data(request, account)
                 raise exc.ValidationError(errors=dict(form.errors), data=data)
 

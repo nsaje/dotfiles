@@ -51,6 +51,13 @@ def validate(*validators):
         raise ValidationError(errors)
 
 
+def should_filter_by_sources(sources):
+    if sources is None:
+        return False
+
+    return Source.objects.exclude(id__in=[s.id for s in sources]).exists()
+
+
 class PermissionMixin(object):
     USERS_FIELD = ''
 
@@ -67,11 +74,13 @@ class PermissionMixin(object):
 
 
 class QuerySetManager(models.Manager):
+
     def get_queryset(self):
         return self.model.QuerySet(self.model)
 
 
 class DemoManager(models.Manager):
+
     def get_queryset(self):
         queryset = super(DemoManager, self).get_queryset()
         if queryset.model is Account:
@@ -94,6 +103,7 @@ class DemoManager(models.Manager):
 
 
 class FootprintModel(models.Model):
+
     def __init__(self, *args, **kwargs):
         super(FootprintModel, self).__init__(*args, **kwargs)
         if not self.pk:
@@ -260,6 +270,7 @@ class Account(models.Model):
         super(Account, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
+
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(users__id=user.id) |
@@ -267,7 +278,7 @@ class Account(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             return self.filter(
@@ -397,6 +408,7 @@ class Campaign(models.Model, PermissionMixin):
         super(Campaign, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
+
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(users__id=user.id) |
@@ -406,7 +418,7 @@ class Campaign(models.Model, PermissionMixin):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             return self.filter(
@@ -520,6 +532,7 @@ class AccountSettings(SettingsBase):
         ordering = ('-created_dt',)
 
     class QuerySet(models.QuerySet):
+
         def group_current_settings(self):
             return self.order_by('account_id', '-created_dt').distinct('account')
 
@@ -619,6 +632,7 @@ class CampaignSettings(SettingsBase):
         ordering = ('-created_dt',)
 
     class QuerySet(models.QuerySet):
+
         def group_current_settings(self):
             return self.order_by('campaign_id', '-created_dt').distinct('campaign')
 
@@ -1041,6 +1055,7 @@ class DefaultSourceSettings(models.Model):
     objects = QuerySetManager()
 
     class QuerySet(models.QuerySet):
+
         def with_credentials(self):
             return self.exclude(credentials__isnull=True)
 
@@ -1130,8 +1145,8 @@ class AdGroup(models.Model):
             return constants.AdGroupRunningStatus.INACTIVE
 
         if (cls.get_running_status_by_flight_time(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE and
-           cls.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings) ==
-           constants.AdGroupRunningStatus.ACTIVE):
+                cls.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings) ==
+                constants.AdGroupRunningStatus.ACTIVE):
             return constants.AdGroupRunningStatus.ACTIVE
 
         return constants.AdGroupRunningStatus.INACTIVE
@@ -1198,6 +1213,7 @@ class AdGroup(models.Model):
         super(AdGroup, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
+
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(campaign__users__id=user.id) |
@@ -1207,7 +1223,7 @@ class AdGroup(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             return self.filter(
@@ -1246,6 +1262,15 @@ class AdGroupSource(models.Model):
         null=True
     )
 
+    objects = QuerySetManager()
+
+    class QuerySet(models.QuerySet):
+        def filter_by_sources(self, sources):
+            if not should_filter_by_sources(sources):
+                return self
+
+            return self.filter(source__in=sources)
+
     def get_tracking_ids(self):
         msid = self.source.tracking_slug or ''
         if self.source.source_type and\
@@ -1282,6 +1307,14 @@ class AdGroupSource(models.Model):
             self.ad_group.id,
             self.source.id
         )
+
+    def get_latest_state(self):
+        try:
+            return AdGroupSourceState.objects.filter(
+                ad_group_source=self
+            ).latest()
+        except AdGroupSourceState.DoesNotExist:
+            return None
 
     def _shorten_name(self, name):
         # if the first word is too long, cut it
@@ -1342,6 +1375,7 @@ class AdGroupSettings(SettingsBase):
         'call_to_action',
         'ad_group_name',
         'enable_ga_tracking',
+        'ga_tracking_type',
         'enable_adobe_tracking',
         'adobe_tracking_param',
     ]
@@ -1349,7 +1383,8 @@ class AdGroupSettings(SettingsBase):
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(AdGroup, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True, blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
+                                   on_delete=models.PROTECT, null=True, blank=True)
     state = models.IntegerField(
         default=constants.AdGroupSettingsState.INACTIVE,
         choices=constants.AdGroupSettingsState.get_choices()
@@ -1374,6 +1409,10 @@ class AdGroupSettings(SettingsBase):
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
     enable_ga_tracking = models.BooleanField(default=True)
+    ga_tracking_type = models.IntegerField(
+        default=constants.GATrackingType.EMAIL,
+        choices=constants.GATrackingType.get_choices()
+    )
     enable_adobe_tracking = models.BooleanField(default=False)
     adobe_tracking_param = models.CharField(max_length=10, blank=True, default='')
     archived = models.BooleanField(default=False)
@@ -1432,8 +1471,8 @@ class AdGroupSettings(SettingsBase):
 
     def is_mobile_only(self):
         return bool(self.target_devices) \
-               and len(self.target_devices) == 1 \
-               and constants.AdTargetDevice.MOBILE in self.target_devices
+            and len(self.target_devices) == 1 \
+            and constants.AdTargetDevice.MOBILE in self.target_devices
 
     @classmethod
     def get_defaults_dict(cls):
@@ -1464,6 +1503,7 @@ class AdGroupSettings(SettingsBase):
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
             'enable_ga_tracking': 'Enable GA tracking',
+            'ga_tracking_type': 'GA tracking type (via API or e-mail).',
             'autopilot_state': 'Auto-Pilot',
             'enable_adobe_tracking': 'Enable Adobe tracking',
             'adobe_tracking_param': 'Adobe tracking parameter'
@@ -1492,6 +1532,8 @@ class AdGroupSettings(SettingsBase):
                 value = 'worldwide'
         elif prop_name in ('archived', 'enable_ga_tracking', 'enable_adobe_tracking'):
             value = str(value)
+        elif prop_name == 'ga_tracking_type':
+            value = constants.GATrackingType.get_text(value)
 
         return value
 
@@ -1537,6 +1579,7 @@ class AdGroupSettings(SettingsBase):
         super(AdGroupSettings, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
+
         def group_current_settings(self):
             return self.order_by('ad_group_id', '-created_dt').distinct('ad_group')
 
@@ -1579,6 +1622,7 @@ class AdGroupSourceState(models.Model):
         ordering = ('-created_dt',)
 
     class QuerySet(models.QuerySet):
+
         def group_current_states(self):
             return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
 
@@ -1672,11 +1716,12 @@ class AdGroupSourceSettings(models.Model):
         return result
 
     class QuerySet(models.QuerySet):
+
         def group_current_settings(self):
             return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
 
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             return self.filter(
@@ -1789,8 +1834,9 @@ class ContentAd(models.Model):
         get_latest_by = 'created_dt'
 
     class QuerySet(models.QuerySet):
+
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             content_ad_ids = ContentAdSource.objects.filter(source=sources).select_related(
@@ -2172,6 +2218,7 @@ class CreditLineItem(FootprintModel):
             raise ValidationError('License fee must be between 0 and 100%.')
 
     class QuerySet(models.QuerySet):
+
         def filter_active(self, date=None):
             if date is None:
                 date = dates_helper.local_today()
@@ -2234,11 +2281,16 @@ class BudgetLineItem(FootprintModel):
             raise AssertionError('Cannot delete nonpending budgets')
         super(BudgetLineItem, self).delete()
 
+    def get_available_amount(self, date=None):
+        if date is None:
+            date = dates_helper.local_today()
+        total_spend = self.get_spend_data(date=date, use_decimal=True)['total']
+        return Decimal(self.amount) - total_spend
+
     def state(self, date=None):
         if date is None:
             date = dates_helper.local_today()
-        total_spend = self.get_spend_data(date=date)['total_cc'] * 0.0001
-        if self.amount <= total_spend:
+        if self.get_available_amount(date) <= 0:
             return constants.BudgetLineItemState.DEPLETED
         if self.end_date and self.end_date < date:
             return constants.BudgetLineItemState.INACTIVE
@@ -2326,12 +2378,12 @@ class BudgetLineItem(FootprintModel):
         }
         try:
             statement = date and self.statements.get(date=date)\
-                        or self.get_latest_statement()
+                or self.get_latest_statement()
         except ObjectDoesNotExist:
             pass
         else:
             spend_data['media_cc'] = nano_to_cc(statement.media_spend_nano)
-            spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano )
+            spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano)
             spend_data['license_fee_cc'] = nano_to_cc(statement.license_fee_nano)
             spend_data['total_cc'] = nano_to_cc(
                 statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
@@ -2355,7 +2407,7 @@ class BudgetLineItem(FootprintModel):
         date_start_diff = (date - self.start_date).days + 1
         date_total_diff = (self.end_date - self.start_date).days + 1
 
-        return self.amount * float(date_start_diff) / float(date_total_diff)
+        return self.amount * Decimal(date_start_diff) / Decimal(date_total_diff)
 
     def clean(self):
         if self.pk:
@@ -2422,6 +2474,7 @@ class BudgetLineItem(FootprintModel):
             )
 
     class QuerySet(models.QuerySet):
+
         def delete(self):
             if any(itm.state() != constants.BudgetLineItemState.PENDING for itm in self):
                 raise AssertionError('Some budget items are not pending')
@@ -2588,3 +2641,11 @@ class ScheduledExportReportLog(models.Model):
             self.errors = error_msg
         else:
             self.errors += '\n\n' + error_msg
+
+
+class GAAnalyticsAccount(models.Model):
+    id = models.AutoField(primary_key=True)
+    account = models.ForeignKey(Account, null=False, blank=False, on_delete=models.PROTECT)
+    ga_account_id = models.CharField(max_length=127, blank=False, null=False)
+    ga_web_property_id = models.CharField(max_length=127, blank=False, null=False)
+

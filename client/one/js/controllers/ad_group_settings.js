@@ -1,5 +1,5 @@
 /*globals oneApp,constants,options*/
-oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', function ($scope, $state, $q, $timeout, api, regions) {
+oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, regions, zemNavigationService) {
     var freshSettings = $q.defer(),
         goToContentAds = false;
     $scope.settings = {};
@@ -102,16 +102,21 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                     status = getAdGroupStatus($scope.settings);
                 $scope.errors = {};
                 if (prevAdGroup != currAdGroup) {
-                    adGroupToEdit = $scope.getAdGroup(prevAdGroup);
-                    adGroupToEdit.name = data.settings.name;
-                    adGroupToEdit.state = data.settings.state === stateActive ? 'enabled' : 'paused';
+                    zemNavigationService.updateAdGroupCache(prevAdGroup, {
+                        name: data.settings.name,
+                        state: data.settings.state === stateActive ? 'enabled' : 'paused',
+                    });
                 } else {
                     $scope.settings = data.settings;
                     $scope.defaultSettings = data.defaultSettings;
                     $scope.actionIsWaiting = data.actionIsWaiting;
 
-                    $scope.updateAccounts(data.settings.name, data.settings.state, status);
-                    $scope.updateBreadcrumbAndTitle();
+                    zemNavigationService.updateAdGroupCache(currAdGroup, {
+                        name: data.settings.name,
+                        state: data.settings.state === constants.adGroupSourceSettingsState.ACTIVE ? 'enabled' : 'paused',
+                        status: status,
+                    });
+
                     $scope.setAdGroupPaused(
                         $scope.settings.state === constants.adGroupSettingsState.INACTIVE
                     );

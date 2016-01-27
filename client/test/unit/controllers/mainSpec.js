@@ -5,9 +5,9 @@ describe('MainCtrl', function () {
     var ctrl;
     var $state;
     var user = {permissions: []};
-    var accounts;
     var zemFullStoryService;
     var zemUserSettings;
+    var accountsAccess;
 
     beforeEach(function () {
         module('one');
@@ -27,19 +27,23 @@ describe('MainCtrl', function () {
 
             spyOn(zemFullStoryService, 'identify');
 
+            accountsAccess = {
+                hasAccounts: true
+            };
+
             ctrl = $controller('MainCtrl', {
                 $scope: $scope,
                 $state: $state,
                 user: user,
-                accounts: accounts,
+                accountsAccess: accountsAccess,
                 zemFullStoryService: zemFullStoryService,
                 zemUserSettings: zemUserSettings
             });
         });
     });
 
-    it('should init accounts properly', function () {
-        expect($scope.accounts).toEqual(accounts);
+    it('should init accounts access properly', function () {
+        expect($scope.accountsAccess).toEqual(accountsAccess);
     });
 
     describe('hasPermission', function () {

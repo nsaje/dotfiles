@@ -418,7 +418,7 @@ def process_report_v2(report_task, report_type):
 
             report = parse_v2.OmnitureReport(content)
         else:
-            report = parse_v2.GAReport(content)
+            report = parse_v2.GAReportFromCSV(content)
             # parse will throw exceptions in case of errors
         report.parse()
         report.validate()
