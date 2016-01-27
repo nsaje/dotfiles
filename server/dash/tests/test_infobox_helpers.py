@@ -185,7 +185,7 @@ class InfoBoxHelpersTest(TestCase):
             dash.infobox_helpers.get_ideal_campaign_spend(user, campaign, end_date)
         )
 
-    def test_get_total_campaign_spend(self):
+    def test_get_total_and_media_campaign_spend(self):
         # very simple test since target func just retrieves data from Redshift
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         campaign = ad_group.campaign
@@ -220,8 +220,8 @@ class InfoBoxHelpersTest(TestCase):
         )
 
         self.assertEqual(
-            499,
-            dash.infobox_helpers.get_total_campaign_spend(user, campaign)
+            (499, 499),
+            dash.infobox_helpers.get_total_and_media_campaign_spend(user, campaign)
         )
 
     def test_get_yesterday_total_spend(self):

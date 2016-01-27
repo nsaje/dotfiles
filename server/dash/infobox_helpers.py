@@ -81,16 +81,20 @@ def get_ideal_campaign_spend(user, campaign, until_date=None):
     return sum(all_budget_spends_at_date)
 
 
-def get_total_campaign_spend(user, campaign, until_date=None):
+def get_total_and_media_campaign_spend(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()
     budgets = _retrieve_active_budgetlineitems(campaign, at_date)
     if len(budgets) == 0:
-        return Decimal(0)
+        return Decimal(0), Decimal(0)
+
     all_budget_spends_at_date = [
-        b.get_spend_data(date=at_date, use_decimal=True)['total'] for b in budgets
+        b.get_spend_data(date=at_date, use_decimal=True) for b in budgets
     ]
-    return sum(all_budget_spends_at_date)
+    return (
+        sum(map(lambda bli: bli['total'], all_budget_spends_at_date)),
+        sum(map(lambda bli: bli['media'], all_budget_spends_at_date))
+    )
 
 
 def get_media_campaign_spend(user, campaign, until_date=None):
@@ -184,7 +188,7 @@ def goals_and_spend_settings(user, campaign):
     )
     settings.append(yesterday_spend_settings.as_dict())
 
-    total_campaign_spend_to_date = get_total_campaign_spend(user, campaign)
+    total_campaign_spend_to_date, media_campaign_spend_to_date = get_total_and_media_campaign_spend(user, campaign)
     ideal_campaign_spend_to_date = get_ideal_campaign_spend(user, campaign)
 
     ratio = 0
@@ -196,7 +200,7 @@ def goals_and_spend_settings(user, campaign):
     campaign_pacing_settings = OverviewSetting(
         'Campaign pacing:',
         '{:.2f}%'.format(ratio * 100),
-        description='${:.2f}'.format(total_campaign_spend_to_date)
+        description='${:.2f}'.format(media_campaign_spend_to_date)
     ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
     settings.append(campaign_pacing_settings.as_dict())
 
