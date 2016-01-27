@@ -1,5 +1,5 @@
-/*globals oneApp,constants,options,moment*/
-oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'zemNavigationService', function ($scope, $state, $modal, api, zemNavigationService) {
+/* globals oneApp, options */
+oneApp.controller('CampaignAgencyCtrl', ['$scope', '$state', '$modal', 'api', 'zemNavigationService', function ($scope, $state, $modal, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.settings = {};
     $scope.history = [];
     $scope.canArchive = false;

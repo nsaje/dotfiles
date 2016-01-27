@@ -1,5 +1,5 @@
-/*globals oneApp,moment*/
-oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigationService', function ($scope, $state, api, zemNavigationService) {
+/* globals oneApp */
+oneApp.controller('AdGroupAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigationService', function ($scope, $state, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.alerts = [];
     $scope.history = [];
     $scope.canArchive = false;

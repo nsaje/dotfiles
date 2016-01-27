@@ -1,7 +1,7 @@
 /* globals oneApp */
 'use strict';
 
-oneApp.factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', function ($rootScope, $q, $location, api) {
+oneApp.factory('zemNavigationService', ['$rootScope', '$q', '$location', 'api', function ($rootScope, $q, $location, api) { // eslint-disable-line max-len
 
     var accounts = [];
 

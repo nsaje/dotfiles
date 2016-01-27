@@ -1,5 +1,5 @@
-/*globals oneApp*/
-oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigationService', function ($scope, $state, api, zemNavigationService) {
+/* globals oneApp */
+oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigationService', function ($scope, $state, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.settings = {};
     $scope.settings.allowedSources = {};
     $scope.history = [];
