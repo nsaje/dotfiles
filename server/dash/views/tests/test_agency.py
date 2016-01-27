@@ -817,33 +817,55 @@ class CampaignConversionGoalsTestCase(TestCase):
         self.assertEqual(200, response.status_code)
 
         decoded_response = json.loads(response.content)
-        self.assertEqual({
-            'rows': [
-                {
-                    'id': 2,
-                    'type': 2,
-                    'name': 'test conversion goal 2',
-                    'conversion_window': None,
-                    'goal_id': '2',
-                }, {
-                    'id': 1,
-                    'type': 1,
-                    'name': 'test conversion goal',
-                    'conversion_window': 168,
-                    'goal_id': '1',
-                    'pixel': {
-                        'id': 1,
-                        'slug': 'test',
-                        'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
-                        'archived': False,
-                    },
-                },
-            ],
-            'available_pixels': [{
+        expected_goals = [
+            {
+                'id': 2,
+                'type': 2,
+                'name': 'test conversion goal 2',
+                'conversion_window': None,
+                'goal_id': '2',
+            }, {
                 'id': 1,
-                'slug': 'test'
-            }]
-        }, decoded_response['data'])
+                'type': 1,
+                'name': 'test conversion goal',
+                'conversion_window': 168,
+                'goal_id': '1',
+                'pixel': {
+                    'id': 1,
+                    'slug': 'test',
+                    'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+                    'archived': False,
+                },
+            },
+            {
+                'id': 5,
+                'goal_id': '5',
+                'name': 'test conversion goal 5',
+                'conversion_window': None,
+                'type': 3,
+            },
+            {
+                'id': 4,
+                'goal_id': '4',
+                'name': 'test conversion goal 4',
+                'conversion_window': None,
+                'type': 3
+            },
+            {
+                'id': 3,
+                'goal_id': '3',
+                'name': 'test conversion goal 3',
+                'conversion_window': None,
+                'type': 2
+            },
+        ]
+        expected_available_pixels = [{
+            'id': 1,
+            'slug': 'test'
+        }]
+
+        self.assertItemsEqual(expected_goals, decoded_response['data']['rows'])
+        self.assertItemsEqual(expected_available_pixels, decoded_response['data']['available_pixels'])
 
     def test_get_no_permissions(self):
         permission = Permission.objects.get(codename='manage_conversion_goals')
@@ -897,37 +919,59 @@ class CampaignConversionGoalsTestCase(TestCase):
         self.assertEqual(200, response.status_code)
 
         decoded_response = json.loads(response.content)
-        self.assertEqual({
-            'rows': [
-                {
-                    'id': 2,
-                    'type': 2,
-                    'name': 'test conversion goal 2',
-                    'conversion_window': None,
-                    'goal_id': '2',
-                },
-                {
-                    'id': 1,
-                    'type': 1,
-                    'name': 'test conversion goal',
-                    'conversion_window': 168,
-                    'goal_id': '1',
-                    'pixel': {
-                        'id': 1,
-                        'slug': 'test',
-                        'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
-                        'archived': False,
-                    },
-                },
-            ],
-            'available_pixels': [{
+        expected_conversion_goals = [
+            {
+                'id': 2,
+                'type': 2,
+                'name': 'test conversion goal 2',
+                'conversion_window': None,
+                'goal_id': '2',
+            },
+            {
                 'id': 1,
-                'slug': 'test',
-            }, {
-                'id': new_pixel.id,
-                'slug': 'new',
-            }]
-        }, decoded_response['data'])
+                'type': 1,
+                'name': 'test conversion goal',
+                'conversion_window': 168,
+                'goal_id': '1',
+                'pixel': {
+                    'id': 1,
+                    'slug': 'test',
+                    'url': settings.CONVERSION_PIXEL_PREFIX + '1/test/',
+                    'archived': False,
+                },
+            },
+            {
+                'id': 5,
+                'goal_id': '5',
+                'name': 'test conversion goal 5',
+                'conversion_window': None,
+                'type': 3,
+            },
+            {
+                'id': 4,
+                'goal_id': '4',
+                'name': 'test conversion goal 4',
+                'conversion_window': None,
+                'type': 3
+            },
+            {
+                'id': 3,
+                'goal_id': '3',
+                'name': 'test conversion goal 3',
+                'conversion_window': None,
+                'type': 2
+            },
+        ]
+        expected_available_pixels = [{
+            'id': 1,
+            'slug': 'test',
+        }, {
+            'id': new_pixel.id,
+            'slug': 'new',
+        }]
+
+        self.assertItemsEqual(expected_conversion_goals, decoded_response['data']['rows'])
+        self.assertItemsEqual(expected_available_pixels, decoded_response['data']['available_pixels'])
 
     def test_get_non_existing_campaign(self):
         response = self.client.get(

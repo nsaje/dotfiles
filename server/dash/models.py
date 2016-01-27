@@ -1308,6 +1308,14 @@ class AdGroupSource(models.Model):
             self.source.id
         )
 
+    def get_latest_state(self):
+        try:
+            return AdGroupSourceState.objects.filter(
+                ad_group_source=self
+            ).latest()
+        except AdGroupSourceState.DoesNotExist:
+            return None
+
     def _shorten_name(self, name):
         # if the first word is too long, cut it
         words = name.split()
@@ -2399,7 +2407,7 @@ class BudgetLineItem(FootprintModel):
         date_start_diff = (date - self.start_date).days + 1
         date_total_diff = (self.end_date - self.start_date).days + 1
 
-        return self.amount * float(date_start_diff) / float(date_total_diff)
+        return self.amount * Decimal(date_start_diff) / Decimal(date_total_diff)
 
     def clean(self):
         if self.pk:

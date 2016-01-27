@@ -242,7 +242,7 @@ class AutomaticallySyncContentAdSourceStatus(TestCase):
         content_ad_data = [{
             'id': 1,
             'state': constants.ContentAdSourceState.INACTIVE,
-            'submission_status': constants.ContentAdSubmissionStatus.PENDING
+            'submission_status': constants.ContentAdSubmissionStatus.APPROVED
         }]
 
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
@@ -278,7 +278,7 @@ class AutomaticallySyncContentAdSourceStatus(TestCase):
         content_ad_data = [{
             'id': 1,
             'state': constants.ContentAdSourceState.INACTIVE,
-            'submission_status': constants.ContentAdSubmissionStatus.PENDING
+            'submission_status': constants.ContentAdSubmissionStatus.APPROVED
         }]
 
         actions = api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
@@ -298,7 +298,7 @@ class AutomaticallySyncContentAdSourceStatus(TestCase):
         content_ad_data = [{
             'id': 1,
             'state': constants.ContentAdSourceState.INACTIVE,
-            'submission_status': constants.ContentAdSubmissionStatus.PENDING
+            'submission_status': constants.ContentAdSubmissionStatus.APPROVED
         }]
 
         actions = api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)

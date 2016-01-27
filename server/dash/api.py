@@ -55,7 +55,7 @@ def update_ad_group_source_state(ad_group_source, conf):
         if key in ('cpc_cc', 'daily_budget_cc'):
             conf[key] = cc_to_decimal(val)
 
-    ad_group_source_state = _get_latest_ad_group_source_state(ad_group_source)
+    ad_group_source_state = ad_group_source.get_latest_state()
 
     # determine if we need to update
     need_update = False
@@ -232,14 +232,6 @@ def _update_publisher_blacklist(key, level, publishers):
 
     if blacklist != []:
         models.PublisherBlacklist.objects.bulk_create(blacklist)
-
-
-def _get_latest_ad_group_source_state(ad_group_source):
-    try:
-        agss = models.AdGroupSourceState.objects.filter(ad_group_source=ad_group_source).latest()
-        return agss
-    except models.AdGroupSourceState.DoesNotExist:
-        return None
 
 
 def create_campaign_callback(ad_group_source, source_campaign_key, request):
@@ -630,8 +622,8 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             if _update_content_ad_source_submission_status(content_ad_source, data['submission_status']):
                 changed = True
 
-        if data['state'] != content_ad_source.content_ad.state and content_ad_source.submission_status in \
-           (constants.ContentAdSubmissionStatus.APPROVED, constants.ContentAdSubmissionStatus.PENDING):
+        if data['state'] != content_ad_source.content_ad.state and \
+           content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
             # content ad state does not match
             # skip sync for rejected content ads - their status doesn't match always
             logger.debug(
