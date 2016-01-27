@@ -241,7 +241,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'settings': self._basic_settings(ad_group, ad_group_settings) +
+            'settings': self._basic_settings(request.user, ad_group, ad_group_settings) +
             [infobox_helpers.OverviewSeparator().as_dict()] +
             performance_settings,
         }
@@ -250,9 +250,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, ad_group, ad_group_settings):
+    def _basic_settings(self, user, ad_group, ad_group_settings):
         settings = []
-
         flight_time, flight_time_left_days =\
             infobox_helpers.format_flight_time(
                 ad_group_settings.start_date,
@@ -302,21 +301,21 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(targeting_region.as_dict())
 
-        daily_cap = infobox_helpers.OverviewSetting(
+        daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
+        daily_cap_setting = infobox_helpers.OverviewSetting(
             'Daily cap',
-            '${:.2f}'.format(ad_group_settings.daily_budget_cc)
-            if ad_group_settings.daily_budget_cc is not None else '',
+            '${:.2f}'.format(daily_cap)
+            if daily_cap is not None else '',
         )
-        settings.append(daily_cap.as_dict())
+        settings.append(daily_cap_setting.as_dict())
 
-        campaign_budget = budget.CampaignBudget(ad_group.campaign)
-        total = campaign_budget.get_total()
-        spend = campaign_budget.get_spend()
+        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(ad_group.campaign)
+        total_media_spend = infobox_helpers.get_media_campaign_spend(user, ad_group.campaign)
 
         campaign_budget_setting = infobox_helpers.OverviewSetting(
             'Campaign budget:',
-            '${:.2f}'.format(total),
-            '${:.2f}'.format(total - spend),
+            '${:.2f}'.format(total_media_spend),
+            '${:.2f}'.format(total_media_available),
         )
         settings.append(campaign_budget_setting.as_dict())
 
@@ -519,7 +518,7 @@ class CampaignOverview(api_common.BaseApiView):
         }
 
         basic_settings, daily_cap =\
-            self._basic_settings(campaign, campaign_settings)
+            self._basic_settings(request.user, campaign, campaign_settings)
 
         performance_settings, is_delivering = self._performance_settings(
             campaign,
@@ -539,14 +538,14 @@ class CampaignOverview(api_common.BaseApiView):
 
         return self.create_api_response(response)
 
-    def _basic_settings(self, campaign, campaign_settings):
+    def _basic_settings(self, user, campaign, campaign_settings):
         settings = []
 
         start_date = None
         end_date = None
         never_finishes = False
 
-        daily_cap_value = infobox_helpers.calculate_daily_cap(campaign)
+        daily_cap_value = infobox_helpers.calculate_daily_campaign_cap(campaign)
 
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)
         for ad_group in ad_groups:
@@ -614,14 +613,13 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(daily_cap.as_dict())
 
-        campaign_budget = budget.CampaignBudget(campaign)
-        total = campaign_budget.get_total()
-        spend = campaign_budget.get_spend()
+        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(ad_group.campaign)
+        total_media_spend = infobox_helpers.get_media_campaign_spend(user, ad_group.campaign)
 
         campaign_budget_setting = infobox_helpers.OverviewSetting(
             'Campaign budget:',
-            '${:.2f}'.format(total),
-            '${:.2f} remaining'.format(total - spend),
+            '${:.2f}'.format(total_media_spend),
+            '${:.2f}'.format(total_media_available),
         )
         settings.append(campaign_budget_setting.as_dict())
 
@@ -1364,9 +1362,12 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         return publishers
 
     def _handle_adgroup_blacklist(self, request, ad_group, level, state, publishers, publishers_selected, publishers_not_selected):
-        ignored_publishers = set([(pub['domain'], ad_group.id, pub['source_id'], )
-                                  for pub in publishers_not_selected]
-                                 )
+        ignored_publishers = set(
+            [
+                (pub['domain'], ad_group.id, pub['source_id'], )
+                for pub in publishers_not_selected
+            ]
+        )
 
         publisher_blacklist = self._create_adgroup_blacklist(
             ad_group,
@@ -1570,9 +1571,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             existing_blacklisted_publishers
         ))
 
-        ignored_publishers = set([(pub['domain'], pub['source_id'])
-                                  for pub in publishers_not_selected]
-                                 )
+        ignored_publishers = set(
+            [(pub['domain'], pub['source_id']) for pub in publishers_not_selected]
+        )
 
         global_blacklist = self._create_global_blacklist(
             ad_group,
@@ -1685,9 +1686,9 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
             )
 
         pub_strings = [u"{pub} on {slug}".format(
-            pub=pub_bl['domain'],
-            slug=pub_bl['source'].name
-        ) for pub_bl in blacklist]
+                       pub=pub_bl['domain'],
+                       slug=pub_bl['source'].name
+                       ) for pub_bl in blacklist]
         pubs_string = u", ".join(pub_strings)
 
         changes_text = u'{action} the following publishers {level_description}: {pubs}.'.format(
