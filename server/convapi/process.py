@@ -21,10 +21,13 @@ NUM_THREADS = 20
 
 # If an account content (campaigns, pixies etc.) was moved,
 # it should be mapped in this dictionary
-MOVED_ACCOUNTS = {  # new-account-id : old-account-id
-    247: 119,
-    249: 119,
+MOVED_PIXIES = {  # (new-account-id, slug) : (old-account-id, slug)
+    (247, 'centurylinkconversionpixel'): (119, 'centurylinkconversionpixel'),
+    (247, 'centurylinklandingpages'): (119, 'centurylinklandingpages'),
+    (249, 'perforceconversionpixel'): (119, 'perforceconversionpixel'),
+    (249, 'perforcelandingpages'): (119, 'perforcelandingpages'),
 }
+MOVED_PIXIES_INVERTED = {v: k for k, v in MOVED_PIXIES.iteritems()}
 
 
 def _get_dates_to_sync(conversion_pixels):
@@ -62,14 +65,30 @@ def _update_touchpoint_conversions_date(date_cp_tup):
 
     logger.info('Fetching touchpoint conversions for date %s, account id %s and conversion pixel slug %s.', date,
                 conversion_pixel.account_id, conversion_pixel.slug)
+    pixie = (conversion_pixel.account_id, conversion_pixel.slug, )
+    if pixie in MOVED_PIXIES:
+        redirects_impressions = redirector_helper.fetch_redirects_impressions(
+            date,
+            MOVED_PIXIES[pixie][0],
+            MOVED_PIXIES[pixie][1],
+        )
+        reports.update.update_touchpoint_conversions(
+            date,
+            conversion_pixel.account_id,
+            conversion_pixel.slug,
+            process_touchpoint_conversions(redirects_impressions)
+        )
     redirects_impressions = redirector_helper.fetch_redirects_impressions(
         date,
-        MOVED_ACCOUNTS.get(conversion_pixel.account_id, conversion_pixel.account_id),
+        conversion_pixel.account_id,
         conversion_pixel.slug
     )
-    touchpoint_conversion_pairs = process_touchpoint_conversions(redirects_impressions)
-    reports.update.update_touchpoint_conversions(date, conversion_pixel.account_id, conversion_pixel.slug,
-                                                 touchpoint_conversion_pairs)
+    reports.update.update_touchpoint_conversions(
+        date,
+        conversion_pixel.account_id,
+        conversion_pixel.slug,
+        process_touchpoint_conversions(redirects_impressions)
+    )
 
 
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')
@@ -106,8 +125,11 @@ def process_touchpoint_conversions(redirects_impressions):
     for zuid, zuid_redirects_impressions in redirects_impressions.iteritems():
         touchpoint_conversion_dict = defaultdict(dict)
         for redirect_impression in zuid_redirects_impressions:
-            slug = redirect_impression['slug']
-            account_id = redirect_impression['accountId']
+            slug, account_id = MOVED_PIXIES_INVERTED.get(
+                (redirect_impression['slug'], redirect_impression['accountId']),
+                (redirect_impression['slug'], redirect_impression['accountId']),
+            )
+
             ad_group_id = redirect_impression['adGroupId']
             content_ad_id = redirect_impression['contentAdId']
             conversion_key = (account_id, slug)
