@@ -87,7 +87,8 @@ class NavigationDataViewTest(TestCase):
             'account': {
                 'archived': False,
                 'id': 1,
-                'name': 'test account 1'
+                'name': 'test account 1',
+                'usesBCM': False,
             }
         })
 
@@ -98,7 +99,8 @@ class NavigationDataViewTest(TestCase):
             'account': {
                 'archived': True,
                 'id': 3,
-                'name': 'test account 3'
+                'name': 'test account 3',
+                'usesBCM': False,
             }
         })
 
@@ -108,7 +110,8 @@ class NavigationDataViewTest(TestCase):
         self.assertDictEqual(response, {
             'account': {
                 'id': 2,
-                'name': 'test account 2'
+                'name': 'test account 2',
+                'usesBCM': False,
             }
         })
 
@@ -135,6 +138,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test account 1',
+                'usesBCM': False,
             },
             'campaign': {
                 'archived': False,
@@ -151,6 +155,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 3,
                 'name': 'test account 3',
+                'usesBCM': False,
             },
             'campaign': {
                 'archived': True,
@@ -166,6 +171,7 @@ class NavigationDataViewTest(TestCase):
             'account': {
                 'id': 2,
                 'name': 'test account 2',
+                'usesBCM': False,
             },
             'campaign': {
                 'id': 2,
@@ -197,6 +203,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test account 1',
+                'usesBCM': False,
             },
             'campaign': {
                 'archived': False,
@@ -225,6 +232,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 2,
                 'name': 'test account 2',
+                'usesBCM': False,
             },
             'campaign': {
                 'archived': False,
@@ -249,6 +257,7 @@ class NavigationDataViewTest(TestCase):
             'account': {
                 'id': 2,
                 'name': 'test account 2',
+                'usesBCM': False,
             },
             'campaign': {
                 'id': 2,
@@ -326,7 +335,8 @@ class NavigationTreeViewTest(TestCase):
                 "name": "test campaign 1"
             }],
             "id": 1,
-            "name": "test account 1"
+            "name": "test account 1",
+            'usesBCM': False,
         }]
         self.assertItemsEqual(response['data'], expected_response)
 
@@ -364,7 +374,8 @@ class NavigationTreeViewTest(TestCase):
                 "name": "test campaign 1"
             }],
             "id": 1,
-            "name": "test account 1"
+            "name": "test account 1",
+            'usesBCM': False,
         }]
         self.assertItemsEqual(response['data'], expected_response)
 
@@ -389,7 +400,8 @@ class NavigationTreeViewTest(TestCase):
                 "name": "test campaign 2"
             }],
             "id": 2,
-            "name": "test account 2"
+            "name": "test account 2",
+            'usesBCM': False,
         }]
 
         self.assertItemsEqual(response['data'], expected_response)
@@ -419,7 +431,8 @@ class NavigationTreeViewTest(TestCase):
             }],
             "id": 2,
             "name": "test account 2",
-            "archived": False
+            "archived": False,
+            'usesBCM': False,
         }]
 
         self.assertItemsEqual(response['data'], expected_response)
