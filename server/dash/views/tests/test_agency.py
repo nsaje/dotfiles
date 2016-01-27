@@ -403,7 +403,6 @@ class AdGroupAgencyTest(TestCase):
         )
 
         mock_is_waiting.assert_called_once(ad_group)
-        t 
         test = json.loads(response.content)
         self.assertEqual(json.loads(response.content), {
             'data': {
