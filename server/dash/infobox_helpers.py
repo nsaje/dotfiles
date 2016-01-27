@@ -90,7 +90,7 @@ def get_yesterday_spend(user, campaign):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
 
     all_budget_spends_at_date = [
-        b.get_spend_data(date=yesterday, use_decimal=True)['total'] for b in budgets
+        b.get_daily_spend(date=yesterday, use_decimal=True)['total'] for b in budgets
     ]
     return sum(all_budget_spends_at_date)
 
@@ -181,8 +181,9 @@ def goals_and_spend_settings(user, campaign):
     ratio = 0
     if ideal_campaign_spend_to_date > 0:
         ratio = min(
-            (total_campaign_spend_to_date - ideal_campaign_spend_to_date) / ideal_campaign_spend_to_date,
-            1)
+            total_campaign_spend_to_date / ideal_campaign_spend_to_date,
+            1
+        )
     campaign_pacing_settings = OverviewSetting(
         'Campaign pacing:',
         '{:.2f}%'.format(ratio * 100),
@@ -190,6 +191,8 @@ def goals_and_spend_settings(user, campaign):
     ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
     settings.append(campaign_pacing_settings.as_dict())
 
+    # TODO: Campaign goals will be disabled until Campaign KPI's ticket gets delivered
+    """
     campaign_settings = campaign.get_current_settings()
     campaign_goals = [(
         campaign_settings.campaign_goal,
@@ -218,7 +221,7 @@ def goals_and_spend_settings(user, campaign):
             description
         ).performance(success)
         settings.append(goal_setting.as_dict())
-
+    """
     is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
     return settings, is_delivering
 

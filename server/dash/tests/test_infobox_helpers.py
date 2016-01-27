@@ -212,7 +212,7 @@ class InfoBoxHelpersTest(TestCase):
             dash.infobox_helpers.get_total_campaign_spend(user, campaign)
         )
 
-    @mock.patch('dash.models.BudgetLineItem.get_spend_data')
+    @mock.patch('dash.models.BudgetLineItem.get_daily_spend')
     def test_get_yesterday_total_spend(self, mock_get_spend_data):
         # very simple test since target func just retrieves data from Redshift
         campaign = dash.models.Campaign.objects.get(pk=1)
@@ -358,7 +358,7 @@ class InfoBoxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         settings, is_delivering = dash.infobox_helpers.goals_and_spend_settings(user, campaign)
 
-        self.assertEqual(3, len(settings))
+        self.assertEqual(2, len(settings))
 
     def test_format_goal_value(self):
         self.assertEqual(

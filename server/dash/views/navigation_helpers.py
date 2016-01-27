@@ -50,6 +50,7 @@ def get_account_dict(account, account_settings=None, include_archived_flag=False
     account_dict = {
         'id': account.id,
         'name': account.name,
+        'usesBCM': account.uses_credits,
     }
 
     if include_archived_flag:

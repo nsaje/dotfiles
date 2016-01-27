@@ -16,6 +16,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.order = '-cost';
     $scope.sources = [];
     $scope.sourcesWaiting = null;
+    $scope.infoboxHeader = null;
+    $scope.infoboxSettings = null;
     $scope.localStoragePrefix = 'adGroupSources';
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
@@ -657,6 +659,19 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         );
     };
 
+    var getInfoboxData = function () {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+
+        api.adGroupOverview.get($state.params.id).then(
+            function (data) {
+                $scope.infoboxHeader = data.header;
+                $scope.infoboxSettings = data.settings;
+            }
+        );
+    };
+
     $scope.selectedSourceRemoved = function (sourceId) {
         if (sourceId !== 'totals') {
             $scope.updateSelectedSources(String(sourceId));
@@ -771,6 +786,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
         getTableData();
         $scope.getDailyStats();
+        getInfoboxData();
 
         getSources();
     };
@@ -892,6 +908,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             }
         }
     };
+
+    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
+        $timeout(function () {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
+    });
 
     $scope.$on('$destroy', function () {
         $timeout.cancel($scope.lastChangeTimeout);
