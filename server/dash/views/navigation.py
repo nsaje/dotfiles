@@ -108,8 +108,9 @@ class NavigationTreeView(api_common.BaseApiView):
         map_ad_groups_settings = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
         # takes too long to do a join when constraints are applied
-        ad_groups_sources_settings = models.AdGroupSourceSettings.objects.all().group_current_settings().only(
-            'ad_group_source_id', 'state')
+        ad_groups_sources_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source__in=ad_group_sources)\
+                                                                         .group_current_settings()\
+                                                                         .only('ad_group_source_id', 'state')
 
         map_ad_groups_sources_settings = navigation_helpers.map_ad_group_sources_settings(
             ad_groups_sources_settings, map_ad_group_source)
