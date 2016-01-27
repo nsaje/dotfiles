@@ -60,7 +60,9 @@ oneApp.controller('AccountCreditCtrl',
         };
 
         $scope.cancelCreditItem = function (id) {
-            if (!$window.confirm('Are you sure you want to cancel the credit line item?')) { return; }
+            if (!$window.confirm('Are you sure you want to cancel the credit line item?')) {
+                return;
+            }
             api.accountCredit.cancel($scope.account.id, [id]).then(function (response) {
                 $scope.canceledIds = {};
                 response.canceled.forEach(function (canceledId) {
