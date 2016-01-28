@@ -669,12 +669,15 @@ div[datepicker] {
     color: #454545;
 }
 
-
 .graph-infobox-parent {
     display: inline-block;
     width: 100%;
     position: relative;
     overflow: hidden;
+}
+
+.graph-hidden {
+	display: none;
 }
 
 .graph-container-short {
@@ -685,10 +688,9 @@ div[datepicker] {
 .infobox-container-full {
     display: inline-block;
     width: 30%;
-    position: absolute;
-    height: 100%;
-    overflow: auto;
-    display: visible;
+    height: 250;
+    max-height: 250;
+    overflow-y: scroll;
     background: #f6f6f6;
 }
 
