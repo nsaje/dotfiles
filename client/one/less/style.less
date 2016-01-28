@@ -11,6 +11,7 @@
 @border-color: #e3e3e3;
 
 @updated-color: #dff0d8;
+@canceled-color: #414141;
 
 @infobox-black: #414141;
 @infobox-gray: #aaaaaa;
@@ -18,6 +19,12 @@
 @keyframes show-updated {
     0% { background-color: @updated-color; }
     50% { background-color: @updated-color; }
+    100% { background-color: white; }
+}
+
+@keyframes show-canceled {
+    0% { background-color: @canceled-color; }
+    50% { background-color: @canceled-color; }
     100% { background-color: white; }
 }
 
@@ -113,12 +120,6 @@ a:visited {
         input[type="text"],
         textarea {
             margin-top: 7px;
-        }
-
-        .multiselect-container {
-            input[type="text"] {
-                margin-top: 0;
-            }
         }
     }
 }
@@ -1878,6 +1879,7 @@ div[datepicker] {
                 margin: 0;
                 list-style-type: none;
                 li {
+                    display: inline-block;
                     padding: 0;
                     margin: 0;
                     color: #2fa8c7;
@@ -1900,12 +1902,21 @@ div[datepicker] {
             width: 100%;
         }
 
+        tr.row-canceled td, tr.row-canceled td i {
+            text-decoration: line-through;
+        }
+
         tr.row-updated {
             animation-name: show-updated;
             animation-duration: 2s;
         }
 
-        tr.row-not-selected td {
+        tr.row-updated-canceled {
+            animation-name: show-canceled;
+            animation-duration: 2s;
+        }
+
+        tr.row-not-selected td, tr.row-not-selected td i {
             color: #d2d2d2;
         }
     }
@@ -3109,7 +3120,7 @@ zem-submission-status {
     }
 }
 
-.selected-locations {
+.multiselect {
     border: 1px solid #d2d2d2;
     border-radius: 2px;
     box-shadow: none;
@@ -3117,7 +3128,7 @@ zem-submission-status {
     margin-top: 7px;
     margin-bottom: 7px;
 
-    .location-tag {
+    .multiselect-tag {
         cursor: pointer;
         margin-right: 5px;
         margin-top: 5px;
@@ -3129,13 +3140,13 @@ zem-submission-status {
         font-size: 13px;
         border: 1px solid @add-filter-color;
 
-        .location-dma {
+        .multiselect-tag-label {
             padding: 6px 6px 5px 6px;
             border-right: 1px solid @add-filter-color;
             margin: 0;
         }
 
-        .location-name {
+        .multiselect-tag-name {
             padding: 6px 27px 6px 6px;
             margin: 0;
             img.remove {
@@ -3178,6 +3189,14 @@ zem-submission-status {
 
 .select2-locations .select2-no-results {
     font-size: 12px;
+}
+
+.ui-select-container .ui-select-dropdown .ui-select-choices-row .select2-result-label {
+    padding-left: 20px;
+
+    .archived {
+        color: #d9d9d9;
+    }
 }
 
 .tutorial.popover {

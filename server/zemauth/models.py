@@ -164,6 +164,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_view_actual_costs', 'Can view actual costs'),
             ('can_modify_outbrain_account_publisher_blacklist_status', 'Can modify Outbrain account publisher blacklist status'),
             ('can_set_ad_group_max_cpc', 'Can set ad group max cpc'),
+            ('can_view_retargeting_settings', 'Can view retargeting settings'),
         )
 
     def get_full_name(self):
