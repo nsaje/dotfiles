@@ -1400,7 +1400,7 @@ class AdGroupSettings(SettingsBase):
         decimal_places=4,
         blank=True,
         null=True,
-        verbose_name='CPC'
+        verbose_name='Maximum CPC'
     )
     daily_budget_cc = models.DecimalField(
         max_digits=10,

@@ -1530,21 +1530,21 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        self.writer.set({'cpc_cc': decimal.Decimal(0.1)}, request)
+        self.writer.set({'cpc_cc': decimal.Decimal(2)}, request)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
         self.assertNotEqual(new_latest_settings.id, latest_settings.id)
-        self.assertEqual(float(new_latest_settings.cpc_cc), 0.1)
+        self.assertEqual(float(new_latest_settings.cpc_cc), 2)
         self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
         self.assertEqual(new_latest_settings.state, latest_settings.state)
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
         self.assertTrue(set_ad_group_source_settings.called)
 
         mock_send_mail.assert_called_with(
-            self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $0.10')
+            self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $2.00')
 
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
@@ -1580,20 +1580,20 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        self.writer.set({'cpc_cc': decimal.Decimal(0.1)}, request, send_action=False)
+        self.writer.set({'cpc_cc': decimal.Decimal(2)}, request, send_action=False)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
         self.assertNotEqual(new_latest_settings.id, latest_settings.id)
-        self.assertEqual(float(new_latest_settings.cpc_cc), 0.1)
+        self.assertEqual(float(new_latest_settings.cpc_cc), 2)
         self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
         self.assertEqual(new_latest_settings.state, latest_settings.state)
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
         self.assertFalse(set_ad_group_source_settings.called)
 
-        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $0.10')
+        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $2.00')
 
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
