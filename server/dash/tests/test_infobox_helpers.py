@@ -259,7 +259,7 @@ class InfoBoxHelpersTest(TestCase):
 
         self.assertEqual(
             50,
-            dash.infobox_helpers.get_yesterday_spend(user, campaign)
+            dash.infobox_helpers.get_yesterday_campaign_spend(user, campaign)
         )
 
     @mock.patch('reports.api_contentads.query')

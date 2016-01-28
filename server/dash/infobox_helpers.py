@@ -108,7 +108,7 @@ def get_media_campaign_spend(user, campaign, until_date=None):
     return ret
 
 
-def get_yesterday_spend(user, campaign):
+def get_yesterday_campaign_spend(user, campaign):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
     budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
     if len(budgets) == 0:
@@ -173,7 +173,7 @@ def get_goal_difference(goal_type, target, actual):
 def goals_and_spend_settings(user, campaign):
     settings = []
     filled_daily_ratio = 0
-    yesterday_cost = get_yesterday_spend(user, campaign) or 0
+    yesterday_cost = get_yesterday_campaign_spend(user, campaign) or 0
     campaign_daily_budget = calculate_daily_campaign_cap(campaign)
 
     if campaign_daily_budget > 0:
