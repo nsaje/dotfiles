@@ -56,7 +56,7 @@ class Command(ExceptionCommand):
 
         if not ad_group_sources:
             logger.info("No new content to approve")
-            sys.exit(0)
+            return
 
         links = []
         for ad_group_source in ad_group_sources:
