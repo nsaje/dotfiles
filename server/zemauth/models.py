@@ -203,6 +203,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                     order_by('id').\
                     distinct('id')
 
+            perms = perms.select_related('content_type')
+
             public_permissions = auth_models.Permission.objects.\
                 filter(pk__in=(x.pk for x in perms)).\
                 filter(group__in=auth_models.Group.objects.filter(internalgroup=None))
