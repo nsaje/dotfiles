@@ -64,6 +64,11 @@ class GetContentAdStatusTest(TestCase):
 
     fixtures = ['test_zwei_api.yaml']
 
+    def setUp(self):
+        ad_group_settings = dash.models.AdGroup.objects.get(pk=1).get_current_settings()
+        ad_group_settings.state = dash.constants.AdGroupSettingsState.ACTIVE
+        ad_group_settings.save(None)
+
     def test_get_content_ad_status(self):
         zwei_response_data = {
             'status': 'success',

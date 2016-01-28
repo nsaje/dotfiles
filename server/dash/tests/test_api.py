@@ -238,6 +238,11 @@ class AutomaticallySyncContentAdSourceStatus(TestCase):
 
     fixtures = ['test_api.yaml']
 
+    def setUp(self):
+        ad_group_settings = models.AdGroup.objects.get(pk=1).get_current_settings()
+        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+        ad_group_settings.save(None)
+
     def test_send_sync_actionlogs(self):
         content_ad_data = [{
             'id': 1,
