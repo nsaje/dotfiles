@@ -1,5 +1,5 @@
 /* globals oneApp, $, angular */
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', 'zemMoment', 'user', 'zemUserSettings', 'accounts', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'accountsAccess', 'zemLayoutService', function ( $scope, $state, $location, $document, $q, $modalStack, $timeout, zemMoment, user, zemUserSettings, accounts, api, zemFilterService, zemFullStoryService, zemIntercomService, accountsAccess, zemLayoutService) {
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemLayoutService', 'zemNavigationService', 'accountsAccess', function ( $scope, $state, $location, $document, $q, $modalStack, $timeout, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemLayoutService, zemNavigationService, accountsAccess) {
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
