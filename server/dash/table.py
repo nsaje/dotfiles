@@ -969,9 +969,9 @@ class AccountsAccountsTable(object):
 
             row.update(account_data)
 
-            row['budget'] = account_budget[aid]
+            row['budget'] = account_budget.get(aid, Decimal('0.0'))
 
-            row['available_budget'] = row['budget'] - account_total_spend[aid]
+            row['available_budget'] = row['budget'] - account_total_spend.get(aid, Decimal('0.0'))
             row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
 
             rows.append(row)
