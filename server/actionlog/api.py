@@ -239,8 +239,9 @@ def send_delayed_actionlogs(ad_group_sources=None, send=True):
             # some actions can be created (and delayed) when waiting on CREATE_CAMPAIGN action to complete
             # and source_campaign_key is not yet available (payload has empty value). In case it is still not
             # available prevent propagation of this action, otherwise update payload's source_campaign_key.
-            args = actionlog.payload['args']
-            if 'source_campaign_key' in args and not args['source_campaign_key']:
+            if 'args' in actionlog.payload \
+                    and 'source_campaign_key' in actionlog.payload['args'] \
+                    and not actionlog.payload['args']['source_campaign_key']:
                 if not actionlog.ad_group_source.source_campaign_key:
                     continue
                 actionlog.payload['args']['source_campaign_key'] = actionlog.ad_group_source.source_campaign_key
@@ -250,7 +251,6 @@ def send_delayed_actionlogs(ad_group_sources=None, send=True):
                 actionlog,
                 constants.ActionState.WAITING
             )
-
             actionlog.state = constants.ActionState.WAITING
             actionlog.expiration_dt = models._due_date_default()
             actionlog.payload['expiration_dt'] = actionlog.expiration_dt
