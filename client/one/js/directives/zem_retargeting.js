@@ -1,7 +1,7 @@
-/* globals oneApp */
+/* globals oneApp, angular */
 'use strict';
-
-oneApp.directive('zemRetargeting', ['config', 'zemFilterService', function (config, zemFilterService) {
+ 
+oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', function (config, zemFilterService, $state) { // eslint-disable-line max-line
     return {
         restrict: 'E',
         scope: {
@@ -12,6 +12,9 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', function (conf
         controller: ['$scope', function ($scope) {
             $scope.config = config;
             $scope.selected = {adgroup: undefined};
+
+            // make a copy of campaigns so we don't change original objects
+            $scope.campaigns = angular.copy($scope.account.campaigns);
 
             $scope.selectedAdgroups = function () {
                 var result = [];
@@ -27,11 +30,13 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', function (conf
             };
 
             $scope.availableAdgroups = function () {
-                return $scope.account.campaigns.reduce(function (result, campaign) {
+                return $scope.campaigns.reduce(function (result, campaign) {
                     var adgroups = campaign.adGroups.filter(function (adgroup) {
                         return !adgroup.archived || zemFilterService.isArchivedFilterOn();
                     }).filter(function (adgroup) {
                         return $scope.selectedAdgroupIds.indexOf(adgroup.id) < 0;
+                    }).filter(function (adgroup) {
+                        return adgroup.id !== parseInt($state.params.id);
                     }).map(function (adgroup) {
                         // add campaign info to each item for grouping
                         adgroup.campaign = campaign;
