@@ -383,7 +383,7 @@ class InfoBoxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         settings, is_delivering = dash.infobox_helpers.goals_and_spend_settings(user, campaign)
 
-        self.assertEqual(2, len(settings))
+        self.assertEqual(1, len(settings))
 
     def test_format_goal_value(self):
         self.assertEqual(
