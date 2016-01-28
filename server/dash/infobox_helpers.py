@@ -277,8 +277,6 @@ def calculate_available_media_campaign_budget(campaign):
 
     ret = 0
     for bli in budgets:
-        spend_data = bli.get_spend_data(date=today, use_decimal=True)
-
         available_total_amount = bli.get_available_amount(today)
         available_media_amount = available_total_amount * (Decimal(1) - bli.credit.license_fee)
 
@@ -286,10 +284,48 @@ def calculate_available_media_campaign_budget(campaign):
     return ret
 
 
+def calculate_available_credit(account):
+    today = datetime.datetime.utcnow().date()
+    credits = _retrieve_active_creditlineitems(account, today)
+
+    return sum([Decimal(credit.amount) * (Decimal(1.0) - credit.license_fee) for credit in credits])
+
+
+def calculate_spend_credit(account):
+    today = datetime.datetime.utcnow().date()
+    credits = _retrieve_active_creditlineitems(account, today)
+
+    budgets = dash.models.BudgetLineItem.objects.filter(credit__in=credits)
+    all_budget_spends_at_date = [
+        b.get_spend_data(date=today, use_decimal=True) for b in budgets
+    ]
+    return sum(map(lambda bli: bli['media'], all_budget_spends_at_date))
+
+
+def calculate_yesterday_account_spend(account):
+    yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
+    credits = _retrieve_active_creditlineitems(account, yesterday)
+
+    budgets = dash.models.BudgetLineItem.objects.filter(credit__in=credits)
+    if len(budgets) == 0:
+        return Decimal(0)
+
+    all_budget_spends_at_date = [
+        b.get_daily_spend(date=yesterday, use_decimal=True).get('media', 0) for b in budgets
+    ]
+    return sum(all_budget_spends_at_date)
+
+
 def _retrieve_active_budgetlineitems(campaign, date):
     return [budget for budget in dash.models.BudgetLineItem.objects.filter(
         campaign=campaign
     ) if budget.state(date) == dash.constants.BudgetLineItemState.ACTIVE]
+
+
+def _retrieve_active_creditlineitems(account, date):
+    return [credit for credit in dash.models.CreditLineItem.objects.filter(
+        account=account
+    ) if credit.is_active(date) == dash.constants.CreditLineItemStatus.SIGNED]
 
 
 def _retrieve_daily_cap(ad_group_source):

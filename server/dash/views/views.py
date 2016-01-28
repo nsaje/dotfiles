@@ -664,38 +664,33 @@ class AccountOverview(api_common.BaseApiView):
         account_settings = account.get_current_settings()
         account_manager_setting = infobox_helpers.OverviewSetting(
             'Account Manager:',
-            self._username(account_settings.default_account_manager),
-            ''
+            self._username(account_settings.default_account_manager)
         )
         settings.append(account_manager_setting.as_dict())
 
         sales_manager_setting = infobox_helpers.OverviewSetting(
             'Sales Manager:',
-            self._username(account_settings.default_sales_representative),
-            ''
+            self._username(account_settings.default_sales_representative)
         )
         settings.append(sales_manager_setting.as_dict())
 
         for i, user in enumerate(account.users.all()):
             user_one_setting = infobox_helpers.OverviewSetting(
                 'Users:' if i == 0 else '',
-                self._username(user),
-                ''
+                self._username(user)
             )
             settings.append(user_one_setting.as_dict())
 
         platform_fee_setting = infobox_helpers.OverviewSetting(
             'Platform fee:',
-            "{:.2f}%".format(account_settings.service_fee * 100),
-            ''
+            "{:.2f}%".format(account_settings.service_fee * 100)
         )
         settings.append(platform_fee_setting.as_dict())
 
         pixels = models.ConversionPixel.objects.filter(account=account)
         conversion_pixel_setting = infobox_helpers.OverviewSetting(
             'Conversion pixel:',
-            'Yes' if pixels.count() > 0 else 'No',
-            ''
+            'Yes' if pixels.count() > 0 else 'No'
         )
         if pixels.count() > 0:
             slugs = [pixel.slug for pixel in pixels]
@@ -707,8 +702,7 @@ class AccountOverview(api_common.BaseApiView):
 
         account_type_setting = infobox_helpers.OverviewSetting(
             'Account type:',
-            'N/A',
-            ''
+            'N/A'
         )
         settings.append(account_type_setting.as_dict())
         return settings
@@ -716,24 +710,24 @@ class AccountOverview(api_common.BaseApiView):
     def _performance_settings(self, account, user):
         settings = []
 
+        available_credit = infobox_helpers.calculate_available_credit(account)
         available_credit_setting = infobox_helpers.OverviewSetting(
             'Available credit:',
-            'N/A',
-            ''
+            '${:.2f}'.format(available_credit)
         )
         settings.append(available_credit_setting.as_dict())
 
+        spend_credit = infobox_helpers.calculate_spend_credit(account)
         spend_credit_setting = infobox_helpers.OverviewSetting(
             'Spend credit:',
-            'N/A',
-            ''
+            '${:.2f}'.format(spend_credit)
         )
         settings.append(spend_credit_setting.as_dict())
 
+        yesterday_spend = infobox_helpers.calculate_yesterday_account_spend(account)
         yesterday_spent_setting = infobox_helpers.OverviewSetting(
             'Yesterday spent:',
-            'N/A',
-            ''
+            '${:.2f}'.format(yesterday_spend)
         )
         settings.append(yesterday_spent_setting.as_dict())
 
