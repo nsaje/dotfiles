@@ -4,7 +4,7 @@
         <div class="section named-data">
             <div class="name">Available Budget</div>
             <div class="value">{{ budgetTotals.currentAvailable | decimalCurrency:"$":2 }}</div>
-            <div class="name bottomborder">Available Credit</div>
+            <div class="name bottomborder">Unallocated Credit</div>
             <div class="value bottomborder">
                 {{ budgetTotals.currentUnallocated | decimalCurrency:"$":2 }}
             </div>
@@ -41,7 +41,7 @@
                     <td>{{ item.licenseFee  }}</td>
                     <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
-                    <td class="text-row">{{ item.comment }}</td>
+                    <td class="text-row"><span ng-if="!item.comment">N/A</span>{{ item.comment }}</td>
                     <td>
                         <ul class="row-actions">
                             <li ng-click="editBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable">edit</li>

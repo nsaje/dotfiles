@@ -4,10 +4,10 @@ describe('MainCtrl', function () {
     var $scope;
     var ctrl;
     var $state;
-    var user = { permissions: [] };
-    var accounts;
+    var user = {permissions: []};
     var zemFullStoryService;
     var zemUserSettings;
+    var accountsAccess;
 
     beforeEach(function () {
         module('one');
@@ -15,36 +15,40 @@ describe('MainCtrl', function () {
         inject(function ($rootScope, $controller, _$state_) {
             $scope = $rootScope.$new();
             $state = _$state_;
-            zemFullStoryService = {identify: function(user) {}};
+            zemFullStoryService = {identify: function (user) {}};
             zemUserSettings = {
-                getInstance: function() {
+                getInstance: function () {
                     return {
-                        register: function() {},
-                        registerGlobal: function() {}
+                        register: function () {},
+                        registerGlobal: function () {}
                     };
                 }
             };
 
             spyOn(zemFullStoryService, 'identify');
 
+            accountsAccess = {
+                hasAccounts: true
+            };
+
             ctrl = $controller('MainCtrl', {
                 $scope: $scope,
                 $state: $state,
                 user: user,
-                accounts: accounts,
+                accountsAccess: accountsAccess,
                 zemFullStoryService: zemFullStoryService,
                 zemUserSettings: zemUserSettings
             });
         });
     });
 
-    it('should init accounts properly', function () {
-        expect($scope.accounts).toEqual(accounts);
+    it('should init accounts access properly', function () {
+        expect($scope.accountsAccess).toEqual(accountsAccess);
     });
 
     describe('hasPermission', function () {
         beforeEach(function () {
-            $scope.user = { permissions: {} };
+            $scope.user = {permissions: {}};
         });
 
         it('should return true if user has the specified permission', function () {

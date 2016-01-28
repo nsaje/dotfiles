@@ -1,8 +1,13 @@
 DIMENSIONS = set(['content_ad', 'article', 'ad_group', 'date', 'source', 'account', 'campaign'])
-TRAFFIC_FIELDS = ['clicks', 'impressions', 'cost', 'data_cost', 'cpc', 'ctr', 'title', 'url']
+TRAFFIC_FIELDS = [
+    'clicks', 'impressions', 'cost', 'data_cost',
+    'cpc', 'ctr', 'title', 'url',
+    'media_cost', 'e_media_cost', 'e_data_cost',
+    'license_fee', 'billing_cost', 'total_cost',
+]
 POSTCLICK_ACQUISITION_FIELDS = ['visits', 'click_discrepancy', 'pageviews']
 POSTCLICK_ENGAGEMENT_FIELDS = [
-    'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals'
+    'percent_new_users', 'pv_per_visit', 'avg_tos', 'bounce_rate', 'goals', 'new_visits'
 ]
 CONVERSION_GOAL_FIELDS = ['conversions']
 
@@ -17,8 +22,15 @@ CONTENTADSTATS_FIELD_MAPPING = {
 }
 CONTENTADSTATS_FIELD_REVERSE_MAPPING = {v: k for k, v in CONTENTADSTATS_FIELD_MAPPING.iteritems()}
 
-FIELD_PERMISSION_MAP = {
-    'data_cost': 'zemauth.can_view_data_cost'
+FIELD_PERMISSION_MAPPING = {
+    'e_media_cost':   'zemauth.can_view_effective_costs',
+    'e_data_cost':    'zemauth.can_view_effective_costs',
+    'license_fee':    'zemauth.can_view_effective_costs',
+    'billing_cost':   'zemauth.can_view_effective_costs',
+    'license_fee':    'zemauth.can_view_effective_costs',
+    'total_cost':     'zemauth.can_view_actual_costs',
+    'media_cost':     'zemauth.can_view_actual_costs',
+    'data_cost':      'zemauth.can_view_actual_costs',
 }
 
 def filter_by_permissions(result, user):
@@ -49,7 +61,7 @@ def filter_by_permissions(result, user):
                     filtered_row[field] = row[field]
         filtered_row = {
             field: value for field, value in filtered_row.iteritems()
-            if field not in FIELD_PERMISSION_MAP or user.has_perm(FIELD_PERMISSION_MAP[field])
+            if field not in FIELD_PERMISSION_MAPPING or user.has_perm(FIELD_PERMISSION_MAPPING[field])
         }
         return filtered_row
     if isinstance(result, dict):

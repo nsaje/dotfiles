@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 from collections import OrderedDict
+from functools import partial
 import json
 
 from django.conf import settings
@@ -14,6 +16,13 @@ from dash import scheduled_report
 from utils import api_common
 from utils import statsd_helper
 from utils import exc
+
+
+log_direct_download_user_action = partial(helpers.log_useraction_if_necessary,
+                                          user_action_type=constants.UserActionType.DOWNLOAD_REPORT)
+
+log_schedule_report_user_action = partial(helpers.log_useraction_if_necessary,
+                                          user_action_type=constants.UserActionType.SCHEDULE_REPORT)
 
 
 class ExportApiView(api_common.BaseApiView):
@@ -43,7 +52,7 @@ class ExportApiView(api_common.BaseApiView):
 
 
 class ExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 250000
+    MAX_ROWS = 500000
     ALL_ACC_BD_ADG_MAX_DAYS = 62
     ALL_ACC_BD_CAMP_MAX_DAYS = 160
 
@@ -115,7 +124,7 @@ class ExportAllowed(api_common.BaseApiView):
 
 
 class SourcesExportAllowed(api_common.BaseApiView):
-    MAX_ROWS = 250000
+    MAX_ROWS = 500000
     ALL_ACC_BD_ADG_MAX_DAYS = 11
     ALL_ACC_BD_CAMP_MAX_DAYS = 21
     ALL_ACC_BD_ACC_MAX_DAYS = 62
@@ -209,26 +218,40 @@ class SourcesExportAllowed(api_common.BaseApiView):
 class AccountCampaignsExport(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'accounts_campaigns_export_plus_get')
     def get(self, request, account_id):
-        content, filename = export_plus.get_report_from_request(request, account=helpers.get_account(request.user, account_id))
+        account = helpers.get_account(request.user, account_id)
+        content, filename = export_plus.get_report_from_request(request, account=account)
+
+        log_direct_download_user_action(request, account=account)
+
         return self.create_csv_response(filename, content=content)
 
     @statsd_helper.statsd_timer('dash.api', 'accounts_campaigns_scheduled_report_put')
     def put(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
         response = _add_scheduled_report_from_request(request, account=account)
+
+        log_schedule_report_user_action(request, account=account)
+
         return self.create_api_response(response)
 
 
 class CampaignAdGroupsExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'campaigns_ad_groups_export_plus_get')
     def get(self, request, campaign_id):
-        content, filename = export_plus.get_report_from_request(request, campaign=helpers.get_campaign(request.user, campaign_id))
+        campaign = helpers.get_campaign(request.user, campaign_id)
+        content, filename = export_plus.get_report_from_request(request, campaign=campaign)
+
+        log_direct_download_user_action(request, campaign=campaign)
+
         return self.create_csv_response(filename, content=content)
 
     @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_groups_scheduled_report_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         response = _add_scheduled_report_from_request(request, campaign=campaign)
+
+        log_schedule_report_user_action(request, campaign=campaign)
+
         return self.create_api_response(response)
 
 
@@ -237,12 +260,18 @@ class AdGroupAdsPlusExport(ExportApiView):
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         content, filename = export_plus.get_report_from_request(request, ad_group=ad_group)
+
+        log_direct_download_user_action(request, ad_group=ad_group)
+
         return self.create_csv_response(filename, content=content)
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_scheduled_report_put')
     def put(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         response = _add_scheduled_report_from_request(request, ad_group=ad_group)
+
+        log_schedule_report_user_action(request, ad_group=ad_group)
+
         return self.create_api_response(response)
 
 
@@ -250,11 +279,17 @@ class AllAccountsSourcesExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_sources_export_plus_get')
     def get(self, request):
         content, filename = export_plus.get_report_from_request(request, by_source=True)
+
+        log_direct_download_user_action(request)
+
         return self.create_csv_response(filename, content=content)
 
     @statsd_helper.statsd_timer('dash.api', 'all_accounts_sources_scheduled_report_put')
     def put(self, request):
         response = _add_scheduled_report_from_request(request, by_source=True)
+
+        log_schedule_report_user_action(request)
+
         return self.create_api_response(response)
 
 
@@ -263,12 +298,18 @@ class AccountSourcesExport(ExportApiView):
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
         content, filename = export_plus.get_report_from_request(request, account=account, by_source=True)
+
+        log_direct_download_user_action(request, account=account)
+
         return self.create_csv_response(filename, content=content)
 
     @statsd_helper.statsd_timer('dash.api', 'account_sources_scheduled_report_put')
     def put(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
         response = _add_scheduled_report_from_request(request, account=account, by_source=True)
+
+        log_schedule_report_user_action(request, account=account)
+
         return self.create_api_response(response)
 
 
@@ -277,12 +318,18 @@ class CampaignSourcesExport(ExportApiView):
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         content, filename = export_plus.get_report_from_request(request, campaign=campaign, by_source=True)
+
+        log_direct_download_user_action(request, campaign=campaign)
+
         return self.create_csv_response(filename, content=content)
 
     @statsd_helper.statsd_timer('dash.api', 'campaign_sources_scheduled_report_put')
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         response = _add_scheduled_report_from_request(request, campaign=campaign, by_source=True)
+
+        log_schedule_report_user_action(request, campaign=campaign)
+
         return self.create_api_response(response)
 
 
@@ -291,12 +338,18 @@ class AdGroupSourcesExport(ExportApiView):
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         content, filename = export_plus.get_report_from_request(request, ad_group=ad_group, by_source=True)
+
+        log_direct_download_user_action(request, ad_group=ad_group)
+
         return self.create_csv_response(filename, content=content)
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_scheduled_report_put')
     def put(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         response = _add_scheduled_report_from_request(request, ad_group=ad_group, by_source=True)
+
+        log_schedule_report_user_action(request, ad_group=ad_group)
+
         return self.create_api_response(response)
 
 
@@ -304,11 +357,17 @@ class AllAccountsExport(ExportApiView):
     @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_export_plus_get')
     def get(self, request):
         content, filename = export_plus.get_report_from_request(request)
+
+        log_direct_download_user_action(request)
+
         return self.create_csv_response(filename, content=content)
 
     @statsd_helper.statsd_timer('dash.api', 'all_accounts_scheduled_report_put')
     def put(self, request):
         response = _add_scheduled_report_from_request(request)
+
+        log_schedule_report_user_action(request)
+
         return self.create_api_response(response)
 
 
@@ -360,7 +419,21 @@ class ScheduledReports(api_common.BaseApiView):
 
         scheduled_report.state = constants.ScheduledReportState.REMOVED
         scheduled_report.save()
+
+        self._log_deletion_user_action(request, scheduled_report)
+
         return self.create_api_response({})
+
+    def _log_deletion_user_action(self, request, scheduled_report):
+        log_data = {}
+        if scheduled_report.report:
+            log_data = {
+                'ad_group': scheduled_report.report.ad_group,
+                'campaign': scheduled_report.report.campaign,
+                'account': scheduled_report.report.account,
+            }
+
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.DELETE_SCHEDULED_REPORT, **log_data)
 
     def format_reports(self, reports):
         result = []

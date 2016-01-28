@@ -12,12 +12,12 @@ class S3Helper(object):
     In case S3 is not used, it falls back to local file system.
     """
 
-    def __init__(self):
+    def __init__(self, bucket_name=settings.S3_BUCKET):
         if settings.USE_S3:
             self.bucket = boto.connect_s3(
                 aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
                 aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
-            ).get_bucket(settings.S3_BUCKET)
+            ).get_bucket(bucket_name)
 
     def get(self, key):
         if settings.USE_S3:
@@ -37,6 +37,12 @@ class S3Helper(object):
         elif settings.FILE_STORAGE_DIR:
             with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), 'w+') as f:
                 f.write(contents)
+
+    def list(self, prefix):
+        if settings.USE_S3:
+            return self.bucket.list(prefix=prefix)
+        elif settings.FILE_STORAGE_DIR:
+            return [name for name in os.listdir(prefix) if os.path.isdir(os.path.join(prefix, name))]
 
 
 def generate_safe_filename(filename, content):

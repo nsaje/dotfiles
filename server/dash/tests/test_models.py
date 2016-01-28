@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import datetime
 from decimal import Decimal
 
@@ -8,6 +9,7 @@ from django.http.request import HttpRequest
 from django.conf import settings
 
 from dash import models, constants
+from dash.constants import GATrackingType
 from zemauth import models as zemauthmodels
 from zemauth.models import User
 from utils import exc
@@ -51,7 +53,8 @@ class AdGroupSettingsTest(TestCase):
             'ad_group_name': 'AdGroup name',
             'enable_ga_tracking': True,
             'enable_adobe_tracking': False,
-            'adobe_tracking_param': ''
+            'adobe_tracking_param': '',
+            'ga_tracking_type': GATrackingType.EMAIL,
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
@@ -221,8 +224,7 @@ class CampaignSettingsTest(TestCase):
             'created_by_id',
             'changes_text',
             'useractionlog',
-            'account_manager_id',
-            'sales_representative_id'
+            'campaign_manager_id',
         ]
 
         all_fields = set(models.CampaignSettings._settings_fields + meta_fields)
@@ -236,11 +238,10 @@ class CampaignSettingsTest(TestCase):
             'iab_category': u'1',
             'name': u'Test campaign 1',
             'target_devices': [u'mobile'],
-            'account_manager': User.objects.get(pk=1),
+            'campaign_manager': User.objects.get(pk=1),
             'promotion_goal': 1,
             'target_regions': [u'CA', u'501'],
             'service_fee': Decimal('0.2000'),
-            'sales_representative': User.objects.get(pk=1),
             'campaign_goal': 2,
             'goal_quantity': Decimal('10.00')
         }
@@ -249,6 +250,34 @@ class CampaignSettingsTest(TestCase):
             models.CampaignSettings.objects.get(id=1).get_settings_dict(),
             settings_dict,
         )
+
+    def test_get_changes_text_unicode(self):
+        old_settings = models.CampaignSettings.objects.get(id=1)
+        new_settings = models.CampaignSettings.objects.get(id=1)
+        new_settings.changes_text = None
+        new_settings.name = u'Ččšćžđ name'
+
+        user = User.objects.create_user('test@example.com')
+        user.first_name = 'Tadej'
+        user.last_name = u'Pavlič'
+        new_settings.campaign_manager = user
+
+        self.assertEqual(
+            models.CampaignSettings.get_changes_text(old_settings, new_settings), u'Campaign Manager set to "Tadej Pavli\u010d", Name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
+
+    def test_get_changes_text_nonunicode(self):
+        old_settings = models.CampaignSettings.objects.get(id=1)
+        new_settings = models.CampaignSettings.objects.get(id=1)
+        new_settings.changes_text = None
+        new_settings.name = u'name'
+
+        user = User.objects.create_user('test@example.com')
+        user.first_name = 'Tadej'
+        user.last_name = u'Pavlic'
+        new_settings.campaign_manager = user
+
+        self.assertEqual(
+            models.CampaignSettings.get_changes_text(old_settings, new_settings), u'Campaign Manager set to "Tadej Pavlic", Name set to "name"')
 
 
 class AdGroupSourceTest(TestCase):

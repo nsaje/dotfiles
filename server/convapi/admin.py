@@ -1,8 +1,20 @@
 from django.contrib import admin
+from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 
 from convapi import models
 from convapi import constants
+from convapi import views
+
+
+def reprocess_reportlogs(modeladmin, request, queryset):
+    try:
+        views.reprocess_report_logs(list(queryset))
+
+        modeladmin.message_user(request, 'Report logs put into reprocess.')
+    except Exception as ex:
+        modeladmin.message_user(request, str(ex), level=messages.ERROR)
+reprocess_reportlogs.short_description = "Reprocess failed report logs"
 
 
 class TestReportsListFilter(admin.SimpleListFilter):
@@ -56,7 +68,8 @@ class GAReportLogAdmin(admin.ModelAdmin):
         'multimatch_clicks',
         'email_subject',
         'csv_filename',
-        'from_address'
+        'from_address',
+        'recipient'
     )
 
     search_fields = (
@@ -70,6 +83,8 @@ class GAReportLogAdmin(admin.ModelAdmin):
         'state',
         TestReportsListFilter,
     )
+
+    actions = [reprocess_reportlogs]
 
     def no_errors_(self, obj):
         return obj.errors is None
@@ -120,7 +135,8 @@ class ReportLogAdmin(admin.ModelAdmin):
         'visits_imported_',
         'email_subject',
         'report_filename',
-        'from_address'
+        'from_address',
+        'recipient'
     )
 
     search_fields = (
@@ -133,6 +149,8 @@ class ReportLogAdmin(admin.ModelAdmin):
         'state',
         TestReportsListFilter,
     )
+
+    actions = [reprocess_reportlogs]
 
     def no_errors_(self, obj):
         return obj.errors is None

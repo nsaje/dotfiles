@@ -79,8 +79,7 @@
         created_dt: '2014-06-04T09:58:21'
         created_by: 1
         archived: False
-        account_manager: 2
-        sales_representative: 3
+        campaign_manager: 2
         campaign_goal: 3
         goal_quantity: 0
         target_devices: ['mobile']
@@ -143,6 +142,39 @@
         created_dt: '2015-09-23T09:57:22'
     model: dash.conversiongoal
     pk: 2
+
+-   fields:
+        campaign: 1
+        type: 2
+        pixel: null
+        name: 'test conversion goal 3'
+        conversion_window: null
+        goal_id: '3'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 3
+
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 4'
+        conversion_window: null
+        goal_id: '4'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 4
+
+-   fields:
+        campaign: 1
+        type: 3
+        pixel: null
+        name: 'test conversion goal 5'
+        conversion_window: null
+        goal_id: '5'
+        created_dt: '2015-09-23T09:57:22'
+    model: dash.conversiongoal
+    pk: 5
 
 # test campaign budget
 

@@ -24,6 +24,15 @@
   model: dash.account
   pk: 1
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    name: 'Test Account 2 (BCM)'
+    uses_credits: true
+  model: dash.account
+  pk: 2
+
 # Campaigns
 - fields:
     created_dt: '2014-06-04T09:58:21'
@@ -43,14 +52,31 @@
   model: dash.campaign
   pk: 2
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 2
+    name: 'Test Campaign 3'
+  model: dash.campaign
+  pk: 3
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 2
+    name: 'Test Campaign 4'
+  model: dash.campaign
+  pk: 4
+
 # Campaign Settings
 - fields:
     created_dt: '2014-06-04T09:58:21'
     created_by_id: 1
     name: 'Campaign Settings 1'
-    account_manager: 1
+    campaign_manager: 1
     campaign: 1
-    sales_representative: 1
   model: dash.campaignsettings
   pk: 1
 
@@ -73,6 +99,26 @@
   model: dash.adgroup
   pk: 2
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 3
+    name: 'Test AdGroup 3'
+  model: dash.adgroup
+  pk: 3
+
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 4
+    name: 'Test AdGroup 4'
+  model: dash.adgroup
+  pk: 4
+
+
 # Ad Group Settings
 - fields:
     ad_group_id: 1
@@ -89,6 +135,22 @@
     state: 2
   model: dash.adgroupsettings
   pk: 2
+
+- fields:
+    ad_group_id: 3
+    created_dt: '2014-06-04T09:58:21'
+    created_by: 1
+    state: 1
+  model: dash.adgroupsettings
+  pk: 3
+
+- fields:
+    ad_group_id: 4
+    created_dt: '2014-06-04T09:58:21'
+    created_by: 1
+    state: 1
+  model: dash.adgroupsettings
+  pk: 4
 
 # Source Types
 -   fields:
@@ -121,6 +183,20 @@
   model: dash.adgroupsource
   pk: 2
 
+- fields:
+    source: 1
+    ad_group: 3
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 3
+
+- fields:
+    source: 1
+    ad_group: 4
+    source_campaign_key: '["fake"]'
+  model: dash.adgroupsource
+  pk: 4
+
 # Ad Group Source Settings
 - fields:
     created_dt: '2014-06-04T09:58:21'
@@ -148,4 +224,96 @@
     state: 1
     autopilot_state: 1
   model: dash.adgroupsourcesettings
+  pk: 3
+
+- fields:
+    created_dt: '2014-06-01T09:58:21'
+    ad_group_source: 3
+    cpc_cc: '0.12'
+    daily_budget_cc: '50.'
+    state: 1
+    autopilot_state: 1
+  model: dash.adgroupsourcesettings
+  pk: 4
+
+- fields:
+    created_dt: '2014-06-01T09:58:21'
+    ad_group_source: 4
+    cpc_cc: '0.12'
+    daily_budget_cc: '50.'
+    state: 1
+    autopilot_state: 1
+  model: dash.adgroupsourcesettings
+  pk: 5
+
+# Credit line items
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    created_by: 1
+    account: 2
+    start_date: '2014-06-01'
+    end_date: '2016-01-01'
+    amount: 100000
+    license_fee: 0.1
+    status: 2
+    comment: 'Test credit'
+  model: dash.creditlineitem
+  pk: 1
+
+# Budget line items
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    created_by: 1
+    credit: 1 # test credit 1
+    campaign: 3
+    start_date: '2014-06-01'
+    end_date: '2016-01-01'
+    amount: 50000
+    comment: 'Test case'
+  model: dash.budgetlineitem
+  pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    created_by: 1
+    credit: 1 # test credit 1
+    campaign: 4
+    start_date: '2014-06-01'
+    end_date: '2016-01-01'
+    amount: 50000
+    comment: 'Test case'
+  model: dash.budgetlineitem
+  pk: 2
+
+# Daily statements
+
+- fields:
+    date: '2014-06-04'
+    budget: 1
+    media_spend_nano: 50000000000
+    data_spend_nano: 0
+    license_fee_nano: 5000000000
+  model: reports.budgetdailystatement
+  pk: 1
+
+- fields:
+    date: '2014-06-03'
+    budget: 1
+    media_spend_nano: 60000000000
+    data_spend_nano: 0
+    license_fee_nano: 6000000000
+  model: reports.budgetdailystatement
+  pk: 2
+
+- fields:
+    date: '2014-06-04'
+    budget: 2
+    media_spend_nano: 70000000000
+    data_spend_nano: 0
+    license_fee_nano: 7000000000
+  model: reports.budgetdailystatement
   pk: 3

@@ -17,6 +17,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.isIncompletePostclickMetrics = false;
     $scope.sources = [];
     $scope.exportOptions = [];
+    $scope.infoboxHeader = null;
+    $scope.infoboxSettings = null;
 
     var userSettings = null;
 
@@ -164,38 +166,134 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             initialOrder: 'desc'
         },
         {
+            name: 'Actual Yesterday Spend',
+            field: 'yesterday_cost',
+            checked: false,
+            type: 'currency',
+            help: 'Amount that you have spent yesterday for promotion on specific media source, including overspend.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+        },
+        {
             name: 'Yesterday Spend',
             field: 'yesterday_cost',
             checked: false,
             type: 'currency',
             help: 'Amount that you have spent yesterday for promotion on specific media source.',
-            shown: 'true',
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
+            shown: !$scope.hasPermission('zemauth.can_view_effective_costs') && !$scope.hasPermission('zemauth.can_view_actual_costs')
+        },
+        {
+            name: 'Yesterday Spend',
+            field: 'e_yesterday_cost',
+            checked: false,
+            type: 'currency',
+            help: 'Amount that you have spent yesterday for promotion on specific media source.',
+            totalRow: true,
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
             name: 'Spend',
             field: 'cost',
             checked: true,
             type: 'currency',
-            shown: true,
-            help: "Amount spent per media source.",
+            help: 'Amount spent per media source.',
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
+            shown: !$scope.hasPermission('zemauth.can_view_effective_costs') && !$scope.hasPermission('zemauth.can_view_actual_costs')
+        },
+        {
+            name: 'Actual Media Spend',
+            field: 'media_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Amount spent per media source, including overspend.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+        },
+        {
+            name: 'Media Spend',
+            field: 'e_media_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Amount spent per media source.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'Actual Data Cost',
+            field: 'data_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Additional targeting/segmenting costs, including overspend.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
         },
         {
             name: 'Data Cost',
-            field: 'data_cost',
+            field: 'e_data_cost',
             checked: false,
             type: 'currency',
             totalRow: true,
             help: 'Additional targeting/segmenting costs.',
             order: true,
             initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_data_cost'),
-            shown: $scope.hasPermission('zemauth.can_view_data_cost')
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'Actual Total Spend',
+            field: 'total_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee, including overspend.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+        },
+        {
+            name: 'Total Spend',
+            field: 'billing_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'License Fee',
+            field: 'license_fee',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Zemanta One platform usage cost.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
             name: 'Avg. CPC',
@@ -204,7 +302,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             type: 'currency',
             shown: true,
             fractionSize: 3,
-            help: "The average CPC.",
+            help: 'The average CPC.',
             totalRow: true,
             order: true,
             initialOrder: 'desc'
@@ -272,8 +370,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         {
             'name': 'Traffic Acquisition',
             'fields': [
-                'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'cost', 'data_cost', 
-                'cpc', 'clicks', 'impressions', 'ctr', 'yesterday_cost'
+                'min_bid_cpc', 'max_bid_cpc', 'daily_budget', 'cost', 'data_cost',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
+                'cpc', 'clicks', 'impressions', 'ctr', 'license_fee',
+                'yesterday_cost', 'e_yesterday_cost'
             ]
         },
         {
@@ -286,7 +386,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         },
         {
             'name': 'Conversions',
-            'fields': ['conversion_goal_1', 'conversion_goal_2']
+            'fields': ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']
         },
         {
             'name': 'Data Sync',
@@ -345,7 +445,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         $scope.chartHidden = !$scope.chartHidden;
         $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
-        $timeout(function() {
+        $timeout(function () {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     };
@@ -395,7 +495,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         );
     };
 
-    $scope.orderTableData = function(order) {
+    $scope.orderTableData = function (order) {
         $scope.order = order;
         getTableData();
     };
@@ -439,6 +539,19 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         );
     };
 
+    var getInfoboxData = function () {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+
+        api.campaignOverview.get($state.params.id).then(
+            function (data) {
+                $scope.infoboxHeader = data.header;
+                $scope.infoboxSettings = data.settings;
+            }
+        );
+    };
+
     var setChartOptions = function () {
         $scope.chartMetricOptions = $scope.chartMetrics;
 
@@ -461,6 +574,27 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 $scope.chartMetricOptions,
                 options.campaignConversionGoalChartMetrics,
                 $scope.isPermissionInternal('zemauth.conversion_reports')
+            );
+        }
+
+        if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.effectiveCostChartMetrics,
+                $scope.isPermissionInternal('zemauth.can_view_effective_costs')
+            );
+        } else if (!$scope.hasPermission('zemauth.can_view_actual_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.legacyCostChartMetrics,
+                false
+            );
+        }
+        if ($scope.hasPermission('zemauth.can_view_actual_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.actualCostChartMetrics,
+                $scope.isPermissionInternal('zemauth.can_view_actual_costs')
             );
         }
     };
@@ -524,11 +658,12 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         getDailyStats();
         getTableData();
+        getInfoboxData();
         pollSyncStatus();
     };
 
-    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
-        if(newValue === true && oldValue === false){
+    $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
+        if (newValue === true && oldValue === false) {
             pollSyncStatus();
         }
     });
@@ -555,14 +690,14 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         getDailyStats();
     }, true);
 
-    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+    $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         $location.search('source_ids', null);
         $location.search('source_totals', null);
     });
 
-    var pollSyncStatus = function() {
-        if($scope.isSyncInProgress){
-            $timeout(function() {
+    var pollSyncStatus = function () {
+        if ($scope.isSyncInProgress) {
+            $timeout(function () {
                 var promise = null;
 
                 if ($scope.level === constants.level.ALL_ACCOUNTS) {
@@ -574,28 +709,28 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 }
 
                 promise.then(
-                    function(data) {
+                    function (data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                        if($scope.isSyncInProgress === false){
+                        if ($scope.isSyncInProgress === false) {
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             getTableData();
                             getDailyStats();
                         }
                     },
-                    function(data) {
+                    function (data) {
                         // error
                         $scope.isSyncInProgress = false;
                     }
-                ).finally(function() {
+                ).finally(function () {
                     pollSyncStatus();
                 });
             }, 5000);
         }
     };
 
-    $scope.triggerSync = function() {
+    $scope.triggerSync = function () {
         $scope.isSyncInProgress = true;
 
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
@@ -606,6 +741,12 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             api.campaignSync.get($state.params.id, null);
         }
     };
+
+    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
+        $timeout(function () {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
+    });
 
     init();
 }]);

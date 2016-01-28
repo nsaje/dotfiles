@@ -1,0 +1,76 @@
+rules:
+  indent:
+    - 2
+    - 4
+  quotes:
+    - 2
+    - single
+  linebreak-style:
+    - 2
+    - unix
+  semi:
+    - 2
+    - always
+  comma-dangle:
+    - 2
+    - 'always-multiline'
+  complexity:
+    - 2
+    - 10
+  dot-notation:
+    - 2
+  eqeqeq:
+    - 2
+  guard-for-in:
+    - 2
+  no-alert:
+    - 2
+  no-else-return:
+    - 2
+  no-trailing-spaces:
+    - 2
+  max-len:
+    - 2
+    - 120
+    - 4
+  brace-style:
+    - 2
+  array-bracket-spacing:
+    - 2
+  object-curly-spacing:
+    - 2
+  block-spacing:
+    - 2
+  camelcase:
+    - 2
+  comma-spacing:
+    - 2
+  key-spacing:
+    - 2
+  no-lonely-if:
+    - 2
+  no-multiple-empty-lines:
+    - 2
+  semi-spacing:
+    - 2
+  space-after-keywords:
+    - 2
+  space-before-blocks:
+    - 2
+  space-before-function-paren:
+    - 2
+  space-before-keywords:
+    - 2
+  space-in-parens:
+    - 2
+  space-infix-ops:
+    - 2
+  space-return-throw-case:
+    - 2
+  space-unary-ops:
+    - 2
+  spaced-comment:
+    - 2
+env:
+  browser: true
+extends: 'eslint:recommended'

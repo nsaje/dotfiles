@@ -1,14 +1,14 @@
+import sys
 import datetime
 import logging
 import textwrap
 
-from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.core.mail import send_mail
 
 from dash import models
 from dash import constants
-from utils.command_helpers import set_logger_verbosity
+from utils.command_helpers import set_logger_verbosity, ExceptionCommand
 from utils.url_helper import get_full_z1_url
 
 
@@ -21,23 +21,30 @@ def get_ad_group_sources(source):
         submission_status=constants.ContentAdSubmissionStatus.PENDING
     ).values('content_ad__ad_group_id').distinct()
 
-    ad_group_states = models.AdGroupSettings.objects\
-                                            .all()\
-                                            .group_current_settings()\
-                                            .values('ad_group_id', 'state')
+    ad_group_sources = []
 
-    ad_group_ids = list(set([x['content_ad__ad_group_id'] for x in ad_group_ids]) &
-                        set([x['ad_group_id'] for x in ad_group_states if x['state'] == constants.AdGroupSettingsState.ACTIVE]))
-    return models.AdGroupSource.objects.filter(ad_group_id__in=ad_group_ids, source=source)
+    for ad_group_id_dict in ad_group_ids:
+        ad_group_id = ad_group_id_dict['content_ad__ad_group_id']
+
+        ad_group = models.AdGroup.objects.get(pk=ad_group_id)
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_source = models.AdGroupSource.objects.get(ad_group=ad_group, source=source)
+        ad_group_source_settings = ad_group_source.get_current_settings()
+
+        if models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, [ad_group_source_settings])\
+           == constants.AdGroupRunningStatus.ACTIVE:
+            ad_group_sources.append(ad_group_source)
+
+    return ad_group_sources
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
 
     help = "Sends email with ad groups that had content ads added recently"
 
     def add_arguments(self, parser):
         parser.add_argument('--email', metavar='EMAIL', nargs='*', help='Reports receiver e-mail.',
-                            default=['dusan.omercevic@zemanta.com', 'gregor.ratajc@zemanta.com'])
+                            default=['operations@zemanta.com', 'gregor.ratajc@zemanta.com'])
         parser.add_argument('--source-id', metavar='SOURCEID', nargs='?', default='3', type=int,
                             help='Source id. 3 (Outbrain) by default.')
 
@@ -46,6 +53,10 @@ class Command(BaseCommand):
 
         source = models.Source.objects.get(id=options['source_id'])
         ad_group_sources = get_ad_group_sources(source)
+
+        if not ad_group_sources:
+            logger.info("No new content to approve")
+            sys.exit(0)
 
         links = []
         for ad_group_source in ad_group_sources:

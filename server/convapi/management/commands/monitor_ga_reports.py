@@ -5,10 +5,11 @@ import reports.api
 import convapi.models
 import dash.models
 
+from utils.command_helpers import ExceptionCommand
 from utils.statsd_helper import statsd_gauge
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
 
     def handle(self, *args, **options):
         max_date = convapi.models.RawPostclickStats.objects.aggregate(max_date=Max('datetime'))['max_date']

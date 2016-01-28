@@ -1,5 +1,5 @@
 /* globals oneApp, options, angular */
-oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', function($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService) {
+oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService) {
     var contentAdsNotLoaded = $q.defer();
 
     $scope.order = '-upload_time';
@@ -32,7 +32,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.selectedContentAdsStatus = {};
 
     $scope.archivingResults = null;
-    $scope.closeArchivingResults = function() {
+    $scope.closeArchivingResults = function () {
         $scope.archivingResults = null;
     };
 
@@ -83,7 +83,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         internal: $scope.isPermissionInternal('zemauth.archive_restore_entity')
     }];
 
-    $scope.selectedAdsChanged = function(row, checked) {
+    $scope.selectedAdsChanged = function (row, checked) {
         $scope.selectedContentAdsStatus[row.id] = checked;
 
         var numSelected = 0,
@@ -132,8 +132,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         });
     };
 
-    $scope.updateContentAdSelection = function() {
-        $scope.rows.forEach(function(row) {
+    $scope.updateContentAdSelection = function () {
+        $scope.rows.forEach(function (row) {
             if ($scope.selectedContentAdsStatus[row.id] !== undefined) {
                 row.ad_selected = $scope.selectedContentAdsStatus[row.id];
             } else if ($scope.selectedAll) {
@@ -146,7 +146,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         });
     };
 
-    $scope.isAnythingSelected = function() {
+    $scope.isAnythingSelected = function () {
         if ($scope.selectedAll || $scope.selectedBatchId) {
             return true;
         }
@@ -214,7 +214,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 }
             );
         },
-        getDisabledMessage: function(row) {
+        getDisabledMessage: function (row) {
             return 'This ad must be managed manually.';
         },
         disabled: false,
@@ -342,30 +342,96 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         field: 'cost',
         checked: true,
         type: 'currency',
-        shown: true,
-        help: "The amount spent per content ad.",
+        help: 'The amount spent per content ad.',
         totalRow: true,
         order: true,
-        initialOrder: 'desc'
+        initialOrder: 'desc',
+        shown: !$scope.hasPermission('zemauth.can_view_effective_costs') && !$scope.hasPermission('zemauth.can_view_actual_costs')
     }, {
-        name: 'Data Cost',
+        name: 'Actual Media Spend',
+        field: 'media_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Amount spent per media source, including overspend.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+    }, {
+        name: 'Media Spend',
+        field: 'e_media_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Amount spent per media source.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+    }, {
+        name: 'Actual Data Cost',
         field: 'data_cost',
         checked: false,
         type: 'currency',
         totalRow: true,
-        help: 'Additional targeting/segmenting costs.', 
+        help: 'Additional targeting/segmenting costs, including overspend.',
         order: true,
         initialOrder: 'desc',
-        internal: $scope.isPermissionInternal('zemauth.can_view_data_cost'),
-        shown: $scope.hasPermission('zemauth.can_view_data_cost')
-    },{
+        internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+    }, {
+        name: 'Data Cost',
+        field: 'e_data_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Additional targeting/segmenting costs.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+    }, {
+        name: 'Actual Total Spend',
+        field: 'total_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Sum of media spend, data cost and license fee, including overspend.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+    }, {
+        name: 'Total Spend',
+        field: 'billing_cost',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Sum of media spend, data cost and license fee.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+    }, {
+        name: 'License Fee',
+        field: 'license_fee',
+        checked: false,
+        type: 'currency',
+        totalRow: true,
+        help: 'Zemanta One platform usage cost.',
+        order: true,
+        initialOrder: 'desc',
+        internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+        shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+    }, {
         name: 'Avg. CPC',
         field: 'cpc',
         checked: true,
         type: 'currency',
         shown: true,
         fractionSize: 3,
-        help: "The average CPC for each content ad.",
+        help: 'The average CPC for each content ad.',
         totalRow: true,
         order: true,
         initialOrder: 'desc'
@@ -417,16 +483,18 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         'fields': ['ad_selected', 'image_urls', 'titleLink', 'urlLink', 'submission_status', 'checked', 'upload_time', 'batch_name', 'display_url', 'brand_name', 'description', 'call_to_action']
     }, {
         'name': 'Traffic Acquisition',
-        'fields': ['cost', 'data_cost', 'cpc', 'clicks', 'impressions', 'ctr']
+        'fields': ['cost', 'data_cost', 'cpc', 'clicks', 'impressions', 'ctr',
+                   'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
+                   'license_fee']
     }, {
         'name': 'Audience Metrics',
         'fields': ['percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 'visits', 'pageviews', 'click_discrepancy']
     }, {
         name: 'Conversions',
-        fields: ['conversion_goal_1', 'conversion_goal_2']
+        fields: ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']
     }];
 
-    $scope.addContentAds = function() {
+    $scope.addContentAds = function () {
         var modalInstance = $modal.open({
             templateUrl: '/partials/upload_ads_modal.html',
             controller: 'UploadAdsModalCtrl',
@@ -434,7 +502,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             scope: $scope
         });
 
-        modalInstance.result.then(function() {
+        modalInstance.result.then(function () {
             getTableData();
         });
 
@@ -456,7 +524,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         });
     };
 
-    $scope.updateTableAfterArchiving = function(data) {
+    $scope.updateTableAfterArchiving = function (data) {
         // update rows immediately, refresh whole table after
         updateTableData(data.data.rows, {});
 
@@ -515,43 +583,43 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         });
 
         switch (action) {
-            case 'pause':
-                bulkUpdateContentAds(
+        case 'pause':
+            bulkUpdateContentAds(
                     contentAdIdsSelected,
                     contentAdIdsNotSelected,
                     constants.contentAdSourceState.INACTIVE
                 );
-                break;
-            case 'resume':
-                bulkUpdateContentAds(
+            break;
+        case 'resume':
+            bulkUpdateContentAds(
                     contentAdIdsSelected,
                     contentAdIdsNotSelected,
                     constants.contentAdSourceState.ACTIVE
                 );
-                break;
-            case 'download':
-                downloadContentAds(contentAdIdsSelected, contentAdIdsNotSelected);
-                break;
-            case 'archive':
-                api.adGroupContentAdArchive.archive(
+            break;
+        case 'download':
+            downloadContentAds(contentAdIdsSelected, contentAdIdsNotSelected);
+            break;
+        case 'archive':
+            api.adGroupContentAdArchive.archive(
                     $state.params.id,
                     contentAdIdsSelected,
                     contentAdIdsNotSelected,
                     $scope.selectedAll,
                     $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
-                break;
-            case 'restore':
-                api.adGroupContentAdArchive.restore(
+            break;
+        case 'restore':
+            api.adGroupContentAdArchive.restore(
                     $state.params.id,
                     contentAdIdsSelected,
                     contentAdIdsNotSelected,
                     $scope.selectedAll,
                     $scope.selectedBatchId).then($scope.updateTableAfterArchiving);
-                break;
+            break;
         }
     };
 
-    $scope.loadPage = function(page) {
+    $scope.loadPage = function (page) {
         if (page && page > 0 && page <= $scope.pagination.numPages) {
             $scope.pagination.currentPage = page;
         }
@@ -565,20 +633,20 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }
     };
 
-    $scope.$watch('$parent.infoboxVisible', function(newValue, oldValue) {
-        $timeout(function() {
+    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
+        $timeout(function () {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     });
 
-    $scope.$watch('size', function(newValue, oldValue) {
+    $scope.$watch('size', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.loadPage();
         }
     });
 
     // From parent scope (mainCtrl).
-    $scope.$watch('dateRange', function(newValue, oldValue) {
+    $scope.$watch('dateRange', function (newValue, oldValue) {
         if (newValue.startDate.isSame(oldValue.startDate) && newValue.endDate.isSame(oldValue.endDate)) {
             return;
         }
@@ -587,15 +655,15 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         getTableData();
     });
 
-    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
+    $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
         if (newValue === true && oldValue === false) {
             pollSyncStatus();
         }
     });
 
-    var hasMetricData = function(metric) {
+    var hasMetricData = function (metric) {
         var hasData = false;
-        $scope.chartData.forEach(function(group) {
+        $scope.chartData.forEach(function (group) {
             if (group.seriesData[metric] !== undefined) {
                 hasData = true;
             }
@@ -604,7 +672,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         return hasData;
     };
 
-    $scope.$watch('chartMetric1', function(newValue, oldValue) {
+    $scope.$watch('chartMetric1', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             if (!hasMetricData($scope.chartMetric1)) {
                 getDailyStats();
@@ -615,7 +683,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }
     });
 
-    $scope.$watch('chartMetric2', function(newValue, oldValue) {
+    $scope.$watch('chartMetric2', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             if (!hasMetricData($scope.chartMetric2)) {
                 getDailyStats();
@@ -626,22 +694,22 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }
     });
 
-    $scope.orderTableData = function(order) {
+    $scope.orderTableData = function (order) {
         $scope.order = order;
 
         $location.search('order', $scope.order);
         getTableData();
     };
 
-    $scope.toggleChart = function() {
+    $scope.toggleChart = function () {
         $scope.chartHidden = !$scope.chartHidden;
 
-        $timeout(function() {
+        $timeout(function () {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     };
 
-    $scope.$watch(zemFilterService.getFilteredSources, function(newValue, oldValue) {
+    $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         if (angular.equals(newValue, oldValue)) {
             return;
         }
@@ -649,7 +717,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         getDailyStats();
     }, true);
 
-    $scope.$watch(zemFilterService.getShowArchived, function(newValue, oldValue) {
+    $scope.$watch(zemFilterService.getShowArchived, function (newValue, oldValue) {
         if (angular.equals(newValue, oldValue)) {
             return;
         }
@@ -657,16 +725,16 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         getDailyStats();
     }, true);
 
-    $scope.triggerSync = function() {
+    $scope.triggerSync = function () {
         $scope.isSyncInProgress = true;
         api.adGroupSync.get($state.params.id);
     };
 
-    var getTableData = function() {
+    var getTableData = function () {
         $scope.loadRequestInProgress = true;
 
         api.adGroupAdsPlusTable.get($state.params.id, $scope.pagination.currentPage, $scope.size, $scope.dateRange.startDate, $scope.dateRange.endDate, $scope.order).then(
-            function(data) {
+            function (data) {
                 $scope.rows = data.rows;
                 $scope.totals = data.totals;
                 $scope.order = data.order;
@@ -688,20 +756,20 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 initUploadBatches(data.batches);
                 contentAdsNotLoaded.resolve($scope.rows.length === 0);
             },
-            function(data) {
+            function (data) {
                 // error
                 return;
             }
-        ).finally(function() {
+        ).finally(function () {
             $scope.loadRequestInProgress = false;
         });
     };
 
-    var pollSyncStatus = function() {
+    var pollSyncStatus = function () {
         if ($scope.isSyncInProgress) {
-            $timeout(function() {
+            $timeout(function () {
                 api.checkSyncProgress.get($state.params.id).then(
-                    function(data) {
+                    function (data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
                         if ($scope.isSyncInProgress === false) {
@@ -711,11 +779,11 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                             getDailyStats();
                         }
                     },
-                    function(data) {
+                    function (data) {
                         // error
                         $scope.isSyncInProgress = false;
                     }
-                ).finally(function() {
+                ).finally(function () {
                     pollSyncStatus();
                 });
             }, 10000);
@@ -802,7 +870,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }
 
         api.adGroupAdsPlusTable.getUpdates($state.params.id, $scope.lastChange)
-            .then(function(data) {
+            .then(function (data) {
                 if (data.lastChange) {
                     $scope.lastChange = data.lastChange;
                     $scope.notifications = data.notifications;
@@ -812,7 +880,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 }
 
                 if (data.inProgress) {
-                    $scope.lastChangeTimeout = $timeout(function() {
+                    $scope.lastChangeTimeout = $timeout(function () {
                         $scope.lastChangeTimeout = null;
                         $scope.pollTableUpdates();
                     }, 2000);
@@ -824,8 +892,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         return contentAdsNotLoaded.promise;
     };
 
-    var updateTableData = function(rowsUpdates, totalsUpdates) {
-        $scope.rows.forEach(function(row) {
+    var updateTableData = function (rowsUpdates, totalsUpdates) {
+        $scope.rows.forEach(function (row) {
             var rowUpdates = rowsUpdates[row.id];
             if (rowUpdates) {
                 updateObject(row, rowUpdates);
@@ -835,16 +903,16 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         updateObject($scope.totals, totalsUpdates);
     };
 
-    $scope.updateDataStatus = function(newDataStatus) {
+    $scope.updateDataStatus = function (newDataStatus) {
         for (var rowid in newDataStatus) {
             var newStatus = newDataStatus[rowid];
             if (newStatus) {
                 $scope.dataStatus[rowid] = newStatus;
             }
-        };
+        }
     };
 
-    var updateObject = function(object, updates) {
+    var updateObject = function (object, updates) {
         for (var key in updates) {
             if (updates.hasOwnProperty(key)) {
                 object[key] = updates[key];
@@ -875,30 +943,29 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     };
 
 
-    var getDailyStats = function() {
+    var getDailyStats = function () {
         api.dailyStats.listContentAdStats($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate, getDailyStatsMetrics()).then(
-            function(data) {
+            function (data) {
                 setConversionGoalChartOptions(data.conversionGoals);
                 $scope.chartData = data.chartData;
             },
-            function(data) {
+            function (data) {
                 // error
                 return;
             }
         );
     };
 
-    var getInfoboxData = function() {
+    var getInfoboxData = function () {
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
 
         api.adGroupOverview.get($state.params.id).then(
-            function(data) {
+            function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxSettings = data.settings;
-            },
-            function(data) {}
+            }
         );
     };
 
@@ -926,6 +993,27 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
                 $scope.isPermissionInternal('zemauth.conversion_reports')
             );
         }
+
+        if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.effectiveCostChartMetrics,
+                $scope.isPermissionInternal('zemauth.can_view_effective_costs')
+            );
+        } else if (!$scope.hasPermission('zemauth.can_view_actual_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.legacyCostChartMetrics,
+                false
+            );
+        }
+        if ($scope.hasPermission('zemauth.can_view_actual_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.actualCostChartMetrics,
+                $scope.isPermissionInternal('zemauth.can_view_actual_costs')
+            );
+        }
     };
 
     var setConversionGoalChartOptions = function (conversionGoals) {
@@ -939,11 +1027,11 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         );
     };
 
-    var setDisabledExportOptions = function() {
+    var setDisabledExportOptions = function () {
         api.adGroupAdsPlusExportAllowed.get($state.params.id, $scope.dateRange.startDate, $scope.dateRange.endDate).then(
-            function(data) {
+            function (data) {
                 var option = null;
-                $scope.exportOptions.forEach(function(opt) {
+                $scope.exportOptions.forEach(function (opt) {
                     if (opt.value === 'day-excel') {
                         option = opt;
                     }

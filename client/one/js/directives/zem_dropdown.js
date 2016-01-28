@@ -1,7 +1,7 @@
 /* globals oneApp */
-"use strict";
+'use strict';
 
-oneApp.directive('zemDropdown', function() {
+oneApp.directive('zemDropdown', function () {
     return {
         restrict: 'E',
         scope: {
@@ -16,9 +16,9 @@ oneApp.directive('zemDropdown', function() {
         },
         templateUrl: '/partials/zem_dropdown.html',
         controller: ['$scope', '$compile', '$element', '$attrs', function ($scope, $compile, $element, $attrs) {
-            var formatSelection = function(object) {
+            var formatSelection = function (object) {
                 var option;
-                $scope.dropdownOptions.forEach(function(item) {
+                $scope.dropdownOptions.forEach(function (item) {
                     if (item.value == object.id) {
                         option = item;
                     }
@@ -34,7 +34,7 @@ oneApp.directive('zemDropdown', function() {
                     // hide immediately without animation - solves a glitch when
                     // the element is selected
                     element.attr('popover-animation', 'false');
-                    element.on('$destroy', function() {
+                    element.on('$destroy', function () {
                         element.trigger('mouseleave');
                     });
                 }
@@ -58,12 +58,12 @@ oneApp.directive('zemDropdown', function() {
 
             $scope.selectedItem = null;
 
-            $scope.callOnSelect = function() {
-                $scope.onSelect({ selected: $scope.selectedItem });
+            $scope.callOnSelect = function () {
+                $scope.onSelect({selected: $scope.selectedItem});
                 $scope.selectedItem = null;
             };
 
-            $scope.$watch('checkDisabled()', function(newValue, oldValue) {
+            $scope.$watch('checkDisabled()', function (newValue, oldValue) {
                 $scope.disabledTitleOrUndefined = $scope.checkDisabled() ? $scope.disabledTitle : undefined;
             });
         }]

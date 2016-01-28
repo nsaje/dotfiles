@@ -220,19 +220,19 @@ Zemanta
     )
     try:
         send_mail(
-            'Campaign Auto-Pilot Changes - {camp}, {account}'.format(
+            u'Campaign Auto-Pilot Changes - {camp}, {account}'.format(
                 camp=campaign_name,
                 account=account_name
             ),
             body,
-            'Zemanta <{}>'.format(automation.settings.AUTOPILOT_EMAIL),
+            u'Zemanta <{}>'.format(automation.settings.AUTOPILOT_EMAIL),
             emails,
             fail_silently=False
         )
     except Exception as e:
-        logger.exception('Auto-pilot bid CPC e-mail for campaign %s to %s was not sent because an exception was raised:',
+        logger.exception(u'Auto-pilot bid CPC e-mail for campaign %s to %s was not sent because an exception was raised:',
                          campaign_name,
-                         ''.join(emails))
+                         u''.join(emails))
         desc = {
             'campaign_name': campaign_name,
             'email': ''.join(emails)
@@ -272,7 +272,7 @@ def adjust_autopilot_media_sources_bid_cpcs():
     changes = {}
     for adgroup in automation.helpers.get_all_active_ad_groups():
 
-        yesterday_spends = reports.api.get_yesterday_cost(ad_group=adgroup)
+        yesterday_spends = reports.api.get_yesterday_cost(dict(ad_group=adgroup))
         for ad_group_source_settings in get_autopilot_ad_group_sources_settings(adgroup):
             cpc_change_comments = []
 
@@ -326,7 +326,7 @@ def adjust_autopilot_media_sources_bid_cpcs():
             camp.name,
             camp.id,
             camp.account.name,
-            [camp.get_current_settings().account_manager.email],
+            [camp.get_current_settings().campaign_manager.email],
             adgroup_changes
         )
     report_autopilot_metrics()

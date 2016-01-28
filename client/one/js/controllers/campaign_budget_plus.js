@@ -1,17 +1,17 @@
 /*globals oneApp*/
 oneApp.controller('CampaignBudgetPlusCtrl', ['$scope', '$state', '$modal',  'api', function ($scope, $state, $modal, api) {
     var availableCredit = [];
-    function updateView(data) {
+    function updateView (data) {
         $scope.activeBudget = data.active;
         $scope.pastBudget = data.past;
         $scope.budgetTotals = data.totals;
         availableCredit = data.credits;
     }
-    function refresh(updatedId) {
+    function refresh (updatedId) {
         $scope.updatedId = updatedId;
         $scope.init();
     }
-    function openModal() {
+    function openModal () {
         var modalInstance = $modal.open({
             templateUrl: '/partials/campaign_budget_item_modal.html',
             controller: 'CampaignBudgetItemModalCtrl',
@@ -29,7 +29,7 @@ oneApp.controller('CampaignBudgetPlusCtrl', ['$scope', '$state', '$modal',  'api
             return include && obj.id === include || !include && obj.isAvailable;
         });
     };
-    
+
     $scope.addBudgetItem = function () {
         $scope.selectedBudgetId = null;
         return openModal();
@@ -40,7 +40,7 @@ oneApp.controller('CampaignBudgetPlusCtrl', ['$scope', '$state', '$modal',  'api
     };
 
     $scope.init = function () {
-        if (! $scope.campaign) { return; }
+        if (!$scope.campaign) { return; }
         $scope.loadingInProgress = true;
         api.campaignBudgetPlus.list($scope.campaign.id).then(function (data) {
             $scope.loadingInProgress = false;

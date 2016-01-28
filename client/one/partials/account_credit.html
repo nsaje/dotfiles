@@ -28,11 +28,12 @@
                     <th>Credit Amount</th>
                     <th>Allocated Budgets</th>
                     <th>Available Credit</th>
+                    <th>Notes</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="item in activeCredit" ng-class="{ 'row-updated': item.id == updatedId }">
+                <tr ng-repeat="item in activeCredit" ng-class="{ 'row-updated': item.id == updatedId, 'row-not-selected': !isSelected(item.startDate, item.endDate) }">
                     <td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>
@@ -44,6 +45,9 @@
                         <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
+                    <td>
+                        <zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover>
+                    </td>
                     <td>
                         <ul class="row-actions">
                             <li ng-click="editCreditItem(item.id)">edit</li>
@@ -70,11 +74,12 @@
                     <th>Total Credit Amount</th>
                     <th>Allocated Budgets</th>
                     <th>Available Credit</th>
+                    <th>Notes</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="item in pastCredit">
+                <tr ng-repeat="item in pastCredit" ng-class="{ 'row-not-selected': !isSelected(item.startDate, item.endDate) }">
                     <td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>
@@ -86,6 +91,9 @@
                         <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)
                     </td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
+                    <td>
+                        <zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover>
+                    </td>
                     <td>
                         <ul class="row-actions">
                             <li ng-click="editCreditItem(item.id)">edit</li>

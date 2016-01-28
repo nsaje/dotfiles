@@ -23,6 +23,7 @@ import dash.views.sync
 import dash.views.table
 import dash.views.agency
 import dash.views.views
+import dash.views.navigation
 
 
 admin.site.login = login_required(admin.site.login)
@@ -395,7 +396,21 @@ urlpatterns += patterns(
         login_required(dash.views.bcm.CampaignBudgetView.as_view()),
         name='campaigns_budget'
     ),
-    url(r'^api/nav_data$', login_required(dash.views.views.NavigationDataView.as_view())),
+    url(
+        r'^api/(?P<level_>(ad_groups|campaigns|accounts))/(?P<id_>\d+)/nav/',
+        login_required(dash.views.navigation.NavigationDataView.as_view()),
+        name='navigation'
+    ),
+    url(
+        r'^api/all_accounts/nav/',
+        login_required(dash.views.navigation.NavigationAllAccountsDataView.as_view()),
+        name='navigation_all_accounts'
+    ),
+    url(
+        r'^api/nav/',
+        login_required(dash.views.navigation.NavigationTreeView.as_view()),
+        name='navigation_tree'
+    ),
     url(
         r'^api/users/(?P<user_id>(\d+|current))/$',
         login_required(dash.views.views.User.as_view()),

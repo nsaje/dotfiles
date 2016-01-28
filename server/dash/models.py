@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import jsonfield
 import binascii
 import datetime
@@ -34,8 +35,10 @@ CC_TO_DEC_MULTIPLIER = Decimal('0.0001')
 TO_CC_MULTIPLIER = 10**4
 TO_NANO_MULTIPLIER = 10**9
 
+
 def nano_to_cc(num):
     return int(round(num * 0.00001))
+
 
 def validate(*validators):
     errors = {}
@@ -46,6 +49,13 @@ def validate(*validators):
             errors[v.__name__.replace('validate_', '')] = e.error_list
     if errors:
         raise ValidationError(errors)
+
+
+def should_filter_by_sources(sources):
+    if sources is None:
+        return False
+
+    return Source.objects.exclude(id__in=[s.id for s in sources]).exists()
 
 
 class PermissionMixin(object):
@@ -64,11 +74,13 @@ class PermissionMixin(object):
 
 
 class QuerySetManager(models.Manager):
+
     def get_queryset(self):
         return self.model.QuerySet(self.model)
 
 
 class DemoManager(models.Manager):
+
     def get_queryset(self):
         queryset = super(DemoManager, self).get_queryset()
         if queryset.model is Account:
@@ -91,6 +103,7 @@ class DemoManager(models.Manager):
 
 
 class FootprintModel(models.Model):
+
     def __init__(self, *args, **kwargs):
         super(FootprintModel, self).__init__(*args, **kwargs)
         if not self.pk:
@@ -257,6 +270,7 @@ class Account(models.Model):
         super(Account, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
+
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(users__id=user.id) |
@@ -264,7 +278,7 @@ class Account(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             return self.filter(
@@ -316,6 +330,9 @@ class Campaign(models.Model, PermissionMixin):
 
     admin_link.allow_tags = True
 
+    def get_sales_representative(self):
+        return self.account.get_current_settings().default_sales_representative
+
     def get_current_settings(self):
         if not self.pk:
             raise exc.BaseError(
@@ -331,6 +348,14 @@ class Campaign(models.Model, PermissionMixin):
             settings = CampaignSettings(campaign=self, **CampaignSettings.get_defaults_dict())
 
         return settings
+
+    def get_current_budget_settings(self):
+        cbs_latest = None
+        try:
+            cbs_latest = CampaignBudgetSettings.objects.filter(campaign=self).latest()
+        except CampaignBudgetSettings.DoesNotExist:
+            pass
+        return cbs_latest
 
     def can_archive(self):
         for ad_group in self.adgroup_set.all():
@@ -383,6 +408,7 @@ class Campaign(models.Model, PermissionMixin):
         super(Campaign, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
+
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(users__id=user.id) |
@@ -392,7 +418,7 @@ class Campaign(models.Model, PermissionMixin):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             return self.filter(
@@ -427,6 +453,14 @@ class SettingsBase(models.Model):
                 changes[field_name] = new_settings_dict[field_name]
 
         return changes
+
+    @classmethod
+    def get_default_value(cls, prop_name):
+        return cls.get_defaults_dict().get(prop_name)
+
+    @classmethod
+    def get_defaults_dict(cls):
+        return {}
 
     def copy_settings(self):
         new_settings = type(self)()
@@ -485,7 +519,7 @@ class AccountSettings(SettingsBase):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
-    
+
     objects = QuerySetManager()
 
     def save(self, request, *args, **kwargs):
@@ -498,6 +532,7 @@ class AccountSettings(SettingsBase):
         ordering = ('-created_dt',)
 
     class QuerySet(models.QuerySet):
+
         def group_current_settings(self):
             return self.order_by('account_id', '-created_dt').distinct('account')
 
@@ -505,13 +540,12 @@ class AccountSettings(SettingsBase):
 class CampaignSettings(SettingsBase):
     _settings_fields = [
         'name',
-        'account_manager',
-        'sales_representative',
-        'service_fee',
+        'campaign_manager',
         'iab_category',
-        'promotion_goal',
         'campaign_goal',
         'goal_quantity',
+        'service_fee',
+        'promotion_goal',
         'archived',
         'target_devices',
         'target_regions'
@@ -526,18 +560,13 @@ class CampaignSettings(SettingsBase):
     campaign = models.ForeignKey(Campaign, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
-    account_manager = models.ForeignKey(
+    campaign_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
         related_name="+",
         on_delete=models.PROTECT
     )
-    sales_representative = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        related_name="+",
-        on_delete=models.PROTECT
-    )
+
     service_fee = models.DecimalField(
         decimal_places=4,
         max_digits=5,
@@ -577,10 +606,33 @@ class CampaignSettings(SettingsBase):
 
         super(CampaignSettings, self).save(*args, **kwargs)
 
+    @classmethod
+    def get_changes_text(cls, old_settings, new_settings, separator=', '):
+
+        if new_settings.changes_text is not None:
+            return new_settings.changes_text
+
+        changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
+
+        if changes is None:
+            return 'Created settings'
+
+        change_strings = []
+
+        for key, value in changes.iteritems():
+            prop = cls.get_human_prop_name(key)
+            val = cls.get_human_value(key, value)
+            change_strings.append(
+                u'{} set to "{}"'.format(prop, val)
+            )
+
+        return separator.join(change_strings)
+
     class Meta:
         ordering = ('-created_dt',)
 
     class QuerySet(models.QuerySet):
+
         def group_current_settings(self):
             return self.order_by('campaign_id', '-created_dt').distinct('campaign')
 
@@ -590,6 +642,73 @@ class CampaignSettings(SettingsBase):
             'target_devices': constants.AdTargetDevice.get_all(),
             'target_regions': ['US']
         }
+
+    @classmethod
+    def get_human_prop_name(cls, prop_name):
+        NAMES = {
+            'name': 'Name',
+            'campaign_manager': 'Campaign Manager',
+            'iab_category': 'IAB Category',
+            'campaign_goal': 'Campaign Goal',
+            'goal_quantity': 'Goal Quantity',
+            'service_fee': 'Service Fee',
+            'promotion_goal': 'Promotion Goal',
+            'archived': 'Archived',
+            'target_devices': 'Device targeting',
+            'target_regions': 'Locations',
+        }
+
+        return NAMES[prop_name]
+
+    @classmethod
+    def get_human_value(cls, prop_name, value):
+        if prop_name == 'campaign_manager':
+            value = views.helpers.get_user_full_name_or_email(value).decode('utf-8')
+        elif prop_name == 'iab_category':
+            value = constants.IABCategory.get_text(value)
+        elif prop_name == 'campaign_goal':
+            value = constants.CampaignGoal.get_text(value)
+        elif prop_name == 'service_fee':
+            value = views.helpers.format_decimal_to_percent(value) + '%'
+        elif prop_name == 'promotion_goal':
+            value = constants.PromotionGoal.get_text(value)
+        elif prop_name == 'target_devices':
+            value = ', '.join(constants.AdTargetDevice.get_text(x) for x in value)
+        elif prop_name == 'target_regions':
+            if value:
+                value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
+            else:
+                value = 'worldwide'
+        elif prop_name == 'archived':
+            value = str(value)
+
+        return value
+
+
+class CampaignGoal(models.Model):
+    campaign = models.ForeignKey(Campaign)
+    type = models.PositiveSmallIntegerField(
+        default=constants.CampaignGoalKPI.TIME_ON_SITE,
+        choices=constants.CampaignGoalKPI.get_choices(),
+    )
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
+                                   verbose_name='Created by',
+                                   on_delete=models.PROTECT, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('campaign', 'type')
+
+
+class CampaignGoalValue(models.Model):
+    campaign_goal = models.ForeignKey(CampaignGoal)
+    value = models.DecimalField(max_digits=15, decimal_places=5)
+
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
+                                   verbose_name='Created by',
+                                   on_delete=models.PROTECT, null=True, blank=True)
 
 
 class SourceType(models.Model):
@@ -933,14 +1052,10 @@ class DefaultSourceSettings(models.Model):
         verbose_name='Default daily budget'
     )
 
-    auto_add = models.BooleanField(null=False,
-                                   blank=False,
-                                   default=False,
-                                   verbose_name='Automatically add this source to ad group at creation')
-
     objects = QuerySetManager()
 
     class QuerySet(models.QuerySet):
+
         def with_credentials(self):
             return self.exclude(credentials__isnull=True)
 
@@ -993,7 +1108,7 @@ class AdGroup(models.Model):
     def get_current_settings(self):
         if not self.pk:
             raise exc.BaseError(
-                'Ad group setting couln\'t be fetched because ad group hasn\'t been saved yet.'
+                'Ad group setting couldn\'t be fetched because ad group hasn\'t been saved yet.'
             )
 
         settings = AdGroupSettings.objects.\
@@ -1030,8 +1145,8 @@ class AdGroup(models.Model):
             return constants.AdGroupRunningStatus.INACTIVE
 
         if (cls.get_running_status_by_flight_time(ad_group_settings) == constants.AdGroupRunningStatus.ACTIVE and
-           cls.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings) ==
-           constants.AdGroupRunningStatus.ACTIVE):
+                cls.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings) ==
+                constants.AdGroupRunningStatus.ACTIVE):
             return constants.AdGroupRunningStatus.ACTIVE
 
         return constants.AdGroupRunningStatus.INACTIVE
@@ -1098,6 +1213,7 @@ class AdGroup(models.Model):
         super(AdGroup, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
+
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(campaign__users__id=user.id) |
@@ -1107,7 +1223,7 @@ class AdGroup(models.Model):
             ).distinct()
 
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             return self.filter(
@@ -1146,6 +1262,15 @@ class AdGroupSource(models.Model):
         null=True
     )
 
+    objects = QuerySetManager()
+
+    class QuerySet(models.QuerySet):
+        def filter_by_sources(self, sources):
+            if not should_filter_by_sources(sources):
+                return self
+
+            return self.filter(source__in=sources)
+
     def get_tracking_ids(self):
         msid = self.source.tracking_slug or ''
         if self.source.source_type and\
@@ -1182,6 +1307,14 @@ class AdGroupSource(models.Model):
             self.ad_group.id,
             self.source.id
         )
+
+    def get_latest_state(self):
+        try:
+            return AdGroupSourceState.objects.filter(
+                ad_group_source=self
+            ).latest()
+        except AdGroupSourceState.DoesNotExist:
+            return None
 
     def _shorten_name(self, name):
         # if the first word is too long, cut it
@@ -1242,6 +1375,7 @@ class AdGroupSettings(SettingsBase):
         'call_to_action',
         'ad_group_name',
         'enable_ga_tracking',
+        'ga_tracking_type',
         'enable_adobe_tracking',
         'adobe_tracking_param',
     ]
@@ -1249,7 +1383,8 @@ class AdGroupSettings(SettingsBase):
     id = models.AutoField(primary_key=True)
     ad_group = models.ForeignKey(AdGroup, related_name='settings', on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True, blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
+                                   on_delete=models.PROTECT, null=True, blank=True)
     state = models.IntegerField(
         default=constants.AdGroupSettingsState.INACTIVE,
         choices=constants.AdGroupSettingsState.get_choices()
@@ -1274,6 +1409,10 @@ class AdGroupSettings(SettingsBase):
     target_regions = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
     enable_ga_tracking = models.BooleanField(default=True)
+    ga_tracking_type = models.IntegerField(
+        default=constants.GATrackingType.EMAIL,
+        choices=constants.GATrackingType.get_choices()
+    )
     enable_adobe_tracking = models.BooleanField(default=False)
     adobe_tracking_param = models.CharField(max_length=10, blank=True, default='')
     archived = models.BooleanField(default=False)
@@ -1331,7 +1470,9 @@ class AdGroupSettings(SettingsBase):
         return [regions_of_type[target_region] for target_region in self.target_regions or [] if target_region in regions_of_type]
 
     def is_mobile_only(self):
-        return self.target_devices and len(self.target_devices) == 1 and constants.AdTargetDevice.MOBILE in self.target_devices
+        return bool(self.target_devices) \
+            and len(self.target_devices) == 1 \
+            and constants.AdTargetDevice.MOBILE in self.target_devices
 
     @classmethod
     def get_defaults_dict(cls):
@@ -1343,10 +1484,6 @@ class AdGroupSettings(SettingsBase):
             'target_devices': constants.AdTargetDevice.get_all(),
             'target_regions': ['US']
         }
-
-    @classmethod
-    def get_default_value(cls, prop_name):
-        return cls.get_defaults_dict().get(prop_name)
 
     @classmethod
     def get_human_prop_name(cls, prop_name):
@@ -1366,6 +1503,7 @@ class AdGroupSettings(SettingsBase):
             'call_to_action': 'Call to action',
             'ad_group_name': 'AdGroup name',
             'enable_ga_tracking': 'Enable GA tracking',
+            'ga_tracking_type': 'GA tracking type (via API or e-mail).',
             'autopilot_state': 'Auto-Pilot',
             'enable_adobe_tracking': 'Enable Adobe tracking',
             'adobe_tracking_param': 'Adobe tracking parameter'
@@ -1394,8 +1532,36 @@ class AdGroupSettings(SettingsBase):
                 value = 'worldwide'
         elif prop_name in ('archived', 'enable_ga_tracking', 'enable_adobe_tracking'):
             value = str(value)
+        elif prop_name == 'ga_tracking_type':
+            value = constants.GATrackingType.get_text(value)
 
         return value
+
+    @classmethod
+    def get_changes_text(cls, old_settings, new_settings, user, separator=', '):
+
+        if new_settings.changes_text is not None:
+            return new_settings.changes_text
+
+        changes = old_settings.get_setting_changes(new_settings) if old_settings is not None else None
+
+        if changes is None:
+            return 'Created settings'
+
+        change_strings = []
+
+        for key, value in changes.iteritems():
+            if key in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
+                    not user.has_perm('zemauth.new_content_ads_tab'):
+                continue
+
+            prop = cls.get_human_prop_name(key)
+            val = cls.get_human_value(key, value)
+            change_strings.append(
+                u'{} set to "{}"'.format(prop, val)
+            )
+
+        return separator.join(change_strings)
 
     objects = QuerySetManager()
 
@@ -1413,6 +1579,7 @@ class AdGroupSettings(SettingsBase):
         super(AdGroupSettings, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
+
         def group_current_settings(self):
             return self.order_by('ad_group_id', '-created_dt').distinct('ad_group')
 
@@ -1455,6 +1622,7 @@ class AdGroupSourceState(models.Model):
         ordering = ('-created_dt',)
 
     class QuerySet(models.QuerySet):
+
         def group_current_states(self):
             return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
 
@@ -1548,11 +1716,12 @@ class AdGroupSourceSettings(models.Model):
         return result
 
     class QuerySet(models.QuerySet):
+
         def group_current_settings(self):
             return self.order_by('ad_group_source_id', '-created_dt').distinct('ad_group_source')
 
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             return self.filter(
@@ -1665,8 +1834,9 @@ class ContentAd(models.Model):
         get_latest_by = 'created_dt'
 
     class QuerySet(models.QuerySet):
+
         def filter_by_sources(self, sources):
-            if set(sources) == set(Source.objects.all()):
+            if not should_filter_by_sources(sources):
                 return self
 
             content_ad_ids = ContentAdSource.objects.filter(source=sources).select_related(
@@ -1871,6 +2041,7 @@ class PublisherBlacklist(models.Model):
     campaign = models.ForeignKey(Campaign, null=True, related_name='campaign', on_delete=models.PROTECT)
     ad_group = models.ForeignKey(AdGroup, null=True, related_name='ad_group', on_delete=models.PROTECT)
     source = models.ForeignKey(Source, null=True, on_delete=models.PROTECT)
+    external_id = models.CharField(max_length=127, blank=False, null=True, verbose_name='External ID')
 
     status = models.IntegerField(
         default=constants.PublisherStatus.BLACKLISTED,
@@ -1888,6 +2059,21 @@ class PublisherBlacklist(models.Model):
         elif self.everywhere:
             level = constants.PublisherBlacklistLevel.GLOBAL
         return level
+
+    def fill_keys(self, ad_group, level):
+        self.everywhere = False
+        self.account = None
+        self.campaign = None
+        self.ad_group = None
+
+        if level == constants.PublisherBlacklistLevel.GLOBAL:
+            self.everywhere = True
+        if level == constants.PublisherBlacklistLevel.ACCOUNT:
+            self.account = ad_group.campaign.account
+        if level == constants.PublisherBlacklistLevel.CAMPAIGN:
+            self.campaign = ad_group.campaign
+        if level == constants.PublisherBlacklistLevel.ADGROUP:
+            self.ad_group = ad_group
 
     class Meta:
         unique_together = (('name', 'everywhere', 'account', 'campaign', 'ad_group', 'source'), )
@@ -1927,7 +2113,7 @@ class CreditLineItem(FootprintModel):
     def is_past(self, date=None):
         if date is None:
             date = dates_helper.local_today()
-        return self.end_date <= date
+        return self.end_date < date
 
     def get_allocated_amount(self):
         return sum(b.allocated_amount() for b in self.budgets.all())
@@ -1952,9 +2138,10 @@ class CreditLineItem(FootprintModel):
             credit=self,
         )
 
-    def __str__(self):
-        return '{} - ${} - from {} to {}'.format(str(self.account), self.amount,
-                                                 self.start_date, self.end_date)
+    def __unicode__(self):
+        return u'{} - {} - ${} - from {} to {}'.format(
+            self.account.id, unicode(self.account), self.amount,
+            self.start_date, self.end_date)
 
     def is_editable(self):
         return self.status == constants.CreditLineItemStatus.PENDING
@@ -2001,7 +2188,7 @@ class CreditLineItem(FootprintModel):
             return
         prev_amount = self.previous_value('amount')
         budgets = self.budgets.all()
-        
+
         if prev_amount < self.amount or not budgets:
             return
         if self.amount < sum(b.amount for b in budgets):
@@ -2031,6 +2218,7 @@ class CreditLineItem(FootprintModel):
             raise ValidationError('License fee must be between 0 and 100%.')
 
     class QuerySet(models.QuerySet):
+
         def filter_active(self, date=None):
             if date is None:
                 date = dates_helper.local_today()
@@ -2065,6 +2253,15 @@ class BudgetLineItem(FootprintModel):
 
     objects = QuerySetManager()
 
+    def __unicode__(self):
+        return u'${} - from {} to {} (id: {}, campaign: {})'.format(
+            self.amount,
+            self.start_date,
+            self.end_date,
+            self.id,
+            unicode(self.campaign),
+        )
+
     def save(self, request=None, *args, **kwargs):
         self.full_clean()
         if request and not self.pk:
@@ -2084,11 +2281,16 @@ class BudgetLineItem(FootprintModel):
             raise AssertionError('Cannot delete nonpending budgets')
         super(BudgetLineItem, self).delete()
 
+    def get_available_amount(self, date=None):
+        if date is None:
+            date = dates_helper.local_today()
+        total_spend = self.get_spend_data(date=date, use_decimal=True)['total']
+        return Decimal(self.amount) - total_spend
+
     def state(self, date=None):
         if date is None:
             date = dates_helper.local_today()
-        total_spend = self.get_spend_data(date=date)['total_cc'] * 0.0001
-        if self.amount <= total_spend:
+        if self.get_available_amount(date) <= 0:
             return constants.BudgetLineItemState.DEPLETED
         if self.end_date and self.end_date < date:
             return constants.BudgetLineItemState.INACTIVE
@@ -2116,11 +2318,11 @@ class BudgetLineItem(FootprintModel):
             raise AssertionError('Budget has to be inactive to be freed.')
         amount_cc = self.amount * TO_CC_MULTIPLIER
         spend_data = self.get_spend_data()
-        
+
         reserve = self.get_reserve_amount_cc()
         free_date = self.end_date + datetime.timedelta(days=settings.LAST_N_DAY_REPORTS)
         is_over_sync_time = dates_helper.local_today() > free_date
-    
+
         if is_over_sync_time:
             # After we completed all syncs, free all the assets including reserve
             self.freed_cc = max(0, amount_cc - spend_data['total_cc'])
@@ -2168,7 +2370,7 @@ class BudgetLineItem(FootprintModel):
             key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
             for key in spend_data.keys()
         }
-    
+
     def get_daily_spend(self, date, use_decimal=False):
         spend_data = {
             'media_cc': 0, 'data_cc': 0,
@@ -2176,12 +2378,12 @@ class BudgetLineItem(FootprintModel):
         }
         try:
             statement = date and self.statements.get(date=date)\
-                        or self.get_latest_statement()
+                or self.get_latest_statement()
         except ObjectDoesNotExist:
             pass
         else:
             spend_data['media_cc'] = nano_to_cc(statement.media_spend_nano)
-            spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano )
+            spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano)
             spend_data['license_fee_cc'] = nano_to_cc(statement.license_fee_nano)
             spend_data['total_cc'] = nano_to_cc(
                 statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
@@ -2194,15 +2396,18 @@ class BudgetLineItem(FootprintModel):
         }
 
     def get_ideal_budget_spend(self, date):
+        '''
+        Ideal budget spend at END of specified date.
+        '''
         if date < self.start_date:
             return 0
         elif date >= self.end_date:
             return self.amount
 
-        date_start_diff = (date - self.start_date).days
-        date_total_diff = (self.end_date - self.start_date).days
+        date_start_diff = (date - self.start_date).days + 1
+        date_total_diff = (self.end_date - self.start_date).days + 1
 
-        return self.amount * float(date_start_diff) / float(date_total_diff)
+        return self.amount * Decimal(date_start_diff) / Decimal(date_total_diff)
 
     def clean(self):
         if self.pk:
@@ -2269,6 +2474,7 @@ class BudgetLineItem(FootprintModel):
             )
 
     class QuerySet(models.QuerySet):
+
         def delete(self):
             if any(itm.state() != constants.BudgetLineItemState.PENDING for itm in self):
                 raise AssertionError('Some budget items are not pending')
@@ -2435,3 +2641,11 @@ class ScheduledExportReportLog(models.Model):
             self.errors = error_msg
         else:
             self.errors += '\n\n' + error_msg
+
+
+class GAAnalyticsAccount(models.Model):
+    id = models.AutoField(primary_key=True)
+    account = models.ForeignKey(Account, null=False, blank=False, on_delete=models.PROTECT)
+    ga_account_id = models.CharField(max_length=127, blank=False, null=False)
+    ga_web_property_id = models.CharField(max_length=127, blank=False, null=False)
+

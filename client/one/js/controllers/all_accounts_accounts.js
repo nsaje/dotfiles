@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', function ($scope, $state, $location, $timeout, api, zemFilterService, zemPostclickMetricsService, zemUserSettings) {
+oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemFilterService', 'zemPostclickMetricsService', 'zemUserSettings', 'zemNavigationService', function ($scope, $state, $location, $timeout, api, zemFilterService, zemPostclickMetricsService, zemUserSettings, zemNavigationService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.requestInProgress = false;
@@ -25,7 +25,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.exportOptions = [
            {name: 'By Day (CSV)', value: 'csv'},
            {name: 'By Day (Excel)', value: 'excel'}
-       ];
+    ];
 
     $scope.exportPlusOptions = [
       {name: 'Current View', value: 'account-csv'},
@@ -102,23 +102,95 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             field: 'cost',
             checked: true,
             type: 'currency',
-            shown: true,
-            help: "Amount spent per account",
+            help: 'Amount spent per account',
             totalRow: true,
             order: true,
-            initialOrder: 'desc'
+            initialOrder: 'desc',
+            shown: !$scope.hasPermission('zemauth.can_view_effective_costs') && !$scope.hasPermission('zemauth.can_view_actual_costs')
+        },
+        {
+            name: 'Actual Media Spend',
+            field: 'media_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Amount spent per media source, including overspend.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+        },
+        {
+            name: 'Media Spend',
+            field: 'e_media_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Amount spent per media source.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'Actual Data Cost',
+            field: 'data_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Additional targeting/segmenting costs, including overspend.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
         },
         {
             name: 'Data Cost',
-            field: 'data_cost',
+            field: 'e_data_cost',
             checked: false,
             type: 'currency',
             totalRow: true,
             help: 'Additional targeting/segmenting costs.',
             order: true,
             initialOrder: 'desc',
-            internal: $scope.isPermissionInternal('zemauth.can_view_data_cost'),
-            shown: $scope.hasPermission('zemauth.can_view_data_cost')
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'Actual Total Spend',
+            field: 'total_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee, including overspend.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_actual_costs')
+        },
+        {
+            name: 'Total Spend',
+            field: 'billing_cost',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Sum of media spend, data cost and license fee.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
+        },
+        {
+            name: 'License Fee',
+            field: 'license_fee',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: 'Zemanta One platform usage cost.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_effective_costs'),
+            shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
             name: 'Avg. CPC',
@@ -127,7 +199,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             type: 'currency',
             shown: true,
             fractionSize: 3,
-            help: "The average CPC.",
+            help: 'The average CPC.',
             totalRow: true,
             order: true,
             initialOrder: 'desc'
@@ -140,6 +212,17 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             shown: true,
             help: 'The number of times a content ad has been clicked.',
             totalRow: true,
+            order: true,
+            initialOrder: 'desc'
+        },
+        {
+            name: 'Impressions',
+            field: 'impressions',
+            checked: true,
+            type: 'number',
+            shown: true,
+            totalRow: true,
+            help: 'The number of times content ads have been displayed.',
             order: true,
             initialOrder: 'desc'
         },
@@ -171,7 +254,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             'name': 'Traffic Acquisition',
             'fields': [
-                'clicks', 'cost', 'data_cost', 'cpc', 'budget', 'available_budget', 'unspent_budget'
+                'clicks', 'impressions', 'cost', 'data_cost', 'cpc', 'budget', 'available_budget', 'unspent_budget',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost', 'license_fee'
             ]
         },
         {
@@ -188,9 +272,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     ];
 
-    $scope.setAccount(null);
-    $scope.setCampaign(null);
-    $scope.setAdGroup(null);
+    $scope.setModels(null);
 
     var initColumns = function () {
         zemPostclickMetricsService.insertAcquisitionColumns(
@@ -213,10 +295,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         api.account.create().then(
             function (data) {
-                $scope.accounts.push({
+                zemNavigationService.addAccountToCache({
                     'name': data.name,
                     'id': data.id,
-                    'campaigns': []
+                    'campaigns': [],
                 });
 
                 $state.go('main.accounts.agency', {id: data.id});
@@ -266,6 +348,27 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
                 $scope.chartMetricOptions,
                 $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+            );
+        }
+
+        if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.effectiveCostChartMetrics,
+                $scope.isPermissionInternal('zemauth.can_view_effective_costs')
+            );
+        } else if (!$scope.hasPermission('zemauth.can_view_actual_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.legacyCostChartMetrics,
+                false
+            );
+        }
+        if ($scope.hasPermission('zemauth.can_view_actual_costs')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.actualCostChartMetrics,
+                $scope.isPermissionInternal('zemauth.can_view_actual_costs')
             );
         }
     };
@@ -342,8 +445,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     });
 
-    $scope.$watch('isSyncInProgress', function(newValue, oldValue) {
-        if(newValue === true && oldValue === false){
+    $scope.$watch('isSyncInProgress', function (newValue, oldValue) {
+        if (newValue === true && oldValue === false) {
             pollSyncStatus();
         }
     });
@@ -371,38 +474,38 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         getTableData();
     });
 
-    var pollSyncStatus = function() {
-        if($scope.isSyncInProgress){
-            $timeout(function() {
+    var pollSyncStatus = function () {
+        if ($scope.isSyncInProgress) {
+            $timeout(function () {
                 api.checkAccountsSyncProgress.get().then(
-                    function(data) {
+                    function (data) {
                         $scope.isSyncInProgress = data.is_sync_in_progress;
 
-                        if($scope.isSyncInProgress == false){
+                        if ($scope.isSyncInProgress == false) {
                             // we found out that the sync is no longer in progress
                             // time to reload the data
                             getTableData();
                             getDailyStats();
                         }
                     },
-                    function(data) {
+                    function (data) {
                         // error
                         $scope.isSyncInProgress = false;
                     }
-                ).finally(function() {
+                ).finally(function () {
                     pollSyncStatus();
                 });
             }, 5000);
         }
     };
 
-    $scope.triggerSync = function() {
+    $scope.triggerSync = function () {
         $scope.isSyncInProgress = true;
         api.accountSync.get();
     };
 
-    $scope.loadPage = function(page) {
-        if(page && page > 0 && page <= $scope.pagination.numPages) {
+    $scope.loadPage = function (page) {
+        if (page && page > 0 && page <= $scope.pagination.numPages) {
             $scope.pagination.currentPage = page;
         }
 
@@ -413,7 +516,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         }
     };
 
-    $scope.$watch('size', function(newValue, oldValue) {
+    $scope.$watch('size', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.loadPage();
         }
@@ -423,12 +526,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         $scope.chartHidden = !$scope.chartHidden;
         $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
-        $timeout(function() {
+        $timeout(function () {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     };
 
-    $scope.init = function() {
+    $scope.init = function () {
         var page = parseInt($location.search().page || '1');
         var size = parseInt($location.search().size || '0');
 
@@ -458,7 +561,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         initColumns();
     };
 
-    $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+    $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);
     });
 

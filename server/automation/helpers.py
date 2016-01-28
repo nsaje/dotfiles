@@ -5,35 +5,86 @@ from django.conf import settings
 from django.db import transaction
 
 import dash
+import dash.constants
 import dash.budget
 import decimal
 import reports.api
 import dash.views.helpers
 import actionlog.api
+import utils.dates_helper
 from actionlog import zwei_actions
 
 
+def split_legacy_campaigns(campaigns):
+    updated, legacy = [], []
+    for campaign in campaigns:
+        if campaign.account.uses_credits:
+            updated.append(campaign)
+        else:
+            legacy.append(campaign)
+    return updated, legacy
+
+
 def get_yesterdays_spends(campaigns):
-    return {campaign.id:
-            sum(reports.api.get_yesterday_cost(campaign=campaign).values())
-            for campaign in campaigns}
+    bcm_campaigns, legacy_campaigns = split_legacy_campaigns(campaigns)
+    spends = {}
+    spends.update({
+        campaign.id: decimal.Decimal(sum(reports.api.get_yesterday_cost(dict(campaign=campaign)).values()))
+        for campaign in legacy_campaigns
+    })
+    yesterday = utils.dates_helper.local_today() - datetime.timedelta(1)
+    spends.update({
+        campaign.id: _get_total_campaign_spend(campaign, yesterday)
+        for campaign in bcm_campaigns
+    })
+
+    return spends
 
 
 def get_available_budgets(campaigns):
-    total_budgets = _get_total_budgets(campaigns)
-    total_spends = _get_total_spends(campaigns)
-    return {k: float(total_budgets[k]) - float(total_spends[k])
-            for k in total_budgets if k in total_spends}
+    bcm_campaigns, legacy_campaigns = split_legacy_campaigns(campaigns)
+    available_budgets = {}
+
+    total_budgets = _get_total_legacy_budgets(legacy_campaigns)
+    total_spends = _get_total_legacy_spends(legacy_campaigns)
+    available_budgets.update({
+        k: decimal.Decimal(total_budgets[k]) - decimal.Decimal(total_spends[k])
+        for k in total_budgets if k in total_spends
+    })
+
+    available_budgets.update({
+        campaign.id: decimal.Decimal(_get_total_available_budget(campaign))
+        for campaign in bcm_campaigns
+    })
+
+    return available_budgets
 
 
-def _get_total_budgets(campaigns):
+def _get_total_legacy_budgets(campaigns):
     return {campaign.id: dash.budget.CampaignBudget(campaign).get_total()
             for campaign in campaigns}
 
 
-def _get_total_spends(campaigns):
+def _get_total_legacy_spends(campaigns):
     return {campaign.id: dash.budget.CampaignBudget(campaign).get_spend()
             for campaign in campaigns}
+
+
+def _get_total_available_budget(campaign, date=None):
+    date = date or utils.dates_helper.local_today()
+    return sum(
+        budget.get_available_amount(date) for budget in campaign.budgets.all()
+        if budget.state() == dash.constants.BudgetLineItemState.ACTIVE
+    )
+
+
+def _get_total_campaign_spend(campaign, date=None):
+    date = date or utils.dates_helper.local_today()
+    return sum(
+        decimal.Decimal(budget.get_daily_spend(date, use_decimal=True)['total'])
+        for budget in campaign.budgets.all()
+        if budget.state() == dash.constants.BudgetLineItemState.ACTIVE
+    )
 
 
 def get_active_campaigns():
@@ -117,8 +168,8 @@ def get_total_daily_budget_amount(campaign):
 
 def get_latest_ad_group_source_state(ad_group_source):
     try:
-        latest_state = dash.models.AdGroupSourceState.objects \
-            .filter(ad_group_source=ad_group_source) \
+        latest_state = dash.models.AdGroupSourceState.objects\
+            .filter(ad_group_source=ad_group_source)\
             .latest('created_dt')
         return latest_state
     except dash.models.AdGroupSourceState.DoesNotExist:

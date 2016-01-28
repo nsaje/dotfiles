@@ -1,5 +1,5 @@
 /*globals oneApp,constants,options*/
-oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', function ($scope, $state, $q, $timeout, api, regions) {
+oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 'api', 'regions', 'zemNavigationService', function ($scope, $state, $q, $timeout, api, regions, zemNavigationService) {
     var freshSettings = $q.defer(),
         goToContentAds = false;
     $scope.settings = {};
@@ -12,6 +12,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.saveRequestInProgress = false;
     $scope.saved = null;
     $scope.discarded = null;
+    $scope.minEndDate = new Date();
 
     // isOpen has to be an object property instead
     // of being directly on $scope because
@@ -24,8 +25,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.adGroupHasFreshSettings = function () {
         return freshSettings.promise;
     };
-    
-    $scope.closeAlert = function(index) {
+
+    $scope.closeAlert = function (index) {
         $scope.alerts.splice(index, 1);
     };
 
@@ -51,6 +52,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         api.adGroupSettings.get(id).then(
             function (data) {
                 $scope.settings = data.settings;
+                $scope.defaultSettings = data.defaultSettings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
                 freshSettings.resolve(data.settings.name == 'New ad group');
@@ -73,6 +75,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         api.adGroupSettings.get($state.params.id).then(
             function (data) {
                 $scope.settings = data.settings;
+                $scope.defaultSettings = data.defaultSettings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.saveRequestInProgress = false;
                 $scope.discarded = true;
@@ -99,15 +102,21 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                     status = getAdGroupStatus($scope.settings);
                 $scope.errors = {};
                 if (prevAdGroup != currAdGroup) {
-                    adGroupToEdit = $scope.getAdGroup(prevAdGroup);
-                    adGroupToEdit.name = data.settings.name;
-                    adGroupToEdit.state = data.settings.state === stateActive ? 'enabled' : 'paused';
+                    zemNavigationService.updateAdGroupCache(prevAdGroup, {
+                        name: data.settings.name,
+                        state: data.settings.state === stateActive ? 'enabled' : 'paused',
+                    });
                 } else {
                     $scope.settings = data.settings;
+                    $scope.defaultSettings = data.defaultSettings;
                     $scope.actionIsWaiting = data.actionIsWaiting;
-                    
-                    $scope.updateAccounts(data.settings.name, data.settings.state, status);
-                    $scope.updateBreadcrumbAndTitle();
+
+                    zemNavigationService.updateAdGroupCache(currAdGroup, {
+                        name: data.settings.name,
+                        state: data.settings.state === constants.adGroupSourceSettingsState.ACTIVE ? 'enabled' : 'paused',
+                        status: status,
+                    });
+
                     $scope.setAdGroupPaused(
                         $scope.settings.state === constants.adGroupSettingsState.INACTIVE
                     );
@@ -117,7 +126,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.saved = true;
 
                 if ($scope.user.showOnboardingGuidance && goToContentAds) {
-                    $timeout(function() {
+                    $timeout(function () {
                         $state.go('main.adGroups.adsPlus', {id: $scope.settings.id});
                     }, 100);
                 }
@@ -128,6 +137,50 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.saved = false;
             }
         );
+    };
+
+    function getDeviceItemByValue (devices, value) {
+        var result;
+
+        devices.forEach(function (item) {
+            if (item.value === value) {
+                result = item;
+            }
+        });
+
+        return result;
+    }
+
+    $scope.isDefaultTargetDevices = function () {
+        var isDefault = true;
+        var item, defaultItem;
+
+        options.adTargetDevices.forEach(function (option) {
+            item = getDeviceItemByValue($scope.settings.targetDevices, option.value);
+            defaultItem = getDeviceItemByValue($scope.defaultSettings.targetDevices, option.value);
+
+            if (item.checked !== defaultItem.checked) {
+                isDefault = false;
+            }
+        });
+
+        return isDefault;
+    };
+
+    $scope.isDefaultTargetRegions = function () {
+        var result = true;
+
+        if ($scope.settings.targetRegions.length !== $scope.defaultSettings.targetRegions.length) {
+            return false;
+        }
+
+        $scope.settings.targetRegions.forEach(function (region) {
+            if ($scope.defaultSettings.targetRegions.indexOf(region) === -1) {
+                result = false;
+            }
+        });
+
+        return result;
     };
 
     $scope.$watch('settings.manualStop', function (newValue, oldValue) {

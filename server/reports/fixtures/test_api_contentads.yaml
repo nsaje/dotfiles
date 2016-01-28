@@ -155,6 +155,22 @@
     model: dash.source
     pk: 2
 
+-   fields:
+        created_dt: '2014-06-04T00:00:00'
+        modified_dt: '2014-06-04T00:00:00'
+        name: Outbrain
+        tracking_slug: 'outbrain'
+        maintenance: false
+        source_type: 1
+    model: dash.source
+    pk: 3
+
+# test source types
+- fields:
+    type: 'outbrain'
+  model: dash.sourcetype
+  pk: 1
+
 # test contentadsource
 
 -   fields:
@@ -229,18 +245,100 @@
     model: dash.contentadsource
     pk: 6
 
+# test credit line items
+
+-   fields:
+        account: 1
+        start_date: '2015-02-01'
+        end_date: '2015-02-10'
+        amount: 5000
+        license_fee: '0.20'
+        status: 1
+        created_dt: '2015-11-01 00:00:01'
+        modified_dt: '2015-11-01 00:00:01'
+        created_by: 1
+    model: dash.creditlineitem
+    pk: 1
+
+-   fields:
+        account: 1
+        start_date: '2015-02-01'
+        end_date: '2015-02-10'
+        amount: 5000
+        license_fee: '1.0'
+        status: 1
+        created_dt: '2015-11-01 00:00:01'
+        modified_dt: '2015-11-01 00:00:01'
+        created_by: 1
+    model: dash.creditlineitem
+    pk: 2
+
+# test budget line items
+
+-   fields:
+        campaign: 1
+        credit: 1
+        start_date: '2015-02-01'
+        end_date: '2015-02-10'
+        amount: 5000
+        created_dt: '2015-11-01 00:00:01'
+        modified_dt: '2015-11-01 00:00:01'
+        created_by: 1
+    model: dash.budgetlineitem
+    pk: 1
+
+-   fields:
+        campaign: 1
+        credit: 2
+        start_date: '2015-02-01'
+        end_date: '2015-02-10'
+        amount: 5000
+        created_dt: '2015-11-01 00:00:01'
+        modified_dt: '2015-11-01 00:00:01'
+        created_by: 1
+    model: dash.budgetlineitem
+    pk: 2
+
 # test adgroupstats
 
 -   fields:
         datetime: '2015-02-01T00:00:00'
         ad_group: 1
         source: 1
-        impressions: 0
-        clicks: 0
-        cost_cc: 0
+        impressions: 3000000
+        clicks: 300
+        cost_cc: 400000
+        data_cost_cc: 400000
+
+        visits: 3000
+        new_visits: 300
+        bounced_visits: 400
+        pageviews: 4000
+        duration: 130
+
         created_dt: '2014-06-04T09:58:21'
     model: reports.adgroupstats
     pk: 1
+
+-   fields:
+        datetime: '2015-02-01T00:00:00'
+        ad_group: 1
+        source: 2
+
+        impressions: 0
+        clicks: 0
+        cost_cc: 0
+        data_cost_cc: 0
+
+        visits: 0
+        new_visits: 0
+        bounced_visits: 0
+        pageviews: 0
+        duration: 0
+
+        created_dt: '2014-06-04T09:58:21'
+    model: reports.adgroupstats
+    pk: 2
 
 # test contentadstats
 

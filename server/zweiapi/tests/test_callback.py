@@ -118,7 +118,7 @@ class GetContentAdStatusTest(TestCase):
         )
 
     @mock.patch('dash.views.views.actionlog.zwei_actions.send')
-    def test_get_content_ad_status_with_sync(self, mock_send):
+    def test_get_content_ad_status_with_status_sync(self, mock_send):
         zwei_response_data = {
             'status': 'success',
             'data': [{
@@ -137,11 +137,6 @@ class GetContentAdStatusTest(TestCase):
         self.assertEqual(
             content_ad_source.source_state,
             dash.constants.ContentAdSourceState.ACTIVE
-        )
-
-        self.assertEqual(
-            content_ad_source.submission_status,
-            dash.constants.ContentAdSubmissionStatus.PENDING
         )
 
         action_log = actionlog.models.ActionLog(
@@ -165,14 +160,11 @@ class GetContentAdStatusTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
         content_ad_source = dash.models.ContentAdSource.objects.get(id=1)
+
+        # should update source state and create an action that syncs the state
         self.assertEqual(
             content_ad_source.source_state,
             dash.constants.ContentAdSourceState.INACTIVE
-        )  # we still update the state in z1 but trigger a zwei action
-
-        self.assertEqual(
-            content_ad_source.submission_status,
-            dash.constants.ContentAdSubmissionStatus.APPROVED
         )
 
         action = actionlog.models.ActionLog.objects.all().\
@@ -298,7 +290,8 @@ class CreateCampaignManualActionsTest(TestCase):
 
     @patch('dash.consistency.SettingsStateConsistence')
     @patch('actionlog.api.set_ad_group_source_settings')
-    def test_set_ad_group_source_settings_fires(self, mock_set_ad_group_source_settings, mock_consistence):
+    @patch('actionlog.zwei_actions.send')
+    def test_set_ad_group_source_settings_fires(self, mock_send, mock_set_ad_group_source_settings, mock_consistence):
         ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
 
         changes = {
@@ -309,7 +302,8 @@ class CreateCampaignManualActionsTest(TestCase):
 
         self._fire_campaign_creation_callback(ad_group_source)
 
-        mock_set_ad_group_source_settings.assert_called_with(changes, ad_group_source, request=None, send=True)
+        mock_set_ad_group_source_settings.assert_called_with(changes, ad_group_source, request=None, send=False)
+        self.assertTrue(mock_send.called)
 
     def test_manual_update_after_campaign_creation_manual_dma_targeting(self):
         ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
@@ -809,35 +803,27 @@ class FetchReportsByPublisherTestCase(TestCase):
 
     fixtures = ['test_zwei_api.yaml', 'test_article_stats_ob.yaml']
 
-    @mock.patch('reports.api_publishers.ob_insert_adgroup_date')
-    def test_fetch_reports_by_publisher(self, ob_insert_adgroup_date):
+    @patch('reports.api_publishers.put_ob_data_to_s3')
+    def test_fetch_reports_by_publisher(self, mock_put_to_s3):
         article_row = {
             'url': 'http://money.cnn.com',
             'name': 'Some publisher',
             'clicks': 2,
-            'ob_section_id': 'AABBCCDDEEFF',
+            'ob_id': 'AABBCCDDEEFF',
         }
         zwei_response_data = {
             'status': 'success',
             'data': [article_row]
         }
 
-        ad_group_source = dash.models.AdGroupSource.objects.get(id=1)
+        ad_group_source = dash.models.AdGroupSource.objects.get(id=3)
         response, action_log = self._execute_action(ad_group_source, datetime.date(2014, 6, 4), zwei_response_data)
-        ob_insert_adgroup_date.assert_has_calls ([mock.call(
-                                              datetime.date(2014,6,4),
-                                              1,
-                                              "Outbrain",
-                                              [article_row],
-                                              1.9043	# daily cost
-                                              )])
-
+        mock_put_to_s3.assert_called_once_with(datetime.date(2014, 6, 4), ad_group_source.ad_group, [article_row])
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             actionlog.models.ActionLog.objects.get(id=action_log.id).state, actionlog.constants.ActionState.SUCCESS
         )
-
 
     def _execute_action(self, ad_group_source, date, zwei_response_data):
         action_log = actionlog.models.ActionLog(

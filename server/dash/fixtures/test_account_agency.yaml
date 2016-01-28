@@ -7,7 +7,7 @@
         released: true
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
-    model: dash.Source 
+    model: dash.Source
     pk: 1
 
 
@@ -18,7 +18,7 @@
         released: true
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
-    model: dash.Source 
+    model: dash.Source
     pk: 2
 
 -   fields:
@@ -28,7 +28,7 @@
         released: false
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
-    model: dash.Source 
+    model: dash.Source
     pk: 3
 
 # test for AccountAgencyView.are_sources_removable
@@ -42,10 +42,9 @@
         allowed_sources: [2,3]
     model: dash.account
     pk: 111
-    
 
-# this one is archived 
--   fields: 
+# this one is archived
+-   fields:
         name: Campaign 111
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
@@ -59,14 +58,13 @@
         campaign: 111
         created_dt: '2015-09-23T09:57:22'
         created_by: 1
-        account_manager: 1
-        sales_representative: 1
+        campaign_manager: 1
         archived: true
     model: dash.campaignsettings
     pk: 111
 
 # not archived
--   fields: 
+-   fields:
         name: Campaign 1112
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
@@ -80,8 +78,7 @@
         campaign: 1112
         created_dt: '2015-09-23T09:57:22'
         created_by: 1
-        account_manager: 1
-        sales_representative: 1
+        campaign_manager: 1
         archived: false
     model: dash.campaignsettings
     pk: 1112
@@ -98,7 +95,7 @@
     model: dash.adgroup
     pk: 1112
 
-# this one is inactive 
+# this one is inactive
 -   fields:
         name: Adgroup 11121
         campaign: 1112
@@ -118,7 +115,7 @@
     pk: 11121
 
 
-# this one is active 
+# this one is active
 -   fields:
         name: Adgroup 11122
         campaign: 1112
@@ -168,3 +165,120 @@
         state: 2
     model: dash.adgroupsourcesettings
     pk: 111222
+
+
+
+# tests for AccountAgencyView.get_history
+-   fields:
+        name: Account 200
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        uses_credits: false
+        modified_by: 1
+    model: dash.account
+    pk: 200
+
+-   fields:
+        name: Account 201
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        uses_credits: false
+        modified_by: 1
+    model: dash.account
+    pk: 201
+
+-   fields:
+        name: Account 202
+        created_dt: '2015-09-23T09:57:22'
+        modified_dt: '2015-09-23T09:57:22'
+        uses_credits: false
+        modified_by: 1
+    model: dash.account
+    pk: 202
+
+
+# initial setting (account : 200)
+-   fields:
+        name: AccountSetting for Account 200
+        default_account_manager: 1
+        default_sales_representative: 2
+        service_fee: 0.2
+        created_dt: '2015-09-23T09:57:21'
+        created_by: 1
+        account: 200
+    model: dash.accountsettings
+    pk: 200
+
+# one update (service_fee)
+-   fields:
+        name: AccountSetting for Account 200
+        default_account_manager: 1
+        default_sales_representative: 2
+        service_fee: 0.1
+        created_dt: '2015-09-23T09:57:22'
+        created_by: 1
+        account: 200
+    model: dash.accountsettings
+    pk: 201
+
+# multiple updates (service_fee, default_sales_representative)
+-   fields:
+        name: AccountSetting for Account 200
+        default_account_manager: 1
+        default_sales_representative: 1
+        service_fee: 0.2
+        created_dt: '2015-09-23T09:57:23'
+        created_by: 1
+        account: 200
+    model: dash.accountsettings
+    pk: 202
+
+# no updates
+-   fields:
+        name: AccountSetting for Account 200
+        default_account_manager: 1
+        default_sales_representative: 1
+        service_fee: 0.2
+        created_dt: '2015-09-23T09:57:24'
+        created_by: 1
+        account: 200
+    model: dash.accountsettings
+    pk: 203
+
+# no updates /w changes_text
+-   fields:
+        name: AccountSetting for Account 200
+        default_account_manager: 1
+        default_sales_representative: 1
+        service_fee: 0.2
+        created_dt: '2015-09-23T09:57:25'
+        created_by: 1
+        changes_text: 'some text'
+        account: 200
+    model: dash.accountsettings
+    pk: 204
+
+# update /w changes_text
+-   fields:
+        name: AccountSetting for Account 200
+        default_account_manager: 1
+        default_sales_representative: 1
+        service_fee: 0.1
+        created_dt: '2015-09-23T09:57:26'
+        created_by: 1
+        changes_text: 'some text'
+        account: 200
+    model: dash.accountsettings
+    pk: 205
+
+# initial setting (account : 201)
+-   fields:
+        name: AccountSetting for Account 201
+        default_account_manager: 1
+        default_sales_representative: 1
+        service_fee: 0.1
+        created_dt: '2015-09-23T09:57:22'
+        created_by: 1
+        account: 201
+    model: dash.accountsettings
+    pk: 210

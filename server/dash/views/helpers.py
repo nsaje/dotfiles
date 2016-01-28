@@ -6,16 +6,20 @@ import pytz
 from decimal import Decimal
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models import Q, Max
 
 import actionlog.api
 import actionlog.constants
 import actionlog.models
+import actionlog.zwei_actions
 from dash import models
 from dash import constants
 from dash import api
+from dash import budget
 from utils import exc
 from utils import statsd_helper
+from utils import email_helper
 import automation.autopilot
 
 STATS_START_DELTA = 30
@@ -82,9 +86,13 @@ def get_additional_columns(additional_columns):
     return []
 
 
-def get_account(user, account_id, select_related=False):
+def get_account(user, account_id, select_related=False, sources=None):
     try:
         account = models.Account.objects.all().filter_by_user(user)
+
+        if sources:
+            account = account.filter_by_sources(sources)
+
         if select_related:
             account = account.select_related('campaign_set')
 
@@ -93,10 +101,13 @@ def get_account(user, account_id, select_related=False):
         raise exc.MissingDataError('Account does not exist')
 
 
-def get_ad_group(user, ad_group_id, select_related=False):
+def get_ad_group(user, ad_group_id, select_related=False, sources=None):
     try:
         ad_group = models.AdGroup.objects.all().filter_by_user(user).\
             filter(id=int(ad_group_id))
+
+        if sources:
+            ad_group = ad_group.filter_by_sources(sources)
 
         if select_related:
             ad_group = ad_group.select_related('campaign__account')
@@ -106,10 +117,15 @@ def get_ad_group(user, ad_group_id, select_related=False):
         raise exc.MissingDataError('Ad Group does not exist')
 
 
-def get_campaign(user, campaign_id):
+def get_campaign(user, campaign_id, sources=None):
     try:
-        return models.Campaign.objects.all().filter_by_user(user).\
-            filter(id=int(campaign_id)).get()
+        campaign = models.Campaign.objects.all()\
+                                          .filter_by_user(user)\
+                                          .filter(id=int(campaign_id))
+        if sources:
+            campaign = campaign.filter_by_sources(sources)
+
+        return campaign.get()
     except models.Campaign.DoesNotExist:
         raise exc.MissingDataError('Campaign does not exist')
 
@@ -733,8 +749,7 @@ def get_ad_group_sources_settings(ad_group_sources):
 def get_ad_group_state_by_sources_running_status(ad_groups, ad_groups_settings,
                                                  ad_groups_sources_settings, group_by_key):
 
-    # TODO: temporary disabled for performance observations - should by running status by source settings
-    running_status_per_ag = map_per_ad_group_flight_running_status(ad_groups_settings)
+    running_status_per_ag = map_per_ad_group_source_running_status(ad_groups_settings, ad_groups_sources_settings)
 
     status_dict = collections.defaultdict(lambda: constants.AdGroupSettingsState.INACTIVE)
 
@@ -745,15 +760,6 @@ def get_ad_group_state_by_sources_running_status(ad_groups, ad_groups_settings,
             status_dict[key] = constants.AdGroupSettingsState.ACTIVE
 
     return status_dict
-
-
-def map_per_ad_group_flight_running_status(ad_groups_settings):
-    running_status_dict = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
-    for ags in ad_groups_settings:
-        running_status_dict[ags.ad_group_id] = models.AdGroup.get_running_status_by_flight_time(
-            ags)
-
-    return running_status_dict
 
 
 def map_per_ad_group_source_running_status(ad_groups_settings, ad_groups_sources_settings):
@@ -803,10 +809,19 @@ def get_user_full_name_or_email(user):
     return result.encode('utf-8')
 
 
+def get_target_regions_string(regions):
+    if not regions:
+        return 'worldwide'
+
+    return ', '.join(constants.AdTargetLocation.get_text(x) for x in regions)
+
+
 def copy_stats_to_row(stat, row):
     for key in ['impressions', 'clicks', 'cost', 'data_cost', 'cpc', 'ctr',
-                'visits', 'click_discrepancy', 'pageviews',
-                'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos']:
+                'visits', 'click_discrepancy', 'pageviews', 'media_cost',
+                'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
+                'license_fee', ]:
         row[key] = stat.get(key)
 
     for key in [k for k in stat.keys() if k.startswith('conversion_goal_')]:
@@ -959,24 +974,16 @@ def add_source_to_ad_group(default_source_settings, ad_group):
     return ad_group_source
 
 
-def set_ad_group_source_defaults(default_source_settings, ad_group_settings, ad_group_source,
-                                 request, send_action=False):
+def set_ad_group_source_settings(request, ad_group_source, source_settings,
+                                 mobile_only=False, active=False, send_action=False):
+    resource = {
+        'daily_budget_cc': source_settings.daily_budget_cc,
+        'cpc_cc': source_settings.mobile_cpc_cc if mobile_only else source_settings.default_cpc_cc,
+        'state': constants.ContentAdSourceState.ACTIVE if active else constants.ContentAdSourceState.INACTIVE
+    }
 
-    # set defaults if available
-    cpc_cc = default_source_settings.mobile_cpc_cc if ad_group_settings.is_mobile_only() else\
-        default_source_settings.default_cpc_cc
-
-    daily_budget_cc = default_source_settings.daily_budget_cc
-
-    resource = {}
-    if daily_budget_cc is not None:
-        resource['daily_budget_cc'] = daily_budget_cc
-    if cpc_cc is not None:
-        resource['cpc_cc'] = cpc_cc
-
-    if resource:
-        settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
-        settings_writer.set(resource, request, send_action=send_action)
+    settings_writer = api.AdGroupSourceSettingsWriter(ad_group_source)
+    settings_writer.set(resource, request, send_action=send_action)
 
 
 def format_decimal_to_percent(num):
@@ -1001,3 +1008,60 @@ def log_useraction_if_necessary(request, user_action_type, account=None, campaig
             ad_group_settings_id=ad_group.get_current_settings().id if ad_group else None
         )
         user_action_log.save()
+
+
+def ad_group_has_available_budget(ad_group):
+    campaign_budget = budget.CampaignBudget(ad_group.campaign)
+
+    total = campaign_budget.get_total()
+    spend = campaign_budget.get_spend()
+
+    available = total - spend
+
+    return bool(available)
+
+
+def get_source_default_settings(source):
+    try:
+        default_settings = models.DefaultSourceSettings.objects.get(source=source)
+    except models.DefaultSourceSettings.DoesNotExist:
+        raise exc.MissingDataError('No default settings set for {}.'.format(source.name))
+
+    if not default_settings.credentials:
+        raise exc.MissingDataError('No default credentials set in {}.'.format(default_settings))
+
+    return default_settings
+
+
+def save_campaign_settings_and_propagate(campaign, settings, request):
+    actions = []
+
+    with transaction.atomic():
+        campaign.save(request)
+        settings.save(request)
+
+        # propagate setting changes to all adgroups(adgroup sources) belonging to campaign
+        campaign_ad_groups = models.AdGroup.objects.filter(campaign=campaign)
+
+        for ad_group in campaign_ad_groups:
+            adgroup_settings = ad_group.get_current_settings()
+            actions.extend(
+                api.order_ad_group_settings_update(
+                    ad_group,
+                    adgroup_settings,
+                    adgroup_settings,
+                    request,
+                    send=False,
+                    iab_update=True
+                )
+            )
+
+    actionlog.zwei_actions.send(actions)
+
+
+def log_and_notify_campaign_settings_change(campaign, old_settings, new_settings, request, user_action_type):
+    changes = old_settings.get_setting_changes(new_settings)
+    if changes:
+        changes_text = models.CampaignSettings.get_changes_text(old_settings, new_settings, separator='\n')
+        email_helper.send_campaign_notification_email(campaign, request, changes_text)
+        log_useraction_if_necessary(request, user_action_type, campaign=campaign)

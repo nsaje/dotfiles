@@ -15,12 +15,13 @@ from reports import api_contentads
 from reports import constants
 from django.core.management.base import BaseCommand
 from optparse import make_option
+from utils.command_helpers import ExceptionCommand
 from utils.csv_utils import convert_to_xls
 
 logger = logging.getLogger(__name__)
 
 
-class Command(BaseCommand):
+class Command(ExceptionCommand):
 
     option_list = BaseCommand.option_list + (
         make_option('-f', '--filename', help='file', dest='filename'),
@@ -65,7 +66,7 @@ class Command(BaseCommand):
 
                     elif parser_version == 'v2':
                         if report_type == 'ga':
-                            report = parse_v2.GAReport(content)
+                            report = parse_v2.GAReportFromCSV(content)
                         elif report_type == 'omniture':
                             if filename.endswith('.csv'):
                                 content = convert_to_xls(content)

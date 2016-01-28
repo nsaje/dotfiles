@@ -1,10 +1,10 @@
-describe('AccountCreditItemModalCtrl', function() {
+describe('AccountCreditItemModalCtrl', function () {
     var $scope, $modalInstance, api, $q, $window, $timeout, openedDeferred;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
 
-    beforeEach(inject(function($controller, $rootScope, _$q_, _$timeout_, _$window_) {
+    beforeEach(inject(function ($controller, $rootScope, _$q_, _$timeout_, _$window_) {
         $q = _$q_;
         $timeout = _$timeout_;
         $scope = $rootScope.$new();
@@ -16,15 +16,15 @@ describe('AccountCreditItemModalCtrl', function() {
 
         openedDeferred = $q.defer();
         $modalInstance = {
-            close: function(){},
+            close: function () {},
             opened: openedDeferred.promise
         };
 
-        var mockApiFunc = function() {
+        var mockApiFunc = function () {
             return {
-                then: function() {
+                then: function () {
                     return {
-                        finally: function() {}
+                        finally: function () {}
                     };
                 }
             };
@@ -37,7 +37,7 @@ describe('AccountCreditItemModalCtrl', function() {
                 create: mockApiFunc,
                 get: mockApiFunc,
                 delete: mockApiFunc,
-                convert: { errors: function (obj) { return obj; } }
+                convert: {errors: function (obj) { return obj; }}
             }
         };
 
@@ -59,14 +59,14 @@ describe('AccountCreditItemModalCtrl', function() {
             spyOn(api.accountCredit, 'create').and.callFake(function () { return deferred.promise; });
 
             $scope.upsertCreditItem();
-            
+
             deferred.resolve(1);
             $scope.$digest();
-            
+
             expect(api.accountCredit.create).toHaveBeenCalled();
             $timeout(function () {
                 expect($modalInstance.close).toHaveBeenCalled();
-            }, 1500);           
+            }, 1500);
         });
 
         it('calls correct api function on edit and closes the modal', function () {
@@ -80,7 +80,7 @@ describe('AccountCreditItemModalCtrl', function() {
             spyOn(api.accountCredit, 'save').and.callFake(function () { return deferred.promise; });
 
             $scope.upsertCreditItem();
-            
+
             deferred.resolve(1);
             $scope.$digest();
 
@@ -88,7 +88,7 @@ describe('AccountCreditItemModalCtrl', function() {
             $timeout(function () {
                 expect($modalInstance.close).toHaveBeenCalled();
             }, 1500);
-            
+
         });
     });
 
@@ -98,7 +98,7 @@ describe('AccountCreditItemModalCtrl', function() {
             $scope.discardCreditItem();
             $scope.$digest();
             $timeout(function () {
-                expect($modalInstance.close).toHaveBeenCalled()
+                expect($modalInstance.close).toHaveBeenCalled();
             }, 1200);
         });
     });
@@ -112,7 +112,7 @@ describe('AccountCreditItemModalCtrl', function() {
             spyOn(api.accountCredit, 'delete').and.callFake(function () {
                 return deferred.promise;
             });
-            
+
             $scope.deleteCreditItem(10);
             deferred.resolve();
             $scope.$digest();
@@ -131,7 +131,7 @@ describe('AccountCreditItemModalCtrl', function() {
             spyOn(api.accountCredit, 'delete').and.callFake(function () {
                 return deferred.promise;
             });
-            
+
             $scope.deleteCreditItem(10);
             $scope.$digest();
 
@@ -161,14 +161,15 @@ describe('AccountCreditItemModalCtrl', function() {
             spyOn(api.accountCredit, 'get').and.callFake(function () {
                 return deferred.promise;
             });
-            
+
             $scope.init();
 
             deferred.resolve({
                 id: 1,
                 isSigned: true,
                 endDate: '12/31/2015',
-                startDate: '12/1/2015'
+                startDate: '12/1/2015',
+                licenseFee: '15%'
             });
 
             $scope.$digest();

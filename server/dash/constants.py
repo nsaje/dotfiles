@@ -2,6 +2,11 @@ from utils.constant_base import ConstantBase
 from dash import regions
 
 
+# Outbrain supports only 10 blocked publisher per marketer id
+# which corresponds to 10 blacklisted publishers per Z1 account
+MAX_OUTBRAIN_BLACKLISTED_PUBLISHERS_PER_ACCOUNT = 10
+
+
 class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
@@ -40,6 +45,16 @@ class AdGroupSourceSettingsAutopilotState(ConstantBase):
     _VALUES = {
         ACTIVE: 'Enabled',
         INACTIVE: 'Paused'
+    }
+
+
+class ExportPlusStatus(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+
+    _VALUES = {
+        ACTIVE: 'Active',
+        INACTIVE: 'Inactive'
     }
 
 
@@ -967,6 +982,24 @@ class CampaignGoal(ConstantBase):
     }
 
 
+class CampaignGoalKPI(ConstantBase):
+    TIME_ON_SITE = 1
+    MAX_BOUNCE_RATE = 2
+    PAGES_PER_SESSION = 3
+    CPA = 4
+    CPC = 5
+    CPM = 6
+
+    _VALUES = {
+        TIME_ON_SITE: 'time on site in seconds',
+        MAX_BOUNCE_RATE: 'max bounce rate %',
+        PAGES_PER_SESSION: 'pages per session',
+        CPA: '$CPA',
+        CPC: '$CPC',
+        CPM: '$CPM',
+    }
+
+
 class SourceAction(ConstantBase):
     CAN_UPDATE_STATE = 1
     CAN_UPDATE_CPC = 2
@@ -1109,6 +1142,15 @@ class UserActionType(ConstantBase):
     CREATE_MEDIA_SOURCE_CAMPAIGN = 20
     SET_MEDIA_SOURCE_SETTINGS = 21
 
+    SCHEDULE_REPORT = 22
+    DELETE_SCHEDULED_REPORT = 23
+    DOWNLOAD_REPORT = 24
+
+    SET_ADGROUP_PUBLISHER_BLACKLIST = 25
+    SET_CAMPAIGN_PUBLISHER_BLACKLIST = 26
+    SET_ACCOUNT_PUBLISHER_BLACKLIST = 27
+    SET_GLOBAL_PUBLISHER_BLACKLIST = 28
+
     _VALUES = {
         UPLOAD_CONTENT_ADS: 'Upload Content Ads',
         SET_CONTENT_AD_STATE: 'Set Content Ad(s) State',
@@ -1131,6 +1173,13 @@ class UserActionType(ConstantBase):
         ARCHIVE_RESTORE_CONVERSION_PIXEL: 'Archive/Restore Conversion Pixel',
         CREATE_MEDIA_SOURCE_CAMPAIGN: 'Create Media Source Campaign',
         SET_MEDIA_SOURCE_SETTINGS: 'Set Media Source Settings',
+        SCHEDULE_REPORT: 'Schedule report',
+        DELETE_SCHEDULED_REPORT: 'Delete scheduled report',
+        DOWNLOAD_REPORT: 'Direct report download',
+        SET_ADGROUP_PUBLISHER_BLACKLIST: 'Set Ad Group Publisher Blacklist',
+        SET_CAMPAIGN_PUBLISHER_BLACKLIST: 'Set Campaign Publisher Blacklist',
+        SET_ACCOUNT_PUBLISHER_BLACKLIST: 'Set Account Publisher Blacklist',
+        SET_GLOBAL_PUBLISHER_BLACKLIST: 'Set Global Publisher Blacklist'
     }
 
 
@@ -1156,6 +1205,7 @@ class CreditLineItemStatus(ConstantBase):
         PENDING: 'Pending',
         CANCELED: 'Canceled',
     }
+
 
 class BudgetLineItemState(ConstantBase):
     ACTIVE = 1
@@ -1232,4 +1282,14 @@ class ScheduledReportSent(ConstantBase):
     _VALUES = {
         SUCCESS: 'Success',
         FAILED: 'Failed'
+    }
+
+
+class GATrackingType(ConstantBase):
+    EMAIL = 1
+    API = 2
+
+    _VALUES = {
+        EMAIL: 'Email',
+        API: 'API'
     }

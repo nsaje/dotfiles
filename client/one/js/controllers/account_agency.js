@@ -1,5 +1,5 @@
-/*globals oneApp*/
-oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($scope, $state, api) {
+/* globals oneApp */
+oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigationService', function ($scope, $state, api, zemNavigationService) { // eslint-disable-line max-len
     $scope.settings = {};
     $scope.settings.allowedSources = {};
     $scope.history = [];
@@ -23,8 +23,8 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
 
     $scope.getAllowedMediaSources = function () {
         var list = [];
-        angular.forEach($scope.settings.allowedSources, function(value, key) {
-            if(value.allowed){
+        angular.forEach($scope.settings.allowedSources, function (value, key) {
+            if (value.allowed) {
                 value.value = key;
                 this.push(value);
             }
@@ -34,8 +34,8 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
 
     $scope.getAvailableMediaSources = function () {
         var list = [];
-        angular.forEach($scope.settings.allowedSources, function(value, key) {
-            if(!value.allowed){
+        angular.forEach($scope.settings.allowedSources, function (value, key) {
+            if (!value.allowed) {
                 value.value = key;
                 this.push(value);
             }
@@ -59,7 +59,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
         $scope.selectedMediaSouces.allowed.length = 0;
     };
 
-    $scope.getServiceFees = function(search) {
+    $scope.getServiceFees = function (search) {
         // use fresh instance because we modify the collection on the fly
         var fees = ['15', '20', '25'];
 
@@ -126,8 +126,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
                 $scope.history = data.history;
                 $scope.canArchive = data.canArchive;
                 $scope.canRestore = data.canRestore;
-                $scope.updateAccounts(data.settings.name);
-                $scope.updateBreadcrumbAndTitle();
+                zemNavigationService.updateAccountCache($state.params.id, {name: data.settings.name});
                 $scope.saved = true;
             },
             function (data) {
@@ -141,10 +140,7 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', function ($sc
     };
 
     $scope.refreshPage = function () {
-        api.navData.list().then(function (accounts) {
-            $scope.refreshNavData(accounts);
-            $scope.getAccount();
-        });
+        zemNavigationService.reload();
         $scope.getSettings();
     };
 

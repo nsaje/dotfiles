@@ -146,6 +146,7 @@ a:visited {
 
         label.control-label {
             color: #c70000;
+            font-weight: normal;
 
             a {
                 color: #c70000;
@@ -159,6 +160,13 @@ a:visited {
         font-size: 15px;
         font-weight: 600;
         color: #414141;
+        
+        .sidenote {
+            font-weight: 400;
+            font-size: 12px;
+            color: #737373;
+            font-style: italic;
+        }
     }
 
     .input-placeholder{
@@ -673,11 +681,6 @@ div[datepicker] {
     width: 70%;
 }
 
-.graph-container-full {
-    display: inline-block;
-    width: 100%;
-}
-
 .infobox-container-full {
     display: inline-block;
     width: 30%;
@@ -685,6 +688,7 @@ div[datepicker] {
     height: 100%;
     overflow: auto;
     display: visible;
+    background: #f6f6f6;
 }
 
 .infobox-container-short {
@@ -720,8 +724,10 @@ div[datepicker] {
 }
 
 .infobox-header {
-    display: inline-block;
+    display: block;
     width: 100%;
+    white-space: nowrap;
+    overflow: visible;
 }
 
 .infobox-title {
@@ -733,6 +739,7 @@ div[datepicker] {
 .infobox-icon {
     width: 10px;
     height: 10px;
+    margin-right: 4px;
 }
 
 .infobox-subtitle {
@@ -742,8 +749,8 @@ div[datepicker] {
 }
 
 .infobox-setting-label {
-    width: 150px;
-    max-width: 150px;
+    width: 140px;
+    max-width: 120px;
     overflow: hidden;
     display: inline-block;
     color: @infobox-gray;
@@ -766,7 +773,7 @@ div[datepicker] {
 .infobox-setting-icon {
     display: inline-block;
     vertical-align: top;
- }
+}
 
 .infobox-details-link {
     cursor: pointer;
@@ -1167,7 +1174,7 @@ div[datepicker] {
     display: inline-block;
     border: 1px solid #666;
     .border-radius(2px);
-    padding: 1px 3px 0px 3px;;
+    padding: 1px 3px 0px 3px;
     margin-left: 5px;
     font-size: 10px;
     line-height: 10px;
@@ -1896,6 +1903,10 @@ div[datepicker] {
         tr.row-updated {
             animation-name: show-updated;
             animation-duration: 2s;
+        }
+
+        tr.row-not-selected td {
+            color: #d2d2d2;
         }
     }
     .scrollable {
@@ -3290,23 +3301,6 @@ select.media-source-select {
     width: 100%;
 }
 
-.page-campaign-agency {
-
-    form {
-        margin-bottom: 30px;
-    }
-
-    .default-settings {
-        h3 {
-            margin-top: 0;
-        }
-
-        padding: 0 15px 1px 15px;
-        background-color: #f7f7f7;
-        margin-bottom: 20px;
-    }
-}
-
-.selected-locations {
-    background-color: #fff;
+.page-campaign-agency form {
+    margin-bottom: 30px;
 }

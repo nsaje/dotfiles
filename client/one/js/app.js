@@ -15,7 +15,7 @@ oneApp.config(['$httpProvider', function ($httpProvider) {
     $httpProvider.defaults.xsrfCookieName = 'csrftoken';
 }]);
 
-oneApp.config(["$locationProvider", function($locationProvider) {
+oneApp.config(['$locationProvider', function ($locationProvider) {
     $locationProvider.html5Mode(true);
     $locationProvider.hashPrefix('!');
 }]);
@@ -51,17 +51,17 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/main.html',
             controller: 'MainCtrl',
             resolve: {
-                user: ['api', function(api) {
-                    return api.user.get('current');
+                user: ['api', 'zemLocalStorageService', 'zemFilterService', function (api, zemLocalStorageService, zemFilterService) {
+                    return api.user.get('current').then(function (user) {
+                        zemLocalStorageService.init(user);
+                        zemFilterService.init(user);
+                        return user;
+                    });
                 }],
-                accounts: ['$location', 'zemLocalStorageService', 'zemFilterService', 'api', 'user', function ($location, zemLocalStorageService, zemFilterService, api, user) {
-                    // init filter service only after we have user
-                    // this way we can get settings from local storage
-                    zemLocalStorageService.init(user);
-                    zemFilterService.init(user);
-                    return api.navData.list();
-                }]
-            }
+                accountsAccess: ['zemNavigationService', function (zemNavigationService) {
+                    return zemNavigationService.getAccountsAccess();
+                }],
+            },
         });
 
     $stateProvider
@@ -90,7 +90,12 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('main.accounts', {
             url: 'accounts/{id}',
             template: basicTemplate,
-            controller: 'AccountCtrl'
+            controller: 'AccountCtrl',
+            resolve: {
+                accountData: ['$stateParams', 'zemNavigationService', function ($stateParams, zemNavigationService) {
+                    return zemNavigationService.getAccount($stateParams.id);
+                }],
+            },
         })
         .state('main.accounts.campaigns', {
             url: '/campaigns',
@@ -107,13 +112,13 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
             templateUrl: '/partials/account_agency.html',
             controller: 'AccountAgencyCtrl'
         })
-        .state('main.accounts.account', {
-            url: '/account',
+        .state('main.accounts.settings', {
+            url: '/settings',
             templateUrl: '/partials/account_account.html',
             controller: 'AccountAccountCtrl'
         })
-        .state('main.accounts.settings', {
-            url: '/settings',
+        .state('main.accounts.archived', {
+            url: '/archived',
             templateUrl: '/partials/account_settings.html'
         }).state('main.accounts.credit', {
             url: '/credit',
@@ -129,7 +134,12 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('main.campaigns', {
             url: 'campaigns/{id}',
             template: basicTemplate,
-            controller: 'CampaignCtrl'
+            controller: 'CampaignCtrl',
+            resolve: {
+                campaignData: ['$stateParams', 'zemNavigationService', function ($stateParams, zemNavigationService) {
+                    return zemNavigationService.getCampaign($stateParams.id);
+                }],
+            },
         })
         .state('main.campaigns.ad_groups', {
             url: '/ad_groups',
@@ -170,7 +180,13 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
     $stateProvider
         .state('main.adGroups', {
             url: 'ad_groups/{id}',
-            templateUrl: '/partials/ad_group.html'
+            template: basicTemplate,
+            controller: 'AdGroupCtrl',
+            resolve: {
+                adGroupData: ['$stateParams', 'zemNavigationService', function ($stateParams, zemNavigationService) {
+                    return zemNavigationService.getAdGroup($stateParams.id);
+                }],
+            },
         })
         .state('main.adGroups.ads', {
             url: '/ads',
@@ -207,18 +223,18 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
 }]);
 
 oneApp.config(['datepickerConfig', 'datepickerPopupConfig', function (datepickerConfig, datepickerPopupConfig) {
-  datepickerConfig.showWeeks = false;
-  datepickerConfig.formatDayHeader = 'EEE';
-  datepickerPopupConfig.showButtonBar = false;
+    datepickerConfig.showWeeks = false;
+    datepickerConfig.formatDayHeader = 'EEE';
+    datepickerPopupConfig.showButtonBar = false;
 }]);
 
-oneApp.config(['$tooltipProvider', function($tooltipProvider) {
+oneApp.config(['$tooltipProvider', function ($tooltipProvider) {
     $tooltipProvider.setTriggers({'openTutorial': 'closeTutorial'});
 }]);
 
 var locationSearch;
 // Fixes https://github.com/angular-ui/ui-router/issues/679
-oneApp.run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService', function($state, $rootScope, $location, config, zemIntercomService) {
+oneApp.run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService', function ($state, $rootScope, $location, config, zemIntercomService) {
     $rootScope.config = config;
     $rootScope.$state = $state;
 
@@ -234,14 +250,14 @@ oneApp.run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService',
         zemIntercomService.update();
     });
 
-    $rootScope.tabClick = function(event) {
+    $rootScope.tabClick = function (event) {
         // Function to fix opening tabs in new tab when clicking with the middle button
         // This is effectively a workaround for a bug in bootstrap-ui
-        if (event.which === 2 || (event.which ===1 && (event.metaKey || event.ctrlKey))) {
+        if (event.which === 2 || (event.which === 1 && (event.metaKey || event.ctrlKey))) {
            // MIDDLE CLICK or CMD+LEFTCLICK
            // the regular link will open in new tab if we stop the event propagation
-           event.stopPropagation();
+            event.stopPropagation();
         }
-    }
+    };
 
 }]);

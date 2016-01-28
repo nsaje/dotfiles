@@ -1,6 +1,6 @@
 <div class="zem-conversion-goals col-xs-6" ng-if="hasPermission('zemauth.manage_conversion_goals')">
     <div class="title">
-        Conversions & Goals
+        Conversions
         <zem-help-popover content="If your goal is to increase conversions (ie. registrations, sales, etc.) for your content, Zemanta’s conversion and goal tracking tools can help. By placing a conversion pixel on your content pages you’ll know exactly which networks and articles led to your conversion." placement="right"></zem-help-popover>
         <div class="loader" ng-show="requestInProgress || removeInProgress"></div>
     </div>
@@ -15,15 +15,7 @@
         </div>
         <button type="button" class="btn btn-default remove-btn" ng-class="{'disabled': !!removeInProgress || !!error}" ng-click="removeConversionGoal(goal.id)">Remove</button>
     </div>
-    <button type="button" class="btn btn-default" ng-click="addConversionGoal()" ng-disabled="!!error || !!requestInProgress || !!removeInProgress || conversionGoals.length > 1" title="{{ (conversionGoals.length > 1 && 'At most two conversions or goals can be set up per campaign.
-
-Why does Zemanta One only support two goals?
-
-Zemanta One is designed to help marketers optimize their content marketing campaigns. To effectively optimize campaigns marketers need to clearly define their goals in the platform. We have set a limit of two goals to ensure Zemanta One understands the true KPIs for success and optimizes accordingly. In our experience content marketing campaigns with more than two goals often fall short of the desired outcome.
-
-Example Goals:
-- Primary Goal: Bounce Rate below 50%
-- Secondary Goal: Whitepaper Downloads') || '' }}"">Set up conversion or goal tracking</button>
+    <button type="button" class="btn btn-default" ng-click="addConversionGoal()" ng-disabled="!!error || !!requestInProgress || !!removeInProgress || conversionGoals.length > 4">Set up conversion or goal tracking</button>
     <div ng-if="!!error" class="error">
         An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
     </div>
