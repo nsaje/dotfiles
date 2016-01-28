@@ -972,7 +972,7 @@ class AccountsAccountsTable(object):
             row['budget'] = account_budget[aid]
 
             row['available_budget'] = row['budget'] - account_total_spend[aid]
-            row['unspent_budget'] = row['budget'] - (row.get('cost') or 0)
+            row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
 
             rows.append(row)
 
