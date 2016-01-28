@@ -20,7 +20,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
     $scope.infoboxEnabled = false;
     $scope.infoboxVisible = false;
-    $scope.graphVisible = false;
+    $scope.graphVisible = true;
+    $scope.navigationPaneVisible = true;
 
     $scope.user.automaticallyCreateAdGroup = false;
 
@@ -344,6 +345,13 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
     $scope.$watch(zemLayoutService.isGraphVisible, function (newValue, oldValue) {
         $scope.graphVisible = newValue;
+        $timeout(function () {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
+    });
+
+    $scope.$watch(zemLayoutService.isNavigationPaneVisible, function (newValue, oldValue) {
+        $scope.navigationPaneVisible = newValue;
         $timeout(function () {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
