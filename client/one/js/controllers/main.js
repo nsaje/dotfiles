@@ -1,6 +1,8 @@
 /* globals oneApp, $, angular */
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', 'zemMoment', 'user', 'zemUserSettings', 'accounts', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemLayoutService', function ( $scope, $state, $location, $document, $q, $modalStack, $timeout, zemMoment, user, zemUserSettings, accounts, api, zemFilterService, zemFullStoryService, zemIntercomService, zemLayoutService) {
-    $scope.accounts = accounts;
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', 'zemMoment', 'user', 'zemUserSettings', 'accounts', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'accountsAccess', 'zemLayoutService', function ( $scope, $state, $location, $document, $q, $modalStack, $timeout, zemMoment, user, zemUserSettings, accounts, api, zemFilterService, zemFullStoryService, zemIntercomService, accountsAccess, zemLayoutService) {
+    $scope.accountsAccess = accountsAccess;
+    $scope.accounts = [];
+
     $scope.user = user;
     $scope.currentRoute = $scope.current;
     $scope.inputDateFormat = 'M/D/YYYY';
@@ -21,10 +23,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.graphVisible = false;
 
     $scope.user.automaticallyCreateAdGroup = false;
-
-    $scope.refreshNavData = function (accounts) {
-        $scope.accounts = accounts;
-    };
 
     $scope.hasPermission = function (permissions) {
         if (!permissions) {
@@ -231,7 +229,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
         $scope.breadcrumb = breadcrumb;
-        if ($scope.canAccessAllAccounts() && $scope.accounts.length) {
+        if ($scope.canAccessAllAccounts() && $scope.accountsAccess.hasAccounts) {
             $scope.breadcrumb.unshift({
                 name: 'All accounts',
                 state: $scope.getDefaultAllAccountsState(),
@@ -242,16 +240,22 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         $document.prop('title', title + ' | Zemanta');
     };
 
-    $scope.setAccount = function (account) {
-        $scope.account = account;
-    };
+    $scope.setModels = function (models) {
+        $scope.account = null;
+        $scope.campaign = null;
+        $scope.adGroup = null;
 
-    $scope.setCampaign = function (campaign) {
-        $scope.campaign = campaign;
-    };
-
-    $scope.setAdGroup = function (adGroup) {
-        $scope.adGroup = adGroup;
+        if (models) {
+            if (models.hasOwnProperty('account')) {
+                $scope.account = models.account;
+            }
+            if (models.hasOwnProperty('campaign')) {
+                $scope.campaign = models.campaign;
+            }
+            if (models.hasOwnProperty('adGroup')) {
+                $scope.adGroup = models.adGroup;
+            }
+        }
     };
 
     $scope.setPublisherFilterVisible = function (visible) {
@@ -286,20 +290,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             state = $scope.getDefaultCampaignState();
         } else if ($state.is('main.adGroups')) {
             state = $scope.getDefaultAdGroupState();
-        } else if ($state.is('main') && $scope.accounts && $scope.accounts.length) {
+        } else if ($state.is('main') && $scope.accountsAccess.hasAccounts) {
             if ($scope.canAccessAllAccounts()) {
                 state = 'main.allAccounts.accounts';
             } else {
-                $scope.accounts.some(function (account) {
-                    id = account.id;
-
-                    if (id && account.archived === false) {
-                        return true;
-                    }
-
-                    return false;
-                });
-
+                id = $scope.accountsAccess.defaultAccountId;
                 state = $scope.getDefaultAccountState();
             }
         }
@@ -375,18 +370,20 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return zemFilterService.getShowArchived();
     };
 
+    zemNavigationService.onUpdate($scope, function () {
+        $scope.accounts = zemNavigationService.getAccounts();
+    });
+
+    zemNavigationService.onLoading($scope, function (e, isLoading) {
+        $scope.loadSidebarInProgress = isLoading;
+    });
+
     $scope.$watch(zemFilterService.getFilteredSources, function (newValue, oldValue) {
         if (angular.equals(newValue, oldValue)) {
             return;
         }
 
-        $scope.loadSidebarInProgress = true;
-        api.navData.list().then(function (accounts) {
-            $scope.refreshNavData(accounts);
-        })
-        .finally(function () {
-            $scope.loadSidebarInProgress = false;
-        });
+        zemNavigationService.reload();
     }, true);
 
     $scope.$watch(zemFilterService.getShowBlacklistedPublishers, function (newValue, oldValue) {
@@ -398,5 +395,5 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
     zemFullStoryService.identify($scope.user);
     zemIntercomService.boot($scope.user);
-
+    zemNavigationService.reload();
 }]);

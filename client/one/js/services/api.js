@@ -47,25 +47,79 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         });
     }
 
-    function NavData () {
-        this.list = function () {
-            var deferred = $q.defer();
-            var url = '/api/nav_data';
-            var config = {
-                params: {}
-            };
+    function Navigation () {
 
+        function convertFromApi (models) {
+            if (models.hasOwnProperty('ad_group')) {
+                models.adGroup = models.ad_group;
+                delete models.ad_group;
+            }
+
+            if (models.hasOwnProperty('has_accounts')) {
+                models.hasAccounts = models.has_accounts;
+                models.defaultAccountId = models.default_account_id;
+            }
+
+            return models;
+        }
+
+        this.getAdGroup = function (id) {
+            return this.get('ad_groups/' + id);
+        }.bind(this);
+
+        this.getCampaign = function (id) {
+            return this.get('campaigns/' + id);
+        }.bind(this);
+
+        this.getAccount = function (id) {
+            return this.get('accounts/' + id);
+        }.bind(this);
+
+        this.getAccountsAccess = function () {
+            return this.get('all_accounts');
+        }.bind(this);
+
+        this.get = function (route) {
+            var deferred = $q.defer();
+            var url = '/api/' + route + '/nav/';
+            var config = {
+                params: {},
+            };
             addFilteredSources(config.params);
 
             $http.get(url, config).
-                success(function (data, status) {
+                success(function (data) {
+                    var resource;
+
+                    if (data && data.data) {
+                        resource = data.data;
+                    }
+                    deferred.resolve(convertFromApi(resource));
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        this.list = function () {
+            var deferred = $q.defer();
+            var url = '/api/nav/';
+            var config = {
+                params: {},
+            };
+            addFilteredSources(config.params);
+
+            $http.get(url, config).
+                success(function (data) {
                     var resource;
                     if (data && data.data) {
                         resource = data.data;
                     }
                     deferred.resolve(resource || []);
                 }).
-                error(function (data, status, headers, config) {
+                error(function (data) {
                     deferred.reject(data);
                 });
 
@@ -2732,6 +2786,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                                                         'YYYY-MM-DD').format('MM/DD/YYYY'),
                     endDate: obj.end_date && moment(obj.end_date, 'YYYY-MM-DD').format('MM/DD/YYYY'),
                     isSigned: obj.is_signed,
+                    isCanceled: obj.is_canceled,
                     account: obj.account_id,
                     licenseFee: obj.license_fee,
                     total: obj.total,
@@ -2806,6 +2861,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         this.delete = function (accountId, itemId) {
             var url = '/api/accounts/' + accountId + '/credit/' + itemId + '/';
             return $http.delete(url).then(processResponse).then(self.convert.dataFromApi);
+        };
+
+        this.cancel = function (accountId, itemIds) {
+            var url = '/api/accounts/' + accountId + '/credit/';
+            return $http.post(url, {
+                'cancel': itemIds
+            }).then(processResponse);
         };
     }
 
@@ -2905,7 +2967,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
     }
 
     return {
-        navData: new NavData(),
+        navigation: new Navigation(),
         user: new User(),
         adGroupState: new AdGroupState(),
         adGroupSettings: new AdGroupSettings(),

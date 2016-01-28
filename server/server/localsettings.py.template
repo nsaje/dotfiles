@@ -184,3 +184,7 @@ SHARETHROUGH_PARAM_SIGN_KEY = ''
 
 # BCM
 BUDGET_RESERVE_FACTOR = 0.05
+
+# Google Analytics authentication
+GA_CLIENT_EMAIL = ''
+GA_PRIVATE_KEY = ''

@@ -234,6 +234,82 @@ class AutomaticallyApproveContentAdSourceSubmissionStatus(TestCase):
         self.assertEqual(self.content_ad_source.submission_status, constants.ContentAdSubmissionStatus.APPROVED)
 
 
+class AutomaticallySyncContentAdSourceStatus(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        ad_group_settings = models.AdGroup.objects.get(pk=1).get_current_settings()
+        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+        ad_group_settings.save(None)
+
+    def test_send_sync_actionlogs(self):
+        content_ad_data = [{
+            'id': 1,
+            'state': constants.ContentAdSourceState.INACTIVE,
+            'submission_status': constants.ContentAdSubmissionStatus.APPROVED
+        }]
+
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        actions = api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
+
+        self.assertEqual(len(actions), 1)
+        action = actions[0]
+        self.assertEqual(action.payload['args']['changes'], {'state': dash.constants.ContentAdSourceState.ACTIVE})
+
+    def test_skip_rejected(self):
+        content_ad_data = [{
+            'id': 1,
+            'state': constants.ContentAdSourceState.INACTIVE,
+            'submission_status': constants.ContentAdSubmissionStatus.REJECTED
+        }]
+
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        actions = api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
+        self.assertEqual(len(actions), 0)
+
+    def test_skip_if_waiting_actions(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        action = actionlog.models.ActionLog(
+            state=actionlog.constants.ActionState.WAITING,
+            action=actionlog.constants.Action.UPDATE_CONTENT_AD,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            content_ad_source=models.ContentAdSource.objects.get(pk=1),
+            ad_group_source=ad_group_source
+        )
+
+        action.save(None)
+        content_ad_data = [{
+            'id': 1,
+            'state': constants.ContentAdSourceState.INACTIVE,
+            'submission_status': constants.ContentAdSubmissionStatus.APPROVED
+        }]
+
+        actions = api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
+        self.assertEqual(len(actions), 0)
+
+    def test_skip_if_failed_actions(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        action = actionlog.models.ActionLog(
+            state=actionlog.constants.ActionState.FAILED,
+            action=actionlog.constants.Action.UPDATE_CONTENT_AD,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            content_ad_source=models.ContentAdSource.objects.get(pk=1),
+            ad_group_source=ad_group_source
+        )
+
+        action.save(None)
+        content_ad_data = [{
+            'id': 1,
+            'state': constants.ContentAdSourceState.INACTIVE,
+            'submission_status': constants.ContentAdSubmissionStatus.APPROVED
+        }]
+
+        actions = api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
+        self.assertEqual(len(actions), 0)
+
+
 @override_settings(
     R1_REDIRECTS_ADGROUP_API_URL='https://r1.example.com/api/redirects/',
     R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA'

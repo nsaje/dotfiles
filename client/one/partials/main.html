@@ -2,7 +2,7 @@
     <div class="row header" ng-include src="'/partials/header.html'"></div>
 
     <div class="row body">
-        <div class="sidebar" ng-show="accounts.length" ng-class="{'sidebar-new': hasPermission('zemauth.all_new_sidebar') }">
+        <div class="sidebar" ng-show="accountsAccess.hasAccounts" ng-class="{'sidebar-new': hasPermission('zemauth.all_new_sidebar') }">
             <div class="loader" ng-if="loadSidebarInProgress"></div>
             <div id="nav-new" ng-if="hasPermission('zemauth.all_new_sidebar')">
                 <zem-nav-search zem-current-account="account" zem-all-accounts="accounts" zem-can-access-accounts="{{ canAccessAccounts() }}" zem-can-access-campaigns="{{ canAccessCampaigns() }}" zem-default-account-state="{{ getDefaultAccountState() }}" zem-default-campaign-state="{{ getDefaultCampaignState() }}" zem-show-archived="getShowArchived()" zem-default-ad-group-state="{{ getDefaultAdGroupState() }}"></zem-nav-search>
@@ -48,16 +48,16 @@
                 </div>
             </div>
         </div>
-        <div class="content" ng-show="accounts.length">
+        <div class="content" ng-show="accountsAccess.hasAccounts">
             <form id="datepicker" class="form-horizontal pull-right" role="form" ng-hide="$state.includes('*.*.agency') || $state.includes('*.*.settings') || $state.includes('*.*.budget') || $state.includes('*.*.budget_plus')">
                 <div class="input-group calendar">
                     <i class="input-group-addon"><img ng-src="{{ config.static_url }}/one/img/calendar.svg"></i>
                     <input type="daterange" class="form-control" ng-model="dateRange" max-date="{{ maxDateStr }}" format="{{ inputDateFormat }}" ranges="{{ dateRanges }}" opens="left">
                 </div>
             </form>
-            <zem-filter 
-                zem-has-permission="hasPermission" 
-                zem-is-permission-internal="isPermissionInternal" 
+            <zem-filter
+                zem-has-permission="hasPermission"
+                zem-is-permission-internal="isPermissionInternal"
                 enable-publisher-filter="enablePublisherFilter"
                 show-publisher-selected="showPublisherSelected">
             </zem-filter>
@@ -65,10 +65,10 @@
             <div class="btn btn-default graph-button pull-right" ng-click="toggleGraph()"><img class="graph-button-image" ng-src="{{ config.static_url }}/one/img/chart.svg"></div>
             <div class="btn btn-default navigation-button pull-right" ng-show="true" ng-click="toggleNavigationPane()">N</div>
             <div ui-view></div>
-            
+
         </div>
 
-        <div ng-show="!accounts.length" ng-include src="'/partials/403.html'"></div>
+        <div ng-show="!accountsAccess.hasAccounts" ng-include src="'/partials/403.html'"></div>
 
     </div>
 

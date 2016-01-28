@@ -42,3 +42,13 @@ class UpdateUploadBatchThread(Thread):
         batch = models.UploadBatch.objects.get(pk=self.batch_id)
         batch.inserted_content_ads = self.inserted_content_ads
         batch.save()
+
+
+class CreateUpdateContentAdsActions(Thread):
+
+    def start(self):
+        # block when testing so that results can be verified
+        # else do not block
+        super(CreateUpdateContentAdsActions, self).start()
+        if settings.TESTING:
+            self.join()

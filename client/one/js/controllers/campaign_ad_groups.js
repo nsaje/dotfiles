@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($location, $scope, $state, $timeout, api, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
+oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', function ($location, $scope, $state, $timeout, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService) {
     $scope.getTableDataRequestInProgress = false;
     $scope.addGroupRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -331,7 +331,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         },
         {
             'name': 'Conversions',
-            'fields': ['conversion_goal_1', 'conversion_goal_2']
+            'fields': ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']
         },
         {
             'name': 'Data Sync',
@@ -368,21 +368,14 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
 
         api.campaignAdGroups.create(campaignId).then(
             function (data) {
-                $scope.accounts.forEach(function (account) {
-                    account.campaigns.forEach(function (campaign) {
-                        if (campaign.id.toString() === campaignId.toString()) {
-                            campaign.adGroups.push({
-                                id: data.id,
-                                name: data.name,
-                                contentAdsTabWithCMS: data.contentAdsTabWithCMS,
-                                status: 'stopped',
-                                state: 'paused'
-                            });
-
-                            $state.go('main.adGroups.settings', {id: data.id});
-                        }
-                    });
+                zemNavigationService.addAdGroupToCache(campaignId, {
+                    id: data.id,
+                    name: data.name,
+                    contentAdsTabWithCMS: data.contentAdsTabWithCMS,
+                    status: 'stopped',
+                    state: 'paused',
                 });
+                $state.go('main.adGroups.settings', {id: data.id});
             },
             function (data) {
                 // error

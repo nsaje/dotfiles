@@ -6,7 +6,7 @@ from django.contrib.auth import models as authmodels
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
-from utils.test_helper import QuerySetMatcher
+from utils.test_helper import QuerySetMatcher, ListMatcher
 from zemauth.models import User
 from dash import models
 
@@ -362,7 +362,7 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
             breakdown=['date'],
             order=[],
             ignore_diff_rows=True,
-            conversion_goals=['ga__2'],
+            conversion_goals=ListMatcher(['ga__2', 'ga__3', 'omniture__4', 'omniture__5']),
             ad_group=1,
             source=matcher
         )
@@ -383,10 +383,13 @@ class AdGroupAdsPlusDailyStatsTest(TestCase):
                         ]
                     }
                 }],
-                'conversion_goals': [
+                'conversion_goals': ListMatcher([
                     {'id': 'conversion_goal_2', 'name': 'test conversion goal 2'},
                     {'id': 'conversion_goal_1', 'name': 'test conversion goal'},
-                ],
+                    {'id': 'conversion_goal_3', 'name': 'test conversion goal 3'},
+                    {'id': 'conversion_goal_4', 'name': 'test conversion goal 4'},
+                    {'id': 'conversion_goal_5', 'name': 'test conversion goal 5'}
+                ]),
             },
             'success': True
         })
