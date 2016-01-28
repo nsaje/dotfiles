@@ -16,6 +16,9 @@ from reports.constants import ReportType
 logger = logging.getLogger(__name__)
 
 
+SOURCE_Z1 = 'z1'
+
+
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('-d', '--date',
@@ -51,13 +54,15 @@ class Command(BaseCommand):
         ga_accounts = GAAnalyticsAccount.objects.filter(account__in=accounts_ga_api_enabled)
         for ga_account in ga_accounts:
             ga_reports.download(ga_account)
-        stats_ga_enabled = self._filter_stats_ga_enabled(ga_reports.entries, content_ad_ids_ga_api_enabled)
+        stats_ga_enabled = self._filter_valid_stats(ga_reports.entries, content_ad_ids_ga_api_enabled)
         update.process_report(ga_date, stats_ga_enabled, ReportType.GOOGLE_ANALYTICS)
 
-    def _filter_stats_ga_enabled(self, ga_report_entries, content_ad_ids_ga_api_enabled):
+    def _filter_valid_stats(self, ga_report_entries, content_ad_ids_ga_api_enabled):
         ga_stats = []
         for entry_key in ga_report_entries.keys():
-            if entry_key[1] in content_ad_ids_ga_api_enabled:
+            # filter out the GA entries that came from Z1 (i.e. one of the Zemanta employees clicked the link) and
+            # the entries that belong to content ad grops that aren't configured to receive stats via GA API
+            if entry_key[2] != SOURCE_Z1 and entry_key[1] in content_ad_ids_ga_api_enabled:
                 stats = ga_report_entries[entry_key]
                 ga_stats.append(stats)
         return ga_stats
