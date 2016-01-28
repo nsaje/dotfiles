@@ -778,7 +778,7 @@ class AccountsAccountsTable(object):
 
         totals_data['budget'] = sum(account_budget.itervalues())
         totals_data['available_budget'] = totals_data['budget'] - sum(account_total_spend.values())
-        totals_data['unspent_budget'] = totals_data['budget'] - (totals_data.get('cost') or 0)
+        totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
 
         last_success_actions = actionlog.sync.GlobalSync(sources=filtered_sources).get_latest_success_by_child()
         last_success_actions = {aid: val for aid, val in last_success_actions.items() if aid in account_ids}
