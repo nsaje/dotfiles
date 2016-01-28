@@ -1,6 +1,7 @@
 import collections
 import datetime
 import pytz
+from decimal import Decimal
 import re
 from slugify import slugify
 from django.conf import settings
@@ -879,7 +880,7 @@ class AccountsAccountsTable(object):
 
         all_accounts_budget = budget.GlobalBudget().get_total_by_account()
         account_budget = {
-            aid: all_accounts_budget.get(aid, 0)
+            aid: Decimal(all_accounts_budget.get(aid, 0))
             for aid in legacy_account_ids
         }
         account_budget.update(
@@ -890,7 +891,7 @@ class AccountsAccountsTable(object):
 
         all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
         account_total_spend = {
-            aid: all_accounts_total_spend.get(aid, 0)
+            aid: Decimal(all_accounts_total_spend.get(aid, 0))
             for aid in legacy_account_ids
         }
         account_total_spend.update(
