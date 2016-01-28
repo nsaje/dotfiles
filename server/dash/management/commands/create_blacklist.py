@@ -42,7 +42,8 @@ class Command(ExceptionCommand):
 
         actionlogs = self.create_actionlogs_for_domains(ad_group, domains)
 
-        zwei_actions.send(actionlogs)
+        for i in range(0, len(actionlogs)):
+            zwei_actions.send(actionlogs[i])
 
     def parse_csv(self, csv_file):
         lines = unicodecsv.reader(csv_file)
