@@ -17,6 +17,7 @@ from dash.models import AdGroupSource
 
 
 UNSUPPORTED_SOURCES = [SourceType.GRAVITY, SourceType.OUTBRAIN, SourceType.YAHOO]
+BLACKLIST_ENTRIES_PER_ACTIONLOG = 1000
 
 
 class Command(ExceptionCommand):
@@ -62,7 +63,10 @@ class Command(ExceptionCommand):
         domains = self.clean_domains(domains)
         sources = self.get_sources(ad_group)
         blacklist = self.combine(ad_group, domains, sources)
-        actionlogs = self.create_actionlogs_for_blacklist(ad_group, blacklist)
+        actionlogs = []
+
+        for i in range(0, len(blacklist), BLACKLIST_ENTRIES_PER_ACTIONLOG):
+            actionlogs.append(self.create_actionlogs_for_blacklist(ad_group, blacklist[i:i+BLACKLIST_ENTRIES_PER_ACTIONLOG]))
 
         return actionlogs
 
