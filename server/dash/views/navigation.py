@@ -93,24 +93,23 @@ class NavigationTreeView(api_common.BaseApiView):
 
     def _load_ad_groups_data(self, user, filtered_sources, include_archived_flag):
         # load necessary objects
-        ad_groups = models.AdGroup.objects.all().filter_by_user(user).filter_by_sources(filtered_sources).only(
-            'id', 'name', 'campaign_id', 'content_ads_tab_with_cms')
+        ad_groups = models.AdGroup.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
 
-        ad_group_sources = models.AdGroupSource.objects.filter(ad_group__in=ad_groups).filter_by_sources(
-            filtered_sources).only('id', 'ad_group_id')
-
-        map_ad_group_source = dict(ad_group_sources.values_list('id', 'ad_group_id'))
+        map_ad_group_source = dict(
+            models.AdGroupSource.objects
+            .filter(ad_group__in=ad_groups)
+            .filter_by_sources(filtered_sources)
+            .values_list('id', 'ad_group_id')
+        )
 
         ad_groups_settings = models.AdGroupSettings.objects.filter(ad_group__in=ad_groups)\
-                                                           .group_current_settings()\
-                                                           .only('ad_group_id', 'state', 'start_date', 'end_date')
+                                                           .group_current_settings()
 
         map_ad_groups_settings = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
         # takes too long to do a join when constraints are applied
-        ad_groups_sources_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source__in=ad_group_sources)\
-                                                                         .group_current_settings()\
-                                                                         .only('ad_group_source_id', 'state')
+        ad_groups_sources_settings = models.AdGroupSourceSettings.objects.filter(ad_group_source__in=map_ad_group_source.keys())\
+                                                                         .group_current_settings()
 
         map_ad_groups_sources_settings = navigation_helpers.map_ad_group_sources_settings(
             ad_groups_sources_settings, map_ad_group_source)
@@ -129,12 +128,12 @@ class NavigationTreeView(api_common.BaseApiView):
 
     def _load_campaigns_data(self, ad_groups_data, user, filtered_sources, include_archived_flag):
         campaigns = models.Campaign.objects.all().filter_by_user(user).filter_by_sources(
-            filtered_sources).only('id', 'name', 'account_id')
+            filtered_sources)
 
         map_campaigns_settings = {}
         if include_archived_flag:
             campaigns_settings = models.CampaignSettings.objects.filter(
-                campaign__in=campaigns).group_current_settings().only('campaign_id', 'archived')
+                campaign__in=campaigns).group_current_settings()
 
             map_campaigns_settings = {cs.campaign_id: cs for cs in campaigns_settings}
 
@@ -152,13 +151,12 @@ class NavigationTreeView(api_common.BaseApiView):
 
     def _load_accounts_data(self, campaings_data, user, filtered_sources, include_archived_flag):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(
-            filtered_sources).only('id', 'name')
+            filtered_sources)
 
         map_accounts_settings = {}
         if include_archived_flag:
             accounts_settings = models.AccountSettings.objects.filter(account__in=accounts)\
-                                                              .group_current_settings()\
-                                                              .only('account_id', 'archived')
+                                                              .group_current_settings()
             map_accounts_settings = {acs.account_id: acs for acs in accounts_settings}
 
         data_accounts = []
