@@ -48,12 +48,6 @@ class OverviewSeparator(OverviewSetting):
         super(OverviewSeparator, self).__init__('', '', '', setting_type='hr')
 
 
-def get_reports_api_module(user):
-    if user.has_perm('zemauth.can_see_redshift_postclick_statistics'):
-        return reports.api_contentads
-    return reports.api
-
-
 def format_flight_time(start_date, end_date):
     start_date_str = start_date.strftime('%m/%d') if start_date else ''
     end_date_str = end_date.strftime('%m/%d') if end_date else ''
@@ -108,7 +102,15 @@ def get_media_campaign_spend(user, campaign, until_date=None):
     return ret
 
 
-def get_yesterday_spend(user, campaign):
+def get_yesterday_adgroup_spend(user, ad_group):
+    yesterday_media_cost = reports.api_contentads.get_actual_yesterday_cost(
+        {'ad_group': ad_group.id},
+        breakdown=['ad_group']
+    )
+    return sum(yesterday_media_cost.values())
+
+
+def get_yesterday_campaign_spend(user, campaign):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
     budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
     if len(budgets) == 0:
@@ -123,7 +125,7 @@ def get_goal_value(user, campaign, campaign_settings, goal_type):
     # we are interested in reaching the goal by today
     end_date = datetime.datetime.today().date()
     totals_stats = reports.api_helpers.filter_by_permissions(
-        get_reports_api_module(user).query(
+        reports.api_contentads.query(
             campaign.created_dt,
             end_date,
             campaign=campaign,
@@ -172,21 +174,6 @@ def get_goal_difference(goal_type, target, actual):
 
 def goals_and_spend_settings(user, campaign):
     settings = []
-    filled_daily_ratio = 0
-    yesterday_cost = get_yesterday_spend(user, campaign) or 0
-    campaign_daily_budget = calculate_daily_campaign_cap(campaign)
-
-    if campaign_daily_budget > 0:
-        filled_daily_ratio = float(yesterday_cost) / float(campaign_daily_budget)
-
-    yesterday_spend_settings = OverviewSetting(
-        'Yesterday spend:',
-        '${:.2f}'.format(yesterday_cost),
-        description='{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100),
-    ).performance(
-        filled_daily_ratio >= 1.0
-    )
-    settings.append(yesterday_spend_settings.as_dict())
 
     total_campaign_spend_to_date, media_campaign_spend_to_date = get_total_and_media_campaign_spend(user, campaign)
     ideal_campaign_spend_to_date = get_ideal_campaign_spend(user, campaign)
@@ -314,6 +301,26 @@ def calculate_yesterday_account_spend(account):
         b.get_daily_spend(date=yesterday, use_decimal=True).get('media', 0) for b in budgets
     ]
     return sum(all_budget_spends_at_date)
+
+
+def create_yesterday_spend_setting(yesterday_cost, daily_budget):
+    filled_daily_ratio = None
+    if daily_budget > 0:
+        filled_daily_ratio = float(yesterday_cost) / float(daily_budget)
+
+    if filled_daily_ratio:
+        daily_ratio_description = '{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100)
+    else:
+        daily_ratio_description = 'N/A'
+
+    yesterday_spend_setting = OverviewSetting(
+        'Yesterday spend:',
+        '${:.2f}'.format(yesterday_cost),
+        description=daily_ratio_description,
+    ).performance(
+        filled_daily_ratio >= 1.0 if filled_daily_ratio else False
+    )
+    return yesterday_spend_setting
 
 
 def _retrieve_active_budgetlineitems(campaign, date):

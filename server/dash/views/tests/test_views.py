@@ -2355,6 +2355,7 @@ class AdGroupOverviewTest(TestCase):
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
         cursor().dictfetchall.return_value = [{
+            'adgroup_id': 1,
             'source_id': 9,
             'cost_cc_sum': 0.0
         }]
@@ -2429,7 +2430,8 @@ class AdGroupOverviewTest(TestCase):
         """
 
     @patch('reports.redshift.get_cursor')
-    def test_run_mid(self, cursor):
+    @patch('reports.api_contentads.get_actual_yesterday_cost')
+    def test_run_mid(self, mock_cost, cursor):
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
 
@@ -2467,10 +2469,15 @@ class AdGroupOverviewTest(TestCase):
             license_fee_nano=0
         )
 
-        cursor().diftfetchall.return_value = [{
-                'source_id': 9,
+        cursor().diftfetchall.return_value = {
+            1: {
                 'cost_cc_sum': 500000.0,
-            }]
+            }
+        }
+
+        mock_cost.return_value = {
+            1: 60.0
+        }
 
         response = self._get_ad_group_overview(1)
 
@@ -2508,7 +2515,7 @@ class CampaignOverviewTest(TestCase):
         user.user_permissions.add(permission)
         user.save()
 
-    def _get_campaign_overview(self, campaign_id, user_id=3, with_status=False):
+    def _get_campaign_overview(self, campaign_id, user_id=2, with_status=False):
         user = User.objects.get(pk=user_id)
         self.client.login(username=user.username, password='secret')
         reversed_url = reverse(
@@ -2526,6 +2533,7 @@ class CampaignOverviewTest(TestCase):
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
         cursor().dictfetchall.return_value = [{
+            'adgroup_id': 1,
             'source_id': 9,
             'cost_cc_sum': 0.0
         }]
