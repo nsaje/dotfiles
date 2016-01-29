@@ -25,3 +25,4 @@
 29 6,18 * * *     /home/ubuntu/docker-manage-py.sh schedule_old_data_refresh
 30 6,10,12 * * *  /home/ubuntu/docker-manage-py.sh update_publishers_b1
 30 5,7,9,12 * * * /home/ubuntu/docker-manage-py.sh update_publishers_ob
+40 6,10,12 * * *  /home/ubuntu/docker-manage-py.sh update_content_ad_stats_from_ga_api
