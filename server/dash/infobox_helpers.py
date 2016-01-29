@@ -91,23 +91,6 @@ def get_total_and_media_campaign_spend(user, campaign, until_date=None):
     )
 
 
-def get_daily_media_account_budget(account, at_date):
-    # campaign budget based on non-depleted budget line items
-    at_date = until_date or datetime.datetime.utcnow().date()
-    campaigns = dash.models.Campaign.objects.filter(account=account)
-    budgets = _retrieve_active_budgetlineitems(campaigns, at_date)
-    if len(budgets) == 0:
-        return Decimal(0), Decimal(0)
-
-    all_budget_spends_at_date = [
-        b.get_spend_data(date=at_date, use_decimal=True) for b in budgets
-    ]
-    return (
-        sum(map(lambda bli: bli['total'], all_budget_spends_at_date)),
-        sum(map(lambda bli: bli['media'], all_budget_spends_at_date))
-    )
-
-
 def get_media_campaign_spend(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()

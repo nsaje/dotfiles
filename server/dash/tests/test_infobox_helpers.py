@@ -1,6 +1,7 @@
 import datetime
 
 from django.test import TestCase, mock
+from django.http.request import HttpRequest
 
 import zemauth.models
 
@@ -434,3 +435,24 @@ class InfoBoxHelpersTest(TestCase):
         self.assertEqual("$50.00", setting_0.value)
         self.assertEqual("N/A", setting_0.description)
         self.assertEqual('sad', setting_0.icon)
+
+    def test_calculate_daily_account_cap(self):
+        adgs = dash.models.AdGroupSource.objects.first()
+        dash.models.AdGroupSourceState.objects.create(
+            ad_group_source=adgs,
+            state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+            daily_budget_cc=50
+        )
+
+        account = dash.models.Account.objects.get(pk=1)
+        cap = dash.infobox_helpers.calculate_daily_account_cap(account)
+        self.assertEqual(50, cap)
+
+    def test_calculate_available_credit(self):
+        pass
+
+    def test_calculate_spend_credit(self):
+        pass
+
+    def test_calculate_yesterday_account_spend(self):
+        pass
