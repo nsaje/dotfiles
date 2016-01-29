@@ -168,13 +168,15 @@ class AdGroupSourceSettingsTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.client.login(username=User.objects.get(pk=1).email, password='secret')
+        self.ad_group = models.AdGroup.objects.get(pk=1)
 
-    def test_end_date_past(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        settings = ad_group.get_current_settings()
-        settings.end_date = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
+    def _set_ad_group_end_date(self, days_delta=0):
+        settings = self.ad_group.get_current_settings()
+        settings.end_date = datetime.datetime.utcnow().date() + datetime.timedelta(days=days_delta)
         settings.save(None)
 
+    def test_end_date_past(self):
+        self._set_ad_group_end_date(-1)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
             data=json.dumps({'cpc_cc': '0.15'})
@@ -184,11 +186,7 @@ class AdGroupSourceSettingsTest(TestCase):
 
     @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
     def test_end_date_future(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        settings = ad_group.get_current_settings()
-        settings.end_date = datetime.datetime.utcnow().date() + datetime.timedelta(days=3)
-        settings.save(None)
-
+        self._set_ad_group_end_date(days_delta=3)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
             data=json.dumps({'cpc_cc': '0.15'})
@@ -197,11 +195,7 @@ class AdGroupSourceSettingsTest(TestCase):
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_logs_user_action(self, mock_log_useraction):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        settings = ad_group.get_current_settings()
-        settings.end_date = datetime.datetime.utcnow().date()
-        settings.save(None)
-
+        self._set_ad_group_end_date(days_delta=0)
         response = self.client.put(
             reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
             data=json.dumps({'cpc_cc': '0.15'})
@@ -210,7 +204,25 @@ class AdGroupSourceSettingsTest(TestCase):
         mock_log_useraction.assert_called_with(
             response.wsgi_request,
             constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
-            ad_group=ad_group)
+            ad_group=self.ad_group)
+
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    def test_source_cpc_over_ad_group_maximum(self):
+        self._set_ad_group_end_date(days_delta=3)
+        response = self.client.put(
+                reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+                data=json.dumps({'cpc_cc': '1.10'})
+        )
+        self.assertEqual(response.status_code, 400)
+
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    def test_source_cpc_equal_ad_group_maximum(self):
+        self._set_ad_group_end_date(days_delta=3)
+        response = self.client.put(
+                reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+                data=json.dumps({'cpc_cc': '1.00'})
+        )
+        self.assertEqual(response.status_code, 200)
 
 
 class CampaignAdGroups(TestCase):

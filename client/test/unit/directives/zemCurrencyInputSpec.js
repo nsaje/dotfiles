@@ -89,4 +89,29 @@ describe('zemCurrencyInput', function () {
         expect(element.val()).toEqual('100,212.40');
         expect($scope.value).toEqual('100212.40');
     });
+
+    it('displays 0.00 if no empty-text configured and value is not set', function () {
+        var element = prepareElement();
+        expect(element.val()).toEqual('0.00');
+    });
+
+    it('displays empty text if empty-text configured and value is not set', function () {
+        var element = $compile('<input type="text" ng-model="value" zem-currency-input empty-text="empty">')($scope);
+        $scope.$digest();
+
+        expect(element.val()).toEqual('empty');
+
+        $scope.value = '';
+        $scope.$digest();
+        expect(element.val()).toEqual('empty');
+
+        $scope.value = null;
+        $scope.$digest();
+        expect(element.val()).toEqual('empty');
+
+        setVal(element, '1');
+        expect(element.val()).toEqual('1');
+        expect($scope.value).toEqual('1');
+    });
+
 });
