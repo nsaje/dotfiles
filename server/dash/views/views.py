@@ -349,21 +349,13 @@ class AdGroupOverview(api_common.BaseApiView):
     def _performance_settings(self, ad_group, user, ad_group_settings):
         settings = []
 
-        filled_daily_ratio = 0
         yesterday_cost = infobox_helpers.get_yesterday_adgroup_spend(user, ad_group) or 0
         ad_group_daily_budget = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
 
-        if ad_group_daily_budget > 0:
-            filled_daily_ratio = float(yesterday_cost) / float(ad_group_daily_budget)
-
-        yesterday_spend_settings = infobox_helpers.OverviewSetting(
-            'Yesterday spend:',
-            '${:.2f}'.format(yesterday_cost),
-            description='{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100),
-        ).performance(
-            filled_daily_ratio >= 1.0
-        )
-        settings.append(yesterday_spend_settings.as_dict())
+        settings.append(infobox_helpers.create_yesterday_spend_setting(
+            yesterday_cost,
+            ad_group_daily_budget
+        ).as_dict())
 
         common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
             user, ad_group.campaign
@@ -629,21 +621,13 @@ class CampaignOverview(api_common.BaseApiView):
     def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc):
         settings = []
 
-        filled_daily_ratio = 0
         yesterday_cost = infobox_helpers.get_yesterday_campaign_spend(user, campaign) or 0
         campaign_daily_budget = infobox_helpers.calculate_daily_campaign_cap(campaign)
 
-        if campaign_daily_budget > 0:
-            filled_daily_ratio = float(yesterday_cost) / float(campaign_daily_budget)
-
-        yesterday_spend_settings = infobox_helpers.OverviewSetting(
-            'Yesterday spend:',
-            '${:.2f}'.format(yesterday_cost),
-            description='{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100),
-        ).performance(
-            filled_daily_ratio >= 1.0
-        )
-        settings.append(yesterday_spend_settings.as_dict())
+        settings.append(infobox_helpers.create_yesterday_spend_setting(
+            yesterday_cost,
+           campaign_daily_budget
+        ).as_dict())
 
         common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
             user, campaign

@@ -264,13 +264,24 @@ def calculate_available_media_campaign_budget(campaign):
 
     ret = 0
     for bli in budgets:
-        spend_data = bli.get_spend_data(date=today, use_decimal=True)
-
         available_total_amount = bli.get_available_amount(today)
         available_media_amount = available_total_amount * (Decimal(1) - bli.credit.license_fee)
 
         ret += available_media_amount
     return ret
+
+
+def create_yesterday_spend_setting(yesterday_cost, daily_budget):
+    if daily_budget> 0:
+        filled_daily_ratio = float(yesterday_cost) / float(daily_budget)
+    yesterday_spend_setting = OverviewSetting(
+        'Yesterday spend:',
+        '${:.2f}'.format(yesterday_cost),
+        description='{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100),
+    ).performance(
+        filled_daily_ratio >= 1.0
+    )
+    return yesterday_spend_setting
 
 
 def _retrieve_active_budgetlineitems(campaign, date):
