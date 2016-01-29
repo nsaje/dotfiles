@@ -273,7 +273,7 @@ def calculate_available_media_campaign_budget(campaign):
 
 def create_yesterday_spend_setting(yesterday_cost, daily_budget):
     filled_daily_ratio = None
-    if daily_budget> 0:
+    if daily_budget > 0:
         filled_daily_ratio = float(yesterday_cost) / float(daily_budget)
 
     if filled_daily_ratio:
