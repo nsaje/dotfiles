@@ -200,4 +200,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     if (!$scope.adGroup.archived) {
         $scope.getSettings($state.params.id);
     }
+
+    $scope.setActiveTab();
 }]);

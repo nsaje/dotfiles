@@ -273,4 +273,6 @@ oneApp.controller('AccountAgencyCtrl', ['$scope', '$state', 'api', 'zemNavigatio
     $scope.getName = function (user) {
         return user.name;
     };
+
+    $scope.setActiveTab();
 }]);

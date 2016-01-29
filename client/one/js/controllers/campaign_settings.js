@@ -73,4 +73,5 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
     };
 
     $scope.getSettings();
+    $scope.setActiveTab();
 }]);

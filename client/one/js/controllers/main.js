@@ -257,7 +257,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.$on('$stateChangeSuccess', function () {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
-
         // infobox will be visible only on certain views and
         // is entirely housed within main atm
         if ($state.is('main.campaigns.ad_groups') ||

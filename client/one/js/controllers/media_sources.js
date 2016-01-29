@@ -19,6 +19,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.exportOptions = [];
     $scope.infoboxHeader = null;
     $scope.infoboxSettings = null;
+    $scope.infoboxLinkTo = null;
 
     var userSettings = null;
 
@@ -560,14 +561,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                     $scope.infoboxSettings = data.settings;
                 }
             );
-        } else {
-            api.adGroupOverview.get($state.params.id).then(
-                function (data) {
-                    $scope.infoboxHeader = data.header;
-                    $scope.infoboxSettings = data.settings;
-                }
-            );
-        }
+        } 
     };
 
     var setChartOptions = function () {
@@ -618,6 +612,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var init = function () {
+
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
             $scope.localStoragePrefix = 'allAccountSources';
             $scope.chartMetrics = options.allAccountsChartMetrics;
@@ -630,6 +625,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
               {name: 'By Campaign', value: 'campaign-csv'},
               {name: 'By Ad Group', value: 'adgroup-csv'}
             ];
+
         } else if ($scope.level === constants.level.ACCOUNTS) {
             $scope.localStoragePrefix = 'accountSources';
             $scope.chartMetrics = options.accountChartMetrics;
@@ -640,6 +636,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
               {name: 'By Ad Group', value: 'adgroup-csv'},
               {name: 'By Content Ad', value: 'contentad-csv'}
             ];
+            $scope.infoboxLinkTo = 'main.accounts.settings';
         } else if ($scope.level === constants.level.CAMPAIGNS) {
             $scope.localStoragePrefix = 'campaignSources';
             $scope.chartMetrics = options.campaignChartMetrics;
@@ -649,6 +646,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
               {name: 'By Ad Group', value: 'adgroup-csv'},
               {name: 'By Content Ad', value: 'contentad-csv'}
             ];
+
+            $scope.infoboxLinkTo = 'main.campaigns.settings';
         }
 
         userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
