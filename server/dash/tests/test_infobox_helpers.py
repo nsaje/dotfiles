@@ -401,3 +401,21 @@ class InfoBoxHelpersTest(TestCase):
                 dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE,
             )
         )
+
+    @mock.patch('reports.redshift.get_cursor')
+    def test_get_yesterday_adgroup_spend(self, cursor):
+        user = zemauth.models.User.objects.get(pk=1)
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        cursor().dictfetchall.return_value = [{
+            'adgroup_id': u'1',
+            'cost_cc_sum': 500000,
+        }]
+
+        self.assertEqual(
+            50,
+            dash.infobox_helpers.get_yesterday_adgroup_spend(user, ad_group)
+        )
+
+
+    def test_create_yesterday_spend_setting(self):
+        pass
