@@ -416,6 +416,23 @@ class InfoBoxHelpersTest(TestCase):
             dash.infobox_helpers.get_yesterday_adgroup_spend(user, ad_group)
         )
 
-
     def test_create_yesterday_spend_setting(self):
-        pass
+        setting = dash.infobox_helpers.create_yesterday_spend_setting(50, 100)
+
+        self.assertEqual("$50.00", setting.value)
+        self.assertEqual("50.00% of daily cap", setting.description)
+        self.assertEqual('sad', setting.icon)
+
+
+        setting_1 = dash.infobox_helpers.create_yesterday_spend_setting(110, 100)
+
+        self.assertEqual("$110.00", setting_1.value)
+        self.assertEqual("110.00% of daily cap", setting_1.description)
+        self.assertEqual('happy', setting_1.icon)
+
+
+        setting_0 = dash.infobox_helpers.create_yesterday_spend_setting(50, 0)
+
+        self.assertEqual("$50.00", setting_0.value)
+        self.assertEqual("N/A", setting_0.description)
+        self.assertEqual('sad', setting_0.icon)

@@ -272,14 +272,21 @@ def calculate_available_media_campaign_budget(campaign):
 
 
 def create_yesterday_spend_setting(yesterday_cost, daily_budget):
+    filled_daily_ratio = None
     if daily_budget> 0:
         filled_daily_ratio = float(yesterday_cost) / float(daily_budget)
+
+    if filled_daily_ratio:
+        daily_ratio_description = '{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100)
+    else:
+        daily_ratio_description = 'N/A'
+
     yesterday_spend_setting = OverviewSetting(
         'Yesterday spend:',
         '${:.2f}'.format(yesterday_cost),
-        description='{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100),
+        description=daily_ratio_description,
     ).performance(
-        filled_daily_ratio >= 1.0
+        filled_daily_ratio >= 1.0 if filled_daily_ratio else False
     )
     return yesterday_spend_setting
 
