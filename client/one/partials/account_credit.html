@@ -33,7 +33,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="item in activeCredit" ng-class="{ 'row-updated': item.id == updatedId, 'row-not-selected': !isSelected(item.startDate, item.endDate) }">
+                <tr ng-repeat="item in activeCredit" ng-class="{ 'row-updated': item.id == updatedId, 'row-canceled': item.isCanceled, 'row-updated-canceled': canceledIds[item.id], 'row-not-selected': !isSelected(item.startDate, item.endDate) }">
                     <td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>
@@ -50,7 +50,12 @@
                     </td>
                     <td>
                         <ul class="row-actions">
-                            <li ng-click="editCreditItem(item.id)">edit</li>
+                            <li ng-click="editCreditItem(item.id)" ng-if="!item.isCanceled">
+								<i class="glyphicon glyphicon-pencil" title="edit"></i>
+							</li>
+							<li ng-click="cancelCreditItem(item.id)" ng-if="item.isSigned">
+								<i class="glyphicon glyphicon-trash" title="cancel"></i>
+							</li>
                         </ul>
                     </td>
                 </tr>
@@ -79,7 +84,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="item in pastCredit" ng-class="{ 'row-not-selected': !isSelected(item.startDate, item.endDate) }">
+                <tr ng-repeat="item in pastCredit" ng-class="{ 'row-canceled': item.isCanceled, 'row-updated-canceled': canceledIds[item.id], 'row-not-selected': !isSelected(item.startDate, item.endDate) }">
                     <td>{{ item.createdBy }}<br />{{ item.createdOn }}</td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>
@@ -96,7 +101,12 @@
                     </td>
                     <td>
                         <ul class="row-actions">
-                            <li ng-click="editCreditItem(item.id)">edit</li>
+                            <li ng-click="editCreditItem(item.id)" ng-if="!item.isCanceled">
+								<i class="glyphicon glyphicon-pencil" title="edit"></i>
+							</li>
+							<li ng-click="cancelCreditItem(item.id)" ng-if="item.isSigned">
+								<i class="glyphicon glyphicon-trash" title="cancel"></i>
+							</li>
                         </ul>
                     </td>
                 </tr>   

@@ -41,10 +41,10 @@
                     <td>{{ item.licenseFee  }}</td>
                     <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
-                    <td class="text-row"><span ng-if="!item.comment">N/A</span>{{ item.comment }}</td>
+                    <td><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
                     <td>
                         <ul class="row-actions">
-                            <li ng-click="editBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable">edit</li>
+                            <li ng-click="editBudgetItem(item.id)" ng-if="item.isEditable || item.isUpdatable"><i class="glyphicon glyphicon-pencil" title="edit"></i></li>
                         </ul>
                     </td>
                 </tr>
@@ -81,11 +81,11 @@
                     <td>{{ item.spend | decimalCurrency:"$":2  }}</td>
                     <td>{{ item.available | decimalCurrency:"$":2  }}</td>
 
-                    <td class="text-row">{{ item.comment }}</td>
+                    <td><zem-note-popover content="{{ item.comment }}" placement="top"></zem-note-popover></td>
                     
                     <td>
                         <ul class="row-actions">
-                            <li ng-click="editBudgetItem(item.id)" ng-if="item.isEditable">edit</li>
+                            <li ng-click="editBudgetItem(item.id)" ng-if="item.isEditable"><i class="glyphicon glyphicon-pencil" title="edit"></i></li>
                         </ul>
                     </td>
                 </tr>

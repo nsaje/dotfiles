@@ -661,7 +661,6 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             nr_inconsistent_internal_states
         )
 
-    if unsynced_content_ad_sources_actions:
         logger.info(
             'Found unsynced content ads for ad group %s on sources: %s',
             ad_group_source.ad_group,

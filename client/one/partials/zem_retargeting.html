@@ -1,0 +1,21 @@
+<div ng-show="selectedAdgroupIds.length" class="multiselect">
+    <div class="multiselect-tag" ng-repeat="adgroup in selectedAdgroups()" ng-click="removeSelectedAdgroup(adgroup)">
+        <span class="multiselect-tag-name">
+            {{adgroup.name}}
+            <img class="remove" ng-src="{{ config.static_url }}/one/img/x_gray.svg">
+        </span>
+     </div>
+</div>
+
+<ui-select theme="select2" ng-if="availableAdgroups().length" ng-model="selected.adgroup" on-select="addAdgroup($item)">
+    <ui-select-match placeholder="Add New Ad Group">{{$item.name}}</ui-select-match>
+    <ui-select-choices 
+            group-by="groupByCampaign" 
+            repeat="adgroup in availableAdgroups() | filter: {name: $select.search} track by adgroup.id"
+            position='down'>
+        <div 
+            ng-class="{archived: adgroup.archived}"
+            ng-bind-html="adgroup.name | highlight: $select.search">
+        </div>
+    </ui-select-choices>
+</ui-select>
