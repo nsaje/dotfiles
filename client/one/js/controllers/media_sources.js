@@ -544,12 +544,30 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             return;
         }
 
-        api.campaignOverview.get($state.params.id).then(
-            function (data) {
-                $scope.infoboxHeader = data.header;
-                $scope.infoboxSettings = data.settings;
-            }
-        );
+        if ($scope.level === constants.level.ALL_ACCOUNTS) {
+            // not yet supported
+        } else if ($scope.level === constants.level.ACCOUNTS) {
+            api.accountOverview.get($state.params.id).then(
+                function (data) {
+                    $scope.infoboxHeader = data.header;
+                    $scope.infoboxSettings = data.settings;
+                }
+            );
+        } else if ($scope.level === constants.level.CAMPAIGNS) {
+            api.campaignOverview.get($state.params.id).then(
+                function (data) {
+                    $scope.infoboxHeader = data.header;
+                    $scope.infoboxSettings = data.settings;
+                }
+            );
+        } else {
+            api.adGroupOverview.get($state.params.id).then(
+                function (data) {
+                    $scope.infoboxHeader = data.header;
+                    $scope.infoboxSettings = data.settings;
+                }
+            );
+        }
     };
 
     var setChartOptions = function () {
