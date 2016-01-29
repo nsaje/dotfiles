@@ -449,7 +449,24 @@ class InfoBoxHelpersTest(TestCase):
         self.assertEqual(50, cap)
 
     def test_calculate_available_credit(self):
-        pass
+        account = dash.models.Account.objects.get(pk=1)
+        available_credit = dash.infobox_helpers.calculate_available_credit(account)
+        self.assertEqual(0, available_credit)
+
+        user = zemauth.models.User.objects.get(pk=1)
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        credit = dash.models.CreditLineItem.objects.create(
+            account=account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        available_credit = dash.infobox_helpers.calculate_available_credit(account)
+        self.assertEqual(80, available_credit)
 
     def test_calculate_spend_credit(self):
         pass
