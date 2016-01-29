@@ -68,7 +68,17 @@ def format_flight_time(start_date, end_date):
 
 def get_ideal_campaign_spend(user, campaign, until_date=None):
     at_date = until_date or datetime.datetime.today().date()
-    budgets = _retrieve_active_budgetlineitems(campaign, at_date)
+    budgets = _retrieve_active_budgetlineitems([campaign], at_date)
+    if len(budgets) == 0:
+        return Decimal(0)
+    all_budget_spends_at_date = [b.get_ideal_budget_spend(at_date) for b in budgets]
+    return sum(all_budget_spends_at_date)
+
+
+def get_ideal_account_spend(user, account, until_date=None):
+    at_date = until_date or datetime.datetime.today().date()
+    campaigns = dash.models.Campaign.objects.filter(account=account)
+    budgets = _retrieve_active_budgetlineitems(campaigns, at_date)
     if len(budgets) == 0:
         return Decimal(0)
     all_budget_spends_at_date = [b.get_ideal_budget_spend(at_date) for b in budgets]
@@ -78,7 +88,24 @@ def get_ideal_campaign_spend(user, campaign, until_date=None):
 def get_total_and_media_campaign_spend(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()
-    budgets = _retrieve_active_budgetlineitems(campaign, at_date)
+    budgets = _retrieve_active_budgetlineitems([campaign], at_date)
+    if len(budgets) == 0:
+        return Decimal(0), Decimal(0)
+
+    all_budget_spends_at_date = [
+        b.get_spend_data(date=at_date, use_decimal=True) for b in budgets
+    ]
+    return (
+        sum(map(lambda bli: bli['total'], all_budget_spends_at_date)),
+        sum(map(lambda bli: bli['media'], all_budget_spends_at_date))
+    )
+
+
+def get_daily_media_account_budget(account, at_date):
+    # campaign budget based on non-depleted budget line items
+    at_date = until_date or datetime.datetime.utcnow().date()
+    campaigns = dash.models.Campaign.objects.filter(account=account)
+    budgets = _retrieve_active_budgetlineitems(campaigns, at_date)
     if len(budgets) == 0:
         return Decimal(0), Decimal(0)
 
@@ -94,7 +121,7 @@ def get_total_and_media_campaign_spend(user, campaign, until_date=None):
 def get_media_campaign_spend(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()
-    budgets = _retrieve_active_budgetlineitems(campaign, at_date)
+    budgets = _retrieve_active_budgetlineitems([campaign], at_date)
     ret = Decimal(0)
     for bli in budgets:
         spend_data = bli.get_spend_data(date=at_date, use_decimal=True)
@@ -257,10 +284,23 @@ def calculate_daily_campaign_cap(campaign):
     ))
 
 
+def calculate_daily_account_cap(account):
+    campaigns = dash.models.Campaign.objects.filter(account=account)
+    ad_groups = dash.models.AdGroup.objects.filter(
+        campaign__in=campaigns
+    ).exclude_archived()
+    return sum(map(
+        _retrieve_daily_cap,
+        dash.models.AdGroupSource.objects.filter(
+            ad_group=ad_groups
+        )
+    ))
+
+
 def calculate_available_media_campaign_budget(campaign):
     # campaign budget based on non-depleted budget line items
     today = datetime.datetime.utcnow().date()
-    budgets = _retrieve_active_budgetlineitems(campaign, today)
+    budgets = _retrieve_active_budgetlineitems([campaign], today)
 
     ret = 0
     for bli in budgets:
@@ -309,7 +349,7 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
         filled_daily_ratio = float(yesterday_cost) / float(daily_budget)
 
     if filled_daily_ratio:
-        daily_ratio_description = '{:.2f}% of daily cap'.format(abs(filled_daily_ratio) * 100)
+        daily_ratio_description = '{:.2f}% of daily budget'.format(abs(filled_daily_ratio) * 100)
     else:
         daily_ratio_description = 'N/A'
 
@@ -323,9 +363,9 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
     return yesterday_spend_setting
 
 
-def _retrieve_active_budgetlineitems(campaign, date):
+def _retrieve_active_budgetlineitems(campaigns, date):
     return [budget for budget in dash.models.BudgetLineItem.objects.filter(
-        campaign=campaign
+        campaign__in=campaigns
     ) if budget.state(date) == dash.constants.BudgetLineItemState.ACTIVE]
 
 

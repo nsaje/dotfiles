@@ -735,25 +735,22 @@ class AccountOverview(api_common.BaseApiView):
         settings = []
 
         available_credit = infobox_helpers.calculate_available_credit(account)
-        available_credit_setting = infobox_helpers.OverviewSetting(
-            'Available credit:',
-            '${:.2f}'.format(available_credit)
-        )
-        settings.append(available_credit_setting.as_dict())
-
         spend_credit = infobox_helpers.calculate_spend_credit(account)
         spend_credit_setting = infobox_helpers.OverviewSetting(
             'Spend credit:',
-            '${:.2f}'.format(spend_credit)
+            '${:.2f}'.format(spend_credit),
+            description='${:.2f}'.format(available_credit)
         )
         settings.append(spend_credit_setting.as_dict())
 
+        daily_budget = infobox_helpers.calculate_daily_account_cap(account)
         yesterday_spend = infobox_helpers.calculate_yesterday_account_spend(account)
-        yesterday_spent_setting = infobox_helpers.OverviewSetting(
-            'Yesterday spent:',
-            '${:.2f}'.format(yesterday_spend)
+        settings.append(
+            infobox_helpers.create_yesterday_spend_setting(
+                yesterday_spend,
+                daily_budget
+            ).as_dict()
         )
-        settings.append(yesterday_spent_setting.as_dict())
 
         return settings
 
