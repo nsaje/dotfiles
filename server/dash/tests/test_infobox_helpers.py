@@ -469,7 +469,11 @@ class InfoBoxHelpersTest(TestCase):
         self.assertEqual(80, available_credit)
 
     def test_calculate_spend_credit(self):
-        pass
+        account = dash.models.Account.objects.get(pk=1)
+        available_credit = dash.infobox_helpers.calculate_spend_credit(account)
+        self.assertEqual(0, available_credit)
 
     def test_calculate_yesterday_account_spend(self):
-        pass
+        account = dash.models.Account.objects.get(pk=1)
+        available_credit = dash.infobox_helpers.calculate_yesterday_account_spend(account)
+        self.assertEqual(0, available_credit)
