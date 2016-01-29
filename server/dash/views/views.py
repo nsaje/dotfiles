@@ -695,7 +695,6 @@ class AccountOverview(api_common.BaseApiView):
 
     def _basic_settings(self, account):
         settings = []
-
         account_settings = account.get_current_settings()
         account_manager_setting = infobox_helpers.OverviewSetting(
             'Account Manager:',

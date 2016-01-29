@@ -2569,11 +2569,26 @@ class AccountOverviewTest(TestCase):
         return [s for s in settings if name in s['name'].lower()][0]
 
     @patch('reports.redshift.get_cursor')
-    def test_run_empty(self, cursor):
+    @patch('dash.models.Account.get_current_settings')
+    def test_run_empty(self, mock_current_settings, cursor):
+        account = models.Account.objects.get(pk=1)
+
+        settings = models.AccountSettings(
+            default_account_manager=zemauth.models.User.objects.get(pk=1),
+            default_sales_representative=zemauth.models.User.objects.get(pk=2),
+        )
+
+        mock_current_settings.return_value = settings
+
+        # do some extra setup to the account
         cursor().dictfetchall.return_value = [{
             'adgroup_id': 1,
             'source_id': 9,
             'cost_cc_sum': 0.0
         }]
         response = self._get_account_overview(1)
+        settings = response['data']['settings']
+
+        pf_setting = self._get_setting(settings, 'platform fee')
+        self.assertEqual('20.00%', pf_setting['value'])
         self.assertTrue(response['success'])
