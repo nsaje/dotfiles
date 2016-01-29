@@ -18,6 +18,7 @@ from dash.models import AdGroupSource
 
 UNSUPPORTED_SOURCES = [SourceType.GRAVITY, SourceType.OUTBRAIN, SourceType.YAHOO]
 BLACKLIST_ENTRIES_PER_ACTIONLOG = 1000
+ACTIONLOGS_PER_ZWEI_ACTIONS_SEND = 5
 
 
 class Command(ExceptionCommand):
@@ -42,8 +43,8 @@ class Command(ExceptionCommand):
 
         actionlogs = self.create_actionlogs_for_domains(ad_group, domains)
 
-        for i in range(0, len(actionlogs), 5):
-            zwei_actions.send(actionlogs[i:i+5])
+        for i in range(0, len(actionlogs), ACTIONLOGS_PER_ZWEI_ACTIONS_SEND):
+            zwei_actions.send(actionlogs[i:i+ACTIONLOGS_PER_ZWEI_ACTIONS_SEND])
 
     def parse_csv(self, csv_file):
         lines = unicodecsv.reader(csv_file)
