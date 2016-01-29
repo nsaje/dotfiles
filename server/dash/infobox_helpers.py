@@ -357,6 +357,7 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
         'Yesterday spend:',
         '${:.2f}'.format(yesterday_cost),
         description=daily_ratio_description,
+        tooltip='Yesterday media spend'
     ).performance(
         filled_daily_ratio >= 1.0 if filled_daily_ratio else False
     )

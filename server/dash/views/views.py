@@ -670,7 +670,18 @@ class AccountOverview(api_common.BaseApiView):
                 performance_settings,
         }
 
-        header['subtitle'] = 'TODO: With x account n campaigns'
+        count_campaigns = models.Campaign.objects.filter(
+            account=account
+        ).count()
+
+        count_adgroups = models.AdGroup.objects.filter(
+            campaign__account=account
+        ).count()
+
+        header['subtitle'] = 'with {count_campaigns} campaigns and {count_adgroups} ad groups'.format(
+            count_campaigns=count_campaigns,
+            count_adgroups=count_adgroups
+        )
 
         return self.create_api_response(response)
 
@@ -724,11 +735,14 @@ class AccountOverview(api_common.BaseApiView):
             )
         settings.append(conversion_pixel_setting.as_dict())
 
+        """
+        # temporarily disabled
         account_type_setting = infobox_helpers.OverviewSetting(
             'Account type:',
             'N/A'
         )
         settings.append(account_type_setting.as_dict())
+        """
         return settings
 
     def _performance_settings(self, account, user):
