@@ -1,8 +1,8 @@
-<div ng-show="selectedLocationCodes" class="selected-locations">
-    <div class="location-tag" ng-if="!selectedLocationCodes.length"><span class="location-name">Worldwide</span></div>
-    <div class="location-tag" ng-repeat="location in selectedLocations()" ng-click="removeSelectedLocation(location)">
-        <span ng-if="regions.isDMA(location) || regions.isUSState(location)" class="location-dma">US</span>
-        <span class="location-name">
+<div ng-show="selectedLocationCodes" class="multiselect">
+    <div class="multiselect-tag" ng-if="!selectedLocationCodes.length"><span class="multiselect-tag-name">Worldwide</span></div>
+    <div class="multiselect-tag" ng-repeat="location in selectedLocations()" ng-click="removeSelectedLocation(location)">
+        <span ng-if="regions.isDMA(location) || regions.isUSState(location)" class="multiselect-tag-label">US</span>
+        <span class="multiselect-tag-name">
             {{location.name}}
             <img class="remove" ng-src="{{ config.static_url }}/one/img/x_gray.svg">
         </span>
