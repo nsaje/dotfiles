@@ -75,16 +75,6 @@ def get_ideal_campaign_spend(user, campaign, until_date=None):
     return sum(all_budget_spends_at_date)
 
 
-def get_ideal_account_spend(user, account, until_date=None):
-    at_date = until_date or datetime.datetime.today().date()
-    campaigns = dash.models.Campaign.objects.filter(account=account)
-    budgets = _retrieve_active_budgetlineitems(campaigns, at_date)
-    if len(budgets) == 0:
-        return Decimal(0)
-    all_budget_spends_at_date = [b.get_ideal_budget_spend(at_date) for b in budgets]
-    return sum(all_budget_spends_at_date)
-
-
 def get_total_and_media_campaign_spend(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()
