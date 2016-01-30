@@ -1483,7 +1483,7 @@ class AdGroupSettings(SettingsBase):
         return {
             'state': constants.AdGroupSettingsState.INACTIVE,
             'start_date': dates_helper.utc_today(),
-            'cpc_cc': 0.4000,
+            'cpc_cc': None,
             'daily_budget_cc': 10.0000,
             'target_devices': constants.AdTargetDevice.get_all(),
             'target_regions': ['US']
