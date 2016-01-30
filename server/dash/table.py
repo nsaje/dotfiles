@@ -1493,6 +1493,9 @@ class CampaignAdGroupsTable(object):
 
             row['last_sync'] = last_sync
 
+            row['status_setting'] = ad_groups_status_dict[ad_group.id]
+            row['editable_fields'] = {'status_setting': {'enabled': True, 'message': None}}
+
             rows.append(row)
 
         if order:

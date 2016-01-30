@@ -88,6 +88,57 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             disabled: false
         },
         {
+            name: '\u25CF',
+            field: 'status_setting',
+            type: 'state',
+            order: true,
+            editable: true,
+            initialOrder: 'asc',
+            enabledValue: constants.adGroupSourceSettingsState.ACTIVE,
+            pausedValue: constants.adGroupSourceSettingsState.INACTIVE,
+            internal: false,
+            shown: true,
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            help: 'A setting for enabling and pausing ad groups.',
+            onChange: function (adgroupId, value) {
+                console.log("Changed: "+adgroupId+"  state="+value);
+
+                var newSettings = {};
+                newSettings.id = adgroupId;
+                newSettings.state = value;
+
+                api.adGroupSettings.save(
+                    $state.params.id,
+                    adgroupId,
+                    newSettings
+                ).then(
+                    function (data) {
+                        // TODO
+                        console.log (data)
+
+                    }
+                );
+            },
+            getDisabledMessage: function (row) {
+                return 'This ad must be managed manually.';
+            },
+            disabled: false,
+            archivedField: 'archived'
+        },
+        {
+            getDisabledMessage: function (row) {
+                var editableFields = row.editable_fields;
+                if (!editableFields) {
+                    return '';
+                }
+
+                return editableFields['status_setting'].message;
+            },
+            disabled: false
+        },
+        {
             name: 'Ad Group',
             field: 'name',
             unselectable: true,

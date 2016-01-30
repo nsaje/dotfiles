@@ -202,6 +202,48 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
 
+class AdGroupSettingsState(api_common.BaseApiView):
+
+    # @statsd_helper.statsd_timer('dash.api', 'ad_group_state_post')
+    def post(self, request, ad_group_id):
+        # if not request.user.has_perm('zemauth.set_content_ad_status'):
+        #     raise exc.ForbiddenError(message='Not allowed')
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        data = json.loads(request.body)
+        new_state = data.get('state')
+        self._validate_state(ad_group, new_state)
+
+        settings = ad_group.get_current_settings()
+
+        if settings.state != new_state:
+            settings.state = new_state
+            settings.save(request)
+            actions = self._init_state_actions(ad_group, new_state, request)
+            zwei_actions.send(actions)
+
+        return self.create_api_response()
+
+    def _validate_state(self, ad_group, state):
+        if state is None or state not in constants.AdGroupSettingsState.get_all():
+            raise exc.ValidationError()
+
+        # ACTIVE state is only valid when there is budget to spend
+        if state == constants.AdGroupSettingsState.ACTIVE and \
+                not helpers.ad_group_has_available_budget(ad_group):
+            raise exc.ValidationError('Cannot enable ad group without available budget.')
+
+    def _init_state_actions(self, ad_group, state, request):
+        with transaction.atomic():
+            order = actionlog_models.ActionLogOrder.objects.create(
+                    order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+            )
+            if state == constants.AdGroupSettingsState.ACTIVE:
+                return actionlog_api.init_pause_ad_group(ad_group, request, order=order, send=False)
+            else:
+                return actionlog_api.init_enable_ad_group(ad_group, request, order=order, send=False)
+
+
 class CampaignAgency(api_common.BaseApiView):
     @statsd_helper.statsd_timer('dash.api', 'campaign_agency_get')
     def get(self, request, campaign_id):

@@ -333,6 +333,7 @@ class AdGroupSettingsTest(TestCase):
         self.assertFalse(response_dict['success'])
         self.assertIn('end_date', response_dict['data']['errors'])
 
+
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
     def test_enable_without_budget(self, mock_actionlog_api, mock_order_ad_group_settings_update):
@@ -343,14 +344,62 @@ class AdGroupSettingsTest(TestCase):
         self.settings_dict['settings']['id'] = 2
 
         response = self.client.put(
-            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True
         )
 
         response_dict = json.loads(response.content)
         self.assertFalse(response_dict['success'])
         self.assertIn('state', response_dict['data']['errors'])
+
+
+class AdGroupSettingsStateTest(TestCase):
+    fixtures = ['test_api.yaml', 'test_views.yaml']
+
+    def setUp(self):
+        user = User.objects.get(pk=1)
+        self.client.login(username=user.email, password='secret')
+
+    def test_enable_without_budget(self):
+        ad_group = models.AdGroup.objects.get(pk=2)
+
+        response = self.client.post(
+                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps({'state': 1}),
+                content_type='application/json',
+                follow=True,
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    @patch('actionlog.zwei_actions.send')
+    def test_inactivate(self, mock_zwei_send):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        response = self.client.post(
+                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps({'state': 2}),
+                content_type='application/json',
+                follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    @patch('dash.views.helpers.ad_group_has_available_budget')
+    def test_enable_with_budget(self, mock_budget_check):
+        ad_group = models.AdGroup.objects.get(pk=2)
+
+        mock_budget_check.return_value = True
+
+        response = self.client.post(
+                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps({'state': 1}),
+                content_type='application/json',
+                follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
 
 
 class AdGroupAgencyTest(TestCase):
