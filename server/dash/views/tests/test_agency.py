@@ -22,7 +22,7 @@ from dash import forms
 
 
 class AdGroupSettingsTest(TestCase):
-    fixtures = ['test_api.yaml', 'test_views.yaml']
+    fixtures = ['test_models.yaml', 'test_adgroup_settings.yaml']
 
     def setUp(self):
         self.settings_dict = {
@@ -355,7 +355,7 @@ class AdGroupSettingsTest(TestCase):
 
 
 class AdGroupSettingsStateTest(TestCase):
-    fixtures = ['test_api.yaml', 'test_views.yaml']
+    fixtures = ['test_models.yaml', 'test_adgroup_settings.yaml']
 
     def setUp(self):
         user = User.objects.get(pk=1)
@@ -365,7 +365,6 @@ class AdGroupSettingsStateTest(TestCase):
     @patch('actionlog.zwei_actions.send')
     def test_activate(self, mock_zwei_send, mock_budget_check):
         ad_group = models.AdGroup.objects.get(pk=2)
-
         mock_budget_check.return_value = True
 
         response = self.client.post(
@@ -380,6 +379,20 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(len(mock_zwei_send.call_args), 2)
         self.assertEqual(ad_group.get_current_settings().state, 1)
 
+    @patch('dash.views.helpers.ad_group_has_available_budget')
+    @patch('actionlog.zwei_actions.send')
+    def test_activate_already_activated(self, mock_zwei_send, mock_budget_check):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        mock_budget_check.return_value = True
+
+        response = self.client.post(
+                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps({'state': 1}),
+                content_type='application/json',
+                follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(mock_zwei_send.called, False)
 
     @patch('actionlog.zwei_actions.send')
     def test_activate_without_budget(self, mock_zwei_send):
@@ -391,7 +404,6 @@ class AdGroupSettingsStateTest(TestCase):
                 content_type='application/json',
                 follow=True,
         )
-
         self.assertEqual(response.status_code, 400)
         self.assertEqual(ad_group.get_current_settings().state, 2)
         self.assertEqual(mock_zwei_send.called, False)
@@ -411,19 +423,6 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(mock_zwei_send.called, True)
         self.assertEqual(len(mock_zwei_send.call_args[0]), 1)
         self.assertEqual(ad_group.get_current_settings().state, 2)
-
-    @patch('actionlog.zwei_actions.send')
-    def test_activate_already_activated(self, mock_zwei_send):
-        ad_group = models.AdGroup.objects.get(pk=1)
-
-        response = self.client.post(
-                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
-                json.dumps({'state': 1}),
-                content_type='application/json',
-                follow=True,
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_zwei_send.called, False)
 
     @patch('actionlog.zwei_actions.send')
     def test_inactivate_already_inactivated(self, mock_zwei_send):
