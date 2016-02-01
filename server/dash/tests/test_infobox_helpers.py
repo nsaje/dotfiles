@@ -434,3 +434,9 @@ class InfoBoxHelpersTest(TestCase):
         self.assertEqual("$50.00", setting_0.value)
         self.assertEqual("N/A", setting_0.description)
         self.assertEqual('sad', setting_0.icon)
+
+    def test_get_yesterday_all_accounts_spend(self):
+        self.assertEqual(0, dash.infobox_helpers.get_yesterday_all_accounts_spend())
+
+    def test_get_mtd_all_accounts_spend(self):
+        self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend())
