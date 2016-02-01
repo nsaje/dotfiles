@@ -732,8 +732,6 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
         self.assertItemsEqual(expected, conversion_pairs)
 
     def test_process_bad_pixie(self):
-        self.maxDiff = None
-
         redirects_impressions = {
             '1234-12345-123456': [
                 {
