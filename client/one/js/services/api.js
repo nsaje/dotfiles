@@ -1450,6 +1450,37 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
+
+    function AllAccountsOverview () {
+
+        this.get = function () {
+            var deferred = $q.defer();
+            var url = '/api/accounts/overview/';
+            var config = {
+                params: {}
+            };
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        data.data.settings = data.data.settings.map(convertFromApi);
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function (data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        function convertFromApi (setting) {
+            setting.detailsLabel = setting.details_label;
+            setting.detailsContent = setting.details_content;
+            return setting;
+        }
+    }
+
     function ScheduledReports () {
         this.get = function (level, id) {
             var deferred = $q.defer();
@@ -3006,6 +3037,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         userActivation: new UserActivation(),
         dailyStats: new DailyStats(),
         allAccountsBudget: new AllAccountsBudget(),
+        allAccountsOverview: new AllAccountsOverview(),
         accountUsers: new AccountUsers(),
         adGroupSourceSettings: new AdGroupSourceSettings(),
         adGroupSourcesUpdates: new AdGroupSourcesUpdates(),

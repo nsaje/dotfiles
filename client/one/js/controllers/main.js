@@ -264,7 +264,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             $state.is('main.campaigns.sources') ||
             $state.is('main.adGroups.adsPlus') ||
             $state.is('main.adGroups.sources') ||
-            $state.is('main.adGroups.publishers')) {
+            $state.is('main.adGroups.publishers') ||
+            $state.is('main.allAccounts.accounts') ||
+            $state.is('main.allAccounts.sources')) {
             $scope.infoboxEnabled = true;
         } else {
             $scope.infoboxEnabled = false;

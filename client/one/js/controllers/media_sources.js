@@ -544,12 +544,21 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             return;
         }
 
-        api.campaignOverview.get($state.params.id).then(
-            function (data) {
-                $scope.infoboxHeader = data.header;
-                $scope.infoboxSettings = data.settings;
-            }
-        );
+        if ($scope.level === constants.level.ALL_ACCOUNTS) {
+            api.allAccountsOverview.get().then(
+                function (data) {
+                    $scope.infoboxHeader = data.header;
+                    $scope.infoboxSettings = data.settings;
+                }
+            );
+        } else {
+            api.campaignOverview.get($state.params.id).then(
+                function (data) {
+                    $scope.infoboxHeader = data.header;
+                    $scope.infoboxSettings = data.settings;
+                }
+            );
+        }
     };
 
     var setChartOptions = function () {

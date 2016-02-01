@@ -15,6 +15,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.sizeRange = [5, 10, 20, 50];
     $scope.size = $scope.sizeRange[0];
     $scope.isIncompletePostclickMetrics = false;
+    $scope.infoboxHeader = null;
+    $scope.infoboxSettings = null;
     $scope.pagination = {
         currentPage: 1,
     };
@@ -382,6 +384,19 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             function (data) {
                 // error
                 return;
+            }
+        );
+    };
+
+    var getInfoboxData = function () {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+
+        api.allAccountsOverview.get().then(
+            function (data) {
+                $scope.infoboxHeader = data.header;
+                $scope.infoboxSettings = data.settings;
             }
         );
     };
