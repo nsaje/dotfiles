@@ -32,7 +32,7 @@ MOVED_PIXIES_INVERTED = {v: k for k, v in MOVED_PIXIES.iteritems()}
 # If a pixie was misplaced or for some other reason needs some of its data ignored,
 # it should be specified in a BAD_PIXIE_X map.
 BAD_PIXIES_ACCOUNT_LEVEL = {  # (account_id, slug): [(range_start_dt, range_end_dt),...]
-    
+
 }
 
 BAD_PIXIES_AD_GROUP_LEVEL = {  # (ad_group_id, slug): [(range_start_dt, range_end_dt),...]
@@ -216,24 +216,30 @@ def process_touchpoint_conversions(redirects_impressions):
             }
 
             # filter out conversions that are within BAD_PIXIE date ranges
-            bad = False
+            if _touchpoint_conversion_falls_within_bad_pixie_range(account_id, potential_touchpoint_conversion):
+                continue
 
-            if((account_id, slug) in BAD_PIXIES_ACCOUNT_LEVEL):
-                for range_start_dt, range_end_dt in BAD_PIXIES_ACCOUNT_LEVEL[(account_id, slug)]:
-                    if(range_start_dt <= impression_ts <= range_end_dt):
-                        bad = True
-                        break
-
-            if((ad_group_id, slug) in BAD_PIXIES_AD_GROUP_LEVEL):
-                for range_start_dt, range_end_dt in BAD_PIXIES_AD_GROUP_LEVEL[(ad_group_id, slug)]:
-                    if(range_start_dt <= impression_ts <= range_end_dt):
-                        bad = True
-                        break
-
-            if not bad:
-                touchpoint_conversion_dict[redirect_id][conversion_key] = potential_touchpoint_conversion
+            touchpoint_conversion_dict[redirect_id][conversion_key] = potential_touchpoint_conversion
 
         for touchpoint in touchpoint_conversion_dict.itervalues():
             touchpoint_conversions.extend(touchpoint.itervalues())
 
     return touchpoint_conversions
+
+
+def _touchpoint_conversion_falls_within_bad_pixie_range(account_id, touchpoint_conversion):
+    ad_group_id = touchpoint_conversion['ad_group_id']
+    slug = touchpoint_conversion['slug']
+    conversion_timestamp = touchpoint_conversion['conversion_timestamp']
+
+    if((account_id, slug) in BAD_PIXIES_ACCOUNT_LEVEL):
+        for range_start_dt, range_end_dt in BAD_PIXIES_ACCOUNT_LEVEL[(account_id, slug)]:
+            if(range_start_dt <= conversion_timestamp <= range_end_dt):
+                return True
+
+    if((ad_group_id, slug) in BAD_PIXIES_AD_GROUP_LEVEL):
+        for range_start_dt, range_end_dt in BAD_PIXIES_AD_GROUP_LEVEL[(ad_group_id, slug)]:
+            if(range_start_dt <= conversion_timestamp <= range_end_dt):
+                return True
+
+    return False
