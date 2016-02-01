@@ -121,6 +121,28 @@ def get_yesterday_campaign_spend(user, campaign):
     return sum(all_budget_spends_at_date)
 
 
+def get_yesterday_all_accounts_spend():
+    yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
+    budgets = dash.models.BudgetLineItem.objects.all()
+    if len(budgets) == 0:
+        return Decimal(0)
+    all_budget_spends_at_date = [
+        b.get_daily_spend(date=yesterday, use_decimal=True).get('media', 0) for b in budgets
+    ]
+    return sum(all_budget_spends_at_date)
+
+
+def get_mtd_all_accounts_spend():
+    yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
+    budgets = dash.models.BudgetLineItem.objects.all()
+    if len(budgets) == 0:
+        return Decimal(0)
+    all_budget_spends_at_date = [
+        b.get_mtd_spend_data(date=yesterday, use_decimal=True).get('media', 0) for b in budgets
+    ]
+    return sum(all_budget_spends_at_date)
+
+
 def get_goal_value(user, campaign, campaign_settings, goal_type):
     # we are interested in reaching the goal by today
     end_date = datetime.datetime.today().date()

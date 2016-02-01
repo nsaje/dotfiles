@@ -1729,26 +1729,43 @@ class AllAccountsOverview(api_common.BaseApiView):
             'title': 'All accounts',
         }
 
-        '''
-        basic_settings, daily_cap =\
-            self._basic_settings(request.user, campaign, campaign_settings)
-
-        performance_settings, is_delivering = self._performance_settings(
-            campaign,
-            request.user,
-            campaign_settings,
-            daily_cap
-        )
-        '''
 
         response = {
             'header': header,
-            'settings': [],
+            'settings': self._basic_settings(),
         }
 
         header['subtitle'] = ''  # 'Delivering' if is_delivering else 'Not Delivering'
 
         return self.create_api_response(response)
+
+    def _basic_settings(self):
+        settings = []
+        settings.append(infobox_helpers.OverviewSetting(
+            'Active accounts:',
+            0
+        ))
+
+        settings.append(infobox_helpers.OverviewSetting(
+            'Weekly active users:',
+            0
+        ))
+
+        yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Yesterday spend:',
+            '${:.2f}'.format(yesterday_spend),
+            tooltip='Yesterday media spend'
+        ))
+
+        mtd_spend = infobox_helpers.get_mtd_all_accounts_spend()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Spend MTD:',
+            '${:.2f}'.format(mtd_spend),
+            tooltip='Month-to-date media spend'
+        ))
+
+        return [setting.as_dict() for setting in settings]
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
