@@ -499,6 +499,13 @@ class InfoBoxAccountHelpersTest(TestCase):
 
     @mock.patch('dash.models.BudgetLineItem.get_spend_data')
     def test_calculate_spend_credit(self, mock_get_spend_data):
+        mock_get_spend_data.return_value = {
+            'media': 0,
+            'data': 0,
+            'license_fee': 0,
+            'total': 0
+        }
+
         account = dash.models.Account.objects.get(pk=1)
         available_credit = dash.infobox_helpers.calculate_spend_credit(account)
         self.assertEqual(0, available_credit)
