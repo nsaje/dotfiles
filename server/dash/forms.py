@@ -802,7 +802,8 @@ class CreditLineItemAdminForm(forms.ModelForm):
 
     class Meta:
         model = models.CreditLineItem
-        fields = ['account', 'start_date', 'end_date', 'amount', 'flat_fee_cc',
+        fields = ['account', 'start_date', 'end_date', 'amount',
+                  'flat_fee_cc', 'flat_fee_start_date', 'flat_fee_end_date',
                   'license_fee', 'status', 'comment']
 
 
