@@ -37,7 +37,7 @@ class AdGroupSettingsTest(TestCase):
                 'name': 'Test ad group name',
                 'id': 1,
                 'autopilot_state': 2,
-                'autopilot_daily_budget_cc': '100.0000'
+                'autopilot_daily_budget': '100.0000'
             }
         }
 
@@ -74,7 +74,7 @@ class AdGroupSettingsTest(TestCase):
                     'target_regions': ['UK', 'US', 'CA'],
                     'tracking_code': 'param1=foo&param2=bar',
                     'autopilot_state': 2,
-                    'autopilot_daily_budget_cc': '0.00'
+                    'autopilot_daily_budget': '0.00'
                 }
             },
             'success': True
@@ -124,7 +124,7 @@ class AdGroupSettingsTest(TestCase):
                     'enable_adobe_tracking': False,
                     'adobe_tracking_param': '',
                     'autopilot_state': 2,
-                    'autopilot_daily_budget_cc': '100.00'
+                    'autopilot_daily_budget': '100.00'
                 }
             },
             'success': True
@@ -232,7 +232,7 @@ class AdGroupSettingsTest(TestCase):
                     'adobe_tracking_param': '',
                     'enable_adobe_tracking': False,
                     'autopilot_state': 2,
-                    'autopilot_daily_budget_cc': '100.00'
+                    'autopilot_daily_budget': '100.00'
                 }
             },
             'success': True

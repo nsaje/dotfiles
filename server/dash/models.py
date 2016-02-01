@@ -1354,7 +1354,7 @@ class AdGroupSettings(SettingsBase):
         'enable_adobe_tracking',
         'adobe_tracking_param',
         'autopilot_state',
-        'autopilot_daily_budget_cc',
+        'autopilot_daily_budget',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -1400,7 +1400,7 @@ class AdGroupSettings(SettingsBase):
         default=constants.AdGroupSettingsAutopilotState.INACTIVE,
         choices=constants.AdGroupSettingsAutopilotState.get_choices()
     )
-    autopilot_daily_budget_cc = models.DecimalField(
+    autopilot_daily_budget = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
@@ -1471,7 +1471,7 @@ class AdGroupSettings(SettingsBase):
             'target_devices': constants.AdTargetDevice.get_all(),
             'target_regions': ['US'],
             'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
-            'autopilot_daily_budget_cc': 0.00
+            'autopilot_daily_budget': 0.00
         }
 
     @classmethod
@@ -1493,7 +1493,7 @@ class AdGroupSettings(SettingsBase):
             'ad_group_name': 'AdGroup name',
             'enable_ga_tracking': 'Enable GA tracking',
             'autopilot_state': 'Auto-Pilot',
-            'autopilot_daily_budget_cc': 'Auto-Pilot\'s Daily Budget',
+            'autopilot_daily_budget': 'Auto-Pilot\'s Daily Budget',
             'enable_adobe_tracking': 'Enable Adobe tracking',
             'adobe_tracking_param': 'Adobe tracking parameter'
         }
@@ -1506,7 +1506,7 @@ class AdGroupSettings(SettingsBase):
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'autopilot_state':
             value = constants.AdGroupSettingsAutopilotState.get_text(value)
-        elif prop_name == 'autopilot_daily_budget_cc' and value is not None:
+        elif prop_name == 'autopilot_daily_budget' and value is not None:
             value = '$' + utils.string_helper.format_decimal(value, 2, 2)
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'

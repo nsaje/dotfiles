@@ -53,7 +53,7 @@ class AdGroupSettingsTest(TestCase):
             'enable_ga_tracking': True,
             'enable_adobe_tracking': False,
             'adobe_tracking_param': '',
-            'autopilot_daily_budget_cc': Decimal('0.0000'),
+            'autopilot_daily_budget': Decimal('0.0000'),
             'autopilot_state': 2,
 
         }

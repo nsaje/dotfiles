@@ -97,7 +97,7 @@ class AdGroupSettingsForm(forms.Form):
         empty_value=None
     )
 
-    autopilot_daily_budget_cc = forms.DecimalField(
+    autopilot_daily_budget = forms.DecimalField(
         decimal_places=4,
         required=False
     )

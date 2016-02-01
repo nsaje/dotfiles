@@ -539,10 +539,12 @@ var constants = {
     }
 };
 var options = {
-    adGroupSettingsStates: [{name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
+    adGroupSettingsStates: [
+        {name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
         {name: 'Enabled', value: constants.adGroupSettingsState.ACTIVE}
     ],
-    adGroupSettingsAutopilotStates: [{name: 'Paused', value: constants.adGroupSettingsAutopilotState.INACTIVE},
+    adGroupSettingsAutopilotStates: [
+        {name: 'Paused', value: constants.adGroupSettingsAutopilotState.INACTIVE},
         {name: 'Enabled', value: constants.adGroupSettingsAutopilotState.ACTIVE}
     ],
     adTargetDevices: [

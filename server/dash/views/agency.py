@@ -91,7 +91,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         if request.user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
             new_settings.autopilot_state = form.cleaned_data['autopilot_state']
-            new_settings.autopilot_daily_budget_cc = form.cleaned_data['autopilot_daily_budget_cc']
+            new_settings.autopilot_daily_budget = form.cleaned_data['autopilot_daily_budget']
 
         user_action_type = constants.UserActionType.SET_AD_GROUP_SETTINGS
 
@@ -136,9 +136,9 @@ class AdGroupSettings(api_common.BaseApiView):
                 'enable_adobe_tracking': settings.enable_adobe_tracking,
                 'adobe_tracking_param': settings.adobe_tracking_param,
                 'autopilot_state': settings.autopilot_state,
-                'autopilot_daily_budget_cc':
-                    '{:.2f}'.format(settings.autopilot_daily_budget_cc)
-                    if settings.autopilot_daily_budget_cc is not None else ''
+                'autopilot_daily_budget':
+                    '{:.2f}'.format(settings.autopilot_daily_budget)
+                    if settings.autopilot_daily_budget is not None else ''
             }
 
         return result

@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 BLOCKED_AD_GROUP_SETTINGS = [
     'state', 'cpc_cc', 'daily_budget_cc', 'display_url',
     'brand_name', 'description', 'call_to_action',
-    'autopilot_state', 'autopilot_daily_budget_cc'
+    'autopilot_state', 'autopilot_daily_budget'
 ]
 
 AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT = '0082c33a43e59aa0da8849b5af3448bc7b'

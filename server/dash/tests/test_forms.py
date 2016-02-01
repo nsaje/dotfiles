@@ -113,7 +113,7 @@ class AdGroupSettingsFormTest(TestCase):
             'tracking_code': 'code=test',
             'enable_ga_tracking': True,
             'autopilot_state': 2,
-            'autopilot_daily_budget_cc': '100.00'
+            'autopilot_daily_budget': '100.00'
         }
 
     def test_form(self):
@@ -135,14 +135,14 @@ class AdGroupSettingsFormTest(TestCase):
             'enable_adobe_tracking': False,
             'adobe_tracking_param': '',
             'autopilot_state': 2,
-            'autopilot_daily_budget_cc': Decimal('100.00')
+            'autopilot_daily_budget': Decimal('100.00')
         })
 
     def test_no_non_propagated_fields(self):
         self.data['cpc_cc'] = None
         self.data['daily_budget_cc'] = None
         self.data['autopilot_state'] = None
-        self.data['autopilot_daily_budget_cc'] = None
+        self.data['autopilot_daily_budget'] = None
 
         form = forms.AdGroupSettingsForm(self.data)
 
@@ -151,7 +151,7 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertEqual(form.cleaned_data.get('daily_budget_cc'), None)
         self.assertEqual(form.cleaned_data.get('cpc_cc'), None)
         self.assertEqual(form.cleaned_data.get('autopilot_state'), None)
-        self.assertEqual(form.cleaned_data.get('autopilot_daily_budget_cc'), None)
+        self.assertEqual(form.cleaned_data.get('autopilot_daily_budget'), None)
 
     def test_errors_on_non_propagated_fields(self):
         self.data['cpc_cc'] = 0.01

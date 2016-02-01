@@ -151,8 +151,8 @@
 
         <div class="form-horizontal" ng-if="hasPermission('zemauth.can_set_adgroup_to_auto_pilot')">
             <label class="control-label">
-              Auto-Pilot
-              <zem-help-popover content="Ad Group Auto-Pilot for CPC and Budget Automation." placement="top"></zem-help-popover>
+                Auto-Pilot
+                <zem-help-popover content="Ad Group Auto-Pilot for CPC and Budget Automation." placement="top"></zem-help-popover>
             </label>
             <div class="form-group indented" ng-class="{'has-error': !!errors.autopilotState}">
                 <label for="autopilot-state-switch" class="col-xs-2 control-label">
@@ -168,20 +168,20 @@
                 <label ng-repeat="error in errors.autopilotState" class="control-label error" for="name-input">{{ error }}</label>
             </div>
 
-          <div class="form-group indented" ng-class="{'has-error': !!errors.autopilotBudget}">
-              <label for="autopilot-budget" class="col-xs-2 control-label">
-                  <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_adgroup_to_auto_pilot')" popover-placement="right"></zem-internal-feature>
-                  Daily Budget
-                  <zem-help-popover content="Amount of budget Auto-Pilot can operate with on this Ad Group every day." placement="top"></zem-help-popover>
-              </label>
-              <div class="col-xs-2">
-                  <div class="input-group">
-                      <span class="input-group-addon">$</span>
-                      <input id="autopilot-budget" type="text" class="form-control" ng-model="settings.autopilotBudget" zem-currency-input>
-                  </div>
-              </div>
-              <label ng-repeat="error in errors.autopilotBudget" class="control-label error" for="autopilot-budget">{{ error }}</label>
-          </div>
+            <div class="form-group indented" ng-class="{'has-error': !!errors.autopilotBudget}">
+                <label for="autopilot-budget" class="col-xs-2 control-label">
+                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_adgroup_to_auto_pilot')" popover-placement="right"></zem-internal-feature>
+                    Daily Budget
+                    <zem-help-popover content="Amount of budget Auto-Pilot can operate with on this Ad Group every day." placement="top"></zem-help-popover>
+                </label>
+                <div class="col-xs-2">
+                    <div class="input-group">
+                        <span class="input-group-addon">$</span>
+                        <input id="autopilot-budget" type="text" class="form-control" ng-model="settings.autopilotBudget" zem-currency-input>
+                    </div>
+                </div>
+                <label ng-repeat="error in errors.autopilotBudget" class="control-label error" for="autopilot-budget">{{ error }}</label>
+            </div>
         </div>
 
 		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
