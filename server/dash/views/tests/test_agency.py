@@ -22,7 +22,7 @@ from dash import forms
 
 
 class AdGroupSettingsTest(TestCase):
-    fixtures = ['test_models.yaml', 'test_adgroup_settings.yaml']
+    fixtures = ['test_api.yaml', 'test_views.yaml']
 
     def setUp(self):
         self.settings_dict = {
@@ -141,7 +141,8 @@ class AdGroupSettingsTest(TestCase):
             call.mock_order_ad_group_settings_update(
                 ad_group, old_settings, new_settings, ANY, send=False),
             ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
-            call.mock_actionlog_api.init_enable_ad_group(ad_group, ANY, order=ANY, send=False)
+            call.mock_actionlog_api.init_set_ad_group_state(ad_group, constants.AdGroupSettingsState.ACTIVE,
+                                                            ANY, send=False)
         ])
         mock_log_useraction.assert_called_with(
             response.wsgi_request, constants.UserActionType.SET_AD_GROUP_SETTINGS, ad_group=ad_group)
@@ -234,7 +235,8 @@ class AdGroupSettingsTest(TestCase):
         new_settings = ad_group.get_current_settings()
         self.assertIsNotNone(new_settings.pk)
 
-        self.assertTrue(mock_actionlog_api.init_enable_ad_group.called)
+        mock_actionlog_api.init_set_ad_group_state.assert_called_with(ad_group, constants.AdGroupSettingsState.ACTIVE,
+                                                                      ANY, send=False)
 
         # uses 'ANY' instead of 'current_settings' because before settings are created, the
         # 'get_current_settings' returns a new AdGroupSettings instance each time
@@ -333,7 +335,6 @@ class AdGroupSettingsTest(TestCase):
         self.assertFalse(response_dict['success'])
         self.assertIn('end_date', response_dict['data']['errors'])
 
-
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
     def test_enable_without_budget(self, mock_actionlog_api, mock_order_ad_group_settings_update):
@@ -355,11 +356,25 @@ class AdGroupSettingsTest(TestCase):
 
 
 class AdGroupSettingsStateTest(TestCase):
-    fixtures = ['test_models.yaml', 'test_adgroup_settings.yaml']
+    fixtures = ['test_models.yaml', 'test_adgroup_settings_state.yaml']
 
     def setUp(self):
         user = User.objects.get(pk=1)
         self.client.login(username=user.email, password='secret')
+
+    def test_get(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        response = self.client.get(
+                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+                follow=True,
+        )
+        self.assertDictEqual(json.loads(response.content), {
+            'data': {
+                'id': str(ad_group.pk),
+                'state': ad_group.get_current_settings().state
+            },
+            'success': True
+        })
 
     @patch('dash.views.helpers.ad_group_has_available_budget')
     @patch('actionlog.zwei_actions.send')
@@ -377,7 +392,7 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(mock_zwei_send.called, True)
         self.assertEqual(len(mock_zwei_send.call_args), 2)
-        self.assertEqual(ad_group.get_current_settings().state, 1)
+        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.ACTIVE)
 
     @patch('dash.views.helpers.ad_group_has_available_budget')
     @patch('actionlog.zwei_actions.send')
@@ -405,7 +420,7 @@ class AdGroupSettingsStateTest(TestCase):
                 follow=True,
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(ad_group.get_current_settings().state, 2)
+        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
         self.assertEqual(mock_zwei_send.called, False)
 
     @patch('actionlog.zwei_actions.send')
@@ -422,7 +437,7 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(mock_zwei_send.called, True)
         self.assertEqual(len(mock_zwei_send.call_args[0]), 1)
-        self.assertEqual(ad_group.get_current_settings().state, 2)
+        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
 
     @patch('actionlog.zwei_actions.send')
     def test_inactivate_already_inactivated(self, mock_zwei_send):

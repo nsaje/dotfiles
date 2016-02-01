@@ -178,6 +178,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 actionlogs_to_send.extend(
                     actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=False)
                 )
+
         zwei_actions.send(actionlogs_to_send)
 
     def get_default_settings_dict(self, ad_group):
