@@ -1383,6 +1383,8 @@ class AdGroupSettings(SettingsBase):
         'ga_tracking_type',
         'enable_adobe_tracking',
         'adobe_tracking_param',
+        'autopilot_state',
+        'autopilot_daily_budget',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -1426,6 +1428,20 @@ class AdGroupSettings(SettingsBase):
     description = models.CharField(max_length=140, blank=True, default='')
     call_to_action = models.CharField(max_length=25, blank=True, default='')
     ad_group_name = models.CharField(max_length=127, blank=True, default='')
+    autopilot_state = models.IntegerField(
+        blank=True,
+        null=True,
+        default=constants.AdGroupSettingsAutopilotState.INACTIVE,
+        choices=constants.AdGroupSettingsAutopilotState.get_choices()
+    )
+    autopilot_daily_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Auto-Pilot\'s Daily Budget',
+        default=0
+    )
 
     changes_text = models.TextField(blank=True, null=True)
 
@@ -1487,7 +1503,9 @@ class AdGroupSettings(SettingsBase):
             'cpc_cc': None,
             'daily_budget_cc': 10.0000,
             'target_devices': constants.AdTargetDevice.get_all(),
-            'target_regions': ['US']
+            'target_regions': ['US'],
+            'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
+            'autopilot_daily_budget': 0.00
         }
 
     @classmethod
@@ -1510,6 +1528,7 @@ class AdGroupSettings(SettingsBase):
             'enable_ga_tracking': 'Enable GA tracking',
             'ga_tracking_type': 'GA tracking type (via API or e-mail).',
             'autopilot_state': 'Auto-Pilot',
+            'autopilot_daily_budget': 'Auto-Pilot\'s Daily Budget',
             'enable_adobe_tracking': 'Enable Adobe tracking',
             'adobe_tracking_param': 'Adobe tracking parameter'
         }
@@ -1521,7 +1540,9 @@ class AdGroupSettings(SettingsBase):
         if prop_name == 'state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'autopilot_state':
-            value = constants.AdGroupSourceSettingsAutopilotState.get_text(value)
+            value = constants.AdGroupSettingsAutopilotState.get_text(value)
+        elif prop_name == 'autopilot_daily_budget' and value is not None:
+            value = '$' + utils.string_helper.format_decimal(value, 2, 2)
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
