@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
+oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
@@ -16,6 +16,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.order = '-cost';
     $scope.sources = [];
     $scope.sourcesWaiting = null;
+    $scope.infoboxHeader = null;
+    $scope.infoboxSettings = null;
     $scope.localStoragePrefix = 'adGroupSources';
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
@@ -111,7 +113,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         },
         {
             'name': 'Conversions',
-            'fields': ['conversion_goal_1', 'conversion_goal_2']
+            'fields': ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']
         },
         {
             'name': 'Data Sync',
@@ -170,6 +172,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                             }
                         });
                         $scope.pollSourcesTableUpdates();
+
+                        // reload ad group to update its status
+                        zemNavigationService.reloadAdGroup($state.params.id);
                     }
                 );
             },
@@ -654,6 +659,19 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         );
     };
 
+    var getInfoboxData = function () {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+
+        api.adGroupOverview.get($state.params.id).then(
+            function (data) {
+                $scope.infoboxHeader = data.header;
+                $scope.infoboxSettings = data.settings;
+            }
+        );
+    };
+
     $scope.selectedSourceRemoved = function (sourceId) {
         if (sourceId !== 'totals') {
             $scope.updateSelectedSources(String(sourceId));
@@ -768,6 +786,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
         getTableData();
         $scope.getDailyStats();
+        getInfoboxData();
 
         getSources();
     };
@@ -889,6 +908,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             }
         }
     };
+
+    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
+        $timeout(function () {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
+    });
 
     $scope.$on('$destroy', function () {
         $timeout.cancel($scope.lastChangeTimeout);

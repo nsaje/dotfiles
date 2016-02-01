@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 CONVERSION_PIXEL_INACTIVE_DAYS = 7
-MAX_CONVERSION_GOALS_PER_CAMPAIGN = 2
+MAX_CONVERSION_GOALS_PER_CAMPAIGN = 5
 
 
 def _get_conversion_pixel_url(account_id, slug):
@@ -67,7 +67,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         resource = json.loads(request.body)
 
-        form = forms.AdGroupSettingsForm(resource.get('settings', {}))
+        form = forms.AdGroupSettingsForm(resource.get('settings', {}), ad_group=ad_group)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
@@ -82,6 +82,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         new_settings = current_settings.copy_settings()
         self.set_settings(new_settings, form.cleaned_data,
+                          request.user.has_perm('zemauth.can_set_ad_group_max_cpc'),
                           request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'),
                           request.user.has_perm('zemauth.can_toggle_adobe_performance_tracking'))
 
@@ -146,15 +147,21 @@ class AdGroupSettings(api_common.BaseApiView):
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
 
-    def set_settings(self, settings, resource, can_set_ga_tracking_params, can_set_adobe_tracking_params):
+    def set_settings(self, settings, resource,
+                     can_set_ad_group_max_cpc,
+                     can_set_ga_tracking_params,
+                     can_set_adobe_tracking_params):
+
         settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
-        settings.cpc_cc = resource['cpc_cc']
         settings.daily_budget_cc = resource['daily_budget_cc']
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.ad_group_name = resource['name']
+
+        if can_set_ad_group_max_cpc:
+            settings.cpc_cc = resource['cpc_cc']
 
         if can_set_ga_tracking_params:
             settings.enable_ga_tracking = resource['enable_ga_tracking']

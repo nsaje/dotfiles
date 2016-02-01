@@ -223,3 +223,34 @@
         modified_dt: '2015-02-23T00:00:00'
     model: dash.contentadsource
     pk: 1
+
+# AdGroupSettings
+
+-   fields:
+        ad_group: 1
+        created_dt: '2015-02-23T00:00:00'
+        created_by: 1
+        state: 1
+        start_date: '2015-01-01'
+        end_date: NULL
+        cpc_cc: 0.4
+        daily_budget_cc: 10.0
+        target_devices: ['desktop', 'mobile']
+        target_regions: []
+        tracking_code: ''
+        enable_ga_tracking: true
+        ga_tracking_type: 2
+        enable_adobe_tracking: false
+        adobe_tracking_param: ''
+        archived: false
+    model: dash.adgroupsettings
+    pk: 1
+
+# GAAnalyticsAccount
+
+-   fields:
+        account: 1
+        ga_account_id: 1234567
+        ga_web_property_id: UA-1234567-12
+    model: dash.gaanalyticsaccount
+    pk: 1

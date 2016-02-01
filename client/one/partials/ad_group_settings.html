@@ -68,6 +68,21 @@
             <label ng-repeat="error in errors.endDate" class="control-label error" for="end-date-input">{{ error }}</label>
         </div>
 
+        <div class="form-group" ng-class="{'has-error': !!errors.cpc}" ng-if="hasPermission('zemauth.can_set_ad_group_max_cpc')">
+            <label for="cpc-input" class="col-xs-2 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_ad_group_max_cpc')" popover-placement="right"></zem-internal-feature>
+                Maximum CPC
+                <zem-help-popover content="Maximum CPC in this ad group." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-2">
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input id="cpc-input" type="text" class="form-control" ng-model="settings.cpc" zem-currency-input empty-text="No limit">
+                </div>
+            </div>
+            <label ng-repeat="error in errors.cpc" class="control-label error" for="cpc-input">{{ error }}</label>
+        </div>
+
         <div class="form-vertical">
             <div class="form-group" ng-class="{'has-error': !!errors.targetDevices}">
                 <label class="col-xs-2 control-label">
@@ -101,6 +116,20 @@
                 </div>
 
                 <label ng-repeat="error in errors.targetRegions" class="control-label error">{{ error }}</label>
+            </div>
+
+            <div class="form-group" ng-if="hasPermission('zemauth.can_view_retargeting_settings')" ng-class="{'has-error': !!errors.retargetingIds}">
+                <label class="col-xs-2 control-label">
+                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_view_retargeting_settings')" popover-placement="right"></zem-internal-feature>
+                    Retargeting
+                    <zem-help-popover content="Content ads will only be shown to people who have already seen an ad from selected ad groups." placement="top"></zem-help-popover>
+                </label>
+
+                <div class="col-xs-6 col-md-4">
+                    <zem-retargeting zem-selected-adgroup-ids="[]" zem-account="account"></zem-retargeting>
+                </div>
+
+                <label ng-repeat="error in errors.retargetingIds" class="control-label error">{{ error }}</label>
             </div>
 
             <div class="form-group" ng-class="{'has-error': !!errors.trackingCode}">

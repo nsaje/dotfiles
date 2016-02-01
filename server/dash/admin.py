@@ -212,7 +212,7 @@ class DefaultSourceSettingsForm(forms.ModelForm):
         cpc_cc = self.cleaned_data.get('default_cpc_cc')
         if cpc_cc:
             source = self.instance.source
-            validation_helpers.validate_cpc_cc(cpc_cc, source)
+            validation_helpers.validate_source_cpc_cc(cpc_cc, source)
 
         return cpc_cc
 
@@ -220,7 +220,7 @@ class DefaultSourceSettingsForm(forms.ModelForm):
         cpc_cc = self.cleaned_data.get('mobile_cpc_cc')
         if cpc_cc:
             source = self.instance.source
-            validation_helpers.validate_cpc_cc(cpc_cc, source)
+            validation_helpers.validate_source_cpc_cc(cpc_cc, source)
 
         return cpc_cc
 
@@ -1004,6 +1004,7 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'start_date',
         'end_date',
         'amount',
+        'flat_fee_cc',
         'status',
         'license_fee',
         'created_dt',
@@ -1233,6 +1234,10 @@ class PublisherBlacklistAdmin(admin.ModelAdmin):
     actions = [reenable_global]
 
 
+class GAAnalyticsAccount(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)
@@ -1255,3 +1260,4 @@ admin.site.register(models.ScheduledExportReportLog, ScheduledExportReportLogAdm
 admin.site.register(models.ScheduledExportReport, ScheduledExportReportAdmin)
 admin.site.register(models.ExportReport, ExportReportAdmin)
 admin.site.register(models.PublisherBlacklist, PublisherBlacklistAdmin)
+admin.site.register(models.GAAnalyticsAccount, GAAnalyticsAccount)

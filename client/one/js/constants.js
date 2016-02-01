@@ -50,7 +50,10 @@ var constants = {
         AVG_TOS: 'avg_tos',
         CLICK_DISCREPANCY: 'click_discrepancy',
         CONVERSION_GOAL1: 'conversion_goal_1',
-        CONVERSION_GOAL2: 'conversion_goal_2'
+        CONVERSION_GOAL2: 'conversion_goal_2',
+        CONVERSION_GOAL3: 'conversion_goal_3',
+        CONVERSION_GOAL4: 'conversion_goal_4',
+        CONVERSION_GOAL5: 'conversion_goal_5',
     },
     creditLineItemStatus: {
         SIGNED: 1,
@@ -571,6 +574,9 @@ var options = {
     adGroupConversionGoalChartMetrics: [
         {name: '', value: constants.chartMetric.CONVERSION_GOAL1, shown: false},
         {name: '', value: constants.chartMetric.CONVERSION_GOAL2, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL3, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL4, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL5, shown: false},
     ],
     campaignChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
@@ -581,6 +587,9 @@ var options = {
     campaignConversionGoalChartMetrics: [
         {name: '', value: constants.chartMetric.CONVERSION_GOAL1, shown: false},
         {name: '', value: constants.chartMetric.CONVERSION_GOAL2, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL3, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL4, shown: false},
+        {name: '', value: constants.chartMetric.CONVERSION_GOAL5, shown: false},
     ],
     accountChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},

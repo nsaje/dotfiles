@@ -1293,3 +1293,13 @@ class ScheduledReportSent(ConstantBase):
         SUCCESS: 'Success',
         FAILED: 'Failed'
     }
+
+
+class GATrackingType(ConstantBase):
+    EMAIL = 1
+    API = 2
+
+    _VALUES = {
+        EMAIL: 'Email',
+        API: 'API'
+    }

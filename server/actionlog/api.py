@@ -235,6 +235,17 @@ def send_delayed_actionlogs(ad_group_sources=None, send=True):
             if waiting_actionlogs.exists():
                 continue
 
+            # WORKAROUND (will be fixed with new version of actionlogs)
+            # some actions can be created (and delayed) when waiting on CREATE_CAMPAIGN action to complete
+            # and source_campaign_key is not yet available (payload has empty value). In case it is still not
+            # available prevent propagation of this action, otherwise update payload's source_campaign_key.
+            if 'args' in actionlog.payload \
+                    and 'source_campaign_key' in actionlog.payload['args'] \
+                    and not actionlog.payload['args']['source_campaign_key']:
+                if not actionlog.ad_group_source.source_campaign_key:
+                    continue
+                actionlog.payload['args']['source_campaign_key'] = actionlog.ad_group_source.source_campaign_key
+
             logger.info(
                 'Sending delayed action log %s. Updating state to: %s.',
                 actionlog,

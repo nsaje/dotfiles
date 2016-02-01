@@ -56,12 +56,10 @@ class AdGroupSettingsForm(forms.Form):
     end_date = forms.DateField(required=False)
     cpc_cc = forms.DecimalField(
         min_value=0.03,
-        max_value=2,
         decimal_places=4,
         required=False,
         error_messages={
-            'min_value': 'Minimum CPC is $0.03.',
-            'max_value': 'Maximum CPC is $2.00.'
+            'min_value': 'Maximum CPC can\'t be lower than $0.03.',
         }
     )
     daily_budget_cc = forms.DecimalField(
@@ -103,6 +101,7 @@ class AdGroupSettingsForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
+        self.ad_group = kwargs.pop('ad_group')
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
 
     def clean_end_date(self):
@@ -158,6 +157,11 @@ class AdGroupSettingsForm(forms.Form):
 
         return target_regions
 
+    def clean_cpc_cc(self):
+        cpc_cc = self.cleaned_data.get('cpc_cc')
+        validation_helpers.validate_ad_group_cpc_cc(cpc_cc, self.ad_group)
+        return cpc_cc
+
 
 class AdGroupSourceSettingsCpcForm(forms.Form):
     cpc_cc = forms.DecimalField(
@@ -173,9 +177,7 @@ class AdGroupSourceSettingsCpcForm(forms.Form):
 
     def clean_cpc_cc(self):
         cpc_cc = self.cleaned_data.get('cpc_cc')
-        source = self.ad_group_source.source
-
-        validation_helpers.validate_cpc_cc(cpc_cc, source)
+        validation_helpers.validate_ad_group_source_cpc_cc(cpc_cc, self.ad_group_source)
 
 
 class AdGroupSourceSettingsDailyBudgetForm(forms.Form):
@@ -812,7 +814,9 @@ class CreditLineItemAdminForm(forms.ModelForm):
 
     class Meta:
         model = models.CreditLineItem
-        fields = ['account', 'start_date', 'end_date', 'amount', 'license_fee', 'status', 'comment']
+        fields = ['account', 'start_date', 'end_date', 'amount',
+                  'flat_fee_cc', 'flat_fee_start_date', 'flat_fee_end_date',
+                  'license_fee', 'status', 'comment']
 
 
 class BudgetLineItemAdminForm(forms.ModelForm):

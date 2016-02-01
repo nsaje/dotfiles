@@ -234,6 +234,82 @@ class AutomaticallyApproveContentAdSourceSubmissionStatus(TestCase):
         self.assertEqual(self.content_ad_source.submission_status, constants.ContentAdSubmissionStatus.APPROVED)
 
 
+class AutomaticallySyncContentAdSourceStatus(TestCase):
+
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        ad_group_settings = models.AdGroup.objects.get(pk=1).get_current_settings()
+        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+        ad_group_settings.save(None)
+
+    def test_send_sync_actionlogs(self):
+        content_ad_data = [{
+            'id': 1,
+            'state': constants.ContentAdSourceState.INACTIVE,
+            'submission_status': constants.ContentAdSubmissionStatus.APPROVED
+        }]
+
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        actions = api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
+
+        self.assertEqual(len(actions), 1)
+        action = actions[0]
+        self.assertEqual(action.payload['args']['changes'], {'state': dash.constants.ContentAdSourceState.ACTIVE})
+
+    def test_skip_rejected(self):
+        content_ad_data = [{
+            'id': 1,
+            'state': constants.ContentAdSourceState.INACTIVE,
+            'submission_status': constants.ContentAdSubmissionStatus.REJECTED
+        }]
+
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        actions = api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
+        self.assertEqual(len(actions), 0)
+
+    def test_skip_if_waiting_actions(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        action = actionlog.models.ActionLog(
+            state=actionlog.constants.ActionState.WAITING,
+            action=actionlog.constants.Action.UPDATE_CONTENT_AD,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            content_ad_source=models.ContentAdSource.objects.get(pk=1),
+            ad_group_source=ad_group_source
+        )
+
+        action.save(None)
+        content_ad_data = [{
+            'id': 1,
+            'state': constants.ContentAdSourceState.INACTIVE,
+            'submission_status': constants.ContentAdSubmissionStatus.APPROVED
+        }]
+
+        actions = api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
+        self.assertEqual(len(actions), 0)
+
+    def test_skip_if_failed_actions(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        action = actionlog.models.ActionLog(
+            state=actionlog.constants.ActionState.FAILED,
+            action=actionlog.constants.Action.UPDATE_CONTENT_AD,
+            action_type=actionlog.constants.ActionType.AUTOMATIC,
+            content_ad_source=models.ContentAdSource.objects.get(pk=1),
+            ad_group_source=ad_group_source
+        )
+
+        action.save(None)
+        content_ad_data = [{
+            'id': 1,
+            'state': constants.ContentAdSourceState.INACTIVE,
+            'submission_status': constants.ContentAdSubmissionStatus.APPROVED
+        }]
+
+        actions = api.update_multiple_content_ad_source_states(ad_group_source, content_ad_data)
+        self.assertEqual(len(actions), 0)
+
+
 @override_settings(
     R1_REDIRECTS_ADGROUP_API_URL='https://r1.example.com/api/redirects/',
     R1_API_SIGN_KEY='AAAAAAAAAAAAAAAAAAAAAAAA'
@@ -1454,21 +1530,21 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        self.writer.set({'cpc_cc': decimal.Decimal(0.1)}, request)
+        self.writer.set({'cpc_cc': decimal.Decimal(2)}, request)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
         self.assertNotEqual(new_latest_settings.id, latest_settings.id)
-        self.assertEqual(float(new_latest_settings.cpc_cc), 0.1)
+        self.assertEqual(float(new_latest_settings.cpc_cc), 2)
         self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
         self.assertEqual(new_latest_settings.state, latest_settings.state)
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
         self.assertTrue(set_ad_group_source_settings.called)
 
         mock_send_mail.assert_called_with(
-            self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $0.10')
+            self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $2.00')
 
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')
@@ -1504,20 +1580,20 @@ class AdGroupSourceSettingsWriterTest(TestCase):
         request = HttpRequest()
         request.user = User.objects.create_user('test@example.com')
 
-        self.writer.set({'cpc_cc': decimal.Decimal(0.1)}, request, send_action=False)
+        self.writer.set({'cpc_cc': decimal.Decimal(2)}, request, send_action=False)
 
         new_latest_settings = models.AdGroupSourceSettings.objects \
             .filter(ad_group_source=self.ad_group_source) \
             .latest('created_dt')
 
         self.assertNotEqual(new_latest_settings.id, latest_settings.id)
-        self.assertEqual(float(new_latest_settings.cpc_cc), 0.1)
+        self.assertEqual(float(new_latest_settings.cpc_cc), 2)
         self.assertNotEqual(new_latest_settings.cpc_cc, latest_settings.cpc_cc)
         self.assertEqual(new_latest_settings.state, latest_settings.state)
         self.assertEqual(new_latest_settings.daily_budget_cc, latest_settings.daily_budget_cc)
         self.assertFalse(set_ad_group_source_settings.called)
 
-        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $0.10')
+        mock_send_mail.assert_called_with(self.ad_group_source.ad_group, request, 'AdsNative Max CPC bid set from $0.12 to $2.00')
 
     @mock.patch('actionlog.api.utils.email_helper.send_ad_group_notification_email')
     @mock.patch('actionlog.api.set_ad_group_source_settings')

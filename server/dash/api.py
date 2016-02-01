@@ -23,6 +23,7 @@ from dash import consistency
 from dash import region_targeting_helper
 from dash import views
 from dash import publisher_helpers
+from dash import threads
 
 import utils.url_helper
 import utils.statsd_helper
@@ -55,7 +56,7 @@ def update_ad_group_source_state(ad_group_source, conf):
         if key in ('cpc_cc', 'daily_budget_cc'):
             conf[key] = cc_to_decimal(val)
 
-    ad_group_source_state = _get_latest_ad_group_source_state(ad_group_source)
+    ad_group_source_state = ad_group_source.get_latest_state()
 
     # determine if we need to update
     need_update = False
@@ -232,14 +233,6 @@ def _update_publisher_blacklist(key, level, publishers):
 
     if blacklist != []:
         models.PublisherBlacklist.objects.bulk_create(blacklist)
-
-
-def _get_latest_ad_group_source_state(ad_group_source):
-    try:
-        agss = models.AdGroupSourceState.objects.filter(ad_group_source=ad_group_source).latest()
-        return agss
-    except models.AdGroupSourceState.DoesNotExist:
-        return None
 
 
 def create_campaign_callback(ad_group_source, source_campaign_key, request):
@@ -618,7 +611,6 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
         changed = False
 
-        # TODO: should it only be updated when it is None?
         if data.get('source_content_ad_id'):
             content_ad_source.source_content_ad_id = str(data['source_content_ad_id'])
             changed = True
@@ -627,7 +619,14 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             content_ad_source.source_state = data['state']
             changed = True
 
-        if data['state'] != content_ad_source.content_ad.state:
+        if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
+            if _update_content_ad_source_submission_status(content_ad_source, data['submission_status']):
+                changed = True
+
+        if data['state'] != content_ad_source.content_ad.state and \
+           content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
+            # content ad state does not match
+            # skip sync for rejected content ads - their status doesn't match always
             logger.debug(
                 ('Found inconsistent content ad state on media source {} for content ad {}: source state={},'
                  'z1 state={}, source submission status={}, z1 submission status={}').format(
@@ -636,20 +635,9 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
                      data.get('submission_status'), content_ad_source.submission_status)
             )
             nr_inconsistent_internal_states += 1
-
-        if 'submission_status' in data and data['submission_status'] != content_ad_source.submission_status:
-            is_unsynced = all([
-                data['submission_status'] == constants.ContentAdSubmissionStatus.APPROVED,
-                content_ad_source.content_ad.state != data['state'],
-            ])
-            if is_unsynced:
-                # Content ad state was not synced with media source
-                unsynced_content_ad_sources_actions.append(
-                    (content_ad_source, {'state': content_ad_source.content_ad.state})
-                )
-
-            if _update_content_ad_source_submission_status(content_ad_source, data['submission_status']):
-                changed = True
+            unsynced_content_ad_sources_actions.append(
+                (content_ad_source, {'state': content_ad_source.content_ad.state})
+            )
 
         if 'submission_errors' in data and data['submission_errors'] != content_ad_source.submission_errors:
             content_ad_source.submission_errors = data['submission_errors']
@@ -667,14 +655,22 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
         nr_inconsistent_internal_states
     )
 
-    if unsynced_content_ad_sources_actions:
+    if ad_group_source.ad_group.get_current_settings().state == constants.AdGroupSettingsState.ACTIVE:
+        utils.statsd_helper.statsd_incr(
+            'propagation_consistency.content_ad.inconsistent_internal_state_active_adgroups.{}'.format(
+                ad_group_source.source.tracking_slug),
+            nr_inconsistent_internal_states
+        )
+
         logger.info(
             'Found unsynced content ads for ad group %s on sources: %s',
             ad_group_source.ad_group,
             ', '.join(set(action[0].source.name for action in unsynced_content_ad_sources_actions))
         )
+
+        # do not create actions if actions already exists - prevents flooding
         return actionlog.api_contentads.init_bulk_update_content_ad_actions(
-            unsynced_content_ad_sources_actions, None)
+            unsynced_content_ad_sources_actions, None, skip_if_action_exists=True)
 
     return []
 
@@ -1091,9 +1087,19 @@ def update_content_ads_state(content_ads, state, request):
         content_ad_sources = models.ContentAdSource.objects.filter(
             ~Q(state=state) | ~Q(source_state=state),
             content_ad_id__in=[ca.id for ca in content_ads],
-        ).select_related('content_ad__ad_group', 'content_ad__batch', 'source')
+        )
         content_ad_sources.update(state=state)
-        content_ad_sources = content_ad_sources.all()
+
+    content_ad_source_ids = [cas.id for cas in content_ad_sources]
+    t = threads.CreateUpdateContentAdsActions(target=_create_update_content_ads_actions_async,
+                                              args=(content_ad_source_ids, request))
+    t.start()
+
+
+def _create_update_content_ads_actions_async(content_ad_source_ids, request):
+    with transaction.atomic():
+        content_ad_sources = models.ContentAdSource.objects.filter(id__in=content_ad_source_ids).select_related(
+            'content_ad__ad_group', 'content_ad__batch', 'source')
 
         content_ad_sources_changes = []
         for content_ad_source in content_ad_sources:

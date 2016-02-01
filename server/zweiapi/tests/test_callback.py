@@ -64,6 +64,11 @@ class GetContentAdStatusTest(TestCase):
 
     fixtures = ['test_zwei_api.yaml']
 
+    def setUp(self):
+        ad_group_settings = dash.models.AdGroup.objects.get(pk=1).get_current_settings()
+        ad_group_settings.state = dash.constants.AdGroupSettingsState.ACTIVE
+        ad_group_settings.save(None)
+
     def test_get_content_ad_status(self):
         zwei_response_data = {
             'status': 'success',
@@ -118,7 +123,7 @@ class GetContentAdStatusTest(TestCase):
         )
 
     @mock.patch('dash.views.views.actionlog.zwei_actions.send')
-    def test_get_content_ad_status_with_sync(self, mock_send):
+    def test_get_content_ad_status_with_status_sync(self, mock_send):
         zwei_response_data = {
             'status': 'success',
             'data': [{
@@ -137,11 +142,6 @@ class GetContentAdStatusTest(TestCase):
         self.assertEqual(
             content_ad_source.source_state,
             dash.constants.ContentAdSourceState.ACTIVE
-        )
-
-        self.assertEqual(
-            content_ad_source.submission_status,
-            dash.constants.ContentAdSubmissionStatus.PENDING
         )
 
         action_log = actionlog.models.ActionLog(
@@ -165,14 +165,11 @@ class GetContentAdStatusTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
         content_ad_source = dash.models.ContentAdSource.objects.get(id=1)
+
+        # should update source state and create an action that syncs the state
         self.assertEqual(
             content_ad_source.source_state,
             dash.constants.ContentAdSourceState.INACTIVE
-        )  # we still update the state in z1 but trigger a zwei action
-
-        self.assertEqual(
-            content_ad_source.submission_status,
-            dash.constants.ContentAdSubmissionStatus.APPROVED
         )
 
         action = actionlog.models.ActionLog.objects.all().\

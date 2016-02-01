@@ -274,7 +274,7 @@ class BCMDepletionTestCase(test.TestCase):
             get_yesterday_cost.return_value = {'test': 100.0}
             self.assertEqual(
                 helpers.get_yesterdays_spends(self.campaigns),
-                {1: 100.0, 2: 100.0, 3: 121.0, 4: 77.0},
+                {1: 100.0, 2: 100.0, 3: 55.0, 4: 77.0},
             )
 
     @patch('datetime.datetime', DatetimeMock)

@@ -9,6 +9,7 @@ from django.http.request import HttpRequest
 from django.conf import settings
 
 from dash import models, constants
+from dash.constants import GATrackingType
 from zemauth import models as zemauthmodels
 from zemauth.models import User
 from utils import exc
@@ -38,7 +39,7 @@ class AdGroupSettingsTest(TestCase):
         settings_dict = {
             'archived': False,
             'state': 1,
-            'cpc_cc': Decimal('0.12'),
+            'cpc_cc': Decimal('1.00'),
             'daily_budget_cc': Decimal('50'),
             'start_date': datetime.date(2014, 6, 4),
             'end_date': datetime.date(2014, 6, 5),
@@ -55,7 +56,7 @@ class AdGroupSettingsTest(TestCase):
             'adobe_tracking_param': '',
             'autopilot_daily_budget': Decimal('0.0000'),
             'autopilot_state': 2,
-
+            'ga_tracking_type': GATrackingType.EMAIL,
         }
         self.assertEqual(
             models.AdGroupSettings.objects.get(id=1).get_settings_dict(),

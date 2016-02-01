@@ -192,7 +192,20 @@ class CreditsTestCase(TestCase):
             c.save()
         self.assertTrue('__all__' in err.exception.error_dict)
 
-        c.start_date = TODAY  # return to previous value
+        request = HttpRequest()
+        request.user = User.objects.get(pk=1)
+        c.account.uses_credits = False  # not migrated
+        c.account.save(request)
+
+        c.start_date = TODAY + datetime.timedelta(1)
+        c.save()  # Editing allowed
+        self.assertEqual(c.start_date, models.CreditLineItem.objects.get(pk=1).start_date)
+
+        # return to previous value
+        c.start_date = TODAY
+        c.save()
+        c.account.uses_credits = True
+        c.account.save(request)
 
         with self.assertRaises(ValidationError) as err:
             c.amount = 111
@@ -450,11 +463,14 @@ class BudgetsTestCase(TestCase):
             account_id=2,
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(10),
-            amount=1000,
+            amount=1200,
+            flat_fee_cc=2000000,
             license_fee=Decimal('0.456'),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
         )
+        self.assertEqual(c.effective_amount(), Decimal('1000'))
+
         create_budget(
             credit=c,
             amount=300,
@@ -498,6 +514,11 @@ class BudgetsTestCase(TestCase):
             campaign_id=1,
         )
         self.assertEqual(c.get_allocated_amount(), 1000)
+
+        c.flat_fee_cc = 3000000
+        with self.assertRaises(ValidationError) as err:
+            # Cannot add flat fee if tehre is no room
+            c.save()
 
     def test_editing_inactive(self):
         b = models.BudgetLineItem.objects.get(pk=1)
@@ -941,11 +962,42 @@ class BudgetReserveTestCase(TestCase):
 
         self.b = create_budget(
             credit=self.c,
-            amount=1000,
+            amount=800,
             start_date=self.start_date,
             end_date=self.end_date,
             campaign_id=1,
         )
+
+    def test_editing_budget_amount(self):
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=self.b,
+            date=self.start_date - datetime.timedelta(1),
+            media_spend_nano=100 * models.TO_NANO_MULTIPLIER,
+            data_spend_nano=0,
+            license_fee_nano=20 * models.TO_NANO_MULTIPLIER,
+        )
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=self.b,
+            date=self.start_date,
+            media_spend_nano=120 * models.TO_NANO_MULTIPLIER,
+            data_spend_nano=0,
+            license_fee_nano=20 * models.TO_NANO_MULTIPLIER,
+        )
+
+        self.b.amount = 900  # can be higher
+        self.b.save()
+        self.assertEqual(self.b.amount, models.BudgetLineItem.objects.get(pk=self.b.pk).amount)
+
+        self.b.amount = 500  # can be lower
+        self.b.save()
+        self.assertEqual(self.b.amount, models.BudgetLineItem.objects.get(pk=self.b.pk).amount)
+
+        self.b.amount = 300  # cannot be lower than minimum
+        with self.assertRaises(ValidationError) as err:
+            self.b.save()
+
+        self.assertEqual(err.exception.error_dict['amount'][0][0],
+                         u'Budget exceeds the minimum budget amount by $87.00.')
 
     def test_reserve_calculation(self):
         reports.models.BudgetDailyStatement.objects.create(
