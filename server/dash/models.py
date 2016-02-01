@@ -1269,6 +1269,7 @@ class AdGroupSource(models.Model):
     objects = QuerySetManager()
 
     class QuerySet(models.QuerySet):
+
         def filter_by_sources(self, sources):
             if not should_filter_by_sources(sources):
                 return self
@@ -2094,6 +2095,11 @@ class CreditLineItem(FootprintModel):
         max_digits=5,
         default=Decimal('0.2000'),
     )
+
+    flat_fee_cc = models.IntegerField(default=0, verbose_name='Flat fee (cc)')
+    flat_fee_start_date = models.DateField(blank=True, null=True)
+    flat_fee_end_date = models.DateField(blank=True, null=True)
+
     status = models.IntegerField(
         default=constants.CreditLineItemStatus.PENDING,
         choices=constants.CreditLineItemStatus.get_choices()
@@ -2120,7 +2126,7 @@ class CreditLineItem(FootprintModel):
         return self.end_date < date
 
     def get_allocated_amount(self):
-        return sum(b.allocated_amount() for b in self.budgets.all())
+        return Decimal(sum(b.allocated_amount() for b in self.budgets.all()))
 
     def cancel(self):
         self.status = constants.CreditLineItemStatus.CANCELED
@@ -2150,9 +2156,15 @@ class CreditLineItem(FootprintModel):
     def is_editable(self):
         return self.status == constants.CreditLineItemStatus.PENDING
 
+    def flat_fee(self):
+        return Decimal(self.flat_fee_cc) * CC_TO_DEC_MULTIPLIER
+
+    def effective_amount(self):
+        return Decimal(self.amount) - self.flat_fee()
+
     def is_available(self):
         return not self.is_past() and self.status == constants.CreditLineItemStatus.SIGNED\
-            and (self.amount - self.get_allocated_amount()) > 0
+            and (self.effective_amount() - self.get_allocated_amount()) > 0
 
     def clean(self):
         has_changed = any((
@@ -2170,6 +2182,7 @@ class CreditLineItem(FootprintModel):
             self.validate_license_fee,
             self.validate_status,
             self.validate_amount,
+            self.validate_flat_fee_cc
         )
 
         if not self.pk or self.previous_value('status') != constants.CreditLineItemStatus.SIGNED:
@@ -2186,6 +2199,17 @@ class CreditLineItem(FootprintModel):
                 'end_date': ['End date minimum is depending on budgets.'],
             })
 
+    def validate_flat_fee_cc(self):
+        if not self.flat_fee_cc:
+            return
+        delta = self.effective_amount() - self.get_allocated_amount()
+        if delta < 0:
+            raise ValidationError(
+                'Flat fee exceeds the available credit amount by ${}.'.format(
+                    -delta.quantize(Decimal('1.00'))
+                )
+            )
+
     def validate_amount(self):
         if self.amount < 0:
             raise ValidationError('Amount cannot be negative.')
@@ -2196,7 +2220,7 @@ class CreditLineItem(FootprintModel):
 
         if prev_amount < self.amount or not budgets:
             return
-        if self.amount < sum(b.amount for b in budgets):
+        if self.effective_amount() < sum(b.allocated_amount() for b in budgets):
             raise ValidationError(
                 'Credit line item amount needs to be larger than the sum of budgets.'
             )
@@ -2466,7 +2490,7 @@ class BudgetLineItem(FootprintModel):
             raise ValidationError('Amount cannot be negative.')
 
         budgets = self.credit.budgets.exclude(pk=self.pk)
-        delta = Decimal(self.credit.amount - sum(b.allocated_amount() for b in budgets) - self.amount)
+        delta = self.credit.effective_amount() - sum(b.allocated_amount() for b in budgets) - self.amount
         if delta < 0:
             raise ValidationError(
                 'Budget exceeds the total credit amount by ${}.'.format(
@@ -2665,4 +2689,3 @@ class GAAnalyticsAccount(models.Model):
     account = models.ForeignKey(Account, null=False, blank=False, on_delete=models.PROTECT)
     ga_account_id = models.CharField(max_length=127, blank=False, null=False)
     ga_web_property_id = models.CharField(max_length=127, blank=False, null=False)
-
