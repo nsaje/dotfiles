@@ -281,6 +281,7 @@
         created_dt: '2014-06-04T00:00:00'
         created_by: 1
         archived: False
+        state: 1
         ad_group: 1
         tracking_code: 'param1=foo&param2=bar'
         target_devices: ['desktop', 'mobile']
@@ -308,6 +309,7 @@
         created_dt: '2014-06-04T00:00:00'
         created_by: 1
         archived: False
+        state: 2
         ad_group: 2
         tracking_code: 'param1=foo&param2=bar'
         enable_ga_tracking: False
@@ -1031,7 +1033,34 @@
         daily_budget_cc: null
         state: 2
     model: dash.adgroupsourcesettings
-    pk: 4
+    pk: 5
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 6
+        cpc_cc: null
+        daily_budget_cc: null
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 6
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 7
+        cpc_cc: null
+        daily_budget_cc: null
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 7
+
+-   fields:
+        created_dt: '2014-06-05T09:58:21'
+        ad_group_source: 8
+        cpc_cc: null
+        daily_budget_cc: null
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 8
 
 -   fields:
         created_dt: '2014-06-05T09:58:21'
@@ -1040,7 +1069,8 @@
         daily_budget_cc: null
         state: 1
     model: dash.adgroupsourcesettings
-    pk: 6
+    pk: 11
+
 
 # test adgroupsourcestate
 

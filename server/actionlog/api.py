@@ -24,13 +24,23 @@ import utils.url_helper
 logger = logging.getLogger(__name__)
 
 
-def init_enable_ad_group(ad_group, request, order=None, send=True):
+def init_set_ad_group_state(ad_group, state, request, send=True):
+    order = models.ActionLogOrder.objects.create(
+            order_type=constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
+    )
+    if state == dash.constants.AdGroupSettingsState.ACTIVE:
+        return _init_enable_ad_group(ad_group, request, order=order, send=send)
+    else:
+        return _init_pause_ad_group(ad_group, request, order=order, send=send)
+
+
+def _init_enable_ad_group(ad_group, request, order=None, send=True):
     source_settings_qs = dash.models.AdGroupSourceSettings.objects\
         .filter(ad_group_source__ad_group=ad_group)\
         .group_current_settings()
 
     allowed_sources_ids = ad_group.campaign.account.allowed_sources\
-        .values_list('id', flat = True)
+        .values_list('id', flat=True)
 
     new_actionlogs = []
     for source_settings in source_settings_qs:
@@ -48,7 +58,7 @@ def init_enable_ad_group(ad_group, request, order=None, send=True):
     return new_actionlogs
 
 
-def init_pause_ad_group(ad_group, request, order=None, send=True):
+def _init_pause_ad_group(ad_group, request, order=None, send=True):
     new_actionlogs = []
     for ad_group_source in dash.models.AdGroupSource.objects.filter(ad_group=ad_group):
         changes = {
