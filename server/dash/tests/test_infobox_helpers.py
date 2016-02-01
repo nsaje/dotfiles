@@ -468,12 +468,74 @@ class InfoBoxHelpersTest(TestCase):
         available_credit = dash.infobox_helpers.calculate_available_credit(account)
         self.assertEqual(80, available_credit)
 
-    def test_calculate_spend_credit(self):
+
+class InfoBoxAccountHelpersTest(TestCase):
+    fixtures = ['test_models.yaml']
+
+    def setUp(self):
+        account = dash.models.Account.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        user = zemauth.models.User.objects.get(pk=1)
+        start_date = datetime.datetime.today().date() - datetime.timedelta(days=1)
+        end_date = start_date + datetime.timedelta(days=99)
+        credit = dash.models.CreditLineItem.objects.create(
+            account=account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=100,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+        )
+
+
+    @mock.patch('dash.models.BudgetLineItem.get_spend_data')
+    def test_calculate_spend_credit(self, mock_get_spend_data):
         account = dash.models.Account.objects.get(pk=1)
         available_credit = dash.infobox_helpers.calculate_spend_credit(account)
         self.assertEqual(0, available_credit)
 
-    def test_calculate_yesterday_account_spend(self):
+        mock_get_spend_data.return_value = {
+            'media': 10,
+            'data': 10,
+            'license_fee': 10,
+            'total': 30
+        }
+
+        account = dash.models.Account.objects.get(pk=1)
+        available_credit = dash.infobox_helpers.calculate_spend_credit(account)
+        self.assertEqual(10, available_credit)
+
+
+    @mock.patch('dash.models.BudgetLineItem.get_daily_spend')
+    def test_calculate_yesterday_account_spend(self, mock_get_daily_spend):
+
+        mock_get_daily_spend.return_value = {
+            'media': 0,
+            'data': 0,
+            'license_fee': 0,
+            'total': 0
+        }
+
         account = dash.models.Account.objects.get(pk=1)
         available_credit = dash.infobox_helpers.calculate_yesterday_account_spend(account)
         self.assertEqual(0, available_credit)
+
+        mock_get_daily_spend.return_value = {
+            'media': 10,
+            'data': 10,
+            'license_fee': 10,
+            'total': 30
+        }
+
+        account = dash.models.Account.objects.get(pk=1)
+        available_credit = dash.infobox_helpers.calculate_yesterday_account_spend(account)
+        self.assertEqual(10, available_credit)
