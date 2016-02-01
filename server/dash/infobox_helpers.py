@@ -133,12 +133,12 @@ def get_yesterday_all_accounts_spend():
 
 
 def get_mtd_all_accounts_spend():
-    yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
+    today = datetime.datetime.utcnow().date()
     budgets = dash.models.BudgetLineItem.objects.all()
     if len(budgets) == 0:
         return Decimal(0)
     all_budget_spends_at_date = [
-        b.get_mtd_spend_data(date=yesterday, use_decimal=True).get('media', 0) for b in budgets
+        b.get_mtd_spend_data(date=today, use_decimal=True).get('media', 0) for b in budgets
     ]
     return sum(all_budget_spends_at_date)
 

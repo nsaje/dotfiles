@@ -435,8 +435,69 @@ class InfoBoxHelpersTest(TestCase):
         self.assertEqual("N/A", setting_0.description)
         self.assertEqual('sad', setting_0.icon)
 
+
+class AllAccountsInfoboxHelpersTest(TestCase):
+    fixtures = ['test_models.yaml']
+
+    def setUp(self):
+        account = dash.models.Account.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        user = zemauth.models.User.objects.get(pk=1)
+
+        start_date = datetime.datetime.today().date() - datetime.timedelta(days=62)
+        end_date = start_date + datetime.timedelta(days=99)
+
+        self.credit = dash.models.CreditLineItem.objects.create(
+            account=account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        self.budget = dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=self.credit,
+            amount=100,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+        )
+
     def test_get_yesterday_all_accounts_spend(self):
         self.assertEqual(0, dash.infobox_helpers.get_yesterday_all_accounts_spend())
 
+        yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=self.budget,
+            date=yesterday,
+            media_spend_nano=10e9,
+            data_spend_nano=10e9,
+            license_fee_nano=10e9,
+        )
+        self.assertEqual(10, dash.infobox_helpers.get_yesterday_all_accounts_spend())
+
     def test_get_mtd_all_accounts_spend(self):
         self.assertEqual(0, dash.infobox_helpers.get_mtd_all_accounts_spend())
+
+        today = datetime.datetime.utcnow()
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=self.budget,
+            date=today,
+            media_spend_nano=10e9,
+            data_spend_nano=10e9,
+            license_fee_nano=10e9,
+        )
+        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend())
+
+        aproximately_one_month_ago = datetime.datetime.utcnow() - datetime.timedelta(days=31)
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=self.budget,
+            date=aproximately_one_month_ago,
+            media_spend_nano=10e9,
+            data_spend_nano=10e9,
+            license_fee_nano=10e9,
+        )
+        # shouldn't change because it's month to date
+        self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend())

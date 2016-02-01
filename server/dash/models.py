@@ -2387,6 +2387,9 @@ class BudgetLineItem(FootprintModel):
             'total_cc': 0,
         }
 
+        if not date:
+            date = datetime.datetime.utcnow()
+
         start_date = datetime.datetime(date.year, date.month, 1)
         statements = self.statements.filter(
             date__gte=start_date,
