@@ -29,12 +29,12 @@ def init_set_ad_group_state(ad_group, state, request, send=True):
             order_type=constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
     )
     if state == dash.constants.AdGroupSettingsState.ACTIVE:
-        return _init_enable_ad_group(ad_group, request, order=order, send=send)
+        return init_enable_ad_group(ad_group, request, order=order, send=send)
     else:
-        return _init_pause_ad_group(ad_group, request, order=order, send=send)
+        return init_pause_ad_group(ad_group, request, order=order, send=send)
 
 
-def _init_enable_ad_group(ad_group, request, order=None, send=True):
+def init_enable_ad_group(ad_group, request, order=None, send=True):
     source_settings_qs = dash.models.AdGroupSourceSettings.objects\
         .filter(ad_group_source__ad_group=ad_group)\
         .group_current_settings()
@@ -58,7 +58,7 @@ def _init_enable_ad_group(ad_group, request, order=None, send=True):
     return new_actionlogs
 
 
-def _init_pause_ad_group(ad_group, request, order=None, send=True):
+def init_pause_ad_group(ad_group, request, order=None, send=True):
     new_actionlogs = []
     for ad_group_source in dash.models.AdGroupSource.objects.filter(ad_group=ad_group):
         changes = {
