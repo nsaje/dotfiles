@@ -1718,6 +1718,39 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
 
 
+class AllAccountsOverview(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'all_accounts_overview')
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_see_infobox'):
+            raise exc.AuthorizationError()
+
+        header = {
+            'title': 'All accounts',
+        }
+
+        '''
+        basic_settings, daily_cap =\
+            self._basic_settings(request.user, campaign, campaign_settings)
+
+        performance_settings, is_delivering = self._performance_settings(
+            campaign,
+            request.user,
+            campaign_settings,
+            daily_cap
+        )
+        '''
+
+        response = {
+            'header': header,
+            'settings': [],
+        }
+
+        header['subtitle'] = ''  # 'Delivering' if is_delivering else 'Not Delivering'
+
+        return self.create_api_response(response)
+
+
 @statsd_helper.statsd_timer('dash', 'healthcheck')
 def healthcheck(request):
     return HttpResponse('OK')
