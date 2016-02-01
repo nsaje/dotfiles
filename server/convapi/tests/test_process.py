@@ -730,3 +730,27 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
         ]
 
         self.assertItemsEqual(expected, conversion_pairs)
+
+    def test_process_bad_pixie(self):
+        self.maxDiff = None
+
+        redirects_impressions = {
+            '1234-12345-123456': [
+                {
+                    'zuid': '1234-12345-123456',
+                    'slug': 'test_slug',
+                    'impressionId': '12345',
+                    'impressionTimestamp': '2015-09-02T15:15:15Z',
+                    'redirectId': '54323',
+                    'redirectTimestamp': '2015-09-02T17:00:00Z',
+                    'accountId': 1,
+                    'adGroupId': 1,
+                    'source': 'outbrain',
+                    'contentAdId': 1,
+                }
+            ]
+        }
+
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
+
+        self.assertItemsEqual([], conversion_pairs, "Conversion pair should have been filtered out by BAD_PIXIE check")
