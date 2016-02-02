@@ -64,7 +64,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
                     "allocated": "100000.0000",
-                    "total": 100000,
+                    "total": "100000.0000",
                     "comment": "Test case",
                     "id": 1,
                     "is_signed": False,
@@ -79,7 +79,7 @@ class AccountCreditViewTest(BCMViewTestCase):
             "totals": {
                 "available": "0.0000",
                 "allocated": "100000.0000",
-                "total": "100000",
+                "total": "100000.0000",
                 "past": "0",
             }
         })
@@ -102,7 +102,7 @@ class AccountCreditViewTest(BCMViewTestCase):
                     "license_fee": "20%",
                     "comment": "Test case",
                     "allocated": "100000.0000",
-                    "total": 100000,
+                    "total": "100000.0000",
                     "id": 1,
                     "is_signed": False,
                     "is_canceled": False,
@@ -113,10 +113,10 @@ class AccountCreditViewTest(BCMViewTestCase):
                 }
             ],
             "totals": {
-                "available": "0",
+                "available": "0.0000",
                 "allocated": "0",
-                "past": "100000",
-                "total": "100000"
+                "past": "100000.0000",
+                "total": "100000.0000"
             }
         })
 
@@ -332,7 +332,6 @@ class CampaignBudgetViewTest(BCMViewTestCase):
         self.assertEqual(response.status_code, 200)
 
         data = json.loads(response.content)['data']
-
         self.assertEqual(data, {
             "active": [
                 {
@@ -358,7 +357,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_available": False,
                     "comment": "Test case",
                     "license_fee": "20",
-                    "total": 100000,
+                    "total": "100000.0000",
                     "start_date": "2015-10-01"
                 }
             ],
@@ -407,7 +406,7 @@ class CampaignBudgetViewTest(BCMViewTestCase):
                     "is_available": False,
                     "comment": "Test case",
                     "license_fee": "20",
-                    "total": 100000,
+                    "total": "100000.0000",
                     "start_date": "2015-10-01"
                 }
             ],
@@ -646,7 +645,7 @@ class BudgetSpendInViewsTestCase(BCMViewTestCase):
                     u"is_available": True,
                     u"license_fee": u"20",
                     u"comment": "Test case",
-                    u"total": 250000,
+                    u"total": "250000.0000",
                     u"start_date": u"2015-10-01"
                 }
             ],
@@ -722,7 +721,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
                     "allocated": "10000.0000",
-                    "total": 10000,
+                    "total": "10000.0000",
                     "id": 3,
                     "is_signed": True,
                     "is_canceled": False,
@@ -741,7 +740,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "license_fee": "20%",
                     "allocated": "100000.0000",
                     "comment": "Test case",
-                    "total": 100000,
+                    "total": "100000.0000",
                     "id": 1,
                     "is_signed": False,
                     "is_canceled": False,
@@ -755,7 +754,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             "totals": {
                 "available": "0.0000",
                 "allocated": "110000.0000",
-                "total": "110000",
+                "total": "110000.0000",
                 "past": "0",
             }
         })
@@ -770,7 +769,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "license_fee": "20%",
                     "comment": None,
                     "allocated": "4994.0000",
-                    "total": 10000,
+                    "total": "10000.0000",
                     "id": 3,
                     "is_signed": True,
                     "is_canceled": False,
@@ -787,7 +786,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "created_by": "ziga.stopinsek@zemanta.com",
                     "license_fee": "20%",
                     "allocated": "100000.0000",
-                    "total": 100000,
+                    "total": "100000.0000",
                     "id": 1,
                     "is_signed": False,
                     "is_canceled": False,
@@ -801,7 +800,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             "totals": {
                 "available": "5006.0000",
                 "allocated": "104994.0000",
-                "total": "110000",
+                "total": "110000.0000",
                 "past": "0",
             }
         }
@@ -815,7 +814,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "license_fee": "20%",
                     "allocated": "4950.0000",
                     "comment": None,
-                    "total": 10000,
+                    "total": "10000.0000",
                     "id": 3,
                     "is_signed": True,
                     "is_canceled": False,
@@ -833,7 +832,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
                     "license_fee": "20%",
                     "comment": "Test case",
                     "allocated": "100000.0000",
-                    "total": 100000,
+                    "total": "100000.0000",
                     "id": 1,
                     "is_signed": False,
                     "is_canceled": False,
@@ -847,7 +846,7 @@ class BudgetReserveInViewsTestCase(BCMViewTestCase):
             "totals": {
                 "available": "5050.0000",
                 "allocated": "104950.0000",
-                "total": "110000",
+                "total": "110000.0000",
                 "past": "0",
             }
         }

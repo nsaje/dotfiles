@@ -1004,6 +1004,7 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         'start_date',
         'end_date',
         'amount',
+        'flat_fee_cc',
         'status',
         'license_fee',
         'created_dt',
