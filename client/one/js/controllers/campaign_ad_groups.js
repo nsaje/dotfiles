@@ -101,43 +101,22 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             checked: true,
             totalRow: false,
             unselectable: true,
-            help: 'A setting for enabling and pausing ad groups.',
+            help: 'A setting for enabling and pausing Ad Groups. ' +
+                  'If you enable one you must then go enable preferred Ad Group\'s Media Sources too. ' +
+                  'If you pause one, all Ad Group\'s Media Sources get paused.',
             onChange: function (adgroupId, state) {
-                console.log("Changed: "+adgroupId+"  state="+state);
-                debugger;
-
-                api.adGroupSettingsState.post(
-                    adgroupId,
-                    state
-                ).then(
-                    function (data) {
-                        // TODO
-                        console.log ('Success: '+data);
-
+                api.adGroupSettingsState.post(adgroupId, state).then(
+                    function () {
                         // reload ad group to update its status
                         zemNavigationService.reloadAdGroup(adgroupId);
-                    }, function (reason)
-                    {
-                        console.log ('Failed to set state : '+reason)
                     }
                 );
             },
             getDisabledMessage: function (row) {
-                return 'This ad must be managed manually.';
+                return row.editable_fields['status_setting'].message;
             },
             disabled: false,
             archivedField: 'archived'
-        },
-        {
-            getDisabledMessage: function (row) {
-                var editableFields = row.editable_fields;
-                if (!editableFields) {
-                    return '';
-                }
-
-                return editableFields['status_setting'].message;
-            },
-            disabled: false
         },
         {
             name: 'Ad Group',
