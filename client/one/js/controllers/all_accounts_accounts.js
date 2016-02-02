@@ -193,6 +193,30 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
+            name: 'Recognized Flat Fee',
+            field: 'flat_fee',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_flat_fees'),
+            shown: $scope.hasPermission('zemauth.can_view_flat_fees')
+        },
+        {
+            name: 'Total Fee',
+            field: 'total_fee',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_flat_fees'),
+            shown: $scope.hasPermission('zemauth.can_view_flat_fees')
+        },
+        {
             name: 'Avg. CPC',
             field: 'cpc',
             checked: true,
@@ -254,8 +278,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             'name': 'Traffic Acquisition',
             'fields': [
-                'clicks', 'impressions', 'cost', 'data_cost', 'cpc', 'budget', 'available_budget', 'unspent_budget',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost', 'license_fee'
+                'clicks', 'impressions', 'cost', 'data_cost', 'cpc', 'budget',
+                'available_budget', 'unspent_budget',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
+                'license_fee', 'total_fee', 'flat_fee'
             ]
         },
         {
