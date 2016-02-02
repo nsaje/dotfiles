@@ -1,5 +1,6 @@
 from mock import patch
 import mock
+from decimal import Decimal
 
 import datetime
 from collections import OrderedDict
@@ -200,6 +201,182 @@ class ExportPlusTestCase(test.TestCase):
             'clicks': 203,
             'status': 2
         }])
+
+    @patch('reports.api_contentads.query')
+    def test_generate_rows_flat_fees(self, mock_query):
+        mock_query.return_value = [{
+            'account': 1,
+            'date': datetime.date(2014, 7, 1),
+            'cost': 1000.12,
+            'data_cost': 10.10,
+            'cpc': 10.23,
+            'clicks': 103,
+            'impressions': 100000,
+            'license_fee': 1.0,
+            'ctr': 1.03,
+            'some_random_metric': 12,
+        }, {
+            'account': 2,
+            'date': datetime.date(2014, 7, 1),
+            'cost': 2000.12,
+            'data_cost': 23.10,
+            'cpc': 20.23,
+            'clicks': 203,
+            'impressions': 200000,
+            'license_fee': 1.0,
+            'ctr': 2.03,
+            'some_random_metric': 13,
+        }]
+
+        dimensions = ['account']
+        start_date = datetime.date(2014, 6, 30)
+        end_date = datetime.date(2014, 7, 2)
+        user = User.objects.get(id=1)
+
+        accounts = models.Account.objects.all()
+
+        models.CreditLineItem.objects.create(
+            account_id=1,
+            amount=1000,
+            license_fee=Decimal('0.1000'),
+            flat_fee_cc=1000000,
+            start_date=datetime.date(2014, 6, 1),
+            end_date=datetime.date(2014, 7, 31),
+            flat_fee_start_date=datetime.date(2014, 6, 1),
+            flat_fee_end_date=datetime.date(2014, 7, 31),
+        )
+
+        rows = export_plus._generate_rows(
+            dimensions,
+            start_date,
+            end_date,
+            user,
+            'impressions',
+            True,
+            [],
+            include_budgets=True,
+            include_flat_fees=True,
+            account=accounts
+        )
+        from pprint import pprint
+        pprint(rows)
+        mock_query.assert_called_with(
+            start_date,
+            end_date,
+            breakdown=dimensions,
+            order=[],
+            conversion_goals=[],
+            ignore_diff_rows=True,
+            account=accounts,
+        )
+        self.assertEqual(rows, [
+            {'account': u'test account 1 \u010c\u017e\u0161',
+             'available_budget': 100.0,
+             'budget': 100.0,
+             'clicks': 103,
+             'cost': 1000.12,
+             'cpc': 10.23,
+             'ctr': 1.03,
+             'data_cost': 10.1,
+             'date': datetime.date(2014, 7, 1),
+             'end_date': datetime.date(2014, 7, 2),
+             'impressions': 100000,
+             'start_date': datetime.date(2014, 6, 30),
+             'license_fee': 1.0,
+             'total_fee': Decimal('101.0'),
+             'flat_fee': Decimal('100.0'),
+             'status': 2,
+             'unspent_budget': -900.12},
+            {'account': u'test account 2',
+             'available_budget': 0,
+             'budget': 0,
+             'clicks': 203,
+             'cost': 2000.12,
+             'cpc': 20.23,
+             'ctr': 2.03,
+             'data_cost': 23.1,
+             'date': datetime.date(2014, 7, 1),
+             'end_date': datetime.date(2014, 7, 2),
+             'impressions': 200000,
+             'start_date': datetime.date(2014, 6, 30),
+             'license_fee': 1.0,
+             'total_fee': Decimal('1.0'),
+             'flat_fee': Decimal('0.0'),
+             'status': 2,
+             'unspent_budget': -2000.12}
+        ])
+
+    @patch('reports.api_contentads.query')
+    def test_generate_rows_budget(self, mock_query):
+        mock_query.return_value = [{
+            'campaign': 1,
+            'account': 1,
+            'date': datetime.date(2014, 7, 1),
+            'cost': 1000.12,
+            'data_cost': 10.10,
+            'cpc': 10.23,
+            'clicks': 103,
+            'impressions': 100000,
+            'ctr': 1.03,
+            'some_random_metric': 12,
+        }, {
+            'campaign': 1,
+            'account': 1,
+            'date': datetime.date(2014, 7, 1),
+            'cost': 2000.12,
+            'data_cost': 23.10,
+            'cpc': 20.23,
+            'clicks': 203,
+            'impressions': 200000,
+            'ctr': 2.03,
+            'some_random_metric': 13,
+        }]
+
+        dimensions = ['campaign']
+        start_date = datetime.date(2014, 6, 30)
+        end_date = datetime.date(2014, 7, 2)
+        user = User.objects.get(id=1)
+
+        campaign = models.Campaign.objects.get(pk=1)
+
+        rows = export_plus._generate_rows(
+            dimensions,
+            start_date,
+            end_date,
+            user,
+            'impressions',
+            True,
+            [],
+            include_budgets=True,
+            campaign=campaign
+        )
+
+        mock_query.assert_called_with(
+            start_date,
+            end_date,
+            breakdown=dimensions,
+            order=[],
+            conversion_goals=[],
+            ignore_diff_rows=True,
+            campaign=campaign,
+        )
+        self.assertEqual(rows, [
+            {'account': u'test account 1 \u010c\u017e\u0161',
+             'available_budget': 100.0,
+             'budget': 100.0,
+             'campaign': campaign,
+             'clicks': 203,
+             'cost': 2000.12,
+             'cpc': 20.23,
+             'ctr': 2.03,
+             'data_cost': 23.1,
+             'date': datetime.date(2014, 7, 1),
+             'end_date': datetime.date(2014, 7, 2),
+             'impressions': 200000,
+             'start_date': datetime.date(2014, 6, 30),
+             'status': 2,
+             'unspent_budget': -1900.12}
+        ])
 
     @patch('reports.api_contentads.query')
     def test_generate_rows_order_by_status(self, mock_query):
