@@ -496,7 +496,6 @@ class InfoBoxAccountHelpersTest(TestCase):
             created_by=user,
         )
 
-
     @mock.patch('dash.models.BudgetLineItem.get_spend_data')
     def test_calculate_spend_credit(self, mock_get_spend_data):
         mock_get_spend_data.return_value = {
@@ -520,7 +519,6 @@ class InfoBoxAccountHelpersTest(TestCase):
         account = dash.models.Account.objects.get(pk=1)
         available_credit = dash.infobox_helpers.calculate_spend_credit(account)
         self.assertEqual(10, available_credit)
-
 
     @mock.patch('dash.models.BudgetLineItem.get_daily_spend')
     def test_calculate_yesterday_account_spend(self, mock_get_daily_spend):

@@ -561,7 +561,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                     $scope.infoboxSettings = data.settings;
                 }
             );
-        } 
+        }
     };
 
     var setChartOptions = function () {

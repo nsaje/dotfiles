@@ -380,8 +380,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         }
     });
 
-    $scope.$watch('$parent.infoboxVisible', function(newValue, oldValue) {
-        $timeout(function() {
+    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
+        $timeout(function () {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
     });
@@ -460,17 +460,16 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         );
     };
 
-    var getInfoboxData = function() {
+    var getInfoboxData = function () {
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
 
         api.accountOverview.get($state.params.id).then(
-            function(data) {
+            function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxSettings = data.settings;
-            },
-            function(data) {}
+            }
         );
     };
 

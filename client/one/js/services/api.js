@@ -1436,7 +1436,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function AccountOverview() {
+    function AccountOverview () {
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + id + '/overview/';
@@ -1450,7 +1450,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         deferred.resolve(data.data);
                     }
                 }).
-                error(function(data, status, headers, config) {
+                error(function (data, status, headers, config) {
                     deferred.reject(data);
                 });
 
