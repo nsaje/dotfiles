@@ -49,7 +49,7 @@ SUPRESS_INVALID_CONTENT_ID_CHECK = {
 @statsd_helper.statsd_timer('zweiapi.views', 'zwei_callback')
 def zwei_callback(request, action_id):
     newrelic.agent.set_background_task(flag=True)
-    logger.debug('Received zwei callback: %s', action_id)
+    logger.info('Received zwei callback: %s', action_id)
 
     _validate_callback(request, action_id)
     action = _get_action(action_id)
