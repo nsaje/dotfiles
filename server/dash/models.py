@@ -7,6 +7,7 @@ import newrelic.agent
 
 from decimal import Decimal
 import pytz
+from django.db.models import Sum, F
 from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.contrib import auth
@@ -34,6 +35,11 @@ SHORT_NAME_MAX_LENGTH = 22
 CC_TO_DEC_MULTIPLIER = Decimal('0.0001')
 TO_CC_MULTIPLIER = 10**4
 TO_NANO_MULTIPLIER = 10**9
+
+
+class Round(Func):
+    function = 'ROUND'
+    template='%(function)s(%(expressions)s, 0)'
 
 
 def nano_to_cc(num):
@@ -2576,6 +2582,24 @@ class BudgetLineItem(FootprintModel):
             if any(itm.state() != constants.BudgetLineItemState.PENDING for itm in self):
                 raise AssertionError('Some budget items are not pending')
             super(BudgetLineItem.QuerySet, self).delete()
+
+
+        def filter_active(self, date):
+            if date is None:
+                date = dates_helper.local_today()
+
+            return self.exclude(
+                end_date__lt=date
+            ).filter(
+                start_date__lte=date
+            ).annotate(
+                media_spend_sum=Sum('statements__media_spend_nano'),
+                license_fee_spend_sum=Sum('statements__license_fee_nano'),
+                data_spend_sum=Sum('statements__data_spend_nano')
+            ).filter(
+                amount__gt=Round(F('media_spend_sum') * 1e-9 + F('license_fee_spend_sum') * 1e-9 +\
+                F('data_spend_sum')*1e-9)
+            )
 
 
 class CreditHistory(HistoryModel):
