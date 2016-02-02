@@ -11,7 +11,7 @@
     </alert>
 
     <form id="form-ad-group-settings" class="form-horizontal">
-        <div class="form-group" ng-class="{'has-error': !!errors.state}">
+        <div class="form-group" ng-class="{'has-error': !!errors.state}" ng-if="!hasPermission('zemauth.can_control_ad_group_state_in_table')">
             <label for="campaign-state-switch" class="col-xs-2 control-label">
                 Ad Group Status
                 <zem-help-popover content="This is the current state of the Ad Group. If you enable the Ad Group you must then go enable preferred Media Sources too.
