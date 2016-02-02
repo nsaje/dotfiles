@@ -290,7 +290,7 @@ def _populate_account_stat(stat, prefetched_data, statuses, budgets=None, flat_f
         stat['unspent_budget'] = stat['budget'] - Decimal(stat.get('cost') or 0)
     if flat_fees is not None:
         stat['flat_fee'] = flat_fees.get(stat['account'], Decimal('0.0'))
-        stat['total_fee'] = stat['flat_fee'] + Decimal(stat.get('license_fee', 0))
+        stat['total_fee'] = stat['flat_fee'] + Decimal(stat.get('license_fee') or 0)
     stat['status'] = statuses[stat['account']]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
