@@ -202,6 +202,78 @@ class ExportPlusTestCase(test.TestCase):
         }])
 
     @patch('reports.api_contentads.query')
+    def test_generate_rows_budget(self, mock_query):
+        mock_query.return_value = [{
+            'campaign': 1,
+            'account': 1,
+            'date': datetime.date(2014, 7, 1),
+            'cost': 1000.12,
+            'data_cost': 10.10,
+            'cpc': 10.23,
+            'clicks': 103,
+            'impressions': 100000,
+            'ctr': 1.03,
+            'some_random_metric': 12,
+        }, {
+            'campaign': 1,
+            'account': 1,
+            'date': datetime.date(2014, 7, 1),
+            'cost': 2000.12,
+            'data_cost': 23.10,
+            'cpc': 20.23,
+            'clicks': 203,
+            'impressions': 200000,
+            'ctr': 2.03,
+            'some_random_metric': 13,
+        }]
+
+        dimensions = ['campaign']
+        start_date = datetime.date(2014, 6, 30)
+        end_date = datetime.date(2014, 7, 2)
+        user = User.objects.get(id=1)
+
+        campaign = models.Campaign.objects.get(pk=1)
+
+        rows = export_plus._generate_rows(
+            dimensions,
+            start_date,
+            end_date,
+            user,
+            'impressions',
+            True,
+            [],
+            include_budgets=True,
+            campaign=campaign
+        )
+
+        mock_query.assert_called_with(
+            start_date,
+            end_date,
+            breakdown=dimensions,
+            order=[],
+            conversion_goals=[],
+            ignore_diff_rows=True,
+            campaign=campaign,
+        )
+        self.assertEqual(rows, [
+            {'account': u'test account 1 \u010c\u017e\u0161',
+             'available_budget': 100.0,
+             'budget': 100.0,
+             'campaign': campaign,
+             'clicks': 203,
+             'cost': 2000.12,
+             'cpc': 20.23,
+             'ctr': 2.03,
+             'data_cost': 23.1,
+             'date': datetime.date(2014, 7, 1),
+             'end_date': datetime.date(2014, 7, 2),
+             'impressions': 200000,
+             'start_date': datetime.date(2014, 6, 30),
+             'status': 2,
+             'unspent_budget': -1900.12}
+        ])
+
+    @patch('reports.api_contentads.query')
     def test_generate_rows_order_by_status(self, mock_query):
         mock_query.return_value = self.mock_generate_rows_stats
 

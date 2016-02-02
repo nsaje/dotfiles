@@ -2,12 +2,14 @@ import unicodecsv
 import StringIO
 import slugify
 import time
+from decimal import Decimal
 from collections import OrderedDict
 
 from dash import models
 from dash import stats_helper
 from dash import budget
 from dash import constants
+from dash import bcm_helpers
 from dash.views import helpers
 
 from utils import exc
@@ -149,20 +151,53 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets):
     return data, budgets, statuses
 
 
+def _prefetch_account_budgets(accounts):
+    all_accounts_budget = budget.GlobalBudget().get_total_by_account()
+    all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
+    result = {
+        acc.id: {
+            'budget': all_accounts_budget.get(acc.id, 0),
+            'spent_budget': all_accounts_total_spend.get(acc.id, 0)
+        } for acc in accounts if not acc.uses_credits
+    }
+    accounts_budget, accounts_spend = bcm_helpers.get_account_media_budget_data(
+        acc.pk for acc in accounts if acc.uses_credits
+    )
+    result.update({
+        acc.pk: {
+            'budget': accounts_budget.get(acc.id, Decimal('0.0')),
+            'spent_budget': accounts_spend.get(acc.id, Decimal('0.0')),
+        } for acc in accounts if acc.uses_credits
+    })
+    return result
+
+
+def _prefetch_campaign_budgets(campaigns):
+    if campaigns and campaigns[0].account.uses_credits:
+        total_budget, spent_budget = bcm_helpers.get_campaign_media_budget_data(
+            camp.pk for camp in campaigns
+        )
+        return {
+            camp.id: {
+                'budget': total_budget.get(camp.id, Decimal('0.0')),
+                'spent_budget': spent_budget.get(camp.id, Decimal('0.0')),
+            } for camp in campaigns
+        }
+    return {
+        camp.id: {
+            'budget': budget.CampaignBudget(camp).get_total(),
+            'spent_budget': budget.CampaignBudget(camp).get_spend()
+        } for camp in campaigns
+    }
+
+
 def _prefetch_budgets(data, level):
+    result = None
     if level == 'account':
-        all_accounts_budget = budget.GlobalBudget().get_total_by_account()
-        all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
-        return {acc.id:
-                {'budget': all_accounts_budget.get(acc.id, 0),
-                 'spent_budget': all_accounts_total_spend.get(acc.id, 0)}
-                for acc in data}
+        result = _prefetch_account_budgets(data)
     elif level == 'campaign':
-        return {camp.id:
-                {'budget': budget.CampaignBudget(camp).get_total(),
-                 'spent_budget': budget.CampaignBudget(camp).get_spend()}
-                for camp in data}
-    return None
+        result = _prefetch_campaign_budgets(data)
+    return result
 
 
 def _prefetch_statuses(entities, level, by_source):
