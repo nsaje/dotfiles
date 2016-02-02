@@ -106,7 +106,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                   'If you pause one, all Ad Group\'s Media Sources get paused.',
             onChange: function (adgroupId, state) {
                 api.adGroupSettingsState.post(adgroupId, state).then(
-                    function () {
+                    function (data) {
                         // reload ad group to update its status
                         zemNavigationService.reloadAdGroup(adgroupId);
                     }

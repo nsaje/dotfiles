@@ -1076,8 +1076,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var url = '/api/ad_groups/' + adgroupId + '/settings/state/';
 
             $http.post(url, {state: state}).
-            success(function (data, state) {
-                deferred.resolve(state);
+            success(function (data, status) {
+                deferred.resolve(data.data);
             }).
             error(function (data, status, headers, config) {
                 deferred.reject(data);
