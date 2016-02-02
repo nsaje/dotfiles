@@ -232,14 +232,14 @@ def _touchpoint_conversion_falls_within_bad_pixie_range(account_id, touchpoint_c
     slug = touchpoint_conversion['slug']
     conversion_timestamp = touchpoint_conversion['conversion_timestamp']
 
-    if((account_id, slug) in BAD_PIXIES_ACCOUNT_LEVEL):
+    if (account_id, slug) in BAD_PIXIES_ACCOUNT_LEVEL:
         for range_start_dt, range_end_dt in BAD_PIXIES_ACCOUNT_LEVEL[(account_id, slug)]:
-            if(range_start_dt <= conversion_timestamp <= range_end_dt):
+            if range_start_dt <= conversion_timestamp <= range_end_dt:
                 return True
 
-    if((ad_group_id, slug) in BAD_PIXIES_AD_GROUP_LEVEL):
+    if (ad_group_id, slug) in BAD_PIXIES_AD_GROUP_LEVEL:
         for range_start_dt, range_end_dt in BAD_PIXIES_AD_GROUP_LEVEL[(ad_group_id, slug)]:
-            if(range_start_dt <= conversion_timestamp <= range_end_dt):
+            if range_start_dt <= conversion_timestamp <= range_end_dt:
                 return True
 
     return False
