@@ -1540,10 +1540,10 @@ class AccountCampaignsTable(object):
 
         campaign_budget, campaign_spend = None, None
         if not account.uses_credits:
-            totals_stats['budget'] = sum(budget.CampaignBudget(campaign).get_total()
-                                         for campaign in campaigns)
-            total_spend = sum(budget.CampaignBudget(campaign).get_spend()
-                              for campaign in campaigns)
+            totals_stats['budget'] = Decimal(sum(budget.CampaignBudget(campaign).get_total()
+                                                 for campaign in campaigns))
+            total_spend = Decimal(sum(budget.CampaignBudget(campaign).get_spend()
+                                      for campaign in campaigns))
 
         else:
             campaign_budget, campaign_spend = bcm_helpers.get_campaign_media_budget_data(
