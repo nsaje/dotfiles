@@ -314,24 +314,51 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
     return yesterday_spend_setting
 
 
+def count_active_accounts():
+    # if source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
+    account_ids = set(
+        dash.models.AdGroupSourceState.objects.group_current_states().filter(
+            state=dash.constants.AdGroupSourceSettingsState.ACTIVE
+       ).values_list(
+           'ad_group_source__ad_group__campaign__account',
+           flat=True
+       )
+    )
+    return len(account_ids)
+
+
+def calculate_all_accounts_total_budget(start_date, end_date):
+    pass
+
+
+def calculate_all_accounts_monthly_budget(today):
+    return 0
+
+
 def count_weekly_logged_in_users():
     # 6 days instead of 6 since today counts as well
     now = datetime.datetime.utcnow()
     one_week_ago = now - datetime.timedelta(days=7)
     return zemauth.models.User.objects.filter(
         last_login__gte=one_week_ago,
+    ).exclude(
+        email__contains='@zemanta'
     ).count()
 
 
 def count_weekly_active_users():
     return len(set(dash.models.UserActionLog.objects.filter(
         created_dt__gte=_one_week_ago()
+    ).exclude(
+        created_by__email__contains='@zemanta'
     ).values_list('created_by__id', flat=True)))
 
 
 def count_weekly_selfmanaged_actions():
     return dash.models.UserActionLog.objects.filter(
         created_dt__gte=_one_week_ago()
+    ).exclude(
+        created_by__email__contains='@zemanta'
     ).count()
 
 
@@ -342,9 +369,7 @@ def _one_week_ago():
 
 
 def _retrieve_active_budgetlineitems(campaign, date):
-    return [budget for budget in dash.models.BudgetLineItem.objects.filter(
-        campaign=campaign
-    ) if budget.state(date) == dash.constants.BudgetLineItemState.ACTIVE]
+    return dash.models.BudgetLineItem.objects.all().filter_active(date)
 
 
 def _retrieve_daily_cap(ad_group_source):

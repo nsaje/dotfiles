@@ -7,7 +7,7 @@ import newrelic.agent
 
 from decimal import Decimal
 import pytz
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Func
 from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.contrib import auth
@@ -39,6 +39,11 @@ TO_NANO_MULTIPLIER = 10**9
 
 class Round(Func):
     function = 'ROUND'
+    template='%(function)s(%(expressions)s, 0)'
+
+
+class Coalesce(Func):
+    function = 'COALESCE'
     template='%(function)s(%(expressions)s, 0)'
 
 
@@ -2596,9 +2601,9 @@ class BudgetLineItem(FootprintModel):
                 media_spend_sum=Sum('statements__media_spend_nano'),
                 license_fee_spend_sum=Sum('statements__license_fee_nano'),
                 data_spend_sum=Sum('statements__data_spend_nano')
-            ).filter(
-                amount__gt=Round(F('media_spend_sum') * 1e-9 + F('license_fee_spend_sum') * 1e-9 +\
-                F('data_spend_sum')*1e-9)
+            ).exclude(
+                amount__lte=Round(Coalesce('media_spend_sum') * 1e-9 + Coalesce('license_fee_spend_sum') * 1e-9 +\
+                Coalesce('data_spend_sum')*1e-9)
             )
 
 
