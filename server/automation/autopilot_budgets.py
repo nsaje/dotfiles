@@ -207,7 +207,7 @@ Zemanta
             fail_silently=False
         )
     except Exception as e:
-        logger.exception(u'Auto-pilot daily budgets e-mail for adgroup %s to %s' +
+        logger.exception(u'Auto-pilot daily budgets e-mail for adgroup %s to %s ' +
                          'was not sent because an exception was raised:',
                          adgroup_name,
                          u''.join(emails))
