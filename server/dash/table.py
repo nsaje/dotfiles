@@ -784,7 +784,7 @@ class AccountsAccountsTable(object):
             totals_data['flat_fee'] = flat_fees and sum(
                 fee for fee in flat_fees.itervalues()
             ) or Decimal('0.0')
-            totals_data['total_fee'] = Decimal(totals_data.get('license_fee', 0)) + totals_data['flat_fee']
+            totals_data['total_fee'] = Decimal(totals_data.get('license_fee') or 0) + totals_data['flat_fee']
 
         last_success_actions = actionlog.sync.GlobalSync(sources=filtered_sources).get_latest_success_by_child()
         last_success_actions = {aid: val for aid, val in last_success_actions.items() if aid in account_ids}
@@ -965,7 +965,7 @@ class AccountsAccountsTable(object):
 
             if flat_fees:
                 row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
-                row['total_fee'] = row['flat_fee'] + Decimal(row.get('license_fee', 0))
+                row['total_fee'] = row['flat_fee'] + Decimal(row.get('license_fee') or 0)
 
             rows.append(row)
 
