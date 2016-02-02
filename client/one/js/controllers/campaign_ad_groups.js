@@ -96,28 +96,29 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             initialOrder: 'asc',
             enabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             pausedValue: constants.adGroupSourceSettingsState.INACTIVE,
-            internal: false,
-            shown: true,
+            internal: false, // TODO: Permission
+            shown: true, // TODO: Permission
             checked: true,
             totalRow: false,
             unselectable: true,
             help: 'A setting for enabling and pausing ad groups.',
-            onChange: function (adgroupId, value) {
-                console.log("Changed: "+adgroupId+"  state="+value);
+            onChange: function (adgroupId, state) {
+                console.log("Changed: "+adgroupId+"  state="+state);
+                debugger;
 
-                var newSettings = {};
-                newSettings.id = adgroupId;
-                newSettings.state = value;
-
-                api.adGroupSettings.save(
-                    $state.params.id,
+                api.adGroupSettingsState.post(
                     adgroupId,
-                    newSettings
+                    state
                 ).then(
                     function (data) {
                         // TODO
-                        console.log (data)
+                        console.log ('Success: '+data);
 
+                        // reload ad group to update its status
+                        zemNavigationService.reloadAdGroup(adgroupId);
+                    }, function (reason)
+                    {
+                        console.log ('Failed to set state : '+reason)
                     }
                 );
             },

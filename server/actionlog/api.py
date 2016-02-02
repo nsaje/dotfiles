@@ -28,10 +28,16 @@ def init_set_ad_group_state(ad_group, state, request, send=True):
     order = models.ActionLogOrder.objects.create(
             order_type=constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
     )
+
     if state == dash.constants.AdGroupSettingsState.ACTIVE:
-        return init_enable_ad_group(ad_group, request, order=order, send=send)
+        actions = init_enable_ad_group(ad_group, request, order=order, send=False)
     else:
-        return init_pause_ad_group(ad_group, request, order=order, send=send)
+        actions = init_pause_ad_group(ad_group, request, order=order, send=False)
+
+    if send:
+        zwei_actions.send(actions)
+
+    return actions
 
 
 def init_enable_ad_group(ad_group, request, order=None, send=True):

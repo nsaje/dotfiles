@@ -207,9 +207,8 @@ class AdGroupSettingsState(api_common.BaseApiView):
 
     # @statsd_helper.statsd_timer('dash.api', 'ad_group_state_post')
     def post(self, request, ad_group_id):
-        # if not request.user.has_perm('zemauth.set_content_ad_status'):
-        #     raise exc.ForbiddenError(message='Not allowed')
-
+        # if not request.user.has_perm('zemauth.can_view_ad_group_state_controls'):
+        #      raise exc.ForbiddenError(message='Not allowed')
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         data = json.loads(request.body)
         new_state = data.get('state')
