@@ -259,7 +259,7 @@ class InfoBoxHelpersTest(TestCase):
 
         self.assertEqual(
             50,
-            dash.infobox_helpers.get_yesterday_spend(user, campaign)
+            dash.infobox_helpers.get_yesterday_campaign_spend(user, campaign)
         )
 
     @mock.patch('reports.api_contentads.query')
@@ -383,7 +383,7 @@ class InfoBoxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         settings, is_delivering = dash.infobox_helpers.goals_and_spend_settings(user, campaign)
 
-        self.assertEqual(2, len(settings))
+        self.assertEqual(1, len(settings))
 
     def test_format_goal_value(self):
         self.assertEqual(
@@ -401,3 +401,36 @@ class InfoBoxHelpersTest(TestCase):
                 dash.constants.CampaignGoal.PERCENT_BOUNCE_RATE,
             )
         )
+
+    @mock.patch('reports.redshift.get_cursor')
+    def test_get_yesterday_adgroup_spend(self, cursor):
+        user = zemauth.models.User.objects.get(pk=1)
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        cursor().dictfetchall.return_value = [{
+            'adgroup_id': u'1',
+            'cost_cc_sum': 500000,
+        }]
+
+        self.assertEqual(
+            50,
+            dash.infobox_helpers.get_yesterday_adgroup_spend(user, ad_group)
+        )
+
+    def test_create_yesterday_spend_setting(self):
+        setting = dash.infobox_helpers.create_yesterday_spend_setting(50, 100)
+
+        self.assertEqual("$50.00", setting.value)
+        self.assertEqual("50.00% of daily cap", setting.description)
+        self.assertEqual('sad', setting.icon)
+
+        setting_1 = dash.infobox_helpers.create_yesterday_spend_setting(110, 100)
+
+        self.assertEqual("$110.00", setting_1.value)
+        self.assertEqual("110.00% of daily cap", setting_1.description)
+        self.assertEqual('happy', setting_1.icon)
+
+        setting_0 = dash.infobox_helpers.create_yesterday_spend_setting(50, 0)
+
+        self.assertEqual("$50.00", setting_0.value)
+        self.assertEqual("N/A", setting_0.description)
+        self.assertEqual('sad', setting_0.icon)

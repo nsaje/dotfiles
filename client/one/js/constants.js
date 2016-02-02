@@ -5,6 +5,10 @@ var constants = {
         ACTIVE: 1,
         INACTIVE: 2
     },
+    adGroupSettingsAutopilotState: {
+        ACTIVE: 1,
+        INACTIVE: 2
+    },
     adGroupRunningStatus: {
         ACTIVE: 1,
         INACTIVE: 2
@@ -538,8 +542,13 @@ var constants = {
     }
 };
 var options = {
-    adGroupSettingsStates: [{name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
+    adGroupSettingsStates: [
+        {name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
         {name: 'Enabled', value: constants.adGroupSettingsState.ACTIVE}
+    ],
+    adGroupSettingsAutopilotStates: [
+        {name: 'Paused', value: constants.adGroupSettingsAutopilotState.INACTIVE},
+        {name: 'Enabled', value: constants.adGroupSettingsAutopilotState.ACTIVE}
     ],
     adTargetDevices: [
         {name: 'Desktop', value: constants.adTargetDevice.DESKTOP},

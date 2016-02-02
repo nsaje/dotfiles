@@ -463,11 +463,14 @@ class BudgetsTestCase(TestCase):
             account_id=2,
             start_date=TODAY + datetime.timedelta(1),
             end_date=TODAY + datetime.timedelta(10),
-            amount=1000,
+            amount=1200,
+            flat_fee_cc=2000000,
             license_fee=Decimal('0.456'),
             status=constants.CreditLineItemStatus.SIGNED,
             created_by_id=1,
         )
+        self.assertEqual(c.effective_amount(), Decimal('1000'))
+
         create_budget(
             credit=c,
             amount=300,
@@ -511,6 +514,11 @@ class BudgetsTestCase(TestCase):
             campaign_id=1,
         )
         self.assertEqual(c.get_allocated_amount(), 1000)
+
+        c.flat_fee_cc = 3000000
+        with self.assertRaises(ValidationError) as err:
+            # Cannot add flat fee if tehre is no room
+            c.save()
 
     def test_editing_inactive(self):
         b = models.BudgetLineItem.objects.get(pk=1)

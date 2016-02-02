@@ -2,29 +2,50 @@
 'use strict';
 
 describe('zemRetargeting', function () {
-    var $scope, element, isolate, zemFilterService;
+    var $scope, element, isolate, zemFilterService, zemNavigationService, $q;
 
     var template = '<zem-retargeting zem-selected-adgroup-ids="selectedIds" zem-account="account"></zem-locations>';
 
     beforeEach(module('one'));
 
-    beforeEach(inject(function ($compile, $rootScope, _zemFilterService_) {
+    beforeEach(inject(function ($compile, $rootScope, _zemFilterService_, _zemNavigationService_, _$q_) {
         $scope = $rootScope.$new();
 
-        $scope.selectedIds = [];
-        $scope.account = {
-            campaigns: [{
-                adGroups: [{id: 1}, {id: 2, archived: true}, {id: 3}],
-            }],
-        };
-
         zemFilterService = _zemFilterService_;
+        zemNavigationService = _zemNavigationService_;
+        $q = _$q_;
+
+        $scope.selectedIds = [];
+        $scope.account = {id: 1};
+
+        spyOnNavigationService();
 
         element = $compile(template)($scope);
 
         $scope.$digest();
         isolate = element.isolateScope();
     }));
+
+    function spyOnNavigationService () {
+        var deferred = $q.defer();
+
+        // return fake account data from getAccount
+        spyOn(zemNavigationService, 'getAccount').and.callFake(function () {
+            return deferred.promise;
+        });
+        deferred.resolve({
+            account: {
+                campaigns: [{
+                    adGroups: [{id: 1}, {id: 2, archived: true}, {id: 3}],
+                }],
+            },
+        });
+
+        // mock onUpdate - immediately invoke the callback passed in
+        spyOn(zemNavigationService, 'onUpdate').and.callFake(function (scope, callback) {
+            callback();
+        });
+    }
 
     it('adds new ad groups', function () {
         spyOn(zemFilterService, 'isArchivedFilterOn').and.returnValue(false);

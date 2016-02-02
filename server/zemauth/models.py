@@ -163,6 +163,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_view_effective_costs', 'Can view effective costs'),
             ('can_view_actual_costs', 'Can view actual costs'),
             ('can_modify_outbrain_account_publisher_blacklist_status', 'Can modify Outbrain account publisher blacklist status'),
+            ('can_set_adgroup_to_auto_pilot', 'Can set Ad Group to Auto-Pilot (budget and CPC automation)'),
             ('can_set_ad_group_max_cpc', 'Can set ad group max cpc'),
             ('can_view_retargeting_settings', 'Can view retargeting settings'),
             ('can_control_ad_group_state_in_table', 'Can control ad group state in Campaign > AgGroups table'),
@@ -205,6 +206,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                     filter(models.Q(user=self) | models.Q(group__user=self)).\
                     order_by('id').\
                     distinct('id')
+
+            perms = perms.select_related('content_type')
 
             public_permissions = auth_models.Permission.objects.\
                 filter(pk__in=(x.pk for x in perms)).\
