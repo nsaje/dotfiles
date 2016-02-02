@@ -1553,7 +1553,7 @@ class AccountCampaignsTable(object):
             total_spend = sum(campaign_spend.itervalues())
 
         totals_stats['available_budget'] = totals_stats['budget'] - total_spend
-        totals_stats['unspent_budget'] = totals_stats['budget'] - (totals_stats.get('cost') or 0)
+        totals_stats['unspent_budget'] = totals_stats['budget'] - Decimal(totals_stats.get('cost') or 0)
 
         account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
         last_success_actions = account_sync.get_latest_success_by_child()
