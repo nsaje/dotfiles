@@ -501,3 +501,21 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         )
         # shouldn't change because it's month to date
         self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend())
+
+    def test_count_active_accounts(self):
+        pass
+
+    def test_calculate_all_accounts_total_budget(self):
+        pass
+
+    def test_calculate_all_accounts_monthly_budget(self):
+        pass
+
+    def test_count_weekly_logged_in_users(self):
+        pass
+
+    def test_count_weekly_active_users(self):
+        pass
+
+    def test_count_weekly_selfmanaged_actions(self):
+        pass
