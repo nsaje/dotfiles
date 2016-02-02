@@ -503,7 +503,18 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend())
 
     def test_count_active_accounts(self):
-        pass
+        self.assertEqual(0, dash.infobox_helpers.count_active_accounts())
+
+        all_adgs = dash.models.AdGroupSource.objects.all()
+        for adgs in all_adgs:
+            dash.models.AdGroupSourceState.objects.create(
+                ad_group_source=adgs,
+                state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+                cpc_cc=10,
+                daily_budget_cc=10
+            )
+
+        self.assertEqual(1, dash.infobox_helpers.count_active_accounts())
 
     def test_calculate_all_accounts_total_budget(self):
         pass
