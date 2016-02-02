@@ -367,6 +367,8 @@ class AdGroupSettingsStateTest(TestCase):
 
     def setUp(self):
         user = User.objects.get(pk=1)
+        account = models.Account.objects.get(pk=1)
+        account.users.add(user)
         self.client.login(username=user.email, password='secret')
 
     def test_get(self):

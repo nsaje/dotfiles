@@ -24,7 +24,6 @@
         modified_by: 1
         name: 'test account 1'
         allowed_sources: [1,2]
-        users: [1]
     model: dash.account
     pk: 1
 
