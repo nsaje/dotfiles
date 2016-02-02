@@ -517,16 +517,76 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         self.assertEqual(1, dash.infobox_helpers.count_active_accounts())
 
     def test_calculate_all_accounts_total_budget(self):
-        pass
+        today = datetime.datetime.utcnow()
+        self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_total_budget(today, today))
+        # TODO: expand test
 
     def test_calculate_all_accounts_monthly_budget(self):
-        pass
+        today = datetime.datetime.utcnow()
+        self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_monthly_budget(today))
+        # TODO: expand test
+
+    def _make_a_john(self):
+        ordinary_john = zemauth.models.User.objects.create_user(
+            username="Janez",
+            email="janez.janez@arnes.si",
+            password="janez"
+        )
+        ordinary_john.last_login = datetime.datetime.utcnow()
+        ordinary_john.save()
+        return ordinary_john
 
     def test_count_weekly_logged_in_users(self):
-        pass
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users())
+
+        for u in zemauth.models.User.objects.all():
+            if 'zemanta' not in u.email:
+                continue
+            u.last_login = datetime.datetime.utcnow()
+            u.save()
+
+        # zemanta mail should be skipped when counting mails
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users())
+
+        self._make_a_john()
+        self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users())
 
     def test_count_weekly_active_users(self):
-        pass
+        # should be 0 by default
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_active_users())
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
-    def test_count_weekly_selfmanaged_actions(self):
-        pass
+        for u in zemauth.models.User.objects.all():
+            if 'zemanta' not in u.email:
+                continue
+
+            dash.models.UserActionLog.objects.create(
+                action_type=dash.constants.UserActionType.UPLOAD_CONTENT_ADS,
+                ad_group=dash.models.AdGroup.objects.get(pk=1),
+                created_dt=datetime.datetime.utcnow(),
+                created_by=u,
+            )
+
+        # zemanta mail should be skipped when counting mails
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_active_users())
+        self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
+
+        john = self._make_a_john()
+        dash.models.UserActionLog.objects.create(
+            action_type=dash.constants.UserActionType.UPLOAD_CONTENT_ADS,
+            ad_group=dash.models.AdGroup.objects.get(pk=1),
+            created_dt=datetime.datetime.utcnow(),
+            created_by=john,
+        )
+
+        self.assertEqual(1, dash.infobox_helpers.count_weekly_active_users())
+        self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions())
+
+        dash.models.UserActionLog.objects.create(
+            action_type=dash.constants.UserActionType.SET_CAMPAIGN_SETTINGS,
+            ad_group=dash.models.AdGroup.objects.get(pk=1),
+            created_dt=datetime.datetime.utcnow(),
+            created_by=john,
+        )
+        self.assertEqual(1, dash.infobox_helpers.count_weekly_active_users())
+        self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions())
