@@ -247,6 +247,9 @@ oneApp.run(['$state', '$rootScope', '$location', 'config', 'zemIntercomService',
         // Restore all query string parameters back to $location.search
         $location.search(locationSearch);
         $rootScope.stateChangeFired = true;
+    });
+
+    $rootScope.$on('$locationChangeSuccess', function () {
         zemIntercomService.update();
     });
 
