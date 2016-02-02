@@ -136,7 +136,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'state',
             checked: true,
             type: 'text',
-            shown: true,
+            shown: !$scope.hasPermission('zemauth.can_control_ad_group_state_in_table'),
             totalRow: false,
             help: 'Status of an ad group (enabled or paused).',
             order: true,

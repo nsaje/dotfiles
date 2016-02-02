@@ -1074,20 +1074,12 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         this.post = function (adgroupId, state) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adgroupId + '/settings/state/';
-            var config = {
-                params: {}
-            };
 
-            var data = {
-                state: state
-            };
-
-            $http.post(url, data).
+            $http.post(url, {state: state}).
             success(function (data, state) {
                 deferred.resolve(state);
             }).
             error(function (data, status, headers, config) {
-                // TODO: Validation error - i.e. budget
                 deferred.reject(data);
             });
 
