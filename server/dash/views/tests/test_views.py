@@ -2539,3 +2539,35 @@ class CampaignOverviewTest(TestCase):
         }]
         response = self._get_campaign_overview(1)
         self.assertTrue(response['success'])
+
+
+class AllAccountsOverviewTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.client = Client()
+        redshift.STATS_DB_NAME = 'default'
+
+        permission = Permission.objects.get(codename='can_see_infobox')
+        user = zemauth.models.User.objects.get(pk=2)
+        user.user_permissions.add(permission)
+        user.save()
+
+    def _get_all_accounts_overview(self, campaign_id, user_id=2, with_status=False):
+        user = User.objects.get(pk=user_id)
+        self.client.login(username=user.username, password='secret')
+        reversed_url = reverse(
+                'all_accounts_overview',
+                kwargs={})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return json.loads(response.content)
+
+    def _get_setting(self, settings, name):
+        return [s for s in settings if name in s['name'].lower()][0]
+
+    def test_run_empty(self):
+        response = self._get_all_accounts_overview(1)
+        self.assertTrue(response['success'])

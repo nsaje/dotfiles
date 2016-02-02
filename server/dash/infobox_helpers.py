@@ -1,3 +1,4 @@
+import calendar
 import copy
 import datetime
 import exceptions
@@ -317,7 +318,7 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
 def count_active_accounts():
     # if source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
     account_ids = set(
-        dash.models.AdGroupSourceState.objects.group_current_states().filter(
+        dash.models.AdGroupSourceState.objects.all().group_current_states().filter(
             state=dash.constants.AdGroupSourceSettingsState.ACTIVE
        ).values_list(
            'ad_group_source__ad_group__campaign__account',
@@ -328,11 +329,22 @@ def count_active_accounts():
 
 
 def calculate_all_accounts_total_budget(start_date, end_date):
-    pass
+    '''
+    Total budget in date range is amount of all active
+    '''
+    all_amounts = dash.models.BudgetLineItem.objects.all().exclude(
+        start_date__gt=end_date
+    ).exclude(
+        end_date__lt=start_date
+    ).values_list('amount', flat=True)
+    return sum(all_amounts)
 
 
 def calculate_all_accounts_monthly_budget(today):
-    return 0
+    start, end = calendar.monthrange(today.year, today.month)
+    start_date = datetime.datetime(today.year, today.month, 1)
+    end_date = datetime.datetime(today.year, today.month, end)
+    return calculate_all_accounts_total_budget(start_date, end_date)
 
 
 def count_weekly_logged_in_users():

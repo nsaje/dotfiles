@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import calendar
 import datetime
 import json
 import decimal
@@ -1729,7 +1730,6 @@ class AllAccountsOverview(api_common.BaseApiView):
             'title': 'All accounts',
         }
 
-
         response = {
             'header': header,
             'settings': self._basic_settings(),
@@ -1742,10 +1742,10 @@ class AllAccountsOverview(api_common.BaseApiView):
     def _basic_settings(self):
         settings = []
 
-
+        count_active_accounts = infobox_helpers.count_active_accounts()
         settings.append(infobox_helpers.OverviewSetting(
             'Active accounts:',
-            0
+            count_active_accounts
         ))
 
         weekly_logged_users = infobox_helpers.count_weekly_logged_in_users()
@@ -1792,14 +1792,21 @@ class AllAccountsOverview(api_common.BaseApiView):
         ))
         """
 
+        today = datetime.datetime.utcnow()
+        start, end = calendar.monthrange(today.year, today.month)
+        start_date = datetime.datetime(today.year, today.month, 1)
+        end_date = datetime.datetime(today.year, today.month, end)
+
+        total_budget = infobox_helpers.calculate_all_accounts_total_budget(start_date, end_date)
         settings.append(infobox_helpers.OverviewSetting(
             'Total budgets:',
-            '$0.00'
+            '${:.2f}'.format(total_budget)
         ))
 
+        monthly_budget = infobox_helpers.calculate_all_accounts_monthly_budget(today)
         settings.append(infobox_helpers.OverviewSetting(
             'Monthly budgets:',
-            '$0.00'
+            '${:.2f}'.format(monthly_budget)
         ))
 
         return [setting.as_dict() for setting in settings]
