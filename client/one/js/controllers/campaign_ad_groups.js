@@ -96,8 +96,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             initialOrder: 'asc',
             enabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             pausedValue: constants.adGroupSourceSettingsState.INACTIVE,
-            internal: false, // TODO: Permission
-            shown: true, // TODO: Permission
+            internal: $scope.isPermissionInternal('zemauth.can_control_ad_group_state_in_table'),
+            shown: $scope.hasPermission('zemauth.can_control_ad_group_state_in_table'),
             checked: true,
             totalRow: false,
             unselectable: true,

@@ -192,34 +192,33 @@ class AdGroupSettings(api_common.BaseApiView):
 
 class AdGroupSettingsState(api_common.BaseApiView):
 
-    #@statsd_helper.statsd_timer('dash.api', 'ad_group_settings_get')
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_state_get')
     def get(self, request, ad_group_id):
-        # if not request.user.has_perm('dash.settings_view'):
-        #     raise exc.MissingDataError()
+        if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
+            raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         settings = ad_group.get_current_settings()
-
         return self.create_api_response({
             'id': str(ad_group.pk),
             'state': settings.state,
         })
 
-    # @statsd_helper.statsd_timer('dash.api', 'ad_group_state_post')
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_state_post')
     def post(self, request, ad_group_id):
-        # if not request.user.has_perm('zemauth.can_view_ad_group_state_controls'):
-        #      raise exc.ForbiddenError(message='Not allowed')
+        if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
+            raise exc.MissingDataError()
+
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         data = json.loads(request.body)
         new_state = data.get('state')
         self._validate_state(ad_group, new_state)
 
         settings = ad_group.get_current_settings()
-
         if settings.state != new_state:
             settings.state = new_state
             settings.save(request)
-            actionlog_api.init_set_ad_group_state(ad_group, new_state, request, send=True)
+            actionlog_api.init_set_ad_group_state(ad_group, settings.state, request, send=True)
 
         return self.create_api_response({
             'id': str(ad_group.pk),
