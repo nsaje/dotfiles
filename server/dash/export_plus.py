@@ -46,7 +46,9 @@ FIELDNAMES = {
     'unspent_budget': 'Unspent Budget',
     'visits': 'Visits',
     'date': 'Date',
-    'license_fee': 'License Fee'
+    'license_fee': 'License Fee',
+    'total_fee': 'Total Fee',
+    'flat_fee': 'Flat Fee',
 }
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
@@ -59,8 +61,10 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
 
 FORMAT_1_DECIMAL = ['avg_tos']
 
-FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'cost', 'data_cost', 'media_cost', 'e_media_cost', 'e_data_cost',
-                     'total_cost', 'billing_cost', 'budget', 'available_budget', 'unspent_budget']
+FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'cost', 'data_cost', 'media_cost',
+                     'e_media_cost', 'e_data_cost',
+                     'total_cost', 'billing_cost', 'budget', 'available_budget',
+                     'unspent_budget', 'license_fee', 'total_fee', 'flat_fee', ]
 
 FORMAT_3_DECIMALS = ['cpc']
 
@@ -70,7 +74,7 @@ FORMAT_EMPTY_TO_0 = [
     'data_cost', 'cost', 'cpc',
     'clicks', 'impressions', 'ctr', 'visits', 'pageviews',
     'e_media_cost', 'media_cost', 'e_data_cost', 'total_cost',
-    'billing_cost', 'license_fee'
+    'billing_cost', 'license_fee', 'total_fee', 'flat_fee',
 ]
 
 
@@ -178,12 +182,12 @@ def _prefetch_statuses(entities, level, by_source):
     if by_source:
         ad_group_sources = helpers.get_active_ad_group_sources(model_class, entities)
         return {entity.id: {ad_group_source.source.id:
-                _get_sources_state(ad_group_sources.filter(
-                    source=ad_group_source.source.id, **{by_source_constraints: entity}))
-                for ad_group_source in ad_group_sources.filter(**{by_source_constraints: entity})}
+                            _get_sources_state(ad_group_sources.filter(
+                                source=ad_group_source.source.id, **{by_source_constraints: entity}))
+                            for ad_group_source in ad_group_sources.filter(**{by_source_constraints: entity})}
                 for entity in entities}
 
-    ad_groups = models.AdGroup.objects.filter(**{constraints+'__in': entities})
+    ad_groups = models.AdGroup.objects.filter(**{constraints + '__in': entities})
     ad_groups_settings = models.AdGroupSettings.objects.filter(
         ad_group__in=ad_groups).group_current_settings()
     return helpers.get_ad_group_state_by_sources_running_status(
@@ -377,6 +381,7 @@ def _include_breakdowns(required_fields, dimensions, by_day, by_source):
 
 
 class AllAccountsExport(object):
+
     def get_data(self, user, filtered_sources, start_date, end_date, order,
                  additional_fields, breakdown=None, by_source=False, by_day=False):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
@@ -424,6 +429,7 @@ class AllAccountsExport(object):
 
 
 class AccountExport(object):
+
     def get_data(self, user, account_id, filtered_sources, start_date, end_date,
                  order, additional_fields, breakdown=None, by_source=False, by_day=False):
         account = helpers.get_account(user, account_id)
@@ -469,6 +475,7 @@ class AccountExport(object):
 
 
 class CampaignExport(object):
+
     def get_data(self, user, campaign_id, filtered_sources, start_date, end_date,
                  order, additional_fields, breakdown=None, by_source=False, by_day=False):
         campaign = helpers.get_campaign(user, campaign_id)
@@ -506,6 +513,7 @@ class CampaignExport(object):
 
 
 class AdGroupExport(object):
+
     def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date,
                  order, additional_fields, breakdown=None, by_source=False, by_day=False):
 
@@ -547,6 +555,7 @@ def filter_allowed_fields(request, fields):
     allowed_fields = []
     can_view_effective_costs = request.user.has_perm('zemauth.can_view_effective_costs')
     can_view_actual_costs = request.user.has_perm('zemauth.can_view_actual_costs')
+    can_view_flat_fees = request.user.has_perm('zemauth.can_view_flat_fees')
     for f in fields:
         if f in ('e_data_cost', 'e_media_cost',
                  'license_fee', 'billing_cost') and not can_view_effective_costs:
@@ -555,6 +564,8 @@ def filter_allowed_fields(request, fields):
                  'license_fee', 'total_cost') and not can_view_actual_costs:
             continue
         if f in ('cost', ) and (can_view_effective_costs or can_view_actual_costs):
+            continue
+        if f in ('total_fee', 'flat_fee', ) and not can_view_flat_fees:
             continue
         allowed_fields.append(f)
     return allowed_fields
