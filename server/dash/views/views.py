@@ -1741,14 +1741,29 @@ class AllAccountsOverview(api_common.BaseApiView):
 
     def _basic_settings(self):
         settings = []
+
+
         settings.append(infobox_helpers.OverviewSetting(
             'Active accounts:',
             0
         ))
 
+        weekly_logged_users = infobox_helpers.count_weekly_logged_in_users()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Weekly logged-in users:',
+            weekly_logged_users
+        ))
+
+        weekly_active_users = infobox_helpers.count_weekly_active_users()
         settings.append(infobox_helpers.OverviewSetting(
             'Weekly active users:',
-            0
+            weekly_active_users
+        ))
+
+        weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Weekly self managed actions:',
+            weekly_sf_actions
         ))
 
         yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
@@ -1763,6 +1778,28 @@ class AllAccountsOverview(api_common.BaseApiView):
             'Spend MTD:',
             '${:.2f}'.format(mtd_spend),
             tooltip='Month-to-date media spend'
+        ))
+
+        """
+        settings.append(infobox_helpers.OverviewSetting(
+            'Forecast EOM:',
+            'TBD'
+        ))
+
+        settings.append(infobox_helpers.OverviewSetting(
+            'Forecast license fee:',
+            '$0.00'
+        ))
+        """
+
+        settings.append(infobox_helpers.OverviewSetting(
+            'Total budgets:',
+            '$0.00'
+        ))
+
+        settings.append(infobox_helpers.OverviewSetting(
+            'Monthly budgets:',
+            '$0.00'
         ))
 
         return [setting.as_dict() for setting in settings]

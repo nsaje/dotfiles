@@ -7,6 +7,7 @@ import reports.api_helpers
 import dash.constants
 import dash.budget
 import dash.models
+import zemauth.models
 import reports.api_contentads
 
 from decimal import Decimal
@@ -311,6 +312,33 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
         filled_daily_ratio >= 1.0 if filled_daily_ratio else False
     )
     return yesterday_spend_setting
+
+
+def count_weekly_logged_in_users():
+    # 6 days instead of 6 since today counts as well
+    now = datetime.datetime.utcnow()
+    one_week_ago = now - datetime.timedelta(days=7)
+    return zemauth.models.User.objects.filter(
+        last_login__gte=one_week_ago,
+    ).count()
+
+
+def count_weekly_active_users():
+    return len(set(dash.models.UserActionLog.objects.filter(
+        created_dt__gte=_one_week_ago()
+    ).values_list('created_by__id', flat=True)))
+
+
+def count_weekly_selfmanaged_actions():
+    return dash.models.UserActionLog.objects.filter(
+        created_dt__gte=_one_week_ago()
+    ).count()
+
+
+def _one_week_ago():
+    # 6 days instead of 6 since today counts as well
+    now = datetime.datetime.utcnow()
+    return now - datetime.timedelta(days=7)
 
 
 def _retrieve_active_budgetlineitems(campaign, date):
