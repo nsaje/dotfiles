@@ -175,8 +175,8 @@ def _prefetch_account_budgets(accounts):
     all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
     result = {
         acc.id: {
-            'budget': all_accounts_budget.get(acc.id, 0),
-            'spent_budget': all_accounts_total_spend.get(acc.id, 0)
+            'budget': Decimal(all_accounts_budget.get(acc.id, 0)),
+            'spent_budget': Decimal(all_accounts_total_spend.get(acc.id, 0))
         } for acc in accounts if not acc.uses_credits
     }
     accounts_budget, accounts_spend = bcm_helpers.get_account_media_budget_data(
@@ -184,8 +184,8 @@ def _prefetch_account_budgets(accounts):
     )
     result.update({
         acc.pk: {
-            'budget': accounts_budget.get(acc.id, Decimal('0.0')),
-            'spent_budget': accounts_spend.get(acc.id, Decimal('0.0')),
+            'budget': Decimal(accounts_budget.get(acc.id, 0)),
+            'spent_budget': Decimal(accounts_spend.get(acc.id, 0)),
         } for acc in accounts if acc.uses_credits
     })
     return result
@@ -198,14 +198,14 @@ def _prefetch_campaign_budgets(campaigns):
         )
         return {
             camp.id: {
-                'budget': total_budget.get(camp.id, Decimal('0.0')),
-                'spent_budget': spent_budget.get(camp.id, Decimal('0.0')),
+                'budget': Decimal(total_budget.get(camp.id, 0)),
+                'spent_budget': Decimal(spent_budget.get(camp.id, 0)),
             } for camp in campaigns
         }
     return {
         camp.id: {
-            'budget': budget.CampaignBudget(camp).get_total(),
-            'spent_budget': budget.CampaignBudget(camp).get_spend()
+            'budget': Decimal(budget.CampaignBudget(camp).get_total()),
+            'spent_budget': Decimal(budget.CampaignBudget(camp).get_spend())
         } for camp in campaigns
     }
 
@@ -276,7 +276,7 @@ def _populate_campaign_stat(stat, campaign, statuses, budgets=None):
     if budgets:
         stat['budget'] = budgets[campaign.id].get('budget')
         stat['available_budget'] = stat['budget'] - budgets[campaign.id].get('spent_budget')
-        stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
+        stat['unspent_budget'] = stat['budget'] - Decimal(stat.get('cost') or 0)
     stat['status'] = statuses[campaign.id]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
@@ -287,7 +287,7 @@ def _populate_account_stat(stat, prefetched_data, statuses, budgets=None, flat_f
     if budgets:
         stat['budget'] = budgets[stat['account']].get('budget')
         stat['available_budget'] = stat['budget'] - budgets[stat['account']].get('spent_budget')
-        stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
+        stat['unspent_budget'] = stat['budget'] - Decimal(stat.get('cost') or 0)
     if flat_fees is not None:
         stat['flat_fee'] = flat_fees.get(stat['account'], Decimal('0.0'))
         stat['total_fee'] = stat['flat_fee'] + Decimal(stat.get('license_fee', 0))
@@ -461,12 +461,10 @@ class AllAccountsExport(object):
         required_fields.extend(['status'])
 
         include_budgets = (
-            any(
-                [
-                    field in additional_fields
-                    for field in ['budget', 'available_budget', 'unspent_budget']
-                ]
-            ) and not by_day and breakdown != 'ad_group'
+            any([
+                field in additional_fields
+                for field in ['budget', 'available_budget', 'unspent_budget']
+            ]) and not by_day and breakdown != 'ad_group'
         )
         include_flat_fees = (
             'total_fee' in additional_fields or 'flat_fee' in additional_fields

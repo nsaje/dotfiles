@@ -774,8 +774,8 @@ class AccountsAccountsTable(object):
 
         account_budget, account_total_spend = self.get_budgets(accounts)
 
-        totals_data['budget'] = sum(account_budget.itervalues())
-        totals_data['available_budget'] = totals_data['budget'] - sum(account_total_spend.values())
+        totals_data['budget'] = Decimal(sum(account_budget.itervalues()))
+        totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
         totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
 
         flat_fees = None
@@ -1686,12 +1686,11 @@ class AccountCampaignsTable(object):
             row.update(campaign_stat)
 
             if not account.uses_credits:
-                row['budget'] = budget.CampaignBudget(campaign).get_total()
-                row['available_budget'] = row['budget'] - budget.CampaignBudget(campaign).get_spend()
+                row['budget'] = Decimal(budget.CampaignBudget(campaign).get_total())
+                row['available_budget'] = row['budget'] - Decimal(budget.CampaignBudget(campaign).get_spend())
             else:
-                row['budget'] = campaign_budget.get(campaign.pk, Decimal('0.0'))
-                row['available_budget'] = row['budget'] - campaign_spend.get(campaign.pk,
-                                                                             Decimal('0.0'))
+                row['budget'] = Decimal(campaign_budget.get(campaign.pk, Decimal('0.0')))
+                row['available_budget'] = row['budget'] - Decimal(campaign_spend.get(campaign.pk, 0))
             row['unspent_budget'] = row['budget'] - Decimal((row.get('cost') or 0))
 
             rows.append(row)

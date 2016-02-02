@@ -258,8 +258,6 @@ class ExportPlusTestCase(test.TestCase):
             include_flat_fees=True,
             account=accounts
         )
-        from pprint import pprint
-        pprint(rows)
         mock_query.assert_called_with(
             start_date,
             end_date,
@@ -271,8 +269,8 @@ class ExportPlusTestCase(test.TestCase):
         )
         self.assertEqual(rows, [
             {'account': u'test account 1 \u010c\u017e\u0161',
-             'available_budget': 100.0,
-             'budget': 100.0,
+             'available_budget': Decimal(100),
+             'budget': Decimal(100),
              'clicks': 103,
              'cost': 1000.12,
              'cpc': 10.23,
@@ -286,10 +284,10 @@ class ExportPlusTestCase(test.TestCase):
              'total_fee': Decimal('101.0'),
              'flat_fee': Decimal('100.0'),
              'status': 2,
-             'unspent_budget': -900.12},
+             'unspent_budget': Decimal('-900.1200000000000045474735089')},
             {'account': u'test account 2',
-             'available_budget': 0,
-             'budget': 0,
+             'available_budget': Decimal(0),
+             'budget': Decimal(0),
              'clicks': 203,
              'cost': 2000.12,
              'cpc': 20.23,
@@ -303,7 +301,7 @@ class ExportPlusTestCase(test.TestCase):
              'total_fee': Decimal('1.0'),
              'flat_fee': Decimal('0.0'),
              'status': 2,
-             'unspent_budget': -2000.12}
+             'unspent_budget': Decimal('-2000.119999999999890860635787')}
         ])
 
     @patch('reports.api_contentads.query')
@@ -350,7 +348,6 @@ class ExportPlusTestCase(test.TestCase):
             include_budgets=True,
             campaign=campaign
         )
-
         mock_query.assert_called_with(
             start_date,
             end_date,
@@ -362,8 +359,8 @@ class ExportPlusTestCase(test.TestCase):
         )
         self.assertEqual(rows, [
             {'account': u'test account 1 \u010c\u017e\u0161',
-             'available_budget': 100.0,
-             'budget': 100.0,
+             'available_budget': Decimal('100'),
+             'budget': Decimal('100'),
              'campaign': campaign,
              'clicks': 203,
              'cost': 2000.12,
@@ -375,7 +372,7 @@ class ExportPlusTestCase(test.TestCase):
              'impressions': 200000,
              'start_date': datetime.date(2014, 6, 30),
              'status': 2,
-             'unspent_budget': -1900.12}
+             'unspent_budget': Decimal('-1900.119999999999890860635787')}
         ])
 
     @patch('reports.api_contentads.query')
