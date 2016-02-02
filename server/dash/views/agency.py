@@ -215,7 +215,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
             'state': settings.state,
         })
 
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_state_post')
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_state_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
             raise exc.MissingDataError()

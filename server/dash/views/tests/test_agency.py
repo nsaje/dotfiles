@@ -352,9 +352,9 @@ class AdGroupSettingsTest(TestCase):
         self.settings_dict['settings']['id'] = 2
 
         response = self.client.put(
-                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-                json.dumps(self.settings_dict),
-                follow=True
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
         )
 
         response_dict = json.loads(response.content)
