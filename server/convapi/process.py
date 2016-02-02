@@ -215,7 +215,6 @@ def process_touchpoint_conversions(redirects_impressions):
                 'conversion_lag': int(math.ceil((impression_ts - redirect_ts).total_seconds() / (60 * 60)))
             }
 
-            # filter out conversions that are within BAD_PIXIE date ranges
             if _touchpoint_conversion_falls_within_bad_pixie_range(account_id, potential_touchpoint_conversion):
                 continue
 
