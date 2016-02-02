@@ -2,12 +2,14 @@ import unicodecsv
 import StringIO
 import slugify
 import time
+from decimal import Decimal
 from collections import OrderedDict
 
 from dash import models
 from dash import stats_helper
 from dash import budget
 from dash import constants
+from dash import bcm_helpers
 from dash.views import helpers
 
 from utils import exc
@@ -46,7 +48,9 @@ FIELDNAMES = {
     'unspent_budget': 'Unspent Budget',
     'visits': 'Visits',
     'date': 'Date',
-    'license_fee': 'License Fee'
+    'license_fee': 'License Fee',
+    'total_fee': 'Total Fee',
+    'flat_fee': 'Flat Fee',
 }
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
@@ -59,8 +63,10 @@ UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
 
 FORMAT_1_DECIMAL = ['avg_tos']
 
-FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'cost', 'data_cost', 'media_cost', 'e_media_cost', 'e_data_cost',
-                     'total_cost', 'billing_cost', 'budget', 'available_budget', 'unspent_budget']
+FORMAT_2_DECIMALS = ['pv_per_visit', 'avg_tos', 'cost', 'data_cost', 'media_cost',
+                     'e_media_cost', 'e_data_cost',
+                     'total_cost', 'billing_cost', 'budget', 'available_budget',
+                     'unspent_budget', 'license_fee', 'total_fee', 'flat_fee', ]
 
 FORMAT_3_DECIMALS = ['cpc']
 
@@ -70,12 +76,12 @@ FORMAT_EMPTY_TO_0 = [
     'data_cost', 'cost', 'cpc',
     'clicks', 'impressions', 'ctr', 'visits', 'pageviews',
     'e_media_cost', 'media_cost', 'e_data_cost', 'total_cost',
-    'billing_cost', 'license_fee'
+    'billing_cost', 'license_fee', 'total_fee', 'flat_fee',
 ]
 
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
-                   conversion_goals, include_budgets=False, **constraints):
+                   conversion_goals, include_budgets=False, include_flat_fees=False, **constraints):
     stats = stats_helper.get_stats_with_conversions(
         user,
         start_date,
@@ -85,11 +91,14 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         conversion_goals=conversion_goals,
         constraints=constraints
     )
-    prefetched_data, budgets, statuses = _prefetch_rows_data(
+    prefetched_data, budgets, flat_fees, statuses = _prefetch_rows_data(
         dimensions,
         constraints,
         stats,
-        include_budgets=include_budgets)
+        start_date,
+        end_date,
+        include_budgets=include_budgets,
+        include_flat_fees=include_flat_fees)
     if 'source' in dimensions:
         source_names = {source.id: source.name for source in models.Source.objects.all()}
 
@@ -105,7 +114,8 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
             stat = _populate_campaign_stat(stat, prefetched_data.get(
                 id=stat['campaign']), statuses=statuses, budgets=budgets)
         elif 'account' in dimensions:
-            stat = _populate_account_stat(stat, prefetched_data, statuses, budgets)
+            stat = _populate_account_stat(stat, prefetched_data, statuses,
+                                          budgets=budgets, flat_fees=flat_fees)
         else:
             ad_group_sources = models.AdGroupSource.objects.filter(
                 ad_group__campaign__account__in=models.Account.objects.all().filter_by_user(user),
@@ -118,10 +128,12 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
     return sort_results(stats, [ordering])
 
 
-def _prefetch_rows_data(dimensions, constraints, stats, include_budgets):
+def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date,
+                        include_budgets=False, include_flat_fees=False):
     data = None
     budgets = None
     statuses = None
+    flat_fees = None
     by_source = ('source' in dimensions)
     level = None
     if 'content_ad' in dimensions:
@@ -138,27 +150,73 @@ def _prefetch_rows_data(dimensions, constraints, stats, include_budgets):
         level = 'account'
         acounts = set(stat['account'] for stat in stats)
         data = models.Account.objects.filter(id__in=acounts)
+        flat_fees = _prefetch_flat_fees(data, start_date, end_date)
 
     if level in ['account', 'campaign', 'ad_group']:
         statuses = _prefetch_statuses(data, level, by_source)
         budgets = None if not include_budgets else _prefetch_budgets(data, level)
-    return data, budgets, statuses
+    return data, budgets, flat_fees, statuses
+
+
+def _prefetch_flat_fees(accounts, start_date, end_date):
+    account_flat_fees = {}
+    for credit in models.CreditLineItem.objects.filter(account__in=accounts):
+        if not credit.flat_fee_cc:
+            continue
+        if credit.account_id not in account_flat_fees:
+            account_flat_fees[credit.account_id] = Decimal('0.0')
+        account_flat_fees[credit.account_id] += credit.get_flat_fee_on_date_range(start_date,
+                                                                                  end_date)
+    return account_flat_fees
+
+
+def _prefetch_account_budgets(accounts):
+    all_accounts_budget = budget.GlobalBudget().get_total_by_account()
+    all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
+    result = {
+        acc.id: {
+            'budget': Decimal(all_accounts_budget.get(acc.id, 0)),
+            'spent_budget': Decimal(all_accounts_total_spend.get(acc.id, 0))
+        } for acc in accounts if not acc.uses_credits
+    }
+    accounts_budget, accounts_spend = bcm_helpers.get_account_media_budget_data(
+        acc.pk for acc in accounts if acc.uses_credits
+    )
+    result.update({
+        acc.pk: {
+            'budget': Decimal(accounts_budget.get(acc.id, 0)),
+            'spent_budget': Decimal(accounts_spend.get(acc.id, 0)),
+        } for acc in accounts if acc.uses_credits
+    })
+    return result
+
+
+def _prefetch_campaign_budgets(campaigns):
+    if campaigns and campaigns[0].account.uses_credits:
+        total_budget, spent_budget = bcm_helpers.get_campaign_media_budget_data(
+            camp.pk for camp in campaigns
+        )
+        return {
+            camp.id: {
+                'budget': Decimal(total_budget.get(camp.id, 0)),
+                'spent_budget': Decimal(spent_budget.get(camp.id, 0)),
+            } for camp in campaigns
+        }
+    return {
+        camp.id: {
+            'budget': Decimal(budget.CampaignBudget(camp).get_total()),
+            'spent_budget': Decimal(budget.CampaignBudget(camp).get_spend())
+        } for camp in campaigns
+    }
 
 
 def _prefetch_budgets(data, level):
+    result = None
     if level == 'account':
-        all_accounts_budget = budget.GlobalBudget().get_total_by_account()
-        all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
-        return {acc.id:
-                {'budget': all_accounts_budget.get(acc.id, 0),
-                 'spent_budget': all_accounts_total_spend.get(acc.id, 0)}
-                for acc in data}
+        result = _prefetch_account_budgets(data)
     elif level == 'campaign':
-        return {camp.id:
-                {'budget': budget.CampaignBudget(camp).get_total(),
-                 'spent_budget': budget.CampaignBudget(camp).get_spend()}
-                for camp in data}
-    return None
+        result = _prefetch_campaign_budgets(data)
+    return result
 
 
 def _prefetch_statuses(entities, level, by_source):
@@ -178,12 +236,12 @@ def _prefetch_statuses(entities, level, by_source):
     if by_source:
         ad_group_sources = helpers.get_active_ad_group_sources(model_class, entities)
         return {entity.id: {ad_group_source.source.id:
-                _get_sources_state(ad_group_sources.filter(
-                    source=ad_group_source.source.id, **{by_source_constraints: entity}))
-                for ad_group_source in ad_group_sources.filter(**{by_source_constraints: entity})}
+                            _get_sources_state(ad_group_sources.filter(
+                                source=ad_group_source.source.id, **{by_source_constraints: entity}))
+                            for ad_group_source in ad_group_sources.filter(**{by_source_constraints: entity})}
                 for entity in entities}
 
-    ad_groups = models.AdGroup.objects.filter(**{constraints+'__in': entities})
+    ad_groups = models.AdGroup.objects.filter(**{constraints + '__in': entities})
     ad_groups_settings = models.AdGroupSettings.objects.filter(
         ad_group__in=ad_groups).group_current_settings()
     return helpers.get_ad_group_state_by_sources_running_status(
@@ -218,18 +276,21 @@ def _populate_campaign_stat(stat, campaign, statuses, budgets=None):
     if budgets:
         stat['budget'] = budgets[campaign.id].get('budget')
         stat['available_budget'] = stat['budget'] - budgets[campaign.id].get('spent_budget')
-        stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
+        stat['unspent_budget'] = stat['budget'] - Decimal(stat.get('cost') or 0)
     stat['status'] = statuses[campaign.id]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
     return stat
 
 
-def _populate_account_stat(stat, prefetched_data, statuses, budgets=None):
+def _populate_account_stat(stat, prefetched_data, statuses, budgets=None, flat_fees=None):
     if budgets:
         stat['budget'] = budgets[stat['account']].get('budget')
         stat['available_budget'] = stat['budget'] - budgets[stat['account']].get('spent_budget')
-        stat['unspent_budget'] = stat['budget'] - (stat.get('cost') or 0)
+        stat['unspent_budget'] = stat['budget'] - Decimal(stat.get('cost') or 0)
+    if flat_fees is not None:
+        stat['flat_fee'] = flat_fees.get(stat['account'], Decimal('0.0'))
+        stat['total_fee'] = stat['flat_fee'] + Decimal(stat.get('license_fee') or 0)
     stat['status'] = statuses[stat['account']]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
@@ -377,6 +438,7 @@ def _include_breakdowns(required_fields, dimensions, by_day, by_source):
 
 
 class AllAccountsExport(object):
+
     def get_data(self, user, filtered_sources, start_date, end_date, order,
                  additional_fields, breakdown=None, by_source=False, by_day=False):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
@@ -398,9 +460,15 @@ class AllAccountsExport(object):
             dimensions.extend(['account', 'campaign', 'ad_group'])
         required_fields.extend(['status'])
 
-        include_budgets = (any(
-                           [field in additional_fields for field in ['budget', 'available_budget', 'unspent_budget']])
-                           and not by_day and breakdown != 'ad_group')
+        include_budgets = (
+            any([
+                field in additional_fields
+                for field in ['budget', 'available_budget', 'unspent_budget']
+            ]) and not by_day and breakdown != 'ad_group'
+        )
+        include_flat_fees = (
+            'total_fee' in additional_fields or 'flat_fee' in additional_fields
+        )
         if not include_budgets:
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
@@ -417,6 +485,7 @@ class AllAccountsExport(object):
             False,
             [],
             include_budgets=include_budgets,
+            include_flat_fees=include_flat_fees,
             account=accounts,
             source=filtered_sources)
 
@@ -424,6 +493,7 @@ class AllAccountsExport(object):
 
 
 class AccountExport(object):
+
     def get_data(self, user, account_id, filtered_sources, start_date, end_date,
                  order, additional_fields, breakdown=None, by_source=False, by_day=False):
         account = helpers.get_account(user, account_id)
@@ -469,6 +539,7 @@ class AccountExport(object):
 
 
 class CampaignExport(object):
+
     def get_data(self, user, campaign_id, filtered_sources, start_date, end_date,
                  order, additional_fields, breakdown=None, by_source=False, by_day=False):
         campaign = helpers.get_campaign(user, campaign_id)
@@ -506,6 +577,7 @@ class CampaignExport(object):
 
 
 class AdGroupExport(object):
+
     def get_data(self, user, ad_group_id, filtered_sources, start_date, end_date,
                  order, additional_fields, breakdown=None, by_source=False, by_day=False):
 
@@ -547,6 +619,7 @@ def filter_allowed_fields(request, fields):
     allowed_fields = []
     can_view_effective_costs = request.user.has_perm('zemauth.can_view_effective_costs')
     can_view_actual_costs = request.user.has_perm('zemauth.can_view_actual_costs')
+    can_view_flat_fees = request.user.has_perm('zemauth.can_view_flat_fees')
     for f in fields:
         if f in ('e_data_cost', 'e_media_cost',
                  'license_fee', 'billing_cost') and not can_view_effective_costs:
@@ -555,6 +628,8 @@ def filter_allowed_fields(request, fields):
                  'license_fee', 'total_cost') and not can_view_actual_costs:
             continue
         if f in ('cost', ) and (can_view_effective_costs or can_view_actual_costs):
+            continue
+        if f in ('total_fee', 'flat_fee', ) and not can_view_flat_fees:
             continue
         allowed_fields.append(f)
     return allowed_fields
