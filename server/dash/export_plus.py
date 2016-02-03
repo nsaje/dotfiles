@@ -50,7 +50,7 @@ FIELDNAMES = {
     'date': 'Date',
     'license_fee': 'License Fee',
     'total_fee': 'Total Fee',
-    'flat_fee': 'Flat Fee',
+    'flat_fee': 'Recognized Flat Fee',
 }
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
