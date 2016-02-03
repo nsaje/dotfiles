@@ -215,7 +215,7 @@ def process_touchpoint_conversions(redirects_impressions):
                 'conversion_lag': int(math.ceil((impression_ts - redirect_ts).total_seconds() / (60 * 60)))
             }
 
-            if _touchpoint_conversion_falls_within_bad_pixie_range(account_id, potential_touchpoint_conversion):
+            if is_touchpoint_conversion_within_bad_pixie_range(account_id, potential_touchpoint_conversion):
                 continue
 
             touchpoint_conversion_dict[redirect_id][conversion_key] = potential_touchpoint_conversion
@@ -226,7 +226,7 @@ def process_touchpoint_conversions(redirects_impressions):
     return touchpoint_conversions
 
 
-def _touchpoint_conversion_falls_within_bad_pixie_range(account_id, touchpoint_conversion):
+def is_touchpoint_conversion_within_bad_pixie_range(account_id, touchpoint_conversion):
     ad_group_id = touchpoint_conversion['ad_group_id']
     slug = touchpoint_conversion['slug']
     conversion_timestamp = touchpoint_conversion['conversion_timestamp']
