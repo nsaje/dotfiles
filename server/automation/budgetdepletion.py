@@ -227,5 +227,5 @@ def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterd
         campaign=campaign,
         available_budget=available_budget,
         yesterdays_spend=yesterdays_spend,
-        campaign_manager=campaign_manager,
+        account_manager=campaign_manager,
         stopped=True).save()

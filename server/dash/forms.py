@@ -88,6 +88,18 @@ class AdGroupSettingsForm(forms.Form):
 
     adobe_tracking_param = forms.CharField(max_length=10, required=False)
 
+    autopilot_state = forms.TypedChoiceField(
+        required=False,
+        choices=constants.AdGroupSettingsAutopilotState.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+
+    autopilot_daily_budget = forms.DecimalField(
+        decimal_places=4,
+        required=False
+    )
+
     def __init__(self, *args, **kwargs):
         self.ad_group = kwargs.pop('ad_group')
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
@@ -802,7 +814,9 @@ class CreditLineItemAdminForm(forms.ModelForm):
 
     class Meta:
         model = models.CreditLineItem
-        fields = ['account', 'start_date', 'end_date', 'amount', 'license_fee', 'status', 'comment']
+        fields = ['account', 'start_date', 'end_date', 'amount',
+                  'flat_fee_cc', 'flat_fee_start_date', 'flat_fee_end_date',
+                  'license_fee', 'status', 'comment']
 
 
 class BudgetLineItemAdminForm(forms.ModelForm):

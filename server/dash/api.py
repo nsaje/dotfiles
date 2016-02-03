@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 BLOCKED_AD_GROUP_SETTINGS = [
     'state', 'cpc_cc', 'daily_budget_cc', 'display_url',
     'brand_name', 'description', 'call_to_action',
+    'autopilot_state', 'autopilot_daily_budget'
 ]
 
 AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT = '0082c33a43e59aa0da8849b5af3448bc7b'
@@ -582,7 +583,7 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
     for content_ad_source in models.ContentAdSource.objects.filter(
             content_ad__ad_group=ad_group_source.ad_group,
-            source=ad_group_source.source):
+            source=ad_group_source.source).select_related('source__source_type'):
         content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
 
     unsynced_content_ad_sources_actions = []
@@ -661,15 +662,16 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
             nr_inconsistent_internal_states
         )
 
-        logger.info(
-            'Found unsynced content ads for ad group %s on sources: %s',
-            ad_group_source.ad_group,
-            ', '.join(set(action[0].source.name for action in unsynced_content_ad_sources_actions))
-        )
+        if unsynced_content_ad_sources_actions:
+            logger.info(
+                'Found unsynced content ads for ad group %s on sources: %s',
+                ad_group_source.ad_group,
+                ', '.join(set(action[0].source.name for action in unsynced_content_ad_sources_actions))
+            )
 
-        # do not create actions if actions already exists - prevents flooding
-        return actionlog.api_contentads.init_bulk_update_content_ad_actions(
-            unsynced_content_ad_sources_actions, None, skip_if_action_exists=True)
+            # do not create actions if actions already exists - prevents flooding
+            return actionlog.api_contentads.init_bulk_update_content_ad_actions(
+                unsynced_content_ad_sources_actions, None, skip_if_action_exists=True)
 
     return []
 

@@ -943,7 +943,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 trackingCode: settings.tracking_code,
                 enableGaTracking: settings.enable_ga_tracking,
                 enableAdobeTracking: settings.enable_adobe_tracking,
-                adobeTrackingParam: settings.adobe_tracking_param
+                adobeTrackingParam: settings.adobe_tracking_param,
+                autopilotState: settings.autopilot_state,
+                autopilotBudget: settings.autopilot_daily_budget
             };
         }
 
@@ -961,7 +963,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 tracking_code: settings.trackingCode,
                 enable_ga_tracking: settings.enableGaTracking,
                 enable_adobe_tracking: settings.enableAdobeTracking,
-                adobe_tracking_param: settings.adobeTrackingParam
+                adobe_tracking_param: settings.adobeTrackingParam,
+                autopilot_state: settings.autopilotState,
+                autopilot_daily_budget: settings.autopilotBudget
             };
 
             return result;
@@ -984,7 +988,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 callToAction: errors.call_to_action,
                 enableGaTracking: errors.enable_ga_tracking,
                 enableAdobeTracking: errors.enable_adobe_tracking,
-                adobeTrackingParam: errors.adobe_tracking_param
+                adobeTrackingParam: errors.adobe_tracking_param,
+                autopilotState: errors.autopilot_state,
+                autopilotBudget: errors.autopilot_daily_budget
             };
 
             return result;

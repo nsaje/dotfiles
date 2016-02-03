@@ -49,7 +49,7 @@ SUPRESS_INVALID_CONTENT_ID_CHECK = {
 @statsd_helper.statsd_timer('zweiapi.views', 'zwei_callback')
 def zwei_callback(request, action_id):
     newrelic.agent.set_background_task(flag=True)
-    logger.debug('Received zwei callback: %s', action_id)
+    logger.info('Received zwei callback: %s', action_id)
 
     _validate_callback(request, action_id)
     action = _get_action(action_id)
@@ -106,6 +106,9 @@ def _get_error_message(data):
 
 
 def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None):
+    if not data_rows:
+        return []
+
     raw_articles = [{'url': row['url'], 'title': row['title']} for row in data_rows]
     articles = dash.api.reconcile_articles(ad_group, raw_articles)
 
@@ -118,7 +121,7 @@ def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None
     content_ad_sources = {}
     for content_ad_source in dash.models.ContentAdSource.objects.filter(
             content_ad__ad_group=ad_group,
-            source=source):
+            source=source).select_related('source__source_type'):
         content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
 
     stats_rows = []
@@ -163,14 +166,14 @@ def _remove_content_ad_sources_from_report_rows(report_rows):
 
 
 def _process_zwei_response(action, data, request):
-    logger.debug('Processing Action Response: %s', action)
+    logger.info('Processing Action Response: %s', action)
 
     if action.state != actionlog.constants.ActionState.WAITING:
-        logger.debug('Action not waiting for a response. Action: %s, response: %s', action, data)
+        logger.info('Action not waiting for a response. Action: %s, response: %s', action, data)
         return
 
     if data['status'] != 'success':
-        logger.debug('Action failed. Action: %s, response: %s', action, data)
+        logger.info('Action failed. Action: %s, response: %s', action, data)
 
         action.state = actionlog.constants.ActionState.FAILED
         action.message = _get_error_message(data)
@@ -254,7 +257,7 @@ def _process_zwei_response(action, data, request):
                 )
             )
 
-        logger.debug('Process action successful. Action: %s', action)
+        logger.info('Process action successful. Action: %s', action)
 
     actionlog.zwei_actions.send(actions)
 
@@ -340,7 +343,7 @@ def _fetch_reports_callback(action, data):
     ad_group_source = action.ad_group_source
     source = action.ad_group_source.source
 
-    logger.debug('_fetch_reports_callback: Processing reports callback for adgroup {adgroup_id}  source {source_id}'.format(
+    logger.info('_fetch_reports_callback: Processing reports callback for adgroup {adgroup_id}  source {source_id}'.format(
         adgroup_id=ad_group.id, source_id=source.id if source is not None else 0)
     )
 
@@ -359,7 +362,7 @@ def _fetch_reports_callback(action, data):
     change_unique_key = "reports_by_link"
 
     if not _has_changed(data, ad_group, source, date, change_unique_key):
-        logger.debug('_fetch_reports_callback: no changes adgroup {adgroup_id}  source {source_id}'.format(
+        logger.info('_fetch_reports_callback: no changes adgroup {adgroup_id}  source {source_id}'.format(
             adgroup_id=ad_group.id, source_id=source.id if source is not None else 0)
         )
 
@@ -383,10 +386,10 @@ def _fetch_reports_callback(action, data):
         action.message = msg % (ad_group.id, source.id, date)
         action.save()
 
-        logger.debug(msg, ad_group.id, source.id, date)
+        logger.info(msg, ad_group.id, source.id, date)
 
     if empty_response:
-        logger.debug(
+        logger.info(
             'Empty report received for adgroup %d, source %d, datetime %s',
             ad_group.id,
             source.id,
