@@ -1735,8 +1735,6 @@ class AllAccountsOverview(api_common.BaseApiView):
             'settings': self._basic_settings(),
         }
 
-        header['subtitle'] = ''  # 'Delivering' if is_delivering else 'Not Delivering'
-
         return self.create_api_response(response)
 
     def _basic_settings(self):
