@@ -1,5 +1,5 @@
 /* globals oneApp, $, angular */
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemLayoutService', 'zemNavigationService', 'accountsAccess', function ( $scope, $state, $location, $document, $q, $modalStack, $timeout, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemLayoutService, zemNavigationService, accountsAccess) {
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemNavigationService', 'accountsAccess', function ( $scope, $state, $location, $document, $q, $modalStack, $timeout, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemNavigationService, accountsAccess) {
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
@@ -10,6 +10,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.enablePublisherFilter = false;
     $scope.showSelectedPublisher = null;
+    $scope.localStoragePrefix = 'main';
 
     $scope.remindToAddBudget = $q.defer();
 
@@ -49,15 +50,24 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.toggleInfobox = function () {
-        zemLayoutService.toggleInfoboxVisible();
+        $scope.infoboxVisible = !$scope.infoboxVisible;
+        $scope.reflowGraph();
     };
 
     $scope.toggleGraph = function () {
-        zemLayoutService.toggleGraphVisible();
+        $scope.graphVisible = !$scope.graphVisible;
+        $scope.reflowGraph();
     };
 
     $scope.toggleNavigationPane = function () {
-        zemLayoutService.toggleNavigationPaneVisible();
+        $scope.navigationPaneVisible = !$scope.navigationPaneVisible;
+        $scope.reflowGraph();
+    };
+
+    $scope.reflowGraph = function () {
+        $timeout(function () {
+             $scope.$broadcast('highchartsng.reflow');
+       }, 0);
     };
 
     $scope.getDefaultAllAccountsState = function () {
@@ -336,27 +346,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         }
     });
 
-    $scope.$watch(zemLayoutService.isInfoboxVisible, function (newValue, oldValue) {
-        $scope.infoboxVisible = newValue;
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    });
-
-    $scope.$watch(zemLayoutService.isGraphVisible, function (newValue, oldValue) {
-        $scope.graphVisible = newValue;
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    });
-
-    $scope.$watch(zemLayoutService.isNavigationPaneVisible, function (newValue, oldValue) {
-        $scope.navigationPaneVisible = newValue;
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    });
-
     $scope.$watch('dateRange', function (newValue, oldValue) {
         if ($.isEmptyObject(newValue) || $.isEmptyObject(oldValue)) {
             return;
@@ -401,7 +390,17 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         $scope.setPublisherFilterVisible(newValue);
     }, true);
 
-    zemFullStoryService.identify($scope.user);
-    zemIntercomService.boot($scope.user);
-    zemNavigationService.reload();
+    
+    $scope.init = function () {
+        zemFullStoryService.identify($scope.user);
+        zemIntercomService.boot($scope.user);
+        zemNavigationService.reload();
+
+        var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
+        userSettings.registerGlobal('infoboxVisible');
+        userSettings.registerGlobal('graphVisible');
+        userSettings.registerGlobal('navigationPaneVisible');
+    };
+
+    $scope.init();
 }]);
