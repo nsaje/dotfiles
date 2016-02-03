@@ -118,7 +118,7 @@ def get_yesterday_campaign_spend(user, campaign):
     if len(budgets) == 0:
         return Decimal(0)
     all_budget_spends_at_date = [
-        b.get_daily_spend(date=yesterday, use_decimal=True).get('media', 0) for b in budgets
+        b.get_daily_spend(date=yesterday, use_decimal=True).get('media', Decimal(0)) for b in budgets
     ]
     return sum(all_budget_spends_at_date)
 
@@ -129,7 +129,7 @@ def get_yesterday_all_accounts_spend():
     if len(budgets) == 0:
         return Decimal(0)
     all_budget_spends_at_date = [
-        b.get_daily_spend(date=yesterday, use_decimal=True).get('media', 0) for b in budgets
+        b.get_daily_spend(date=yesterday, use_decimal=True).get('media', Decimal(0)) for b in budgets
     ]
     return sum(all_budget_spends_at_date)
 
@@ -140,7 +140,7 @@ def get_mtd_all_accounts_spend():
     if len(budgets) == 0:
         return Decimal(0)
     all_budget_spends_at_date = [
-        b.get_mtd_spend_data(date=today, use_decimal=True).get('media', 0) for b in budgets
+        b.get_mtd_spend_data(date=today, use_decimal=True).get('media', Decimal(0)) for b in budgets
     ]
     return sum(all_budget_spends_at_date)
 
