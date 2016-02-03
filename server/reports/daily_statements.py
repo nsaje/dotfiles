@@ -17,7 +17,9 @@ def _generate_statements(date, campaign):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id,
                                                         start_date__lte=date,
                                                         end_date__gte=date)
-    existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
+    existing_statements = reports.models.BudgetDailyStatement.objects.filter(
+        date__lte=date,
+        budget__campaign_id=campaign.id)
     existing_statements.filter(date=date).delete()
 
     stats = reports.models.AdGroupStats.objects\
