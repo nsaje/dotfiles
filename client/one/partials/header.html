@@ -13,23 +13,31 @@
 
 <div class="profile-container">
     <div class="content">
-        <div class="contact-content">
-			<a href="mailto:help@zemanta.com" class="contact"
-			   zem-tutorial-popover-condition-promise="canShowBudgetNotification()"
-               zem-tutorial-popover="Contact support and ask for budget"
-			   zem-tutorial-popover-placement="bottom">
-				Contact support
-			</a>
-		</div>
+        <div class="navbar-collapse-container">
+            <div class="btn btn-link navigation-button" ng-show="true" ng-click="toggleNavigationPane()">
+                <i class="glyphicon glyphicon-menu-hamburger"></i>
+            </div>
+        </div>
         <div class="profile dropdown" dropdown>
-            <a href class="dropdown-toggle" dropdown-toggle>
-				<i class="glyphicon glyphicon-user"></i>
+            <a href="#" class="dropdown-toggle" dropdown-toggle>
+                <i class="glyphicon glyphicon-user"></i>
             </a>
-            <ul class="dropdown-menu dropdown-menu-right" dropdown-menu>
+            <ul class="dropdown-menu" dropdown-menu>
                 <li class="dropdown-header">{{ user.email }}</li>
-                <li ng-if="hasPermission('zemauth.switch_to_demo_mode')" ><zem-internal-feature ng-if="isPermissionInternal('zemauth.switch_to_demo_mode')" popover-placement="bottom"></zem-internal-feature><a ng-href="/demo_mode">Demo mode</a></li>
+                <li ng-if="hasPermission('zemauth.switch_to_demo_mode')"><zem-internal-feature ng-if="isPermissionInternal('zemauth.switch_to_demo_mode')" popover-placement="bottom"></zem-internal-feature><a ng-href="/demo_mode">Demo mode</a></li>
                 <li><a ng-href="/signout">Sign out</a></li>
             </ul>
+        </div>
+
+        <div class="separator">&nbsp;</div>
+
+        <div class="contact-content">
+            <a href="http://help.zemanta.com/support/home" class="contact"
+                zem-tutorial-popover-condition-promise="canshowbudgetnotification()"
+                zem-tutorial-popover="Contact support and ask for budget"
+                zem-tutorial-popover-placement="bottom">
+                Help
+            </a>
         </div>
     </div>
 </div>
