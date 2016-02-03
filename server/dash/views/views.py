@@ -688,10 +688,7 @@ class AccountOverview(api_common.BaseApiView):
     def _username(self, user):
         if not user:
             return 'N/A'
-        return "{first} {last}".format(
-            first=user.first_name.encode('utf-8'),
-            last=user.last_name.encode('utf-8')
-        )
+        return user.get_full_name()
 
     def _basic_settings(self, account):
         settings = []
