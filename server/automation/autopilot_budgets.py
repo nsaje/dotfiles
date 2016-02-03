@@ -2,12 +2,11 @@ import datetime
 import logging
 import operator
 import traceback
-import pytz
+import exceptions
 from decimal import Decimal, ROUND_CEILING
 from random import betavariate, random
 
 from django.core.mail import send_mail
-from django.conf import settings
 from utils import pagerduty_helper
 
 import dash
@@ -18,6 +17,7 @@ import reports.api_contentads
 from automation import helpers
 from dash import constants
 from utils.statsd_helper import statsd_gauge, statsd_timer
+from utils import dates_helper
 
 
 logger = logging.getLogger(__name__)
@@ -26,13 +26,14 @@ MAX_BUDGET_GAIN = Decimal(1.2)
 MAX_BUDGET_LOSS = Decimal(0.8)
 MIN_SOURCE_BUDGET = Decimal(10.0)
 GOALS_COLUMNS = {
-    'bounce_and_spend': {'bounce_rate': 0.7, 'spend_perc': 0.3}
+    'bounce_and_spend': {'bounce_rate': Decimal(0.7), 'spend_perc': Decimal(0.3)}
 }
 GOALS_WORST_VALUE = {
-    'bounce_rate': 100.00,
-    'spend': 0.00,
+    'bounce_rate': Decimal(100.00),
+    'spend': Decimal(0.00),
 }
-DEBUG_EMAILS = ['davorin.kopic@zemanta.com']
+AUTOPILOT_DATA_LOOKBACK_DAYS = 2
+DEBUG_EMAILS = ['davorin.kopic@zemanta.com', 'tadej.pavlic@zemanta.com', 'urska.kosec@zemanta.com']
 
 
 @statsd_timer('automation.autopilot_budgets', 'adjust_autopilot_ad_groups_budgets_timer')
@@ -136,7 +137,7 @@ def predict_outcome_success(source, data, goal):
         prob_success = spend_perc * GOALS_COLUMNS.get(goal).get('spend_perc') +\
             pos_bounce_rate * GOALS_COLUMNS.get(goal).get('bounce_rate')
         return prob_success > random()
-    return random() > 0.5
+    raise exceptions.NotImplementedError('Budget Auto-Pilot Goal is not implemented: ', goal)
 
 
 def get_spend_perc(ad_group_source, day=datetime.date.today()):
@@ -147,16 +148,14 @@ def get_spend_perc(ad_group_source, day=datetime.date.today()):
     ).get('cost')
 
     if yesterday_spend:
-        return float(Decimal(yesterday_spend) / ad_group_source.get_current_settings().daily_budget_cc)
-    return 0.0
+        return Decimal(yesterday_spend) / ad_group_source.get_current_settings().daily_budget_cc
+    return Decimal(0.0)
 
 
 def get_historic_data(ad_group, ad_group_sources, columns):
-    today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
-    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
-    today = datetime.date(today.year, today.month, today.day)
+    today = dates_helper.local_today()
     yesterday = today - datetime.timedelta(days=1)
-    days_ago = yesterday - datetime.timedelta(days=2)
+    days_ago = yesterday - datetime.timedelta(days=AUTOPILOT_DATA_LOOKBACK_DAYS)
     stats = reports.api_contentads.query(
         days_ago,
         yesterday,
