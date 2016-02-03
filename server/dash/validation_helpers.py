@@ -65,7 +65,7 @@ def validate_ad_group_cpc_cc(cpc_cc, ad_group):
 
     if sources_with_greater_cpc:
         raise forms.ValidationError(
-            'Some media sources have higher cpc (${}).'
+            'Some media sources have higher cpc ({}).'
             .format(", ".join(sources_with_greater_cpc))
         )
 
