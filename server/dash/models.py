@@ -1909,7 +1909,7 @@ class ContentAdSource(models.Model):
     def get_source_id(self):
         if self.source.source_type and self.source.source_type.type in [
                 constants.SourceType.B1, constants.SourceType.GRAVITY]:
-            return self.content_ad.id
+            return self.content_ad_id
         else:
             return self.source_content_ad_id
 
