@@ -348,7 +348,6 @@ def calculate_all_accounts_monthly_budget(today):
 
 
 def count_weekly_logged_in_users():
-    # 6 days instead of 6 since today counts as well
     now = datetime.datetime.utcnow()
     one_week_ago = now - datetime.timedelta(days=7)
     return zemauth.models.User.objects.filter(
@@ -375,7 +374,6 @@ def count_weekly_selfmanaged_actions():
 
 
 def _one_week_ago():
-    # 6 days instead of 6 since today counts as well
     now = datetime.datetime.utcnow()
     return now - datetime.timedelta(days=7)
 
