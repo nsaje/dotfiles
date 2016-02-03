@@ -54,7 +54,7 @@
 								<i class="glyphicon glyphicon-pencil" title="edit"></i>
 							</li>
 							<li ng-click="cancelCreditItem(item.id)" ng-if="item.isSigned">
-								<i class="glyphicon glyphicon-trash" title="cancel"></i>
+								<i class="glyphicon glyphicon-remove-circle" title="cancel"></i>
 							</li>
                         </ul>
                     </td>
@@ -103,9 +103,6 @@
                         <ul class="row-actions">
                             <li ng-click="editCreditItem(item.id)" ng-if="!item.isCanceled">
 								<i class="glyphicon glyphicon-pencil" title="edit"></i>
-							</li>
-							<li ng-click="cancelCreditItem(item.id)" ng-if="item.isSigned">
-								<i class="glyphicon glyphicon-trash" title="cancel"></i>
 							</li>
                         </ul>
                     </td>
