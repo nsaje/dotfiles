@@ -2289,7 +2289,7 @@ class CreditLineItem(FootprintModel):
     def validate_license_fee(self):
         if not self.license_fee:
             return
-        if not (0 <= self.license_fee <= 1):
+        if not (0 <= self.license_fee < 1):
             raise ValidationError('License fee must be between 0 and 100%.')
 
     class QuerySet(models.QuerySet):
