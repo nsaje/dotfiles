@@ -4,6 +4,8 @@ from django import forms
 
 import utils.string_helper
 
+from dash import constants
+
 
 def validate_daily_budget_cc(daily_budget_cc, source_type):
     if daily_budget_cc < 0:
@@ -56,7 +58,7 @@ def validate_ad_group_cpc_cc(cpc_cc, ad_group):
     if not cpc_cc:
         return
 
-    ad_group_sources = ad_group.adgroupsource_set.all()
+    ad_group_sources = ad_group.adgroupsource_set.filter(source__deprecated=False)
     sources_with_greater_cpc = []
     for ad_group_source in ad_group_sources:
         settings = ad_group_source.get_current_settings()

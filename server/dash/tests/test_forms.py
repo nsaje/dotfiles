@@ -176,6 +176,15 @@ class AdGroupSettingsFormTest(TestCase):
         form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
         self.assertFalse(form.is_valid())
 
+    def test_max_cpc_setting_lower_min_deprecated_source(self):
+        source = models.Source.objects.get(pk=1)
+        source.deprecated = True
+        source.save()
+
+        self.data['cpc_cc'] = 0.1
+        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        self.assertTrue(form.is_valid())
+
     def test_max_cpc_setting_equal_min_source_value(self):
         self.data['cpc_cc'] = 0.12
         form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
