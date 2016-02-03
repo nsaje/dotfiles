@@ -113,7 +113,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 );
             },
             getDisabledMessage: function (row) {
-                return row.editable_fields['status_setting'].message;
+                return row.editable_fields.status_setting.message;
             },
             disabled: false,
             archivedField: 'archived'
