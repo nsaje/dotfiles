@@ -2567,6 +2567,25 @@ class BudgetLineItem(FootprintModel):
                 raise AssertionError('Some budget items are not pending')
             super(BudgetLineItem.QuerySet, self).delete()
 
+        def filter_active(self, date):
+            if date is None:
+                date = dates_helper.local_today()
+            return self.exclude(
+                end_date__lt=date
+            ).filter(
+                start_date__lte=date
+            ).annotate(
+                media_spend_sum=models.Sum('statements__media_spend_nano'),
+                license_fee_spend_sum=models.Sum('statements__license_fee_nano'),
+                data_spend_sum=models.Sum('statements__data_spend_nano')
+            ).exclude(
+                amount__lte=models.Round(
+                    models.Coalesce('media_spend_sum') * 1e-9 +
+                    models.Coalesce('license_fee_spend_sum') * 1e-9 +
+                    models.Coalesce('data_spend_sum') * 1e-9
+                )
+            )
+
 
 class CreditHistory(HistoryModel):
     credit = models.ForeignKey(CreditLineItem, related_name='history')
