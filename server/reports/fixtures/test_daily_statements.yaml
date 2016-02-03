@@ -67,7 +67,7 @@
         start_date: '2015-11-01'
         end_date: '2015-11-30'
         amount: 3000
-        license_fee: '1.00'
+        license_fee: '0.5'
         status: 1
         created_dt: '2015-11-01 00:00:01'
         modified_dt: '2015-11-01 00:00:01'
@@ -118,7 +118,7 @@
         credit: 1
         start_date: '2015-11-01'
         end_date: '2015-11-30'
-        amount: 5100
+        amount: 5000
         created_dt: '2015-11-01 00:00:01'
         modified_dt: '2015-11-01 00:00:01'
         created_by: 1
