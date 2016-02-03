@@ -1909,7 +1909,7 @@ class ContentAdSource(models.Model):
     def get_source_id(self):
         if self.source.source_type and self.source.source_type.type in [
                 constants.SourceType.B1, constants.SourceType.GRAVITY]:
-            return self.content_ad.id
+            return self.content_ad_id
         else:
             return self.source_content_ad_id
 
@@ -2149,6 +2149,31 @@ class CreditLineItem(FootprintModel):
     def get_allocated_amount(self):
         return Decimal(sum(b.allocated_amount() for b in self.budgets.all()))
 
+    def get_overlap(self, start_date, end_date):
+        return dates_helper.get_overlap(self.start_date, self.end_date, start_date, end_date)
+
+    def get_monthly_flat_fee(self):
+        months = dates_helper.count_months(
+            self.flat_fee_start_date,
+            self.flat_fee_end_date
+        ) + 1
+        return self.flat_fee() / Decimal(months)
+
+    def get_flat_fee_on_date_range(self, start_date, end_date):
+        if not (self.flat_fee_start_date and self.flat_fee_end_date):
+            return Decimal('0.0')
+        overlap = dates_helper.get_overlap(
+            self.flat_fee_start_date, self.flat_fee_end_date,
+            start_date, end_date
+        )
+        if not all(overlap):
+            return Decimal('0.0')
+        effective_months = dates_helper.count_months(*overlap) + 1
+        return min(
+            self.get_monthly_flat_fee() * effective_months,
+            self.flat_fee()
+        )
+
     def cancel(self):
         self.status = constants.CreditLineItemStatus.CANCELED
         self.save()
@@ -2264,7 +2289,7 @@ class CreditLineItem(FootprintModel):
     def validate_license_fee(self):
         if not self.license_fee:
             return
-        if not (0 <= self.license_fee <= 1):
+        if not (0 <= self.license_fee < 1):
             raise ValidationError('License fee must be between 0 and 100%.')
 
     class QuerySet(models.QuerySet):

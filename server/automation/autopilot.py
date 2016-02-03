@@ -22,12 +22,6 @@ from utils.statsd_helper import statsd_gauge
 logger = logging.getLogger(__name__)
 
 
-def update_ad_group_source_cpc(ad_group_source, new_cpc):
-    settings_writer = dash.api.AdGroupSourceSettingsWriter(ad_group_source)
-    resource = {'cpc_cc': new_cpc}
-    settings_writer.set(resource, None)
-
-
 def persist_cpc_change_to_admin_log(
         ad_group_source,
         yesterday_spend,
@@ -324,8 +318,9 @@ def adjust_autopilot_media_sources_bid_cpcs():
             })
 
             if ad_group_source_settings.cpc_cc != proposed_cpc and cpc_change_comments == []:
-                update_ad_group_source_cpc(
+                automation.helpers.update_ad_group_source_value(
                     ad_group_source_settings.ad_group_source,
+                    'cpc_cc',
                     proposed_cpc
                 )
 
