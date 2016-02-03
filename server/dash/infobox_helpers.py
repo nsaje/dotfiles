@@ -288,7 +288,7 @@ def calculate_available_credit(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
 
-    return sum([Decimal(credit.amount) * (Decimal(1.0) - credit.license_fee) for credit in credits])
+    return sum([Decimal(credit.effective_amount()) * (Decimal(1.0) - credit.license_fee) for credit in credits])
 
 
 def calculate_spend_credit(account):
