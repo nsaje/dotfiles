@@ -61,9 +61,13 @@
                 enable-publisher-filter="enablePublisherFilter"
                 show-publisher-selected="showPublisherSelected">
             </zem-filter>
-            <div class="btn btn-default infobox-button pull-right" ng-show="hasPermission('zemauth.can_see_infobox') && infoboxEnabled" ng-click="toggleInfobox()">I</div>
+            <a href="#" class="btn btn-default infobox-button pull-right" ng-show="hasPermission('zemauth.can_see_infobox') && infoboxEnabled" ng-click="toggleInfobox()">
+                <span class="glyphicon glyphicon-info-sign"></span>
+            </a>
             <div class="btn btn-default graph-button pull-right" ng-click="toggleGraph()"><img class="graph-button-image" ng-src="{{ config.static_url }}/one/img/chart.svg"></div>
-            <div class="btn btn-default navigation-button pull-right" ng-show="true" ng-click="toggleNavigationPane()">N</div>
+            <div class="btn btn-default navigation-button pull-right" ng-show="true" ng-click="toggleNavigationPane()">
+               <span class="glyphicon glyphicon-menu-hamburger"></span>
+            </div>
             <div ui-view></div>
 
         </div>
