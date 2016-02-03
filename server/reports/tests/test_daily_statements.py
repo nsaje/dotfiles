@@ -57,7 +57,7 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
         self.assertEqual(1500000000000, statements[0].media_spend_nano)
         self.assertEqual(500000000000, statements[0].data_spend_nano)
-        self.assertEqual(400000000000, statements[0].license_fee_nano)
+        self.assertEqual(500000000000, statements[0].license_fee_nano)
 
     def test_first_day_cost_none(self, mock_ad_group_stats, mock_datetime):
         return_values = {
@@ -101,14 +101,14 @@ class DailyStatementsTestCase(TestCase):
             self.assertEqual(0, statement.license_fee_nano)
         self.assertEqual(1, statements[29].budget_id)
         self.assertEqual(datetime.date(2015, 11, 20), statements[29].date)
-        self.assertEqual(2500000000000, statements[29].media_spend_nano)
+        self.assertEqual(2400000000000, statements[29].media_spend_nano)
         self.assertEqual(0, statements[29].data_spend_nano)
-        self.assertEqual(500000000000, statements[29].license_fee_nano)
+        self.assertEqual(600000000000, statements[29].license_fee_nano)
         self.assertEqual(2, statements[30].budget_id)
         self.assertEqual(datetime.date(2015, 11, 20), statements[30].date)
-        self.assertEqual(1000000000000, statements[30].media_spend_nano)
+        self.assertEqual(1100000000000, statements[30].media_spend_nano)
         self.assertEqual(500000000000, statements[30].data_spend_nano)
-        self.assertEqual(300000000000, statements[30].license_fee_nano)
+        self.assertEqual(400000000000, statements[30].license_fee_nano)
         self.assertEqual(3, statements[31].budget_id)
         self.assertEqual(datetime.date(2015, 11, 20), statements[31].date)
         self.assertEqual(0, statements[31].media_spend_nano)
@@ -131,14 +131,14 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(1, len(statements))
         self.assertEqual(1, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
-        self.assertEqual(2500000000000, statements[0].media_spend_nano)
+        self.assertEqual(2400000000000, statements[0].media_spend_nano)
         self.assertEqual(0, statements[0].data_spend_nano)
-        self.assertEqual(500000000000, statements[0].license_fee_nano)
+        self.assertEqual(600000000000, statements[0].license_fee_nano)
 
     def test_different_fees(self, mock_ad_group_stats, mock_datetime):
         return_values = {
             datetime.date(2015, 11, 1): {
-                'cost_cc_sum': 42500000,
+                'cost_cc_sum': 40000000,
                 'data_cost_cc_sum': 5000000,
             }
         }
@@ -151,9 +151,9 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(2, len(statements))
         self.assertEqual(4, statements[0].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[0].date)
-        self.assertEqual(4250000000000, statements[0].media_spend_nano)
+        self.assertEqual(4000000000000, statements[0].media_spend_nano)
         self.assertEqual(0, statements[0].data_spend_nano)
-        self.assertEqual(850000000000, statements[0].license_fee_nano)
+        self.assertEqual(1000000000000, statements[0].license_fee_nano)
         self.assertEqual(5, statements[1].budget_id)
         self.assertEqual(datetime.date(2015, 11, 1), statements[1].date)
         self.assertEqual(0, statements[1].media_spend_nano)
@@ -185,14 +185,14 @@ class DailyStatementsTestCase(TestCase):
             self.assertGreater(datetime.date(2015, 11, 11), statement.date)
         self.assertEqual(1, statements[9].budget_id)
         self.assertEqual(datetime.date(2015, 11, 10), statements[9].date)
-        self.assertEqual(2500000000000, statements[9].media_spend_nano)
+        self.assertEqual(2400000000000, statements[9].media_spend_nano)
         self.assertEqual(0, statements[9].data_spend_nano)
-        self.assertEqual(500000000000, statements[9].license_fee_nano)
+        self.assertEqual(600000000000, statements[9].license_fee_nano)
         self.assertEqual(2, statements[10].budget_id)
         self.assertEqual(datetime.date(2015, 11, 10), statements[10].date)
-        self.assertEqual(0, statements[10].media_spend_nano)
+        self.assertEqual(100000000000, statements[10].media_spend_nano)
         self.assertEqual(500000000000, statements[10].data_spend_nano)
-        self.assertEqual(100000000000, statements[10].license_fee_nano)
+        self.assertEqual(150000000000, statements[10].license_fee_nano)
         self.assertEqual(1, statements[11].budget_id)
         self.assertEqual(datetime.date(2015, 11, 11), statements[11].date)
         self.assertEqual(0, statements[11].media_spend_nano)
@@ -202,7 +202,7 @@ class DailyStatementsTestCase(TestCase):
         self.assertEqual(datetime.date(2015, 11, 11), statements[12].date)
         self.assertEqual(1000000000000, statements[12].media_spend_nano)
         self.assertEqual(0, statements[12].data_spend_nano)
-        self.assertEqual(200000000000, statements[12].license_fee_nano)
+        self.assertEqual(250000000000, statements[12].license_fee_nano)
 
     def test_max_dates_till_today(self, mock_ad_group_stats, mock_datetime):
         # check that there's no endless loop when update_from is less than all budget start dates
