@@ -35,7 +35,9 @@ class AdGroupSettingsTest(TestCase):
                 'target_devices': ['desktop'],
                 'target_regions': ['693', 'GB'],
                 'name': 'Test ad group name',
-                'id': 1
+                'id': 1,
+                'autopilot_state': 2,
+                'autopilot_daily_budget': '100.0000'
             }
         }
 
@@ -70,7 +72,9 @@ class AdGroupSettingsTest(TestCase):
                     'state': 2,
                     'target_devices': ['desktop', 'mobile'],
                     'target_regions': ['UK', 'US', 'CA'],
-                    'tracking_code': 'param1=foo&param2=bar'
+                    'tracking_code': 'param1=foo&param2=bar',
+                    'autopilot_state': 2,
+                    'autopilot_daily_budget': '0.00'
                 }
             },
             'success': True
@@ -118,7 +122,9 @@ class AdGroupSettingsTest(TestCase):
                     'tracking_code': '',
                     'enable_ga_tracking': True,
                     'enable_adobe_tracking': False,
-                    'adobe_tracking_param': ''
+                    'adobe_tracking_param': '',
+                    'autopilot_state': 2,
+                    'autopilot_daily_budget': '100.00'
                 }
             },
             'success': True
@@ -224,8 +230,9 @@ class AdGroupSettingsTest(TestCase):
                     'tracking_code': '',
                     'enable_ga_tracking': True,
                     'adobe_tracking_param': '',
-                    'enable_adobe_tracking': False
-
+                    'enable_adobe_tracking': False,
+                    'autopilot_state': 2,
+                    'autopilot_daily_budget': '100.00'
                 }
             },
             'success': True
@@ -381,7 +388,7 @@ class AdGroupAgencyTest(TestCase):
 
             settings = models.AdGroupSettings(
                 ad_group=ad_group,
-                cpc_cc='0.4000',
+                cpc_cc='1.0000',
                 tracking_code=tracking_code,
             )
             settings.save(request)
@@ -391,7 +398,7 @@ class AdGroupAgencyTest(TestCase):
 
             settings = models.AdGroupSettings(
                 ad_group=ad_group,
-                cpc_cc='0.3000',
+                cpc_cc='2.0000',
                 daily_budget_cc='120.0000',
                 tracking_code=tracking_code,
             )
@@ -416,7 +423,7 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'State', 'value': 'Paused'},
                         {'name': 'Start date', 'value': None},
                         {'name': 'End date', 'value': 'I\'ll stop it myself'},
-                        {'name': 'Max CPC bid', 'value': '$0.40'},
+                        {'name': 'Max CPC bid', 'value': '$1.00'},
                         {'name': 'Daily budget', 'value': None},
                         {'name': 'Device targeting', 'value': ''},
                         {'name': 'Locations', 'value': 'worldwide'},
@@ -431,18 +438,19 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'GA tracking type (via API or e-mail).', 'value': 'Email'},
                         {'name': 'Enable Adobe tracking', 'value': 'False'},
                         {'name': 'Adobe tracking parameter', 'value': ''},
+                        {'name': 'Auto-Pilot', 'value': 'Paused'},
+                        {'name': 'Auto-Pilot\'s Daily Budget', 'value': '$0.00'},
                     ],
                     'show_old_settings': False
-                },
-                {
+                }, {
                     'changed_by': 'superuser@test.com',
-                    'changes_text': 'Daily budget set to "$120.00", Max CPC bid set to "$0.30"',
+                    'changes_text': 'Daily budget set to "$120.00", Max CPC bid set to "$2.00"',
                     'datetime': '2015-06-05T09:22:24',
                     'settings': [
                         {'name': 'State', 'old_value': 'Paused', 'value': 'Paused'},
                         {'name': 'Start date', 'old_value': None, 'value': None},
                         {'name': 'End date', 'old_value': 'I\'ll stop it myself', 'value': 'I\'ll stop it myself'},
-                        {'name': 'Max CPC bid', 'old_value': '$0.40', 'value': '$0.30'},
+                        {'name': 'Max CPC bid', 'old_value': '$1.00', 'value': '$2.00'},
                         {'name': 'Daily budget', 'old_value': None, 'value': '$120.00'},
                         {'name': 'Device targeting', 'old_value': '', 'value': ''},
                         {'name': 'Locations', 'old_value': 'worldwide', 'value': 'worldwide'},
@@ -457,6 +465,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'GA tracking type (via API or e-mail).', 'old_value': 'Email', 'value': 'Email'},
                         {'name': 'Enable Adobe tracking', 'old_value': 'False', 'value': 'False'},
                         {'name': 'Adobe tracking parameter', 'old_value': '', 'value': ''},
+                        {'name': 'Auto-Pilot', 'old_value': 'Paused', 'value': 'Paused'},
+                        {'name': 'Auto-Pilot\'s Daily Budget', 'old_value': '$0.00', 'value': '$0.00'},
                     ],
                     'show_old_settings': True
                 }]

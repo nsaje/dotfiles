@@ -67,7 +67,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         resource = json.loads(request.body)
 
-        form = forms.AdGroupSettingsForm(resource.get('settings', {}))
+        form = forms.AdGroupSettingsForm(resource.get('settings', {}), ad_group=ad_group)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
@@ -81,9 +81,12 @@ class AdGroupSettings(api_common.BaseApiView):
         self.set_ad_group(ad_group, form.cleaned_data)
 
         new_settings = current_settings.copy_settings()
-        self.set_settings(new_settings, form.cleaned_data,
-                          request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'),
-                          request.user.has_perm('zemauth.can_toggle_adobe_performance_tracking'))
+        self.set_settings(
+            new_settings, form.cleaned_data,
+            can_set_ad_group_max_cpc=request.user.has_perm('zemauth.can_set_ad_group_max_cpc'),
+            can_set_ga_tracking_params=request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'),
+            can_set_adobe_tracking_params=request.user.has_perm('zemauth.can_toggle_adobe_performance_tracking'),
+            can_set_adgroup_to_auto_pilot=request.user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'))
 
         # update ad group name
         current_settings.ad_group_name = previous_ad_group_name
@@ -130,7 +133,11 @@ class AdGroupSettings(api_common.BaseApiView):
                 'tracking_code': settings.tracking_code,
                 'enable_ga_tracking': settings.enable_ga_tracking,
                 'enable_adobe_tracking': settings.enable_adobe_tracking,
-                'adobe_tracking_param': settings.adobe_tracking_param
+                'adobe_tracking_param': settings.adobe_tracking_param,
+                'autopilot_state': settings.autopilot_state,
+                'autopilot_daily_budget':
+                    '{:.2f}'.format(settings.autopilot_daily_budget)
+                    if settings.autopilot_daily_budget is not None else ''
             }
 
         return result
@@ -138,15 +145,22 @@ class AdGroupSettings(api_common.BaseApiView):
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
 
-    def set_settings(self, settings, resource, can_set_ga_tracking_params, can_set_adobe_tracking_params):
+    def set_settings(self, settings, resource,
+                     can_set_ad_group_max_cpc,
+                     can_set_ga_tracking_params,
+                     can_set_adobe_tracking_params,
+                     can_set_adgroup_to_auto_pilot):
+
         settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
-        settings.cpc_cc = resource['cpc_cc']
         settings.daily_budget_cc = resource['daily_budget_cc']
         settings.target_devices = resource['target_devices']
         settings.target_regions = resource['target_regions']
         settings.ad_group_name = resource['name']
+
+        if can_set_ad_group_max_cpc:
+            settings.cpc_cc = resource['cpc_cc']
 
         if can_set_ga_tracking_params:
             settings.enable_ga_tracking = resource['enable_ga_tracking']
@@ -155,6 +169,10 @@ class AdGroupSettings(api_common.BaseApiView):
         if can_set_adobe_tracking_params:
             settings.enable_adobe_tracking = resource['enable_adobe_tracking']
             settings.adobe_tracking_param = resource['adobe_tracking_param']
+
+        if can_set_adgroup_to_auto_pilot:
+            settings.autopilot_state = resource['autopilot_state']
+            settings.autopilot_daily_budget = resource['autopilot_daily_budget']
 
     def _send_update_actions(self, ad_group, current_settings, new_settings, request):
         actionlogs_to_send = []

@@ -68,6 +68,21 @@
             <label ng-repeat="error in errors.endDate" class="control-label error" for="end-date-input">{{ error }}</label>
         </div>
 
+        <div class="form-group" ng-class="{'has-error': !!errors.cpc}" ng-if="hasPermission('zemauth.can_set_ad_group_max_cpc')">
+            <label for="cpc-input" class="col-xs-2 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_ad_group_max_cpc')" popover-placement="right"></zem-internal-feature>
+                Maximum CPC
+                <zem-help-popover content="Maximum CPC in this ad group." placement="top"></zem-help-popover>
+            </label>
+            <div class="col-xs-2">
+                <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input id="cpc-input" type="text" class="form-control" ng-model="settings.cpc" zem-currency-input empty-text="No limit">
+                </div>
+            </div>
+            <label ng-repeat="error in errors.cpc" class="control-label error" for="cpc-input">{{ error }}</label>
+        </div>
+
         <div class="form-vertical">
             <div class="form-group" ng-class="{'has-error': !!errors.targetDevices}">
                 <label class="col-xs-2 control-label">
@@ -163,8 +178,43 @@
             <label ng-repeat="error in errors.adobeTrackingParam" class="control-label error" for="adobe-tracking-param-input">{{ error }}</label>
         </div>
 
-		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
-		<button type="button" class="btn btn-default" ng-click="discardSettings()">Discard</button>
+        <div class="form-horizontal" ng-if="hasPermission('zemauth.can_set_adgroup_to_auto_pilot')">
+            <label class="control-label">
+                Auto-Pilot
+                <zem-help-popover content="Ad Group Auto-Pilot for CPC and Budget Automation." placement="top"></zem-help-popover>
+            </label>
+            <div class="form-group indented" ng-class="{'has-error': !!errors.autopilotState}">
+                <label for="autopilot-state-switch" class="col-xs-2 control-label">
+                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_adgroup_to_auto_pilot')" popover-placement="right"></zem-internal-feature>
+                    Status
+                    <zem-help-popover content="This is the current state of the Auto-Pilot on this Ad Group." placement="top"></zem-help-popover>
+                </label>
+                <div id="autopilot-state-switch" class="col-xs-4">
+                    <div class="btn-group campaign-state-switch">
+                        <label class="btn btn-success" ng-model="settings.autopilotState" ng-repeat="autopilotState in options.adGroupSettingsAutopilotStates" btn-radio="autopilotState.value">{{ autopilotState.name }}</label>
+                    </div>
+                </div>
+                <label ng-repeat="error in errors.autopilotState" class="control-label error" for="name-input">{{ error }}</label>
+            </div>
+
+            <div class="form-group indented" ng-class="{'has-error': !!errors.autopilotBudget}">
+                <label for="autopilot-budget" class="col-xs-2 control-label">
+                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_adgroup_to_auto_pilot')" popover-placement="right"></zem-internal-feature>
+                    Daily Budget
+                    <zem-help-popover content="Amount of budget Auto-Pilot can operate with on this Ad Group every day." placement="top"></zem-help-popover>
+                </label>
+                <div class="col-xs-2">
+                    <div class="input-group">
+                        <span class="input-group-addon">$</span>
+                        <input id="autopilot-budget" type="text" class="form-control" ng-model="settings.autopilotBudget" zem-currency-input>
+                    </div>
+                </div>
+                <label ng-repeat="error in errors.autopilotBudget" class="control-label error" for="autopilot-budget">{{ error }}</label>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+        <button type="button" class="btn btn-default" ng-click="discardSettings()">Discard</button>
         <div class="loader" ng-show="saveRequestInProgress"></div>
         <span ng-show="saved" class="success">Your updates have been saved.</span>
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>
