@@ -358,11 +358,11 @@ def count_weekly_logged_in_users():
 
 
 def count_weekly_active_users():
-    return len(set(dash.models.UserActionLog.objects.filter(
+    return dash.models.UserActionLog.objects.filter(
         created_dt__gte=_one_week_ago()
     ).exclude(
         created_by__email__contains='@zemanta'
-    ).values_list('created_by__id', flat=True)))
+    ).select_related('created_by').distinct('created_by').count()
 
 
 def count_weekly_selfmanaged_actions():
