@@ -346,7 +346,7 @@ def _retrieve_active_budgetlineitems(campaigns, date):
 def _retrieve_active_creditlineitems(account, date):
     return [credit for credit in dash.models.CreditLineItem.objects.filter(
         account=account
-    ) if credit.is_active(date) == dash.constants.CreditLineItemStatus.SIGNED]
+    ) if credit.is_active(date)]
 
 
 def _retrieve_daily_cap(ad_group_source):
