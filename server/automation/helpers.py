@@ -186,3 +186,9 @@ def stop_campaign(campaign):
         with transaction.atomic():
             actionlogs_to_send = actionlog.api.init_pause_ad_group(ad_group, None, send=False)
         zwei_actions.send(actionlogs_to_send)
+
+
+def update_ad_group_source_value(ad_group_source, field, new_value):
+    settings_writer = dash.api.AdGroupSourceSettingsWriter(ad_group_source)
+    resource = {field: new_value}
+    settings_writer.set(resource, None)
