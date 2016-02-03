@@ -4,8 +4,6 @@ from django import forms
 
 import utils.string_helper
 
-from dash import constants
-
 
 def validate_daily_budget_cc(daily_budget_cc, source_type):
     if daily_budget_cc < 0:
