@@ -1920,7 +1920,7 @@ class ContentAdSource(models.Model):
     def get_source_id(self):
         if self.source.source_type and self.source.source_type.type in [
                 constants.SourceType.B1, constants.SourceType.GRAVITY]:
-            return self.content_ad.id
+            return self.content_ad_id
         else:
             return self.source_content_ad_id
 
@@ -2300,7 +2300,7 @@ class CreditLineItem(FootprintModel):
     def validate_license_fee(self):
         if not self.license_fee:
             return
-        if not (0 <= self.license_fee <= 1):
+        if not (0 <= self.license_fee < 1):
             raise ValidationError('License fee must be between 0 and 100%.')
 
     class QuerySet(models.QuerySet):

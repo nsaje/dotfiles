@@ -106,6 +106,9 @@ def _get_error_message(data):
 
 
 def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None):
+    if not data_rows:
+        return []
+
     raw_articles = [{'url': row['url'], 'title': row['title']} for row in data_rows]
     articles = dash.api.reconcile_articles(ad_group, raw_articles)
 
@@ -118,7 +121,7 @@ def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None
     content_ad_sources = {}
     for content_ad_source in dash.models.ContentAdSource.objects.filter(
             content_ad__ad_group=ad_group,
-            source=source):
+            source=source).select_related('source__source_type'):
         content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
 
     stats_rows = []
