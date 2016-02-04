@@ -215,6 +215,11 @@ urlpatterns += patterns(
         login_required(dash.views.sync.AccountSyncProgress.as_view()),
     ),
     url(
+        r'^api/accounts/overview/',
+        login_required(dash.views.views.AllAccountsOverview.as_view()),
+        name='all_accounts_overview'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sync/',
         login_required(dash.views.sync.AdGroupSync.as_view()),
     ),

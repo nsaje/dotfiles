@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import calendar
 import datetime
 import json
 import decimal
@@ -745,19 +746,19 @@ class AccountOverview(api_common.BaseApiView):
         settings = []
 
         available_credit = infobox_helpers.calculate_available_credit(account)
-        spend_credit = infobox_helpers.calculate_spend_credit(account)
-        spend_credit_setting = infobox_helpers.OverviewSetting(
-            'Spend credit:',
-            '${:.2f}'.format(spend_credit),
+        spent_credit = infobox_helpers.calculate_spend_credit(account)
+        spent_credit_setting = infobox_helpers.OverviewSetting(
+            'Spent credit:',
+            '${:.2f}'.format(spent_credit),
             description='${:.2f}'.format(available_credit)
         )
-        settings.append(spend_credit_setting.as_dict())
+        settings.append(spent_credit_setting.as_dict())
 
         daily_budget = infobox_helpers.calculate_daily_account_cap(account)
-        yesterday_spend = infobox_helpers.calculate_yesterday_account_spend(account)
+        yesterday_spent = infobox_helpers.calculate_yesterday_account_spend(account)
         settings.append(
             infobox_helpers.create_yesterday_spend_setting(
-                yesterday_spend,
+                yesterday_spent,
                 daily_budget
             ).as_dict()
         )
@@ -1836,6 +1837,97 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         )
 
         email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
+
+
+class AllAccountsOverview(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'all_accounts_overview')
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_see_infobox'):
+            raise exc.AuthorizationError()
+
+        header = {
+            'title': 'All accounts',
+        }
+
+        response = {
+            'header': header,
+            'settings': self._basic_settings(),
+        }
+
+        return self.create_api_response(response)
+
+    def _basic_settings(self):
+        settings = []
+
+        count_active_accounts = infobox_helpers.count_active_accounts()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Active accounts:',
+            count_active_accounts
+        ))
+
+        weekly_logged_users = infobox_helpers.count_weekly_logged_in_users()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Weekly logged-in users:',
+            weekly_logged_users
+        ))
+
+        weekly_active_users = infobox_helpers.count_weekly_active_users()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Weekly active users:',
+            weekly_active_users
+        ))
+
+        weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Weekly self managed actions:',
+            weekly_sf_actions
+        ))
+
+        yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Yesterday spent:',
+            '${:.2f}'.format(yesterday_spend),
+            tooltip='Yesterday media spent'
+        ))
+
+        mtd_spend = infobox_helpers.get_mtd_all_accounts_spend()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Spent MTD:',
+            '${:.2f}'.format(mtd_spend),
+            tooltip='Month-to-date media spent'
+        ))
+
+        """
+        settings.append(infobox_helpers.OverviewSetting(
+            'Forecast EOM:',
+            'TBD'
+        ))
+
+        settings.append(infobox_helpers.OverviewSetting(
+            'Forecast license fee:',
+            '$0.00'
+        ))
+        """
+
+        today = datetime.datetime.utcnow()
+        start, end = calendar.monthrange(today.year, today.month)
+        start_date = datetime.datetime(today.year, today.month, 1)
+        end_date = datetime.datetime(today.year, today.month, end)
+
+        total_budget = infobox_helpers.calculate_all_accounts_total_budget(start_date, end_date)
+        settings.append(infobox_helpers.OverviewSetting(
+            'Total budgets:',
+            '${:.2f}'.format(total_budget)
+        ))
+
+        monthly_budget = infobox_helpers.calculate_all_accounts_monthly_budget(today)
+        settings.append(infobox_helpers.OverviewSetting(
+            'Monthly budgets:',
+            '${:.2f}'.format(monthly_budget)
+        ))
+
+        return [setting.as_dict() for setting in settings]
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')
