@@ -176,7 +176,7 @@ def get_historic_data(ad_group, ad_group_sources, columns):
             data[ags][col] = GOALS_WORST_VALUE.get(col)
             if col == 'spend_perc':
                 data[ags][col] = get_spend_perc(ags, today)
-            elif stat and col in stat:
+            elif stat and col in stat and stat[col]:
                 data[ags][col] = stat[col]
     return data
 
