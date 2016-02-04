@@ -312,7 +312,7 @@ def calculate_available_credit(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
 
-    return sum([Decimal(credit.effective_amount()) * (Decimal(1.0) - credit.license_fee) for credit in credits])
+    return sum([credit.effective_amount() * (Decimal(1.0) - credit.license_fee) for credit in credits])
 
 
 def calculate_spend_credit(account):
@@ -351,10 +351,10 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
         daily_ratio_description = 'N/A'
 
     yesterday_spend_setting = OverviewSetting(
-        'Yesterday spend:',
+        'Yesterday spent:',
         '${:.2f}'.format(yesterday_cost),
         description=daily_ratio_description,
-        tooltip='Yesterday media spend'
+        tooltip='Yesterday media spent'
     ).performance(
         filled_daily_ratio >= 1.0 if filled_daily_ratio else False
     )

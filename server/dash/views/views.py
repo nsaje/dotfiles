@@ -746,19 +746,19 @@ class AccountOverview(api_common.BaseApiView):
         settings = []
 
         available_credit = infobox_helpers.calculate_available_credit(account)
-        spend_credit = infobox_helpers.calculate_spend_credit(account)
-        spend_credit_setting = infobox_helpers.OverviewSetting(
-            'Spend credit:',
-            '${:.2f}'.format(spend_credit),
+        spent_credit = infobox_helpers.calculate_spend_credit(account)
+        spent_credit_setting = infobox_helpers.OverviewSetting(
+            'Spent credit:',
+            '${:.2f}'.format(spent_credit),
             description='${:.2f}'.format(available_credit)
         )
-        settings.append(spend_credit_setting.as_dict())
+        settings.append(spent_credit_setting.as_dict())
 
         daily_budget = infobox_helpers.calculate_daily_account_cap(account)
-        yesterday_spend = infobox_helpers.calculate_yesterday_account_spend(account)
+        yesterday_spent = infobox_helpers.calculate_yesterday_account_spend(account)
         settings.append(
             infobox_helpers.create_yesterday_spend_setting(
-                yesterday_spend,
+                yesterday_spent,
                 daily_budget
             ).as_dict()
         )
@@ -1886,16 +1886,16 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
         settings.append(infobox_helpers.OverviewSetting(
-            'Yesterday spend:',
+            'Yesterday spent:',
             '${:.2f}'.format(yesterday_spend),
-            tooltip='Yesterday media spend'
+            tooltip='Yesterday media spent'
         ))
 
         mtd_spend = infobox_helpers.get_mtd_all_accounts_spend()
         settings.append(infobox_helpers.OverviewSetting(
-            'Spend MTD:',
+            'Spent MTD:',
             '${:.2f}'.format(mtd_spend),
-            tooltip='Month-to-date media spend'
+            tooltip='Month-to-date media spent'
         ))
 
         """
