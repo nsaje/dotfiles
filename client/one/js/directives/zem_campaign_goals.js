@@ -59,6 +59,13 @@ oneApp.directive('zemCampaignGoals', [function () {
                     scope: scope,
                 });
 
+                modalInstance.result.then(function (campaignGoal) {
+                    var index = $scope.campaignGoals.indexOf(campaignGoal);
+                    if (index < 0) {
+                        $scope.campaignGoals.push(campaignGoal);
+                    }
+                });
+
                 return modalInstance;
             };
 
