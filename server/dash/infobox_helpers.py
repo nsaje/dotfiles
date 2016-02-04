@@ -302,7 +302,7 @@ def calculate_available_media_campaign_budget(campaign):
     ret = 0
     for bli in budgets:
         available_total_amount = bli.get_available_amount(today)
-        available_media_amount = available_total_amount * (Decimal(1) - bli.credit.license_fee)
+        available_media_amount = available_total_amount * (1 - bli.credit.license_fee)
 
         ret += available_media_amount
     return ret
@@ -312,7 +312,7 @@ def calculate_available_credit(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
 
-    return sum([credit.effective_amount() * (Decimal(1.0) - credit.license_fee) for credit in credits])
+    return sum([credit.effective_amount() * (1 - credit.license_fee) for credit in credits])
 
 
 def calculate_spend_credit(account):
