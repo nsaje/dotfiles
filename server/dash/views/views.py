@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import calendar
 import datetime
 import json
 import decimal
@@ -643,6 +644,126 @@ class CampaignOverview(api_common.BaseApiView):
 
         return helpers.get_ad_group_state_by_sources_running_status(
             ad_groups, ad_groups_settings, [], 'campaign_id')
+
+
+class AccountOverview(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'account_overview')
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.can_see_infobox'):
+            raise exc.AuthorizationError()
+
+        account = helpers.get_account(request.user, account_id)
+
+        header = {
+            'title': account.name,
+            'active': False
+        }
+
+        basic_settings = self._basic_settings(account)
+
+        performance_settings = self._performance_settings(account, request.user)
+
+        response = {
+            'header': header,
+            'settings':  basic_settings +
+                [infobox_helpers.OverviewSeparator().as_dict()] +
+                performance_settings,
+        }
+
+        count_campaigns = models.Campaign.objects.filter(
+            account=account
+        ).count()
+
+        count_adgroups = models.AdGroup.objects.filter(
+            campaign__account=account
+        ).count()
+
+        header['subtitle'] = 'with {count_campaigns} campaigns and {count_adgroups} ad groups'.format(
+            count_campaigns=count_campaigns,
+            count_adgroups=count_adgroups
+        )
+
+        return self.create_api_response(response)
+
+    def _username(self, user):
+        if not user:
+            return 'N/A'
+        return user.get_full_name()
+
+    def _basic_settings(self, account):
+        settings = []
+        account_settings = account.get_current_settings()
+        account_manager_setting = infobox_helpers.OverviewSetting(
+            'Account Manager:',
+            self._username(account_settings.default_account_manager)
+        )
+        settings.append(account_manager_setting.as_dict())
+
+        sales_manager_setting = infobox_helpers.OverviewSetting(
+            'Sales Manager:',
+            self._username(account_settings.default_sales_representative)
+        )
+        settings.append(sales_manager_setting.as_dict())
+
+        for i, user in enumerate(account.users.all()):
+            user_one_setting = infobox_helpers.OverviewSetting(
+                'Users:' if i == 0 else '',
+                self._username(user)
+            )
+            settings.append(user_one_setting.as_dict())
+
+        platform_fee_setting = infobox_helpers.OverviewSetting(
+            'Platform fee:',
+            "{:.2f}%".format(account_settings.service_fee * 100)
+        )
+        settings.append(platform_fee_setting.as_dict())
+
+        pixels = models.ConversionPixel.objects.filter(account=account)
+        conversion_pixel_setting = infobox_helpers.OverviewSetting(
+            'Conversion pixel:',
+            'Yes' if pixels.count() > 0 else 'No'
+        )
+        if pixels.count() > 0:
+            slugs = [pixel.slug for pixel in pixels]
+            conversion_pixel_setting = conversion_pixel_setting.comment(
+                'more',
+                ', '.join(slugs),
+            )
+        settings.append(conversion_pixel_setting.as_dict())
+
+        """
+        # temporarily disabled
+        account_type_setting = infobox_helpers.OverviewSetting(
+            'Account type:',
+            'N/A'
+        )
+        settings.append(account_type_setting.as_dict())
+        """
+        return settings
+
+    def _performance_settings(self, account, user):
+        settings = []
+
+        available_credit = infobox_helpers.calculate_available_credit(account)
+        spent_credit = infobox_helpers.calculate_spend_credit(account)
+        spent_credit_setting = infobox_helpers.OverviewSetting(
+            'Spent credit:',
+            '${:.2f}'.format(spent_credit),
+            description='${:.2f}'.format(available_credit)
+        )
+        settings.append(spent_credit_setting.as_dict())
+
+        daily_budget = infobox_helpers.calculate_daily_account_cap(account)
+        yesterday_spent = infobox_helpers.calculate_yesterday_account_spend(account)
+        settings.append(
+            infobox_helpers.create_yesterday_spend_setting(
+                yesterday_spent,
+                daily_budget
+            ).as_dict()
+        )
+
+        return settings
 
 
 class AdGroupState(api_common.BaseApiView):
@@ -1716,6 +1837,97 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         )
 
         email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
+
+
+class AllAccountsOverview(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'all_accounts_overview')
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_see_infobox'):
+            raise exc.AuthorizationError()
+
+        header = {
+            'title': 'All accounts',
+        }
+
+        response = {
+            'header': header,
+            'settings': self._basic_settings(),
+        }
+
+        return self.create_api_response(response)
+
+    def _basic_settings(self):
+        settings = []
+
+        count_active_accounts = infobox_helpers.count_active_accounts()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Active accounts:',
+            count_active_accounts
+        ))
+
+        weekly_logged_users = infobox_helpers.count_weekly_logged_in_users()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Weekly logged-in users:',
+            weekly_logged_users
+        ))
+
+        weekly_active_users = infobox_helpers.count_weekly_active_users()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Weekly active users:',
+            weekly_active_users
+        ))
+
+        weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Weekly self managed actions:',
+            weekly_sf_actions
+        ))
+
+        yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Yesterday spent:',
+            '${:.2f}'.format(yesterday_spend),
+            tooltip='Yesterday media spent'
+        ))
+
+        mtd_spend = infobox_helpers.get_mtd_all_accounts_spend()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Spent MTD:',
+            '${:.2f}'.format(mtd_spend),
+            tooltip='Month-to-date media spent'
+        ))
+
+        """
+        settings.append(infobox_helpers.OverviewSetting(
+            'Forecast EOM:',
+            'TBD'
+        ))
+
+        settings.append(infobox_helpers.OverviewSetting(
+            'Forecast license fee:',
+            '$0.00'
+        ))
+        """
+
+        today = datetime.datetime.utcnow()
+        start, end = calendar.monthrange(today.year, today.month)
+        start_date = datetime.datetime(today.year, today.month, 1)
+        end_date = datetime.datetime(today.year, today.month, end)
+
+        total_budget = infobox_helpers.calculate_all_accounts_total_budget(start_date, end_date)
+        settings.append(infobox_helpers.OverviewSetting(
+            'Total budgets:',
+            '${:.2f}'.format(total_budget)
+        ))
+
+        monthly_budget = infobox_helpers.calculate_all_accounts_monthly_budget(today)
+        settings.append(infobox_helpers.OverviewSetting(
+            'Monthly budgets:',
+            '${:.2f}'.format(monthly_budget)
+        ))
+
+        return [setting.as_dict() for setting in settings]
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')

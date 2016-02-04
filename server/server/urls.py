@@ -215,6 +215,11 @@ urlpatterns += patterns(
         login_required(dash.views.sync.AccountSyncProgress.as_view()),
     ),
     url(
+        r'^api/accounts/overview/',
+        login_required(dash.views.views.AllAccountsOverview.as_view()),
+        name='all_accounts_overview'
+    ),
+    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/sync/',
         login_required(dash.views.sync.AdGroupSync.as_view()),
     ),
@@ -380,6 +385,11 @@ urlpatterns += patterns(
         r'^api/accounts/(?P<account_id>\d+)/credit/',
         login_required(dash.views.bcm.AccountCreditView.as_view()),
         name='accounts_credit'
+    ),
+    url(
+        r'^api/accounts/(?P<account_id>\d+)/overview/',
+        login_required(dash.views.views.AccountOverview.as_view()),
+        name='account_overview'
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/(?P<budget_id>\d+)/',
