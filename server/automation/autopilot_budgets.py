@@ -26,10 +26,10 @@ MAX_BUDGET_GAIN = Decimal(1.2)
 MAX_BUDGET_LOSS = Decimal(0.8)
 MIN_SOURCE_BUDGET = Decimal(10.0)
 GOALS_COLUMNS = {
-    'bounce_and_spend': {'bounce_rate': Decimal(0.7), 'spend_perc': Decimal(0.3)}
+    'bounce_and_spend': {'bounce_rate': 0.7, 'spend_perc': Decimal(0.3)}
 }
 GOALS_WORST_VALUE = {
-    'bounce_rate': Decimal(100.00),
+    'bounce_rate': 100.00,
     'spend': Decimal(0.00),
 }
 AUTOPILOT_DATA_LOOKBACK_DAYS = 2
@@ -134,7 +134,7 @@ def predict_outcome_success(source, data, goal):
         spend_perc = data.get('spend_perc')
         bounce_rate = data.get('bounce_rate')
         pos_bounce_rate = (100 - bounce_rate) / 100
-        prob_success = spend_perc * GOALS_COLUMNS.get(goal).get('spend_perc') +\
+        prob_success = float(spend_perc * GOALS_COLUMNS.get(goal).get('spend_perc')) +\
             pos_bounce_rate * GOALS_COLUMNS.get(goal).get('bounce_rate')
         return prob_success > random()
     raise exceptions.NotImplementedError('Budget Auto-Pilot Goal is not implemented: ', goal)
@@ -212,7 +212,7 @@ Zemanta
                          u''.join(emails))
         desc = {
             'adgroup_name': adgroup_name,
-            'email': ''.join(emails)
+            'email': ', '.join(emails)
         }
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
