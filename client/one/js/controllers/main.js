@@ -267,9 +267,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             $state.is('main.allAccounts.accounts') ||
             $state.is('main.allAccounts.sources')) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     };
 
     $scope.$on('$stateChangeSuccess', function () {
