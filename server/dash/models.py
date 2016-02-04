@@ -2626,8 +2626,11 @@ class BudgetLineItem(FootprintModel):
                 license_fee_spend_sum=Sum('statements__license_fee_nano'),
                 data_spend_sum=Sum('statements__data_spend_nano')
             ).exclude(
-                amount__lte=Round(Coalesce('media_spend_sum') * 1e-9 + Coalesce('license_fee_spend_sum') * 1e-9 +\
-                Coalesce('data_spend_sum')*1e-9)
+                amount__lte=Round(
+                    Coalesce('media_spend_sum')*1e-9 +\
+                    Coalesce('license_fee_spend_sum')*1e-9 +\
+                    Coalesce('data_spend_sum')*1e-9
+                )
             )
 
 
