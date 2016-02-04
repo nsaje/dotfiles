@@ -1010,9 +1010,9 @@ def log_useraction_if_necessary(request, user_action_type, account=None, campaig
         user_action_log.save()
 
 
-def ad_group_has_available_budget(ad_group, date):
+def ad_group_has_available_budget(ad_group):
     if ad_group.campaign.account.uses_credits:
-        return any(ad_group.campaign.budgets.filter_active(date))
+        return any(ad_group.campaign.budgets.filter_active())
 
     campaign_budget = budget.CampaignBudget(ad_group.campaign)
 
