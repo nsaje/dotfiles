@@ -387,6 +387,11 @@ urlpatterns += patterns(
         name='accounts_credit'
     ),
     url(
+        r'^api/accounts/(?P<account_id>\d+)/overview/',
+        login_required(dash.views.views.AccountOverview.as_view()),
+        name='account_overview'
+    ),
+    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/budget-plus/(?P<budget_id>\d+)/',
         login_required(dash.views.bcm.CampaignBudgetItemView.as_view()),
         name='campaigns_budget_item'

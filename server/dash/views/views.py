@@ -646,6 +646,126 @@ class CampaignOverview(api_common.BaseApiView):
             ad_groups, ad_groups_settings, [], 'campaign_id')
 
 
+class AccountOverview(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'account_overview')
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.can_see_infobox'):
+            raise exc.AuthorizationError()
+
+        account = helpers.get_account(request.user, account_id)
+
+        header = {
+            'title': account.name,
+            'active': False
+        }
+
+        basic_settings = self._basic_settings(account)
+
+        performance_settings = self._performance_settings(account, request.user)
+
+        response = {
+            'header': header,
+            'settings':  basic_settings +
+                [infobox_helpers.OverviewSeparator().as_dict()] +
+                performance_settings,
+        }
+
+        count_campaigns = models.Campaign.objects.filter(
+            account=account
+        ).count()
+
+        count_adgroups = models.AdGroup.objects.filter(
+            campaign__account=account
+        ).count()
+
+        header['subtitle'] = 'with {count_campaigns} campaigns and {count_adgroups} ad groups'.format(
+            count_campaigns=count_campaigns,
+            count_adgroups=count_adgroups
+        )
+
+        return self.create_api_response(response)
+
+    def _username(self, user):
+        if not user:
+            return 'N/A'
+        return user.get_full_name()
+
+    def _basic_settings(self, account):
+        settings = []
+        account_settings = account.get_current_settings()
+        account_manager_setting = infobox_helpers.OverviewSetting(
+            'Account Manager:',
+            self._username(account_settings.default_account_manager)
+        )
+        settings.append(account_manager_setting.as_dict())
+
+        sales_manager_setting = infobox_helpers.OverviewSetting(
+            'Sales Manager:',
+            self._username(account_settings.default_sales_representative)
+        )
+        settings.append(sales_manager_setting.as_dict())
+
+        for i, user in enumerate(account.users.all()):
+            user_one_setting = infobox_helpers.OverviewSetting(
+                'Users:' if i == 0 else '',
+                self._username(user)
+            )
+            settings.append(user_one_setting.as_dict())
+
+        platform_fee_setting = infobox_helpers.OverviewSetting(
+            'Platform fee:',
+            "{:.2f}%".format(account_settings.service_fee * 100)
+        )
+        settings.append(platform_fee_setting.as_dict())
+
+        pixels = models.ConversionPixel.objects.filter(account=account)
+        conversion_pixel_setting = infobox_helpers.OverviewSetting(
+            'Conversion pixel:',
+            'Yes' if pixels.count() > 0 else 'No'
+        )
+        if pixels.count() > 0:
+            slugs = [pixel.slug for pixel in pixels]
+            conversion_pixel_setting = conversion_pixel_setting.comment(
+                'more',
+                ', '.join(slugs),
+            )
+        settings.append(conversion_pixel_setting.as_dict())
+
+        """
+        # temporarily disabled
+        account_type_setting = infobox_helpers.OverviewSetting(
+            'Account type:',
+            'N/A'
+        )
+        settings.append(account_type_setting.as_dict())
+        """
+        return settings
+
+    def _performance_settings(self, account, user):
+        settings = []
+
+        available_credit = infobox_helpers.calculate_available_credit(account)
+        spend_credit = infobox_helpers.calculate_spend_credit(account)
+        spend_credit_setting = infobox_helpers.OverviewSetting(
+            'Spend credit:',
+            '${:.2f}'.format(spend_credit),
+            description='${:.2f}'.format(available_credit)
+        )
+        settings.append(spend_credit_setting.as_dict())
+
+        daily_budget = infobox_helpers.calculate_daily_account_cap(account)
+        yesterday_spend = infobox_helpers.calculate_yesterday_account_spend(account)
+        settings.append(
+            infobox_helpers.create_yesterday_spend_setting(
+                yesterday_spend,
+                daily_budget
+            ).as_dict()
+        )
+
+        return settings
+
+
 class AdGroupState(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_state_get')
