@@ -2500,7 +2500,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('$50.00', flight_setting['value'])
         yesterday_setting = self._get_setting(settings, 'yesterday')
         self.assertEqual('$60.00', yesterday_setting['value'])
-        self.assertEqual('120.00% of daily cap', yesterday_setting['description'])
+        self.assertEqual('120.00% of daily budget', yesterday_setting['description'])
 
 
 class CampaignOverviewTest(TestCase):
@@ -2538,4 +2538,57 @@ class CampaignOverviewTest(TestCase):
             'cost_cc_sum': 0.0
         }]
         response = self._get_campaign_overview(1)
+        self.assertTrue(response['success'])
+
+
+class AccountOverviewTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.client = Client()
+        redshift.STATS_DB_NAME = 'default'
+
+        permission = Permission.objects.get(codename='can_see_infobox')
+        user = zemauth.models.User.objects.get(pk=2)
+        user.user_permissions.add(permission)
+        user.save()
+
+    def _get_account_overview(self, account_id, user_id=2, with_status=False):
+        user = User.objects.get(pk=user_id)
+        self.client.login(username=user.username, password='secret')
+        reversed_url = reverse(
+                'account_overview',
+                kwargs={'account_id': account_id})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return json.loads(response.content)
+
+    def _get_setting(self, settings, name):
+        return [s for s in settings if name in s['name'].lower()][0]
+
+    @patch('reports.redshift.get_cursor')
+    @patch('dash.models.Account.get_current_settings')
+    def test_run_empty(self, mock_current_settings, cursor):
+        account = models.Account.objects.get(pk=1)
+
+        settings = models.AccountSettings(
+            default_account_manager=zemauth.models.User.objects.get(pk=1),
+            default_sales_representative=zemauth.models.User.objects.get(pk=2),
+        )
+
+        mock_current_settings.return_value = settings
+
+        # do some extra setup to the account
+        cursor().dictfetchall.return_value = [{
+            'adgroup_id': 1,
+            'source_id': 9,
+            'cost_cc_sum': 0.0
+        }]
+        response = self._get_account_overview(1)
+        settings = response['data']['settings']
+
+        pf_setting = self._get_setting(settings, 'platform fee')
+        self.assertEqual('20.00%', pf_setting['value'])
         self.assertTrue(response['success'])
