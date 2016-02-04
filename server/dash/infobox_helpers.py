@@ -366,10 +366,10 @@ def count_active_accounts():
     account_ids = set(
         dash.models.AdGroupSourceState.objects.all().group_current_states().filter(
             state=dash.constants.AdGroupSourceSettingsState.ACTIVE
-       ).values_list(
-           'ad_group_source__ad_group__campaign__account',
-           flat=True
-       )
+        ).values_list(
+            'ad_group_source__ad_group__campaign__account',
+            flat=True
+        )
     )
     return len(account_ids)
 
