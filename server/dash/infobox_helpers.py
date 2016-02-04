@@ -362,7 +362,6 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
 
 
 def count_active_accounts():
-    # if source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
     account_ids = set(
         dash.models.AdGroupSourceState.objects.all().group_current_states().filter(
             state=dash.constants.AdGroupSourceSettingsState.ACTIVE

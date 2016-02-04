@@ -454,7 +454,7 @@ class InfoBoxAccountHelpersTest(TestCase):
             account=account,
             start_date=start_date,
             end_date=end_date,
-            amount=100,
+            amount=300,
             status=dash.constants.CreditLineItemStatus.SIGNED,
             created_by=user,
         )
@@ -522,12 +522,44 @@ class InfoBoxAccountHelpersTest(TestCase):
     def test_calculate_all_accounts_total_budget(self):
         today = datetime.datetime.utcnow()
         self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_total_budget(today, today))
-        # TODO: expand test
+
+        self.assertEqual(0, dash.infobox_helpers.calculate_all_accounts_total_budget(today + datetime.timedelta(days=100), today + datetime.timedelta(days=100)))
+        # make a past budget and check if total holds
+        user = zemauth.models.User.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+
+        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=62)
+        end_date_1 = start_date_1 + datetime.timedelta(days=15)
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=self.credit,
+            amount=100,
+            start_date=start_date_1,
+            end_date=end_date_1,
+            created_by=user,
+        )
+
+        self.assertEqual(200, dash.infobox_helpers.calculate_all_accounts_total_budget(today - datetime.timedelta(days=60), today))
 
     def test_calculate_all_accounts_monthly_budget(self):
         today = datetime.datetime.utcnow()
         self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_monthly_budget(today))
-        # TODO: expand test
+
+        user = zemauth.models.User.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+
+        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=62)
+        end_date_1 = start_date_1 + datetime.timedelta(days=15)
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=self.credit,
+            amount=100,
+            start_date=start_date_1,
+            end_date=end_date_1,
+            created_by=user,
+        )
+
+        self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_monthly_budget(today))
 
     def _make_a_john(self):
         ordinary_john = zemauth.models.User.objects.create_user(
