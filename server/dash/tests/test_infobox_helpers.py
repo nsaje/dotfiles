@@ -448,8 +448,6 @@ class InfoBoxAccountHelpersTest(TestCase):
         start_date = datetime.datetime.today().date() - datetime.timedelta(days=62)
         end_date = start_date + datetime.timedelta(days=99)
 
-        #start_date = datetime.datetime.today().date() - datetime.timedelta(days=1)
-        # end_date = start_date + datetime.timedelta(days=99)
         self.credit = dash.models.CreditLineItem.objects.create(
             account=account,
             start_date=start_date,
@@ -523,7 +521,9 @@ class InfoBoxAccountHelpersTest(TestCase):
         today = datetime.datetime.utcnow()
         self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_total_budget(today, today))
 
-        self.assertEqual(0, dash.infobox_helpers.calculate_all_accounts_total_budget(today + datetime.timedelta(days=100), today + datetime.timedelta(days=100)))
+        self.assertEqual(0, dash.infobox_helpers.calculate_all_accounts_total_budget(
+            today + datetime.timedelta(days=100), today + datetime.timedelta(days=100)
+        ))
         # make a past budget and check if total holds
         user = zemauth.models.User.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
@@ -539,7 +539,13 @@ class InfoBoxAccountHelpersTest(TestCase):
             created_by=user,
         )
 
-        self.assertEqual(200, dash.infobox_helpers.calculate_all_accounts_total_budget(today - datetime.timedelta(days=60), today))
+        self.assertEqual(
+            200,
+            dash.infobox_helpers.calculate_all_accounts_total_budget(
+                today - datetime.timedelta(days=60),
+                today
+            )
+        )
 
     def test_calculate_all_accounts_monthly_budget(self):
         today = datetime.datetime.utcnow()
