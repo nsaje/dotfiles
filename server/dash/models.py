@@ -39,12 +39,12 @@ TO_NANO_MULTIPLIER = 10**9
 
 class Round(Func):
     function = 'ROUND'
-    template='%(function)s(%(expressions)s, 0)'
+    template = '%(function)s(%(expressions)s, 0)'
 
 
 class Coalesce(Func):
     function = 'COALESCE'
-    template='%(function)s(%(expressions)s, 0)'
+    template = '%(function)s(%(expressions)s, 0)'
 
 
 def nano_to_cc(num):
