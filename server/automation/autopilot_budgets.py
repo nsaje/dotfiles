@@ -47,6 +47,7 @@ def adjust_autopilot_ad_groups_budgets():
     ap_statsd_adgroups_processed = 0
 
     for adgroup in adgroups:
+        logger.info('\nadgroup: ' + str(adgroup) + ' ' + str(adgroup.id) + '\n')
         goal = _get_adgroups_autopilot_goal(adgroup)
         sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, [adgroup])
         active_sources = [s for s in sources if
@@ -54,13 +55,23 @@ def adjust_autopilot_ad_groups_budgets():
         ap_statsd_autopilot_sources_count += len(active_sources)
 
         data = get_historic_data(adgroup, active_sources, GOALS_COLUMNS.get(goal).keys())
+        logger.info('data: ' + str(data) + '\n')
         max_budgets, new_budgets, old_budgets = _get_autopilot_budget_constraints(active_sources)
 
         total_daily_budget = adgroup.get_current_settings().autopilot_daily_budget
         ap_statsd_total_daily_budget += total_daily_budget
+        logger.info('max_budgets: ' + str(max_budgets) + '\n')
+        logger.info('new_budgets: ' + str(new_budgets) + '\n')
+        logger.info('old_budgets: ' + str(old_budgets) + '\n')
+        logger.info('total_daily_budget: ' + str(total_daily_budget) + '\n')
 
         # Don't add any budget to sources with insufficient spend
         active_sources_with_spend = _get_active_sources_with_spend(active_sources, data)
+        if len(active_sources_with_spend) < 1:
+            msg = str(adgroup) + ' does not have any active sources with spend. '
+            logger.info(msg)
+            send_autopilot_daily_budget_changes_email(adgroup.id, DEBUG_EMAILS, msg)
+            continue
 
         bandit = BetaBandit(active_sources_with_spend)
 
@@ -94,7 +105,7 @@ def adjust_autopilot_ad_groups_budgets():
                                           str(data[source].get('bounce_rate')), '\n'])
         email_changes_text += '\n' + bandit.get_bandit_status_text()
 
-        send_autopilot_daily_budget_changes_email(adgroup.name, DEBUG_EMAILS, email_changes_text)
+        send_autopilot_daily_budget_changes_email(str(adgroup.id), DEBUG_EMAILS, email_changes_text)
         ap_statsd_unassigned_daily_budget += budget_left
         ap_statsd_adgroups_processed += 1
 
