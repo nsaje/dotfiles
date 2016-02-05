@@ -1070,6 +1070,23 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
+    function AdGroupSettingsState () {
+        this.post = function (adgroupId, state) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adgroupId + '/settings/state/';
+
+            $http.post(url, {state: state}).
+                success(function (data, status) {
+                    deferred.resolve(data.data);
+                }).
+                error(function (data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AdGroupArchive () {
         this.archive = function (id) {
             var deferred = $q.defer();
@@ -3030,6 +3047,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         user: new User(),
         adGroupState: new AdGroupState(),
         adGroupSettings: new AdGroupSettings(),
+        adGroupSettingsState: new AdGroupSettingsState(),
         adGroupAgency: new AdGroupAgency(),
         adGroupSources: new AdGroupSources(),
         sourcesTable: new SourcesTable(),
