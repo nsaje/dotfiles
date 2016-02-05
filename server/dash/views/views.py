@@ -233,12 +233,16 @@ class AdGroupOverview(api_common.BaseApiView):
         running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
         header = {
             'title': ad_group_settings.ad_group_name,
-            'active': running_status == constants.AdGroupRunningStatus.ACTIVE
+            'active': running_status == constants.AdGroupRunningStatus.ACTIVE,
+            'level': constants.InfoboxLevel.ADGROUP
         }
 
         performance_settings, is_delivering = self._performance_settings(
             ad_group, request.user, ad_group_settings
         )
+        for setting in performance_settings[1:]:
+            setting['section_start'] = True
+
 
         response = {
             'header': header,
@@ -507,7 +511,8 @@ class CampaignOverview(api_common.BaseApiView):
 
         header = {
             'title': campaign.name,
-            'active': False
+            'active': False,
+            'level': constants.InfoboxLevel.CAMPAIGN
         }
 
         basic_settings, daily_cap =\
@@ -519,6 +524,9 @@ class CampaignOverview(api_common.BaseApiView):
             campaign_settings,
             daily_cap
         )
+
+        for setting in performance_settings[1:]:
+            setting['section_start'] = True
 
         response = {
             'header': header,
@@ -655,12 +663,15 @@ class AccountOverview(api_common.BaseApiView):
 
         header = {
             'title': account.name,
-            'active': False
+            'active': False,
+            'level': constants.InfoboxLevel.ACCOUNT
         }
 
         basic_settings = self._basic_settings(account)
 
         performance_settings = self._performance_settings(account, request.user)
+        for setting in performance_settings[1:]:
+            setting['section_start'] = True
 
         response = {
             'header': header,
@@ -1856,6 +1867,7 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         header = {
             'title': 'All accounts',
+            'level': constants.InfoboxLevel.ALL_ACCOUNTS
         }
 
         response = {
