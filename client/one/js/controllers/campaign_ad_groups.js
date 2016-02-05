@@ -101,9 +101,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             checked: true,
             totalRow: false,
             unselectable: true,
-            help: 'A setting for enabling and pausing Ad Groups. ' +
-                  'If you enable one you must then go enable preferred Ad Group\'s Media Sources too. ' +
-                  'If you pause one, all Ad Group\'s Media Sources get paused.',
+            help: 'A setting for enabling and pausing Ad Groups.',
             onChange: function (adgroupId, state) {
                 api.adGroupSettingsState.post(adgroupId, state).then(
                     function (data) {
