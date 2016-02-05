@@ -7,6 +7,7 @@ import newrelic.agent
 
 from decimal import Decimal
 import pytz
+from django.db.models import Sum, F, Func
 from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.contrib import auth
@@ -34,6 +35,16 @@ SHORT_NAME_MAX_LENGTH = 22
 CC_TO_DEC_MULTIPLIER = Decimal('0.0001')
 TO_CC_MULTIPLIER = 10**4
 TO_NANO_MULTIPLIER = 10**9
+
+
+class Round(Func):
+    function = 'ROUND'
+    template = '%(function)s(%(expressions)s, 0)'
+
+
+class Coalesce(Func):
+    function = 'COALESCE'
+    template = '%(function)s(%(expressions)s, 0)'
 
 
 def nano_to_cc(num):
@@ -2422,6 +2433,41 @@ class BudgetLineItem(FootprintModel):
     def get_latest_statement(self):
         return self.statements.all().order_by('-date').first()
 
+    def get_mtd_spend_data(self, date=None, use_decimal=False):
+        '''
+        Get month-to-date spend data
+        '''
+        spend_data = {
+            'media_cc': 0,
+            'data_cc': 0,
+            'license_fee_cc': 0,
+            'total_cc': 0,
+        }
+
+        if not date:
+            date = datetime.datetime.utcnow()
+
+        start_date = datetime.datetime(date.year, date.month, 1)
+        statements = self.statements.filter(
+            date__gte=start_date,
+            date__lte=date
+        ) if date else self.statements.all()
+        spend_data = {
+            (key + '_cc'): nano_to_cc(spend or 0)
+            for key, spend in statements.aggregate(
+                media=models.Sum('media_spend_nano'),
+                data=models.Sum('data_spend_nano'),
+                license_fee=models.Sum('license_fee_nano'),
+            ).iteritems()
+        }
+        spend_data['total_cc'] = sum(spend_data.values())
+        if not use_decimal:
+            return spend_data
+        return {
+            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
+            for key in spend_data.keys()
+        }
+
     def get_spend_data(self, date=None, use_decimal=False):
         spend_data = {
             'media_cc': 0,
@@ -2566,6 +2612,26 @@ class BudgetLineItem(FootprintModel):
             if any(itm.state() != constants.BudgetLineItemState.PENDING for itm in self):
                 raise AssertionError('Some budget items are not pending')
             super(BudgetLineItem.QuerySet, self).delete()
+
+        def filter_active(self, date):
+            if date is None:
+                date = dates_helper.local_today()
+
+            return self.exclude(
+                end_date__lt=date
+            ).filter(
+                start_date__lte=date
+            ).annotate(
+                media_spend_sum=Sum('statements__media_spend_nano'),
+                license_fee_spend_sum=Sum('statements__license_fee_nano'),
+                data_spend_sum=Sum('statements__data_spend_nano')
+            ).exclude(
+                amount__lte=Round(
+                    Coalesce('media_spend_sum')*1e-9 +
+                    Coalesce('license_fee_spend_sum')*1e-9 +
+                    Coalesce('data_spend_sum')*1e-9
+                )
+            )
 
 
 class CreditHistory(HistoryModel):

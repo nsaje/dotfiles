@@ -583,7 +583,7 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
 
     for content_ad_source in models.ContentAdSource.objects.filter(
             content_ad__ad_group=ad_group_source.ad_group,
-            source=ad_group_source.source).select_related('source__source_type'):
+            source=ad_group_source.source).select_related('source__source_type', 'content_ad'):
         content_ad_sources[content_ad_source.get_source_id()] = content_ad_source
 
     unsynced_content_ad_sources_actions = []

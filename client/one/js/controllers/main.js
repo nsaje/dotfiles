@@ -254,21 +254,31 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         $scope.enablePublisherFilter = visible;
     };
 
-    $scope.$on('$stateChangeSuccess', function () {
-        $scope.currentRoute = $state.current;
-        $scope.setDateRangeFromSearch();
-
+    $scope.isInfoboxEnabled = function () {
         // infobox will be visible only on certain views and
         // is entirely housed within main atm
         if ($state.is('main.campaigns.ad_groups') ||
             $state.is('main.campaigns.sources') ||
             $state.is('main.adGroups.adsPlus') ||
             $state.is('main.adGroups.sources') ||
-            $state.is('main.adGroups.publishers')) {
-            $scope.infoboxEnabled = true;
-        } else {
-            $scope.infoboxEnabled = false;
+            $state.is('main.adGroups.publishers') ||
+            $state.is('main.accounts.campaigns') ||
+            $state.is('main.accounts.sources') ||
+            $state.is('main.allAccounts.accounts') ||
+            $state.is('main.allAccounts.sources')) {
+            return true;
         }
+
+        return false;
+    };
+
+    $scope.$on('$stateChangeSuccess', function () {
+        $scope.currentRoute = $state.current;
+        $scope.setDateRangeFromSearch();
+
+        // infobox will be visible only on certain views and
+        // is entirely housed within main atm
+        $scope.infoboxEnabled = $scope.isInfoboxEnabled();
 
         // Redirect from default state
         var state = null;

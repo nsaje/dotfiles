@@ -15,6 +15,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.sizeRange = [5, 10, 20, 50];
     $scope.size = $scope.sizeRange[0];
     $scope.isIncompletePostclickMetrics = false;
+    $scope.infoboxHeader = null;
+    $scope.infoboxSettings = null;
     $scope.pagination = {
         currentPage: 1,
     };
@@ -412,6 +414,19 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         );
     };
 
+    var getInfoboxData = function () {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+
+        api.allAccountsOverview.get().then(
+            function (data) {
+                $scope.infoboxHeader = data.header;
+                $scope.infoboxSettings = data.settings;
+            }
+        );
+    };
+
     $scope.orderRows = function (order) {
         $scope.order = order;
         getTableData();
@@ -583,12 +598,19 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         $scope.loadPage();
         getDailyStats();
+        getInfoboxData();
         getTableData();
         initColumns();
     };
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);
+    });
+
+    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
+        $timeout(function () {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
     });
 
     $scope.init();
