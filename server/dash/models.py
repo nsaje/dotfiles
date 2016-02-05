@@ -2616,7 +2616,6 @@ class BudgetLineItem(FootprintModel):
         def filter_active(self, date):
             if date is None:
                 date = dates_helper.local_today()
-
             return self.exclude(
                 end_date__lt=date
             ).filter(
@@ -2627,9 +2626,9 @@ class BudgetLineItem(FootprintModel):
                 data_spend_sum=Sum('statements__data_spend_nano')
             ).exclude(
                 amount__lte=Round(
-                    Coalesce('media_spend_sum')*1e-9 +
-                    Coalesce('license_fee_spend_sum')*1e-9 +
-                    Coalesce('data_spend_sum')*1e-9
+                    Coalesce('media_spend_sum') * 1e-9 +
+                    Coalesce('license_fee_spend_sum') * 1e-9 +
+                    Coalesce('data_spend_sum') * 1e-9
                 )
             )
 
