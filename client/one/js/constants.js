@@ -1035,8 +1035,8 @@ var options = {
         {name: 'time on site in seconds', value: constants.campaignGoalKPI.TIME_ON_SITE},
         {name: 'max bounce rate %', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE},
         {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
-        {name: '$CPC', value: constants.campaignGoalKPI.TIME_ON_SITE},
-        {name: 'Add a new conversion/goal', value: constants.campaignGoalKPI.CPA},
+        {name: '$CPC', value: constants.campaignGoalKPI.CPC},
+        {name: 'Add new conversion/goal', value: constants.campaignGoalKPI.CPA},
         {name: '$CPM', value: constants.campaignGoalKPI.CPM},
     ],
     conversionGoalTypes: [
