@@ -684,12 +684,14 @@ div[datepicker] {
 
 .infobox-container-full {
     display: inline-block;
-    width: 30%;
+    width: 28%;
+    margin-left: 2%;
     position: absolute;
     height: 100%;
     overflow: auto;
     display: visible;
     background: #f6f6f6;
+	font-size: 13px;
 }
 
 .infobox-container-short {
@@ -705,19 +707,22 @@ div[datepicker] {
 }
 
 .infobox {
-    padding: 8px;
+    padding: 10px;
 
     color: @infobox-black;
 
     hr {
-		margin-top: 10px;
-		margin-bottom: 10px;
+    	border-top: 1px solid #dddddd;
+		margin: 10px -10px;
 	}
 }
 
 .infobox-active-circle-icon-gray {
     .state-icon-placeholder();
     background-image: url('img/active_circle_icon_gray.svg');
+    width: 10px;
+    height: 10px;
+    line-height: 34px;
 }
 
 .infobox-status {
@@ -725,8 +730,10 @@ div[datepicker] {
     display: inline-block;
     min-width: 20px;
     vertical-align: top;
-    margin-top: 7px;
+    margin-top: -4px;
     margin-left: 0px;
+    vertical-align: middle;
+    margin-top: -4px;
 }
 
 .infobox-header {
@@ -734,6 +741,12 @@ div[datepicker] {
     width: 100%;
     white-space: nowrap;
     overflow: visible;
+    height: 34px;
+}
+
+.infobox-all-accounts-header {
+	height: 34px;
+    line-height: 34px;
 }
 
 .infobox-title {
@@ -743,15 +756,17 @@ div[datepicker] {
 }
 
 .infobox-icon {
-    width: 10px;
-    height: 10px;
-    margin-right: 4px;
+	width: 13px;
+	height: 13px;
+    left: 0;
+    margin-bottom: 0;
+    position: absolute;
+    top: 2px;
 }
 
 .infobox-subtitle {
     color: @infobox-black;
     font-size: 13px;
-    font-weight: 600;
 }
 
 .infobox-setting-label {
@@ -773,11 +788,14 @@ div[datepicker] {
 .infobox-setting-value-comment {
     display: inline;
     vertical-align: top;
+    margin-left: 5px;
     color: @infobox-gray;
 }
 
 .infobox-setting-icon {
-    display: inline-block;
+	display: inline-block;
+    padding-left: 16px;
+    position: relative;
     vertical-align: top;
 }
 
@@ -796,7 +814,7 @@ div[datepicker] {
 
 .infobox-setting-info-dropped-content {
     background: white;
-    margin: 5px;
+    padding: 10px;
     border: 1px solid @infobox-gray;
 }
 
@@ -1178,19 +1196,21 @@ div[datepicker] {
 .help-popover:active,
 .help-popover:visited {
     display: inline-block;
-    border: 1px solid #666;
-    .border-radius(2px);
+    background-color: #dddddd;
+    .border-radius(50%);
     padding: 1px 3px 0px 3px;
     margin-left: 5px;
-    font-size: 10px;
-    line-height: 10px;
+    font-size: 12px;
+    line-height: 13px;
     text-align: center;
     text-decoration: none;
     vertical-align: middle;
     margin-bottom: 2px;
+    width: 13px;
+    height: 13px;
     &:after {
-        color: #666;
-        font-weight: 300;
+        color: #888;
+        font-weight: bold;
         content: "?";
     }
 }
