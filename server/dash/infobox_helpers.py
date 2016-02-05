@@ -424,7 +424,7 @@ def count_weekly_selfmanaged_actions():
 
 
 def break_tracking_code(tracking_code):
-    max_len = 34
+    max_len = 26
     if len(tracking_code) <= max_len:
         return tracking_code
 
