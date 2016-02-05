@@ -178,9 +178,6 @@ class AdGroupSettings(api_common.BaseApiView):
         actionlogs_to_send = []
 
         with transaction.atomic():
-            order = actionlog_models.ActionLogOrder.objects.create(
-                order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
-            )
             ad_group.save(request)
             new_settings.save(request)
 
@@ -188,19 +185,10 @@ class AdGroupSettings(api_common.BaseApiView):
                 api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
             )
 
-            if current_settings.state == constants.AdGroupSettingsState.INACTIVE and\
-               new_settings.state == constants.AdGroupSettingsState.ACTIVE:
-
+            if current_settings.state != new_settings.state:
                 actionlogs_to_send.extend(
-                    actionlog_api.init_enable_ad_group(
-                        ad_group, request, order=order, send=False))
-
-            if current_settings.state == constants.AdGroupSettingsState.ACTIVE and\
-               new_settings.state == constants.AdGroupSettingsState.INACTIVE:
-
-                actionlogs_to_send.extend(
-                    actionlog_api.init_pause_ad_group(
-                        ad_group, request, order=order, send=False))
+                    actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=False)
+                )
 
         zwei_actions.send(actionlogs_to_send)
 
@@ -211,6 +199,51 @@ class AdGroupSettings(api_common.BaseApiView):
             'target_devices': settings.target_devices,
             'target_regions': settings.target_regions
         }
+
+
+class AdGroupSettingsState(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_state_get')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
+            raise exc.MissingDataError()
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        settings = ad_group.get_current_settings()
+        return self.create_api_response({
+            'id': str(ad_group.pk),
+            'state': settings.state,
+        })
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_state_post')
+    def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
+            raise exc.MissingDataError()
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        data = json.loads(request.body)
+        new_state = data.get('state')
+        self._validate_state(ad_group, new_state)
+
+        settings = ad_group.get_current_settings()
+        if settings.state != new_state:
+            settings.state = new_state
+            settings.save(request)
+            actionlog_api.init_set_ad_group_state(ad_group, settings.state, request, send=True)
+
+        return self.create_api_response({
+            'id': str(ad_group.pk),
+            'state': settings.state,
+        })
+
+    def _validate_state(self, ad_group, state):
+        if state is None or state not in constants.AdGroupSettingsState.get_all():
+            raise exc.ValidationError()
+
+        # ACTIVE state is only valid when there is budget to spend
+        if state == constants.AdGroupSettingsState.ACTIVE and \
+                not helpers.ad_group_has_available_budget(ad_group):
+            raise exc.ValidationError('Cannot enable ad group without available budget.')
 
 
 class CampaignAgency(api_common.BaseApiView):

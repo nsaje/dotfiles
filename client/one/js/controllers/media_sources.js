@@ -32,7 +32,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.selectedSourceIds.push(sourceId);
         }
 
-        $scope.columns[0].disabled = $scope.selectedSourceIds.length >= 4;
     };
 
     $scope.selectedSourcesChanged = function (row, checked) {
@@ -546,7 +545,12 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         }
 
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
-            // not yet supported
+            api.allAccountsOverview.get().then(
+                function (data) {
+                    $scope.infoboxHeader = data.header;
+                    $scope.infoboxSettings = data.settings;
+                }
+            );
         } else if ($scope.level === constants.level.ACCOUNTS) {
             api.accountOverview.get($state.params.id).then(
                 function (data) {

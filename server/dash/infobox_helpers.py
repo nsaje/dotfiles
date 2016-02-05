@@ -1,3 +1,4 @@
+import calendar
 import copy
 import datetime
 import exceptions
@@ -7,6 +8,7 @@ import reports.api_helpers
 import dash.constants
 import dash.budget
 import dash.models
+import zemauth.models
 import reports.api_contentads
 
 from decimal import Decimal
@@ -116,7 +118,29 @@ def get_yesterday_campaign_spend(user, campaign):
     if len(budgets) == 0:
         return Decimal(0)
     all_budget_spends_at_date = [
-        b.get_daily_spend(date=yesterday, use_decimal=True).get('media', 0) for b in budgets
+        b.get_daily_spend(date=yesterday, use_decimal=True).get('media', Decimal(0)) for b in budgets
+    ]
+    return sum(all_budget_spends_at_date)
+
+
+def get_yesterday_all_accounts_spend():
+    yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
+    budgets = dash.models.BudgetLineItem.objects.all()
+    if len(budgets) == 0:
+        return Decimal(0)
+    all_budget_spends_at_date = [
+        b.get_daily_spend(date=yesterday, use_decimal=True).get('media', Decimal(0)) for b in budgets
+    ]
+    return sum(all_budget_spends_at_date)
+
+
+def get_mtd_all_accounts_spend():
+    today = datetime.datetime.utcnow().date()
+    budgets = dash.models.BudgetLineItem.objects.all()
+    if len(budgets) == 0:
+        return Decimal(0)
+    all_budget_spends_at_date = [
+        b.get_mtd_spend_data(date=today, use_decimal=True).get('media', Decimal(0)) for b in budgets
     ]
     return sum(all_budget_spends_at_date)
 
@@ -278,7 +302,7 @@ def calculate_available_media_campaign_budget(campaign):
     ret = 0
     for bli in budgets:
         available_total_amount = bli.get_available_amount(today)
-        available_media_amount = available_total_amount * (Decimal(1) - bli.credit.license_fee)
+        available_media_amount = available_total_amount * (1 - bli.credit.license_fee)
 
         ret += available_media_amount
     return ret
@@ -288,7 +312,7 @@ def calculate_available_credit(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
 
-    return sum([Decimal(credit.effective_amount()) * (Decimal(1.0) - credit.license_fee) for credit in credits])
+    return sum([credit.effective_amount() * (1 - credit.license_fee) for credit in credits])
 
 
 def calculate_spend_credit(account):
@@ -327,20 +351,80 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
         daily_ratio_description = 'N/A'
 
     yesterday_spend_setting = OverviewSetting(
-        'Yesterday spend:',
+        'Yesterday spent:',
         '${:.2f}'.format(yesterday_cost),
         description=daily_ratio_description,
-        tooltip='Yesterday media spend'
+        tooltip='Yesterday media spent'
     ).performance(
         filled_daily_ratio >= 1.0 if filled_daily_ratio else False
     )
     return yesterday_spend_setting
 
 
-def _retrieve_active_budgetlineitems(campaigns, date):
-    return [budget for budget in dash.models.BudgetLineItem.objects.filter(
-        campaign__in=campaigns
-    ) if budget.state(date) == dash.constants.BudgetLineItemState.ACTIVE]
+def count_active_accounts():
+    account_ids = set(
+        dash.models.AdGroupSourceState.objects.all().group_current_states().filter(
+            state=dash.constants.AdGroupSourceSettingsState.ACTIVE
+        ).values_list(
+            'ad_group_source__ad_group__campaign__account',
+            flat=True
+        )
+    )
+    return len(account_ids)
+
+
+def calculate_all_accounts_total_budget(start_date, end_date):
+    '''
+    Total budget in date range is amount of all active
+    '''
+    all_amounts = dash.models.BudgetLineItem.objects.all().exclude(
+        start_date__gt=end_date
+    ).exclude(
+        end_date__lt=start_date
+    ).values_list('amount', flat=True)
+    return sum(all_amounts)
+
+
+def calculate_all_accounts_monthly_budget(today):
+    start, end = calendar.monthrange(today.year, today.month)
+    start_date = datetime.datetime(today.year, today.month, 1)
+    end_date = datetime.datetime(today.year, today.month, end)
+    return calculate_all_accounts_total_budget(start_date, end_date)
+
+
+def count_weekly_logged_in_users():
+    now = datetime.datetime.utcnow()
+    one_week_ago = now - datetime.timedelta(days=7)
+    return zemauth.models.User.objects.filter(
+        last_login__gte=one_week_ago,
+    ).exclude(
+        email__contains='@zemanta'
+    ).count()
+
+
+def count_weekly_active_users():
+    return dash.models.UserActionLog.objects.filter(
+        created_dt__gte=_one_week_ago()
+    ).exclude(
+        created_by__email__contains='@zemanta'
+    ).select_related('created_by').distinct('created_by').count()
+
+
+def count_weekly_selfmanaged_actions():
+    return dash.models.UserActionLog.objects.filter(
+        created_dt__gte=_one_week_ago()
+    ).exclude(
+        created_by__email__contains='@zemanta'
+    ).count()
+
+
+def _one_week_ago():
+    now = datetime.datetime.utcnow()
+    return now - datetime.timedelta(days=7)
+
+
+def _retrieve_active_budgetlineitems(campaign, date):
+    return dash.models.BudgetLineItem.objects.all().filter_active(date)
 
 
 def _retrieve_active_creditlineitems(account, date):

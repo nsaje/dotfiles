@@ -84,7 +84,7 @@ class AccountCreditView(api_common.BaseApiView):
     def _get_response(self, account_id):
         credit_items = models.CreditLineItem.objects.filter(
             account_id=account_id,
-        ).prefetch_related('budgets').order_by('-created_dt')
+        ).prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt')
 
         return self.create_api_response({
             'active': self._get_active_credit(account_id, credit_items),

@@ -1070,6 +1070,23 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
+    function AdGroupSettingsState () {
+        this.post = function (adgroupId, state) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adgroupId + '/settings/state/';
+
+            $http.post(url, {state: state}).
+                success(function (data, status) {
+                    deferred.resolve(data.data);
+                }).
+                error(function (data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function AdGroupArchive () {
         this.archive = function (id) {
             var deferred = $q.defer();
@@ -1476,6 +1493,37 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             return deferred.promise;
         };
+    }
+
+
+    function AllAccountsOverview () {
+
+        this.get = function () {
+            var deferred = $q.defer();
+            var url = '/api/accounts/overview/';
+            var config = {
+                params: {}
+            };
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        data.data.settings = data.data.settings.map(convertFromApi);
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function (data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        function convertFromApi (setting) {
+            setting.detailsLabel = setting.details_label;
+            setting.detailsContent = setting.details_content;
+            return setting;
+        }
     }
 
     function ScheduledReports () {
@@ -2999,6 +3047,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         user: new User(),
         adGroupState: new AdGroupState(),
         adGroupSettings: new AdGroupSettings(),
+        adGroupSettingsState: new AdGroupSettingsState(),
         adGroupAgency: new AdGroupAgency(),
         adGroupSources: new AdGroupSources(),
         sourcesTable: new SourcesTable(),
@@ -3035,6 +3084,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         userActivation: new UserActivation(),
         dailyStats: new DailyStats(),
         allAccountsBudget: new AllAccountsBudget(),
+        allAccountsOverview: new AllAccountsOverview(),
         accountUsers: new AccountUsers(),
         adGroupSourceSettings: new AdGroupSourceSettings(),
         adGroupSourcesUpdates: new AdGroupSourcesUpdates(),
