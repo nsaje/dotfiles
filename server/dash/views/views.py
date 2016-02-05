@@ -710,7 +710,7 @@ class AccountOverview(api_common.BaseApiView):
                 'Users:',
                 section_start=True,
             )
-            settings.append(user_setting)
+            settings.append(user_setting.as_dict())
         else:
             for i, user in enumerate(all_users):
                 user_one_setting = infobox_helpers.OverviewSetting(
