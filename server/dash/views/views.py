@@ -281,6 +281,7 @@ class AdGroupOverview(api_common.BaseApiView):
                 )
             ),
             device_comment,
+            section_start=True
         )
         settings.append(targeting_device.as_dict())
 
@@ -302,6 +303,7 @@ class AdGroupOverview(api_common.BaseApiView):
         tracking_code_settings = infobox_helpers.OverviewSetting(
             'Tracking codes:',
             'Yes' if ad_group_settings.tracking_code else 'No',
+            section_start=True
         )
         if ad_group_settings.tracking_code:
             tracking_code_settings = tracking_code_settings.comment(
@@ -581,7 +583,8 @@ class CampaignOverview(api_common.BaseApiView):
                 devices=', '.join(
                     [w[0].upper() + w[1:] for w in campaign_settings.target_devices]
                 )
-            )
+            ),
+            section_start=True
         )
         settings.append(targeting_device.as_dict())
 
@@ -597,7 +600,8 @@ class CampaignOverview(api_common.BaseApiView):
         daily_cap = infobox_helpers.OverviewSetting(
             'Daily budget:',
             '${:.2f}'.format(daily_cap_value) if daily_cap_value > 0 else 'N/A',
-            tooltip="Daily media budget"
+            tooltip="Daily media budget",
+            section_start=True
         )
         settings.append(daily_cap.as_dict())
 
@@ -700,16 +704,26 @@ class AccountOverview(api_common.BaseApiView):
         )
         settings.append(sales_manager_setting.as_dict())
 
-        for i, user in enumerate(account.users.all()):
-            user_one_setting = infobox_helpers.OverviewSetting(
-                'Users:' if i == 0 else '',
-                self._username(user)
+        all_users = account.users.all()
+        if all_users.count() == 0:
+            user_setting = infobox_helpers.OverviewSetting(
+                'Users:',
+                section_start=True,
             )
-            settings.append(user_one_setting.as_dict())
+            settings.append(user_setting)
+        else:
+            for i, user in enumerate(all_users):
+                user_one_setting = infobox_helpers.OverviewSetting(
+                    'Users:' if i == 0 else '',
+                    self._username(user),
+                    section_start=i == 0
+                )
+                settings.append(user_one_setting.as_dict())
 
         platform_fee_setting = infobox_helpers.OverviewSetting(
             'Platform fee:',
-            "{:.2f}%".format(account_settings.service_fee * 100)
+            "{:.2f}%".format(account_settings.service_fee * 100),
+            section_start=True
         )
         settings.append(platform_fee_setting.as_dict())
 
@@ -1857,39 +1871,42 @@ class AllAccountsOverview(api_common.BaseApiView):
         count_active_accounts = infobox_helpers.count_active_accounts()
         settings.append(infobox_helpers.OverviewSetting(
             'Active accounts:',
-            count_active_accounts
+            count_active_accounts,
+            section_start=True
         ))
 
         weekly_logged_users = infobox_helpers.count_weekly_logged_in_users()
         settings.append(infobox_helpers.OverviewSetting(
             'Weekly logged-in users:',
-            weekly_logged_users
+            weekly_logged_users,
         ))
 
         weekly_active_users = infobox_helpers.count_weekly_active_users()
         settings.append(infobox_helpers.OverviewSetting(
             'Weekly active users:',
-            weekly_active_users
+            weekly_active_users,
+            section_start=True
         ))
 
         weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
         settings.append(infobox_helpers.OverviewSetting(
             'Weekly self managed actions:',
-            weekly_sf_actions
+            weekly_sf_actions,
         ))
 
         yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
         settings.append(infobox_helpers.OverviewSetting(
             'Yesterday spent:',
             '${:.2f}'.format(yesterday_spend),
-            tooltip='Yesterday media spent'
+            tooltip='Yesterday media spent',
+            section_start=True
         ))
 
         mtd_spend = infobox_helpers.get_mtd_all_accounts_spend()
         settings.append(infobox_helpers.OverviewSetting(
             'Spent MTD:',
             '${:.2f}'.format(mtd_spend),
-            tooltip='Month-to-date media spent'
+            tooltip='Month-to-date media spent',
         ))
 
         """
@@ -1912,7 +1929,8 @@ class AllAccountsOverview(api_common.BaseApiView):
         total_budget = infobox_helpers.calculate_all_accounts_total_budget(start_date, end_date)
         settings.append(infobox_helpers.OverviewSetting(
             'Total budgets:',
-            '${:.2f}'.format(total_budget)
+            '${:.2f}'.format(total_budget),
+            section_start=True
         ))
 
         monthly_budget = infobox_helpers.calculate_all_accounts_monthly_budget(today)
