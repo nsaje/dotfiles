@@ -2613,7 +2613,7 @@ class BudgetLineItem(FootprintModel):
                 raise AssertionError('Some budget items are not pending')
             super(BudgetLineItem.QuerySet, self).delete()
 
-        def filter_active(self, date):
+        def filter_active(self, date=None):
             if date is None:
                 date = dates_helper.local_today()
             return self.exclude(
