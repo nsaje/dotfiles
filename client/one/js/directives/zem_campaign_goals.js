@@ -68,16 +68,6 @@ oneApp.directive('zemCampaignGoals', [function () {
 
                 return modalInstance;
             };
-
-            $scope.saveGoalValue = function (rowId, val, callback) {
-                $scope.campaignGoals.filter(function (el) {
-                    return el.id === rowId;
-                }).forEach(function (el) {
-                    el.value = val;
-                });
-
-                callback();
-            };
         }],
     };
 }]);
