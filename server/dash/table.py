@@ -1485,7 +1485,8 @@ class CampaignAdGroupsTable(object):
             last_sync = last_actions.get(ad_group.pk)
 
             row['last_sync'] = last_sync
-
+            row['status_setting'] = ad_groups_status_dict[ad_group.id]
+            row['editable_fields'] = self.get_editable_fields(ad_group, row)
             rows.append(row)
 
         if order:
@@ -1503,6 +1504,18 @@ class CampaignAdGroupsTable(object):
             totals_data['yesterday_cost'] = yesterday_cost
 
         return totals_data
+
+    def get_editable_fields(self, ad_group, row):
+        status_setting = {
+            'enabled': True,
+            'message': None
+        }
+        if row['status_setting'] == constants.AdGroupSettingsState.INACTIVE \
+                and not helpers.ad_group_has_available_budget(ad_group):
+            status_setting['enabled'] = False
+            status_setting['message'] = 'Cannot enable ad group without available budget.'
+
+        return {'status_setting': status_setting}
 
 
 class AccountCampaignsTable(object):

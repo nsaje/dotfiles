@@ -1,0 +1,133 @@
+# Use with test_models.yaml (parent)
+#
+# AdGroup-s
+#
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'AdGroup 1'
+    model: dash.adgroup
+    pk: 1
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'AdGroup 2'
+    model: dash.adgroup
+    pk: 2
+
+
+#
+# AdGroupSettings
+#
+-   fields:
+        created_dt: '2016-01-01T00:00:00'
+        created_by: 1
+        ad_group: 1
+        state: 1
+        start_date: '2014-06-04'
+        end_date: '2014-06-05'
+        cpc_cc: '1.00'
+        daily_budget_cc: '50.'
+        tracking_code: ''
+        archived: false
+    model: dash.adgroupsettings
+    pk: 1
+
+-   fields:
+        created_dt: '2016-01-01T00:00:00'
+        created_by: 1
+        ad_group: 2
+        state: 2
+        start_date: '2014-06-04'
+        end_date: '2014-06-05'
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        tracking_code: ''
+        archived: false
+    model: dash.adgroupsettings
+    pk: 2
+
+#
+# AdGroupSource
+#
+-   fields:
+        ad_group: 1
+        source: 1
+        source_campaign_key: '["fake"]'
+        source_credentials: 1
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+        can_manage_content_ads: true
+    model: dash.adgroupsource
+    pk: 11
+
+-   fields:
+        ad_group: 1
+        source: 2
+        source_campaign_key: '["fake"]'
+        source_credentials: 1
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 12
+
+-   fields:
+        ad_group: 2
+        source: 1
+        source_campaign_key: '["fake"]'
+        source_credentials: 1
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+        can_manage_content_ads: true
+    model: dash.adgroupsource
+    pk: 21
+
+-   fields:
+        ad_group: 2
+        source: 2
+        source_campaign_key: '["fake"]'
+        source_credentials: 1
+        last_successful_sync_dt: '2014-06-10T09:58:21'
+    model: dash.adgroupsource
+    pk: 22
+
+#
+# AdGroupSourceSettings
+#
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 11
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 11
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 12
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 12
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 21
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 21
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 22
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 2
+    model: dash.adgroupsourcesettings
+    pk: 22
