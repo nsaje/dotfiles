@@ -246,9 +246,6 @@ class AdGroupOverview(api_common.BaseApiView):
             [infobox_helpers.OverviewSeparator().as_dict()] +
             performance_settings,
         }
-
-        header['subtitle'] = 'Delivering' if is_delivering else 'Not Delivering'
-
         return self.create_api_response(response)
 
     def _basic_settings(self, user, ad_group, ad_group_settings):
@@ -527,9 +524,6 @@ class CampaignOverview(api_common.BaseApiView):
             [infobox_helpers.OverviewSeparator().as_dict()] +
             performance_settings,
         }
-
-        header['subtitle'] = ''  # 'Delivering' if is_delivering else 'Not Delivering'
-
         return self.create_api_response(response)
 
     def _basic_settings(self, user, campaign, campaign_settings):
