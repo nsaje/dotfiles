@@ -1,7 +1,7 @@
 <div class="infobox infobox-background">
     <div class="infobox-header clearfix">
         <div class="pull-left">
-            <div ng-class="[{'active-circle-icon': header.active, 'infobox-active-circle-icon-gray': !header.active}, 'infobox-title', 'infobox-status']"></div>
+            <div ng-if="header.active !== undefined" ng-class="[{'active-circle-icon': header.active, 'infobox-active-circle-icon-gray': !header.active}, 'infobox-title', 'infobox-status']"></div>
             <div style="display:inline-block;">
                 <div class="infobox-title">{{header.title}}</div>
                 <div class="infobox-subtitle">{{header.subtitle}}</div>
