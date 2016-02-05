@@ -1049,10 +1049,11 @@ var options = {
         {name: '7 days', value: 168},
         {name: '30 days', value: 720},
     ],
-    exportFrequency: [{name: 'Daily', value: constants.exportFrequency.DAILY},
-                      {name: 'Weekly (Monday)', value: constants.exportFrequency.WEEKLY},
-                      {name: 'Monthly (1st)', value: constants.exportFrequency.MONTHLY},
-                     ],
+    exportFrequency: [
+        {name: 'Daily', value: constants.exportFrequency.DAILY},
+        {name: 'Weekly (Monday)', value: constants.exportFrequency.WEEKLY},
+        {name: 'Monthly (1st)', value: constants.exportFrequency.MONTHLY},
+    ],
 };
 
 var defaults = {
