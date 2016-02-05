@@ -312,7 +312,7 @@ class AdGroupOverview(api_common.BaseApiView):
         if ad_group_settings.tracking_code:
             tracking_code_settings = tracking_code_settings.comment(
                 'codes',
-                ad_group_settings.tracking_code
+                infobox_helpers.break_tracking_code(ad_group_settings.tracking_code)
             )
         settings.append(tracking_code_settings.as_dict())
 

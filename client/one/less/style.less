@@ -708,29 +708,38 @@ div[datepicker] {
 
 .infobox-adgroup {
 	.infobox-setting-label {
-		width: 120px;
+		width: 34%;
 		max-width: 120px;
 	}
 }
 
 .infobox-account {
 	.infobox-setting-label {
-		width: 120px;
+		width: 30%;
 		max-width: 120px;
+	}
+
+	.infobox-status {
+		vertical-align: top;
+		margin-top: 5px;
 	}
 }
 
 .infobox-campaign {
 	.infobox-setting-label {
-		width: 125px;
+		width: 30%;
 		max-width: 125px;
 	}
 }
 
 .infobox-all-accounts {
 	.infobox-setting-label {
-		width: 185px;
+		width: 45%;
 		max-width: 185px;
+	}
+
+	.infobox-setting-value-container {
+		width: 50%;
 	}
 }
 
@@ -748,9 +757,11 @@ div[datepicker] {
 .infobox-active-circle-icon-gray {
     .state-icon-placeholder();
     background-image: url('img/active_circle_icon_gray.svg');
-    width: 10px;
-    height: 10px;
+    height: 14px;
     line-height: 34px;
+    background-position: center center;
+    background-size: 43px auto;
+    width: 14px;
 }
 
 .infobox-status {
@@ -798,13 +809,20 @@ div[datepicker] {
     font-size: 13px;
 }
 
+.infobox-setting-value-container {
+	display: inline-block;
+	width: 68%;
+	vertical-align: top;
+    line-height: 14px;
+}
+
 .infobox-setting-label {
-    width: 130px;
-    max-width: 130px;
+    width: 30%;
     overflow: hidden;
     display: inline-block;
     color: @infobox-gray;
-    float: left;
+    line-height: 14px;
+    vertical-align: top;
 }
 
 .infobox-setting-value {
