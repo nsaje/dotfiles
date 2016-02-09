@@ -725,11 +725,17 @@ div[datepicker] {
 }
 
 .infobox-button {
-    margin-right: 5px;
     width: 34px;
     height: 34px;
     line-height: 34px;
-	padding: 0px 0px;
+	padding: 0px;
+	margin-left: 5px;
+	box-sizing: border-box;
+	position: relative;
+
+    .internal {
+        .header-button-internal;
+    }
 }
 
 .navigation-button {
@@ -743,10 +749,9 @@ div[datepicker] {
 }
 
 .graph-button {
-    margin-right: 5px;
     width: 34px;
     height: 34px;
-    padding: 0px 0px;
+	padding: 0px;
     line-height: 34px;
 }
 
@@ -1709,6 +1714,7 @@ div[datepicker] {
         padding-right: 15px;
 
         #filter {
+        	margin-left: 5px;
 
             .internal {
                 .header-button-internal;
