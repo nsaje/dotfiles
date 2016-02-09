@@ -1,0 +1,39 @@
+<div class="zem-campaign-goals">
+    <div class="row campaign-goal-row" ng-repeat="goal in campaignGoals" ng-class="{'primary': goal.primary}">
+        <div class="campaign-goal-index col-xs-1" ng-click="setPrimary(goal)">
+            <div class="center-area">
+                <div class="centered">{{ $index + 1 }}</div>
+            </div>
+        </div>
+        <div class="campaign-goal-desc col-xs-9" ng-click="setPrimary(goal)">
+            <div class="center-area">
+                <div class="centered">
+                    <div class="camp-goal-text">
+                        Meet or beat the goal of <strong>{{ formatGoalValue(goal) }}</strong>.
+                    </div>
+                    <div ng-if="goal.type === 4" class="conv-goal-text">
+                        Connected with conversion {{ goal.conversionGoal.name }}.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="campaign-goal-edit col-xs-1" ng-click="editGoal(goal)">
+            <div class="center-area">
+                <div class="centered">
+                    <i class="glyphicon glyphicon-edit" title="Edit"></i>
+                </div>
+            </div>
+        </div>
+        <div class="campaign-goal-delete col-xs-1" ng-click="removeGoal(goal)">
+            <div class="center-area">
+                <div class="centered">
+                    <i class="glyphicon glyphicon-remove" title="Remove"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button type="button" class="btn btn-default" ng-click="editGoal()">
+        <span class="plus-sign">+</span>
+        <span class="plus-label">Add new goal</span>
+    </button>
+</div>

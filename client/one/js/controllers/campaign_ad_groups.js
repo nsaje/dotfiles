@@ -88,6 +88,35 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             disabled: false
         },
         {
+            name: '\u25CF',
+            field: 'status_setting',
+            type: 'state',
+            order: true,
+            editable: true,
+            initialOrder: 'asc',
+            enabledValue: constants.adGroupSourceSettingsState.ACTIVE,
+            pausedValue: constants.adGroupSourceSettingsState.INACTIVE,
+            internal: $scope.isPermissionInternal('zemauth.can_control_ad_group_state_in_table'),
+            shown: $scope.hasPermission('zemauth.can_control_ad_group_state_in_table'),
+            checked: true,
+            totalRow: false,
+            unselectable: true,
+            help: 'A setting for enabling and pausing Ad Groups.',
+            onChange: function (adgroupId, state) {
+                api.adGroupSettingsState.post(adgroupId, state).then(
+                    function (data) {
+                        // reload ad group to update its status
+                        zemNavigationService.reloadAdGroup(adgroupId);
+                    }
+                );
+            },
+            getDisabledMessage: function (row) {
+                return row.editable_fields.status_setting.message;
+            },
+            disabled: false,
+            archivedField: 'archived'
+        },
+        {
             name: 'Ad Group',
             field: 'name',
             unselectable: true,
@@ -105,7 +134,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             field: 'state',
             checked: true,
             type: 'text',
-            shown: true,
+            shown: !$scope.hasPermission('zemauth.can_control_ad_group_state_in_table'),
             totalRow: false,
             help: 'Status of an ad group (enabled or paused).',
             order: true,

@@ -1,6 +1,6 @@
 <div class="modal-body modal-page">
     <h3 ng-if="isNew">Add Credit</h3>
-    <h3 ng-if="!isNew">Edit Credit Item</h3>
+    <h3 ng-if="!isNew">Edit Credit Item #{{ creditItem.id }}</h3>
     <div class="loader" ng-show="isLoadingInProgress"></div>
     <form id="form-account-credit-item" class="form-horizontal" ng-class="{ 'new': isNew, 'edit': !isNew }" ng-show="!isLoadingInProgress">
         <div class="form-group" ng-if="!isNew">

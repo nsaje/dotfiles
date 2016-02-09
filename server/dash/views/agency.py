@@ -40,6 +40,7 @@ def _get_conversion_pixel_url(account_id, slug):
 
 
 class AdGroupSettings(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('dash.settings_view'):
@@ -178,9 +179,6 @@ class AdGroupSettings(api_common.BaseApiView):
         actionlogs_to_send = []
 
         with transaction.atomic():
-            order = actionlog_models.ActionLogOrder.objects.create(
-                order_type=actionlog_constants.ActionLogOrderType.AD_GROUP_SETTINGS_UPDATE
-            )
             ad_group.save(request)
             new_settings.save(request)
 
@@ -188,19 +186,10 @@ class AdGroupSettings(api_common.BaseApiView):
                 api.order_ad_group_settings_update(ad_group, current_settings, new_settings, request, send=False)
             )
 
-            if current_settings.state == constants.AdGroupSettingsState.INACTIVE and\
-               new_settings.state == constants.AdGroupSettingsState.ACTIVE:
-
+            if current_settings.state != new_settings.state:
                 actionlogs_to_send.extend(
-                    actionlog_api.init_enable_ad_group(
-                        ad_group, request, order=order, send=False))
-
-            if current_settings.state == constants.AdGroupSettingsState.ACTIVE and\
-               new_settings.state == constants.AdGroupSettingsState.INACTIVE:
-
-                actionlogs_to_send.extend(
-                    actionlog_api.init_pause_ad_group(
-                        ad_group, request, order=order, send=False))
+                    actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=False)
+                )
 
         zwei_actions.send(actionlogs_to_send)
 
@@ -213,7 +202,53 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
 
+class AdGroupSettingsState(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_state_get')
+    def get(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
+            raise exc.MissingDataError()
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        settings = ad_group.get_current_settings()
+        return self.create_api_response({
+            'id': str(ad_group.pk),
+            'state': settings.state,
+        })
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_state_post')
+    def post(self, request, ad_group_id):
+        if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
+            raise exc.MissingDataError()
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        data = json.loads(request.body)
+        new_state = data.get('state')
+        self._validate_state(ad_group, new_state)
+
+        settings = ad_group.get_current_settings()
+        if settings.state != new_state:
+            settings.state = new_state
+            settings.save(request)
+            actionlog_api.init_set_ad_group_state(ad_group, settings.state, request, send=True)
+
+        return self.create_api_response({
+            'id': str(ad_group.pk),
+            'state': settings.state,
+        })
+
+    def _validate_state(self, ad_group, state):
+        if state is None or state not in constants.AdGroupSettingsState.get_all():
+            raise exc.ValidationError()
+
+        # ACTIVE state is only valid when there is budget to spend
+        if state == constants.AdGroupSettingsState.ACTIVE and \
+                not helpers.ad_group_has_available_budget(ad_group):
+            raise exc.ValidationError('Cannot enable ad group without available budget.')
+
+
 class CampaignAgency(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'campaign_agency_get')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_agency_view'):
@@ -335,6 +370,7 @@ class CampaignAgency(api_common.BaseApiView):
 
 
 class CampaignConversionGoals(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_get')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.manage_conversion_goals'):
@@ -435,6 +471,7 @@ class CampaignConversionGoals(api_common.BaseApiView):
 
 
 class ConversionGoal(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'campaign_conversion_goals_delete')
     def delete(self, request, campaign_id, conversion_goal_id):
         if not request.user.has_perm('zemauth.manage_conversion_goals'):
@@ -462,6 +499,7 @@ class ConversionGoal(api_common.BaseApiView):
 
 
 class CampaignSettings(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'campaign_settings_get')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_settings_view'):
@@ -542,6 +580,7 @@ class CampaignSettings(api_common.BaseApiView):
 
 
 class CampaignBudget(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'campaign_budget_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -577,7 +616,8 @@ class CampaignBudget(api_common.BaseApiView):
         current_budget_settings = campaign.get_current_budget_settings()
         if current_budget_settings:
             email_helper.send_budget_notification_email(campaign, request, current_budget_settings.comment)
-            helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_CAMPAIGN_BUDGET, campaign=campaign)
+            helpers.log_useraction_if_necessary(
+                request, constants.UserActionType.SET_CAMPAIGN_BUDGET, campaign=campaign)
 
         response = self.get_response(campaign)
         return self.create_api_response(response)
@@ -612,6 +652,7 @@ class CampaignBudget(api_common.BaseApiView):
 
 
 class AccountConversionPixels(api_common.BaseApiView):
+
     def _get_pixel_status(self, last_verified_dt):
         if last_verified_dt is None:
             return constants.ConversionPixelStatus.NOT_USED
@@ -694,6 +735,7 @@ class AccountConversionPixels(api_common.BaseApiView):
 
 
 class ConversionPixel(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'conversion_pixel_put')
     def put(self, request, conversion_pixel_id):
         if not request.user.has_perm('zemauth.manage_conversion_pixels'):
@@ -742,6 +784,7 @@ class ConversionPixel(api_common.BaseApiView):
 
 
 class AccountAgency(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'account_agency_get')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.account_agency_view'):
@@ -944,7 +987,7 @@ class AccountAgency(api_common.BaseApiView):
                 result['allowed_sources'] = self.get_allowed_sources(
                     request.user.has_perm('zemauth.can_see_all_available_sources'),
                     [source.id for source in account.allowed_sources.all()]
-                    )
+                )
 
         return result
 
@@ -1064,6 +1107,7 @@ class AccountAgency(api_common.BaseApiView):
 
 
 class AdGroupAgency(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_agency_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.ad_group_agency_tab_view'):
@@ -1144,6 +1188,7 @@ class AdGroupAgency(api_common.BaseApiView):
 
 
 class AccountUsers(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'account_access_users_get')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.account_agency_access_permissions'):
@@ -1264,6 +1309,7 @@ class AccountUsers(api_common.BaseApiView):
 
 
 class UserActivation(api_common.BaseApiView):
+
     @statsd_helper.statsd_timer('dash.api', 'account_user_activation_mail_post')
     def post(self, request, account_id, user_id):
         if not request.user.has_perm('zemauth.account_agency_access_permissions'):

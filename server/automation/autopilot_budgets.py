@@ -33,6 +33,7 @@ GOALS_WORST_VALUE = {
     'spend': Decimal(0.00),
 }
 AUTOPILOT_DATA_LOOKBACK_DAYS = 2
+AUTOPILOT_MIN_SPEND_PERC = Decimal(0.50)
 DEBUG_EMAILS = ['davorin.kopic@zemanta.com', 'tadej.pavlic@zemanta.com', 'urska.kosec@zemanta.com']
 
 
@@ -46,6 +47,7 @@ def adjust_autopilot_ad_groups_budgets():
     ap_statsd_adgroups_processed = 0
 
     for adgroup in adgroups:
+        logger.info('\nadgroup: ' + str(adgroup) + ' ' + str(adgroup.id) + '\n')
         goal = _get_adgroups_autopilot_goal(adgroup)
         sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, [adgroup])
         active_sources = [s for s in sources if
@@ -53,19 +55,36 @@ def adjust_autopilot_ad_groups_budgets():
         ap_statsd_autopilot_sources_count += len(active_sources)
 
         data = get_historic_data(adgroup, active_sources, GOALS_COLUMNS.get(goal).keys())
+        logger.info('data: ' + str(data) + '\n')
         max_budgets, new_budgets, old_budgets = _get_autopilot_budget_constraints(active_sources)
 
         total_daily_budget = adgroup.get_current_settings().autopilot_daily_budget
         ap_statsd_total_daily_budget += total_daily_budget
-
-        bandit = BetaBandit(active_sources)
+        logger.info('max_budgets: ' + str(max_budgets) + '\n')
+        logger.info('new_budgets: ' + str(new_budgets) + '\n')
+        logger.info('old_budgets: ' + str(old_budgets) + '\n')
+        logger.info('total_daily_budget: ' + str(total_daily_budget) + '\n')
 
         budget_left = total_daily_budget - sum(new_budgets.values())
 
+        # Don't add any budget to sources with insufficient spend
+        active_sources_with_spend = _get_active_sources_with_spend(active_sources, data)
+
+        if len(active_sources_with_spend) < 1:
+            msg = str(adgroup) +\
+                ' does not have any active sources with enough spend. Uniformly redistributed remaining budget.'
+            logger.info(msg)
+            new_budgets = _uniformly_redistribute_remaining_budget(active_sources, budget_left, new_budgets)
+            set_new_daily_budgets(active_sources, new_budgets)
+            send_autopilot_daily_budget_changes_email(adgroup.id, DEBUG_EMAILS, msg)
+            continue
+
+        bandit = BetaBandit(active_sources_with_spend)
+
         # Train bandit
-        for i in range(budget_left):
-            s = bandit.get_recommendation()
-            bandit.add_result(s, predict_outcome_success(s, data[s], goal))
+        for s in active_sources_with_spend:
+            for i in range(50):
+                bandit.add_result(s, predict_outcome_success(s, data[s], goal))
 
         # Redistribute budgets
         while budget_left >= 1:
@@ -81,15 +100,16 @@ def adjust_autopilot_ad_groups_budgets():
         email_changes_text = 'Total Budget:\t' + str(total_daily_budget) +\
             '\nBudget Assigned:\t' + str(sum(new_budgets.values())) +\
             '\nBudget Left Unassigned:\t' + str(total_daily_budget - sum(new_budgets.values())) +\
-            '\n\nSource\tPreviousBudget\tNewBudget\tMaxGuideline\tSpend_perc_after_budget_allocation\tBounceRate\n'
+            '\n\nSource;PreviousBudget;NewBudget;MaxGuideline;Spend_perc_after_budget_allocation;BounceRate\n'
         for source in active_sources:
-            email_changes_text += ''.join([str(source), '\t', str(old_budgets[source]), '\t',
-                                          str(source.get_current_settings().daily_budget_cc), '\t',
-                                          str(max_budgets[source]), '\t',
-                                          str(get_spend_perc(source)), '\t',
-                                          str(data[source].get('bounce_rate')), '\n'])
-        send_autopilot_daily_budget_changes_email(adgroup.name, DEBUG_EMAILS, email_changes_text)
+            email_changes_text += ';'.join([str(source.source), str(old_budgets[source]),
+                                           str(source.get_current_settings().daily_budget_cc),
+                                           str(max_budgets[source]),
+                                           str('{0:.4g}'.format(get_spend_perc(source))),
+                                           str(data[source].get('bounce_rate')), '\n'])
+        email_changes_text += '\n' + bandit.get_bandit_status_text()
 
+        send_autopilot_daily_budget_changes_email(str(adgroup.id), DEBUG_EMAILS, email_changes_text)
         ap_statsd_unassigned_daily_budget += budget_left
         ap_statsd_adgroups_processed += 1
 
@@ -97,6 +117,24 @@ def adjust_autopilot_ad_groups_budgets():
     statsd_gauge('automation.autopilot_budgets.total_daily_budget', ap_statsd_total_daily_budget)
     statsd_gauge('automation.autopilot_budgets.unassigned_daily_budget', ap_statsd_unassigned_daily_budget)
     statsd_gauge('automation.autopilot_budgets.adgroups_processed', ap_statsd_adgroups_processed)
+
+
+def _uniformly_redistribute_remaining_budget(sources, budget_left, new_budgets):
+    while budget_left >= 1:
+        for s in sources:
+            budget_left -= Decimal(1.0)
+            new_budgets[s] += 1
+            if budget_left <= 0:
+                break
+    return new_budgets
+
+
+def _get_active_sources_with_spend(active_sources, data):
+    active_sources_with_spend = []
+    for s in active_sources:
+        if data[s].get('spend_perc') > AUTOPILOT_MIN_SPEND_PERC:
+            active_sources_with_spend.append(s)
+    return active_sources_with_spend
 
 
 def _get_adgroups_autopilot_goal(adgroup):
@@ -110,6 +148,8 @@ def _get_autopilot_budget_constraints(active_sources):
     old_budgets = {}
     for source in active_sources:
         current_budget = source.get_current_settings().daily_budget_cc
+        if not current_budget:
+            current_budget = MIN_SOURCE_BUDGET
         max_budgets[source] = (current_budget * MAX_BUDGET_GAIN).to_integral_exact(rounding=ROUND_CEILING)
         new_budgets[source] = max(
             (current_budget * MAX_BUDGET_LOSS).to_integral_exact(rounding=ROUND_CEILING), MIN_SOURCE_BUDGET)
@@ -134,13 +174,13 @@ def predict_outcome_success(source, data, goal):
         spend_perc = data.get('spend_perc')
         bounce_rate = data.get('bounce_rate')
         pos_bounce_rate = (100 - bounce_rate) / 100
-        prob_success = float(spend_perc * GOALS_COLUMNS.get(goal).get('spend_perc')) +\
+        prob_success = min(float(spend_perc * GOALS_COLUMNS.get(goal).get('spend_perc')), float(GOALS_COLUMNS.get(goal).get('spend_perc'))) +\
             pos_bounce_rate * GOALS_COLUMNS.get(goal).get('bounce_rate')
         return prob_success > random()
     raise exceptions.NotImplementedError('Budget Auto-Pilot Goal is not implemented: ', goal)
 
 
-def get_spend_perc(ad_group_source, day=datetime.date.today()):
+def get_spend_perc(ad_group_source, day=datetime.date.today() - datetime.timedelta(days=1)):
     yesterday_spend = reports.api.get_day_cost(
         day,
         ad_group=ad_group_source.ad_group,
@@ -175,7 +215,7 @@ def get_historic_data(ad_group, ad_group_sources, columns):
         for col in columns:
             data[ags][col] = GOALS_WORST_VALUE.get(col)
             if col == 'spend_perc':
-                data[ags][col] = get_spend_perc(ags, today)
+                data[ags][col] = get_spend_perc(ags, yesterday)
             elif stat and col in stat and stat[col]:
                 data[ags][col] = stat[col]
     return data
@@ -257,3 +297,10 @@ class BetaBandit(object):
         # All max budgets were reached but we still have budget left, un-ban all and continue redistributing
         self.banned_sources = []
         return sorted_probs[0][0]
+
+    def get_bandit_status_text(self):
+        t = 'source;trials;successes\n'
+        for s in self.sources:
+            t += str(s.source) + ';' + str(self.trials[s]) + ';' + str(self.successes[s]) + '\n'
+        t += 'Banned sources: ' + ', '.join([str(s.source) for s in self.banned_sources])
+        return t

@@ -139,6 +139,11 @@ a:visited {
         }
     }
 
+    .row {
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+
     &.has-error {
         .form-control,
         .form-control:focus {
@@ -688,15 +693,35 @@ div[datepicker] {
 
 .infobox-container-full {
     display: inline-block;
-    width: 30%;
-    height: 250;
-    max-height: 250;
-    overflow-y: scroll;
+    width: 28%;
+    margin-left: 2%;
+    position: absolute;
+    height: 100%;
+    overflow: auto;
+    display: visible;
     background: #f6f6f6;
+    font-size: 13px;
 }
 
 .infobox-container-short {
     display: none;
+}
+
+/**
+ * Default internal-feature style for header buttons
+ */
+.header-button-internal() {
+    &:before {
+        content: " ";
+        position: absolute;
+        top: -4px;
+        left: -4px;
+        width: 0;
+        height: 0;
+        display: block;
+        border-top: 8px solid @internal-color;
+        border-right: 8px solid transparent;
+    }
 }
 
 .infobox-button {
@@ -730,26 +755,80 @@ div[datepicker] {
     height: 18px;
     vertical-align: middle;
     padding-bottom: 4px;
+    position: relative;
+
+    .internal {
+        .header-button-internal;
+    }
 }
 
 .infobox-background {
     background: #f6f6f6;
 }
 
+.infobox-adgroup {
+    .infobox-setting-label {
+        width: 34%;
+        max-width: 120px;
+    }
+}
+
+.infobox-account {
+    .infobox-setting-label {
+        width: 30%;
+        max-width: 120px;
+    }
+
+    .infobox-status {
+        vertical-align: top;
+        height: 40px;
+    }
+}
+
+.graph-button-image {
+    width: 30px;
+    height: 18px;
+    vertical-align: middle;
+    padding-bottom: 4px;
+}
+
+.infobox-campaign {
+    .infobox-setting-label {
+        width: 30%;
+        max-width: 125px;
+    }
+}
+
+.infobox-all-accounts {
+    .infobox-setting-label {
+        width: 45%;
+        max-width: 185px;
+    }
+
+    .infobox-setting-value-container {
+        width: 50%;
+    }
+}
+
 .infobox {
-    padding: 8px;
+    padding: 10px;
 
     color: @infobox-black;
 
     hr {
-		margin-top: 10px;
-		margin-bottom: 10px;
-	}
+        border-top: 1px solid #dddddd;
+        margin: 10px -10px;
+    }
 }
 
 .infobox-active-circle-icon-gray {
     .state-icon-placeholder();
     background-image: url('img/active_circle_icon_gray.svg');
+    height: 14px;
+    line-height: 34px;
+    background-position: center center;
+    background-size: 43px auto;
+    width: 14px;
 }
 
 .infobox-status {
@@ -757,8 +836,9 @@ div[datepicker] {
     display: inline-block;
     min-width: 20px;
     vertical-align: top;
-    margin-top: 7px;
     margin-left: 0px;
+    vertical-align: middle;
+    margin-top: -4px;
 }
 
 .infobox-header {
@@ -766,33 +846,53 @@ div[datepicker] {
     width: 100%;
     white-space: nowrap;
     overflow: visible;
+    height: 34px;
+}
+
+.infobox-header-wo-subtitle {
+    height: 34px;
+    line-height: 38px;
 }
 
 .infobox-title {
     color: @infobox-black;
     font-size: 18px;
     font-weight: 600;
+    line-height: 20px;
 }
 
 .infobox-icon {
-    width: 10px;
-    height: 10px;
-    margin-right: 4px;
+    width: 13px;
+    height: 13px;
+    left: 0;
+    margin-bottom: 0;
+    position: absolute;
+    top: 2px;
 }
 
 .infobox-subtitle {
     color: @infobox-black;
     font-size: 13px;
-    font-weight: 600;
+}
+
+.infobox-setting {
+    overflow: hidden;
+}
+
+.infobox-setting-value-container {
+    display: inline-block;
+    width: 68%;
+    vertical-align: top;
+    line-height: 16px;
 }
 
 .infobox-setting-label {
-    width: 130px;
-    max-width: 130px;
+    width: 30%;
     overflow: hidden;
     display: inline-block;
     color: @infobox-gray;
-    float: left;
+    line-height: 16px;
+    vertical-align: top;
 }
 
 .infobox-setting-value {
@@ -805,11 +905,14 @@ div[datepicker] {
 .infobox-setting-value-comment {
     display: inline;
     vertical-align: top;
+    margin-left: 5px;
     color: @infobox-gray;
 }
 
 .infobox-setting-icon {
     display: inline-block;
+    padding-left: 16px;
+    position: relative;
     vertical-align: top;
 }
 
@@ -823,13 +926,19 @@ div[datepicker] {
 }
 
 .infobox-setting-info-dropped {
-    display: block;
+    display: inline-block;
+    word-break: break-all;
 }
 
 .infobox-setting-info-dropped-content {
     background: white;
-    margin: 5px;
+    padding: 10px;
     border: 1px solid @infobox-gray;
+    margin: 5px 0px
+}
+
+.infobox-setting-section-start {
+    padding-top: 10px
 }
 
 .chart-hidden {
@@ -1210,19 +1319,21 @@ div[datepicker] {
 .help-popover:active,
 .help-popover:visited {
     display: inline-block;
-    border: 1px solid #666;
-    .border-radius(2px);
+    background-color: #dddddd;
+    .border-radius(50%);
     padding: 1px 3px 0px 3px;
     margin-left: 5px;
-    font-size: 10px;
-    line-height: 10px;
+    font-size: 12px;
+    line-height: 13px;
     text-align: center;
     text-decoration: none;
     vertical-align: middle;
     margin-bottom: 2px;
+    width: 13px;
+    height: 13px;
     &:after {
-        color: #666;
-        font-weight: 300;
+        color: #888;
+        font-weight: bold;
         content: "?";
     }
 }
@@ -1600,17 +1711,7 @@ div[datepicker] {
         #filter {
 
             .internal {
-                &:before {
-                    content: " ";
-                    position: absolute;
-                    top: -4px;
-                    left: -4px;
-                    width: 0;
-                    height: 0;
-                    display: block;
-                    border-top: 8px solid @internal-color;
-                    border-right: 8px solid transparent;
-                }
+                .header-button-internal;
             }
 
             div.btn {
@@ -2189,6 +2290,7 @@ div[datepicker] {
         }
     }
 }
+
 
 .no-wrap {
     white-space: nowrap;
@@ -2960,13 +3062,8 @@ zem-editable-currency-field {
                 padding-top: 9px;
             }
 
-            .conversion-pixel-form {
+            .goals-common {
                 margin-bottom: 20px;
-
-                .form-group:last-child {
-                    margin-top: 200px;
-                    margin-bottom: 0;
-                }
 
                 .title {
                     font-weight: bold;
@@ -2999,6 +3096,15 @@ zem-editable-currency-field {
                 }
             }
 
+            .conversion-pixel-form {
+                .goals-common;
+
+                .form-group:last-child {
+                    margin-top: 200px;
+                    margin-bottom: 0;
+                }
+            }
+
             .conversion-goal-form {
                 .conversion-pixel-form;
 
@@ -3011,6 +3117,20 @@ zem-editable-currency-field {
                     margin-right: 0;
                 }
 
+            }
+
+            .campaign-goal-form {
+                .goals-common;
+
+                .form-part {
+                    margin-bottom: 30px;
+                    padding-bottom: 10px;
+                    border-bottom: 1px solid #e2e2e2;
+                }
+
+                .form-group {
+                    margin-right: 0;
+                }
             }
 
             .add-scheduled-report-form {
@@ -3095,7 +3215,6 @@ zem-editable-currency-field {
                 }
             }
         }
-
     }
 }
 
@@ -3389,6 +3508,129 @@ select.media-source-select {
     width: 100%;
 }
 
-.page-campaign-agency form {
-    margin-bottom: 30px;
+.page-campaign-agency {
+    .table-campaign-goals {
+        .primary-goal-label {
+            &:before {
+                content: "";
+                height: 10px;
+                width: 10px;
+                display: inline-block;
+                background-color: @default-color;
+                right: 5px;
+                position: relative;
+            }
+
+            color: #c2c2c2;
+            padding-top: 7px;
+        }
+    }
+
+    form {
+        margin-bottom: 30px;
+    }
+}
+
+.zem-campaign-goals {
+    .btn {
+        .plus-sign {
+            padding-right: 10px;
+            border-right: 1px solid @default-color;
+        }
+
+        .plus-label {
+            padding-left: 10px;
+        }
+    }
+
+    .campaign-goal-row {
+        &:first-child {
+            margin-top: 10px;
+        }
+
+        margin-bottom: 10px;
+
+        &.primary {
+            .campaign-goal-index {
+                background-color: @default-color;
+                border-color: @default-color;
+                color: white;
+            }
+
+            .campaign-goal-desc {
+                .camp-goal-text {
+                    color: @default-color;
+                }
+            }
+        }
+
+        & > div {
+            border-style: solid;
+            border-color: #d2d2d2;
+            border-width: 1px 1px 1px 0;
+            min-height: 50px;
+            .border-radius(0px);
+            cursor: pointer;
+
+            &:first-child {
+                .border-radius(2px 0 0 2px);
+                border-left-width: 1px;
+            }
+
+            &:last-child {
+                .border-radius(0 2px 2px 0);
+            }
+
+            &.campaign-goal-index {
+                font-size: 22px;
+                font-weight: 200;
+                color: #c2c2c2;
+                text-align: center;
+            }
+
+            &.campaign-goal-desc {
+                &:hover .camp-goal-text {
+                    color: @default-color;
+                }
+
+                .conv-goal-text {
+                    font-size: 11px;
+                    line-height: 11px;
+                    color: #c2c2c2;
+                }
+
+                .center-area {
+                    padding-left: 15px;
+                }
+            }
+
+            &.campaign-goal-edit {
+                text-align: center;
+            }
+
+            &.campaign-goal-delete {
+                text-align: center;
+            }
+
+            .center-area {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+
+                &:before {
+                    content: '';
+                    display: inline-block;
+                    vertical-align: middle;
+                    height: 100%;
+                }
+
+                .centered {
+                    display: inline-block;
+                    vertical-align: middle;
+                }
+            }
+        }
+    }
 }

@@ -124,6 +124,20 @@ class PublisherStatus(ConstantBase):
     }
 
 
+class InfoboxLevel(ConstantBase):
+    ADGROUP = 'adgroup'
+    CAMPAIGN = 'campaign'
+    ACCOUNT = 'account'
+    ALL_ACCOUNTS = 'all-accounts'
+
+    _VALUES = {
+        ADGROUP: 'Ad Group',
+        CAMPAIGN : 'Campaign',
+        ACCOUNT : 'Account',
+        ALL_ACCOUNTS: 'All Accounts'
+    }
+
+
 class PublisherBlacklistLevel(ConstantBase):
 
     ADGROUP = 'adgroup'
