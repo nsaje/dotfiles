@@ -60,6 +60,10 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 models.defaultAccountId = models.default_account_id;
             }
 
+            if (models.hasOwnProperty('accounts_count')) {
+                models.accountsCount = models.accounts_count;
+            }
+
             return models;
         }
 

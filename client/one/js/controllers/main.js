@@ -293,7 +293,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         } else if ($state.is('main.adGroups')) {
             state = $scope.getDefaultAdGroupState();
         } else if ($state.is('main') && $scope.accountsAccess.hasAccounts) {
-            if ($scope.canAccessAllAccounts()) {
+            if ($scope.canAccessAllAccounts() && $scope.accountsAccess.accountsCount>1) {
                 state = 'main.allAccounts.accounts';
             } else {
                 id = $scope.accountsAccess.defaultAccountId;
