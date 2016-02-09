@@ -42,11 +42,9 @@ class OverviewSetting(object):
     def as_dict(self):
         ret = {}
         for key, value in self.__dict__.iteritems():
-            adjusted_value = value
-            if value and key == 'description':
-                adjusted_value = ' {} '.format(value)
-            if adjusted_value is not None:
-                ret[key] = adjusted_value
+            if value is None:
+                continue
+            ret[key] = value
         return ret
 
 
