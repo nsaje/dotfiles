@@ -703,8 +703,30 @@ div[datepicker] {
     display: none;
 }
 
+/**
+ * Default internal-feature style for header buttons
+ */
+.header-button-internal() {
+    &:before {
+        content: " ";
+        position: absolute;
+        top: -4px;
+        left: -4px;
+        width: 0;
+        height: 0;
+        display: block;
+        border-top: 8px solid @internal-color;
+        border-right: 8px solid transparent;
+    }
+}
+
 .infobox-button {
     margin-right: 5px;
+    position: relative;
+
+    .internal {
+        .header-button-internal;
+    }
 }
 
 .infobox-background {
@@ -821,7 +843,7 @@ div[datepicker] {
 }
 
 .infobox-setting {
-	overflow: hidden;
+    overflow: hidden;
 }
 
 .infobox-setting-value-container {
@@ -1631,17 +1653,7 @@ div[datepicker] {
         #filter {
 
             .internal {
-                &:before {
-                    content: " ";
-                    position: absolute;
-                    top: -4px;
-                    left: -4px;
-                    width: 0;
-                    height: 0;
-                    display: block;
-                    border-top: 8px solid @internal-color;
-                    border-right: 8px solid transparent;
-                }
+                .header-button-internal;
             }
 
             div.btn {
