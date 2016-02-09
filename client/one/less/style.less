@@ -691,6 +691,10 @@ div[datepicker] {
     width: 70%;
     visibility: hidden;
 
+	/**
+	 * This is needed since highcharts chart doesn't respect
+	 * visibility hidden so it needs to be collapsed
+	 */
     svg {
         display: none;
     }
@@ -724,13 +728,14 @@ div[datepicker] {
     &:before {
         content: " ";
         position: absolute;
-        top: -4px;
-        left: -4px;
+        top: 0px;
+        left: 0px;
         width: 0;
         height: 0;
         display: block;
         border-top: 8px solid @internal-color;
         border-right: 8px solid transparent;
+        z-index: 1000;
     }
 }
 
