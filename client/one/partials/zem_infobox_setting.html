@@ -1,7 +1,7 @@
-<div style="overflow:auto">
+<div style="overflow:hidden">
     <div class="infobox-setting-label">{{label}}</div>
     
-    <div style="display:table; vertical-align:top;">
+    <div class="infobox-setting-value-container">
         <div ng-show="isSet(icon) && icon === 'happy'" style="" class="infobox-setting-icon">
             <img class="infobox-icon" ng-src="{{ config.static_url }}/one/img/happy_face.svg"></img>
         </div>
@@ -30,4 +30,6 @@
             </div>
         </div>
     </div>
+
+    <div class="clearfix"></div>
 </div>

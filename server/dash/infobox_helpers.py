@@ -16,7 +16,7 @@ from decimal import Decimal
 
 class OverviewSetting(object):
 
-    def __init__(self, name='', value='', description=None, tooltip=None, setting_type='setting'):
+    def __init__(self, name='', value='', description=None, tooltip=None, setting_type='setting', section_start=None):
         self.name = name
         self.value = value
         self.description = description
@@ -25,6 +25,8 @@ class OverviewSetting(object):
         self.icon = None
         self.type = setting_type
         self.tooltip = tooltip
+        self.section_start = section_start
+
 
     def comment(self, details_label, details_description):
         ret = copy.deepcopy(self)
@@ -40,8 +42,11 @@ class OverviewSetting(object):
     def as_dict(self):
         ret = {}
         for key, value in self.__dict__.iteritems():
-            if value is not None:
-                ret[key] = value
+            adjusted_value = value
+            if value and key == 'description':
+                adjusted_value = ' {} '.format(value)
+            if adjusted_value is not None:
+                ret[key] = adjusted_value
         return ret
 
 
@@ -416,6 +421,20 @@ def count_weekly_selfmanaged_actions():
     ).exclude(
         created_by__email__contains='@zemanta'
     ).count()
+
+
+def break_tracking_code(tracking_code):
+    max_len = 26
+    if len(tracking_code) <= max_len:
+        return tracking_code
+
+    split = []
+    current_code = tracking_code
+    while len(current_code) > 34:
+        split.append(current_code[:max_len])
+        current_code = current_code[max_len:]
+
+    return '\n'.join(split + [current_code])
 
 
 def _one_week_ago():

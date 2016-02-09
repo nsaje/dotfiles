@@ -1,10 +1,10 @@
-<div class="infobox infobox-background">
-    <div class="infobox-header clearfix">
+<div class="infobox infobox-background infobox-{{header.level}}">
+    <div class="infobox-header clearfix" ng-class="{'infobox-header-wo-subtitle': header.subtitle === undefined}">
         <div class="pull-left">
-            <div ng-class="[{'active-circle-icon': header.active, 'infobox-active-circle-icon-gray': !header.active}, 'infobox-title', 'infobox-status']"></div>
+            <div ng-if="header.active !== undefined" ng-class="[{'active-circle-icon': header.active, 'infobox-active-circle-icon-gray': !header.active}, 'infobox-title', 'infobox-status']"></div>
             <div style="display:inline-block;">
                 <div class="infobox-title">{{header.title}}</div>
-                <div class="infobox-subtitle">{{header.subtitle}}</div>
+                <div ng-if="header.subtitle !== undefined" class="infobox-subtitle">{{header.subtitle}}</div>
             </div>
         </div>
         
@@ -17,7 +17,8 @@
     </div>
  
     <hr>
-    <div ng-repeat="setting in settings">
+    <div ng-repeat="setting in settings" 
+         ng-class="[{'infobox-setting-section-start': setting.section_start}, {'infobox-setting-section-end': setting.section_end}]">
         <hr ng-if="setting.type === 'hr'"/>
         <zem-infobox-setting 
             ng-if="setting.type == 'setting'"
