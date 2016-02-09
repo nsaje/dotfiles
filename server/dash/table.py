@@ -774,10 +774,10 @@ class AccountsAccountsTable(object):
 
         account_budget, account_total_spend = self.get_budgets(accounts)
 
-        # TODO: Add new permission
-        totals_data['budget'] = Decimal(sum(account_budget.itervalues()))
-        totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
-        totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
+        if not user.has_perm('zemauth.all_accounts_budget_view'):
+            totals_data['budget'] = Decimal(sum(account_budget.itervalues()))
+            totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
+            totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
 
         flat_fees = None
         if user.has_perm('zemauth.can_view_flat_fees'):
