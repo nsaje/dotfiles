@@ -149,6 +149,9 @@
         description: 'Example description'
         call_to_action: 'Call to action'
         ad_group_name: 'AdGroup name'
+        target_devices: ['mobile']
+        target_regions: ['US']
+        retargeting_ad_groups: [1, 2]
     model: dash.adgroupsettings
     pk: 1
 
