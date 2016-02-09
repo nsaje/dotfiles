@@ -18,7 +18,7 @@
  
     <hr>
     <div ng-repeat="setting in settings" 
-         ng-class="[{'infobox-setting-section-start': setting.section_start}, {'infobox-setting-section-end': setting.section_end}]">
+         ng-class="{'infobox-setting-section-start': setting.section_start}">
         <hr ng-if="setting.type === 'hr'"/>
         <zem-infobox-setting 
             ng-if="setting.type == 'setting'"
