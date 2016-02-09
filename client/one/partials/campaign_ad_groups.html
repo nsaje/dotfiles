@@ -1,11 +1,11 @@
 <div class="page page-campaign-ad-groups">
     <div class="section">
         <div class="graph-infobox-parent">
-            <div ng-class="{'graph-collapsed': !graphVisible && !infoboxVisible && hasPermission('zemauth.can_see_infobox'), 'graph-hidden': !graphVisible && infoboxVisible && hasPermission('zemauth.can_see_infobox'), 'graph-container-short': graphVisible && infoboxVisible && hasPermission('zemauth.can_see_infobox'), 'graph-infobox-parent': graphVisible && !hasPermission('zemauth.can_see_inbofox')}">
+            <div ng-class="{'graph-collapsed': !graphVisible, 'graph-hidden': !graphVisible && infoboxVisible && hasPermission('zemauth.can_see_infobox'), 'graph-container-short': graphVisible && infoboxVisible && hasPermission('zemauth.can_see_infobox'), 'graph-infobox-parent': graphVisible && !hasPermission('zemauth.can_see_inbofox')}">
                 <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
             </div>
-            <div ng-if="hasPermission('zemauth.can_see_infobox')" ng-class="['pull-right' , {'infobox-container-full': infoboxVisible, 'infobox-container-short': !infoboxVisible}]">
-                <zem-infobox header="infoboxHeader" settings="infoboxSettings" link-to="'main.adGroups.settings'" state-id="$state.params.id"></zem-infobox>
+            <div ng-if="graphVisible" ng-if="hasPermission('zemauth.can_see_infobox')" ng-class="{'infobox-container-full': infoboxVisible, 'infobox-container-short': !infoboxVisible}">
+                <zem-infobox header="infoboxHeader" settings="infoboxSettings" link-to="'main.accounts.settings'" state-id="$state.params.id"></zem-infobox>
             </div>
         </div>
     </div>
