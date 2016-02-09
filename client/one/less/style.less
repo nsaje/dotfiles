@@ -682,8 +682,18 @@ div[datepicker] {
     overflow: hidden;
 }
 
-.graph-hidden {
+.graph-collapsed {
 	display: none;
+}
+
+.graph-hidden {
+    display: inline-block;
+    width: 70%;
+	visibility: hidden;
+
+	svg {
+		display: none;
+	}
 }
 
 .graph-container-short {
