@@ -60,16 +60,12 @@ class NavigationAllAccountsDataView(api_common.BaseApiView):
 
         accounts = models.Account.objects.all().filter_by_user(request.user)\
                                                .filter_by_sources(filtered_sources)
+        accounts_count = len(accounts)
         response = {
-            'has_accounts': False,
-            'accounts_count': 0
+            'accounts_count': accounts_count
         }
 
-        accounts_count = len(accounts)
         if accounts_count > 0:
-            response['has_accounts'] = True
-            response['accounts_count'] = accounts_count
-
             # find the first one that is not archived
             for account in accounts.iterator():
                 if not account.is_archived():
