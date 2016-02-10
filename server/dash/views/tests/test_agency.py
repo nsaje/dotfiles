@@ -20,7 +20,6 @@ from dash import constants
 from dash.views import agency
 from dash import forms
 
-TestCase.maxDiff = None
 
 class AdGroupSettingsTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
