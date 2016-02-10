@@ -2389,7 +2389,8 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual(header['title'], u'AdGroup name')
         self.assertFalse(header['active'])
 
-        settings = response['data']['settings']
+        settings = response['data']['basic_settings'] +\
+            response['data']['performance_settings']
         flight_setting = self._get_setting(settings, 'flight')
         self.assertEqual('03/02 - 04/02', flight_setting['value'])
 
@@ -2486,7 +2487,8 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual(header['title'], u'AdGroup name')
         self.assertFalse(header['active'])
 
-        settings = response['data']['settings']
+        settings = response['data']['basic_settings'] +\
+            response['data']['performance_settings']
 
         flight_setting = self._get_setting(settings, 'flight')
         self.assertEqual('{sm}/{sd} - {em}/{ed}'.format(
@@ -2587,7 +2589,7 @@ class AccountOverviewTest(TestCase):
             'cost_cc_sum': 0.0
         }]
         response = self._get_account_overview(1)
-        settings = response['data']['settings']
+        settings = response['data']['basic_settings']
 
         pf_setting = self._get_setting(settings, 'platform fee')
         self.assertEqual('20.00%', pf_setting['value'])
