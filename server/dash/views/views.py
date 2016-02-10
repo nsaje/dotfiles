@@ -294,13 +294,22 @@ class AdGroupOverview(api_common.BaseApiView):
         else:
             region_comment = 'Differ from campaign default'
 
+        MAX_PREVIEW_REGIONS = 1
+        preview_regions = ad_group_settings.target_regions[:MAX_PREVIEW_REGIONS]
+        full_regions = ad_group_settings.target_regions
+
         targeting_region = infobox_helpers.OverviewSetting(
             '',
             'Location: {regions}'.format(
-                regions=', '.join(ad_group_settings.target_regions)
+                regions=', '.join(preview_regions)
             ),
             region_comment,
         )
+        if full_regions != []:
+            targeting_region = targeting_region.comment(
+                'more',
+                ', '.join(full_regions)
+            )
         settings.append(targeting_region.as_dict())
 
         tracking_code_settings = infobox_helpers.OverviewSetting(
@@ -604,12 +613,20 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(targeting_device.as_dict())
 
+        MAX_PREVIEW_REGIONS = 1
+        preview_regions = campaign_settings.target_regions[:MAX_PREVIEW_REGIONS]
+        full_regions = campaign_settings.target_regions
         targeting_region = infobox_helpers.OverviewSetting(
             '',
             'Location: {regions}'.format(
-                regions=', '.join(campaign_settings.target_regions)
+                regions=', '.join(preview_regions)
             )
         )
+        if full_regions != []:
+            targeting_region = targeting_region.comment(
+                'more',
+                ', '.join(full_regions)
+            )
         settings.append(targeting_region.as_dict())
 
         # take the num
