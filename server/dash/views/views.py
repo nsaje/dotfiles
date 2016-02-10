@@ -332,7 +332,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
         daily_cap_setting = infobox_helpers.OverviewSetting(
-            'Daily budget',
+            'Daily budget:',
             '${:.2f}'.format(daily_cap) if daily_cap is not None else '',
             tooltip='Daily media budget'
         )
@@ -747,15 +747,6 @@ class AccountOverview(api_common.BaseApiView):
                 ', '.join(slugs),
             )
         settings.append(conversion_pixel_setting.as_dict())
-
-        """
-        # temporarily disabled
-        account_type_setting = infobox_helpers.OverviewSetting(
-            'Account type:',
-            'N/A'
-        )
-        settings.append(account_type_setting.as_dict())
-        """
         return settings
 
     def _performance_settings(self, account, user):
@@ -1918,18 +1909,6 @@ class AllAccountsOverview(api_common.BaseApiView):
             '${:.2f}'.format(mtd_spend),
             tooltip='Month-to-date media spent',
         ))
-
-        """
-        settings.append(infobox_helpers.OverviewSetting(
-            'Forecast EOM:',
-            'TBD'
-        ))
-
-        settings.append(infobox_helpers.OverviewSetting(
-            'Forecast license fee:',
-            '$0.00'
-        ))
-        """
 
         today = datetime.datetime.utcnow()
         start, end = calendar.monthrange(today.year, today.month)
