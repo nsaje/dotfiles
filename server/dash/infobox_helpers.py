@@ -55,7 +55,7 @@ class OverviewSeparator(OverviewSetting):
 
 def format_flight_time(start_date, end_date):
     start_date_str = start_date.strftime('%m/%d') if start_date else ''
-    end_date_str = end_date.strftime('%m/%d') if end_date else ''
+    end_date_str = end_date.strftime('%m/%d') if end_date else 'Ongoing'
 
     flight_time = "{start_date} - {end_date}".format(
         start_date=start_date_str,

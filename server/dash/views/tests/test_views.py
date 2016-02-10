@@ -2401,7 +2401,8 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('Device: Desktop, Mobile', device_setting['value'])
 
         region_setting = [s for s in settings if 'location' in s['value'].lower()][0]
-        self.assertEqual('Location: UK, US, CA', region_setting['value'])
+        self.assertEqual('Location: UK', region_setting['value'])
+        self.assertEqual('UK, US, CA', region_setting['details_content'])
 
         tracking_setting = self._get_setting(settings, 'tracking')
         self.assertEqual(tracking_setting['value'], 'Yes')
