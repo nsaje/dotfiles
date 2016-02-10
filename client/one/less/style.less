@@ -931,7 +931,6 @@ div[datepicker] {
     vertical-align: top;
     color: #454545;
     font-weight: normal;
-    margin-right: 5px;
 }
 
 .infobox-setting-value-comment {
@@ -1373,6 +1372,34 @@ div[datepicker] {
         font-weight: bold;
         content: "?";
     }
+}
+
+.exclamation-popover {
+	margin-left: 0px;
+
+	.help-popover,
+	.help-popover:hover,
+	.help-popover:active,
+	.help-popover:visited {
+		display: inline-block;
+		background-color: #dddddd;
+		.border-radius(50%);
+		padding: 1px 3px 0px 3px;
+		margin-left: 0px;
+		font-size: 12px;
+		line-height: 13px;
+		text-align: center;
+		text-decoration: none;
+		vertical-align: middle;
+		margin-bottom: 2px;
+		width: 13px;
+		height: 13px;
+		&:after {
+			color: #888;
+			font-weight: bold;
+			content: "!";
+		}
+	}
 }
 
 .select2-drop,

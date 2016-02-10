@@ -272,9 +272,9 @@ class AdGroupOverview(api_common.BaseApiView):
         campaign_target_devices = campaign_settings.target_devices
 
         if set(campaign_target_devices) == set(ad_group_settings.target_devices):
-            device_comment = None
+            target_device_warning = None
         else:
-            device_comment = 'Differ from campaign default'
+            target_device_warning = 'Different than campaign default'
 
         targeting_device = infobox_helpers.OverviewSetting(
             'Targeting:',
@@ -283,16 +283,16 @@ class AdGroupOverview(api_common.BaseApiView):
                     [w[0].upper() + w[1:] for w in ad_group_settings.target_devices]
                 )
             ),
-            device_comment,
+            warning=target_device_warning,
             section_start=True
         )
         settings.append(targeting_device.as_dict())
 
         campaign_target_regions = campaign_settings.target_regions
         if set(campaign_target_regions) == set(ad_group_settings.target_regions):
-            region_comment = None
+            region_warning = None
         else:
-            region_comment = 'Differ from campaign default'
+            region_warning = 'Different than campaign default'
 
         MAX_PREVIEW_REGIONS = 1
         preview_regions = ad_group_settings.target_regions[:MAX_PREVIEW_REGIONS]
@@ -303,7 +303,7 @@ class AdGroupOverview(api_common.BaseApiView):
             'Location: {regions}'.format(
                 regions=', '.join(preview_regions)
             ),
-            region_comment,
+            warning=region_warning,
         )
         if full_regions != []:
             targeting_region = targeting_region.comment(

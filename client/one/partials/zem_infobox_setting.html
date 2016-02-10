@@ -11,6 +11,14 @@
         </div>
         
         <div class="infobox-setting-value">{{value}}</div>
+
+        <zem-help-popover 
+            class="exclamation-popover"
+            ng-if="isSet(warning)" 
+            content="{{ warning }}" 
+            placement="top">
+        </zem-help-popover>
+
         <div class="infobox-setting-value-comment" ng-if="isSet(valueDescription)">({{valueDescription}})</div>
 
         <zem-help-popover 

@@ -16,13 +16,14 @@ from decimal import Decimal
 
 class OverviewSetting(object):
 
-    def __init__(self, name='', value='', description=None, tooltip=None, setting_type='setting', section_start=None):
+    def __init__(self, name='', value='', description=None, tooltip=None, setting_type='setting', section_start=None, warning=None):
         self.name = name
         self.value = value
         self.description = description
         self.details_label = None
         self.details_content = None
         self.icon = None
+        self.warning = warning
         self.type = setting_type
         self.tooltip = tooltip
         self.section_start = section_start
