@@ -17,7 +17,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     $scope.isIncompletePostclickMetrics = false;
     $scope.localStoragePrefix = 'accountCampaigns';
     $scope.infoboxHeader = null;
-    $scope.infoboxSettings = null;
+    $scope.infoboxBasicSettings = null;
+    $scope.infoboxPerformanceSettings = null;
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix),
         canShowAddCampaignTutorial = $q.defer();
@@ -468,7 +469,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         api.accountOverview.get($state.params.id).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
-                $scope.infoboxSettings = data.settings;
+                $scope.infoboxBasicSettings = data.basicSettings;
+                $scope.infoboxPerformanceSettings = data.performanceSettings;
             }
         );
     };

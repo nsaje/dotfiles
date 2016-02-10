@@ -529,9 +529,8 @@ class CampaignOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'settings':  basic_settings +
-            [infobox_helpers.OverviewSeparator().as_dict()] +
-            performance_settings,
+            'basic_settings':basic_settings,
+            'performance_settings': performance_settings,
         }
         return self.create_api_response(response)
 
@@ -674,9 +673,8 @@ class AccountOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'settings':  basic_settings +
-                [infobox_helpers.OverviewSeparator().as_dict()] +
-                performance_settings,
+            'basic_settings': basic_settings,
+            'performance_settings': performance_settings,
         }
 
         count_campaigns = models.Campaign.objects.filter(
@@ -1871,7 +1869,8 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'settings': self._basic_settings(),
+            'basic_settings': self._basic_settings(),
+            'performance_settings': None
         }
 
         return self.create_api_response(response)
