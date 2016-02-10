@@ -17,18 +17,37 @@
     </div>
  
     <hr>
-    <div ng-repeat="setting in settings" 
-         ng-class="{'infobox-setting-section-start': setting.section_start}">
-        <hr ng-if="setting.type === 'hr'"/>
-        <zem-infobox-setting 
-            ng-if="setting.type == 'setting'"
-            label="(setting.name || '&nbsp;')"  
-            value="setting.value" 
-            value-description="setting.description"
-            details-label="setting.detailsLabel"
-            details-content="setting.detailsContent"
-            icon="(setting.icon || '')"
-            tooltip-text="(setting.tooltip || undefined)">
-        </zem-infobox-setting>
+    <div class="infobox-body">
+        <div ng-repeat="setting in basicSettings" 
+            ng-class="{'infobox-setting-section-start': setting.section_start}">
+            <hr ng-if="setting.type === 'hr'"/>
+            <zem-infobox-setting 
+                ng-if="setting.type == 'setting'"
+                label="(setting.name || '&nbsp;')"  
+                value="setting.value" 
+                value-description="setting.description"
+                details-label="setting.detailsLabel"
+                details-content="setting.detailsContent"
+                icon="(setting.icon || '')"
+                tooltip-text="(setting.tooltip || undefined)">
+            </zem-infobox-setting>
+        </div>
+    </div>
+    <hr>
+    <div class="infobox-footer">
+        <div ng-repeat="setting in performanceSettings" 
+            ng-class="{'infobox-setting-section-start': setting.section_start}">
+            <hr ng-if="setting.type === 'hr'"/>
+            <zem-infobox-setting 
+                ng-if="setting.type == 'setting'"
+                label="(setting.name || '&nbsp;')"  
+                value="setting.value" 
+                value-description="setting.description"
+                details-label="setting.detailsLabel"
+                details-content="setting.detailsContent"
+                icon="(setting.icon || '')"
+                tooltip-text="(setting.tooltip || undefined)">
+            </zem-infobox-setting>
+        </div>
     </div>
 </div>

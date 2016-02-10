@@ -18,7 +18,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.chartMetricOptions = options.adGroupChartMetrics;
     $scope.localStoragePrefix = 'adGroupContentAdsPlus';
     $scope.infoboxHeader = null;
-    $scope.infoboxSettings = null;
+    $scope.infoboxBasicSettings = null;
+    $scope.infoboxPerformanceSettings = null;
 
     $scope.lastSyncDate = null;
     $scope.isSyncRecent = true;
@@ -964,7 +965,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         api.adGroupOverview.get($state.params.id).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
-                $scope.infoboxSettings = data.settings;
+                $scope.infoboxBasicSettings = data.basicSettings;
+                $scope.infoboxPerformanceSettings = data.performanceSettings;
             }
         );
     };

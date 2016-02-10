@@ -754,8 +754,7 @@ div[datepicker] {
 
 .infobox-wrapper {
 	display: block;
-	overflow-x: hidden;
-	overflow-y: scroll;
+	overflow: hidden;
 	max-height: 300px;
 
 }
@@ -806,7 +805,7 @@ div[datepicker] {
 
 .infobox {
     padding: 10px;
-
+	overflow: hidden;
     color: @infobox-black;
 
     hr {
@@ -845,6 +844,17 @@ div[datepicker] {
     table-layout: fixed;
     width: 100%;
     height: 34px;
+}
+
+.infobox-body {
+	overflow-y: scroll;
+	height: 150px;
+	// due to scroller
+	margin-right: -5px;
+}
+
+.infobox-footer {
+	height: 50px;
 }
 
 .infobox-header-row {

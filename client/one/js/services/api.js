@@ -615,7 +615,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
-                        data.data.settings = data.data.settings.map(convertFromApi);
+                        data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
+                        data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);
                         deferred.resolve(data.data);
                     }
                 }).

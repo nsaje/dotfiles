@@ -246,9 +246,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'settings': self._basic_settings(request.user, ad_group, ad_group_settings) +
-            [infobox_helpers.OverviewSeparator().as_dict()] +
-            performance_settings,
+            'basic_settings': self._basic_settings(request.user, ad_group, ad_group_settings),
+            'performance_settings': performance_settings,
         }
         return self.create_api_response(response)
 
