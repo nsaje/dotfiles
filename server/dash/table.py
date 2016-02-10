@@ -774,7 +774,8 @@ class AccountsAccountsTable(object):
 
         account_budget, account_total_spend = self.get_budgets(accounts)
 
-        if not user.has_perm('zemauth.all_accounts_budget_view'):
+        show_budgets = user.has_perm('zemauth.all_accounts_budget_view')
+        if show_budgets:
             totals_data['budget'] = Decimal(sum(account_budget.itervalues()))
             totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
             totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
@@ -808,6 +809,7 @@ class AccountsAccountsTable(object):
             account_total_spend,
             has_view_archived_permission,
             show_archived,
+            show_budgets,
             flat_fees,
             order=order,
         )
@@ -917,7 +919,7 @@ class AccountsAccountsTable(object):
         return account_budget, account_total_spend
 
     def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions, account_budget,
-                 account_total_spend, has_view_archived_permission, show_archived, flat_fees, order=None):
+                 account_total_spend, has_view_archived_permission, show_archived, show_budgets, flat_fees, order=None):
         rows = []
 
         # map settings for quicker access
@@ -959,10 +961,10 @@ class AccountsAccountsTable(object):
 
             row.update(account_data)
 
-            row['budget'] = account_budget.get(aid, Decimal('0.0'))
-
-            row['available_budget'] = row['budget'] - account_total_spend.get(aid, Decimal('0.0'))
-            row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
+            if show_budgets:
+                row['budget'] = account_budget.get(aid, Decimal('0.0'))
+                row['available_budget'] = row['budget'] - account_total_spend.get(aid, Decimal('0.0'))
+                row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
 
             if flat_fees:
                 row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
