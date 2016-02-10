@@ -35,10 +35,12 @@ class UpdateTouchpointConversionsTestCase(TestCase):
 
         process.update_touchpoint_conversions_full()
 
-        update_touchpoint_conversions_mock.assert_called_once_with([(datetime.date(2015, 9, 8), self.cp1),
-                                                                    (datetime.date(2015, 9, 9), self.cp1),
-                                                                    (datetime.date(2015, 9, 10), self.cp1),
-                                                                    (datetime.date(2015, 9, 10), self.cp2)])
+        expected_args = dict([(datetime.date(2015, 9, 8), [self.cp1]),
+                              (datetime.date(2015, 9, 9), [self.cp1]),
+                              (datetime.date(2015, 9, 10), [self.cp1, self.cp2])])
+
+        self.assertEqual(update_touchpoint_conversions_mock.call_count, 1)
+        self.assertEqual(dict(update_touchpoint_conversions_mock.call_args[0][0]), expected_args)
 
     @mock.patch('convapi.process.update_touchpoint_conversions')
     @mock.patch('utils.dates_helper.datetime')
@@ -53,13 +55,13 @@ class UpdateTouchpointConversionsTestCase(TestCase):
 
         process.update_touchpoint_conversions_full()
 
-        update_touchpoint_conversions_mock.assert_called_once_with([(datetime.date(2015, 9, 8), self.cp1),
-                                                                    (datetime.date(2015, 9, 9), self.cp1),
-                                                                    (datetime.date(2015, 9, 10), self.cp1),
-                                                                    (datetime.date(2015, 9, 7), self.cp2),
-                                                                    (datetime.date(2015, 9, 8), self.cp2),
-                                                                    (datetime.date(2015, 9, 9), self.cp2),
-                                                                    (datetime.date(2015, 9, 10), self.cp2)])
+        expected_args = dict([(datetime.date(2015, 9, 8), [self.cp1, self.cp2]),
+                             (datetime.date(2015, 9, 9), [self.cp1, self.cp2]),
+                             (datetime.date(2015, 9, 10), [self.cp1, self.cp2]),
+                             (datetime.date(2015, 9, 7), [self.cp2])])
+
+        self.assertEqual(update_touchpoint_conversions_mock.call_count, 1)
+        self.assertEqual(dict(update_touchpoint_conversions_mock.call_args[0][0]), expected_args)
 
 
 class ProcessTouchpointsImpressionsTestCase(TestCase):

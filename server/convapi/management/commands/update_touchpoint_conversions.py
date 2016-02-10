@@ -1,5 +1,4 @@
 import datetime
-import itertools
 import logging
 
 from django.core.management.base import BaseCommand
@@ -35,9 +34,9 @@ class Command(ExceptionCommand):
         if account_ids is not None:
             conversion_pixels = conversion_pixels.filter(account_id__in=account_ids)
 
-        dates = []
+        pairs = []
         while from_date <= to_date:
-            dates.append(from_date)
+            pairs.append((from_date, conversion_pixels))
             from_date = from_date + datetime.timedelta(days=1)
 
-        process.update_touchpoint_conversions(itertools.product(dates, conversion_pixels))
+        process.update_touchpoint_conversions(pairs)

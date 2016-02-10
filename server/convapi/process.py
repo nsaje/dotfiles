@@ -46,27 +46,31 @@ BAD_PIXIES_AD_GROUP_LEVEL = {  # (ad_group_id, slug): [(range_start_dt, range_en
 
 
 def _get_dates_to_sync(conversion_pixels):
-    pairs = []
+    date_cps_map = defaultdict(list)
     for conversion_pixel in conversion_pixels:
         if conversion_pixel.last_sync_dt is None:
-            pairs.append((dates_helper.local_today(), conversion_pixel))
+            date_cps_map[dates_helper.local_today()].append(conversion_pixel)
             continue
 
         last_sync_dt = conversion_pixel.last_sync_dt - datetime.timedelta(hours=ADDITIONAL_SYNC_HOURS)
         dates = [dates_helper.utc_datetime_to_local_date(last_sync_dt)]
         while dates[-1] < dates_helper.local_today():
             dates.append(dates[-1] + datetime.timedelta(days=1))
-        pairs.extend(itertools.product(dates, [conversion_pixel]))
+        for date in dates:
+            date_cps_map[date].append(conversion_pixel)
+    pairs = []
+    for date, cps in date_cps_map.iteritems():
+        pairs.append((date, cps))
     return pairs
 
 
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions_full')
 def update_touchpoint_conversions_full():
     conversion_pixels = dash.models.ConversionPixel.objects.filter(archived=False)
-    date_cp_pairs = _get_dates_to_sync(conversion_pixels)
+    date_cps_pairs = _get_dates_to_sync(conversion_pixels)
 
     try:
-        update_touchpoint_conversions(date_cp_pairs)
+        update_touchpoint_conversions(date_cps_pairs)
     except Exception:
         logger.exception('exception updating touchpoint conversions')
         return
@@ -75,41 +79,42 @@ def update_touchpoint_conversions_full():
     conversion_pixels.update(last_sync_dt=datetime.datetime.utcnow())
 
 
-def _update_touchpoint_conversions_date(date_cp_tup):
-    date, conversion_pixel = date_cp_tup
+def _group_redirects_impressions(data):
+    grouped = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    for r in data:
+        grouped[r['accountId']][r['slug']][r['zuid']].append(r)
+    return grouped
 
-    logger.info('Fetching touchpoint conversions for date %s, account id %s and conversion pixel slug %s.', date,
-                conversion_pixel.account_id, conversion_pixel.slug)
-    pixie = (conversion_pixel.account_id, conversion_pixel.slug, )
-    if pixie in MOVED_PIXIES:
-        redirects_impressions = redirector_helper.fetch_redirects_impressions(
-            date,
-            MOVED_PIXIES[pixie][0],
-            MOVED_PIXIES[pixie][1],
-        )
+
+def _update_touchpoint_conversions_date(date_cps_tup):
+    date, conversion_pixels = date_cps_tup
+
+    logger.info('Fetching touchpoint conversions for date %s.', date)
+    data = _group_redirects_impressions(redirector_helper.fetch_redirects_impressions(date))
+
+    for conversion_pixel in conversion_pixels:
+        pixie = (conversion_pixel.account_id, conversion_pixel.slug, )
+        if pixie in MOVED_PIXIES:
+            redirects_impressions = data[MOVED_PIXIES[pixie][0]][MOVED_PIXIES[pixie][1]]
+            reports.update.update_touchpoint_conversions(
+                date,
+                conversion_pixel.account_id,
+                conversion_pixel.slug,
+                process_touchpoint_conversions(redirects_impressions)
+            )
+        redirects_impressions = data[conversion_pixel.account_id][conversion_pixel.slug]
         reports.update.update_touchpoint_conversions(
             date,
             conversion_pixel.account_id,
             conversion_pixel.slug,
             process_touchpoint_conversions(redirects_impressions)
         )
-    redirects_impressions = redirector_helper.fetch_redirects_impressions(
-        date,
-        conversion_pixel.account_id,
-        conversion_pixel.slug
-    )
-    reports.update.update_touchpoint_conversions(
-        date,
-        conversion_pixel.account_id,
-        conversion_pixel.slug,
-        process_touchpoint_conversions(redirects_impressions)
-    )
 
 
 @statsd_helper.statsd_timer('convapi', 'update_touchpoint_conversions')
-def update_touchpoint_conversions(date_cp_pairs):
+def update_touchpoint_conversions(date_cps_pairs):
     pool = ThreadPool(processes=NUM_THREADS)
-    result = pool.map_async(_update_touchpoint_conversions_date, date_cp_pairs)
+    result = pool.map_async(_update_touchpoint_conversions_date, date_cps_pairs)
     pool.close()
     pool.join()
 
