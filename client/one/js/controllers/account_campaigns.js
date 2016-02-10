@@ -19,6 +19,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     $scope.infoboxHeader = null;
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;
+    $scope.infoboxLinkTo = 'main.accounts.settings';
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix),
         canShowAddCampaignTutorial = $q.defer();

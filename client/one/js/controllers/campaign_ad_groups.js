@@ -19,6 +19,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.infoboxHeader = null;
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;
+    $scope.infoboxLinkTo = 'main.campaigns.settings';
 
     var userSettings = zemUserSettings.getInstance($scope, 'campaignAdGroups');
 

@@ -20,6 +20,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.infoboxHeader = null;
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;
+    $scope.infoboxLinkTo = 'main.adGroups.settings';
 
     $scope.lastSyncDate = null;
     $scope.isSyncRecent = true;
