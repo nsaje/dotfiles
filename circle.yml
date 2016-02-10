@@ -2,7 +2,7 @@ general:
     artifacts:
         - ./server/coverage_report.txt
         - ./client/coverage/text/*
-        - /home/ubuntu/server.tar.gz
+        - /home/ubuntu/zemanta-eins/server.tar.gz
 
 checkout:
     post:
