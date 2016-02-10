@@ -5,6 +5,7 @@ import unicodecsv
 import dateutil.parser
 import rfc3987
 import datetime
+from decimal import Decimal
 
 from collections import Counter
 
@@ -12,6 +13,7 @@ from django import forms
 from django.db import transaction
 from django.core import validators
 
+from automation import autopilot_budgets
 from dash import api
 from dash import constants
 from dash import models
@@ -161,6 +163,16 @@ class AdGroupSettingsForm(forms.Form):
         cpc_cc = self.cleaned_data.get('cpc_cc')
         validation_helpers.validate_ad_group_cpc_cc(cpc_cc, self.ad_group)
         return cpc_cc
+
+    def clean_autopilot_daily_budget(self):
+        budget = self.cleaned_data.get('autopilot_daily_budget', Decimal(0))
+        ap_state = self.cleaned_data.get('autopilot_state')
+        budget_ap_is_active = ap_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        budget_invalid = budget < autopilot_budgets.get_adgroup_minimum_daily_budget(self.ad_group)
+        if budget_ap_is_active and budget != Decimal(0) and budget_invalid:
+            raise forms.ValidationError(message='Total Daily Budget must be at least $' +
+                                        str(autopilot_budgets.get_adgroup_minimum_daily_budget(self.ad_group)))
+        return self.cleaned_data.get('autopilot_daily_budget')
 
 
 class AdGroupSourceSettingsCpcForm(forms.Form):

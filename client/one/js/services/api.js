@@ -945,7 +945,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 enableAdobeTracking: settings.enable_adobe_tracking,
                 adobeTrackingParam: settings.adobe_tracking_param,
                 autopilotState: settings.autopilot_state,
-                autopilotBudget: settings.autopilot_daily_budget
+                autopilotBudget: settings.autopilot_daily_budget,
+                autopilotMinBudget: settings.autopilot_min_budget,
             };
         }
 

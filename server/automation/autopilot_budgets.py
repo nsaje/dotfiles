@@ -35,6 +35,7 @@ GOALS_WORST_VALUE = {
 }
 AUTOPILOT_DATA_LOOKBACK_DAYS = 2
 AUTOPILOT_MIN_SPEND_PERC = Decimal(0.50)
+BUDGET_AUTOPILOT_MIN_DAILY_BUDGET = Decimal(100)
 DEBUG_EMAILS = ['davorin.kopic@zemanta.com', 'tadej.pavlic@zemanta.com', 'urska.kosec@zemanta.com']
 
 
@@ -280,6 +281,10 @@ Zemanta
                         'an exception was raised: {}'.format(traceback.format_exc(e)),
             details=desc
         )
+
+
+def get_adgroup_minimum_daily_budget(adgroup=None):
+    return BUDGET_AUTOPILOT_MIN_DAILY_BUDGET
 
 
 class BetaBandit(object):
