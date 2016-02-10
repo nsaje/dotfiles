@@ -274,55 +274,7 @@ def _get_email_source_changes_text(change):
 def adjust_autopilot_media_sources_bid_cpcs():
     changes = {}
     for adgroup in automation.helpers.get_all_active_ad_groups():
-
-        yesterday_spends = reports.api.get_yesterday_cost(dict(ad_group=adgroup))
-        for ad_group_source_settings in get_autopilot_ad_group_sources_settings(adgroup):
-            cpc_change_comments = []
-
-            if ad_group_sources_daily_budget_was_changed_recently(ad_group_source_settings.ad_group_source):
-                cpc_change_comments.append(automation.constants.CpcChangeComment.BUDGET_MANUALLY_CHANGED)
-
-            if not _ad_group_source_is_synced(ad_group_source_settings.ad_group_source):
-                cpc_change_comments.append(automation.constants.CpcChangeComment.OLD_DATA)
-
-            yesterday_spend = yesterday_spends.get(ad_group_source_settings.ad_group_source.source_id)
-
-            source = ad_group_source_settings.ad_group_source.source
-            proposed_cpc, calculation_comments = calculate_new_autopilot_cpc(
-                ad_group_source_settings.cpc_cc,
-                ad_group_source_settings.daily_budget_cc,
-                yesterday_spend)
-            cpc_change_comments += calculation_comments
-            cpc_change_comments += _check_source_constraints(proposed_cpc, source)
-            cpc_change_comments += _check_ad_group_constraints(proposed_cpc, adgroup)
-            new_cpc = proposed_cpc if cpc_change_comments == [] else ad_group_source_settings.cpc_cc
-            persist_cpc_change_to_admin_log(
-                ad_group_source_settings.ad_group_source,
-                yesterday_spend,
-                ad_group_source_settings.cpc_cc,
-                new_cpc,
-                ad_group_source_settings.daily_budget_cc,
-                automation.helpers.get_yesterdays_clicks(ad_group_source_settings.ad_group_source),
-                cpc_change_comments
-            )
-
-            if adgroup.campaign not in changes:
-                changes[adgroup.campaign] = {}
-            if (adgroup.name, adgroup.id) not in changes[adgroup.campaign]:
-                changes[adgroup.campaign][(adgroup.name, adgroup.id)] = []
-            changes[adgroup.campaign][(adgroup.name, adgroup.id)].append({
-                'source_name': ad_group_source_settings.ad_group_source.source.name,
-                'old_cpc': ad_group_source_settings.cpc_cc,
-                'new_cpc': new_cpc,
-                'comments': cpc_change_comments
-            })
-
-            if ad_group_source_settings.cpc_cc != proposed_cpc and cpc_change_comments == []:
-                automation.helpers.update_ad_group_source_value(
-                    ad_group_source_settings.ad_group_source,
-                    'cpc_cc',
-                    proposed_cpc
-                )
+        changes = run_cpc_autopilot_on_adgroup(adgroup, changes)
 
     for camp, adgroup_changes in changes.iteritems():
         send_autopilot_CPC_changes_email(
@@ -333,6 +285,59 @@ def adjust_autopilot_media_sources_bid_cpcs():
             adgroup_changes
         )
     report_autopilot_metrics()
+
+
+def run_cpc_autopilot_on_adgroup(adgroup, changes={}, allow_recent_budget_change=False):
+    yesterday_spends = reports.api.get_yesterday_cost(dict(ad_group=adgroup))
+    for ad_group_source_settings in get_autopilot_ad_group_sources_settings(adgroup):
+        cpc_change_comments = []
+
+        if not allow_recent_budget_change and\
+                ad_group_sources_daily_budget_was_changed_recently(ad_group_source_settings.ad_group_source):
+            cpc_change_comments.append(automation.constants.CpcChangeComment.BUDGET_MANUALLY_CHANGED)
+
+        if not _ad_group_source_is_synced(ad_group_source_settings.ad_group_source):
+            cpc_change_comments.append(automation.constants.CpcChangeComment.OLD_DATA)
+
+        yesterday_spend = yesterday_spends.get(ad_group_source_settings.ad_group_source.source_id)
+
+        source = ad_group_source_settings.ad_group_source.source
+        proposed_cpc, calculation_comments = calculate_new_autopilot_cpc(
+            ad_group_source_settings.cpc_cc,
+            ad_group_source_settings.daily_budget_cc,
+            yesterday_spend)
+        cpc_change_comments += calculation_comments
+        cpc_change_comments += _check_source_constraints(proposed_cpc, source)
+        cpc_change_comments += _check_ad_group_constraints(proposed_cpc, adgroup)
+        new_cpc = proposed_cpc if cpc_change_comments == [] else ad_group_source_settings.cpc_cc
+        persist_cpc_change_to_admin_log(
+            ad_group_source_settings.ad_group_source,
+            yesterday_spend,
+            ad_group_source_settings.cpc_cc,
+            new_cpc,
+            ad_group_source_settings.daily_budget_cc,
+            automation.helpers.get_yesterdays_clicks(ad_group_source_settings.ad_group_source),
+            cpc_change_comments
+        )
+
+        if adgroup.campaign not in changes:
+            changes[adgroup.campaign] = {}
+        if (adgroup.name, adgroup.id) not in changes[adgroup.campaign]:
+            changes[adgroup.campaign][(adgroup.name, adgroup.id)] = []
+        changes[adgroup.campaign][(adgroup.name, adgroup.id)].append({
+            'source_name': ad_group_source_settings.ad_group_source.source.name,
+            'old_cpc': ad_group_source_settings.cpc_cc,
+            'new_cpc': new_cpc,
+            'comments': cpc_change_comments
+        })
+
+        if ad_group_source_settings.cpc_cc != proposed_cpc and cpc_change_comments == []:
+            automation.helpers.update_ad_group_source_value(
+                ad_group_source_settings.ad_group_source,
+                'cpc_cc',
+                proposed_cpc
+            )
+    return changes
 
 
 def report_autopilot_metrics():

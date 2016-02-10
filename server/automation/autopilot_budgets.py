@@ -13,6 +13,7 @@ import dash
 import dash.views.helpers
 import automation.settings
 import automation.constants
+import automation.autopilot
 import reports.api_contentads
 from automation import helpers
 from dash import constants
@@ -96,20 +97,11 @@ def adjust_autopilot_ad_groups_budgets():
 
         set_new_daily_budgets(active_sources, new_budgets)
 
-        # send debug email, will be completely removed
-        email_changes_text = 'Total Budget:\t' + str(total_daily_budget) +\
-            '\nBudget Assigned:\t' + str(sum(new_budgets.values())) +\
-            '\nBudget Left Unassigned:\t' + str(total_daily_budget - sum(new_budgets.values())) +\
-            '\n\nSource;PreviousBudget;NewBudget;MaxGuideline;Spend_perc_after_budget_allocation;BounceRate\n'
-        for source in active_sources:
-            email_changes_text += ';'.join([str(source.source), str(old_budgets[source]),
-                                           str(source.get_current_settings().daily_budget_cc),
-                                           str(max_budgets[source]),
-                                           str('{0:.4g}'.format(get_spend_perc(source))),
-                                           str(data[source].get('bounce_rate')), '\n'])
-        email_changes_text += '\n' + bandit.get_bandit_status_text()
+        # Run CPC Auto-Pilot
+        cpc_changes = automation.autopilot.run_cpc_autopilot_on_adgroup(adgroup, {}, True)
 
-        send_autopilot_daily_budget_changes_email(str(adgroup.id), DEBUG_EMAILS, email_changes_text)
+        _send_debug_emails(cpc_changes, total_daily_budget, new_budgets,
+                           active_sources, old_budgets, max_budgets, bandit, data, adgroup)
         ap_statsd_unassigned_daily_budget += budget_left
         ap_statsd_adgroups_processed += 1
 
@@ -117,6 +109,33 @@ def adjust_autopilot_ad_groups_budgets():
     statsd_gauge('automation.autopilot_budgets.total_daily_budget', ap_statsd_total_daily_budget)
     statsd_gauge('automation.autopilot_budgets.unassigned_daily_budget', ap_statsd_unassigned_daily_budget)
     statsd_gauge('automation.autopilot_budgets.adgroups_processed', ap_statsd_adgroups_processed)
+
+
+def _send_debug_emails(cpc_changes, total_daily_budget, new_budgets,
+                       active_sources, old_budgets, max_budgets, bandit, data, adgroup):
+    # send debug emails, will be completely removed
+    for camp, adgroup_changes in cpc_changes.iteritems():
+        automation.autopilot.send_autopilot_CPC_changes_email(
+            camp.name,
+            camp.id,
+            camp.account.name,
+            DEBUG_EMAILS,
+            adgroup_changes
+        )
+
+        email_changes_text = 'Total Budget:\t' + str(total_daily_budget) +\
+            '\nBudget Assigned:\t' + str(sum(new_budgets.values())) +\
+            '\nBudget Left Unassigned:\t' + str(total_daily_budget - sum(new_budgets.values())) +\
+            '\n\nSource;PreviousBudget;NewBudget;MaxGuideline;Spend_perc_after_budget_allocation;BounceRate\n'
+        for source in active_sources:
+            email_changes_text += ';'.join([str(source.source), str(old_budgets[source]),
+                                            str(source.get_current_settings().daily_budget_cc),
+                                            str(max_budgets[source]),
+                                            str('{0:.4g}'.format(get_spend_perc(source))),
+                                            str(data[source].get('bounce_rate')), '\n'])
+            email_changes_text += '\n' + bandit.get_bandit_status_text()
+
+            send_autopilot_daily_budget_changes_email(str(adgroup.id), DEBUG_EMAILS, email_changes_text)
 
 
 def _uniformly_redistribute_remaining_budget(sources, budget_left, new_budgets):
