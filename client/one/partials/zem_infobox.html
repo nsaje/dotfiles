@@ -19,7 +19,7 @@
     <hr>
     <div class="infobox-body">
         <div ng-repeat="setting in basicSettings" 
-            ng-class="{'infobox-setting-section-start': setting.section_start}">
+            class="infobox-setting-base" ng-class="{'infobox-setting-section-start': setting.section_start}">
             <hr ng-if="setting.type === 'hr'"/>
             <zem-infobox-setting 
                 ng-if="setting.type == 'setting'"
