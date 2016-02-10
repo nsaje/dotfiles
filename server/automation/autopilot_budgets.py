@@ -184,7 +184,7 @@ def set_new_daily_budgets(ad_group_sources, new_daily_budgets):
 def get_adgroups_on_autopilot():
     active_adgroups = helpers.get_all_active_ad_groups()
     return [adg for adg in active_adgroups
-            if adg.get_current_settings().autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE]
+            if adg.get_current_settings().autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET]
 
 
 def predict_outcome_success(source, data, goal):
