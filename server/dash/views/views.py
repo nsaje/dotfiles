@@ -508,9 +508,19 @@ class CampaignOverview(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
+        active = False
+        for ad_group in models.AdGroup.objects.filter(
+                campaign=campaign
+            ).exclude_archived():
+            ad_group_settings = ad_group.get_current_settings()
+            running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
+            if running_status == constants.AdGroupRunningStatus.ACTIVE:
+                active = True
+                break
+
         header = {
             'title': campaign.name,
-            'active': False,
+            'active': active,
             'level': constants.InfoboxLevel.CAMPAIGN
         }
 
