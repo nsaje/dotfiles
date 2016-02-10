@@ -35,12 +35,13 @@ class UpdateTouchpointConversionsTestCase(TestCase):
 
         process.update_touchpoint_conversions_full()
 
-        expected_args = dict([(datetime.date(2015, 9, 8), [self.cp1]),
-                              (datetime.date(2015, 9, 9), [self.cp1]),
-                              (datetime.date(2015, 9, 10), [self.cp1, self.cp2])])
+        expected_dates = set([datetime.date(2015, 9, 8),
+                              datetime.date(2015, 9, 9),
+                              datetime.date(2015, 9, 10)])
 
         self.assertEqual(update_touchpoint_conversions_mock.call_count, 1)
-        self.assertEqual(dict(update_touchpoint_conversions_mock.call_args[0][0]), expected_args)
+        self.assertEqual(set(update_touchpoint_conversions_mock.call_args[0][0]), expected_dates)
+        self.assertEqual(set(update_touchpoint_conversions_mock.call_args[0][1]), set([self.cp1, self.cp2]))
 
     @mock.patch('convapi.process.update_touchpoint_conversions')
     @mock.patch('utils.dates_helper.datetime')
@@ -55,13 +56,14 @@ class UpdateTouchpointConversionsTestCase(TestCase):
 
         process.update_touchpoint_conversions_full()
 
-        expected_args = dict([(datetime.date(2015, 9, 8), [self.cp1, self.cp2]),
-                             (datetime.date(2015, 9, 9), [self.cp1, self.cp2]),
-                             (datetime.date(2015, 9, 10), [self.cp1, self.cp2]),
-                             (datetime.date(2015, 9, 7), [self.cp2])])
+        expected_dates = set([datetime.date(2015, 9, 7),
+                              datetime.date(2015, 9, 8),
+                              datetime.date(2015, 9, 9),
+                              datetime.date(2015, 9, 10)])
 
         self.assertEqual(update_touchpoint_conversions_mock.call_count, 1)
-        self.assertEqual(dict(update_touchpoint_conversions_mock.call_args[0][0]), expected_args)
+        self.assertEqual(set(update_touchpoint_conversions_mock.call_args[0][0]), expected_dates)
+        self.assertEqual(set(update_touchpoint_conversions_mock.call_args[0][1]), set([self.cp1, self.cp2]))
 
 
 class ProcessTouchpointsImpressionsTestCase(TestCase):

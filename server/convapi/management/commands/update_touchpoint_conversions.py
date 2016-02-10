@@ -34,9 +34,9 @@ class Command(ExceptionCommand):
         if account_ids is not None:
             conversion_pixels = conversion_pixels.filter(account_id__in=account_ids)
 
-        pairs = []
+        dates = []
         while from_date <= to_date:
-            pairs.append((from_date, conversion_pixels))
+            dates.append(from_date)
             from_date = from_date + datetime.timedelta(days=1)
 
-        process.update_touchpoint_conversions(pairs)
+        process.update_touchpoint_conversions(dates, conversion_pixels)
