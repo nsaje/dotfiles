@@ -676,15 +676,34 @@ div[datepicker] {
 
 
 .graph-infobox-parent {
-    display: inline-block;
-    width: 100%;
-    position: relative;
-    overflow: hidden;
+	display: table; 
+	table-layout: fixed; 
+	width: 100%;
+}
+
+.graph-infobox-row {
+	display: table-row;
+}
+
+.graph-container {
+	display: table-cell;
+	width: 100%;
+	vertical-align: top;
 }
 
 .graph-container-short {
-    display: inline-block;
-    width: 70%;
+    display: table-cell;
+    width: 100%;
+}
+
+.graph-container-long {
+    display: table-cell;
+    width: 100%;
+}
+
+.infobox-container {
+	display: table-cell;
+	width: 350px;
 }
 
 .infobox-container-full {
@@ -731,6 +750,14 @@ div[datepicker] {
 
 .infobox-background {
     background: #f6f6f6;
+}
+
+.infobox-wrapper {
+	display: block;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	max-height: 300px;
+
 }
 
 .infobox-adgroup {
