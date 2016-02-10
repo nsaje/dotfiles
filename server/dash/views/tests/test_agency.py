@@ -20,6 +20,7 @@ from dash import constants
 from dash.views import agency
 from dash import forms
 
+TestCase.maxDiff = None
 
 class AdGroupSettingsTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
@@ -126,7 +127,7 @@ class AdGroupSettingsTest(TestCase):
                     'enable_adobe_tracking': False,
                     'adobe_tracking_param': '',
                     'autopilot_state': 2,
-                    'autopilot_daily_budget': '100.00',
+                    'autopilot_daily_budget': '0.00',
                     'autopilot_min_budget': '100'
                 }
             },
@@ -236,7 +237,7 @@ class AdGroupSettingsTest(TestCase):
                     'adobe_tracking_param': '',
                     'enable_adobe_tracking': False,
                     'autopilot_state': 2,
-                    'autopilot_daily_budget': '100.00',
+                    'autopilot_daily_budget': '0.00',
                     'autopilot_min_budget': '100'
                 }
             },
