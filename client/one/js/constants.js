@@ -557,18 +557,19 @@ var options = {
         {name: 'Enabled', value: constants.adGroupSettingsState.ACTIVE},
     ],
     adGroupSettingsAutopilotStates: [{
-          name: 'Disabled',
-          help: 'Auto-Pilot will not operate on this Ad Group.',
-          value: constants.adGroupSettingsAutopilotState.INACTIVE
-        }, {
-          name: 'Optimize Bid CPCs',
-          help: 'Bid CPCs on active Media Sources in this Ad Group will be optimized. Ad Group\'s Maximum CPC constraint will be enforced.',
-          value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC
-        }, {
-          name: 'Optimize Bid CPCs and Daily Budgets',
-          help: 'Both Bid CPCs and Daily Budgets will be optimized on active Media Sources in this Ad Group.',
-          value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        },
+        name: 'Disabled',
+        help: 'Auto-Pilot will not operate on this Ad Group.',
+        value: constants.adGroupSettingsAutopilotState.INACTIVE,
+    }, {
+        name: 'Optimize Bid CPCs',
+        help: 'Bid CPCs on active Media Sources in this Ad Group will be optimized.' +
+              'Ad Group\'s Maximum CPC constraint will be enforced.',
+        value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC,
+    }, {
+        name: 'Optimize Bid CPCs and Daily Budgets',
+        help: 'Both Bid CPCs and Daily Budgets will be optimized on active Media Sources in this Ad Group.',
+        value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+    },
     ],
     adTargetDevices: [
         {name: 'Desktop', value: constants.adTargetDevice.DESKTOP},
