@@ -403,7 +403,6 @@ def _one_week_ago():
 
 
 def _retrieve_active_budgetlineitems(campaign, date):
-    from pudb import set_trace; set_trace()
     if campaign:
         qs = dash.models.BudgetLineItem.objects.filter(
             campaign__in=campaign
