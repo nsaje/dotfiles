@@ -263,7 +263,7 @@ def _get_email_source_changes_text(change):
         return u'''
 - changed CPC bid on {} from ${} to ${}'''.format(
             change['source_name'],
-            change['old_cpc'].normalize(),
+            change['old_cpc_cc'].normalize(),
             change['new_cpc_cc'].normalize())
     return u'''
 - no changes on {} because {}'''.format(
@@ -327,7 +327,7 @@ def run_cpc_autopilot_on_adgroup(adgroup, changes={}, allow_recent_budget_change
             changes[adgroup.campaign][(adgroup.name, adgroup.id)] = []
         changes[adgroup.campaign][(adgroup.name, adgroup.id)].append({
             'source_name': ad_group_source_settings.ad_group_source.source.name,
-            'old_cpc': ad_group_source_settings.cpc_cc,
+            'old_cpc_cc': ad_group_source_settings.cpc_cc,
             'new_cpc_cc': new_cpc_cc,
             'comments': cpc_change_comments
         })
