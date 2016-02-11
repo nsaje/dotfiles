@@ -66,28 +66,26 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             name: 'Account Manager',
             field: 'default_account_manager',
-            shown: true,
             checked: false,
             type: 'text',
             totalRow: false,
             help: 'Account manager responsible for the campaign and the communication with the client.',
             order: true,
-            initialOrder: 'desc'
-            //internal: $scope.isPermissionInternal('zemauth.unspent_budget_view'),
-            //shown: $scope.hasPermission('zemauth.unspent_budget_view')
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_managers_in_accounts_table'),
+            shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
         },
         {
             name: 'Sales Representative',
             field: 'default_sales_representative',
-            shown: true,
             checked: false,
             type: 'text',
             totalRow: false,
             help: 'Sales representative responsible for the campaign and the communication with the client.',
             order: true,
-            initialOrder: 'desc'
-            //orderField: 'accountManager',
-            //initialOrder: 'asc'
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_managers_in_accounts_table'),
+            shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
         },
         {
             name: 'Total Budget',
