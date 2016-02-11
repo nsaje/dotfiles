@@ -546,7 +546,7 @@ class CampaignOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'basic_settings':basic_settings,
+            'basic_settings': basic_settings,
             'performance_settings': performance_settings,
         }
         return self.create_api_response(response)
