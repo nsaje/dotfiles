@@ -777,7 +777,7 @@ class AccountsAccountsTable(object):
 
         projections = {}
         if user.has_perm('zemauth.can_see_projections'):
-            projections = self.get_bcm_projections(accounts, start_date, end_date)
+            projections = bcm_helpers.get_projections(accounts, start_date, end_date)
             totals_data['spend_projection'] = sum(projections['spend_projection'].itervalues())
             totals_data['credit_projection'] = sum(projections['credit_projection'].itervalues())
 
@@ -899,9 +899,6 @@ class AccountsAccountsTable(object):
             account_flat_fees[credit.account_id] += credit.get_flat_fee_on_date_range(start_date,
                                                                                       end_date)
         return account_flat_fees
-
-    def get_bcm_projections(self, accounts, start_date, end_date):
-        return bcm_helpers.get_projections(accounts, start_date, end_date)
 
     def get_budgets(self, accounts):
         bcm_account_ids = set(acc.pk for acc in accounts if acc.uses_credits)
