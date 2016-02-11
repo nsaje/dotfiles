@@ -11,6 +11,8 @@ import dash.models
 import zemauth.models
 import reports.api_contentads
 
+from utils.statsd_helper import statsd_timer
+
 from decimal import Decimal
 
 
@@ -61,6 +63,7 @@ class OverviewSeparator(OverviewSetting):
         super(OverviewSeparator, self).__init__('', '', '', setting_type='hr')
 
 
+@statsd_timer('dash.infobox_helpers', 'format_flight_time')
 def format_flight_time(start_date, end_date):
     start_date_str = start_date.strftime('%m/%d') if start_date else ''
     end_date_str = end_date.strftime('%m/%d') if end_date else 'Ongoing'
@@ -79,6 +82,7 @@ def format_flight_time(start_date, end_date):
     return flight_time, flight_time_left_days
 
 
+@statsd_timer('dash.infobox_helpers', 'get_ideal_campaign_spend')
 def get_ideal_campaign_spend(user, campaign, until_date=None):
     at_date = until_date or datetime.datetime.today().date()
     budgets = _retrieve_active_budgetlineitems([campaign], at_date)
@@ -88,6 +92,7 @@ def get_ideal_campaign_spend(user, campaign, until_date=None):
     return sum(all_budget_spends_at_date)
 
 
+@statsd_timer('dash.infobox_helpers', 'get_total_and_media_campaign_spend')
 def get_total_and_media_campaign_spend(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()
@@ -104,6 +109,7 @@ def get_total_and_media_campaign_spend(user, campaign, until_date=None):
     )
 
 
+@statsd_timer('dash.infobox_helpers', 'get_media_campaign_spend')
 def get_media_campaign_spend(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()
@@ -115,6 +121,7 @@ def get_media_campaign_spend(user, campaign, until_date=None):
     return ret
 
 
+@statsd_timer('dash.infobox_helpers', 'get_yesterday_adgroup_spend')
 def get_yesterday_adgroup_spend(user, ad_group):
     yesterday_media_cost = reports.api_contentads.get_actual_yesterday_cost(
         {'ad_group': ad_group.id},
@@ -123,6 +130,7 @@ def get_yesterday_adgroup_spend(user, ad_group):
     return sum(yesterday_media_cost.values())
 
 
+@statsd_timer('dash.infobox_helpers', 'get_yesterday_campaign_spend')
 def get_yesterday_campaign_spend(user, campaign):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
     budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
@@ -134,6 +142,7 @@ def get_yesterday_campaign_spend(user, campaign):
     return sum(all_budget_spends_at_date)
 
 
+@statsd_timer('dash.infobox_helpers', 'get_yesterday_all_accounts_spend')
 def get_yesterday_all_accounts_spend():
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
     budgets = dash.models.BudgetLineItem.objects.all()
@@ -145,6 +154,7 @@ def get_yesterday_all_accounts_spend():
     return sum(all_budget_spends_at_date)
 
 
+@statsd_timer('dash.infobox_helpers', 'get_mtd_all_accounts_spend')
 def get_mtd_all_accounts_spend():
     today = datetime.datetime.utcnow().date()
     budgets = dash.models.BudgetLineItem.objects.all()
@@ -156,6 +166,7 @@ def get_mtd_all_accounts_spend():
     return sum(all_budget_spends_at_date)
 
 
+@statsd_timer('dash.infobox_helpers', 'get_goal_value')
 def get_goal_value(user, campaign, campaign_settings, goal_type):
     # we are interested in reaching the goal by today
     end_date = datetime.datetime.today().date()
@@ -181,6 +192,7 @@ def get_goal_value(user, campaign, campaign_settings, goal_type):
     raise exceptions.NotImplementedError()
 
 
+@statsd_timer('dash.infobox_helpers', 'get_goal_difference')
 def get_goal_difference(goal_type, target, actual):
     """
     Returns difference as (value, description, success) tuple
@@ -207,6 +219,7 @@ def get_goal_difference(goal_type, target, actual):
         return diff, description, success
 
 
+@statsd_timer('dash.infobox_helpers', 'goals_and_spend_settings')
 def goals_and_spend_settings(user, campaign):
     settings = []
 
@@ -270,6 +283,7 @@ def format_goal_value(goal_value, goal_type):
         return int(goal_value)
 
 
+@statsd_timer('dash.infobox_helpers', 'calculate_daily_ad_group_cap')
 def calculate_daily_ad_group_cap(ad_group):
     """
     Daily media cap
@@ -280,6 +294,7 @@ def calculate_daily_ad_group_cap(ad_group):
     ))
 
 
+@statsd_timer('dash.infobox_helpers', 'calculate_daily_campaign_cap')
 def calculate_daily_campaign_cap(campaign):
     ad_groups = dash.models.AdGroup.objects.filter(
         campaign=campaign
@@ -292,6 +307,7 @@ def calculate_daily_campaign_cap(campaign):
     ))
 
 
+@statsd_timer('dash.infobox_helpers', 'calculate_daily_account_cap')
 def calculate_daily_account_cap(account):
     campaigns = dash.models.Campaign.objects.filter(account=account)
     ad_groups = dash.models.AdGroup.objects.filter(
@@ -305,6 +321,7 @@ def calculate_daily_account_cap(account):
     ))
 
 
+@statsd_timer('dash.infobox_helpers', 'calculate_available_media_campaign_budget')
 def calculate_available_media_campaign_budget(campaign):
     # campaign budget based on non-depleted budget line items
     today = datetime.datetime.utcnow().date()
@@ -319,6 +336,7 @@ def calculate_available_media_campaign_budget(campaign):
     return ret
 
 
+@statsd_timer('dash.infobox_helpers', 'calculate_available_credit')
 def calculate_available_credit(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
@@ -326,6 +344,7 @@ def calculate_available_credit(account):
     return sum([credit.effective_amount() * (1 - credit.license_fee) for credit in credits])
 
 
+@statsd_timer('dash.infobox_helpers', 'calculate_spend_credit')
 def calculate_spend_credit(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
@@ -337,6 +356,7 @@ def calculate_spend_credit(account):
     return sum(map(lambda bli: bli['media'], all_budget_spends_at_date))
 
 
+@statsd_timer('dash.infobox_helpers', 'calculate_yesterday_account_spend')
 def calculate_yesterday_account_spend(account):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
     credits = _retrieve_active_creditlineitems(account, yesterday)
@@ -351,6 +371,7 @@ def calculate_yesterday_account_spend(account):
     return sum(all_budget_spends_at_date)
 
 
+@statsd_timer('dash.infobox_helpers', 'create_yesterday_spend_setting')
 def create_yesterday_spend_setting(yesterday_cost, daily_budget):
     filled_daily_ratio = None
     if daily_budget > 0:
@@ -372,6 +393,7 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
     return yesterday_spend_setting
 
 
+@statsd_timer('dash.infobox_helpers', 'count_active_accounts')
 def count_active_accounts():
     account_ids = set(
         dash.models.AdGroupSourceState.objects.all().group_current_states().filter(
@@ -384,6 +406,7 @@ def count_active_accounts():
     return len(account_ids)
 
 
+@statsd_timer('dash.infobox_helpers', 'calculate_all_accounts_total_budget')
 def calculate_all_accounts_total_budget(start_date, end_date):
     '''
     Total budget in date range is amount of all active
@@ -413,6 +436,7 @@ def count_weekly_logged_in_users():
     ).count()
 
 
+@statsd_timer('dash.infobox_helpers', 'count_weekly_active_users')
 def count_weekly_active_users():
     return dash.models.UserActionLog.objects.filter(
         created_dt__gte=_one_week_ago()
@@ -421,6 +445,7 @@ def count_weekly_active_users():
     ).select_related('created_by').distinct('created_by').count()
 
 
+@statsd_timer('dash.infobox_helpers', 'count_weekly_selfmanaged_actions')
 def count_weekly_selfmanaged_actions():
     return dash.models.UserActionLog.objects.filter(
         created_dt__gte=_one_week_ago()
@@ -435,15 +460,19 @@ def _one_week_ago():
 
 
 def _retrieve_active_budgetlineitems(campaign, date):
-    return dash.models.BudgetLineItem.objects.all().filter_active(date)
+    return dash.models.BudgetLineItem.objects.filter(
+        campaign__in=campaign
+    ).filter_active(date)
 
 
+@statsd_timer('dash.infobox_helpers', '_retrieve_active_creditlineitems')
 def _retrieve_active_creditlineitems(account, date):
     return [credit for credit in dash.models.CreditLineItem.objects.filter(
         account=account
     ) if credit.is_active(date)]
 
 
+@statsd_timer('dash.infobox_helpers', '_retrieve_daily_cap')
 def _retrieve_daily_cap(ad_group_source):
     adgs_state = ad_group_source.get_latest_state()
     # skip inactive adgroup sources
