@@ -97,10 +97,14 @@ def get_total_and_media_campaign_spend(user, campaign, until_date=None):
     )
 
 
-def get_media_campaign_spend(user, campaign, until_date=None):
+def get_media_campaign_spend(user, campaign, until_date=None, request_cache=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()
-    budgets = _retrieve_active_budgetlineitems([campaign], at_date)
+
+    budgets = request_cache.active_budgetlineitems or _retrieve_active_budgetlineitems([campaign], at_date)
+    if not request_cache.active_budgetlineitems:
+        request_cache.active_budgetlineitems = budgets
+
     ret = Decimal(0)
     for bli in budgets:
         spend_data = bli.get_spend_data(date=at_date, use_decimal=True)
@@ -108,7 +112,7 @@ def get_media_campaign_spend(user, campaign, until_date=None):
     return ret
 
 
-def get_yesterday_adgroup_spend(user, ad_group):
+def get_yesterday_adgroup_spend(user, ad_group, ):
     yesterday_media_cost = reports.api_contentads.get_actual_yesterday_cost(
         {'ad_group': ad_group.id},
         breakdown=['ad_group']
@@ -219,37 +223,6 @@ def goals_and_spend_settings(user, campaign):
     ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
     settings.append(campaign_pacing_settings.as_dict())
 
-    # TODO: Campaign goals will be disabled until Campaign KPI's ticket gets delivered
-    """
-    campaign_settings = campaign.get_current_settings()
-    campaign_goals = [(
-        campaign_settings.campaign_goal,
-        campaign_settings.goal_quantity,
-    )
-    ]
-    for i, (goal, quantity) in enumerate(campaign_goals):
-        text = dash.constants.CampaignGoal.get_text(goal)
-        name = 'Campaign goals:' if i == 0 else ''
-
-        try:
-            goal_value = get_goal_value(user, campaign, campaign_settings, goal)
-        except NotImplementedError:
-            goal_value = None
-        goal_diff, description, success = get_goal_difference(
-            goal,
-            float(quantity),
-            goal_value
-        )
-        goal_setting = OverviewSetting(
-            name,
-            '{actual_goal} {value}'.format(
-                actual_goal=format_goal_value(goal_value, goal),
-                value=text
-            ),
-            description
-        ).performance(success)
-        settings.append(goal_setting.as_dict())
-    """
     is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
     return settings, is_delivering
 
@@ -298,10 +271,12 @@ def calculate_daily_account_cap(account):
     ))
 
 
-def calculate_available_media_campaign_budget(campaign):
+def calculate_available_media_campaign_budget(campaign, request_cache=None):
     # campaign budget based on non-depleted budget line items
     today = datetime.datetime.utcnow().date()
-    budgets = _retrieve_active_budgetlineitems([campaign], today)
+    budgets = request_cache.active_budgetlineitems or _retrieve_active_budgetlineitems([campaign], today)
+    if not request_cache.active_budgetlineitems:
+        request_cache.active_budgetlineitems = budgets
 
     ret = 0
     for bli in budgets:
