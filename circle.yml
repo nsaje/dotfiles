@@ -2,8 +2,6 @@ general:
     artifacts:
         - ./server/coverage_report.txt
         - ./client/coverage/text/*
-        - ./server.tar.gz
-        - ./client.tar.gz
 
 checkout:
     post:
@@ -12,7 +10,7 @@ checkout:
 
 machine:
     python:
-        version: 2.7.6
+        version: 2.7.10
     node:
         version: v0.10.22
 
@@ -20,6 +18,7 @@ dependencies:
     override:
         - pip install -r server/requirements.txt
         - pip install -r server/requirements_dev.txt
+        - pip install awscli
         - 'npm prune && npm install':
             pwd:
                 client
@@ -44,10 +43,10 @@ test:
         - 'echo "${CIRCLE_BUILD_NUM}" > build_number.txt':
             parallel: true
             pwd: server
-        - 'if [[ "$CIRCLE_NODE_INDEX" == "0" ]]; then tar -pc * -zf ../server.tar.gz; fi':
+        - 'if [[ "$CIRCLE_NODE_INDEX" == "0" ]]; then tar -pc * -zf $CIRCLE_ARTIFACTS/server.tar.gz; ../scripts/push_artifact_to_s3.sh $CIRCLE_ARTIFACTS/server.tar.gz; fi':
             parallel: true
             pwd: server
-        - 'if [[ "$CIRCLE_NODE_INDEX" == "1" ]]; then tar -pc dist/ ../server/static -zf ../client.tar.gz; else export; fi':
+        - 'if [[ "$CIRCLE_NODE_INDEX" == "1" ]]; then tar -pc dist/ ../server/static -zf $CIRCLE_ARTIFACTS/client.tar.gz; else export; fi':
             parallel: true
             pwd: client
         - 'if [[ "$CIRCLE_NODE_INDEX" == "1" ]] && [[ "$CIRCLE_BRANCH" == "master" ]]; then ./scripts/push_static_to_s3.sh; fi':

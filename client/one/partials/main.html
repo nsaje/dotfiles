@@ -61,9 +61,12 @@
                 enable-publisher-filter="enablePublisherFilter"
                 show-publisher-selected="showPublisherSelected">
             </zem-filter>
-            <div class="btn btn-default infobox-button pull-right" ng-show="hasPermission('zemauth.can_see_infobox') && infoboxEnabled" ng-click="toggleInfoboxVisibility()">I</div>
+            <div class="infobox-button pull-right">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_see_infobox')" popover-placement="left"></zem-internal-feature>
+                <div class="btn btn-default" ng-show="hasPermission('zemauth.can_see_infobox') && infoboxEnabled" ng-click="toggleInfoboxVisibility()">
+                    I</div>
+                </div>
             <div ui-view></div>
-
         </div>
 
         <div ng-show="!accountsAccess.hasAccounts" ng-include src="'/partials/403.html'"></div>

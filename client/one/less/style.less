@@ -696,15 +696,37 @@ div[datepicker] {
     overflow: auto;
     display: visible;
     background: #f6f6f6;
-	font-size: 13px;
+    font-size: 13px;
 }
 
 .infobox-container-short {
     display: none;
 }
 
+/**
+ * Default internal-feature style for header buttons
+ */
+.header-button-internal() {
+    &:before {
+        content: " ";
+        position: absolute;
+        top: -4px;
+        left: -4px;
+        width: 0;
+        height: 0;
+        display: block;
+        border-top: 8px solid @internal-color;
+        border-right: 8px solid transparent;
+    }
+}
+
 .infobox-button {
     margin-right: 5px;
+    position: relative;
+
+    .internal {
+        .header-button-internal;
+    }
 }
 
 .infobox-background {
@@ -712,40 +734,47 @@ div[datepicker] {
 }
 
 .infobox-adgroup {
-	.infobox-setting-label {
-		width: 34%;
-		max-width: 120px;
-	}
+    .infobox-setting-label {
+        width: 34%;
+        max-width: 120px;
+    }
 }
 
 .infobox-account {
-	.infobox-setting-label {
-		width: 30%;
-		max-width: 120px;
-	}
+    .infobox-setting-label {
+        width: 30%;
+        max-width: 120px;
+    }
 
-	.infobox-status {
-		vertical-align: top;
-		margin-top: 5px;
-	}
+    .infobox-status {
+        vertical-align: top;
+        height: 40px;
+    }
+}
+
+.graph-button-image {
+    width: 30px;
+    height: 18px;
+    vertical-align: middle;
+    padding-bottom: 4px;
 }
 
 .infobox-campaign {
-	.infobox-setting-label {
-		width: 30%;
-		max-width: 125px;
-	}
+    .infobox-setting-label {
+        width: 30%;
+        max-width: 125px;
+    }
 }
 
 .infobox-all-accounts {
-	.infobox-setting-label {
-		width: 45%;
-		max-width: 185px;
-	}
+    .infobox-setting-label {
+        width: 45%;
+        max-width: 185px;
+    }
 
-	.infobox-setting-value-container {
-		width: 50%;
-	}
+    .infobox-setting-value-container {
+        width: 50%;
+    }
 }
 
 .infobox {
@@ -754,9 +783,9 @@ div[datepicker] {
     color: @infobox-black;
 
     hr {
-    	border-top: 1px solid #dddddd;
-		margin: 10px -10px;
-	}
+        border-top: 1px solid #dddddd;
+        margin: 10px -10px;
+    }
 }
 
 .infobox-active-circle-icon-gray {
@@ -774,7 +803,6 @@ div[datepicker] {
     display: inline-block;
     min-width: 20px;
     vertical-align: top;
-    margin-top: -4px;
     margin-left: 0px;
     vertical-align: middle;
     margin-top: -4px;
@@ -789,20 +817,20 @@ div[datepicker] {
 }
 
 .infobox-header-wo-subtitle {
-	height: 34px;
-    line-height: 34px;
+    height: 34px;
+    line-height: 38px;
 }
 
 .infobox-title {
     color: @infobox-black;
     font-size: 18px;
     font-weight: 600;
-    line-height: 24px;
+    line-height: 20px;
 }
 
 .infobox-icon {
-	width: 13px;
-	height: 13px;
+    width: 13px;
+    height: 13px;
     left: 0;
     margin-bottom: 0;
     position: absolute;
@@ -814,10 +842,14 @@ div[datepicker] {
     font-size: 13px;
 }
 
+.infobox-setting {
+    overflow: hidden;
+}
+
 .infobox-setting-value-container {
-	display: inline-block;
-	width: 68%;
-	vertical-align: top;
+    display: inline-block;
+    width: 68%;
+    vertical-align: top;
     line-height: 16px;
 }
 
@@ -845,7 +877,7 @@ div[datepicker] {
 }
 
 .infobox-setting-icon {
-	display: inline-block;
+    display: inline-block;
     padding-left: 16px;
     position: relative;
     vertical-align: top;
@@ -862,6 +894,7 @@ div[datepicker] {
 
 .infobox-setting-info-dropped {
     display: inline-block;
+    word-break: break-all;
 }
 
 .infobox-setting-info-dropped-content {
@@ -872,7 +905,7 @@ div[datepicker] {
 }
 
 .infobox-setting-section-start {
-	padding-top: 10px
+    padding-top: 10px
 }
 
 .chart-hidden {
@@ -1621,17 +1654,7 @@ div[datepicker] {
         #filter {
 
             .internal {
-                &:before {
-                    content: " ";
-                    position: absolute;
-                    top: -4px;
-                    left: -4px;
-                    width: 0;
-                    height: 0;
-                    display: block;
-                    border-top: 8px solid @internal-color;
-                    border-right: 8px solid transparent;
-                }
+                .header-button-internal;
             }
 
             div.btn {
