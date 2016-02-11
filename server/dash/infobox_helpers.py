@@ -423,20 +423,6 @@ def count_weekly_selfmanaged_actions():
     ).count()
 
 
-def break_tracking_code(tracking_code):
-    max_len = 26
-    if len(tracking_code) <= max_len:
-        return tracking_code
-
-    split = []
-    current_code = tracking_code
-    while len(current_code) > 34:
-        split.append(current_code[:max_len])
-        current_code = current_code[max_len:]
-
-    return '\n'.join(split + [current_code])
-
-
 def _one_week_ago():
     now = datetime.datetime.utcnow()
     return now - datetime.timedelta(days=7)

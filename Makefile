@@ -15,7 +15,7 @@ build:
 	docker pull python:2.7
 	docker build -t zemanta/z1 .
 push:
-	docker push zemanta/z2
+	docker push zemanta/z1
 
 update: build push
 
