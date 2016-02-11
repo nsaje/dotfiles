@@ -16,7 +16,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.size = $scope.sizeRange[0];
     $scope.isIncompletePostclickMetrics = false;
     $scope.infoboxHeader = null;
-    $scope.infoboxSettings = null;
+    $scope.infoboxBasicSettings = null;
+    $scope.infoboxPerformanceSettings = null;
     $scope.pagination = {
         currentPage: 1,
     };
@@ -62,6 +63,30 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             order: true,
             orderField: 'status',
             initialOrder: 'asc'
+        },
+        {
+            name: 'Account Manager',
+            field: 'default_account_manager',
+            checked: false,
+            type: 'text',
+            totalRow: false,
+            help: 'Account manager responsible for the campaign and the communication with the client.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_managers_in_accounts_table'),
+            shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
+        },
+        {
+            name: 'Sales Representative',
+            field: 'default_sales_representative',
+            checked: false,
+            type: 'text',
+            totalRow: false,
+            help: 'Sales representative responsible for the campaign and the communication with the client.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_managers_in_accounts_table'),
+            shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
         },
         {
             name: 'Total Budget',
@@ -319,6 +344,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             ]
         },
         {
+            'name': 'Management',
+            'fields': [
+                'default_account_manager', 'default_sales_representative'
+            ]
+        },
+        {
             'name': 'Data Sync',
             'fields': ['last_sync']
         }
@@ -446,7 +477,8 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         api.allAccountsOverview.get().then(
             function (data) {
                 $scope.infoboxHeader = data.header;
-                $scope.infoboxSettings = data.settings;
+                $scope.infoboxBasicSettings = data.basicSettings;
+                $scope.infoboxPerformanceSettings = data.performanceSettings;
             }
         );
     };

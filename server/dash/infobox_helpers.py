@@ -16,13 +16,21 @@ from decimal import Decimal
 
 class OverviewSetting(object):
 
-    def __init__(self, name='', value='', description=None, tooltip=None, setting_type='setting', section_start=None):
+    def __init__(self,
+                 name='',
+                 value='',
+                 description=None,
+                 tooltip=None,
+                 setting_type='setting',
+                 section_start=None,
+                 warning=None):
         self.name = name
         self.value = value
         self.description = description
         self.details_label = None
         self.details_content = None
         self.icon = None
+        self.warning = warning
         self.type = setting_type
         self.tooltip = tooltip
         self.section_start = section_start
@@ -42,11 +50,9 @@ class OverviewSetting(object):
     def as_dict(self):
         ret = {}
         for key, value in self.__dict__.iteritems():
-            adjusted_value = value
-            if value and key == 'description':
-                adjusted_value = ' {} '.format(value)
-            if adjusted_value is not None:
-                ret[key] = adjusted_value
+            if value is None:
+                continue
+            ret[key] = value
         return ret
 
 
@@ -57,7 +63,7 @@ class OverviewSeparator(OverviewSetting):
 
 def format_flight_time(start_date, end_date):
     start_date_str = start_date.strftime('%m/%d') if start_date else ''
-    end_date_str = end_date.strftime('%m/%d') if end_date else ''
+    end_date_str = end_date.strftime('%m/%d') if end_date else 'Ongoing'
 
     flight_time = "{start_date} - {end_date}".format(
         start_date=start_date_str,

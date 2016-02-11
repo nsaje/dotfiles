@@ -15,6 +15,7 @@
 
 @infobox-black: #414141;
 @infobox-gray: #aaaaaa;
+@white: #fff;
 
 @keyframes show-updated {
     0% { background-color: @updated-color; }
@@ -674,29 +675,44 @@ div[datepicker] {
     color: #454545;
 }
 
-
 .graph-infobox-parent {
-    display: inline-block;
+    display: table; 
+    table-layout: fixed; 
     width: 100%;
-    position: relative;
-    overflow: hidden;
+}
+
+.graph-infobox-row {
+    display: table-row;
+}
+
+.graph-container {
+    display: table-cell;
+    width: 100%;
+    vertical-align: top;
+}
+
+.graph-collapsed {
+    display: none;
 }
 
 .graph-container-short {
-    display: inline-block;
-    width: 70%;
+    display: table-cell;
+    width: 100%;
 }
 
+.graph-container-long {
+    display: table-cell;
+    width: 100%;
+}
+
+.infobox-container {
+    display: table-cell;
+    width: 350px;
+}
+
+
 .infobox-container-full {
-    display: inline-block;
-    width: 28%;
     margin-left: 2%;
-    position: absolute;
-    height: 100%;
-    overflow: auto;
-    display: visible;
-    background: #f6f6f6;
-    font-size: 13px;
 }
 
 .infobox-container-short {
@@ -710,18 +726,53 @@ div[datepicker] {
     &:before {
         content: " ";
         position: absolute;
-        top: -4px;
-        left: -4px;
+        top: 0px;
+        left: 0px;
         width: 0;
         height: 0;
         display: block;
         border-top: 8px solid @internal-color;
         border-right: 8px solid transparent;
+        z-index: 1000;
     }
 }
 
 .infobox-button {
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    padding: 0px;
+    margin-left: 5px;
+    box-sizing: border-box;
+    position: relative;
+
+    .internal {
+        .header-button-internal;
+    }
+}
+
+.navigation-button {
     margin-right: 5px;
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    padding: 0px 0px;
+    border: 0px;
+    box-shadow: none;
+}
+
+.graph-button {
+    width: 34px;
+    height: 34px;
+    padding: 0px;
+    line-height: 34px;
+}
+
+.graph-button-image {
+    width: 30px;
+    height: 18px;
+    vertical-align: middle;
+    padding-bottom: 4px;
     position: relative;
 
     .internal {
@@ -733,21 +784,28 @@ div[datepicker] {
     background: #f6f6f6;
 }
 
+.infobox-wrapper {
+    display: block;
+    overflow: hidden;
+    max-height: 300px;
+
+}
+
 .infobox-adgroup {
     .infobox-setting-label {
-        width: 34%;
+        width: 120px;
         max-width: 120px;
     }
 }
 
 .infobox-account {
     .infobox-setting-label {
-        width: 30%;
+        width: 120px;
         max-width: 120px;
     }
 
     .infobox-status {
-        vertical-align: top;
+        vertical-align: middle;
         height: 40px;
     }
 }
@@ -761,41 +819,36 @@ div[datepicker] {
 
 .infobox-campaign {
     .infobox-setting-label {
-        width: 30%;
+        width: 125px;
         max-width: 125px;
     }
 }
 
 .infobox-all-accounts {
     .infobox-setting-label {
-        width: 45%;
+        width: 185px;
         max-width: 185px;
     }
 
-    .infobox-setting-value-container {
-        width: 50%;
+    .infobox-body {
+        overflow: hidden;
+        height: 200px;
     }
 }
 
 .infobox {
     padding: 10px;
-
+    overflow: hidden;
     color: @infobox-black;
 
     hr {
         border-top: 1px solid #dddddd;
         margin: 10px -10px;
     }
-}
 
-.infobox-active-circle-icon-gray {
-    .state-icon-placeholder();
-    background-image: url('img/active_circle_icon_gray.svg');
-    height: 14px;
-    line-height: 34px;
-    background-position: center center;
-    background-size: 43px auto;
-    width: 14px;
+    .active-circle-icon {
+        display: table-cell;
+    }
 }
 
 .infobox-status {
@@ -809,11 +862,46 @@ div[datepicker] {
 }
 
 .infobox-header {
-    display: block;
+    display: table;
+    table-layout: fixed;
     width: 100%;
-    white-space: nowrap;
-    overflow: visible;
     height: 34px;
+}
+
+.infobox-body {
+    overflow-y: scroll;
+    height: 150px;
+    // due to scroller
+    margin-right: -5px;
+}
+
+.infobox-footer {
+    height: 50px;
+}
+
+.infobox-header-row {
+    display: table-row;
+}
+
+.infobox-header-cell {
+    display: table-cell;
+    width: 20px;
+}
+
+.infobox-header-title-cell {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: left;
+    width: 100%;
+    word-wrap: break-word;
+    padding-left: 5px;
+}
+
+.infobox-header-button-cell {
+    display: table-cell;
+    text-align: right;
+    width: 50px;
+    vertical-align: middle;
 }
 
 .infobox-header-wo-subtitle {
@@ -826,6 +914,16 @@ div[datepicker] {
     font-size: 18px;
     font-weight: 600;
     line-height: 20px;
+}
+
+.infobox-active-icon {
+    color: #00cc18;
+    text-align: center;
+}
+
+.infobox-inactive-icon {
+    color: @infobox-black;
+    text-align: center;
 }
 
 .infobox-icon {
@@ -847,16 +945,14 @@ div[datepicker] {
 }
 
 .infobox-setting-value-container {
-    display: inline-block;
-    width: 68%;
-    vertical-align: top;
+    display: table-cell;
     line-height: 16px;
+    vertical-align: text-top;
 }
 
 .infobox-setting-label {
-    width: 30%;
     overflow: hidden;
-    display: inline-block;
+    display: table-cell;
     color: @infobox-gray;
     line-height: 16px;
     vertical-align: top;
@@ -870,9 +966,8 @@ div[datepicker] {
 }
 
 .infobox-setting-value-comment {
-    display: inline;
+    display: inline-block;
     vertical-align: top;
-    margin-left: 5px;
     color: @infobox-gray;
 }
 
@@ -895,6 +990,7 @@ div[datepicker] {
 .infobox-setting-info-dropped {
     display: inline-block;
     word-break: break-all;
+    width: 100%;
 }
 
 .infobox-setting-info-dropped-content {
@@ -902,6 +998,11 @@ div[datepicker] {
     padding: 10px;
     border: 1px solid @infobox-gray;
     margin: 5px 0px
+    width: 100%;
+}
+
+.infobox-setting-base {
+    padding-top: 5px;
 }
 
 .infobox-setting-section-start {
@@ -1305,6 +1406,34 @@ div[datepicker] {
     }
 }
 
+.exclamation-popover {
+    margin-left: 0px;
+
+    .help-popover,
+    .help-popover:hover,
+    .help-popover:active,
+    .help-popover:visited {
+        display: inline-block;
+        background-color: #dddddd;
+        .border-radius(50%);
+        padding: 1px 3px 0px 3px;
+        margin-left: 0px;
+        font-size: 12px;
+        line-height: 13px;
+        text-align: center;
+        text-decoration: none;
+        vertical-align: middle;
+        margin-bottom: 2px;
+        width: 13px;
+        height: 13px;
+        &:after {
+            color: #888;
+            font-weight: bold;
+            content: "!";
+        }
+    }
+}
+
 .select2-drop,
 .table-container {
      zem-internal-feature .internal {
@@ -1399,15 +1528,13 @@ div[datepicker] {
 
         .content {
             float: right;
-            position: relative;
-            width: 170px;
+            max-width: 260px;
+            display: inline-block;
 
             .contact-content {
-                position: absolute;
+                display: inline-block;
                 height: 50px;
                 line-height: 50px;
-                top: 5px;
-                left: 0;
                 text-align: right;
             }
 
@@ -1421,18 +1548,47 @@ div[datepicker] {
             }
 
             .profile {
-                position: absolute;
-                top: 4px;
-                right: 0;
+                display: inline-block;
             }
 
-            .glyphicon {
-                border-left: 1px solid #2a89a1;
-                padding: 8px 1px 8px 17px;
-                margin-left: 20px;
+            .dropdown-toggle {
                 display: inline-block;
-                color: white;
+                height: 28px;
+                line-height: 22px;
+                vertical-align: middle;
+                
+                .glyphicon {
+                    display: inline-block;
+                    color: @white;
+                    font-size: 19px;
+                    line-height: 19px;
+                    vertical-align: middle;
+                }
+            }
+
+            .separator {
+                display: inline-block;
+                border-left: 1px solid #2a89a1;
+                padding: 8px 1px 8px 10px;
+                margin-left: 14px;
                 font-size: 19px;
+                line-height: 19px;
+            }
+            
+            .navbar-collapse-container {
+                display: inline-block;
+
+                .btn {
+                    background: @default-color;
+                }
+
+                .glyphicon {
+                    color: @white;
+                    background: @default-color;
+                    line-height: 19px;
+                    font-size: 19px;
+                    top: 3px;
+                }
             }
         }
     }
@@ -1648,10 +1804,10 @@ div[datepicker] {
     }
 
     .content {
-        margin-left: 210px;
         padding-right: 15px;
 
         #filter {
+            margin-left: 5px;
 
             .internal {
                 .header-button-internal;
@@ -1826,6 +1982,14 @@ div[datepicker] {
             margin-left: 5px;
         }
     }
+}
+
+.content-short {
+    margin-left: 210px;
+}
+
+.content-full {
+    margin-left: 15px;
 }
 
 .page {

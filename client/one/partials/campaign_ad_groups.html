@@ -1,14 +1,5 @@
 <div class="page page-campaign-ad-groups">
-    <div class="section" ng-class="{'chart-hidden': chartHidden}">
-        <div class="graph-infobox-parent">
-            <div ng-class="{'graph-container-short': infoboxVisible && hasPermission('zemauth.can_see_infobox'), 'graph-infobox-parent': !hasPermission('zemauth.can_see_inbofox')}">
-                <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
-            </div>
-            <div ng-if="hasPermission('zemauth.can_see_infobox')" ng-class="{'infobox-container-full': infoboxVisible, 'infobox-container-short': !infoboxVisible}">
-                <zem-infobox header="infoboxHeader" settings="infoboxSettings" link-to="'main.campaigns.settings'" state-id="$state.params.id"></zem-infobox>
-            </div>
-        </div>
-    </div>
+    <div class="section" ng-include src="'/partials/graph_infobox.html'"></div>
     <div class="section table-ad-group-ads">
         <div class="button-bar">
             <div ng-if="hasPermission('zemauth.campaign_ad_groups_add_ad_group')" class="button-bar-item add-source-container">
@@ -40,8 +31,6 @@
             </div>
 
             <zem-custom-table-cols class="pull-right" columns="columns" categories="columnCategories" local-storage-prefix="localStoragePrefix"></zem-custom-table-cols>
-
-            <a id="chart-btn" ng-attr-title="{{ chartBtnTitle }}" class="btn btn-default pull-right" ng-click="toggleChart()"><img ng-src="{{ config.static_url }}/one/img/chart.svg"></a>
         </div>
 
         <alert type="info" class="alert-sync" ng-show="!isSyncRecent">

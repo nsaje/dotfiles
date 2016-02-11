@@ -1,34 +1,55 @@
 <div class="infobox infobox-background infobox-{{header.level}}">
     <div class="infobox-header" ng-class="{'infobox-header-wo-subtitle': header.subtitle === undefined}">
-        <div class="pull-left">
-            <div ng-if="header.active !== undefined" ng-class="[{'active-circle-icon': header.active, 'infobox-active-circle-icon-gray': !header.active}, 'infobox-title', 'infobox-status']"></div>
-            <div style="display:inline-block;">
+        <div class="infobox-header-row">
+            <div class="infobox-header-cell" ng-if="header.active !== undefined" ng-class="['infobox-title', {'infobox-active-icon': header.active, 'infobox-inactive-icon': !header.active}, 'infobox-status']">{{ '\u25CF' }}</div>
+            <div class="infobox-header-title-cell">
                 <div class="infobox-title">{{header.title}}</div>
                 <div ng-if="header.subtitle !== undefined" class="infobox-subtitle">{{header.subtitle}}</div>
             </div>
-        </div>
         
-        <div class="pull-right">
-            <a class="btn btn-default" ng-if="stateId !== undefined" ng-click="tabClick($event)" zem-in-link="{{ linkTo }}({ id: {{ stateId }} })">
-                <zem-internal-feature ng-if="tab.internal" popover-placement="bottom"></zem-internal-feature>
-                Edit
-            </a>
+            <div class="infobox-header-button-cell">
+                <a class="btn btn-default" ng-if="stateId !== undefined" ng-click="tabClick($event)" zem-in-link="{{ linkTo }}({ id: {{ stateId }} })">
+                    <zem-internal-feature ng-if="tab.internal" popover-placement="bottom"></zem-internal-feature>
+                    Edit
+                </a>
+            </div>
         </div>
     </div>
  
     <hr>
-    <div ng-repeat="setting in settings" 
-         ng-class="{'infobox-setting-section-start': setting.section_start}">
-        <hr ng-if="setting.type === 'hr'"/>
-        <zem-infobox-setting 
-            ng-if="setting.type == 'setting'"
-            label="(setting.name || '&nbsp;')"  
-            value="setting.value" 
-            value-description="setting.description"
-            details-label="setting.detailsLabel"
-            details-content="setting.detailsContent"
-            icon="(setting.icon || '')"
-            tooltip-text="(setting.tooltip || undefined)">
-        </zem-infobox-setting>
+    <div class="infobox-body">
+        <div ng-repeat="setting in basicSettings" 
+            class="infobox-setting-base" ng-class="{'infobox-setting-section-start': setting.section_start}">
+            <hr ng-if="setting.type === 'hr'"/>
+            <zem-infobox-setting 
+                ng-if="setting.type == 'setting'"
+                label="(setting.name || '&nbsp;')"  
+                value="setting.value" 
+                value-description="setting.description"
+                details-label="setting.detailsLabel"
+                details-content="setting.detailsContent"
+                warning="setting.warning"
+                icon="(setting.icon || '')"
+                tooltip-text="(setting.tooltip || undefined)">
+            </zem-infobox-setting>
+        </div>
+    </div>
+    <hr ng-if="performanceSettings !== undefined">
+    <div ng-if="performanceSettings !== undefined" class="infobox-footer">
+        <div ng-repeat="setting in performanceSettings" 
+            ng-class="{'infobox-setting-section-start': setting.section_start}">
+            <hr ng-if="setting.type === 'hr'"/>
+            <zem-infobox-setting 
+                ng-if="setting.type == 'setting'"
+                label="(setting.name || '&nbsp;')"  
+                value="setting.value" 
+                value-description="setting.description"
+                details-label="setting.detailsLabel"
+                details-content="setting.detailsContent"
+                warning="setting.warning"
+                icon="(setting.icon || '')"
+                tooltip-text="(setting.tooltip || undefined)">
+            </zem-infobox-setting>
+        </div>
     </div>
 </div>

@@ -2389,7 +2389,8 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual(header['title'], u'AdGroup name')
         self.assertFalse(header['active'])
 
-        settings = response['data']['settings']
+        settings = response['data']['basic_settings'] +\
+            response['data']['performance_settings']
         flight_setting = self._get_setting(settings, 'flight')
         self.assertEqual('03/02 - 04/02', flight_setting['value'])
 
@@ -2400,7 +2401,8 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('Device: Desktop, Mobile', device_setting['value'])
 
         region_setting = [s for s in settings if 'location' in s['value'].lower()][0]
-        self.assertEqual('Location: UK, US, CA', region_setting['value'])
+        self.assertEqual('Location: UK', region_setting['value'])
+        self.assertEqual('UK, US, CA', region_setting['details_content'])
 
         tracking_setting = self._get_setting(settings, 'tracking')
         self.assertEqual(tracking_setting['value'], 'Yes')
@@ -2414,7 +2416,7 @@ class AdGroupOverviewTest(TestCase):
 
         budget_setting = self._get_setting(settings, 'campaign budget')
         self.assertEqual('$0.00', budget_setting['value'])
-        self.assertEqual(' $80.00 ', budget_setting['description'])
+        self.assertEqual('$80.00', budget_setting['description'])
 
         pacing_setting = self._get_setting(settings, 'pacing')
         self.assertEqual('0.00%', pacing_setting['value'])
@@ -2486,7 +2488,8 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual(header['title'], u'AdGroup name')
         self.assertFalse(header['active'])
 
-        settings = response['data']['settings']
+        settings = response['data']['basic_settings'] +\
+            response['data']['performance_settings']
 
         flight_setting = self._get_setting(settings, 'flight')
         self.assertEqual('{sm}/{sd} - {em}/{ed}'.format(
@@ -2500,7 +2503,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('$50.00', flight_setting['value'])
         yesterday_setting = self._get_setting(settings, 'yesterday')
         self.assertEqual('$60.00', yesterday_setting['value'])
-        self.assertEqual(' 120.00% of daily budget ', yesterday_setting['description'])
+        self.assertEqual('120.00% of daily budget', yesterday_setting['description'])
 
 
 class CampaignOverviewTest(TestCase):
@@ -2587,7 +2590,7 @@ class AccountOverviewTest(TestCase):
             'cost_cc_sum': 0.0
         }]
         response = self._get_account_overview(1)
-        settings = response['data']['settings']
+        settings = response['data']['basic_settings']
 
         pf_setting = self._get_setting(settings, 'platform fee')
         self.assertEqual('20.00%', pf_setting['value'])
