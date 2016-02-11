@@ -69,7 +69,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             shown: true,
             checked: false,
             type: 'text',
-            shown: true,
             totalRow: false,
             help: 'Account manager responsible for the campaign and the communication with the client.',
             order: true,

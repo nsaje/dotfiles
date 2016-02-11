@@ -969,9 +969,9 @@ class AccountsAccountsTable(object):
 
             if account_settings:
                 row['default_account_manager'] = helpers.get_user_full_name_or_email(
-                    account_settings.default_account_manager, none_value='')
+                    account_settings.default_account_manager, none_value=None)
                 row['default_sales_representative'] = helpers.get_user_full_name_or_email(
-                    account_settings.default_sales_representative, none_value='')
+                    account_settings.default_sales_representative, none_value=None)
 
             rows.append(row)
 
