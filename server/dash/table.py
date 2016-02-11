@@ -967,6 +967,12 @@ class AccountsAccountsTable(object):
                 row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
                 row['total_fee'] = row['flat_fee'] + Decimal(row.get('license_fee') or 0)
 
+            if account_settings:
+                row['default_account_manager'] = helpers.get_user_full_name_or_email(
+                    account_settings.default_account_manager, none_value='')
+                row['default_sales_representative'] = helpers.get_user_full_name_or_email(
+                    account_settings.default_sales_representative, none_value='')
+
             rows.append(row)
 
         if order:
