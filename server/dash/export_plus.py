@@ -101,7 +101,8 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         start_date,
         end_date,
         include_budgets=include_budgets,
-        include_flat_fees=include_flat_fees)
+        include_flat_fees=include_flat_fees,
+        include_projections=include_projections)
 
     if 'source' in dimensions:
         source_names = {source.id: source.name for source in models.Source.objects.all()}
@@ -134,7 +135,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
 
 
 def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date,
-                        include_budgets=False, include_flat_fees=False):
+                        include_budgets=False, include_flat_fees=False, include_projections=False):
     data = None
     budgets = None
     projections = None
@@ -157,7 +158,8 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date,
         accounts = set(stat['account'] for stat in stats)
         data = models.Account.objects.filter(id__in=accounts)
         flat_fees = _prefetch_flat_fees(data, start_date, end_date)
-        projections = bcm_helpers.get_projections(data, start_date, end_date)
+        if include_projections:
+            projections = bcm_helpers.get_projections(data, start_date, end_date)
 
     if level in ['account', 'campaign', 'ad_group']:
         statuses = _prefetch_statuses(data, level, by_source)

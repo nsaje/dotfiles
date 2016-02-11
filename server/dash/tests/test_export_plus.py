@@ -267,6 +267,7 @@ class ExportPlusTestCase(test.TestCase):
             ignore_diff_rows=True,
             account=accounts,
         )
+        self.maxDiff = None
         self.assertEqual(rows, [
             {'account': u'test account 1 \u010c\u017e\u0161',
              'available_budget': Decimal(100),
