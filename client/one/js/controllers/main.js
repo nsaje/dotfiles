@@ -225,7 +225,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             $scope.breadcrumb.unshift({
                 name: $scope.getBreadcrumbAllAccountsName(),
                 state: $scope.getDefaultAllAccountsState(),
-                disabled: !$scope.canAccessAllAccounts()
+                disabled: !$scope.canAccessAllAccounts(),
             });
         }
 
@@ -233,12 +233,10 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.getBreadcrumbAllAccountsName = function () {
-        var name = 'My accounts';
         if ($scope.hasPermission('dash.group_account_automatically_add')) {
-            return 'All accounts' ;
-        }
-        else {
-            return 'My accounts'
+            return 'All accounts';
+        } else {
+            return 'My accounts';
         }
     };
 
