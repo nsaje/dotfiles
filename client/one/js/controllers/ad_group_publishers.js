@@ -921,12 +921,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
     };
 
-    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    });
-
     $scope.$watch('size', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.loadPage();

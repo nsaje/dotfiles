@@ -15,6 +15,7 @@
 
 @infobox-black: #414141;
 @infobox-gray: #aaaaaa;
+@white: #fff;
 
 @keyframes show-updated {
     0% { background-color: @updated-color; }
@@ -674,7 +675,6 @@ div[datepicker] {
     color: #454545;
 }
 
-
 .graph-infobox-parent {
 	display: table; 
 	table-layout: fixed; 
@@ -689,6 +689,10 @@ div[datepicker] {
 	display: table-cell;
 	width: 100%;
 	vertical-align: top;
+}
+
+.graph-collapsed {
+    display: none;
 }
 
 .graph-container-short {
@@ -729,18 +733,53 @@ div[datepicker] {
     &:before {
         content: " ";
         position: absolute;
-        top: -4px;
-        left: -4px;
+        top: 0px;
+        left: 0px;
         width: 0;
         height: 0;
         display: block;
         border-top: 8px solid @internal-color;
         border-right: 8px solid transparent;
+        z-index: 1000;
     }
 }
 
 .infobox-button {
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    padding: 0px;
+    margin-left: 5px;
+    box-sizing: border-box;
+    position: relative;
+
+    .internal {
+        .header-button-internal;
+    }
+}
+
+.navigation-button {
     margin-right: 5px;
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    padding: 0px 0px;
+    border: 0px;
+    box-shadow: none;
+}
+
+.graph-button {
+    width: 34px;
+    height: 34px;
+    padding: 0px;
+    line-height: 34px;
+}
+
+.graph-button-image {
+    width: 30px;
+    height: 18px;
+    vertical-align: middle;
+    padding-bottom: 4px;
     position: relative;
 
     .internal {
@@ -1496,15 +1535,13 @@ div[datepicker] {
 
         .content {
             float: right;
-            position: relative;
-            width: 170px;
+            max-width: 260px;
+            display: inline-block;
 
             .contact-content {
-                position: absolute;
+                display: inline-block;
                 height: 50px;
                 line-height: 50px;
-                top: 5px;
-                left: 0;
                 text-align: right;
             }
 
@@ -1518,18 +1555,47 @@ div[datepicker] {
             }
 
             .profile {
-                position: absolute;
-                top: 4px;
-                right: 0;
+                display: inline-block;
             }
 
-            .glyphicon {
-                border-left: 1px solid #2a89a1;
-                padding: 8px 1px 8px 17px;
-                margin-left: 20px;
+            .dropdown-toggle {
                 display: inline-block;
-                color: white;
+                height: 28px;
+                line-height: 22px;
+                vertical-align: middle;
+                
+                .glyphicon {
+                    display: inline-block;
+                    color: @white;
+                    font-size: 19px;
+                    line-height: 19px;
+                    vertical-align: middle;
+                }
+            }
+
+            .separator {
+                display: inline-block;
+                border-left: 1px solid #2a89a1;
+                padding: 8px 1px 8px 10px;
+                margin-left: 14px;
                 font-size: 19px;
+                line-height: 19px;
+            }
+            
+            .navbar-collapse-container {
+                display: inline-block;
+
+                .btn {
+                    background: @default-color;
+                }
+
+                .glyphicon {
+                    color: @white;
+                    background: @default-color;
+                    line-height: 19px;
+                    font-size: 19px;
+                    top: 3px;
+                }
             }
         }
     }
@@ -1745,10 +1811,10 @@ div[datepicker] {
     }
 
     .content {
-        margin-left: 210px;
         padding-right: 15px;
 
         #filter {
+            margin-left: 5px;
 
             .internal {
                 .header-button-internal;
@@ -1923,6 +1989,14 @@ div[datepicker] {
             margin-left: 5px;
         }
     }
+}
+
+.content-short {
+    margin-left: 210px;
+}
+
+.content-full {
+    margin-left: 15px;
 }
 
 .page {
