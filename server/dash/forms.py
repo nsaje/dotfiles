@@ -165,11 +165,11 @@ class AdGroupSettingsForm(forms.Form):
         return cpc_cc
 
     def clean_autopilot_daily_budget(self):
-        budget = self.cleaned_data.get('autopilot_daily_budget', Decimal(0))
+        budget = self.cleaned_data.get('autopilot_daily_budget', 0)
         ap_state = self.cleaned_data.get('autopilot_state')
         budget_ap_is_active = ap_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        budget_invalid = budget < autopilot_budgets.get_adgroup_minimum_daily_budget(self.ad_group)
-        if budget_ap_is_active and budget != Decimal(0) and budget_invalid:
+        budget_insufficient = budget < autopilot_budgets.get_adgroup_minimum_daily_budget(self.ad_group)
+        if budget_ap_is_active and budget_insufficient:
             raise forms.ValidationError(message='Total Daily Budget must be at least $' +
                                         str(autopilot_budgets.get_adgroup_minimum_daily_budget(self.ad_group)))
         return self.cleaned_data.get('autopilot_daily_budget')

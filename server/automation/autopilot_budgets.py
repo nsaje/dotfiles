@@ -124,19 +124,19 @@ def _send_debug_emails(cpc_changes, total_daily_budget, new_budgets,
             adgroup_changes
         )
 
-        email_changes_text = 'Total Budget:\t' + str(total_daily_budget) +\
-            '\nBudget Assigned:\t' + str(sum(new_budgets.values())) +\
-            '\nBudget Left Unassigned:\t' + str(total_daily_budget - sum(new_budgets.values())) +\
-            '\n\nSource;PreviousBudget;NewBudget;MaxGuideline;Spend_perc_after_budget_allocation;BounceRate\n'
-        for source in active_sources:
-            email_changes_text += ';'.join([str(source.source), str(old_budgets[source]),
-                                            str(source.get_current_settings().daily_budget_cc),
-                                            str(max_budgets[source]),
-                                            str('{0:.4g}'.format(get_spend_perc(source))),
-                                            str(data[source].get('bounce_rate')), '\n'])
-            email_changes_text += '\n' + bandit.get_bandit_status_text()
+    email_changes_text = 'Total Budget:\t' + str(total_daily_budget) +\
+        '\nBudget Assigned:\t' + str(sum(new_budgets.values())) +\
+        '\nBudget Left Unassigned:\t' + str(total_daily_budget - sum(new_budgets.values())) +\
+        '\n\nSource;PreviousBudget;NewBudget;MaxGuideline;Spend_perc_after_budget_allocation;BounceRate\n'
+    for source in active_sources:
+        email_changes_text += ';'.join([str(source.source), str(old_budgets[source]),
+                                        str(source.get_current_settings().daily_budget_cc),
+                                        str(max_budgets[source]),
+                                        str('{0:.4g}'.format(get_spend_perc(source))),
+                                        str(data[source].get('bounce_rate')), '\n'])
+        email_changes_text += '\n' + bandit.get_bandit_status_text()
 
-            send_autopilot_daily_budget_changes_email(str(adgroup.id), DEBUG_EMAILS, email_changes_text)
+        send_autopilot_daily_budget_changes_email(str(adgroup.id), DEBUG_EMAILS, email_changes_text)
 
 
 def _uniformly_redistribute_remaining_budget(sources, budget_left, new_budgets):

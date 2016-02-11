@@ -26,7 +26,7 @@ def persist_cpc_change_to_admin_log(
         ad_group_source,
         yesterday_spend,
         previous_cpc,
-        new_cpc,
+        new_cpc_cc,
         daily_budget,
         yesterday_clicks,
         comments):
@@ -36,7 +36,7 @@ def persist_cpc_change_to_admin_log(
         ad_group_source=ad_group_source,
         yesterdays_spend_cc=yesterday_spend,
         previous_cpc_cc=previous_cpc,
-        new_cpc_cc=new_cpc,
+        new_cpc_cc=new_cpc_cc,
         current_daily_budget_cc=daily_budget,
         yesterdays_clicks=yesterday_clicks,
         comments=', '.join(automation.constants.CpcChangeComment.get_text(comment) for comment in comments)
@@ -84,7 +84,8 @@ def get_autopilot_ad_group_sources_settings(adgroup):
         source_state = automation.helpers.get_latest_ad_group_source_state(current_source_settings.ad_group_source)
         if current_source_settings.cpc_cc is None and source_state is not None and source_state.cpc_cc is not None:
             current_source_settings.cpc_cc = source_state.cpc_cc
-        if current_source_settings.daily_budget_cc is None and source_state is not None and source_state.daily_budget_cc is not None:
+        if current_source_settings.daily_budget_cc is None and source_state is not None \
+                and source_state.daily_budget_cc is not None:
             current_source_settings.daily_budget_cc = source_state.daily_budget_cc
     return autopilot_sources_settings
 
@@ -106,45 +107,45 @@ def _ad_group_source_is_synced(ad_group_source):
     return last_sync >= min_sync_date
 
 
-def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_spend):
-    cpc_change_comments = _get_calculate_cpc_comments(current_cpc, current_daily_budget, yesterdays_spend)
+def calculate_new_autopilot_cpc(current_cpc_cc, current_daily_budget, yesterdays_spend):
+    cpc_change_comments = _get_calculate_cpc_comments(current_cpc_cc, current_daily_budget, yesterdays_spend)
     spending_perc = _calculate_spending_perc(yesterdays_spend, current_daily_budget)
     if spending_perc is not None and spending_perc > automation.settings.AUTOPILOT_MAX_ALLOWED_SPENDING:
         cpc_change_comments.append(automation.constants.CpcChangeComment.HIGH_OVERSPEND)
 
     if cpc_change_comments:
-        return (current_cpc, cpc_change_comments)
+        return (current_cpc_cc, cpc_change_comments)
 
-    new_cpc = current_cpc
+    new_cpc_cc = current_cpc_cc
     for change_interval in automation.settings.AUTOPILOT_CPC_CHANGE_TABLE:
         if change_interval['underspend_upper_limit'] <= spending_perc <= change_interval['underspend_lower_limit']:
-            new_cpc += current_cpc * change_interval['bid_cpc_procentual_increase']
+            new_cpc_cc += current_cpc_cc * change_interval['bid_cpc_procentual_increase']
             if change_interval['bid_cpc_procentual_increase'] == decimal.Decimal('0'):
-                return (current_cpc, [automation.constants.CpcChangeComment.OPTIMAL_SPEND])
+                return (current_cpc_cc, [automation.constants.CpcChangeComment.OPTIMAL_SPEND])
             if change_interval['bid_cpc_procentual_increase'] < 0:
-                new_cpc = _threshold_reducing_cpc(current_cpc, new_cpc)
+                new_cpc_cc = _threshold_reducing_cpc(current_cpc_cc, new_cpc_cc)
             else:
-                new_cpc = _threshold_increasing_cpc(current_cpc, new_cpc)
-            new_cpc = _round_cpc(new_cpc)
+                new_cpc_cc = _threshold_increasing_cpc(current_cpc_cc, new_cpc_cc)
+            new_cpc_cc = _round_cpc(new_cpc_cc)
             break
-    if automation.settings.AUTOPILOT_MIN_CPC > new_cpc:
+    if automation.settings.AUTOPILOT_MIN_CPC > new_cpc_cc:
         return (automation.settings.AUTOPILOT_MIN_CPC, cpc_change_comments)
-    if automation.settings.AUTOPILOT_MAX_CPC < new_cpc:
+    if automation.settings.AUTOPILOT_MAX_CPC < new_cpc_cc:
         return (automation.settings.AUTOPILOT_MAX_CPC, cpc_change_comments)
-    return (new_cpc, cpc_change_comments)
+    return (new_cpc_cc, cpc_change_comments)
 
 
-def _get_calculate_cpc_comments(current_cpc, current_daily_budget, yesterdays_spend):
+def _get_calculate_cpc_comments(current_cpc_cc, current_daily_budget, yesterdays_spend):
     cpc_change_comments = []
     if current_daily_budget is None or current_daily_budget <= 0:
         cpc_change_comments.append(automation.constants.CpcChangeComment.BUDGET_NOT_SET)
     if yesterdays_spend is None or yesterdays_spend <= 0:
         cpc_change_comments.append(automation.constants.CpcChangeComment.NO_YESTERDAY_SPEND)
-    if current_cpc is None or current_cpc <= 0:
+    if current_cpc_cc is None or current_cpc_cc <= 0:
         cpc_change_comments.append(automation.constants.CpcChangeComment.CPC_NOT_SET)
-    if current_cpc > automation.settings.AUTOPILOT_MAX_CPC:
+    if current_cpc_cc > automation.settings.AUTOPILOT_MAX_CPC:
         cpc_change_comments.append(automation.constants.CpcChangeComment.CURRENT_CPC_TOO_HIGH)
-    if current_cpc < automation.settings.AUTOPILOT_MIN_CPC:
+    if current_cpc_cc < automation.settings.AUTOPILOT_MIN_CPC:
         cpc_change_comments.append(automation.constants.CpcChangeComment.CURRENT_CPC_TOO_LOW)
     return cpc_change_comments
 
@@ -157,37 +158,37 @@ def _calculate_spending_perc(yesterdays_spend, current_daily_budget):
     return None
 
 
-def _threshold_reducing_cpc(current_cpc, new_cpc):
-    cpc_change = abs(current_cpc - new_cpc)
+def _threshold_reducing_cpc(current_cpc_cc, new_cpc_cc):
+    cpc_change = abs(current_cpc_cc - new_cpc_cc)
     if cpc_change < automation.settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE:
-        return current_cpc - automation.settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE
+        return current_cpc_cc - automation.settings.AUTOPILOT_MIN_REDUCING_CPC_CHANGE
     if cpc_change > automation.settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE:
-        return current_cpc - automation.settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE
-    return new_cpc
+        return current_cpc_cc - automation.settings.AUTOPILOT_MAX_REDUCING_CPC_CHANGE
+    return new_cpc_cc
 
 
-def _threshold_increasing_cpc(current_cpc, new_cpc):
-    cpc_change = abs(current_cpc - new_cpc)
+def _threshold_increasing_cpc(current_cpc_cc, new_cpc_cc):
+    cpc_change = abs(current_cpc_cc - new_cpc_cc)
     if cpc_change < automation.settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE:
-        return current_cpc + automation.settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE
+        return current_cpc_cc + automation.settings.AUTOPILOT_MIN_INCREASING_CPC_CHANGE
     if cpc_change > automation.settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE:
-        return current_cpc + automation.settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE
-    return new_cpc
+        return current_cpc_cc + automation.settings.AUTOPILOT_MAX_INCREASING_CPC_CHANGE
+    return new_cpc_cc
 
 
-def _check_source_constraints(proposed_cpc, source):
+def _check_source_constraints(proposed_cpc_cc, source):
     min_cpc = source.source_type.min_cpc
     max_cpc = source.source_type.max_cpc
-    if proposed_cpc > max_cpc:
+    if proposed_cpc_cc > max_cpc:
         return [automation.constants.CpcChangeComment.OVER_SOURCE_MAX_CPC]
-    if proposed_cpc < min_cpc:
+    if proposed_cpc_cc < min_cpc:
         return [automation.constants.CpcChangeComment.UNDER_SOURCE_MIN_CPC]
     return []
 
 
-def _check_ad_group_constraints(proposed_cpc, ad_group):
+def _check_ad_group_constraints(proposed_cpc_cc, ad_group):
     settings = ad_group.get_current_settings()
-    if settings.cpc_cc and proposed_cpc > settings.cpc_cc:
+    if settings.cpc_cc and proposed_cpc_cc > settings.cpc_cc:
         return [automation.constants.CpcChangeComment.OVER_AD_GROUP_MAX_CPC]
     return []
 
@@ -263,7 +264,7 @@ def _get_email_source_changes_text(change):
 - changed CPC bid on {} from ${} to ${}'''.format(
             change['source_name'],
             change['old_cpc'].normalize(),
-            change['new_cpc'].normalize())
+            change['new_cpc_cc'].normalize())
     return u'''
 - no changes on {} because {}'''.format(
         change['source_name'],
@@ -302,19 +303,19 @@ def run_cpc_autopilot_on_adgroup(adgroup, changes={}, allow_recent_budget_change
         yesterday_spend = yesterday_spends.get(ad_group_source_settings.ad_group_source.source_id)
 
         source = ad_group_source_settings.ad_group_source.source
-        proposed_cpc, calculation_comments = calculate_new_autopilot_cpc(
+        proposed_cpc_cc, calculation_comments = calculate_new_autopilot_cpc(
             ad_group_source_settings.cpc_cc,
             ad_group_source_settings.daily_budget_cc,
             yesterday_spend)
         cpc_change_comments += calculation_comments
-        cpc_change_comments += _check_source_constraints(proposed_cpc, source)
-        cpc_change_comments += _check_ad_group_constraints(proposed_cpc, adgroup)
-        new_cpc = proposed_cpc if cpc_change_comments == [] else ad_group_source_settings.cpc_cc
+        cpc_change_comments += _check_source_constraints(proposed_cpc_cc, source)
+        cpc_change_comments += _check_ad_group_constraints(proposed_cpc_cc, adgroup)
+        new_cpc_cc = proposed_cpc_cc if cpc_change_comments == [] else ad_group_source_settings.cpc_cc
         persist_cpc_change_to_admin_log(
             ad_group_source_settings.ad_group_source,
             yesterday_spend,
             ad_group_source_settings.cpc_cc,
-            new_cpc,
+            new_cpc_cc,
             ad_group_source_settings.daily_budget_cc,
             automation.helpers.get_yesterdays_clicks(ad_group_source_settings.ad_group_source),
             cpc_change_comments
@@ -327,15 +328,15 @@ def run_cpc_autopilot_on_adgroup(adgroup, changes={}, allow_recent_budget_change
         changes[adgroup.campaign][(adgroup.name, adgroup.id)].append({
             'source_name': ad_group_source_settings.ad_group_source.source.name,
             'old_cpc': ad_group_source_settings.cpc_cc,
-            'new_cpc': new_cpc,
+            'new_cpc_cc': new_cpc_cc,
             'comments': cpc_change_comments
         })
 
-        if ad_group_source_settings.cpc_cc != proposed_cpc and cpc_change_comments == []:
+        if new_cpc_cc != ad_group_source_settings.cpc_cc:
             automation.helpers.update_ad_group_source_value(
                 ad_group_source_settings.ad_group_source,
                 'cpc_cc',
-                proposed_cpc
+                new_cpc_cc
             )
     return changes
 
