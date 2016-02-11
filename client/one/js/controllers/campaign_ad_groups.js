@@ -17,7 +17,9 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     $scope.isIncompletePostclickMetrics = false;
     $scope.localStoragePrefix = 'campaignAdGroups';
     $scope.infoboxHeader = null;
-    $scope.infoboxSettings = null;
+    $scope.infoboxBasicSettings = null;
+    $scope.infoboxPerformanceSettings = null;
+    $scope.infoboxLinkTo = 'main.campaigns.settings';
 
     var userSettings = zemUserSettings.getInstance($scope, 'campaignAdGroups');
 
@@ -423,7 +425,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         api.campaignOverview.get($state.params.id).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
-                $scope.infoboxSettings = data.settings;
+                $scope.infoboxBasicSettings = data.basicSettings;
+                $scope.infoboxPerformanceSettings = data.performanceSettings;
             }
         );
     };

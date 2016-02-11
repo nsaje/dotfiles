@@ -615,7 +615,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
-                        data.data.settings = data.data.settings.map(convertFromApi);
+                        data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
+                        data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);
                         deferred.resolve(data.data);
                     }
                 }).
@@ -1185,7 +1186,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
-                        data.data.settings = data.data.settings.map(convertFromApi);
+                        data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
+                        data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);
                         deferred.resolve(data.data);
                     }
                 }).
@@ -1464,6 +1466,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
+                        data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);
                         deferred.resolve(data.data);
                     }
                 }).
@@ -1473,6 +1477,12 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             return deferred.promise;
         };
+
+        function convertFromApi (setting) {
+            setting.detailsLabel = setting.details_label;
+            setting.detailsContent = setting.details_content;
+            return setting;
+        }
     }
 
     function AllAccountsBudget () {
@@ -1508,7 +1518,12 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
-                        data.data.settings = data.data.settings.map(convertFromApi);
+                        data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
+                        if (!data.data.performanceSettings) {
+                            data.data.performanceSettings = undefined;
+                        } else {
+                            data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);
+                        }
                         deferred.resolve(data.data);
                     }
                 }).

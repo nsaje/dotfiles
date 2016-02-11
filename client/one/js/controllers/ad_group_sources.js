@@ -17,7 +17,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.sources = [];
     $scope.sourcesWaiting = null;
     $scope.infoboxHeader = null;
-    $scope.infoboxSettings = null;
+    $scope.infoboxBasicSettings = null;
+    $scope.infoboxPerformanceSettings = null;
+    $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.localStoragePrefix = 'adGroupSources';
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
@@ -667,7 +669,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         api.adGroupOverview.get($state.params.id).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
-                $scope.infoboxSettings = data.settings;
+                $scope.infoboxBasicSettings = data.basicSettings;
+                $scope.infoboxPerformanceSettings = data.performanceSettings;
             }
         );
     };

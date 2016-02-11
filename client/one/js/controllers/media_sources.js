@@ -18,7 +18,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.sources = [];
     $scope.exportOptions = [];
     $scope.infoboxHeader = null;
-    $scope.infoboxSettings = null;
+    $scope.infoboxBasicSettings = null;
+    $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = null;
 
     var userSettings = null;
@@ -548,21 +549,24 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             api.allAccountsOverview.get().then(
                 function (data) {
                     $scope.infoboxHeader = data.header;
-                    $scope.infoboxSettings = data.settings;
+                    $scope.infoboxBasicSettings = data.basicSettings;
+                    $scope.infoboxPerformanceSettings = data.performanceSettings;
                 }
             );
         } else if ($scope.level === constants.level.ACCOUNTS) {
             api.accountOverview.get($state.params.id).then(
                 function (data) {
                     $scope.infoboxHeader = data.header;
-                    $scope.infoboxSettings = data.settings;
+                    $scope.infoboxBasicSettings = data.basicSettings;
+                    $scope.infoboxPerformanceSettings = data.performanceSettings;
                 }
             );
         } else if ($scope.level === constants.level.CAMPAIGNS) {
             api.campaignOverview.get($state.params.id).then(
                 function (data) {
                     $scope.infoboxHeader = data.header;
-                    $scope.infoboxSettings = data.settings;
+                    $scope.infoboxBasicSettings = data.basicSettings;
+                    $scope.infoboxPerformanceSettings = data.performanceSettings;
                 }
             );
         }
