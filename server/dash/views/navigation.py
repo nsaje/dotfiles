@@ -60,7 +60,7 @@ class NavigationAllAccountsDataView(api_common.BaseApiView):
 
         accounts = models.Account.objects.all().filter_by_user(request.user)\
                                                .filter_by_sources(filtered_sources)
-        accounts_count = len(accounts)
+        accounts_count = accounts.count()
         response = {
             'accounts_count': accounts_count
         }
