@@ -183,9 +183,17 @@ def set_new_daily_budgets(ad_group_sources, new_daily_budgets):
 
 
 def get_adgroups_on_autopilot():
-    active_adgroups = helpers.get_all_active_ad_groups()
-    return [adg for adg in active_adgroups
-            if adg.get_current_settings().autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET]
+    adgroups_on_autopilot = []
+    adgroup_settings = dash.models.AdGroupSettings.objects.all().group_current_settings()\
+        .select_related('ad_group')
+    for ags in adgroup_settings:
+        if ags.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+            ad_group = ags.ad_group
+            ad_groups_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group)\
+                                                    .group_current_settings()
+            if ad_group.get_running_status(ags, ad_groups_sources_settings) == constants.AdGroupRunningStatus.ACTIVE:
+                adgroups_on_autopilot.append(ad_group)
+    return adgroups_on_autopilot
 
 
 def predict_outcome_success(source, data, goal):
