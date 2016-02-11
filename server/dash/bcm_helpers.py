@@ -10,6 +10,7 @@ import dash.constants
 import reports.models
 
 TWOPLACES = Decimal('0.01')
+SPEND_PROJECTION_DAYS = 3
 
 
 def _money_to_decimal(amount):
@@ -107,7 +108,7 @@ def get_projections(accounts, start_date, end_date):
         account_id = spend['budget__credit__account_id']
         total_nano = spend['media_nano'] + spend['data_nano'] + spend['fee_nano']
         projections['spend_projection'][account_id] = min(
-            dash.models.nano_to_dec(total_nano) / Decimal('3') * days,
+            (dash.models.nano_to_dec(total_nano) / Decimal(SPEND_PROJECTION_DAYS)) * days,
             projections['credit_projection'][account_id]
         )
     return projections
