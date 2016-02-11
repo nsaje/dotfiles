@@ -57,11 +57,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             if (models.hasOwnProperty('accounts_count')) {
                 models.accountsCount = models.accounts_count;
+                delete models.accounts_count;
                 models.hasAccounts = models.accountsCount>0;
             }
 
             if (models.hasOwnProperty('default_account_id')) {
                 models.defaultAccountId = models.default_account_id;
+                delete models.default_account_id;
             }
 
 
