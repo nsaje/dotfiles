@@ -241,7 +241,6 @@ class AdGroupOverview(api_common.BaseApiView):
             'level': constants.InfoboxLevel.ADGROUP
         }
 
-        from pudb import set_trace; set_trace()
         basic_settings = self._basic_settings(request.user, ad_group, ad_group_settings)
         performance_settings, is_delivering = self._performance_settings(
             ad_group, request.user, ad_group_settings
@@ -360,7 +359,7 @@ class AdGroupOverview(api_common.BaseApiView):
         total_media_spend = infobox_helpers.get_media_campaign_spend(
             user,
             ad_group.campaign,
-            self.request_cache
+            request_cache=self.request_cache
         )
 
         campaign_budget_setting = infobox_helpers.OverviewSetting(
