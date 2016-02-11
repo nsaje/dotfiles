@@ -157,7 +157,7 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date,
         accounts = set(stat['account'] for stat in stats)
         data = models.Account.objects.filter(id__in=accounts)
         flat_fees = _prefetch_flat_fees(data, start_date, end_date)
-        projections = bcm_helpers.get_projections(accounts, start_date, end_date)
+        projections = bcm_helpers.get_projections(data, start_date, end_date)
 
     if level in ['account', 'campaign', 'ad_group']:
         statuses = _prefetch_statuses(data, level, by_source)
