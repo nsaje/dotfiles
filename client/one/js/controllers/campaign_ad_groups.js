@@ -91,7 +91,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         },
         {
             name: '\u25CF',
-            field: 'status_setting',
+            field: 'state',
             type: 'state',
             order: true,
             editable: true,
@@ -105,6 +105,12 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             unselectable: true,
             help: 'A setting for enabling and pausing Ad Groups.',
             onChange: function (adgroupId, state) {
+                $scope.rows.forEach(function (row) {
+                    debugger;
+                    if (row['id'] === adgroupId) {
+                        row['state_text'] = $scope.getStateText(state);
+                    }
+                });
                 api.adGroupSettingsState.post(adgroupId, state).then(
                     function (data) {
                         // reload ad group to update its status
@@ -113,7 +119,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 );
             },
             getDisabledMessage: function (row) {
-                return row.editable_fields.status_setting.message;
+                return row.editable_fields.state.message;
             },
             disabled: false,
             archivedField: 'archived'
@@ -133,10 +139,10 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         },
         {
             name: 'Status',
-            field: 'state',
+            field: 'state_text',
             checked: true,
             type: 'text',
-            shown: !$scope.hasPermission('zemauth.can_control_ad_group_state_in_table'),
+            shown: true,
             totalRow: false,
             help: 'Status of an ad group (enabled or paused).',
             order: true,
@@ -575,11 +581,9 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                     };
 
                     if (x.archived) {
-                        x.state = 'Archived';
-                    } else if (x.state === constants.adGroupSettingsState.ACTIVE) {
-                        x.state = 'Active';
+                        x.state_text = 'Archived';
                     } else {
-                        x.state = 'Paused';
+                        x.state_text = $scope.getStateText(x.state);
                     }
 
                     return x;
@@ -594,6 +598,14 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         ).finally(function () {
             $scope.getTableDataRequestInProgress = false;
         });
+    };
+
+    $scope.getStateText = function(state) {
+        if (state === constants.adGroupSettingsState.ACTIVE) {
+            return 'Active';
+        } else {
+            return 'Paused';
+        }
     };
 
     $scope.orderTableData = function (order) {
