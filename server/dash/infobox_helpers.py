@@ -428,7 +428,13 @@ def _one_week_ago():
 
 
 def _retrieve_active_budgetlineitems(campaign, date):
-    return dash.models.BudgetLineItem.objects.all().filter_active(date)
+    if campaign:
+        qs = dash.models.BudgetLineItem.objects.filter(
+            campaign__in=campaign
+        )
+    else:
+        qs = dash.models.BudgetLineItem.objects.all()
+    return qs.filter_active(date)
 
 
 def _retrieve_active_creditlineitems(account, date):
