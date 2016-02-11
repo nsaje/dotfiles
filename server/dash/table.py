@@ -745,6 +745,8 @@ class AccountsAccountsTable(object):
         show_archived = show_archived == 'true' and\
             user.has_perm('zemauth.view_archived_entities')
 
+        has_view_managers_permission = user.has_perm('zemauth.can_see_managers_in_accounts_table')
+
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
         account_ids = set(acc.id for acc in accounts)
 
@@ -807,6 +809,7 @@ class AccountsAccountsTable(object):
             account_total_spend,
             has_view_archived_permission,
             show_archived,
+            has_view_managers_permission,
             flat_fees,
             order=order,
         )
@@ -916,7 +919,8 @@ class AccountsAccountsTable(object):
         return account_budget, account_total_spend
 
     def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions, account_budget,
-                 account_total_spend, has_view_archived_permission, show_archived, flat_fees, order=None):
+                 account_total_spend, has_view_archived_permission, show_archived,
+                 has_view_managers_permission, flat_fees, order=None):
         rows = []
 
         # map settings for quicker access
@@ -947,6 +951,15 @@ class AccountsAccountsTable(object):
                not reports.api.row_has_conversion_goal_data(account_data):
                 continue
 
+            if has_view_managers_permission:
+                row['default_account_manager'] = None
+                row['default_sales_representative'] = None
+                if account_settings:
+                    row['default_account_manager'] = helpers.get_user_full_name_or_email(
+                        account_settings.default_account_manager, default_value=None)
+                    row['default_sales_representative'] = helpers.get_user_full_name_or_email(
+                        account_settings.default_sales_representative, default_value=None)
+
             row['status'] = accounts_status_dict[account.id]
 
             if has_view_archived_permission:
@@ -966,12 +979,6 @@ class AccountsAccountsTable(object):
             if flat_fees:
                 row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
                 row['total_fee'] = row['flat_fee'] + Decimal(row.get('license_fee') or 0)
-
-            if account_settings:
-                row['default_account_manager'] = helpers.get_user_full_name_or_email(
-                    account_settings.default_account_manager, default_value=None)
-                row['default_sales_representative'] = helpers.get_user_full_name_or_email(
-                    account_settings.default_sales_representative, default_value=None)
 
             rows.append(row)
 
