@@ -225,7 +225,6 @@ class AdGroupOverview(api_common.BaseApiView):
     class RequestCache(object):
         active_budgetlineitems = None
 
-
     @statsd_helper.statsd_timer('dash.api', 'ad_group_overview')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_see_infobox'):
@@ -234,7 +233,6 @@ class AdGroupOverview(api_common.BaseApiView):
         self.request_cache = AdGroupOverview.RequestCache()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        from pudb import set_trace; set_trace()
         ad_group_settings = ad_group.get_current_settings()
         running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
         header = {
@@ -243,6 +241,8 @@ class AdGroupOverview(api_common.BaseApiView):
             'level': constants.InfoboxLevel.ADGROUP
         }
 
+        from pudb import set_trace; set_trace()
+        basic_settings = self._basic_settings(request.user, ad_group, ad_group_settings)
         performance_settings, is_delivering = self._performance_settings(
             ad_group, request.user, ad_group_settings
         )
@@ -252,7 +252,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'basic_settings': self._basic_settings(request.user, ad_group, ad_group_settings),
+            'basic_settings': basic_settings,
             'performance_settings': performance_settings,
         }
         return self.create_api_response(response)
@@ -360,7 +360,7 @@ class AdGroupOverview(api_common.BaseApiView):
         total_media_spend = infobox_helpers.get_media_campaign_spend(
             user,
             ad_group.campaign,
-            self.requst_cache
+            self.request_cache
         )
 
         campaign_budget_setting = infobox_helpers.OverviewSetting(

@@ -101,8 +101,8 @@ def get_media_campaign_spend(user, campaign, until_date=None, request_cache=None
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()
 
-    budgets = request_cache.active_budgetlineitems or _retrieve_active_budgetlineitems([campaign], at_date)
-    if not request_cache.active_budgetlineitems:
+    budgets = (request_cache and request_cache.active_budgetlineitems) or _retrieve_active_budgetlineitems([campaign], at_date)
+    if request_cache and not request_cache.active_budgetlineitems:
         request_cache.active_budgetlineitems = budgets
 
     ret = Decimal(0)
@@ -274,8 +274,8 @@ def calculate_daily_account_cap(account):
 def calculate_available_media_campaign_budget(campaign, request_cache=None):
     # campaign budget based on non-depleted budget line items
     today = datetime.datetime.utcnow().date()
-    budgets = request_cache.active_budgetlineitems or _retrieve_active_budgetlineitems([campaign], today)
-    if not request_cache.active_budgetlineitems:
+    budgets = (request_cache and request_cache.active_budgetlineitems) or _retrieve_active_budgetlineitems([campaign], today)
+    if request_cache and not request_cache.active_budgetlineitems:
         request_cache.active_budgetlineitems = budgets
 
     ret = 0
