@@ -819,11 +819,8 @@ class AccountsAccountsTable(object):
             account_total_spend,
             has_view_archived_permission,
             show_archived,
-<<<<<<< HEAD
             show_budgets,
-=======
             has_view_managers_permission,
->>>>>>> origin/master
             flat_fees,
             order=order,
         )
@@ -932,14 +929,9 @@ class AccountsAccountsTable(object):
 
         return account_budget, account_total_spend
 
-<<<<<<< HEAD
-    def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions, account_budget,
-                 account_total_spend, has_view_archived_permission, show_archived, show_budgets, flat_fees, order=None):
-=======
     def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions,
                  account_budget, projections, account_total_spend, has_view_archived_permission,
-                 show_archived, has_view_managers_permission, flat_fees, order=None):
->>>>>>> origin/master
+                 show_archived, show_budgets, has_view_managers_permission, flat_fees, order=None):
         rows = []
 
         # map settings for quicker access
@@ -990,21 +982,14 @@ class AccountsAccountsTable(object):
 
             row.update(account_data)
 
-<<<<<<< HEAD
             if show_budgets:
                 row['budget'] = account_budget.get(aid, Decimal('0.0'))
                 row['available_budget'] = row['budget'] - account_total_spend.get(aid, Decimal('0.0'))
                 row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
-=======
+
             if projections:
                 row['credit_projection'] = projections['credit_projection'][aid]
                 row['spend_projection'] = projections['spend_projection'][aid]
-
-            row['budget'] = account_budget.get(aid, Decimal('0.0'))
-
-            row['available_budget'] = row['budget'] - account_total_spend.get(aid, Decimal('0.0'))
-            row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
->>>>>>> origin/master
 
             if flat_fees:
                 row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
