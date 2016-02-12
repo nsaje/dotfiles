@@ -294,23 +294,11 @@ class AdGroupOverview(api_common.BaseApiView):
         else:
             region_warning = 'Different than campaign default'
 
-        MAX_PREVIEW_REGIONS = 1
-        preview_regions = ad_group_settings.target_regions[:MAX_PREVIEW_REGIONS]
-        full_regions = ad_group_settings.target_regions
-
-        targeting_region = infobox_helpers.OverviewSetting(
-            '',
-            'Location: {regions}'.format(
-                regions=', '.join(preview_regions)
-            ),
-            warning=region_warning,
+        targeting_region_setting = infobox_helpers.create_region_setting(
+            ad_group_settings.target_regions
         )
-        if full_regions != []:
-            targeting_region = targeting_region.comment(
-                'more',
-                ', '.join(full_regions)
-            )
-        settings.append(targeting_region.as_dict())
+        targeting_region_setting.warning = region_warning
+        settings.append(targeting_region_setting.as_dict())
 
         tracking_code_settings = infobox_helpers.OverviewSetting(
             'Tracking codes:',
@@ -522,17 +510,9 @@ class CampaignOverview(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
-        active = False
-        for ad_group in models.AdGroup.objects.filter(campaign=campaign).exclude_archived():
-            ad_group_settings = ad_group.get_current_settings()
-            running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
-            if running_status == constants.AdGroupRunningStatus.ACTIVE:
-                active = True
-                break
-
         header = {
             'title': campaign.name,
-            'active': active,
+            'active': infobox_helpers.is_campaign_active(campaign),
             'level': constants.InfoboxLevel.CAMPAIGN
         }
 
@@ -616,21 +596,10 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(targeting_device.as_dict())
 
-        MAX_PREVIEW_REGIONS = 1
-        preview_regions = campaign_settings.target_regions[:MAX_PREVIEW_REGIONS]
-        full_regions = campaign_settings.target_regions
-        targeting_region = infobox_helpers.OverviewSetting(
-            '',
-            'Location: {regions}'.format(
-                regions=', '.join(preview_regions)
-            )
+        targeting_region_setting = infobox_helpers.create_region_setting(
+            campaign_settings.target_regions
         )
-        if full_regions != []:
-            targeting_region = targeting_region.comment(
-                'more',
-                ', '.join(full_regions)
-            )
-        settings.append(targeting_region.as_dict())
+        settings.append(targeting_region_setting.as_dict())
 
         # take the num
         daily_cap = infobox_helpers.OverviewSetting(

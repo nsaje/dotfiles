@@ -15,6 +15,8 @@ from utils.statsd_helper import statsd_timer
 
 from decimal import Decimal
 
+MAX_PREVIEW_REGIONS = 1
+
 
 class OverviewSetting(object):
 
@@ -80,6 +82,23 @@ def format_flight_time(start_date, end_date):
     else:
         flight_time_left_days = (end_date - today).days + 1
     return flight_time, flight_time_left_days
+
+
+def create_region_setting(regions):
+    preview_regions = regions[:MAX_PREVIEW_REGIONS]
+    full_regions = regions
+    targeting_region_setting = OverviewSetting(
+        '',
+        'Location: {regions}'.format(
+            regions=', '.join(preview_regions)
+        )
+    )
+    if len(full_regions) > 1:
+        targeting_region_setting = targeting_region_setting.comment(
+            'more',
+            ', '.join(full_regions)
+        )
+    return targeting_region_setting
 
 
 @statsd_timer('dash.infobox_helpers', 'get_ideal_campaign_spend')
@@ -427,6 +446,16 @@ def _retrieve_active_budgetlineitems(campaign, date):
     else:
         qs = dash.models.BudgetLineItem.objects.all()
     return qs.filter_active(date)
+
+
+def is_campaign_active(campaign):
+    active = False
+    for ad_group in dash.models.AdGroup.objects.filter(campaign=campaign).exclude_archived():
+        ad_group_settings = ad_group.get_current_settings()
+        running_status = dash.models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
+        if running_status == dash.constants.AdGroupRunningStatus.ACTIVE:
+            active = True
+    return active
 
 
 @statsd_timer('dash.infobox_helpers', '_retrieve_active_creditlineitems')

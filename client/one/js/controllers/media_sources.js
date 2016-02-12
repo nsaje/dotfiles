@@ -540,6 +540,12 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         );
     };
 
+    var updateInfoboxData = function (data) { 
+        $scope.infoboxHeader = data.header;
+        $scope.infoboxBasicSettings = data.basicSettings;
+        $scope.infoboxPerformanceSettings = data.performanceSettings;
+    };
+
     var getInfoboxData = function () {
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
@@ -548,25 +554,19 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
             api.allAccountsOverview.get().then(
                 function (data) {
-                    $scope.infoboxHeader = data.header;
-                    $scope.infoboxBasicSettings = data.basicSettings;
-                    $scope.infoboxPerformanceSettings = data.performanceSettings;
+                    updateInfoboxData(data);
                 }
             );
         } else if ($scope.level === constants.level.ACCOUNTS) {
             api.accountOverview.get($state.params.id).then(
                 function (data) {
-                    $scope.infoboxHeader = data.header;
-                    $scope.infoboxBasicSettings = data.basicSettings;
-                    $scope.infoboxPerformanceSettings = data.performanceSettings;
+                    updateInfoboxData(data);
                 }
             );
         } else if ($scope.level === constants.level.CAMPAIGNS) {
             api.campaignOverview.get($state.params.id).then(
                 function (data) {
-                    $scope.infoboxHeader = data.header;
-                    $scope.infoboxBasicSettings = data.basicSettings;
-                    $scope.infoboxPerformanceSettings = data.performanceSettings;
+                    updateInfoboxData(data);
                 }
             );
         }

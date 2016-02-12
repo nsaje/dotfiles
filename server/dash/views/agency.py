@@ -12,6 +12,7 @@ from actionlog import api as actionlog_api
 from actionlog import models as actionlog_models
 from actionlog import constants as actionlog_constants
 from actionlog import zwei_actions
+from automation import autopilot_budgets
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -138,7 +139,8 @@ class AdGroupSettings(api_common.BaseApiView):
                 'autopilot_state': settings.autopilot_state,
                 'autopilot_daily_budget':
                     '{:.2f}'.format(settings.autopilot_daily_budget)
-                    if settings.autopilot_daily_budget is not None else ''
+                    if settings.autopilot_daily_budget is not None else '',
+                'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group)
             }
 
         return result
@@ -173,7 +175,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
         if can_set_adgroup_to_auto_pilot:
             settings.autopilot_state = resource['autopilot_state']
-            settings.autopilot_daily_budget = resource['autopilot_daily_budget']
+            if resource['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+                settings.autopilot_daily_budget = resource['autopilot_daily_budget']
 
     def _send_update_actions(self, ad_group, current_settings, new_settings, request):
         actionlogs_to_send = []

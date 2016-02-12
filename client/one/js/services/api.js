@@ -946,7 +946,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 enableAdobeTracking: settings.enable_adobe_tracking,
                 adobeTrackingParam: settings.adobe_tracking_param,
                 autopilotState: settings.autopilot_state,
-                autopilotBudget: settings.autopilot_daily_budget
+                autopilotBudget: settings.autopilot_daily_budget,
+                autopilotMinBudget: settings.autopilot_min_budget,
             };
         }
 
@@ -1519,9 +1520,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 success(function (data, status) {
                     if (data && data.data) {
                         data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
-                        if (!data.data.performanceSettings) {
-                            data.data.performanceSettings = undefined;
-                        } else {
+                        if (data.data.performanceSettings) {
                             data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);
                         }
                         deferred.resolve(data.data);

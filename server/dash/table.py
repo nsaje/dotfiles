@@ -742,6 +742,7 @@ class AccountsAccountsTable(object):
             raise exc.MissingDataError()
 
         has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
+
         show_archived = show_archived == 'true' and\
             user.has_perm('zemauth.view_archived_entities')
 
@@ -776,6 +777,12 @@ class AccountsAccountsTable(object):
 
         account_budget, account_total_spend = self.get_budgets(accounts)
 
+        projections = {}
+        if user.has_perm('zemauth.can_see_projections'):
+            projections = bcm_helpers.get_projections(accounts, start_date, end_date)
+            totals_data['spend_projection'] = sum(projections['spend_projection'].itervalues())
+            totals_data['credit_projection'] = sum(projections['credit_projection'].itervalues())
+
         totals_data['budget'] = Decimal(sum(account_budget.itervalues()))
         totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
         totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
@@ -806,6 +813,7 @@ class AccountsAccountsTable(object):
             accounts_data,
             last_success_actions_joined,
             account_budget,
+            projections,
             account_total_spend,
             has_view_archived_permission,
             show_archived,
@@ -918,9 +926,9 @@ class AccountsAccountsTable(object):
 
         return account_budget, account_total_spend
 
-    def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions, account_budget,
-                 account_total_spend, has_view_archived_permission, show_archived,
-                 has_view_managers_permission, flat_fees, order=None):
+    def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions,
+                 account_budget, projections, account_total_spend, has_view_archived_permission,
+                 show_archived, has_view_managers_permission, flat_fees, order=None):
         rows = []
 
         # map settings for quicker access
@@ -970,6 +978,10 @@ class AccountsAccountsTable(object):
                 row['last_sync'] = row['last_sync']
 
             row.update(account_data)
+
+            if projections:
+                row['credit_projection'] = projections['credit_projection'][aid]
+                row['spend_projection'] = projections['spend_projection'][aid]
 
             row['budget'] = account_budget.get(aid, Decimal('0.0'))
 
@@ -1498,7 +1510,6 @@ class CampaignAdGroupsTable(object):
             last_sync = last_actions.get(ad_group.pk)
 
             row['last_sync'] = last_sync
-            row['status_setting'] = ad_groups_status_dict[ad_group.id]
             row['editable_fields'] = self.get_editable_fields(ad_group, row)
             rows.append(row)
 
@@ -1519,16 +1530,16 @@ class CampaignAdGroupsTable(object):
         return totals_data
 
     def get_editable_fields(self, ad_group, row):
-        status_setting = {
+        state = {
             'enabled': True,
             'message': None
         }
-        if row['status_setting'] == constants.AdGroupSettingsState.INACTIVE \
+        if row['state'] == constants.AdGroupSettingsState.INACTIVE \
                 and not helpers.ad_group_has_available_budget(ad_group):
-            status_setting['enabled'] = False
-            status_setting['message'] = 'Cannot enable ad group without available budget.'
+            state['enabled'] = False
+            state['message'] = 'Cannot enable ad group without available budget.'
 
-        return {'status_setting': status_setting}
+        return {'state': state}
 
 
 class AccountCampaignsTable(object):
