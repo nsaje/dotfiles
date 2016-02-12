@@ -261,10 +261,7 @@ def calculate_daily_ad_group_cap(ad_group):
     """
     Daily media cap
     """
-    return sum(map(
-        _retrieve_daily_cap,
-        dash.models.AdGroupSource.objects.filter(ad_group=ad_group)
-    ))
+    return _compute_daily_cap([ad_group])
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_daily_campaign_cap')
@@ -272,12 +269,7 @@ def calculate_daily_campaign_cap(campaign):
     ad_groups = dash.models.AdGroup.objects.filter(
         campaign=campaign
     ).exclude_archived()
-    return sum(map(
-        _retrieve_daily_cap,
-        dash.models.AdGroupSource.objects.filter(
-            ad_group=ad_groups
-        )
-    ))
+    return _compute_daily_cap(ad_groups)
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_daily_account_cap')
@@ -286,12 +278,10 @@ def calculate_daily_account_cap(account):
     ad_groups = dash.models.AdGroup.objects.filter(
         campaign__in=campaigns
     ).exclude_archived()
-    return sum(map(
-        _retrieve_daily_cap,
-        dash.models.AdGroupSource.objects.filter(
-            ad_group=ad_groups
-        )
-    ))
+    ad_groups = dash.models.AdGroup.objects.filter(
+        campaign__in=campaigns
+    ).exclude_archived()
+    return _compute_daily_cap(ad_groups)
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_available_media_campaign_budget')
@@ -462,3 +452,29 @@ def _retrieve_daily_cap(ad_group_source):
         return 0
     # cc is not actually cc
     return adgs_settings.daily_budget_cc or 0
+
+
+def _compute_daily_cap(ad_groups):
+    ad_group_sources = dash.models.AdGroupSource.objects.filter(
+        ad_group__in=ad_groups
+    )
+    ad_group_source_states = dash.models.AdGroupSourceState.objects.filter(
+        ad_group_source__in=ad_group_sources
+    ).group_current_states()
+    adg_state = {
+        adgsst.ad_group_source_id: adgsst.state for adgsst in ad_group_source_states
+    }
+
+    ad_group_source_settings = dash.models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__in=ad_group_sources
+    )
+    adgs_settings = {
+        adgss.ad_group_source_id: adgss.daily_budget_cc or 0 for adgss in ad_group_source_settings
+    }
+
+    ret = 0
+    for adgsid, state in adg_state.iteritems():
+        if not state or state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+            continue
+        ret += adgs_settings.get(adgsid)
+    return ret
