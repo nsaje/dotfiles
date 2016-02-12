@@ -530,9 +530,7 @@ class CampaignOverview(api_common.BaseApiView):
         campaign_settings = campaign.get_current_settings()
 
         active = False
-        for ad_group in models.AdGroup.objects.filter(
-                campaign=campaign
-            ).exclude_archived():
+        for ad_group in models.AdGroup.objects.filter(campaign=campaign).exclude_archived():
             ad_group_settings = ad_group.get_current_settings()
             running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
             if running_status == constants.AdGroupRunningStatus.ACTIVE:
@@ -560,7 +558,7 @@ class CampaignOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'basic_settings':basic_settings,
+            'basic_settings': basic_settings,
             'performance_settings': performance_settings,
         }
         return self.create_api_response(response)

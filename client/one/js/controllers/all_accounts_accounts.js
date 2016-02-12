@@ -65,6 +65,30 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'asc'
         },
         {
+            name: 'Account Manager',
+            field: 'default_account_manager',
+            checked: false,
+            type: 'text',
+            totalRow: false,
+            help: 'Account manager responsible for the campaign and the communication with the client.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_managers_in_accounts_table'),
+            shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
+        },
+        {
+            name: 'Sales Representative',
+            field: 'default_sales_representative',
+            checked: false,
+            type: 'text',
+            totalRow: false,
+            help: 'Sales representative responsible for the campaign and the communication with the client.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_managers_in_accounts_table'),
+            shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
+        },
+        {
             name: 'Total Budget',
             field: 'budget',
             checked: true,
@@ -293,6 +317,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                 'visits', 'pageviews', 'percent_new_users',
                 'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'click_discrepancy'
+            ]
+        },
+        {
+            'name': 'Management',
+            'fields': [
+                'default_account_manager', 'default_sales_representative'
             ]
         },
         {
