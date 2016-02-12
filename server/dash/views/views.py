@@ -57,6 +57,9 @@ import reports.api
 
 logger = logging.getLogger(__name__)
 
+# infobox settings
+MAX_PREVIEW_REGIONS = 1
+
 
 def create_name(objects, name):
     objects = objects.filter(name__regex=r'^{}( [0-9]+)?$'.format(name))
@@ -294,7 +297,6 @@ class AdGroupOverview(api_common.BaseApiView):
         else:
             region_warning = 'Different than campaign default'
 
-        MAX_PREVIEW_REGIONS = 1
         preview_regions = ad_group_settings.target_regions[:MAX_PREVIEW_REGIONS]
         full_regions = ad_group_settings.target_regions
 
@@ -611,7 +613,6 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(targeting_device.as_dict())
 
-        MAX_PREVIEW_REGIONS = 1
         preview_regions = campaign_settings.target_regions[:MAX_PREVIEW_REGIONS]
         full_regions = campaign_settings.target_regions
         targeting_region = infobox_helpers.OverviewSetting(
