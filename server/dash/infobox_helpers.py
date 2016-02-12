@@ -455,7 +455,7 @@ def _compute_daily_cap(ad_groups):
 
     ad_group_source_settings = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source__in=ad_group_sources
-    )
+    ).group_current_settings()
     adgs_settings = {
         adgss.ad_group_source_id: adgss.daily_budget_cc or 0 for adgss in ad_group_source_settings
     }
