@@ -552,18 +552,27 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         }
 
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
+            if (!$scope.hasPermission('zemauth.can_access_all_accounts_infobox')) {
+                return;
+            }
             api.allAccountsOverview.get().then(
                 function (data) {
                     updateInfoboxData(data);
                 }
             );
         } else if ($scope.level === constants.level.ACCOUNTS) {
+            if (!$scope.hasPermission('zemauth.can_access_account_infobox')) {
+                return;
+            }
             api.accountOverview.get($state.params.id).then(
                 function (data) {
                     updateInfoboxData(data);
                 }
             );
         } else if ($scope.level === constants.level.CAMPAIGNS) {
+            if (!$scope.hasPermission('zemauth.can_access_campaign_infobox')) {
+                return;
+            }
             api.campaignOverview.get($state.params.id).then(
                 function (data) {
                     updateInfoboxData(data);
