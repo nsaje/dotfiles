@@ -37,7 +37,8 @@ class AdGroupSettingsTest(TestCase):
                 'name': 'Test ad group name',
                 'id': 1,
                 'autopilot_state': 2,
-                'autopilot_daily_budget': '100.0000'
+                'autopilot_daily_budget': '100.0000',
+                'autopilot_min_budget': '100'
             }
         }
 
@@ -74,7 +75,8 @@ class AdGroupSettingsTest(TestCase):
                     'target_regions': ['UK', 'US', 'CA'],
                     'tracking_code': 'param1=foo&param2=bar',
                     'autopilot_state': 2,
-                    'autopilot_daily_budget': '0.00'
+                    'autopilot_daily_budget': '0.00',
+                    'autopilot_min_budget': '100'
                 }
             },
             'success': True
@@ -124,7 +126,8 @@ class AdGroupSettingsTest(TestCase):
                     'enable_adobe_tracking': False,
                     'adobe_tracking_param': '',
                     'autopilot_state': 2,
-                    'autopilot_daily_budget': '100.00'
+                    'autopilot_daily_budget': '0.00',
+                    'autopilot_min_budget': '100'
                 }
             },
             'success': True
@@ -233,7 +236,8 @@ class AdGroupSettingsTest(TestCase):
                     'adobe_tracking_param': '',
                     'enable_adobe_tracking': False,
                     'autopilot_state': 2,
-                    'autopilot_daily_budget': '100.00'
+                    'autopilot_daily_budget': '0.00',
+                    'autopilot_min_budget': '100'
                 }
             },
             'success': True
@@ -540,7 +544,7 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'GA tracking type (via API or e-mail).', 'value': 'Email'},
                         {'name': 'Enable Adobe tracking', 'value': 'False'},
                         {'name': 'Adobe tracking parameter', 'value': ''},
-                        {'name': 'Auto-Pilot', 'value': 'Paused'},
+                        {'name': 'Auto-Pilot', 'value': 'Disabled'},
                         {'name': 'Auto-Pilot\'s Daily Budget', 'value': '$0.00'},
                     ],
                     'show_old_settings': False
@@ -567,7 +571,7 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'GA tracking type (via API or e-mail).', 'old_value': 'Email', 'value': 'Email'},
                         {'name': 'Enable Adobe tracking', 'old_value': 'False', 'value': 'False'},
                         {'name': 'Adobe tracking parameter', 'old_value': '', 'value': ''},
-                        {'name': 'Auto-Pilot', 'old_value': 'Paused', 'value': 'Paused'},
+                        {'name': 'Auto-Pilot', 'old_value': 'Disabled', 'value': 'Disabled'},
                         {'name': 'Auto-Pilot\'s Daily Budget', 'old_value': '$0.00', 'value': '$0.00'},
                     ],
                     'show_old_settings': True

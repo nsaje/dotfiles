@@ -16,9 +16,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.order = '-cost';
     $scope.sources = [];
     $scope.sourcesWaiting = null;
-    $scope.infoboxHeader = null;
-    $scope.infoboxBasicSettings = null;
-    $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.localStoragePrefix = 'adGroupSources';
 

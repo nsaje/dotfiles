@@ -17,9 +17,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.size = $scope.sizeRange[0];
     $scope.rows = [];
     $scope.isSyncInProgress = false;
-    $scope.infoboxHeader = null;
-    $scope.infoboxBasicSettings = null;
-    $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.pagination = {
         currentPage: 1

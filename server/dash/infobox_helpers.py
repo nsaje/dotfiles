@@ -15,6 +15,8 @@ from utils.statsd_helper import statsd_timer
 
 from decimal import Decimal
 
+MAX_PREVIEW_REGIONS = 1
+
 
 class OverviewSetting(object):
 
@@ -80,6 +82,23 @@ def format_flight_time(start_date, end_date):
     else:
         flight_time_left_days = (end_date - today).days + 1
     return flight_time, flight_time_left_days
+
+
+def create_region_setting(regions):
+    preview_regions = regions[:MAX_PREVIEW_REGIONS]
+    full_regions = regions
+    targeting_region_setting = OverviewSetting(
+        '',
+        'Location: {regions}'.format(
+            regions=', '.join(preview_regions)
+        )
+    )
+    if len(full_regions) > 1:
+        targeting_region_setting = targeting_region_setting.comment(
+            'more',
+            ', '.join(full_regions)
+        )
+    return targeting_region_setting
 
 
 @statsd_timer('dash.infobox_helpers', 'get_ideal_campaign_spend')
@@ -239,37 +258,6 @@ def goals_and_spend_settings(user, campaign):
     ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
     settings.append(campaign_pacing_settings.as_dict())
 
-    # TODO: Campaign goals will be disabled until Campaign KPI's ticket gets delivered
-    """
-    campaign_settings = campaign.get_current_settings()
-    campaign_goals = [(
-        campaign_settings.campaign_goal,
-        campaign_settings.goal_quantity,
-    )
-    ]
-    for i, (goal, quantity) in enumerate(campaign_goals):
-        text = dash.constants.CampaignGoal.get_text(goal)
-        name = 'Campaign goals:' if i == 0 else ''
-
-        try:
-            goal_value = get_goal_value(user, campaign, campaign_settings, goal)
-        except NotImplementedError:
-            goal_value = None
-        goal_diff, description, success = get_goal_difference(
-            goal,
-            float(quantity),
-            goal_value
-        )
-        goal_setting = OverviewSetting(
-            name,
-            '{actual_goal} {value}'.format(
-                actual_goal=format_goal_value(goal_value, goal),
-                value=text
-            ),
-            description
-        ).performance(success)
-        settings.append(goal_setting.as_dict())
-    """
     is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
     return settings, is_delivering
 
@@ -463,6 +451,16 @@ def _retrieve_active_budgetlineitems(campaign, date):
     return dash.models.BudgetLineItem.objects.filter(
         campaign__in=campaign
     ).filter_active(date)
+
+
+def is_campaign_active(campaign):
+    active = False
+    for ad_group in dash.models.AdGroup.objects.filter(campaign=campaign).exclude_archived():
+        ad_group_settings = ad_group.get_current_settings()
+        running_status = dash.models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
+        if running_status == dash.constants.AdGroupRunningStatus.ACTIVE:
+            active = True
+    return active
 
 
 @statsd_timer('dash.infobox_helpers', '_retrieve_active_creditlineitems')
