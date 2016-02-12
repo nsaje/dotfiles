@@ -38,7 +38,7 @@ admin.site.register(models.AutopilotAdGroupSourceBidCpcLog, AutopilotAdGroupSour
 
 
 class AutopilotLogAdmin(admin.ModelAdmin):
-    search_fields = ['ad_group_source__name']
+    search_fields = ['ad_group__name']
     list_display = (
         'ad_group',
         'ad_group_source',
