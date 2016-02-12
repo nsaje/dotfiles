@@ -15,6 +15,8 @@ from utils.statsd_helper import statsd_timer
 
 from decimal import Decimal
 
+MAX_PREVIEW_REGIONS = 1
+
 
 class OverviewSetting(object):
 
@@ -80,6 +82,23 @@ def format_flight_time(start_date, end_date):
     else:
         flight_time_left_days = (end_date - today).days + 1
     return flight_time, flight_time_left_days
+
+
+def create_region_setting(regions):
+    preview_regions = regions[:MAX_PREVIEW_REGIONS]
+    full_regions = regions
+    targeting_region_setting = OverviewSetting(
+        '',
+        'Location: {regions}'.format(
+            regions=', '.join(preview_regions)
+        )
+    )
+    if len(full_regions) > 1:
+        targeting_region_setting = targeting_region_setting.comment(
+            'more',
+            ', '.join(full_regions)
+        )
+    return targeting_region_setting
 
 
 @statsd_timer('dash.infobox_helpers', 'get_ideal_campaign_spend')

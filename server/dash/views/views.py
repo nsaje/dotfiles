@@ -297,22 +297,11 @@ class AdGroupOverview(api_common.BaseApiView):
         else:
             region_warning = 'Different than campaign default'
 
-        preview_regions = ad_group_settings.target_regions[:MAX_PREVIEW_REGIONS]
-        full_regions = ad_group_settings.target_regions
-
-        targeting_region = infobox_helpers.OverviewSetting(
-            '',
-            'Location: {regions}'.format(
-                regions=', '.join(preview_regions)
-            ),
-            warning=region_warning,
+        targeting_region_setting = infobox_helpers.create_region_setting(
+            ad_group_settings.target_regions
         )
-        if len(full_regions) > 1:
-            targeting_region = targeting_region.comment(
-                'more',
-                ', '.join(full_regions)
-            )
-        settings.append(targeting_region.as_dict())
+        targeting_region_setting.warning = region_warning
+        settings.append(targeting_region_setting.as_dict())
 
         tracking_code_settings = infobox_helpers.OverviewSetting(
             'Tracking codes:',
@@ -605,20 +594,10 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(targeting_device.as_dict())
 
-        preview_regions = campaign_settings.target_regions[:MAX_PREVIEW_REGIONS]
-        full_regions = campaign_settings.target_regions
-        targeting_region = infobox_helpers.OverviewSetting(
-            '',
-            'Location: {regions}'.format(
-                regions=', '.join(preview_regions)
-            )
+        targeting_region_setting = infobox_helpers.create_region_setting(
+            campaign_settings.target_regions
         )
-        if len(full_regions) > 1:
-            targeting_region = targeting_region.comment(
-                'more',
-                ', '.join(full_regions)
-            )
-        settings.append(targeting_region.as_dict())
+        settings.append(targeting_region_setting.as_dict())
 
         # take the num
         daily_cap = infobox_helpers.OverviewSetting(
