@@ -17,19 +17,6 @@ def format_currency(value, places=2, curr='', sep=',', dp='.',
     pos:     optional sign for positive numbers: '+', space or blank
     neg:     optional sign for negative numbers: '-', '(', space or blank
     trailneg:optional trailing minus indicator:  '-', ')', space or blank
-
-    >>> d = Decimal('-1234567.8901')
-    >>> moneyfmt(d, curr='$')
-    '-$1,234,567.89'
-    >>> moneyfmt(d, places=0, sep='.', dp='', neg='', trailneg='-')
-    '1.234.568-'
-    >>> moneyfmt(d, curr='$', neg='(', trailneg=')')
-    '($1,234,567.89)'
-    >>> moneyfmt(Decimal(123456789), sep=' ')
-    '123 456 789.00'
-    >>> moneyfmt(Decimal('-0.02'), neg='<', trailneg='>')
-    '<0.02>'
-
     """
     q = Decimal(10) ** -places      # 2 places --> '0.01'
     sign, digits, exp = value.quantize(q).as_tuple()
