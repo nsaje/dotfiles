@@ -35,3 +35,22 @@ class AutopilotAdGroupSourceBidCpcLogAdmin(admin.ModelAdmin):
     readonly_fields = ['created_dt']
 
 admin.site.register(models.AutopilotAdGroupSourceBidCpcLog, AutopilotAdGroupSourceBidCpcLogAdmin)
+
+
+class AutopilotLogAdmin(admin.ModelAdmin):
+    search_fields = ['ad_group_source__name']
+    list_display = (
+        'ad_group',
+        'ad_group_source',
+        'previous_cpc_cc',
+        'new_cpc_cc',
+        'previous_daily_budget_cc',
+        'new_daily_budget_cc',
+        'yesterdays_spend_cc',
+        'yesterdays_clicks',
+        'created_dt',
+        'comments'
+    )
+    readonly_fields = ['created_dt']
+
+admin.site.register(models.AutopilotLog, AutopilotLogAdmin)
