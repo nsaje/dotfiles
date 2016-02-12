@@ -307,7 +307,7 @@ class AdGroupOverview(api_common.BaseApiView):
             ),
             warning=region_warning,
         )
-        if full_regions != []:
+        if len(full_regions) > 1:
             targeting_region = targeting_region.comment(
                 'more',
                 ', '.join(full_regions)
@@ -621,7 +621,7 @@ class CampaignOverview(api_common.BaseApiView):
                 regions=', '.join(preview_regions)
             )
         )
-        if full_regions != []:
+        if len(full_regions) > 1:
             targeting_region = targeting_region.comment(
                 'more',
                 ', '.join(full_regions)
