@@ -106,8 +106,8 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             help: 'A setting for enabling and pausing Ad Groups.',
             onChange: function (adgroupId, state) {
                 $scope.rows.forEach(function (row) {
-                    if (row['id'] === adgroupId) {
-                        row['state_text'] = $scope.getStateText(state);
+                    if (row.id === adgroupId) {
+                        row.stateText = $scope.getStateText(state);
                     }
                 });
                 api.adGroupSettingsState.post(adgroupId, state).then(
@@ -138,7 +138,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         },
         {
             name: 'Status',
-            field: 'state_text',
+            field: 'stateText',
             checked: true,
             type: 'text',
             shown: true,
@@ -580,9 +580,9 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                     };
 
                     if (x.archived) {
-                        x.state_text = 'Archived';
+                        x.stateText = 'Archived';
                     } else {
-                        x.state_text = $scope.getStateText(x.state);
+                        x.stateText = $scope.getStateText(x.state);
                     }
 
                     return x;
@@ -599,12 +599,12 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         });
     };
 
-    $scope.getStateText = function(state) {
+    $scope.getStateText = function (state) {
         if (state === constants.adGroupSettingsState.ACTIVE) {
             return 'Active';
-        } else {
-            return 'Paused';
         }
+
+        return 'Paused';
     };
 
     $scope.orderTableData = function (order) {
