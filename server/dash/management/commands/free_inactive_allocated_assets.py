@@ -12,7 +12,7 @@ class Command(BaseCommand):
     help = 'Free recently inactive budget assets.'
     option_list = BaseCommand.option_list + (
         make_option('--budget-ids', help="Budget line item IDs"),
-        make_option('--verbose', help="Verbose"),
+        make_option('--verbose', action='store_true', default=False, help="Verbose"),
     )
 
     def handle(self, *args, **options):
@@ -29,7 +29,9 @@ class Command(BaseCommand):
 
         for budget in candidate_budgets:
             if is_verbose:
-                print 'Processing', budget
+                self.stdout.write('Processing {}\n'.format(str(budget)))
             budget.free_inactive_allocated_assets()
             if is_verbose:
-                print 'Budget has', budget.freed_cc * dash.models.CC_TO_DEC_MULTIPLIER, 'assets freed.'
+                self.stdout.write('Budget has ${} assets freed.\n'.format(
+                    budget.freed_cc * dash.models.CC_TO_DEC_MULTIPLIER
+                ))
