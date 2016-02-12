@@ -17,9 +17,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.chartData = undefined;
     $scope.chartMetricOptions = options.adGroupChartMetrics;
     $scope.localStoragePrefix = 'adGroupContentAdsPlus';
-    $scope.infoboxHeader = null;
-    $scope.infoboxBasicSettings = null;
-    $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.adGroups.settings';
 
     $scope.lastSyncDate = null;
