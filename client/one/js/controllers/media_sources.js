@@ -18,7 +18,9 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     $scope.sources = [];
     $scope.exportOptions = [];
     $scope.infoboxHeader = null;
-    $scope.infoboxSettings = null;
+    $scope.infoboxBasicSettings = null;
+    $scope.infoboxPerformanceSettings = null;
+    $scope.infoboxLinkTo = null;
 
     var userSettings = null;
 
@@ -31,7 +33,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.selectedSourceIds.push(sourceId);
         }
 
-        $scope.columns[0].disabled = $scope.selectedSourceIds.length >= 4;
     };
 
     $scope.selectedSourcesChanged = function (row, checked) {
@@ -539,17 +540,36 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         );
     };
 
+    var updateInfoboxData = function (data) { 
+        $scope.infoboxHeader = data.header;
+        $scope.infoboxBasicSettings = data.basicSettings;
+        $scope.infoboxPerformanceSettings = data.performanceSettings;
+    };
+
     var getInfoboxData = function () {
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
 
-        api.campaignOverview.get($state.params.id).then(
-            function (data) {
-                $scope.infoboxHeader = data.header;
-                $scope.infoboxSettings = data.settings;
-            }
-        );
+        if ($scope.level === constants.level.ALL_ACCOUNTS) {
+            api.allAccountsOverview.get().then(
+                function (data) {
+                    updateInfoboxData(data);
+                }
+            );
+        } else if ($scope.level === constants.level.ACCOUNTS) {
+            api.accountOverview.get($state.params.id).then(
+                function (data) {
+                    updateInfoboxData(data);
+                }
+            );
+        } else if ($scope.level === constants.level.CAMPAIGNS) {
+            api.campaignOverview.get($state.params.id).then(
+                function (data) {
+                    updateInfoboxData(data);
+                }
+            );
+        }
     };
 
     var setChartOptions = function () {
@@ -600,6 +620,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var init = function () {
+
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
             $scope.localStoragePrefix = 'allAccountSources';
             $scope.chartMetrics = options.allAccountsChartMetrics;
@@ -612,6 +633,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
               {name: 'By Campaign', value: 'campaign-csv'},
               {name: 'By Ad Group', value: 'adgroup-csv'}
             ];
+
         } else if ($scope.level === constants.level.ACCOUNTS) {
             $scope.localStoragePrefix = 'accountSources';
             $scope.chartMetrics = options.accountChartMetrics;
@@ -622,6 +644,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
               {name: 'By Ad Group', value: 'adgroup-csv'},
               {name: 'By Content Ad', value: 'contentad-csv'}
             ];
+            $scope.infoboxLinkTo = 'main.accounts.settings';
         } else if ($scope.level === constants.level.CAMPAIGNS) {
             $scope.localStoragePrefix = 'campaignSources';
             $scope.chartMetrics = options.campaignChartMetrics;
@@ -631,6 +654,8 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
               {name: 'By Ad Group', value: 'adgroup-csv'},
               {name: 'By Content Ad', value: 'contentad-csv'}
             ];
+
+            $scope.infoboxLinkTo = 'main.campaigns.settings';
         }
 
         userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
@@ -741,12 +766,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             api.campaignSync.get($state.params.id, null);
         }
     };
-
-    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    });
 
     init();
 }]);

@@ -717,19 +717,19 @@ def _get_state_messages(ad_group_source, ad_group_settings, ad_group_source_sett
 
 
 def _get_ad_group_source_settings_from_filter_qs(ad_group_source, ad_group_sources_settings):
-        for ags_settings in ad_group_sources_settings:
-            if ags_settings.ad_group_source_id == ad_group_source.id:
-                return ags_settings
+    for ags_settings in ad_group_sources_settings:
+        if ags_settings.ad_group_source_id == ad_group_source.id:
+            return ags_settings
 
-        return None
+    return None
 
 
 def _get_ad_group_source_state_from_filter_qs(ad_group_source, ad_group_sources_states):
-        for ags_state in ad_group_sources_states:
-            if ags_state.ad_group_source_id == ad_group_source.id:
-                return ags_state
+    for ags_state in ad_group_sources_states:
+        if ags_state.ad_group_source_id == ad_group_source.id:
+            return ags_state
 
-        return None
+    return None
 
 
 def get_ad_group_sources_states(ad_group_sources):
@@ -801,9 +801,9 @@ def parse_post_request_content_ad_ids(request_data, param_name):
         raise exc.ValidationError()
 
 
-def get_user_full_name_or_email(user):
+def get_user_full_name_or_email(user, default_value='/'):
     if user is None:
-        return '/'
+        return default_value
 
     result = user.get_full_name() or user.email
     return result.encode('utf-8')
@@ -819,7 +819,7 @@ def get_target_regions_string(regions):
 def copy_stats_to_row(stat, row):
     for key in ['impressions', 'clicks', 'cost', 'data_cost', 'cpc', 'ctr',
                 'visits', 'click_discrepancy', 'pageviews', 'media_cost',
-                'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos', 
+                'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
                 'license_fee', ]:
         row[key] = stat.get(key)
@@ -919,7 +919,7 @@ def _get_status_setting_disabled_message(ad_group_source):
 
 
 def _get_status_setting_disabled_message_for_target_regions(
-                 ad_group_source, ad_group_settings, ad_group_source_settings):
+        ad_group_source, ad_group_settings, ad_group_source_settings):
     source = ad_group_source.source
     unsupported_targets = []
     manual_targets = []
@@ -1011,6 +1011,9 @@ def log_useraction_if_necessary(request, user_action_type, account=None, campaig
 
 
 def ad_group_has_available_budget(ad_group):
+    if ad_group.campaign.account.uses_credits:
+        return any(ad_group.campaign.budgets.all().filter_active())
+
     campaign_budget = budget.CampaignBudget(ad_group.campaign)
 
     total = campaign_budget.get_total()

@@ -5,6 +5,7 @@ import unicodecsv
 import dateutil.parser
 import rfc3987
 import datetime
+from decimal import Decimal
 
 from collections import Counter
 
@@ -12,6 +13,7 @@ from django import forms
 from django.db import transaction
 from django.core import validators
 
+from automation import autopilot_budgets
 from dash import api
 from dash import constants
 from dash import models
@@ -88,6 +90,18 @@ class AdGroupSettingsForm(forms.Form):
 
     adobe_tracking_param = forms.CharField(max_length=10, required=False)
 
+    autopilot_state = forms.TypedChoiceField(
+        required=False,
+        choices=constants.AdGroupSettingsAutopilotState.get_choices(),
+        coerce=int,
+        empty_value=None
+    )
+
+    autopilot_daily_budget = forms.DecimalField(
+        decimal_places=4,
+        required=False
+    )
+
     def __init__(self, *args, **kwargs):
         self.ad_group = kwargs.pop('ad_group')
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
@@ -149,6 +163,16 @@ class AdGroupSettingsForm(forms.Form):
         cpc_cc = self.cleaned_data.get('cpc_cc')
         validation_helpers.validate_ad_group_cpc_cc(cpc_cc, self.ad_group)
         return cpc_cc
+
+    def clean_autopilot_daily_budget(self):
+        budget = self.cleaned_data.get('autopilot_daily_budget', 0)
+        ap_state = self.cleaned_data.get('autopilot_state')
+        budget_ap_is_active = ap_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        budget_insufficient = budget < autopilot_budgets.get_adgroup_minimum_daily_budget(self.ad_group)
+        if budget_ap_is_active and budget_insufficient:
+            raise forms.ValidationError(message='Total Daily Budget must be at least $' +
+                                        str(autopilot_budgets.get_adgroup_minimum_daily_budget(self.ad_group)))
+        return self.cleaned_data.get('autopilot_daily_budget')
 
 
 class AdGroupSourceSettingsCpcForm(forms.Form):
@@ -802,7 +826,9 @@ class CreditLineItemAdminForm(forms.ModelForm):
 
     class Meta:
         model = models.CreditLineItem
-        fields = ['account', 'start_date', 'end_date', 'amount', 'license_fee', 'status', 'comment']
+        fields = ['account', 'start_date', 'end_date', 'amount',
+                  'flat_fee_cc', 'flat_fee_start_date', 'flat_fee_end_date',
+                  'license_fee', 'status', 'comment']
 
 
 class BudgetLineItemAdminForm(forms.ModelForm):

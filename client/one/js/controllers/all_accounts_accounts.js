@@ -15,6 +15,9 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     $scope.sizeRange = [5, 10, 20, 50];
     $scope.size = $scope.sizeRange[0];
     $scope.isIncompletePostclickMetrics = false;
+    $scope.infoboxHeader = null;
+    $scope.infoboxBasicSettings = null;
+    $scope.infoboxPerformanceSettings = null;
     $scope.pagination = {
         currentPage: 1,
     };
@@ -62,6 +65,30 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'asc'
         },
         {
+            name: 'Account Manager',
+            field: 'default_account_manager',
+            checked: false,
+            type: 'text',
+            totalRow: false,
+            help: 'Account manager responsible for the campaign and the communication with the client.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_managers_in_accounts_table'),
+            shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
+        },
+        {
+            name: 'Sales Representative',
+            field: 'default_sales_representative',
+            checked: false,
+            type: 'text',
+            totalRow: false,
+            help: 'Sales representative responsible for the campaign and the communication with the client.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_managers_in_accounts_table'),
+            shown: $scope.hasPermission('zemauth.can_see_managers_in_accounts_table')
+        },
+        {
             name: 'Total Budget',
             field: 'budget',
             checked: true,
@@ -96,6 +123,30 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             initialOrder: 'desc',
             internal: $scope.isPermissionInternal('zemauth.unspent_budget_view'),
             shown: $scope.hasPermission('zemauth.unspent_budget_view')
+        },
+        {
+            name: 'Total Credit',
+            field: 'credit_projection',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_projections'),
+            shown: $scope.hasPermission('zemauth.can_see_projections')
+        },
+        {
+            name: 'Spend Projection',
+            field: 'spend_projection',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_projections'),
+            shown: $scope.hasPermission('zemauth.can_see_projections')
         },
         {
             name: 'Spend',
@@ -193,6 +244,30 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             shown: $scope.hasPermission('zemauth.can_view_effective_costs')
         },
         {
+            name: 'Recognized Flat Fee',
+            field: 'flat_fee',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_flat_fees'),
+            shown: $scope.hasPermission('zemauth.can_view_flat_fees')
+        },
+        {
+            name: 'Total Fee',
+            field: 'total_fee',
+            checked: false,
+            type: 'currency',
+            totalRow: true,
+            help: '',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_view_flat_fees'),
+            shown: $scope.hasPermission('zemauth.can_view_flat_fees')
+        },
+        {
             name: 'Avg. CPC',
             field: 'cpc',
             checked: true,
@@ -254,8 +329,10 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         {
             'name': 'Traffic Acquisition',
             'fields': [
-                'clicks', 'impressions', 'cost', 'data_cost', 'cpc', 'budget', 'available_budget', 'unspent_budget',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost', 'license_fee'
+                'clicks', 'impressions', 'cost', 'data_cost', 'cpc', 'budget',
+                'available_budget', 'unspent_budget', 'credit_projection', 'spend_projection',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
+                'license_fee', 'total_fee', 'flat_fee'
             ]
         },
         {
@@ -264,6 +341,12 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
                 'visits', 'pageviews', 'percent_new_users',
                 'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'click_discrepancy'
+            ]
+        },
+        {
+            'name': 'Management',
+            'fields': [
+                'default_account_manager', 'default_sales_representative'
             ]
         },
         {
@@ -382,6 +465,20 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             function (data) {
                 // error
                 return;
+            }
+        );
+    };
+
+    var getInfoboxData = function () {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+
+        api.allAccountsOverview.get().then(
+            function (data) {
+                $scope.infoboxHeader = data.header;
+                $scope.infoboxBasicSettings = data.basicSettings;
+                $scope.infoboxPerformanceSettings = data.performanceSettings;
             }
         );
     };
@@ -557,12 +654,19 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         $scope.loadPage();
         getDailyStats();
+        getInfoboxData();
         getTableData();
         initColumns();
     };
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);
+    });
+
+    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
+        $timeout(function () {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
     });
 
     $scope.init();

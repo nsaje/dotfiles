@@ -17,7 +17,9 @@ def _generate_statements(date, campaign):
     budgets = dash.models.BudgetLineItem.objects.filter(campaign_id=campaign.id,
                                                         start_date__lte=date,
                                                         end_date__gte=date)
-    existing_statements = reports.models.BudgetDailyStatement.objects.filter(budget__campaign_id=campaign.id)
+    existing_statements = reports.models.BudgetDailyStatement.objects.filter(
+        date__lte=date,
+        budget__campaign_id=campaign.id)
     existing_statements.filter(date=date).delete()
 
     stats = reports.models.AdGroupStats.objects\
@@ -44,7 +46,7 @@ def _generate_statements(date, campaign):
             per_budget_spend_nano[budget.id]['data'] +\
             per_budget_spend_nano[budget.id]['license_fee']
         if total_spend_nano > 0 and budget_spend_total_nano < budget_amount_nano:
-            available_budget_nano = (budget_amount_nano - budget_spend_total_nano) / (1 + budget.credit.license_fee)
+            available_budget_nano = (budget_amount_nano - budget_spend_total_nano) * (1 - budget.credit.license_fee)
             if total_media_nano + total_data_nano > available_budget_nano:
                 if total_media_nano >= available_budget_nano:
                     attributed_media_nano = available_budget_nano
@@ -56,7 +58,8 @@ def _generate_statements(date, campaign):
                 attributed_media_nano = total_media_nano
                 attributed_data_nano = total_data_nano
 
-            license_fee_nano = (attributed_media_nano + attributed_data_nano) * budget.credit.license_fee
+            license_fee_pct_of_total = (1 / (1 - budget.credit.license_fee)) - 1
+            license_fee_nano = (attributed_media_nano + attributed_data_nano) * license_fee_pct_of_total
 
         per_budget_spend_nano[budget.id]['media'] += attributed_media_nano
         per_budget_spend_nano[budget.id]['data'] += attributed_data_nano

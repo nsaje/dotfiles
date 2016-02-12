@@ -27,6 +27,18 @@ class AdGroupRunningStatus(ConstantBase):
     }
 
 
+class AdGroupSettingsAutopilotState(ConstantBase):
+    ACTIVE_CPC_BUDGET = 1
+    INACTIVE = 2
+    ACTIVE_CPC = 3
+
+    _VALUES = {
+        ACTIVE_CPC: 'Optimize Bid CPCs',
+        ACTIVE_CPC_BUDGET: 'Optimize Bid CPCs and Daily Budgets',
+        INACTIVE: 'Disabled'
+    }
+
+
 class AdGroupSourceSettingsState(ConstantBase):
     # keep in sync with zwei
     ACTIVE = 1
@@ -111,6 +123,20 @@ class PublisherStatus(ConstantBase):
         ENABLED: 'Enabled',
         BLACKLISTED: 'Blacklisted',
         PENDING: 'Pending'
+    }
+
+
+class InfoboxLevel(ConstantBase):
+    ADGROUP = 'adgroup'
+    CAMPAIGN = 'campaign'
+    ACCOUNT = 'account'
+    ALL_ACCOUNTS = 'all-accounts'
+
+    _VALUES = {
+        ADGROUP: 'Ad Group',
+        CAMPAIGN : 'Campaign',
+        ACCOUNT : 'Account',
+        ALL_ACCOUNTS: 'All Accounts'
     }
 
 

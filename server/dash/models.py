@@ -7,6 +7,7 @@ import newrelic.agent
 
 from decimal import Decimal
 import pytz
+from django.db.models import Sum, F, Func
 from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.contrib import auth
@@ -34,6 +35,16 @@ SHORT_NAME_MAX_LENGTH = 22
 CC_TO_DEC_MULTIPLIER = Decimal('0.0001')
 TO_CC_MULTIPLIER = 10**4
 TO_NANO_MULTIPLIER = 10**9
+
+
+class Round(Func):
+    function = 'ROUND'
+    template = '%(function)s(%(expressions)s, 0)'
+
+
+class Coalesce(Func):
+    function = 'COALESCE'
+    template = '%(function)s(%(expressions)s, 0)'
 
 
 def nano_to_cc(num):
@@ -1269,6 +1280,7 @@ class AdGroupSource(models.Model):
     objects = QuerySetManager()
 
     class QuerySet(models.QuerySet):
+
         def filter_by_sources(self, sources):
             if not should_filter_by_sources(sources):
                 return self
@@ -1382,6 +1394,8 @@ class AdGroupSettings(SettingsBase):
         'ga_tracking_type',
         'enable_adobe_tracking',
         'adobe_tracking_param',
+        'autopilot_state',
+        'autopilot_daily_budget',
     ]
 
     id = models.AutoField(primary_key=True)
@@ -1425,6 +1439,20 @@ class AdGroupSettings(SettingsBase):
     description = models.CharField(max_length=140, blank=True, default='')
     call_to_action = models.CharField(max_length=25, blank=True, default='')
     ad_group_name = models.CharField(max_length=127, blank=True, default='')
+    autopilot_state = models.IntegerField(
+        blank=True,
+        null=True,
+        default=constants.AdGroupSettingsAutopilotState.INACTIVE,
+        choices=constants.AdGroupSettingsAutopilotState.get_choices()
+    )
+    autopilot_daily_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Auto-Pilot\'s Daily Budget',
+        default=0
+    )
 
     changes_text = models.TextField(blank=True, null=True)
 
@@ -1483,10 +1511,12 @@ class AdGroupSettings(SettingsBase):
         return {
             'state': constants.AdGroupSettingsState.INACTIVE,
             'start_date': dates_helper.utc_today(),
-            'cpc_cc': 0.4000,
+            'cpc_cc': None,
             'daily_budget_cc': 10.0000,
             'target_devices': constants.AdTargetDevice.get_all(),
-            'target_regions': ['US']
+            'target_regions': ['US'],
+            'autopilot_state': constants.AdGroupSettingsAutopilotState.INACTIVE,
+            'autopilot_daily_budget': 0.00
         }
 
     @classmethod
@@ -1509,6 +1539,7 @@ class AdGroupSettings(SettingsBase):
             'enable_ga_tracking': 'Enable GA tracking',
             'ga_tracking_type': 'GA tracking type (via API or e-mail).',
             'autopilot_state': 'Auto-Pilot',
+            'autopilot_daily_budget': 'Auto-Pilot\'s Daily Budget',
             'enable_adobe_tracking': 'Enable Adobe tracking',
             'adobe_tracking_param': 'Adobe tracking parameter'
         }
@@ -1520,7 +1551,9 @@ class AdGroupSettings(SettingsBase):
         if prop_name == 'state':
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == 'autopilot_state':
-            value = constants.AdGroupSourceSettingsAutopilotState.get_text(value)
+            value = constants.AdGroupSettingsAutopilotState.get_text(value)
+        elif prop_name == 'autopilot_daily_budget' and value is not None:
+            value = '$' + utils.string_helper.format_decimal(value, 2, 2)
         elif prop_name == 'end_date' and value is None:
             value = 'I\'ll stop it myself'
         elif prop_name == 'cpc_cc' and value is not None:
@@ -1887,7 +1920,7 @@ class ContentAdSource(models.Model):
     def get_source_id(self):
         if self.source.source_type and self.source.source_type.type in [
                 constants.SourceType.B1, constants.SourceType.GRAVITY]:
-            return self.content_ad.id
+            return self.content_ad_id
         else:
             return self.source_content_ad_id
 
@@ -2094,6 +2127,11 @@ class CreditLineItem(FootprintModel):
         max_digits=5,
         default=Decimal('0.2000'),
     )
+
+    flat_fee_cc = models.IntegerField(default=0, verbose_name='Flat fee (cc)')
+    flat_fee_start_date = models.DateField(blank=True, null=True)
+    flat_fee_end_date = models.DateField(blank=True, null=True)
+
     status = models.IntegerField(
         default=constants.CreditLineItemStatus.PENDING,
         choices=constants.CreditLineItemStatus.get_choices()
@@ -2120,7 +2158,32 @@ class CreditLineItem(FootprintModel):
         return self.end_date < date
 
     def get_allocated_amount(self):
-        return sum(b.allocated_amount() for b in self.budgets.all())
+        return Decimal(sum(b.allocated_amount() for b in self.budgets.all()))
+
+    def get_overlap(self, start_date, end_date):
+        return dates_helper.get_overlap(self.start_date, self.end_date, start_date, end_date)
+
+    def get_monthly_flat_fee(self):
+        months = dates_helper.count_months(
+            self.flat_fee_start_date,
+            self.flat_fee_end_date
+        ) + 1
+        return self.flat_fee() / Decimal(months)
+
+    def get_flat_fee_on_date_range(self, start_date, end_date):
+        if not (self.flat_fee_start_date and self.flat_fee_end_date):
+            return Decimal('0.0')
+        overlap = dates_helper.get_overlap(
+            self.flat_fee_start_date, self.flat_fee_end_date,
+            start_date, end_date
+        )
+        if not all(overlap):
+            return Decimal('0.0')
+        effective_months = dates_helper.count_months(*overlap) + 1
+        return min(
+            self.get_monthly_flat_fee() * effective_months,
+            self.flat_fee()
+        )
 
     def cancel(self):
         self.status = constants.CreditLineItemStatus.CANCELED
@@ -2150,9 +2213,15 @@ class CreditLineItem(FootprintModel):
     def is_editable(self):
         return self.status == constants.CreditLineItemStatus.PENDING
 
+    def flat_fee(self):
+        return Decimal(self.flat_fee_cc) * CC_TO_DEC_MULTIPLIER
+
+    def effective_amount(self):
+        return Decimal(self.amount) - self.flat_fee()
+
     def is_available(self):
         return not self.is_past() and self.status == constants.CreditLineItemStatus.SIGNED\
-            and (self.amount - self.get_allocated_amount()) > 0
+            and (self.effective_amount() - self.get_allocated_amount()) > 0
 
     def clean(self):
         has_changed = any((
@@ -2170,6 +2239,7 @@ class CreditLineItem(FootprintModel):
             self.validate_license_fee,
             self.validate_status,
             self.validate_amount,
+            self.validate_flat_fee_cc
         )
 
         if not self.pk or self.previous_value('status') != constants.CreditLineItemStatus.SIGNED:
@@ -2186,6 +2256,17 @@ class CreditLineItem(FootprintModel):
                 'end_date': ['End date minimum is depending on budgets.'],
             })
 
+    def validate_flat_fee_cc(self):
+        if not self.flat_fee_cc:
+            return
+        delta = self.effective_amount() - self.get_allocated_amount()
+        if delta < 0:
+            raise ValidationError(
+                'Flat fee exceeds the available credit amount by ${}.'.format(
+                    -delta.quantize(Decimal('1.00'))
+                )
+            )
+
     def validate_amount(self):
         if self.amount < 0:
             raise ValidationError('Amount cannot be negative.')
@@ -2196,7 +2277,7 @@ class CreditLineItem(FootprintModel):
 
         if prev_amount < self.amount or not budgets:
             return
-        if self.amount < sum(b.amount for b in budgets):
+        if self.effective_amount() < sum(b.allocated_amount() for b in budgets):
             raise ValidationError(
                 'Credit line item amount needs to be larger than the sum of budgets.'
             )
@@ -2219,7 +2300,7 @@ class CreditLineItem(FootprintModel):
     def validate_license_fee(self):
         if not self.license_fee:
             return
-        if not (0 <= self.license_fee <= 1):
+        if not (0 <= self.license_fee < 1):
             raise ValidationError('License fee must be between 0 and 100%.')
 
     class QuerySet(models.QuerySet):
@@ -2352,6 +2433,41 @@ class BudgetLineItem(FootprintModel):
     def get_latest_statement(self):
         return self.statements.all().order_by('-date').first()
 
+    def get_mtd_spend_data(self, date=None, use_decimal=False):
+        '''
+        Get month-to-date spend data
+        '''
+        spend_data = {
+            'media_cc': 0,
+            'data_cc': 0,
+            'license_fee_cc': 0,
+            'total_cc': 0,
+        }
+
+        if not date:
+            date = datetime.datetime.utcnow()
+
+        start_date = datetime.datetime(date.year, date.month, 1)
+        statements = self.statements.filter(
+            date__gte=start_date,
+            date__lte=date
+        ) if date else self.statements.all()
+        spend_data = {
+            (key + '_cc'): nano_to_cc(spend or 0)
+            for key, spend in statements.aggregate(
+                media=models.Sum('media_spend_nano'),
+                data=models.Sum('data_spend_nano'),
+                license_fee=models.Sum('license_fee_nano'),
+            ).iteritems()
+        }
+        spend_data['total_cc'] = sum(spend_data.values())
+        if not use_decimal:
+            return spend_data
+        return {
+            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
+            for key in spend_data.keys()
+        }
+
     def get_spend_data(self, date=None, use_decimal=False):
         spend_data = {
             'media_cc': 0,
@@ -2466,7 +2582,7 @@ class BudgetLineItem(FootprintModel):
             raise ValidationError('Amount cannot be negative.')
 
         budgets = self.credit.budgets.exclude(pk=self.pk)
-        delta = Decimal(self.credit.amount - sum(b.allocated_amount() for b in budgets) - self.amount)
+        delta = self.credit.effective_amount() - sum(b.allocated_amount() for b in budgets) - self.amount
         if delta < 0:
             raise ValidationError(
                 'Budget exceeds the total credit amount by ${}.'.format(
@@ -2496,6 +2612,25 @@ class BudgetLineItem(FootprintModel):
             if any(itm.state() != constants.BudgetLineItemState.PENDING for itm in self):
                 raise AssertionError('Some budget items are not pending')
             super(BudgetLineItem.QuerySet, self).delete()
+
+        def filter_active(self, date=None):
+            if date is None:
+                date = dates_helper.local_today()
+            return self.exclude(
+                end_date__lt=date
+            ).filter(
+                start_date__lte=date
+            ).annotate(
+                media_spend_sum=Sum('statements__media_spend_nano'),
+                license_fee_spend_sum=Sum('statements__license_fee_nano'),
+                data_spend_sum=Sum('statements__data_spend_nano')
+            ).exclude(
+                amount__lte=Round(
+                    Coalesce('media_spend_sum') * 1e-9 +
+                    Coalesce('license_fee_spend_sum') * 1e-9 +
+                    Coalesce('data_spend_sum') * 1e-9
+                )
+            )
 
 
 class CreditHistory(HistoryModel):
@@ -2665,4 +2800,3 @@ class GAAnalyticsAccount(models.Model):
     account = models.ForeignKey(Account, null=False, blank=False, on_delete=models.PROTECT)
     ga_account_id = models.CharField(max_length=127, blank=False, null=False)
     ga_web_property_id = models.CharField(max_length=127, blank=False, null=False)
-

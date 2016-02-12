@@ -17,8 +17,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.size = $scope.sizeRange[0];
     $scope.rows = [];
     $scope.isSyncInProgress = false;
-    $scope.infoboxHeader = null;
-    $scope.infoboxSettings = null;
+    $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.pagination = {
         currentPage: 1
     };
@@ -779,7 +778,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         api.adGroupOverview.get($state.params.id).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
-                $scope.infoboxSettings = data.settings;
+                $scope.infoboxBasicSettings = data.basicSettings;
+                $scope.infoboxPerformanceSettings = data.performanceSettings;
             }
         );
     };
@@ -917,12 +917,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             getTableData();
         }
     };
-
-    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    });
 
     $scope.$watch('size', function (newValue, oldValue) {
         if (newValue !== oldValue) {

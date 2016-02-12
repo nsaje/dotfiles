@@ -183,6 +183,10 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         return result;
     };
 
+    $scope.showAutoPilotDailyBudget = function () {
+        return $scope.settings.autopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
+    };
+
     $scope.$watch('settings.manualStop', function (newValue, oldValue) {
         if (newValue) {
             $scope.settings.endDate = null;

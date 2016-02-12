@@ -2355,6 +2355,7 @@ class AdGroupOverviewTest(TestCase):
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
         cursor().dictfetchall.return_value = [{
+            'adgroup_id': 1,
             'source_id': 9,
             'cost_cc_sum': 0.0
         }]
@@ -2388,7 +2389,8 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual(header['title'], u'AdGroup name')
         self.assertFalse(header['active'])
 
-        settings = response['data']['settings']
+        settings = response['data']['basic_settings'] +\
+            response['data']['performance_settings']
         flight_setting = self._get_setting(settings, 'flight')
         self.assertEqual('03/02 - 04/02', flight_setting['value'])
 
@@ -2399,7 +2401,8 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('Device: Desktop, Mobile', device_setting['value'])
 
         region_setting = [s for s in settings if 'location' in s['value'].lower()][0]
-        self.assertEqual('Location: UK, US, CA', region_setting['value'])
+        self.assertEqual('Location: UK', region_setting['value'])
+        self.assertEqual('UK, US, CA', region_setting['details_content'])
 
         tracking_setting = self._get_setting(settings, 'tracking')
         self.assertEqual(tracking_setting['value'], 'Yes')
@@ -2429,7 +2432,8 @@ class AdGroupOverviewTest(TestCase):
         """
 
     @patch('reports.redshift.get_cursor')
-    def test_run_mid(self, cursor):
+    @patch('reports.api_contentads.get_actual_yesterday_cost')
+    def test_run_mid(self, mock_cost, cursor):
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
 
@@ -2467,10 +2471,15 @@ class AdGroupOverviewTest(TestCase):
             license_fee_nano=0
         )
 
-        cursor().diftfetchall.return_value = [{
-                'source_id': 9,
+        cursor().diftfetchall.return_value = {
+            1: {
                 'cost_cc_sum': 500000.0,
-            }]
+            }
+        }
+
+        mock_cost.return_value = {
+            1: 60.0
+        }
 
         response = self._get_ad_group_overview(1)
 
@@ -2479,7 +2488,8 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual(header['title'], u'AdGroup name')
         self.assertFalse(header['active'])
 
-        settings = response['data']['settings']
+        settings = response['data']['basic_settings'] +\
+            response['data']['performance_settings']
 
         flight_setting = self._get_setting(settings, 'flight')
         self.assertEqual('{sm}/{sd} - {em}/{ed}'.format(
@@ -2493,7 +2503,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('$50.00', flight_setting['value'])
         yesterday_setting = self._get_setting(settings, 'yesterday')
         self.assertEqual('$60.00', yesterday_setting['value'])
-        self.assertEqual('120.00% of daily cap', yesterday_setting['description'])
+        self.assertEqual('120.00% of daily budget', yesterday_setting['description'])
 
 
 class CampaignOverviewTest(TestCase):
@@ -2508,7 +2518,7 @@ class CampaignOverviewTest(TestCase):
         user.user_permissions.add(permission)
         user.save()
 
-    def _get_campaign_overview(self, campaign_id, user_id=3, with_status=False):
+    def _get_campaign_overview(self, campaign_id, user_id=2, with_status=False):
         user = User.objects.get(pk=user_id)
         self.client.login(username=user.username, password='secret')
         reversed_url = reverse(
@@ -2526,8 +2536,91 @@ class CampaignOverviewTest(TestCase):
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
         cursor().dictfetchall.return_value = [{
+            'adgroup_id': 1,
             'source_id': 9,
             'cost_cc_sum': 0.0
         }]
         response = self._get_campaign_overview(1)
+        self.assertTrue(response['success'])
+
+
+class AccountOverviewTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.client = Client()
+        redshift.STATS_DB_NAME = 'default'
+
+        permission = Permission.objects.get(codename='can_see_infobox')
+        user = zemauth.models.User.objects.get(pk=2)
+        user.user_permissions.add(permission)
+        user.save()
+
+    def _get_account_overview(self, account_id, user_id=2, with_status=False):
+        user = User.objects.get(pk=user_id)
+        self.client.login(username=user.username, password='secret')
+        reversed_url = reverse(
+                'account_overview',
+                kwargs={'account_id': account_id})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return json.loads(response.content)
+
+    def _get_setting(self, settings, name):
+        return [s for s in settings if name in s['name'].lower()][0]
+
+    @patch('reports.redshift.get_cursor')
+    @patch('dash.models.Account.get_current_settings')
+    def test_run_empty(self, mock_current_settings, cursor):
+        account = models.Account.objects.get(pk=1)
+
+        settings = models.AccountSettings(
+            default_account_manager=zemauth.models.User.objects.get(pk=1),
+            default_sales_representative=zemauth.models.User.objects.get(pk=2),
+        )
+
+        mock_current_settings.return_value = settings
+
+        # do some extra setup to the account
+        cursor().dictfetchall.return_value = [{
+            'adgroup_id': 1,
+            'source_id': 9,
+            'cost_cc_sum': 0.0
+        }]
+        response = self._get_account_overview(1)
+        settings = response['data']['basic_settings']
+
+        pf_setting = self._get_setting(settings, 'platform fee')
+        self.assertEqual('20.00%', pf_setting['value'])
+        self.assertTrue(response['success'])
+
+
+class AllAccountsOverviewTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.client = Client()
+        redshift.STATS_DB_NAME = 'default'
+
+        permission = Permission.objects.get(codename='can_see_infobox')
+        user = zemauth.models.User.objects.get(pk=2)
+        user.user_permissions.add(permission)
+        user.save()
+
+    def _get_all_accounts_overview(self, campaign_id, user_id=2, with_status=False):
+        user = User.objects.get(pk=user_id)
+        self.client.login(username=user.username, password='secret')
+        reversed_url = reverse(
+                'all_accounts_overview',
+                kwargs={})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return json.loads(response.content)
+
+    def test_run_empty(self):
+        response = self._get_all_accounts_overview(1)
         self.assertTrue(response['success'])

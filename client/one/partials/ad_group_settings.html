@@ -11,7 +11,7 @@
     </alert>
 
     <form id="form-ad-group-settings" class="form-horizontal">
-        <div class="form-group" ng-class="{'has-error': !!errors.state}">
+        <div class="form-group" ng-class="{'has-error': !!errors.state}" ng-if="!hasPermission('zemauth.can_control_ad_group_state_in_table')">
             <label for="campaign-state-switch" class="col-xs-2 control-label">
                 Ad Group Status
                 <zem-help-popover content="This is the current state of the Ad Group. If you enable the Ad Group you must then go enable preferred Media Sources too.
@@ -72,7 +72,7 @@
             <label for="cpc-input" class="col-xs-2 control-label">
                 <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_ad_group_max_cpc')" popover-placement="right"></zem-internal-feature>
                 Maximum CPC
-                <zem-help-popover content="Maximum CPC in this ad group." placement="top"></zem-help-popover>
+                <zem-help-popover content="Maximum allowed CPC in this ad group." placement="top"></zem-help-popover>
             </label>
             <div class="col-xs-2">
                 <div class="input-group">
@@ -178,8 +178,56 @@
             <label ng-repeat="error in errors.adobeTrackingParam" class="control-label error" for="adobe-tracking-param-input">{{ error }}</label>
         </div>
 
-		<button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
-		<button type="button" class="btn btn-default" ng-click="discardSettings()">Discard</button>
+        <div class="form-group" ng-if="hasPermission('zemauth.can_set_adgroup_to_auto_pilot')">
+            <label class="col-xs-12 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_adgroup_to_auto_pilot')" popover-placement="right"></zem-internal-feature>
+                Auto-Pilot
+                <zem-help-popover content="Bid CPC and Daily Budget Allocation Automation Settings." placement="top"></zem-help-popover>
+            </label>
+
+            <div class="form-group indented" ng-class="{'has-error': !!errors.autopilotState}">
+                <label class="col-xs-2 control-label">
+                    Auto-Pilot's Status
+                    <zem-help-popover content="State of the Auto-Pilot on this Ad Group" placement="top"></zem-help-popover>
+                </label>
+                <div class="col">
+                    <div class="radio" ng-repeat='autopilotState in options.adGroupSettingsAutopilotStates'>
+                        <label>
+                            <input type="radio" ng-model="settings.autopilotState" ng-value="autopilotState.value"> {{ autopilotState.name }} <zem-help-popover content="{{autopilotState.help}}" placement="right"></zem-help-popover>
+                        </label>
+                    </div>
+                </div>
+
+                <label ng-repeat="error in errors.autopilotState" class="control-label error">{{ error }}</label>
+            </div>
+
+            <div class="form-group indented" ng-if="showAutoPilotDailyBudget()" ng-class="{'has-error': !!errors.autopilotBudget}">
+                <label for="autopilot-budget" class="col-xs-2 control-label">
+                    Daily Budget
+                    <zem-help-popover content="Amount of budget Auto-Pilot can operate with on this Ad Group every day." placement="top"></zem-help-popover>
+                </label>
+                <div class="col-xs-2">
+                    <div class="input-group">
+                        <span class="input-group-addon">$</span>
+                        <input id="autopilot-budget" type="text" class="form-control" ng-model="settings.autopilotBudget" fraction-size="0" zem-currency-input>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+                    <label ng-repeat="error in errors.autopilotBudget" class="control-label error" for="autopilot-budget">{{ error }}</label>
+                </div>
+            </div>
+
+            <div class="form-group indented" ng-if="showAutoPilotDailyBudget()">
+                <div class="col-xs-10">
+                    Auto-Pilot will optimize for <b>Bounce Rate</b>.<br/>
+                    Minimum Total Daily Budget to run Daily Budget Automation Auto-Pilot on this Ad Group is <b>${{settings.autopilotMinBudget}}</b>.<br/>
+                    If You wish to change optimization objective please change Primary Campaign Goal in Campaign Settings.
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-primary" ng-click="saveSettings()">Save</button>
+        <button type="button" class="btn btn-default" ng-click="discardSettings()">Discard</button>
         <div class="loader" ng-show="saveRequestInProgress"></div>
         <span ng-show="saved" class="success">Your updates have been saved.</span>
         <span ng-show="saved === false" class="error">An error occurred while saving. Please correct the marked fields and save again.</span>

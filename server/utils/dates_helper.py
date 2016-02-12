@@ -22,3 +22,13 @@ def utc_today():
 
 def local_today():
     return utc_datetime_to_local_date(datetime.datetime.utcnow())
+
+
+def count_months(start_date, end_date):
+    return (end_date.year - start_date.year) * 12 + end_date.month - start_date.month
+
+
+def get_overlap(start_date1, end_date1, start_date2, end_date2):
+    if start_date1 > end_date2 or start_date2 > end_date1:
+        return None, None
+    return max(start_date1, start_date2), min(end_date1, end_date2)

@@ -1,5 +1,8 @@
 /*globals oneApp,$,moment*/
 oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'api', 'zemNavigationService', 'adGroupData', function ($scope, $state, $window, $location, api, zemNavigationService, adGroupData) {
+    $scope.infoboxHeader = null;
+    $scope.infoboxBasicSettings = null;
+    $scope.infoboxPerformanceSettings = null;
     $scope.level = constants.level.AD_GROUPS;
     $scope.getTabs = function () {
         var tabs = [{

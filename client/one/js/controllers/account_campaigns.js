@@ -16,6 +16,10 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     $scope.order = '-cost';
     $scope.isIncompletePostclickMetrics = false;
     $scope.localStoragePrefix = 'accountCampaigns';
+    $scope.infoboxHeader = null;
+    $scope.infoboxBasicSettings = null;
+    $scope.infoboxPerformanceSettings = null;
+    $scope.infoboxLinkTo = 'main.accounts.settings';
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix),
         canShowAddCampaignTutorial = $q.defer();
@@ -378,6 +382,12 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         }
     });
 
+    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
+        $timeout(function () {
+            $scope.$broadcast('highchartsng.reflow');
+        }, 0);
+    });
+
     var getDailyStatsMetrics = function () {
         var values = $scope.chartMetricOptions.map(function (option) {
             return option.value;
@@ -448,6 +458,20 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             function (data) {
                 // error
                 return;
+            }
+        );
+    };
+
+    var getInfoboxData = function () {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+
+        api.accountOverview.get($state.params.id).then(
+            function (data) {
+                $scope.infoboxHeader = data.header;
+                $scope.infoboxBasicSettings = data.basicSettings;
+                $scope.infoboxPerformanceSettings = data.performanceSettings;
             }
         );
     };
@@ -607,6 +631,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         initColumns();
         pollSyncStatus();
         getDailyStats();
+        getInfoboxData();
     };
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
