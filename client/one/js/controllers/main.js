@@ -254,9 +254,9 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.getBreadcrumbAllAccountsName = function () {
         if ($scope.hasPermission('dash.group_account_automatically_add')) {
             return 'All accounts';
-        } else {
-            return 'My accounts';
         }
+
+        return 'My accounts';
     };
 
     $scope.setModels = function (models) {
