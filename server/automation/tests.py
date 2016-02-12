@@ -196,9 +196,9 @@ class BudgetDepletionTestCase(test.TestCase):
             u'\u2014account_name',
             ['test@zemanta.com'],
             {(u'Adgroup', 109): [{
-                'old_cpc': decimal.Decimal('0.1800'),
+                'old_cpc_cc': decimal.Decimal('0.1800'),
                 'source_name': u'source',
-                'new_cpc': decimal.Decimal('0.21'),
+                'new_cpc_cc': decimal.Decimal('0.21'),
                 'comments': []}
             ]}
         )
