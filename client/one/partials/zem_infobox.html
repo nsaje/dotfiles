@@ -23,13 +23,13 @@
             <hr ng-if="setting.type === 'hr'"/>
             <zem-infobox-setting 
                 ng-if="setting.type == 'setting'"
-                label="(setting.name || '&nbsp;')"  
+                label="setting.name || '&nbsp;'"
                 value="setting.value" 
                 value-description="setting.description"
                 details-label="setting.detailsLabel"
                 details-content="setting.detailsContent"
                 warning="setting.warning"
-                icon="(setting.icon || '')"
+                icon="setting.icon || ''"
                 tooltip-text="(setting.tooltip || undefined)">
             </zem-infobox-setting>
         </div>
@@ -41,13 +41,13 @@
             <hr ng-if="setting.type === 'hr'"/>
             <zem-infobox-setting 
                 ng-if="setting.type == 'setting'"
-                label="(setting.name || '&nbsp;')"  
+                label="setting.name || '&nbsp;'"
                 value="setting.value" 
                 value-description="setting.description"
                 details-label="setting.detailsLabel"
                 details-content="setting.detailsContent"
                 warning="setting.warning"
-                icon="(setting.icon || '')"
+                icon="setting.icon || ''"
                 tooltip-text="(setting.tooltip || undefined)">
             </zem-infobox-setting>
         </div>
