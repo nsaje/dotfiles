@@ -229,7 +229,6 @@ class AdGroupOverview(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
         ad_group_settings = ad_group.get_current_settings()
         running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
         header = {
@@ -238,6 +237,7 @@ class AdGroupOverview(api_common.BaseApiView):
             'level': constants.InfoboxLevel.ADGROUP
         }
 
+        basic_settings = self._basic_settings(request.user, ad_group, ad_group_settings)
         performance_settings, is_delivering = self._performance_settings(
             ad_group, request.user, ad_group_settings
         )
@@ -247,7 +247,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'basic_settings': self._basic_settings(request.user, ad_group, ad_group_settings),
+            'basic_settings': basic_settings,
             'performance_settings': performance_settings,
         }
         return self.create_api_response(response)
@@ -328,16 +328,21 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(post_click_tracking_setting.as_dict())
 
-        daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
+        self.daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
         daily_cap_setting = infobox_helpers.OverviewSetting(
             'Daily budget:',
-            lc_helper.default_currency(daily_cap) if daily_cap is not None else '',
+            lc_helper.default_currency(self.daily_cap) if self.daily_cap is not None else '',
             tooltip='Daily media budget'
         )
         settings.append(daily_cap_setting.as_dict())
 
-        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(ad_group.campaign)
-        total_media_spend = infobox_helpers.get_media_campaign_spend(user, ad_group.campaign)
+        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(
+            ad_group.campaign
+        )
+        total_media_spend = infobox_helpers.get_media_campaign_spend(
+            user,
+            ad_group.campaign
+        )
 
         campaign_budget_setting = infobox_helpers.OverviewSetting(
             'Campaign budget:',
@@ -351,7 +356,7 @@ class AdGroupOverview(api_common.BaseApiView):
         settings = []
 
         yesterday_cost = infobox_helpers.get_yesterday_adgroup_spend(user, ad_group) or 0
-        ad_group_daily_budget = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
+        ad_group_daily_budget = self.daily_cap
 
         settings.append(infobox_helpers.create_yesterday_spend_setting(
             yesterday_cost,

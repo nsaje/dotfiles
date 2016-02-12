@@ -133,6 +133,7 @@ def get_total_and_media_campaign_spend(user, campaign, until_date=None):
 def get_media_campaign_spend(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()
+
     budgets = _retrieve_active_budgetlineitems([campaign], at_date)
     ret = Decimal(0)
     for bli in budgets:
@@ -277,10 +278,7 @@ def calculate_daily_ad_group_cap(ad_group):
     """
     Daily media cap
     """
-    return sum(map(
-        _retrieve_daily_cap,
-        dash.models.AdGroupSource.objects.filter(ad_group=ad_group)
-    ))
+    return _compute_daily_cap([ad_group])
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_daily_campaign_cap')
@@ -288,12 +286,7 @@ def calculate_daily_campaign_cap(campaign):
     ad_groups = dash.models.AdGroup.objects.filter(
         campaign=campaign
     ).exclude_archived()
-    return sum(map(
-        _retrieve_daily_cap,
-        dash.models.AdGroupSource.objects.filter(
-            ad_group=ad_groups
-        )
-    ))
+    return _compute_daily_cap(ad_groups)
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_daily_account_cap')
@@ -302,12 +295,10 @@ def calculate_daily_account_cap(account):
     ad_groups = dash.models.AdGroup.objects.filter(
         campaign__in=campaigns
     ).exclude_archived()
-    return sum(map(
-        _retrieve_daily_cap,
-        dash.models.AdGroupSource.objects.filter(
-            ad_group=ad_groups
-        )
-    ))
+    ad_groups = dash.models.AdGroup.objects.filter(
+        campaign__in=campaigns
+    ).exclude_archived()
+    return _compute_daily_cap(ad_groups)
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_available_media_campaign_budget')
@@ -449,9 +440,13 @@ def _one_week_ago():
 
 
 def _retrieve_active_budgetlineitems(campaign, date):
-    return dash.models.BudgetLineItem.objects.filter(
-        campaign__in=campaign
-    ).filter_active(date)
+    if campaign:
+        qs = dash.models.BudgetLineItem.objects.filter(
+            campaign__in=campaign
+        )
+    else:
+        qs = dash.models.BudgetLineItem.objects.all()
+    return qs.filter_active(date)
 
 
 def is_campaign_active(campaign):
@@ -471,14 +466,28 @@ def _retrieve_active_creditlineitems(account, date):
     ) if credit.is_active(date)]
 
 
-@statsd_timer('dash.infobox_helpers', '_retrieve_daily_cap')
-def _retrieve_daily_cap(ad_group_source):
-    adgs_state = ad_group_source.get_latest_state()
-    # skip inactive adgroup sources
-    if not adgs_state or adgs_state.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
-        return 0
-    adgs_settings = ad_group_source.get_current_settings()
-    if not adgs_settings:
-        return 0
-    # cc is not actually cc
-    return adgs_settings.daily_budget_cc or 0
+@statsd_timer('dash.infobox_helpers', '_compute_daily_cap')
+def _compute_daily_cap(ad_groups):
+    ad_group_sources = dash.models.AdGroupSource.objects.filter(
+        ad_group__in=ad_groups
+    )
+    ad_group_source_states = dash.models.AdGroupSourceState.objects.filter(
+        ad_group_source__in=ad_group_sources
+    ).group_current_states()
+    adg_state = {
+        adgsst.ad_group_source_id: adgsst.state for adgsst in ad_group_source_states
+    }
+
+    ad_group_source_settings = dash.models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__in=ad_group_sources
+    ).group_current_settings()
+    adgs_settings = {
+        adgss.ad_group_source_id: adgss.daily_budget_cc or 0 for adgss in ad_group_source_settings
+    }
+
+    ret = 0
+    for adgsid, state in adg_state.iteritems():
+        if not state or state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+            continue
+        ret += adgs_settings.get(adgsid)
+    return ret
