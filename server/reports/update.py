@@ -357,6 +357,8 @@ def _create_contentad_postclick_stats(entry, track_source_map):
         stats.source_id = track_source_map[entry.source_param]
         stats.content_ad_id = entry.content_ad_id
         return stats
+    except KeyError as ex_source_not_found:
+        logger.warning("The source was not found: %s. Skipping the GA postclick entry.", ex_source_not_found)
     except:
         logger.exception("Failed parsing content ad {blob}".format(
             blob=entry
@@ -382,6 +384,8 @@ def _create_contentad_goal_conversion_stats(entry, goal_type, track_source_map):
             stat.content_ad_id = entry.content_ad_id
             stats.append(stat)
         return stats
+    except KeyError as ex_source_not_found:
+        logger.warning("The source was not found: %s. Skipping the GA goal conversion entry.", ex_source_not_found)
     except:
         logger.exception("Failed parsing content ad {blob}".format(
             blob=entry
