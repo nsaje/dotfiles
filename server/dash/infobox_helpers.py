@@ -465,6 +465,16 @@ def _retrieve_active_budgetlineitems(campaign, date):
     ).filter_active(date)
 
 
+def is_campaign_active(campaign):
+    active = False
+    for ad_group in dash.models.AdGroup.objects.filter(campaign=campaign).exclude_archived():
+        ad_group_settings = ad_group.get_current_settings()
+        running_status = dash.models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
+        if running_status == dash.constants.AdGroupRunningStatus.ACTIVE:
+            active = True
+    return active
+
+
 @statsd_timer('dash.infobox_helpers', '_retrieve_active_creditlineitems')
 def _retrieve_active_creditlineitems(account, date):
     return [credit for credit in dash.models.CreditLineItem.objects.filter(
