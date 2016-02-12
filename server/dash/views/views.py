@@ -903,7 +903,7 @@ class Account(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'account_put')
     def put(self, request):
-        if not request.user.has_perm('zemauth.all_accounts_accounts_view'):
+        if not request.user.has_perm('zemauth.all_accounts_accounts_add_account'):
             raise exc.MissingDataError()
 
         account = models.Account(name=create_name(models.Account.objects, 'New account'))

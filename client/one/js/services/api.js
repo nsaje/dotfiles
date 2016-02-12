@@ -55,10 +55,17 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 delete models.ad_group;
             }
 
-            if (models.hasOwnProperty('has_accounts')) {
-                models.hasAccounts = models.has_accounts;
-                models.defaultAccountId = models.default_account_id;
+            if (models.hasOwnProperty('accounts_count')) {
+                models.accountsCount = models.accounts_count;
+                delete models.accounts_count;
+                models.hasAccounts = models.accountsCount>0;
             }
+
+            if (models.hasOwnProperty('default_account_id')) {
+                models.defaultAccountId = models.default_account_id;
+                delete models.default_account_id;
+            }
+
 
             return models;
         }

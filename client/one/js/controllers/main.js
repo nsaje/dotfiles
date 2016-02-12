@@ -240,15 +240,23 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
         $scope.breadcrumb = breadcrumb;
-        if ($scope.canAccessAllAccounts() && $scope.accountsAccess.hasAccounts) {
+        if ($scope.canAccessAllAccounts() && $scope.accountsAccess.accountsCount > 0) {
             $scope.breadcrumb.unshift({
-                name: 'All accounts',
+                name: $scope.getBreadcrumbAllAccountsName(),
                 state: $scope.getDefaultAllAccountsState(),
                 disabled: !$scope.canAccessAllAccounts(),
             });
         }
 
         $document.prop('title', title + ' | Zemanta');
+    };
+
+    $scope.getBreadcrumbAllAccountsName = function () {
+        if ($scope.hasPermission('dash.group_account_automatically_add')) {
+            return 'All accounts';
+        }
+
+        return 'My accounts';
     };
 
     $scope.setModels = function (models) {
@@ -312,7 +320,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         } else if ($state.is('main.adGroups')) {
             state = $scope.getDefaultAdGroupState();
         } else if ($state.is('main') && $scope.accountsAccess.hasAccounts) {
-            if ($scope.canAccessAllAccounts()) {
+            if ($scope.canAccessAllAccounts() && $scope.accountsAccess.accountsCount > 1) {
                 state = 'main.allAccounts.accounts';
             } else {
                 id = $scope.accountsAccess.defaultAccountId;
