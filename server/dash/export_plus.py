@@ -51,6 +51,8 @@ FIELDNAMES = {
     'license_fee': 'License Fee',
     'total_fee': 'Total Fee',
     'flat_fee': 'Recognized Flat Fee',
+    'spend_projection': 'Spend projection',
+    'credit_projection': 'Total credit',
 }
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
@@ -81,7 +83,8 @@ FORMAT_EMPTY_TO_0 = [
 
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
-                   conversion_goals, include_budgets=False, include_flat_fees=False, **constraints):
+                   conversion_goals, include_budgets=False, include_flat_fees=False,
+                   include_projections=False, **constraints):
     stats = stats_helper.get_stats_with_conversions(
         user,
         start_date,
@@ -91,14 +94,16 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         conversion_goals=conversion_goals,
         constraints=constraints
     )
-    prefetched_data, budgets, flat_fees, statuses = _prefetch_rows_data(
+    prefetched_data, budgets, projections, flat_fees, statuses = _prefetch_rows_data(
         dimensions,
         constraints,
         stats,
         start_date,
         end_date,
         include_budgets=include_budgets,
-        include_flat_fees=include_flat_fees)
+        include_flat_fees=include_flat_fees,
+        include_projections=include_projections)
+
     if 'source' in dimensions:
         source_names = {source.id: source.name for source in models.Source.objects.all()}
 
@@ -115,6 +120,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
                 id=stat['campaign']), statuses=statuses, budgets=budgets)
         elif 'account' in dimensions:
             stat = _populate_account_stat(stat, prefetched_data, statuses,
+                                          projections=projections,
                                           budgets=budgets, flat_fees=flat_fees)
         else:
             ad_group_sources = models.AdGroupSource.objects.filter(
@@ -129,9 +135,10 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
 
 
 def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date,
-                        include_budgets=False, include_flat_fees=False):
+                        include_budgets=False, include_flat_fees=False, include_projections=False):
     data = None
     budgets = None
+    projections = None
     statuses = None
     flat_fees = None
     by_source = ('source' in dimensions)
@@ -148,14 +155,16 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date,
         data = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
     elif 'account' in dimensions:
         level = 'account'
-        acounts = set(stat['account'] for stat in stats)
-        data = models.Account.objects.filter(id__in=acounts)
+        accounts = set(stat['account'] for stat in stats)
+        data = models.Account.objects.filter(id__in=accounts)
         flat_fees = _prefetch_flat_fees(data, start_date, end_date)
+        if include_projections:
+            projections = bcm_helpers.get_projections(data, start_date, end_date)
 
     if level in ['account', 'campaign', 'ad_group']:
         statuses = _prefetch_statuses(data, level, by_source)
         budgets = None if not include_budgets else _prefetch_budgets(data, level)
-    return data, budgets, flat_fees, statuses
+    return data, budgets, projections, flat_fees, statuses
 
 
 def _prefetch_flat_fees(accounts, start_date, end_date):
@@ -283,7 +292,8 @@ def _populate_campaign_stat(stat, campaign, statuses, budgets=None):
     return stat
 
 
-def _populate_account_stat(stat, prefetched_data, statuses, budgets=None, flat_fees=None):
+def _populate_account_stat(stat, prefetched_data, statuses, projections=None,
+                           budgets=None, flat_fees=None):
     if budgets:
         stat['budget'] = budgets[stat['account']].get('budget')
         stat['available_budget'] = stat['budget'] - budgets[stat['account']].get('spent_budget')
@@ -291,6 +301,12 @@ def _populate_account_stat(stat, prefetched_data, statuses, budgets=None, flat_f
     if flat_fees is not None:
         stat['flat_fee'] = flat_fees.get(stat['account'], Decimal('0.0'))
         stat['total_fee'] = stat['flat_fee'] + Decimal(stat.get('license_fee') or 0)
+    if projections:
+        stat['credit_projection'] = projections['credit_projection'].get(stat['account'],
+                                                                         Decimal('0.0'))
+        stat['spend_projection'] = projections['spend_projection'].get(stat['account'],
+                                                                       Decimal('0.0'))
+
     stat['status'] = statuses[stat['account']]
     if 'source' in stat:
         stat['status'] = stat['status'].get(stat['source'])
@@ -469,6 +485,10 @@ class AllAccountsExport(object):
         include_flat_fees = (
             'total_fee' in additional_fields or 'flat_fee' in additional_fields
         )
+        include_projections = (
+            'spend_projection' in additional_fields or 'credit_projection' in additional_fields
+        )
+
         if not include_budgets:
             exclude_fields.extend(['budget', 'available_budget', 'unspent_budget'])
 
@@ -486,6 +506,7 @@ class AllAccountsExport(object):
             [],
             include_budgets=include_budgets,
             include_flat_fees=include_flat_fees,
+            include_projections=include_projections,
             account=accounts,
             source=filtered_sources)
 
@@ -620,6 +641,7 @@ def filter_allowed_fields(request, fields):
     can_view_effective_costs = request.user.has_perm('zemauth.can_view_effective_costs')
     can_view_actual_costs = request.user.has_perm('zemauth.can_view_actual_costs')
     can_view_flat_fees = request.user.has_perm('zemauth.can_view_flat_fees')
+    can_see_projections = request.user.has_perm('zemauth.can_see_projections')
     for f in fields:
         if f in ('e_data_cost', 'e_media_cost',
                  'license_fee', 'billing_cost') and not can_view_effective_costs:
@@ -630,6 +652,8 @@ def filter_allowed_fields(request, fields):
         if f in ('cost', ) and (can_view_effective_costs or can_view_actual_costs):
             continue
         if f in ('total_fee', 'flat_fee', ) and not can_view_flat_fees:
+            continue
+        if f in ('credit_projection', 'spend_projection') and not can_see_projections:
             continue
         allowed_fields.append(f)
     return allowed_fields

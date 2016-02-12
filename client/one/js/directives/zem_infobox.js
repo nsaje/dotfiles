@@ -7,7 +7,8 @@ oneApp.directive('zemInfobox', ['config', '$window', function (config, $window) 
         restrict: 'E',
         scope: {
             header: '=',
-            settings: '=',
+            basicSettings: '=',
+            performanceSettings: '=',
             linkTo: '=',
             stateId: '='
         },

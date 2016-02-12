@@ -246,9 +246,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'settings': self._basic_settings(request.user, ad_group, ad_group_settings) +
-            [infobox_helpers.OverviewSeparator().as_dict()] +
-            performance_settings,
+            'basic_settings': self._basic_settings(request.user, ad_group, ad_group_settings),
+            'performance_settings': performance_settings,
         }
         return self.create_api_response(response)
 
@@ -273,9 +272,9 @@ class AdGroupOverview(api_common.BaseApiView):
         campaign_target_devices = campaign_settings.target_devices
 
         if set(campaign_target_devices) == set(ad_group_settings.target_devices):
-            device_comment = None
+            target_device_warning = None
         else:
-            device_comment = 'Differ from campaign default'
+            target_device_warning = 'Different than campaign default'
 
         targeting_device = infobox_helpers.OverviewSetting(
             'Targeting:',
@@ -284,24 +283,33 @@ class AdGroupOverview(api_common.BaseApiView):
                     [w[0].upper() + w[1:] for w in ad_group_settings.target_devices]
                 )
             ),
-            device_comment,
+            warning=target_device_warning,
             section_start=True
         )
         settings.append(targeting_device.as_dict())
 
         campaign_target_regions = campaign_settings.target_regions
         if set(campaign_target_regions) == set(ad_group_settings.target_regions):
-            region_comment = None
+            region_warning = None
         else:
-            region_comment = 'Differ from campaign default'
+            region_warning = 'Different than campaign default'
+
+        MAX_PREVIEW_REGIONS = 1
+        preview_regions = ad_group_settings.target_regions[:MAX_PREVIEW_REGIONS]
+        full_regions = ad_group_settings.target_regions
 
         targeting_region = infobox_helpers.OverviewSetting(
             '',
             'Location: {regions}'.format(
-                regions=', '.join(ad_group_settings.target_regions)
+                regions=', '.join(preview_regions)
             ),
-            region_comment,
+            warning=region_warning,
         )
+        if full_regions != []:
+            targeting_region = targeting_region.comment(
+                'more',
+                ', '.join(full_regions)
+            )
         settings.append(targeting_region.as_dict())
 
         tracking_code_settings = infobox_helpers.OverviewSetting(
@@ -333,7 +341,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
         daily_cap_setting = infobox_helpers.OverviewSetting(
-            'Daily budget',
+            'Daily budget:',
             '${:.2f}'.format(daily_cap) if daily_cap is not None else '',
             tooltip='Daily media budget'
         )
@@ -509,9 +517,17 @@ class CampaignOverview(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
+        active = False
+        for ad_group in models.AdGroup.objects.filter(campaign=campaign).exclude_archived():
+            ad_group_settings = ad_group.get_current_settings()
+            running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
+            if running_status == constants.AdGroupRunningStatus.ACTIVE:
+                active = True
+                break
+
         header = {
             'title': campaign.name,
-            'active': False,
+            'active': active,
             'level': constants.InfoboxLevel.CAMPAIGN
         }
 
@@ -530,9 +546,8 @@ class CampaignOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'settings':  basic_settings +
-            [infobox_helpers.OverviewSeparator().as_dict()] +
-            performance_settings,
+            'basic_settings': basic_settings,
+            'performance_settings': performance_settings,
         }
         return self.create_api_response(response)
 
@@ -596,12 +611,20 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(targeting_device.as_dict())
 
+        MAX_PREVIEW_REGIONS = 1
+        preview_regions = campaign_settings.target_regions[:MAX_PREVIEW_REGIONS]
+        full_regions = campaign_settings.target_regions
         targeting_region = infobox_helpers.OverviewSetting(
             '',
             'Location: {regions}'.format(
-                regions=', '.join(campaign_settings.target_regions)
+                regions=', '.join(preview_regions)
             )
         )
+        if full_regions != []:
+            targeting_region = targeting_region.comment(
+                'more',
+                ', '.join(full_regions)
+            )
         settings.append(targeting_region.as_dict())
 
         # take the num
@@ -675,9 +698,8 @@ class AccountOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'settings':  basic_settings +
-                [infobox_helpers.OverviewSeparator().as_dict()] +
-                performance_settings,
+            'basic_settings': basic_settings,
+            'performance_settings': performance_settings,
         }
 
         count_campaigns = models.Campaign.objects.filter(
@@ -750,15 +772,6 @@ class AccountOverview(api_common.BaseApiView):
                 ', '.join(slugs),
             )
         settings.append(conversion_pixel_setting.as_dict())
-
-        """
-        # temporarily disabled
-        account_type_setting = infobox_helpers.OverviewSetting(
-            'Account type:',
-            'N/A'
-        )
-        settings.append(account_type_setting.as_dict())
-        """
         return settings
 
     def _performance_settings(self, account, user):
@@ -1872,7 +1885,8 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'settings': self._basic_settings(),
+            'basic_settings': self._basic_settings(),
+            'performance_settings': None
         }
 
         return self.create_api_response(response)
@@ -1920,18 +1934,6 @@ class AllAccountsOverview(api_common.BaseApiView):
             '${:.2f}'.format(mtd_spend),
             tooltip='Month-to-date media spent',
         ))
-
-        """
-        settings.append(infobox_helpers.OverviewSetting(
-            'Forecast EOM:',
-            'TBD'
-        ))
-
-        settings.append(infobox_helpers.OverviewSetting(
-            'Forecast license fee:',
-            '$0.00'
-        ))
-        """
 
         today = datetime.datetime.utcnow()
         start, end = calendar.monthrange(today.year, today.month)
