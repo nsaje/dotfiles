@@ -292,16 +292,14 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.hasInfoboxPermission = function () {
-        // infobox will be visible only on certain views and
-        // is entirely housed within main atm
-        if ($state.is('main.campaigns.ad_groups') ||
-            $state.is('main.campaigns.sources')) {
-            return $scope.hasPermission('zemauth.can_access_ad_group_infobox');
-        }
-
         if ($state.is('main.adGroups.adsPlus') ||
             $state.is('main.adGroups.sources') ||
             $state.is('main.adGroups.publishers')) {
+            return $scope.hasPermission('zemauth.can_access_ad_group_infobox');
+        }
+
+        if ($state.is('main.campaigns.ad_groups') ||
+            $state.is('main.campaigns.sources')) {
             return $scope.hasPermission('zemauth.can_access_campaign_infobox');
         }
 

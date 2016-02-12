@@ -620,7 +620,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
     };
 
     var init = function () {
-        $scope.hasInfoboxPermission = hasPermission('zemauth.can_see_infobox');
+        $scope.hasInfoboxPermission = $scope.hasPermission('zemauth.can_see_infobox');
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
             $scope.localStoragePrefix = 'allAccountSources';
             $scope.hasInfoboxPermission = $scope.hasInfoboxPermission && $scope.hasPermission('zemauth.can_access_all_accounts_infobox');
