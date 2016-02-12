@@ -110,15 +110,11 @@ def get_total_and_media_campaign_spend(user, campaign, until_date=None):
 
 
 @statsd_timer('dash.infobox_helpers', 'get_media_campaign_spend')
-def get_media_campaign_spend(user, campaign, until_date=None, request_cache=None):
+def get_media_campaign_spend(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()
 
-    budgets = (request_cache and request_cache.active_budgetlineitems) or\
-        _retrieve_active_budgetlineitems([campaign], at_date)
-    if request_cache and not request_cache.active_budgetlineitems:
-        request_cache.active_budgetlineitems = budgets
-
+    budgets = _retrieve_active_budgetlineitems([campaign], at_date)
     ret = Decimal(0)
     for bli in budgets:
         spend_data = bli.get_spend_data(date=at_date, use_decimal=True)
@@ -286,13 +282,10 @@ def calculate_daily_account_cap(account):
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_available_media_campaign_budget')
-def calculate_available_media_campaign_budget(campaign, request_cache=None):
+def calculate_available_media_campaign_budget(campaign):
     # campaign budget based on non-depleted budget line items
     today = datetime.datetime.utcnow().date()
-    budgets = (request_cache and request_cache.active_budgetlineitems) or\
-        _retrieve_active_budgetlineitems([campaign], today)
-    if request_cache and not request_cache.active_budgetlineitems:
-        request_cache.active_budgetlineitems = budgets
+    budgets = _retrieve_active_budgetlineitems([campaign], today)
 
     ret = 0
     for bli in budgets:

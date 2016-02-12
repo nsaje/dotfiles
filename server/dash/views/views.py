@@ -222,15 +222,10 @@ class CampaignRestore(api_common.BaseApiView):
 
 class AdGroupOverview(api_common.BaseApiView):
 
-    class RequestCache(object):
-        active_budgetlineitems = None
-
     @statsd_helper.statsd_timer('dash.api', 'ad_group_overview')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_see_infobox'):
             raise exc.AuthorizationError()
-
-        self.request_cache = AdGroupOverview.RequestCache()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         ad_group_settings = ad_group.get_current_settings()
@@ -353,13 +348,11 @@ class AdGroupOverview(api_common.BaseApiView):
         settings.append(daily_cap_setting.as_dict())
 
         total_media_available = infobox_helpers.calculate_available_media_campaign_budget(
-            ad_group.campaign,
-            request_cache=self.request_cache
+            ad_group.campaign
         )
         total_media_spend = infobox_helpers.get_media_campaign_spend(
             user,
-            ad_group.campaign,
-            request_cache=self.request_cache
+            ad_group.campaign
         )
 
         campaign_budget_setting = infobox_helpers.OverviewSetting(
