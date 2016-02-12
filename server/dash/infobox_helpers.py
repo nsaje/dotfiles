@@ -255,7 +255,7 @@ def goals_and_spend_settings(user, campaign):
     campaign_pacing_settings = OverviewSetting(
         'Campaign pacing:',
         '{:.2f}%'.format(ratio * 100),
-        description=utils.lc_helper.format_dollars(media_campaign_spend_to_date)
+        description=utils.lc_helper.default_currency(media_campaign_spend_to_date)
     ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
     settings.append(campaign_pacing_settings.as_dict())
 
@@ -373,7 +373,7 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
 
     yesterday_spend_setting = OverviewSetting(
         'Yesterday spent:',
-        utils.lc_helper.format_dollars(yesterday_cost),
+        utils.lc_helper.default_currency(yesterday_cost),
         description=daily_ratio_description,
         tooltip='Yesterday media spent'
     ).performance(
