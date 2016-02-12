@@ -72,6 +72,7 @@ def get_account_media_budget_data(account_ids):
 
 
 def get_projections(accounts, start_date, end_date):
+    yesterday = datetime.date.today() - datetime.timedelta(1)
     projections = {
         'spend_projection': {
             acc.pk: Decimal('0.0') for acc in accounts
@@ -97,8 +98,8 @@ def get_projections(accounts, start_date, end_date):
     days = (end_date - start_date).days + 1
     spend_data = reports.models.BudgetDailyStatement.objects.filter(
         budget__credit__account__in=accounts,
-        date__lte=end_date,
-        date__gte=end_date - datetime.timedelta(2)
+        date__lte=min(end_date, yesterday),
+        date__gte=min(end_date, yesterday) - datetime.timedelta(2)
     ).values('budget__credit__account_id').order_by().annotate(
         media_nano=Sum('media_spend_nano'),
         data_nano=Sum('data_spend_nano'),

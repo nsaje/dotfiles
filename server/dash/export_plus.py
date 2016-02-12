@@ -131,7 +131,19 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         if 'source' in stat:
             stat['source'] = source_names[stat['source']]
 
+        # Adjsut by day breakdown
+        if 'date' in stat:
+            _adjust_breakdown_by_day(start_date, stat)
+
     return sort_results(stats, [ordering])
+
+
+def _adjust_breakdown_by_day(start_date, stat):
+    if stat['date'] == start_date or stat['date'].day == 1:
+        return
+    for field in ('credit_projection', 'flat_fee', 'total_fee', 'spend_projection'):
+        if field in stat:
+            stat[field] = Decimal(0.0)
 
 
 def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date,
