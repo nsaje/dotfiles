@@ -1110,6 +1110,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             propagated_content_ads=0,
             batch_size=len(content_ads),
         )
+        batch.save()
 
         current_settings = ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
@@ -1214,10 +1215,13 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
             'batch_size': batch_size,
             'step': step,
             'cancelled': batch.cancelled,
-            'errors': {
-                'details': self._get_error_details(batch, ad_group_id),
-            },
         }
+
+        errors = self._get_error_details(batch, ad_group_id)
+        if errors:
+            response_data['errors'] = {
+                'details': errors,
+            }
 
         return self.create_api_response(response_data)
 
@@ -1227,7 +1231,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
             if batch.error_report_key:
                 errors['report_url'] = reverse('ad_group_ads_plus_upload_report',
                                                kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
-                errors['description'] = 'Found {} error{}'.format(batch.num_errors, 's' if batch.num_errors > 1 else '')
+                errors['description'] = 'Found {} error{}.'.format(batch.num_errors, 's' if batch.num_errors > 1 else '')
             elif batch.cancelled:
                 errors['description'] = 'Content Ads upload was cancelled.'
             else:

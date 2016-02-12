@@ -409,6 +409,7 @@ class ProcessCallbackTest(TestCase):
 
         batch = models.UploadBatch.objects.create(name=batch_name)
         batch.batch_size = 10
+        batch.save()
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
 
         request = HttpRequest()

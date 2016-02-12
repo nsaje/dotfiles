@@ -2561,18 +2561,23 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
 
         function convertValidationErrorsFromApi (errors) {
-            return {
+            var converted = {
                 file: errors.content_ads,
                 batchName: errors.batch_name,
                 displayUrl: errors.display_url,
                 brandName: errors.brand_name,
                 description: errors.description,
                 callToAction: errors.call_to_action,
-                details: {
+            };
+
+            if (errors.details) {
+                converted.details = {
                     reportUrl: errors.details && errors.details.report_url,
                     description: errors.details && errors.details.description,
-                },
-            };
+                };
+            }
+
+            return converted;
         }
     }
 
