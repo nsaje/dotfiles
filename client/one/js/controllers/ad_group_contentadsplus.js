@@ -18,12 +18,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.chartMetricOptions = options.adGroupChartMetrics;
     $scope.localStoragePrefix = 'adGroupContentAdsPlus';
     $scope.infoboxHeader = null;
-    $scope.infoboxSettings = null;
+    $scope.infoboxBasicSettings = null;
+    $scope.infoboxPerformanceSettings = null;
+    $scope.infoboxLinkTo = 'main.adGroups.settings';
 
     $scope.lastSyncDate = null;
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
-
     $scope.selectionMenuConfig = {};
 
     // selection triplet - all, a batch, or specific content ads can be selected
@@ -633,12 +634,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         }
     };
 
-    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    });
-
     $scope.$watch('size', function (newValue, oldValue) {
         if (newValue !== oldValue) {
             $scope.loadPage();
@@ -964,7 +959,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         api.adGroupOverview.get($state.params.id).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
-                $scope.infoboxSettings = data.settings;
+                $scope.infoboxBasicSettings = data.basicSettings;
+                $scope.infoboxPerformanceSettings = data.performanceSettings;
             }
         );
     };

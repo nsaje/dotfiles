@@ -4,8 +4,9 @@ RUN useradd -m -u 1000 ubuntu
 
 # Install dependencies
 RUN apt-get update && \
-    apt-get install -y libmemcached-dev nano dropbear && \
-    apt-get -y autoremove
+    apt-get install -y libmemcached-dev nano dropbear openssh-server && \
+    apt-get -y autoremove && \
+    mkdir /var/run/sshd
 
 RUN rm -fr /app ; mkdir -p /app && \
     mkdir -p /app/logs && \

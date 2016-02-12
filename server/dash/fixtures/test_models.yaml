@@ -10,7 +10,7 @@
         is_superuser: true
         last_login: '2014-06-16T12:21:29'
         last_name: ''
-        password: pbkdf2_sha256$12000$ekG2j1OyTgy0$dzdTxiFUkB0uQXWdvV4enBMdOs/8D/J7Jl5zDtKsMZA=
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA= # == 'secret'
         user_permissions: []
         username: ''
     model: zemauth.user
@@ -140,7 +140,7 @@
         state: 1
         start_date: '2014-06-04'
         end_date: '2014-06-05'
-        cpc_cc: '0.12'
+        cpc_cc: '1.00'
         daily_budget_cc: '50.'
         tracking_code: ''
         archived: false

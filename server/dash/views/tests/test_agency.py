@@ -35,7 +35,9 @@ class AdGroupSettingsTest(TestCase):
                 'target_devices': ['desktop'],
                 'target_regions': ['693', 'GB'],
                 'name': 'Test ad group name',
-                'id': 1
+                'id': 1,
+                'autopilot_state': 2,
+                'autopilot_daily_budget': '100.0000'
             }
         }
 
@@ -70,7 +72,9 @@ class AdGroupSettingsTest(TestCase):
                     'state': 2,
                     'target_devices': ['desktop', 'mobile'],
                     'target_regions': ['UK', 'US', 'CA'],
-                    'tracking_code': 'param1=foo&param2=bar'
+                    'tracking_code': 'param1=foo&param2=bar',
+                    'autopilot_state': 2,
+                    'autopilot_daily_budget': '0.00'
                 }
             },
             'success': True
@@ -118,7 +122,9 @@ class AdGroupSettingsTest(TestCase):
                     'tracking_code': '',
                     'enable_ga_tracking': True,
                     'enable_adobe_tracking': False,
-                    'adobe_tracking_param': ''
+                    'adobe_tracking_param': '',
+                    'autopilot_state': 2,
+                    'autopilot_daily_budget': '100.00'
                 }
             },
             'success': True
@@ -141,7 +147,8 @@ class AdGroupSettingsTest(TestCase):
             call.mock_order_ad_group_settings_update(
                 ad_group, old_settings, new_settings, ANY, send=False),
             ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
-            call.mock_actionlog_api.init_enable_ad_group(ad_group, ANY, order=ANY, send=False)
+            call.mock_actionlog_api.init_set_ad_group_state(ad_group, constants.AdGroupSettingsState.ACTIVE,
+                                                            ANY, send=False)
         ])
         mock_log_useraction.assert_called_with(
             response.wsgi_request, constants.UserActionType.SET_AD_GROUP_SETTINGS, ad_group=ad_group)
@@ -224,8 +231,9 @@ class AdGroupSettingsTest(TestCase):
                     'tracking_code': '',
                     'enable_ga_tracking': True,
                     'adobe_tracking_param': '',
-                    'enable_adobe_tracking': False
-
+                    'enable_adobe_tracking': False,
+                    'autopilot_state': 2,
+                    'autopilot_daily_budget': '100.00'
                 }
             },
             'success': True
@@ -234,7 +242,8 @@ class AdGroupSettingsTest(TestCase):
         new_settings = ad_group.get_current_settings()
         self.assertIsNotNone(new_settings.pk)
 
-        self.assertTrue(mock_actionlog_api.init_enable_ad_group.called)
+        mock_actionlog_api.init_set_ad_group_state.assert_called_with(ad_group, constants.AdGroupSettingsState.ACTIVE,
+                                                                      ANY, send=False)
 
         # uses 'ANY' instead of 'current_settings' because before settings are created, the
         # 'get_current_settings' returns a new AdGroupSettings instance each time
@@ -353,6 +362,106 @@ class AdGroupSettingsTest(TestCase):
         self.assertIn('state', response_dict['data']['errors'])
 
 
+class AdGroupSettingsStateTest(TestCase):
+    fixtures = ['test_models.yaml', 'test_adgroup_settings_state.yaml']
+
+    def setUp(self):
+        user = User.objects.get(pk=1)
+        account = models.Account.objects.get(pk=1)
+        account.users.add(user)
+        self.client.login(username=user.email, password='secret')
+
+    def test_get(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        response = self.client.get(
+                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+                follow=True,
+        )
+        self.assertDictEqual(json.loads(response.content), {
+            'data': {
+                'id': str(ad_group.pk),
+                'state': ad_group.get_current_settings().state
+            },
+            'success': True
+        })
+
+    @patch('dash.views.helpers.ad_group_has_available_budget')
+    @patch('actionlog.zwei_actions.send')
+    def test_activate(self, mock_zwei_send, mock_budget_check):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        mock_budget_check.return_value = True
+
+        response = self.client.post(
+                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps({'state': 1}),
+                content_type='application/json',
+                follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(mock_zwei_send.called, True)
+        self.assertEqual(len(mock_zwei_send.call_args), 2)
+        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.ACTIVE)
+
+    @patch('dash.views.helpers.ad_group_has_available_budget')
+    @patch('actionlog.zwei_actions.send')
+    def test_activate_already_activated(self, mock_zwei_send, mock_budget_check):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        mock_budget_check.return_value = True
+
+        response = self.client.post(
+                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps({'state': 1}),
+                content_type='application/json',
+                follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(mock_zwei_send.called, False)
+
+    @patch('actionlog.zwei_actions.send')
+    def test_activate_without_budget(self, mock_zwei_send):
+        ad_group = models.AdGroup.objects.get(pk=2)
+
+        response = self.client.post(
+                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps({'state': 1}),
+                content_type='application/json',
+                follow=True,
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
+        self.assertEqual(mock_zwei_send.called, False)
+
+    @patch('actionlog.zwei_actions.send')
+    def test_inactivate(self, mock_zwei_send):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        response = self.client.post(
+                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps({'state': 2}),
+                content_type='application/json',
+                follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(mock_zwei_send.called, True)
+        self.assertEqual(len(mock_zwei_send.call_args[0]), 1)
+        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
+
+    @patch('actionlog.zwei_actions.send')
+    def test_inactivate_already_inactivated(self, mock_zwei_send):
+        ad_group = models.AdGroup.objects.get(pk=2)
+
+        response = self.client.post(
+                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps({'state': 2}),
+                content_type='application/json',
+                follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(mock_zwei_send.called, False)
+
+
 class AdGroupAgencyTest(TestCase):
     fixtures = ['test_views.yaml']
 
@@ -381,7 +490,7 @@ class AdGroupAgencyTest(TestCase):
 
             settings = models.AdGroupSettings(
                 ad_group=ad_group,
-                cpc_cc='0.4000',
+                cpc_cc='1.0000',
                 tracking_code=tracking_code,
             )
             settings.save(request)
@@ -391,7 +500,7 @@ class AdGroupAgencyTest(TestCase):
 
             settings = models.AdGroupSettings(
                 ad_group=ad_group,
-                cpc_cc='0.3000',
+                cpc_cc='2.0000',
                 daily_budget_cc='120.0000',
                 tracking_code=tracking_code,
             )
@@ -416,7 +525,7 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'State', 'value': 'Paused'},
                         {'name': 'Start date', 'value': None},
                         {'name': 'End date', 'value': 'I\'ll stop it myself'},
-                        {'name': 'Max CPC bid', 'value': '$0.40'},
+                        {'name': 'Max CPC bid', 'value': '$1.00'},
                         {'name': 'Daily budget', 'value': None},
                         {'name': 'Device targeting', 'value': ''},
                         {'name': 'Locations', 'value': 'worldwide'},
@@ -431,18 +540,19 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'GA tracking type (via API or e-mail).', 'value': 'Email'},
                         {'name': 'Enable Adobe tracking', 'value': 'False'},
                         {'name': 'Adobe tracking parameter', 'value': ''},
+                        {'name': 'Auto-Pilot', 'value': 'Paused'},
+                        {'name': 'Auto-Pilot\'s Daily Budget', 'value': '$0.00'},
                     ],
                     'show_old_settings': False
-                },
-                {
+                }, {
                     'changed_by': 'superuser@test.com',
-                    'changes_text': 'Daily budget set to "$120.00", Max CPC bid set to "$0.30"',
+                    'changes_text': 'Daily budget set to "$120.00", Max CPC bid set to "$2.00"',
                     'datetime': '2015-06-05T09:22:24',
                     'settings': [
                         {'name': 'State', 'old_value': 'Paused', 'value': 'Paused'},
                         {'name': 'Start date', 'old_value': None, 'value': None},
                         {'name': 'End date', 'old_value': 'I\'ll stop it myself', 'value': 'I\'ll stop it myself'},
-                        {'name': 'Max CPC bid', 'old_value': '$0.40', 'value': '$0.30'},
+                        {'name': 'Max CPC bid', 'old_value': '$1.00', 'value': '$2.00'},
                         {'name': 'Daily budget', 'old_value': None, 'value': '$120.00'},
                         {'name': 'Device targeting', 'old_value': '', 'value': ''},
                         {'name': 'Locations', 'old_value': 'worldwide', 'value': 'worldwide'},
@@ -457,6 +567,8 @@ class AdGroupAgencyTest(TestCase):
                         {'name': 'GA tracking type (via API or e-mail).', 'old_value': 'Email', 'value': 'Email'},
                         {'name': 'Enable Adobe tracking', 'old_value': 'False', 'value': 'False'},
                         {'name': 'Adobe tracking parameter', 'old_value': '', 'value': ''},
+                        {'name': 'Auto-Pilot', 'old_value': 'Paused', 'value': 'Paused'},
+                        {'name': 'Auto-Pilot\'s Daily Budget', 'old_value': '$0.00', 'value': '$0.00'},
                     ],
                     'show_old_settings': True
                 }]

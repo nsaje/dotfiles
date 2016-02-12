@@ -15,6 +15,7 @@
 
 @infobox-black: #414141;
 @infobox-gray: #aaaaaa;
+@white: #fff;
 
 @keyframes show-updated {
     0% { background-color: @updated-color; }
@@ -136,6 +137,11 @@ a:visited {
             font-size: 14px;
             font-weight: 400;
         }
+    }
+
+    .row {
+        margin-left: 0px;
+        margin-right: 0px;
     }
 
     &.has-error {
@@ -669,50 +675,180 @@ div[datepicker] {
     color: #454545;
 }
 
-
 .graph-infobox-parent {
-    display: inline-block;
+    display: table; 
+    table-layout: fixed; 
     width: 100%;
-    position: relative;
-    overflow: hidden;
+}
+
+.graph-infobox-row {
+    display: table-row;
+}
+
+.graph-container {
+    display: table-cell;
+    width: 100%;
+    vertical-align: top;
+}
+
+.graph-collapsed {
+    display: none;
 }
 
 .graph-container-short {
-    display: inline-block;
-    width: 70%;
+    display: table-cell;
+    width: 100%;
 }
 
+.graph-container-long {
+    display: table-cell;
+    width: 100%;
+}
+
+.infobox-container {
+    display: table-cell;
+    width: 350px;
+}
+
+
 .infobox-container-full {
-    display: inline-block;
-    width: 30%;
-    position: absolute;
-    height: 100%;
-    overflow: auto;
-    display: visible;
-    background: #f6f6f6;
+    margin-left: 2%;
 }
 
 .infobox-container-short {
     display: none;
 }
 
+/**
+ * Default internal-feature style for header buttons
+ */
+.header-button-internal() {
+    &:before {
+        content: " ";
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 0;
+        height: 0;
+        display: block;
+        border-top: 8px solid @internal-color;
+        border-right: 8px solid transparent;
+        z-index: 1000;
+    }
+}
+
 .infobox-button {
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    padding: 0px;
+    margin-left: 5px;
+    box-sizing: border-box;
+    position: relative;
+
+    .internal {
+        .header-button-internal;
+    }
+}
+
+.navigation-button {
     margin-right: 5px;
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    padding: 0px 0px;
+    border: 0px;
+    box-shadow: none;
+}
+
+.graph-button {
+    width: 34px;
+    height: 34px;
+    padding: 0px;
+    line-height: 34px;
+    position: relative;
+    text-align: center;
+
+	zem-internal-feature {
+		position: absolute;
+
+        margin-left: -4px;
+	}
+
+    .internal {
+        .header-button-internal;
+    }
 }
 
 .infobox-background {
     background: #f6f6f6;
 }
 
-.infobox {
-    padding: 8px;
+.infobox-wrapper {
+    display: block;
+    overflow: hidden;
+    max-height: 300px;
 
-    color: @infobox-black;
 }
 
-.infobox-active-circle-icon-gray {
-    .state-icon-placeholder();
-    background-image: url('img/active_circle_icon_gray.svg');
+.infobox-adgroup {
+    .infobox-setting-label {
+        width: 120px;
+        max-width: 120px;
+    }
+}
+
+.infobox-account {
+    .infobox-setting-label {
+        width: 120px;
+        max-width: 120px;
+    }
+
+    .infobox-status {
+        vertical-align: middle;
+        height: 40px;
+    }
+}
+
+.graph-button-image {
+    width: 25px;
+    height: 18px;
+    vertical-align: middle;
+    padding-bottom: 4px;
+}
+
+.infobox-campaign {
+    .infobox-setting-label {
+        width: 125px;
+        max-width: 125px;
+    }
+}
+
+.infobox-all-accounts {
+    .infobox-setting-label {
+        width: 185px;
+        max-width: 185px;
+    }
+
+    .infobox-body {
+        overflow: hidden;
+        height: 200px;
+    }
+}
+
+.infobox {
+    padding: 10px;
+    overflow: hidden;
+    color: @infobox-black;
+
+    hr {
+        border-top: 1px solid #dddddd;
+        margin: 10px -10px;
+    }
+
+    .active-circle-icon {
+        display: table-cell;
+    }
 }
 
 .infobox-status {
@@ -720,42 +856,106 @@ div[datepicker] {
     display: inline-block;
     min-width: 20px;
     vertical-align: top;
-    margin-top: 7px;
     margin-left: 0px;
+    vertical-align: middle;
+    margin-top: -4px;
 }
 
 .infobox-header {
-    display: block;
+    display: table;
+    table-layout: fixed;
     width: 100%;
-    white-space: nowrap;
-    overflow: visible;
+    height: 34px;
+}
+
+.infobox-body {
+    overflow-y: scroll;
+    height: 150px;
+    // due to scroller
+    margin-right: -5px;
+}
+
+.infobox-footer {
+    height: 50px;
+}
+
+.infobox-header-row {
+    display: table-row;
+}
+
+.infobox-header-cell {
+    display: table-cell;
+    width: 20px;
+}
+
+.infobox-header-title-cell {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: left;
+    width: 100%;
+    word-wrap: break-word;
+    padding-left: 5px;
+}
+
+.infobox-header-button-cell {
+    display: table-cell;
+    text-align: right;
+    width: 50px;
+    vertical-align: middle;
+}
+
+.infobox-header-wo-subtitle {
+    height: 34px;
+    line-height: 38px;
 }
 
 .infobox-title {
     color: @infobox-black;
     font-size: 18px;
     font-weight: 600;
+    line-height: 20px;
+}
+
+.infobox-active-icon {
+    color: #00cc18;
+    text-align: center;
+}
+
+.infobox-inactive-icon {
+    color: @infobox-black;
+    text-align: center;
 }
 
 .infobox-icon {
-    width: 10px;
-    height: 10px;
-    margin-right: 4px;
+    width: 13px;
+    height: 13px;
+    left: 0;
+    margin-bottom: 0;
+    position: absolute;
+    top: 2px;
 }
 
 .infobox-subtitle {
     color: @infobox-black;
     font-size: 13px;
-    font-weight: 600;
+}
+
+.infobox-setting {
+    overflow: hidden;
+}
+
+.infobox-setting-value-container {
+    display: table-cell;
+    line-height: 16px;
+    vertical-align: text-top;
 }
 
 .infobox-setting-label {
-    width: 140px;
-    max-width: 120px;
     overflow: hidden;
-    display: inline-block;
+    display: table-cell;
     color: @infobox-gray;
-    float: left;
+    line-height: 16px;
+    vertical-align: top;
 }
 
 .infobox-setting-value {
@@ -766,13 +966,15 @@ div[datepicker] {
 }
 
 .infobox-setting-value-comment {
-    display: inline;
+    display: inline-block;
     vertical-align: top;
     color: @infobox-gray;
 }
 
 .infobox-setting-icon {
     display: inline-block;
+    padding-left: 16px;
+    position: relative;
     vertical-align: top;
 }
 
@@ -786,13 +988,25 @@ div[datepicker] {
 }
 
 .infobox-setting-info-dropped {
-    display: block;
+    display: inline-block;
+    word-break: break-all;
+    width: 100%;
 }
 
 .infobox-setting-info-dropped-content {
     background: white;
-    margin: 5px;
+    padding: 10px;
     border: 1px solid @infobox-gray;
+    margin: 5px 0px
+    width: 100%;
+}
+
+.infobox-setting-base {
+    padding-top: 5px;
+}
+
+.infobox-setting-section-start {
+    padding-top: 10px
 }
 
 .chart-hidden {
@@ -1173,20 +1387,50 @@ div[datepicker] {
 .help-popover:active,
 .help-popover:visited {
     display: inline-block;
-    border: 1px solid #666;
-    .border-radius(2px);
+    background-color: #dddddd;
+    .border-radius(50%);
     padding: 1px 3px 0px 3px;
     margin-left: 5px;
-    font-size: 10px;
-    line-height: 10px;
+    font-size: 12px;
+    line-height: 13px;
     text-align: center;
     text-decoration: none;
     vertical-align: middle;
     margin-bottom: 2px;
+    width: 13px;
+    height: 13px;
     &:after {
-        color: #666;
-        font-weight: 300;
+        color: #888;
+        font-weight: bold;
         content: "?";
+    }
+}
+
+.exclamation-popover {
+    margin-left: 0px;
+
+    .help-popover,
+    .help-popover:hover,
+    .help-popover:active,
+    .help-popover:visited {
+        display: inline-block;
+        background-color: #dddddd;
+        .border-radius(50%);
+        padding: 1px 3px 0px 3px;
+        margin-left: 0px;
+        font-size: 12px;
+        line-height: 13px;
+        text-align: center;
+        text-decoration: none;
+        vertical-align: middle;
+        margin-bottom: 2px;
+        width: 13px;
+        height: 13px;
+        &:after {
+            color: #888;
+            font-weight: bold;
+            content: "!";
+        }
     }
 }
 
@@ -1284,15 +1528,13 @@ div[datepicker] {
 
         .content {
             float: right;
-            position: relative;
-            width: 170px;
+            max-width: 260px;
+            display: inline-block;
 
             .contact-content {
-                position: absolute;
+                display: inline-block;
                 height: 50px;
                 line-height: 50px;
-                top: 5px;
-                left: 0;
                 text-align: right;
             }
 
@@ -1306,18 +1548,47 @@ div[datepicker] {
             }
 
             .profile {
-                position: absolute;
-                top: 4px;
-                right: 0;
+                display: inline-block;
             }
 
-            .glyphicon {
-                border-left: 1px solid #2a89a1;
-                padding: 8px 1px 8px 17px;
-                margin-left: 20px;
+            .dropdown-toggle {
                 display: inline-block;
-                color: white;
+                height: 28px;
+                line-height: 22px;
+                vertical-align: middle;
+                
+                .glyphicon {
+                    display: inline-block;
+                    color: @white;
+                    font-size: 19px;
+                    line-height: 19px;
+                    vertical-align: middle;
+                }
+            }
+
+            .separator {
+                display: inline-block;
+                border-left: 1px solid #2a89a1;
+                padding: 8px 1px 8px 10px;
+                margin-left: 14px;
                 font-size: 19px;
+                line-height: 19px;
+            }
+            
+            .navbar-collapse-container {
+                display: inline-block;
+
+                .btn {
+                    background: @default-color;
+                }
+
+                .glyphicon {
+                    color: @white;
+                    background: @default-color;
+                    line-height: 19px;
+                    font-size: 19px;
+                    top: 3px;
+                }
             }
         }
     }
@@ -1533,23 +1804,13 @@ div[datepicker] {
     }
 
     .content {
-        margin-left: 210px;
         padding-right: 15px;
 
         #filter {
+            margin-left: 5px;
 
             .internal {
-                &:before {
-                    content: " ";
-                    position: absolute;
-                    top: -4px;
-                    left: -4px;
-                    width: 0;
-                    height: 0;
-                    display: block;
-                    border-top: 8px solid @internal-color;
-                    border-right: 8px solid transparent;
-                }
+                .header-button-internal;
             }
 
             div.btn {
@@ -1721,6 +1982,14 @@ div[datepicker] {
             margin-left: 5px;
         }
     }
+}
+
+.content-short {
+    margin-left: 210px;
+}
+
+.content-full {
+    margin-left: 15px;
 }
 
 .page {
@@ -2120,6 +2389,7 @@ div[datepicker] {
         }
     }
 }
+
 
 .no-wrap {
     white-space: nowrap;
@@ -2891,13 +3161,8 @@ zem-editable-currency-field {
                 padding-top: 9px;
             }
 
-            .conversion-pixel-form {
+            .goals-common {
                 margin-bottom: 20px;
-
-                .form-group:last-child {
-                    margin-top: 200px;
-                    margin-bottom: 0;
-                }
 
                 .title {
                     font-weight: bold;
@@ -2930,6 +3195,15 @@ zem-editable-currency-field {
                 }
             }
 
+            .conversion-pixel-form {
+                .goals-common;
+
+                .form-group:last-child {
+                    margin-top: 200px;
+                    margin-bottom: 0;
+                }
+            }
+
             .conversion-goal-form {
                 .conversion-pixel-form;
 
@@ -2942,6 +3216,20 @@ zem-editable-currency-field {
                     margin-right: 0;
                 }
 
+            }
+
+            .campaign-goal-form {
+                .goals-common;
+
+                .form-part {
+                    margin-bottom: 30px;
+                    padding-bottom: 10px;
+                    border-bottom: 1px solid #e2e2e2;
+                }
+
+                .form-group {
+                    margin-right: 0;
+                }
             }
 
             .add-scheduled-report-form {
@@ -3026,7 +3314,6 @@ zem-editable-currency-field {
                 }
             }
         }
-
     }
 }
 
@@ -3320,8 +3607,131 @@ select.media-source-select {
     width: 100%;
 }
 
-.page-campaign-agency form {
-    margin-bottom: 30px;
+.page-campaign-agency {
+    .table-campaign-goals {
+        .primary-goal-label {
+            &:before {
+                content: "";
+                height: 10px;
+                width: 10px;
+                display: inline-block;
+                background-color: @default-color;
+                right: 5px;
+                position: relative;
+            }
+
+            color: #c2c2c2;
+            padding-top: 7px;
+        }
+    }
+
+    form {
+        margin-bottom: 30px;
+    }
+}
+
+.zem-campaign-goals {
+    .btn {
+        .plus-sign {
+            padding-right: 10px;
+            border-right: 1px solid @default-color;
+        }
+
+        .plus-label {
+            padding-left: 10px;
+        }
+    }
+
+    .campaign-goal-row {
+        &:first-child {
+            margin-top: 10px;
+        }
+
+        margin-bottom: 10px;
+
+        &.primary {
+            .campaign-goal-index {
+                background-color: @default-color;
+                border-color: @default-color;
+                color: white;
+            }
+
+            .campaign-goal-desc {
+                .camp-goal-text {
+                    color: @default-color;
+                }
+            }
+        }
+
+        & > div {
+            border-style: solid;
+            border-color: #d2d2d2;
+            border-width: 1px 1px 1px 0;
+            min-height: 50px;
+            .border-radius(0px);
+            cursor: pointer;
+
+            &:first-child {
+                .border-radius(2px 0 0 2px);
+                border-left-width: 1px;
+            }
+
+            &:last-child {
+                .border-radius(0 2px 2px 0);
+            }
+
+            &.campaign-goal-index {
+                font-size: 22px;
+                font-weight: 200;
+                color: #c2c2c2;
+                text-align: center;
+            }
+
+            &.campaign-goal-desc {
+                &:hover .camp-goal-text {
+                    color: @default-color;
+                }
+
+                .conv-goal-text {
+                    font-size: 11px;
+                    line-height: 11px;
+                    color: #c2c2c2;
+                }
+
+                .center-area {
+                    padding-left: 15px;
+                }
+            }
+
+            &.campaign-goal-edit {
+                text-align: center;
+            }
+
+            &.campaign-goal-delete {
+                text-align: center;
+            }
+
+            .center-area {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+
+                &:before {
+                    content: '';
+                    display: inline-block;
+                    vertical-align: middle;
+                    height: 100%;
+                }
+
+                .centered {
+                    display: inline-block;
+                    vertical-align: middle;
+                }
+            }
+        }
+    }
 }
 
 .progress-result {

@@ -72,19 +72,19 @@ class AccountCreditView(api_common.BaseApiView):
             'is_signed': item.status == constants.CreditLineItemStatus.SIGNED,
             'is_canceled': item.status == constants.CreditLineItemStatus.CANCELED,
             'license_fee': helpers.format_decimal_to_percent(item.license_fee) + '%',
-            'total': item.amount,
+            'total': item.effective_amount(),
             'allocated': allocated,
             'comment': item.comment,
             'budgets': [
                 {'id': b.pk, 'amount': b.amount} for b in item.budgets.all()
             ],
-            'available': item.amount - allocated,
+            'available': item.effective_amount() - allocated,
         }
 
     def _get_response(self, account_id):
         credit_items = models.CreditLineItem.objects.filter(
             account_id=account_id,
-        ).prefetch_related('budgets').order_by('-created_dt')
+        ).prefetch_related('budgets').order_by('-start_date', '-end_date', '-created_dt')
 
         return self.create_api_response({
             'active': self._get_active_credit(account_id, credit_items),
@@ -105,11 +105,11 @@ class AccountCreditView(api_common.BaseApiView):
         ]
 
     def _get_credit_totals(self, account_id, credit_items):
-        total = sum(credit.amount for credit in credit_items)
+        total = sum(credit.effective_amount() for credit in credit_items)
         allocated = sum(
             credit.get_allocated_amount() for credit in credit_items if not credit.is_past()
         )
-        past = sum(credit.amount for credit in credit_items if credit.is_past())
+        past = sum(credit.effective_amount() for credit in credit_items if credit.is_past())
         return {
             'total': str(total),
             'allocated': str(allocated),
@@ -259,8 +259,8 @@ class CampaignBudgetView(api_common.BaseApiView):
         return [
             {
                 'id': credit.pk,
-                'total': credit.amount,
-                'available': credit.amount - credit.get_allocated_amount(),
+                'total': credit.effective_amount(),
+                'available': credit.effective_amount() - credit.get_allocated_amount(),
                 'license_fee': helpers.format_decimal_to_percent(credit.license_fee),
                 'start_date': credit.start_date,
                 'end_date': credit.end_date,

@@ -1,6 +1,7 @@
 import decimal
 import dash
 import datetime
+import operator
 from mock import patch
 
 from django.core import mail
@@ -13,6 +14,7 @@ from dash import models
 from reports import refresh
 import automation.settings
 import automation.constants
+import automation.autopilot_budgets
 
 from zemauth.models import User
 
@@ -296,3 +298,26 @@ class BCMDepletionTestCase(test.TestCase):
                 helpers.get_available_budgets(self.campaigns),
                 {1: 0.0, 2: 100.0, 3: 49879.0, 4: 49923.0},
             )
+
+
+class BetaBanditTestCase(test.TestCase):
+    fixtures = ['test_automation.yaml']
+
+    def setUp(self):
+        refresh.refresh_adgroup_stats()
+
+    def test_naiive(self):
+        ags = models.AdGroupSource.objects.filter(ad_group=4)
+        self.assertEqual(ags.count(), 3)
+
+        bandit = automation.autopilot_budgets.BetaBandit(ags)
+
+        for i in range(100):
+            bandit.add_result(ags[0], True)
+
+        recommendations = {s: 0 for s in ags}
+        for i in range(100):
+            recommendations[bandit.get_recommendation()] += 1
+
+        most_recommended = max(recommendations.iteritems(), key=operator.itemgetter(1))[0]
+        self.assertEqual(most_recommended, ags[0])

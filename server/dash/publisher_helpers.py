@@ -92,4 +92,6 @@ def publisher_exchange(source):
 
 
 def is_publisher_domain(raw_str):
+    if raw_str is None:
+        return False
     return re.search("\.[a-z]+$", raw_str.lower()) is not None

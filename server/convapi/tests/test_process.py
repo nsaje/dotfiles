@@ -35,10 +35,13 @@ class UpdateTouchpointConversionsTestCase(TestCase):
 
         process.update_touchpoint_conversions_full()
 
-        update_touchpoint_conversions_mock.assert_called_once_with([(datetime.date(2015, 9, 8), self.cp1),
-                                                                    (datetime.date(2015, 9, 9), self.cp1),
-                                                                    (datetime.date(2015, 9, 10), self.cp1),
-                                                                    (datetime.date(2015, 9, 10), self.cp2)])
+        expected_dates = set([datetime.date(2015, 9, 8),
+                              datetime.date(2015, 9, 9),
+                              datetime.date(2015, 9, 10)])
+
+        self.assertEqual(update_touchpoint_conversions_mock.call_count, 1)
+        self.assertEqual(set(update_touchpoint_conversions_mock.call_args[0][0]), expected_dates)
+        self.assertEqual(set(update_touchpoint_conversions_mock.call_args[0][1]), set([self.cp1, self.cp2]))
 
     @mock.patch('convapi.process.update_touchpoint_conversions')
     @mock.patch('utils.dates_helper.datetime')
@@ -53,13 +56,14 @@ class UpdateTouchpointConversionsTestCase(TestCase):
 
         process.update_touchpoint_conversions_full()
 
-        update_touchpoint_conversions_mock.assert_called_once_with([(datetime.date(2015, 9, 8), self.cp1),
-                                                                    (datetime.date(2015, 9, 9), self.cp1),
-                                                                    (datetime.date(2015, 9, 10), self.cp1),
-                                                                    (datetime.date(2015, 9, 7), self.cp2),
-                                                                    (datetime.date(2015, 9, 8), self.cp2),
-                                                                    (datetime.date(2015, 9, 9), self.cp2),
-                                                                    (datetime.date(2015, 9, 10), self.cp2)])
+        expected_dates = set([datetime.date(2015, 9, 7),
+                              datetime.date(2015, 9, 8),
+                              datetime.date(2015, 9, 9),
+                              datetime.date(2015, 9, 10)])
+
+        self.assertEqual(update_touchpoint_conversions_mock.call_count, 1)
+        self.assertEqual(set(update_touchpoint_conversions_mock.call_args[0][0]), expected_dates)
+        self.assertEqual(set(update_touchpoint_conversions_mock.call_args[0][1]), set([self.cp1, self.cp2]))
 
 
 class ProcessTouchpointsImpressionsTestCase(TestCase):
@@ -730,3 +734,25 @@ class ProcessTouchpointsImpressionsTestCase(TestCase):
         ]
 
         self.assertItemsEqual(expected, conversion_pairs)
+
+    def test_process_bad_pixie(self):
+        redirects_impressions = {
+            '1234-12345-123456': [
+                {
+                    'zuid': '1234-12345-123456',
+                    'slug': 'test_slug',
+                    'impressionId': '12345',
+                    'impressionTimestamp': '2015-09-02T15:15:15Z',
+                    'redirectId': '54323',
+                    'redirectTimestamp': '2015-09-02T17:00:00Z',
+                    'accountId': 1,
+                    'adGroupId': 1,
+                    'source': 'outbrain',
+                    'contentAdId': 1,
+                }
+            ]
+        }
+
+        conversion_pairs = process.process_touchpoint_conversions(redirects_impressions)
+
+        self.assertItemsEqual([], conversion_pairs, "Conversion pair should have been filtered out by BAD_PIXIE check")

@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 
 
 class UserManager(auth_models.BaseUserManager):
+
     def _create_user(self, email, password, is_staff, is_superuser, **extra_fields):
         """
         Creates and saves a User with the given email and password.
@@ -148,7 +149,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_see_publishers', 'Can see publishers'),
             ('manage_conversion_goals', 'Can manage conversion goals on campaign level'),
             ('can_see_redshift_postclick_statistics', 'Can see Redshift postclick statistics'),
-            ('group_campaign_stop_on_budget_depleted', 'Automatic campaign stop on depleted budget applies to campaigns in this group'),
+            ('group_campaign_stop_on_budget_depleted',
+             'Automatic campaign stop on depleted budget applies to campaigns in this group'),
             ('can_see_publisher_blacklist_status', 'Can see publishers blacklist status'),
             ('can_modify_publisher_blacklist_status', 'Can modify publishers blacklist status'),
             ('conversion_reports', 'Can see conversions and goals in reports'),
@@ -156,14 +158,24 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_modify_allowed_sources', 'Can modify allowed sources on account level'),
             ('settings_defaults_on_campaign_level', 'Can view ad group settings defaults on campaign level'),
             ('can_access_global_publisher_blacklist_status', 'Can view or modify global publishers blacklist status'),
-            ('can_access_campaign_account_publisher_blacklist_status', 'Can view or modify account and campaign publishers blacklist status'),
+            ('can_access_campaign_account_publisher_blacklist_status',
+             'Can view or modify account and campaign publishers blacklist status'),
             ('can_see_all_available_sources', 'Can see all available media sources in account settings'),
             ('can_see_infobox', 'Can see info box'),
             ('account_account_view', "Can view account's Account tab."),
             ('can_view_effective_costs', 'Can view effective costs'),
             ('can_view_actual_costs', 'Can view actual costs'),
-            ('can_modify_outbrain_account_publisher_blacklist_status', 'Can modify Outbrain account publisher blacklist status'),
+            ('can_modify_outbrain_account_publisher_blacklist_status',
+             'Can modify Outbrain account publisher blacklist status'),
+            ('can_set_adgroup_to_auto_pilot', 'Can set Ad Group to Auto-Pilot (budget and CPC automation)'),
+            ('can_set_ad_group_max_cpc', 'Can set ad group max cpc'),
             ('can_view_retargeting_settings', 'Can view retargeting settings'),
+            ('can_view_flat_fees', 'Can view flat fees in All accounts/accounts table'),
+            ('can_control_ad_group_state_in_table', 'Can control ad group state in Campaign / Ad Groups table'),
+            ('can_see_campaign_goals', 'Can see and manage campaign goals'),
+            ('can_see_projections', 'Can see projections'),
+            ('can_see_managers_in_accounts_table', "Can see Account Manager and Sales Representative in accounts table."),
+            ('can_hide_chart', 'Can show or hide chart'),
         )
 
     def get_full_name(self):

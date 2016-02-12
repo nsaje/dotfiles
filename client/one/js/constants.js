@@ -3,27 +3,31 @@
 var constants = {
     adGroupSettingsState: {
         ACTIVE: 1,
+        INACTIVE: 2,
+    },
+    adGroupSettingsAutopilotState: {
+        ACTIVE: 1,
         INACTIVE: 2
     },
     adGroupRunningStatus: {
         ACTIVE: 1,
-        INACTIVE: 2
+        INACTIVE: 2,
     },
     adGroupSourceSettingsState: {
         ACTIVE: 1,
-        INACTIVE: 2
+        INACTIVE: 2,
     },
     adGroupSourceSettingsAutopilotState: {
         ACTIVE: 1,
-        INACTIVE: 2
+        INACTIVE: 2,
     },
     publisherStatus: {
         ENABLED: 1,
-        BLACKLISTED: 2
+        BLACKLISTED: 2,
     },
     adTargetDevice: {
         DESKTOP: 'desktop',
-        MOBILE: 'mobile'
+        MOBILE: 'mobile',
     },
     chartMetric: {
         CLICKS: 'clicks',
@@ -54,13 +58,13 @@ var constants = {
     creditLineItemStatus: {
         SIGNED: 1,
         PENDING: 2,
-        CANCELED: 3
+        CANCELED: 3,
     },
     budgetLineItemStatus: {
         ACTIVE: 1,
         PENDING: 2,
         INACTIVE: 3,
-        DEPLETED: 4
+        DEPLETED: 4,
     },
     iabCategory: {
         IAB1: 'IAB1',
@@ -454,77 +458,85 @@ var constants = {
         IAB26_1: 'IAB26-1',
         IAB26_2: 'IAB26-2',
         IAB26_3: 'IAB26-3',
-        IAB26_4: 'IAB26-4'
+        IAB26_4: 'IAB26-4',
     },
     promotionGoal: {
         BRAND_BUILDING: 1,
         TRAFFIC_ACQUISITION: 2,
-        CONVERSIONS: 3
+        CONVERSIONS: 3,
     },
     campaignGoal: {
         CPA: 1,
         PERCENT_BOUNCE_RATE: 2,
         NEW_UNIQUE_VISITORS: 3,
         SECONDS_TIME_ON_SITE: 4,
-        PAGES_PER_SESSION: 5
+        PAGES_PER_SESSION: 5,
+    },
+    campaignGoalKPI: {
+        TIME_ON_SITE: 1,
+        MAX_BOUNCE_RATE: 2,
+        PAGES_PER_SESSION: 3,
+        CPA: 4,
+        CPC: 5,
+        CPM: 6,
     },
     conversionGoalType: {
         PIXEL: 1,
         GA: 2,
-        OMNITURE: 3
+        OMNITURE: 3,
     },
     conversionGoalTypeText: {
         1: 'Conversion Pixel',
         2: 'Google Analytics',
-        3: 'Adobe Analytics'
+        3: 'Adobe Analytics',
     },
     conversionWindowText: {
         24: '1 day',
         168: '7 days',
-        720: '30 days'
+        720: '30 days',
     },
     entityType: {
         AD_GROUP: 'adGroup',
         CAMPAIGN: 'campaign',
-        ACCOUNT: 'account'
+        ACCOUNT: 'account',
     },
     level: {
         AD_GROUPS: 'ad_groups',
         CAMPAIGNS: 'campaigns',
         ACCOUNTS: 'accounts',
-        ALL_ACCOUNTS: 'all_accounts'
+        ALL_ACCOUNTS: 'all_accounts',
     },
     contentAdApprovalStatus: {
         PENDING: 1,
         APPROVED: 2,
-        REJECTED: 3
+        REJECTED: 3,
     },
     uploadBatchStatus: {
         DONE: 1,
         FAILED: 2,
-        IN_PROGRESS: 3
+        IN_PROGRESS: 3,
     },
     contentAdSourceState: {
         ACTIVE: 1,
-        INACTIVE: 2
+        INACTIVE: 2,
     },
     exportType: {
         ALL_ACCOUNTS: 'allaccounts-csv',
         ACCOUNT: 'account-csv',
         CAMPAIGN: 'campaign-csv',
         AD_GROUP: 'adgroup-csv',
-        CONTENT_AD: 'contentad-csv'
+        CONTENT_AD: 'contentad-csv',
     },
     exportFrequency: {
         DAILY: 'daily',
         WEEKLY: 'weekly',
-        MONTHLY: 'monthly'
+        MONTHLY: 'monthly',
     },
     publisherBlacklistLevel: {
         ADGROUP: 'adgroup',
         CAMPAIGN: 'campaign',
         ACCOUNT: 'account',
-        GLOBAL: 'global'
+        GLOBAL: 'global',
     },
     /* source type names are string values of dash.SourceType */
     sourceTypeName: {
@@ -534,33 +546,39 @@ var constants = {
         OUTBRAIN: 'Outbrain',
         YAHOO: 'Yahoo',
         ZEMANTA: 'Zemanta',
-        B1: 'B1'
-    }
+        B1: 'B1',
+    },
 };
+
 var options = {
-    adGroupSettingsStates: [{name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
-        {name: 'Enabled', value: constants.adGroupSettingsState.ACTIVE}
+    adGroupSettingsStates: [
+        {name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
+        {name: 'Enabled', value: constants.adGroupSettingsState.ACTIVE},
+    ],
+    adGroupSettingsAutopilotStates: [
+        {name: 'Paused', value: constants.adGroupSettingsAutopilotState.INACTIVE},
+        {name: 'Enabled', value: constants.adGroupSettingsAutopilotState.ACTIVE},
     ],
     adTargetDevices: [
         {name: 'Desktop', value: constants.adTargetDevice.DESKTOP},
-        {name: 'Mobile', value: constants.adTargetDevice.MOBILE}
+        {name: 'Mobile', value: constants.adTargetDevice.MOBILE},
     ],
     adGroupChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
-        {name: 'Avg. CPC', value: constants.chartMetric.CPC}
+        {name: 'Avg. CPC', value: constants.chartMetric.CPC},
     ],
     adGroupAcquisitionChartPostClickMetrics: [
         {name: 'Visits', value: constants.chartMetric.VISITS},
         {name: 'Click Discrepancy', value: constants.chartMetric.CLICK_DISCREPANCY},
-        {name: 'Pageviews', value: constants.chartMetric.PAGEVIEWS}
+        {name: 'Pageviews', value: constants.chartMetric.PAGEVIEWS},
     ],
     adGroupEngagementChartPostClickMetrics: [
         {name: '% New Users', value: constants.chartMetric.NEW_USERS},
         {name: 'Bounce Rate', value: constants.chartMetric.BOUNCE_RATE},
         {name: 'PV/Visit', value: constants.chartMetric.PV_PER_VISIT},
-        {name: 'Avg. ToS', value: constants.chartMetric.AVG_TOS}
+        {name: 'Avg. ToS', value: constants.chartMetric.AVG_TOS},
     ],
     adGroupConversionGoalChartMetrics: [
         {name: '', value: constants.chartMetric.CONVERSION_GOAL1, shown: false},
@@ -573,7 +591,7 @@ var options = {
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
-        {name: 'Avg. CPC', value: constants.chartMetric.CPC}
+        {name: 'Avg. CPC', value: constants.chartMetric.CPC},
     ],
     campaignConversionGoalChartMetrics: [
         {name: '', value: constants.chartMetric.CONVERSION_GOAL1, shown: false},
@@ -586,14 +604,14 @@ var options = {
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
         {name: 'CTR', value: constants.chartMetric.CTR},
-        {name: 'Avg. CPC', value: constants.chartMetric.CPC}
+        {name: 'Avg. CPC', value: constants.chartMetric.CPC},
     ],
     allAccountsChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
         {name: 'Impressions', value: constants.chartMetric.IMPRESSIONS},
-        {name: 'Avg. CPC', value: constants.chartMetric.CPC}
+        {name: 'Avg. CPC', value: constants.chartMetric.CPC},
     ],
-    legacyCostChartMetrics : [
+    legacyCostChartMetrics: [
         {name: 'Spend', value: constants.chartMetric.COST},
     ],
     effectiveCostChartMetrics: [
@@ -1004,29 +1022,38 @@ var options = {
     promotionGoals: [
         {name: 'Brand Building', value: constants.promotionGoal.BRAND_BUILDING},
         {name: 'Traffic Acquisition', value: constants.promotionGoal.TRAFFIC_ACQUISITION},
-        {name: 'Conversions', value: constants.promotionGoal.CONVERSIONS}
+        {name: 'Conversions', value: constants.promotionGoal.CONVERSIONS},
     ],
     campaignGoals: [
         {name: 'CPA', value: constants.campaignGoal.CPA},
         {name: '% bounce rate', value: constants.campaignGoal.PERCENT_BOUNCE_RATE},
         {name: 'new unique visitors', value: constants.campaignGoal.NEW_UNIQUE_VISITORS},
         {name: 'seconds time on site', value: constants.campaignGoal.SECONDS_TIME_ON_SITE},
-        {name: 'pages per session', value: constants.campaignGoal.PAGES_PER_SESSION}
+        {name: 'pages per session', value: constants.campaignGoal.PAGES_PER_SESSION},
+    ],
+    campaignGoalKPIs: [
+        {name: 'time on site in seconds', value: constants.campaignGoalKPI.TIME_ON_SITE},
+        {name: 'max bounce rate %', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE},
+        {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
+        {name: '$CPC', value: constants.campaignGoalKPI.CPC},
+        {name: 'Add new conversion/goal', value: constants.campaignGoalKPI.CPA},
+        {name: '$CPM', value: constants.campaignGoalKPI.CPM},
     ],
     conversionGoalTypes: [
         {name: 'Conversion Pixel', value: constants.conversionGoalType.PIXEL},
         {name: 'Google Analytics', value: constants.conversionGoalType.GA},
-        {name: 'Adobe Analytics', value: constants.conversionGoalType.OMNITURE}
+        {name: 'Adobe Analytics', value: constants.conversionGoalType.OMNITURE},
     ],
     conversionWindows: [
         {name: '1 day', value: 24},
         {name: '7 days', value: 168},
-        {name: '30 days', value: 720}
+        {name: '30 days', value: 720},
     ],
-    exportFrequency: [{name: 'Daily', value: constants.exportFrequency.DAILY},
+    exportFrequency: [
+        {name: 'Daily', value: constants.exportFrequency.DAILY},
         {name: 'Weekly (Monday)', value: constants.exportFrequency.WEEKLY},
-        {name: 'Monthly (1st)', value: constants.exportFrequency.MONTHLY}
-    ]
+        {name: 'Monthly (1st)', value: constants.exportFrequency.MONTHLY},
+    ],
 };
 
 var defaults = {
@@ -1038,6 +1065,6 @@ var defaults = {
         {id: 'Learn More', text: 'Learn More'},
         {id: 'Shop Now', text: 'Shop Now'},
         {id: 'Sign Up', text: 'Sign Up'},
-        {id: 'Watch More', text: 'Watch More'}
-    ]
+        {id: 'Watch More', text: 'Watch More'},
+    ],
 };

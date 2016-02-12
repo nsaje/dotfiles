@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import calendar
 import datetime
 import json
 import decimal
@@ -232,22 +233,22 @@ class AdGroupOverview(api_common.BaseApiView):
         running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
         header = {
             'title': ad_group_settings.ad_group_name,
-            'active': running_status == constants.AdGroupRunningStatus.ACTIVE
+            'active': running_status == constants.AdGroupRunningStatus.ACTIVE,
+            'level': constants.InfoboxLevel.ADGROUP
         }
 
         performance_settings, is_delivering = self._performance_settings(
             ad_group, request.user, ad_group_settings
         )
+        for setting in performance_settings[1:]:
+            setting['section_start'] = True
+
 
         response = {
             'header': header,
-            'settings': self._basic_settings(request.user, ad_group, ad_group_settings) +
-            [infobox_helpers.OverviewSeparator().as_dict()] +
-            performance_settings,
+            'basic_settings': self._basic_settings(request.user, ad_group, ad_group_settings),
+            'performance_settings': performance_settings,
         }
-
-        header['subtitle'] = 'Delivering' if is_delivering else 'Not Delivering'
-
         return self.create_api_response(response)
 
     def _basic_settings(self, user, ad_group, ad_group_settings):
@@ -271,9 +272,9 @@ class AdGroupOverview(api_common.BaseApiView):
         campaign_target_devices = campaign_settings.target_devices
 
         if set(campaign_target_devices) == set(ad_group_settings.target_devices):
-            device_comment = None
+            target_device_warning = None
         else:
-            device_comment = 'Differ from campaign default'
+            target_device_warning = 'Different than campaign default'
 
         targeting_device = infobox_helpers.OverviewSetting(
             'Targeting:',
@@ -282,28 +283,39 @@ class AdGroupOverview(api_common.BaseApiView):
                     [w[0].upper() + w[1:] for w in ad_group_settings.target_devices]
                 )
             ),
-            device_comment,
+            warning=target_device_warning,
+            section_start=True
         )
         settings.append(targeting_device.as_dict())
 
         campaign_target_regions = campaign_settings.target_regions
         if set(campaign_target_regions) == set(ad_group_settings.target_regions):
-            region_comment = None
+            region_warning = None
         else:
-            region_comment = 'Differ from campaign default'
+            region_warning = 'Different than campaign default'
+
+        MAX_PREVIEW_REGIONS = 1
+        preview_regions = ad_group_settings.target_regions[:MAX_PREVIEW_REGIONS]
+        full_regions = ad_group_settings.target_regions
 
         targeting_region = infobox_helpers.OverviewSetting(
             '',
             'Location: {regions}'.format(
-                regions=', '.join(ad_group_settings.target_regions)
+                regions=', '.join(preview_regions)
             ),
-            region_comment,
+            warning=region_warning,
         )
+        if full_regions != []:
+            targeting_region = targeting_region.comment(
+                'more',
+                ', '.join(full_regions)
+            )
         settings.append(targeting_region.as_dict())
 
         tracking_code_settings = infobox_helpers.OverviewSetting(
             'Tracking codes:',
             'Yes' if ad_group_settings.tracking_code else 'No',
+            section_start=True
         )
         if ad_group_settings.tracking_code:
             tracking_code_settings = tracking_code_settings.comment(
@@ -329,7 +341,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
         daily_cap_setting = infobox_helpers.OverviewSetting(
-            'Daily budget',
+            'Daily budget:',
             '${:.2f}'.format(daily_cap) if daily_cap is not None else '',
             tooltip='Daily media budget'
         )
@@ -347,9 +359,21 @@ class AdGroupOverview(api_common.BaseApiView):
         return settings
 
     def _performance_settings(self, ad_group, user, ad_group_settings):
-        return infobox_helpers.goals_and_spend_settings(
+        settings = []
+
+        yesterday_cost = infobox_helpers.get_yesterday_adgroup_spend(user, ad_group) or 0
+        ad_group_daily_budget = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
+
+        settings.append(infobox_helpers.create_yesterday_spend_setting(
+            yesterday_cost,
+            ad_group_daily_budget
+        ).as_dict())
+
+        common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
             user, ad_group.campaign
         )
+        settings.extend(common_settings)
+        return settings, is_delivering
 
 
 class AdGroupArchive(api_common.BaseApiView):
@@ -493,9 +517,18 @@ class CampaignOverview(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
+        active = False
+        for ad_group in models.AdGroup.objects.filter(campaign=campaign).exclude_archived():
+            ad_group_settings = ad_group.get_current_settings()
+            running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
+            if running_status == constants.AdGroupRunningStatus.ACTIVE:
+                active = True
+                break
+
         header = {
             'title': campaign.name,
-            'active': False
+            'active': active,
+            'level': constants.InfoboxLevel.CAMPAIGN
         }
 
         basic_settings, daily_cap =\
@@ -508,15 +541,14 @@ class CampaignOverview(api_common.BaseApiView):
             daily_cap
         )
 
+        for setting in performance_settings[1:]:
+            setting['section_start'] = True
+
         response = {
             'header': header,
-            'settings':  basic_settings +
-            [infobox_helpers.OverviewSeparator().as_dict()] +
-            performance_settings,
+            'basic_settings': basic_settings,
+            'performance_settings': performance_settings,
         }
-
-        header['subtitle'] = ''  # 'Delivering' if is_delivering else 'Not Delivering'
-
         return self.create_api_response(response)
 
     def _basic_settings(self, user, campaign, campaign_settings):
@@ -574,23 +606,33 @@ class CampaignOverview(api_common.BaseApiView):
                 devices=', '.join(
                     [w[0].upper() + w[1:] for w in campaign_settings.target_devices]
                 )
-            )
+            ),
+            section_start=True
         )
         settings.append(targeting_device.as_dict())
 
+        MAX_PREVIEW_REGIONS = 1
+        preview_regions = campaign_settings.target_regions[:MAX_PREVIEW_REGIONS]
+        full_regions = campaign_settings.target_regions
         targeting_region = infobox_helpers.OverviewSetting(
             '',
             'Location: {regions}'.format(
-                regions=', '.join(campaign_settings.target_regions)
+                regions=', '.join(preview_regions)
             )
         )
+        if full_regions != []:
+            targeting_region = targeting_region.comment(
+                'more',
+                ', '.join(full_regions)
+            )
         settings.append(targeting_region.as_dict())
 
         # take the num
         daily_cap = infobox_helpers.OverviewSetting(
             'Daily budget:',
             '${:.2f}'.format(daily_cap_value) if daily_cap_value > 0 else 'N/A',
-            tooltip="Daily media budget"
+            tooltip="Daily media budget",
+            section_start=True
         )
         settings.append(daily_cap.as_dict())
 
@@ -607,9 +649,21 @@ class CampaignOverview(api_common.BaseApiView):
         return settings, daily_cap_value
 
     def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc):
-        return infobox_helpers.goals_and_spend_settings(
+        settings = []
+
+        yesterday_cost = infobox_helpers.get_yesterday_campaign_spend(user, campaign) or 0
+        campaign_daily_budget = infobox_helpers.calculate_daily_campaign_cap(campaign)
+
+        settings.append(infobox_helpers.create_yesterday_spend_setting(
+            yesterday_cost,
+           campaign_daily_budget
+        ).as_dict())
+
+        common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
             user, campaign
         )
+        settings.extend(common_settings)
+        return settings, is_delivering
 
     def get_campaign_status(self, campaign):
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)
@@ -619,6 +673,129 @@ class CampaignOverview(api_common.BaseApiView):
 
         return helpers.get_ad_group_state_by_sources_running_status(
             ad_groups, ad_groups_settings, [], 'campaign_id')
+
+
+class AccountOverview(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'account_overview')
+    def get(self, request, account_id):
+        if not request.user.has_perm('zemauth.can_see_infobox'):
+            raise exc.AuthorizationError()
+
+        account = helpers.get_account(request.user, account_id)
+
+        header = {
+            'title': account.name,
+            'active': False,
+            'level': constants.InfoboxLevel.ACCOUNT
+        }
+
+        basic_settings = self._basic_settings(account)
+
+        performance_settings = self._performance_settings(account, request.user)
+        for setting in performance_settings[1:]:
+            setting['section_start'] = True
+
+        response = {
+            'header': header,
+            'basic_settings': basic_settings,
+            'performance_settings': performance_settings,
+        }
+
+        count_campaigns = models.Campaign.objects.filter(
+            account=account
+        ).count()
+
+        count_adgroups = models.AdGroup.objects.filter(
+            campaign__account=account
+        ).count()
+
+        header['subtitle'] = 'with {count_campaigns} campaigns and {count_adgroups} ad groups'.format(
+            count_campaigns=count_campaigns,
+            count_adgroups=count_adgroups
+        )
+
+        return self.create_api_response(response)
+
+    def _username(self, user):
+        if not user:
+            return 'N/A'
+        return user.get_full_name()
+
+    def _basic_settings(self, account):
+        settings = []
+        account_settings = account.get_current_settings()
+        account_manager_setting = infobox_helpers.OverviewSetting(
+            'Account Manager:',
+            self._username(account_settings.default_account_manager)
+        )
+        settings.append(account_manager_setting.as_dict())
+
+        sales_manager_setting = infobox_helpers.OverviewSetting(
+            'Sales Manager:',
+            self._username(account_settings.default_sales_representative)
+        )
+        settings.append(sales_manager_setting.as_dict())
+
+        all_users = account.users.all()
+        if all_users.count() == 0:
+            user_setting = infobox_helpers.OverviewSetting(
+                'Users:',
+                section_start=True,
+            )
+            settings.append(user_setting.as_dict())
+        else:
+            for i, user in enumerate(all_users):
+                user_one_setting = infobox_helpers.OverviewSetting(
+                    'Users:' if i == 0 else '',
+                    self._username(user),
+                    section_start=i == 0
+                )
+                settings.append(user_one_setting.as_dict())
+
+        platform_fee_setting = infobox_helpers.OverviewSetting(
+            'Platform fee:',
+            "{:.2f}%".format(account_settings.service_fee * 100),
+            section_start=True
+        )
+        settings.append(platform_fee_setting.as_dict())
+
+        pixels = models.ConversionPixel.objects.filter(account=account)
+        conversion_pixel_setting = infobox_helpers.OverviewSetting(
+            'Conversion pixel:',
+            'Yes' if pixels.count() > 0 else 'No'
+        )
+        if pixels.count() > 0:
+            slugs = [pixel.slug for pixel in pixels]
+            conversion_pixel_setting = conversion_pixel_setting.comment(
+                'more',
+                ', '.join(slugs),
+            )
+        settings.append(conversion_pixel_setting.as_dict())
+        return settings
+
+    def _performance_settings(self, account, user):
+        settings = []
+
+        available_credit = infobox_helpers.calculate_available_credit(account)
+        spent_credit = infobox_helpers.calculate_spend_credit(account)
+        spent_credit_setting = infobox_helpers.OverviewSetting(
+            'Spent credit:',
+            '${:.2f}'.format(spent_credit),
+            description='${:.2f}'.format(available_credit)
+        )
+        settings.append(spent_credit_setting.as_dict())
+
+        daily_budget = infobox_helpers.calculate_daily_account_cap(account)
+        yesterday_spent = infobox_helpers.calculate_yesterday_account_spend(account)
+        settings.append(
+            infobox_helpers.create_yesterday_spend_setting(
+                yesterday_spent,
+                daily_budget
+            ).as_dict()
+        )
+
+        return settings
 
 
 class AdGroupState(api_common.BaseApiView):
@@ -1718,6 +1895,91 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
         )
 
         email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
+
+
+class AllAccountsOverview(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'all_accounts_overview')
+    def get(self, request):
+        if not request.user.has_perm('zemauth.can_see_infobox'):
+            raise exc.AuthorizationError()
+
+        header = {
+            'title': 'All accounts',
+            'level': constants.InfoboxLevel.ALL_ACCOUNTS
+        }
+
+        response = {
+            'header': header,
+            'basic_settings': self._basic_settings(),
+            'performance_settings': None
+        }
+
+        return self.create_api_response(response)
+
+    def _basic_settings(self):
+        settings = []
+
+        count_active_accounts = infobox_helpers.count_active_accounts()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Active accounts:',
+            count_active_accounts,
+            section_start=True
+        ))
+
+        weekly_logged_users = infobox_helpers.count_weekly_logged_in_users()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Weekly logged-in users:',
+            weekly_logged_users,
+        ))
+
+        weekly_active_users = infobox_helpers.count_weekly_active_users()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Weekly active users:',
+            weekly_active_users,
+            section_start=True
+        ))
+
+        weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Weekly self managed actions:',
+            weekly_sf_actions,
+        ))
+
+        yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Yesterday spent:',
+            '${:.2f}'.format(yesterday_spend),
+            tooltip='Yesterday media spent',
+            section_start=True
+        ))
+
+        mtd_spend = infobox_helpers.get_mtd_all_accounts_spend()
+        settings.append(infobox_helpers.OverviewSetting(
+            'Spent MTD:',
+            '${:.2f}'.format(mtd_spend),
+            tooltip='Month-to-date media spent',
+        ))
+
+        today = datetime.datetime.utcnow()
+        start, end = calendar.monthrange(today.year, today.month)
+        start_date = datetime.datetime(today.year, today.month, 1)
+        end_date = datetime.datetime(today.year, today.month, end)
+
+        total_budget = infobox_helpers.calculate_all_accounts_total_budget(start_date, end_date)
+        settings.append(infobox_helpers.OverviewSetting(
+            'Total budgets:',
+            '${:.2f}'.format(total_budget),
+            section_start=True
+        ))
+
+        monthly_budget = infobox_helpers.calculate_all_accounts_monthly_budget(today)
+        settings.append(infobox_helpers.OverviewSetting(
+            'Monthly budgets:',
+            '${:.2f}'.format(monthly_budget)
+        ))
+
+        return [setting.as_dict() for setting in settings]
 
 
 @statsd_helper.statsd_timer('dash', 'healthcheck')

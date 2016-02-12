@@ -27,6 +27,16 @@ class AdGroupRunningStatus(ConstantBase):
     }
 
 
+class AdGroupSettingsAutopilotState(ConstantBase):
+    ACTIVE = 1
+    INACTIVE = 2
+
+    _VALUES = {
+        ACTIVE: 'Enabled',
+        INACTIVE: 'Paused'
+    }
+
+
 class AdGroupSourceSettingsState(ConstantBase):
     # keep in sync with zwei
     ACTIVE = 1
@@ -111,6 +121,20 @@ class PublisherStatus(ConstantBase):
         ENABLED: 'Enabled',
         BLACKLISTED: 'Blacklisted',
         PENDING: 'Pending'
+    }
+
+
+class InfoboxLevel(ConstantBase):
+    ADGROUP = 'adgroup'
+    CAMPAIGN = 'campaign'
+    ACCOUNT = 'account'
+    ALL_ACCOUNTS = 'all-accounts'
+
+    _VALUES = {
+        ADGROUP: 'Ad Group',
+        CAMPAIGN : 'Campaign',
+        ACCOUNT : 'Account',
+        ALL_ACCOUNTS: 'All Accounts'
     }
 
 

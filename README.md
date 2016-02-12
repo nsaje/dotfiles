@@ -23,7 +23,14 @@ Client is a web client built on top of AngularJS. It uses Server API to communic
 
 ### Server
 
-In prodution, we use PostgreSQL 9.3 database so it is best to install it for development as well.
+#### Development databases
+
+For development, you can use the development databases running on AWS.
+Howto and connection details are specified in the [Z1 Staging Data repo](https://github.com/Zemanta/z1-staging-data/blob/master/README.md)
+
+#### Local databases
+
+In production, we use PostgreSQL 9.3 database so it is best to install it for development as well.
 
 All the commands bellow assume that you are located in server subdirectory.
 

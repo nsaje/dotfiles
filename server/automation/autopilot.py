@@ -22,12 +22,6 @@ from utils.statsd_helper import statsd_gauge
 logger = logging.getLogger(__name__)
 
 
-def update_ad_group_source_cpc(ad_group_source, new_cpc):
-    settings_writer = dash.api.AdGroupSourceSettingsWriter(ad_group_source)
-    resource = {'cpc_cc': new_cpc}
-    settings_writer.set(resource, None)
-
-
 def persist_cpc_change_to_admin_log(
         ad_group_source,
         yesterday_spend,
@@ -181,11 +175,20 @@ def _threshold_increasing_cpc(current_cpc, new_cpc):
     return new_cpc
 
 
-def _check_source_constraints(proposed_cpc, source_min_cpc, source_max_cpc):
-    if proposed_cpc > source_max_cpc:
+def _check_source_constraints(proposed_cpc, source):
+    min_cpc = source.source_type.min_cpc
+    max_cpc = source.source_type.max_cpc
+    if proposed_cpc > max_cpc:
         return [automation.constants.CpcChangeComment.OVER_SOURCE_MAX_CPC]
-    if proposed_cpc < source_min_cpc:
+    if proposed_cpc < min_cpc:
         return [automation.constants.CpcChangeComment.UNDER_SOURCE_MIN_CPC]
+    return []
+
+
+def _check_ad_group_constraints(proposed_cpc, ad_group):
+    settings = ad_group.get_current_settings()
+    if settings.cpc_cc and proposed_cpc > settings.cpc_cc:
+        return [automation.constants.CpcChangeComment.OVER_AD_GROUP_MAX_CPC]
     return []
 
 
@@ -284,15 +287,14 @@ def adjust_autopilot_media_sources_bid_cpcs():
 
             yesterday_spend = yesterday_spends.get(ad_group_source_settings.ad_group_source.source_id)
 
+            source = ad_group_source_settings.ad_group_source.source
             proposed_cpc, calculation_comments = calculate_new_autopilot_cpc(
                 ad_group_source_settings.cpc_cc,
                 ad_group_source_settings.daily_budget_cc,
                 yesterday_spend)
             cpc_change_comments += calculation_comments
-            cpc_change_comments += _check_source_constraints(
-                proposed_cpc,
-                ad_group_source_settings.ad_group_source.source.source_type.min_cpc,
-                ad_group_source_settings.ad_group_source.source.source_type.max_cpc)
+            cpc_change_comments += _check_source_constraints(proposed_cpc, source)
+            cpc_change_comments += _check_ad_group_constraints(proposed_cpc, adgroup)
             new_cpc = proposed_cpc if cpc_change_comments == [] else ad_group_source_settings.cpc_cc
             persist_cpc_change_to_admin_log(
                 ad_group_source_settings.ad_group_source,
@@ -316,8 +318,9 @@ def adjust_autopilot_media_sources_bid_cpcs():
             })
 
             if ad_group_source_settings.cpc_cc != proposed_cpc and cpc_change_comments == []:
-                update_ad_group_source_cpc(
+                automation.helpers.update_ad_group_source_value(
                     ad_group_source_settings.ad_group_source,
+                    'cpc_cc',
                     proposed_cpc
                 )
 
