@@ -30,6 +30,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from dash.views import helpers
 
+from utils import lc_helper
 from utils import statsd_helper
 from utils import api_common
 from utils import exc
@@ -330,7 +331,7 @@ class AdGroupOverview(api_common.BaseApiView):
         daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
         daily_cap_setting = infobox_helpers.OverviewSetting(
             'Daily budget:',
-            '${:.2f}'.format(daily_cap) if daily_cap is not None else '',
+            lc_helper.default_currency(daily_cap) if daily_cap is not None else '',
             tooltip='Daily media budget'
         )
         settings.append(daily_cap_setting.as_dict())
@@ -340,8 +341,8 @@ class AdGroupOverview(api_common.BaseApiView):
 
         campaign_budget_setting = infobox_helpers.OverviewSetting(
             'Campaign budget:',
-            '${:.2f}'.format(total_media_spend),
-            '${:.2f}'.format(total_media_available),
+            lc_helper.default_currency(total_media_spend),
+            lc_helper.default_currency(total_media_available),
         )
         settings.append(campaign_budget_setting.as_dict())
         return settings
@@ -599,7 +600,7 @@ class CampaignOverview(api_common.BaseApiView):
         # take the num
         daily_cap = infobox_helpers.OverviewSetting(
             'Daily budget:',
-            '${:.2f}'.format(daily_cap_value) if daily_cap_value > 0 else 'N/A',
+            lc_helper.default_currency(daily_cap_value) if daily_cap_value > 0 else 'N/A',
             tooltip="Daily media budget",
             section_start=True
         )
@@ -610,8 +611,8 @@ class CampaignOverview(api_common.BaseApiView):
 
         campaign_budget_setting = infobox_helpers.OverviewSetting(
             'Campaign budget:',
-            '${:.2f}'.format(total_media_spend),
-            '${:.2f}'.format(total_media_available),
+            lc_helper.default_currency(total_media_spend),
+            lc_helper.default_currency(total_media_available),
         )
         settings.append(campaign_budget_setting.as_dict())
 
@@ -750,8 +751,8 @@ class AccountOverview(api_common.BaseApiView):
         spent_credit = infobox_helpers.calculate_spend_credit(account)
         spent_credit_setting = infobox_helpers.OverviewSetting(
             'Spent credit:',
-            '${:.2f}'.format(spent_credit),
-            description='${:.2f}'.format(available_credit)
+            lc_helper.default_currency(spent_credit),
+            description=lc_helper.default_currency(available_credit)
         )
         settings.append(spent_credit_setting.as_dict())
 
@@ -1892,7 +1893,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
         settings.append(infobox_helpers.OverviewSetting(
             'Yesterday spent:',
-            '${:.2f}'.format(yesterday_spend),
+            lc_helper.default_currency(yesterday_spend),
             tooltip='Yesterday media spent',
             section_start=True
         ))
@@ -1900,7 +1901,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         mtd_spend = infobox_helpers.get_mtd_all_accounts_spend()
         settings.append(infobox_helpers.OverviewSetting(
             'Spent MTD:',
-            '${:.2f}'.format(mtd_spend),
+            lc_helper.default_currency(mtd_spend),
             tooltip='Month-to-date media spent',
         ))
 
@@ -1912,14 +1913,14 @@ class AllAccountsOverview(api_common.BaseApiView):
         total_budget = infobox_helpers.calculate_all_accounts_total_budget(start_date, end_date)
         settings.append(infobox_helpers.OverviewSetting(
             'Total budgets:',
-            '${:.2f}'.format(total_budget),
+            lc_helper.default_currency(total_budget),
             section_start=True
         ))
 
         monthly_budget = infobox_helpers.calculate_all_accounts_monthly_budget(today)
         settings.append(infobox_helpers.OverviewSetting(
             'Monthly budgets:',
-            '${:.2f}'.format(monthly_budget)
+            lc_helper.default_currency(monthly_budget)
         ))
 
         return [setting.as_dict() for setting in settings]
