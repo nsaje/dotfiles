@@ -783,9 +783,11 @@ class AccountsAccountsTable(object):
             totals_data['spend_projection'] = sum(projections['spend_projection'].itervalues())
             totals_data['credit_projection'] = sum(projections['credit_projection'].itervalues())
 
-        totals_data['budget'] = Decimal(sum(account_budget.itervalues()))
-        totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
-        totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
+        show_budgets = user.has_perm('zemauth.all_accounts_budget_view')
+        if show_budgets:
+            totals_data['budget'] = Decimal(sum(account_budget.itervalues()))
+            totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
+            totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
 
         flat_fees = None
         if user.has_perm('zemauth.can_view_flat_fees'):
@@ -817,6 +819,7 @@ class AccountsAccountsTable(object):
             account_total_spend,
             has_view_archived_permission,
             show_archived,
+            show_budgets,
             has_view_managers_permission,
             flat_fees,
             order=order,
@@ -928,7 +931,7 @@ class AccountsAccountsTable(object):
 
     def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions,
                  account_budget, projections, account_total_spend, has_view_archived_permission,
-                 show_archived, has_view_managers_permission, flat_fees, order=None):
+                 show_archived, show_budgets, has_view_managers_permission, flat_fees, order=None):
         rows = []
 
         # map settings for quicker access
@@ -983,10 +986,10 @@ class AccountsAccountsTable(object):
                 row['credit_projection'] = projections['credit_projection'][aid]
                 row['spend_projection'] = projections['spend_projection'][aid]
 
-            row['budget'] = account_budget.get(aid, Decimal('0.0'))
-
-            row['available_budget'] = row['budget'] - account_total_spend.get(aid, Decimal('0.0'))
-            row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
+            if show_budgets:
+                row['budget'] = account_budget.get(aid, Decimal('0.0'))
+                row['available_budget'] = row['budget'] - account_total_spend.get(aid, Decimal('0.0'))
+                row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
 
             if flat_fees:
                 row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
