@@ -106,7 +106,6 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             help: 'A setting for enabling and pausing Ad Groups.',
             onChange: function (adgroupId, state) {
                 $scope.rows.forEach(function (row) {
-                    debugger;
                     if (row['id'] === adgroupId) {
                         row['state_text'] = $scope.getStateText(state);
                     }
