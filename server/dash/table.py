@@ -982,14 +982,14 @@ class AccountsAccountsTable(object):
 
             row.update(account_data)
 
+            if projections:
+                row['credit_projection'] = projections['credit_projection'][aid]
+                row['spend_projection'] = projections['spend_projection'][aid]
+
             if show_budgets:
                 row['budget'] = account_budget.get(aid, Decimal('0.0'))
                 row['available_budget'] = row['budget'] - account_total_spend.get(aid, Decimal('0.0'))
                 row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
-
-            if projections:
-                row['credit_projection'] = projections['credit_projection'][aid]
-                row['spend_projection'] = projections['spend_projection'][aid]
 
             if flat_fees:
                 row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
