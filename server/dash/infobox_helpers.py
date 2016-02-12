@@ -441,19 +441,7 @@ def _retrieve_active_creditlineitems(account, date):
     ) if credit.is_active(date)]
 
 
-@statsd_timer('dash.infobox_helpers', '_retrieve_daily_cap')
-def _retrieve_daily_cap(ad_group_source):
-    adgs_state = ad_group_source.get_latest_state()
-    # skip inactive adgroup sources
-    if not adgs_state or adgs_state.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
-        return 0
-    adgs_settings = ad_group_source.get_current_settings()
-    if not adgs_settings:
-        return 0
-    # cc is not actually cc
-    return adgs_settings.daily_budget_cc or 0
-
-
+@statsd_timer('dash.infobox_helpers', '_compute_daily_cap')
 def _compute_daily_cap(ad_groups):
     ad_group_sources = dash.models.AdGroupSource.objects.filter(
         ad_group__in=ad_groups
