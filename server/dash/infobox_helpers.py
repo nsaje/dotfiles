@@ -258,37 +258,6 @@ def goals_and_spend_settings(user, campaign):
     ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
     settings.append(campaign_pacing_settings.as_dict())
 
-    # TODO: Campaign goals will be disabled until Campaign KPI's ticket gets delivered
-    """
-    campaign_settings = campaign.get_current_settings()
-    campaign_goals = [(
-        campaign_settings.campaign_goal,
-        campaign_settings.goal_quantity,
-    )
-    ]
-    for i, (goal, quantity) in enumerate(campaign_goals):
-        text = dash.constants.CampaignGoal.get_text(goal)
-        name = 'Campaign goals:' if i == 0 else ''
-
-        try:
-            goal_value = get_goal_value(user, campaign, campaign_settings, goal)
-        except NotImplementedError:
-            goal_value = None
-        goal_diff, description, success = get_goal_difference(
-            goal,
-            float(quantity),
-            goal_value
-        )
-        goal_setting = OverviewSetting(
-            name,
-            '{actual_goal} {value}'.format(
-                actual_goal=format_goal_value(goal_value, goal),
-                value=text
-            ),
-            description
-        ).performance(success)
-        settings.append(goal_setting.as_dict())
-    """
     is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
     return settings, is_delivering
 
