@@ -1,9 +1,12 @@
 from threading import Thread
 import logging
+import Queue
 
 from django.conf import settings
+from django.db.models import F
 
 from dash import models
+from dash import exceptions
 import actionlog.zwei_actions
 
 logger = logging.getLogger(__name__)
@@ -23,9 +26,11 @@ class SendActionLogsThread(Thread):
 
 
 class UpdateUploadBatchThread(Thread):
-    def __init__(self, batch_id, inserted_content_ads, *args, **kwargs):
+    def __init__(self, batch_id, bump_inserted=False, bump_propagated=False, *args, **kwargs):
         self.batch_id = batch_id
-        self.inserted_content_ads = inserted_content_ads
+        self.exception_queue = Queue.Queue()
+        self.bump_inserted = bump_inserted
+        self.bump_propagated = bump_propagated
         super(UpdateUploadBatchThread, self).__init__(*args, **kwargs)
 
     def start_and_join(self):
@@ -38,9 +43,21 @@ class UpdateUploadBatchThread(Thread):
         self.start()
         self.join()
 
+        try:
+            ex = self.exception_queue.get_nowait()
+            if ex:
+                raise ex
+        except Queue.Empty:
+            pass
+
     def run(self):
         batch = models.UploadBatch.objects.get(pk=self.batch_id)
-        batch.inserted_content_ads = self.inserted_content_ads
+        if self.bump_inserted:
+            batch.inserted_content_ads = F('inserted_content_ads') + 1
+        if self.bump_propagated:
+            batch.propagated_content_ads = F('propagated_content_ads') + 1
+        if batch.cancelled:
+            self.exception_queue.put_nowait(exceptions.UploadCancelledException())
         batch.save()
 
 
