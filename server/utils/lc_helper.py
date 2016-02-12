@@ -5,8 +5,14 @@ def default_currency(number):
     return format_currency(Decimal(number), places=2, curr='$')
 
 
-def format_currency(value, places=2, curr='', sep=',', dp='.',
-             pos='', neg='-', trailneg=''):
+def format_currency(value,
+                    places=2,
+                    curr='',
+                    sep=',',
+                    dp='.',
+                    pos='',
+                    neg='-',
+                    trailneg=''):
     """Convert Decimal to a money formatted string.
 
     places:  required number of places after the decimal point
