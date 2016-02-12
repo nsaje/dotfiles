@@ -5,7 +5,7 @@
                 <div class="graph-container" ng-class="{'graph-collapsed': !graphVisible, 'graph-hidden': !graphVisible && infoboxVisible && hasPermission('zemauth.can_see_infobox'), 'graph-container-short': graphVisible && infoboxVisible && hasPermission('zemauth.can_see_infobox')}">
                     <zem-chart zem-data="chartData" zem-metric1="chartMetric1" zem-metric2="chartMetric2" zem-metric-options="chartMetricOptions" zem-min-date="dateRange.startDate" zem-max-date="dateRange.endDate" zem-on-remove="selectedSourceRemoved(id)" local-storage-prefix="localStoragePrefix"></zem-chart>
                 </div>
-                <div ng-if="infoboxVisible && hasPermission('zemauth.can_see_infobox') && hasPermission('zemauth.can_access_all_accounts_infobox')" class="infobox-container" ng-class="{'infobox-container-full': infoboxVisible, 'infobox-container-short': !infoboxVisible}">
+                <div ng-if="infoboxVisible && hasPermission('zemauth.can_see_infobox') && hasInfoboxPermission()" class="infobox-container" ng-class="{'infobox-container-full': infoboxVisible, 'infobox-container-short': !infoboxVisible}">
                     <zem-infobox class="infobox-wrapper" header="infoboxHeader" basic-settings="infoboxBasicSettings" performance-settings="infoboxPerformanceSettings" link-to="infoboxLinkTo" state-id="$state.params.id"></zem-infobox>
                 </div>
             </div>
