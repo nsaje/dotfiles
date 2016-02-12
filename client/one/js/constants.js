@@ -6,8 +6,9 @@ var constants = {
         INACTIVE: 2,
     },
     adGroupSettingsAutopilotState: {
-        ACTIVE: 1,
-        INACTIVE: 2
+        ACTIVE_CPC_BUDGET: 1,
+        INACTIVE: 2,
+        ACTIVE_CPC: 3,
     },
     adGroupRunningStatus: {
         ACTIVE: 1,
@@ -555,9 +556,20 @@ var options = {
         {name: 'Paused', value: constants.adGroupSettingsState.INACTIVE},
         {name: 'Enabled', value: constants.adGroupSettingsState.ACTIVE},
     ],
-    adGroupSettingsAutopilotStates: [
-        {name: 'Paused', value: constants.adGroupSettingsAutopilotState.INACTIVE},
-        {name: 'Enabled', value: constants.adGroupSettingsAutopilotState.ACTIVE},
+    adGroupSettingsAutopilotStates: [{
+        name: 'Disabled',
+        help: 'Auto-Pilot will not operate on this Ad Group.',
+        value: constants.adGroupSettingsAutopilotState.INACTIVE,
+    }, {
+        name: 'Optimize Bid CPCs',
+        help: 'Bid CPCs on active Media Sources in this Ad Group will be optimized.' +
+              'Ad Group\'s Maximum CPC constraint will be enforced.',
+        value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC,
+    }, {
+        name: 'Optimize Bid CPCs and Daily Budgets',
+        help: 'Both Bid CPCs and Daily Budgets will be optimized on active Media Sources in this Ad Group.',
+        value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+    },
     ],
     adTargetDevices: [
         {name: 'Desktop', value: constants.adTargetDevice.DESKTOP},

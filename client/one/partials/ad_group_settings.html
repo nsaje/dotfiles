@@ -178,28 +178,31 @@
             <label ng-repeat="error in errors.adobeTrackingParam" class="control-label error" for="adobe-tracking-param-input">{{ error }}</label>
         </div>
 
-        <div class="form-horizontal" ng-if="hasPermission('zemauth.can_set_adgroup_to_auto_pilot')">
-            <label class="control-label">
+        <div class="form-group" ng-if="hasPermission('zemauth.can_set_adgroup_to_auto_pilot')">
+            <label class="col-xs-12 control-label">
+                <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_adgroup_to_auto_pilot')" popover-placement="right"></zem-internal-feature>
                 Auto-Pilot
-                <zem-help-popover content="Ad Group Auto-Pilot for CPC and Budget Automation." placement="top"></zem-help-popover>
+                <zem-help-popover content="Bid CPC and Daily Budget Allocation Automation Settings." placement="top"></zem-help-popover>
             </label>
+
             <div class="form-group indented" ng-class="{'has-error': !!errors.autopilotState}">
-                <label for="autopilot-state-switch" class="col-xs-2 control-label">
-                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_adgroup_to_auto_pilot')" popover-placement="right"></zem-internal-feature>
-                    Status
-                    <zem-help-popover content="This is the current state of the Auto-Pilot on this Ad Group." placement="top"></zem-help-popover>
+                <label class="col-xs-2 control-label">
+                    Auto-Pilot's Status
+                    <zem-help-popover content="State of the Auto-Pilot on this Ad Group" placement="top"></zem-help-popover>
                 </label>
-                <div id="autopilot-state-switch" class="col-xs-4">
-                    <div class="btn-group campaign-state-switch">
-                        <label class="btn btn-success" ng-model="settings.autopilotState" ng-repeat="autopilotState in options.adGroupSettingsAutopilotStates" btn-radio="autopilotState.value">{{ autopilotState.name }}</label>
+                <div class="col">
+                    <div class="radio" ng-repeat='autopilotState in options.adGroupSettingsAutopilotStates'>
+                        <label>
+                            <input type="radio" ng-model="settings.autopilotState" ng-value="autopilotState.value"> {{ autopilotState.name }} <zem-help-popover content="{{autopilotState.help}}" placement="right"></zem-help-popover>
+                        </label>
                     </div>
                 </div>
-                <label ng-repeat="error in errors.autopilotState" class="control-label error" for="name-input">{{ error }}</label>
+
+                <label ng-repeat="error in errors.autopilotState" class="control-label error">{{ error }}</label>
             </div>
 
-            <div class="form-group indented" ng-class="{'has-error': !!errors.autopilotBudget}">
+            <div class="form-group indented" ng-if="showAutoPilotDailyBudget()" ng-class="{'has-error': !!errors.autopilotBudget}">
                 <label for="autopilot-budget" class="col-xs-2 control-label">
-                    <zem-internal-feature ng-if="isPermissionInternal('zemauth.can_set_adgroup_to_auto_pilot')" popover-placement="right"></zem-internal-feature>
                     Daily Budget
                     <zem-help-popover content="Amount of budget Auto-Pilot can operate with on this Ad Group every day." placement="top"></zem-help-popover>
                 </label>
@@ -209,7 +212,17 @@
                         <input id="autopilot-budget" type="text" class="form-control" ng-model="settings.autopilotBudget" fraction-size="0" zem-currency-input>
                     </div>
                 </div>
-                <label ng-repeat="error in errors.autopilotBudget" class="control-label error" for="autopilot-budget">{{ error }}</label>
+                <div class="col-xs-4">
+                    <label ng-repeat="error in errors.autopilotBudget" class="control-label error" for="autopilot-budget">{{ error }}</label>
+                </div>
+            </div>
+
+            <div class="form-group indented" ng-if="showAutoPilotDailyBudget()">
+                <div class="col-xs-10">
+                    Auto-Pilot will optimize for <b>Bounce Rate</b>.<br/>
+                    Minimum Total Daily Budget to run Daily Budget Automation Auto-Pilot on this Ad Group is <b>${{settings.autopilotMinBudget}}</b>.<br/>
+                    If You wish to change optimization objective please change Primary Campaign Goal in Campaign Settings.
+                </div>
             </div>
         </div>
 
