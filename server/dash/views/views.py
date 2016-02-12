@@ -331,7 +331,7 @@ class AdGroupOverview(api_common.BaseApiView):
         self.daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
         daily_cap_setting = infobox_helpers.OverviewSetting(
             'Daily budget:',
-            lc_helper.default_currency(daily_cap) if daily_cap is not None else '',
+            lc_helper.default_currency(self.daily_cap) if self.daily_cap is not None else '',
             tooltip='Daily media budget'
         )
         settings.append(daily_cap_setting.as_dict())
