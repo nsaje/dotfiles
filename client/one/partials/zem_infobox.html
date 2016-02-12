@@ -34,8 +34,8 @@
             </zem-infobox-setting>
         </div>
     </div>
-    <hr ng-if="performanceSettings !== undefined">
-    <div ng-if="performanceSettings !== undefined" class="infobox-footer">
+    <hr ng-if="performanceSettings">
+    <div ng-if="performanceSettings" class="infobox-footer">
         <div ng-repeat="setting in performanceSettings" 
             ng-class="{'infobox-setting-section-start': setting.section_start}">
             <hr ng-if="setting.type === 'hr'"/>
