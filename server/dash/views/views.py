@@ -551,12 +551,11 @@ class CampaignOverview(api_common.BaseApiView):
         daily_cap_value = infobox_helpers.calculate_daily_campaign_cap(campaign)
 
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-        for ad_group in ad_groups:
-            if ad_group.is_archived():
-                continue
+        ad_groups_settings = models.AdGroupSettings.objects.filter(
+            ad_group__in=ad_groups
+        ).group_current_settings()
 
-            ad_group_settings = ad_group.get_current_settings()
-
+        for ad_group_settings in ad_groups_settings:
             adg_start_date = ad_group_settings.start_date
             adg_end_date = ad_group_settings.end_date
             if start_date is None:
