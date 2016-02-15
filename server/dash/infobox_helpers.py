@@ -449,10 +449,15 @@ def _retrieve_active_budgetlineitems(campaign, date):
     return qs.filter_active(date)
 
 
+@statsd_timer('dash.infobox_helpers', 'is_campaign_active')
 def is_campaign_active(campaign):
     active = False
-    for ad_group in dash.models.AdGroup.objects.filter(campaign=campaign).exclude_archived():
-        ad_group_settings = ad_group.get_current_settings()
+
+    ad_groups_settings = dash.models.AdGroupSettings.objects.filter(
+        ad_group__campaign=campaign
+    ).group_current_settings()
+
+    for ad_group_settings in ad_groups_settings:
         running_status = dash.models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
         if running_status == dash.constants.AdGroupRunningStatus.ACTIVE:
             active = True
