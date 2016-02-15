@@ -2332,8 +2332,10 @@ class AdGroupOverviewTest(TestCase):
         redshift.STATS_DB_NAME = 'default'
 
         permission = Permission.objects.get(codename='can_see_infobox')
+        permission_2 = Permission.objects.get(codename='can_access_ad_group_infobox')
         user = zemauth.models.User.objects.get(pk=2)
         user.user_permissions.add(permission)
+        user.user_permissions.add(permission_2)
         user.save()
 
     def _get_ad_group_overview(self, ad_group_id, user_id=3, with_status=False):
@@ -2514,8 +2516,10 @@ class CampaignOverviewTest(TestCase):
         redshift.STATS_DB_NAME = 'default'
 
         permission = Permission.objects.get(codename='can_see_infobox')
+        permission_2 = Permission.objects.get(codename='can_access_campaign_infobox')
         user = zemauth.models.User.objects.get(pk=2)
         user.user_permissions.add(permission)
+        user.user_permissions.add(permission_2)
         user.save()
 
     def _get_campaign_overview(self, campaign_id, user_id=2, with_status=False):
@@ -2552,8 +2556,10 @@ class AccountOverviewTest(TestCase):
         redshift.STATS_DB_NAME = 'default'
 
         permission = Permission.objects.get(codename='can_see_infobox')
+        permission_2 = Permission.objects.get(codename='can_access_account_infobox')
         user = zemauth.models.User.objects.get(pk=2)
         user.user_permissions.add(permission)
+        user.user_permissions.add(permission_2)
         user.save()
 
     def _get_account_overview(self, account_id, user_id=2, with_status=False):
@@ -2605,8 +2611,10 @@ class AllAccountsOverviewTest(TestCase):
         redshift.STATS_DB_NAME = 'default'
 
         permission = Permission.objects.get(codename='can_see_infobox')
+        permission_2 = Permission.objects.get(codename='can_access_all_accounts_infobox')
         user = zemauth.models.User.objects.get(pk=2)
         user.user_permissions.add(permission)
+        user.user_permissions.add(permission_2)
         user.save()
 
     def _get_all_accounts_overview(self, campaign_id, user_id=2, with_status=False):

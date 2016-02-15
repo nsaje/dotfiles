@@ -774,6 +774,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
+        if (!$scope.hasPermission('zemauth.can_access_ad_group_infobox')) {
+            return;
+        }
 
         api.adGroupOverview.get($state.params.id).then(
             function (data) {
