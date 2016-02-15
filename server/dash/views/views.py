@@ -1905,9 +1905,9 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
         settings.append(infobox_helpers.OverviewSetting(
-            'Yesterday spent:',
+            'Yesterday spend:',
             lc_helper.default_currency(yesterday_spend),
-            tooltip='Yesterday media spent',
+            tooltip='Yesterday media spend',
             section_start=True
         ))
 
