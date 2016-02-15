@@ -78,18 +78,16 @@ def get_adgroup(ad_group_id):
 
 
 @statsd_helper.statsd_timer('redirector_helper', 'fetch_redirects_impressions')
-def fetch_redirects_impressions(date, account_id, slug, timeout=300):
-    url = settings.R1_CONVERSION_STATS_URL.format(date=date.strftime('%Y-%m-%d'),
-                                                  account_id=account_id,
-                                                  slug=slug)
+def fetch_redirects_impressions(date, timeout=300):
+    request_url = settings.R1_CONVERSION_STATS_URL.format(date=date.strftime('%Y-%m-%d'))
 
     logger.info('Querying redirect impressions')
-    job_id = _call_api_retry(url, method='GET')
+    job_id = _call_api_retry(request_url, method='GET')
 
     start_time = time.time()
     while (time.time() - start_time) < timeout:
         logger.info('Polling redirect impressions results')
-        result = _call_api_retry(settings.R1_CONVERSION_STATS_RESULT_URL.format(job_id=job_id), method='GET')
+        result = _call_api_paginated(settings.R1_CONVERSION_STATS_RESULT_URL.format(job_id=job_id), method='GET')
         if result is None:
             time.sleep(2)
             continue
@@ -98,6 +96,21 @@ def fetch_redirects_impressions(date, account_id, slug, timeout=300):
         return result
 
     raise Exception('Redirect conversion stats timeout')
+
+
+def _call_api_paginated(url, data=None, method='POST'):
+    result = _call_api_retry(url, data, method)
+    if result is None:
+        return None
+
+    result_data = result['data']
+    while result['pagetoken'] != "":
+        result = _call_api_retry(url + "?pagetoken=" + result['pagetoken'], data, method)
+        if result is None:
+            return None
+        result_data += result['data']
+
+    return result_data
 
 
 def _call_api_retry(url, data=None, method='POST'):

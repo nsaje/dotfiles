@@ -99,33 +99,45 @@
     model: zemauth.user
     pk: 4
 
+-   fields:
+        date_joined: '2014-06-16T12:21:29'
+        email: user5@test.com
+        is_active: true
+        is_staff: false
+        is_superuser: true
+        password: pbkdf2_sha256$12000$sLa33nAjknrE$D1ygaCbM0vkEiBMnM3d4wks49zb2W2xwcDqTj0279TA=
+        user_permissions: []
+        username: ''
+    model: zemauth.user
+    pk: 5
+
 
 # test accounts
 
 -   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
+        created_dt: '2014-06-04T09:58:11'
+        modified_dt: '2014-06-04T09:58:11'
         modified_by: 1
         name: 'test account 1'
-        users: [1]
+        users: [1,5]
     model: dash.account
     pk: 1
 
 -   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
+        created_dt: '2014-06-04T09:58:22'
+        modified_dt: '2014-06-04T09:58:22'
         modified_by: 2
         name: 'test account 2'
-        users: [2]
+        users: [2,5]
     model: dash.account
     pk: 2
 
 -   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
+        created_dt: '2014-06-04T09:58:33'
+        modified_dt: '2014-06-04T09:58:33'
         modified_by: 2
         name: 'test account 3'
-        users: [3]
+        users: [3,5]
     model: dash.account
     pk: 3
 

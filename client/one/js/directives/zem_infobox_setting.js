@@ -14,7 +14,8 @@ oneApp.directive('zemInfoboxSetting', ['config', '$window', function (config, $w
             detailsContent: '=',
             statusActive: '=',
             tooltipText: '=',
-            icon: '='
+            icon: '=',
+            warning: '='
         },
         templateUrl: '/partials/zem_infobox_setting.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {

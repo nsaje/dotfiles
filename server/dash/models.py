@@ -129,19 +129,19 @@ class FootprintModel(models.Model):
         if not self.pk:
             return False
         if field:
-            return self._meta.orig[field] != getattr(self, field)
+            return self._orig[field] != getattr(self, field)
         for f in self._meta.fields:
-            if self._meta.orig[f.name] != getattr(self, f.name):
+            if self._orig[f.name] != getattr(self, f.name):
                 return True
         return False
 
     def previous_value(self, field):
-        return self.pk and self._meta.orig[field]
+        return self.pk and self._orig[field]
 
     def _footprint(self):
-        self._meta.orig = {}
+        self._orig = {}
         for f in self._meta.fields:
-            self._meta.orig[f.name] = getattr(self, f.name)
+            self._orig[f.name] = getattr(self, f.name)
 
     def save(self, *args, **kwargs):
         super(FootprintModel, self).save(*args, **kwargs)
@@ -2598,7 +2598,6 @@ class BudgetLineItem(FootprintModel):
                     -delta.quantize(Decimal('1.00'))
                 )
             )
-
         if self.previous_value('amount') > self.amount:
             self._validate_smaller_amount()
 

@@ -800,9 +800,9 @@ def parse_post_request_content_ad_ids(request_data, param_name):
         raise exc.ValidationError()
 
 
-def get_user_full_name_or_email(user):
+def get_user_full_name_or_email(user, default_value='/'):
     if user is None:
-        return '/'
+        return default_value
 
     result = user.get_full_name() or user.email
     return result.encode('utf-8')

@@ -106,8 +106,6 @@ def _get_error_message(data):
 
 
 def _prepare_report_rows(ad_group, ad_group_source, source, data_rows, date=None):
-    if not data_rows:
-        return []
 
     raw_articles = [{'url': row['url'], 'title': row['title']} for row in data_rows]
     articles = dash.api.reconcile_articles(ad_group, raw_articles)

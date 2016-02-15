@@ -1,5 +1,4 @@
 import datetime
-import itertools
 import logging
 
 from django.core.management.base import BaseCommand
@@ -40,4 +39,4 @@ class Command(ExceptionCommand):
             dates.append(from_date)
             from_date = from_date + datetime.timedelta(days=1)
 
-        process.update_touchpoint_conversions(itertools.product(dates, conversion_pixels))
+        process.update_touchpoint_conversions(dates, conversion_pixels)

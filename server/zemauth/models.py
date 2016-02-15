@@ -173,6 +173,13 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_view_flat_fees', 'Can view flat fees in All accounts/accounts table'),
             ('can_control_ad_group_state_in_table', 'Can control ad group state in Campaign / Ad Groups table'),
             ('can_see_campaign_goals', 'Can see and manage campaign goals'),
+            ('can_see_projections', 'Can see projections'),
+            ('can_see_managers_in_accounts_table', "Can see Account Manager and Sales Representative in accounts table."),
+            ('can_hide_chart', 'Can show or hide chart'),
+            ('can_access_ad_group_infobox', 'Can access info box on adgroup level'),
+            ('can_access_campaign_infobox', 'Can access info box on campaign level'),
+            ('can_access_account_infobox', 'Can access info box on account level'),
+            ('can_access_all_accounts_infobox', 'Can access info box on all accounts level'),
         )
 
     def get_full_name(self):

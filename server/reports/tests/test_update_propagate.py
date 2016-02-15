@@ -13,6 +13,7 @@ from reports import update
 import dash.models
 
 from convapi import parse_v2
+from convapi import ga_api
 
 
 class StatsUpdateTestCase(test.TestCase):
@@ -44,15 +45,15 @@ class StatsUpdateTestCase(test.TestCase):
         self.assertEqual(article_stats_totals, adgroup_stats_totals)
 
         reports.update.stats_update_adgroup_source_traffic(
-            datetime=dt,
-            ad_group=ad_group,
-            source=source,
-            rows=[{
-                'article': dash.models.Article.objects.get(pk=1),
-                'impressions': 1000,
-                'clicks': 11,
-                'cost_cc': 9999
-            }]
+                datetime=dt,
+                ad_group=ad_group,
+                source=source,
+                rows=[{
+                    'article': dash.models.Article.objects.get(pk=1),
+                    'impressions': 1000,
+                    'clicks': 11,
+                    'cost_cc': 9999
+                }]
         )
 
         article_stats_totals = reports.models.ArticleStats.objects \
@@ -71,10 +72,10 @@ class StatsUpdateTestCase(test.TestCase):
 
         # update with empty rows
         reports.update.stats_update_adgroup_source_traffic(
-            datetime=dt,
-            ad_group=ad_group,
-            source=source,
-            rows=[]
+                datetime=dt,
+                ad_group=ad_group,
+                source=source,
+                rows=[]
         )
         article_stats_totals = reports.models.ArticleStats.objects \
             .filter(datetime=dt, ad_group=ad_group, source=source) \
@@ -115,17 +116,17 @@ class StatsUpdateTestCase(test.TestCase):
         self.assertEqual(article_stats_totals, adgroup_stats_totals)
 
         reports.update.stats_update_adgroup_postclick(
-            datetime=dt,
-            ad_group=ad_group,
-            rows=[{
-                'article': dash.models.Article.objects.get(pk=1),
-                'source': source,
-                'visits': 1000,
-                'new_visits': 900,
-                'bounced_visits': 800,
-                'pageviews': 2000,
-                'duration': 1234
-            }]
+                datetime=dt,
+                ad_group=ad_group,
+                rows=[{
+                    'article': dash.models.Article.objects.get(pk=1),
+                    'source': source,
+                    'visits': 1000,
+                    'new_visits': 900,
+                    'bounced_visits': 800,
+                    'pageviews': 2000,
+                    'duration': 1234
+                }]
         )
 
         article_stats_totals = reports.models.ArticleStats.objects \
@@ -154,9 +155,9 @@ class StatsUpdateTestCase(test.TestCase):
 
         # Update with empty rows
         reports.update.stats_update_adgroup_postclick(
-            datetime=dt,
-            ad_group=ad_group,
-            rows=[]
+                datetime=dt,
+                ad_group=ad_group,
+                rows=[]
         )
 
         article_stats_totals = reports.models.ArticleStats.objects \
@@ -215,20 +216,20 @@ class StatsUpdateTestCase(test.TestCase):
         self.assertEqual(article_stats_totals, adgroup_stats_totals)
 
         reports.update.stats_update_adgroup_all(
-            datetime=dt,
-            ad_group=ad_group,
-            rows=[{
-                'article': dash.models.Article.objects.get(pk=1),
-                'source': source,
-                'impressions': 20000,
-                'clicks': 1500,
-                'cost_cc': 7654321,
-                'visits': 1000,
-                'new_visits': 900,
-                'bounced_visits': 800,
-                'pageviews': 2000,
-                'duration': 1234
-            }]
+                datetime=dt,
+                ad_group=ad_group,
+                rows=[{
+                    'article': dash.models.Article.objects.get(pk=1),
+                    'source': source,
+                    'impressions': 20000,
+                    'clicks': 1500,
+                    'cost_cc': 7654321,
+                    'visits': 1000,
+                    'new_visits': 900,
+                    'bounced_visits': 800,
+                    'pageviews': 2000,
+                    'duration': 1234
+                }]
         )
 
         # after update
@@ -267,9 +268,9 @@ class StatsUpdateTestCase(test.TestCase):
 
         # update with empty rows
         reports.update.stats_update_adgroup_all(
-            datetime=dt,
-            ad_group=ad_group,
-            rows=[]
+                datetime=dt,
+                ad_group=ad_group,
+                rows=[]
         )
 
         # after update
@@ -458,70 +459,70 @@ class GaContentAdReportTest(test.TransactionTestCase):
 
     sample_data = [
         parse_v2.GaReportRow(
-            {
-                "% New Sessions": "96.02%",
-                "Avg. Session Duration": "00:00:12",
-                "Bounce Rate": "92.41%",
-                "Device Category": "mobile",
-                "Landing Page": "/lasko?_z1_caid=1&_z1_msid=gravity",
-                "New Users": "531",
-                "Pages / Session": "1.12",
-                "Sessions": "553",
-                "Yell Free Listings (Goal 1 Completions)": "0",
-                "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
-                "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
-            },
-            datetime.date(2015, 4, 16),
-            1,
-            "gravity",
-            {
-                "Goal 1": 0,
-            }
+                {
+                    "% New Sessions": "96.02%",
+                    "Avg. Session Duration": "00:00:12",
+                    "Bounce Rate": "92.41%",
+                    "Device Category": "mobile",
+                    "Landing Page": "/lasko?_z1_caid=1&_z1_msid=gravity",
+                    "New Users": "531",
+                    "Pages / Session": "1.12",
+                    "Sessions": "553",
+                    "Yell Free Listings (Goal 1 Completions)": "0",
+                    "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
+                    "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
+                },
+                datetime.date(2015, 4, 16),
+                1,
+                "gravity",
+                {
+                    "Goal 1": 0,
+                }
         ),
         parse_v2.GaReportRow(
-            {
-                "% New Sessions": "96.02%",
-                "Avg. Session Duration": "00:00:12",
-                "Bounce Rate": "92.41%",
-                "Device Category": "mobile",
-                "Landing Page": "/lasko?_z1_caid=1&_z1_msid=gravity",
-                "New Users": "531",
-                "Pages / Session": "1.12",
-                "Sessions": "553",
-                "Yell Free Listings (Goal 1 Completions)": "0",
-                "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
-                "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
-            },
-            datetime.date(2015, 4, 16),
-            3,
-            "gravity",
-            {
-                "Goal 1": 0,
-            }
+                {
+                    "% New Sessions": "96.02%",
+                    "Avg. Session Duration": "00:00:12",
+                    "Bounce Rate": "92.41%",
+                    "Device Category": "mobile",
+                    "Landing Page": "/lasko?_z1_caid=1&_z1_msid=gravity",
+                    "New Users": "531",
+                    "Pages / Session": "1.12",
+                    "Sessions": "553",
+                    "Yell Free Listings (Goal 1 Completions)": "0",
+                    "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
+                    "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
+                },
+                datetime.date(2015, 4, 16),
+                3,
+                "gravity",
+                {
+                    "Goal 1": 0,
+                }
         )
     ]
 
     sample_invalid_data_1 = [
         parse_v2.GaReportRow(
-            {
-                "% New Sessions": "96.02%",
-                "Avg. Session Duration": "00:00:12",
-                "Bounce Rate": "92.41%",
-                "Device Category": "mobile",
-                "Landing Page": "/lasko?_z1_caid=12345&_z1_msid=gravity",
-                "New Users": "531",
-                "Pages / Session": "1.12",
-                "Sessions": "553",
-                "Yell Free Listings (Goal 1 Completions)": "0",
-                "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
-                "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
-            },
-            datetime.date(2015, 4, 16),
-            12345,
-            "gravity",
-            {
-                "Goal 1": 0,
-            }
+                {
+                    "% New Sessions": "96.02%",
+                    "Avg. Session Duration": "00:00:12",
+                    "Bounce Rate": "92.41%",
+                    "Device Category": "mobile",
+                    "Landing Page": "/lasko?_z1_caid=12345&_z1_msid=gravity",
+                    "New Users": "531",
+                    "Pages / Session": "1.12",
+                    "Sessions": "553",
+                    "Yell Free Listings (Goal 1 Completions)": "0",
+                    "Yell Free Listings (Goal 1 Conversion Rate)": "0.00%",
+                    "Yell Free Listings (Goal 1 Value)": "\u00a30.00",
+                },
+                datetime.date(2015, 4, 16),
+                12345,
+                "gravity",
+                {
+                    "Goal 1": 0,
+                }
         )
     ]
 
@@ -555,5 +556,22 @@ class GaContentAdReportTest(test.TransactionTestCase):
         with self.assertRaises(Exception):
             update.process_report(self.date, self.sample_invalid_data_1, constants.ReportType.GOOGLE_ANALYTICS)
 
+        self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
+
+    @patch('reports.refresh.notify_contentadstats_change')
+    def test_invalid_source(self, mock_notify_contentadstats_change):
+        self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
+        self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())
+
+        row_invalid_source = ga_api.GAApiReportRow(
+                datetime.date(2015, 4, 16),
+                12345,
+                'z1163569b1_gu\u00f1pzwssedw___mgum1z'
+        )
+        row_invalid_source.set_postclick_stats(['/coupons/', 'z1163569b1_gu\u00f1pzwssedw___mgum1z', '1', '0', '0.0',
+                                                '1', '0.0'])
+        update.process_report(datetime.date(2015, 4, 16), [row_invalid_source], constants.ReportType.GOOGLE_ANALYTICS)
+        self.assertFalse(mock_notify_contentadstats_change.called)
         self.assertEqual(6, reports.models.ContentAdPostclickStats.objects.count())
         self.assertEqual(3, reports.models.ContentAdGoalConversionStats.objects.count())

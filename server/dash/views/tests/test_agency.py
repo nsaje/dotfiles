@@ -36,13 +36,14 @@ class AdGroupSettingsTest(TestCase):
                 'target_regions': ['693', 'GB'],
                 'name': 'Test ad group name',
                 'id': 1,
-                'autopilot_state': 2,
+                'autopilot_state': 1,
                 'autopilot_daily_budget': '100.0000',
                 'retargeting_ad_groups': [2],
                 'enable_ga_tracking': False,
                 'enable_adobe_tracking': False,
                 'adobe_tracking_param': 'cid',
-                'tracking_code': 'def=123'
+                'tracking_code': 'def=123',
+                'autopilot_min_budget': '100'
             }
         }
 
@@ -84,7 +85,8 @@ class AdGroupSettingsTest(TestCase):
                     'enable_ga_tracking': True,
                     'enable_adobe_tracking': True,
                     'adobe_tracking_param': 'pid',
-                    'tracking_code': 'param1=foo&param2=bar'
+                    'tracking_code': 'param1=foo&param2=bar',
+                    'autopilot_min_budget': '100'
                 }
             },
             'success': True
@@ -133,13 +135,14 @@ class AdGroupSettingsTest(TestCase):
                     'enable_ga_tracking': True,
                     'enable_adobe_tracking': False,
                     'adobe_tracking_param': '',
-                    'autopilot_state': 2,
+                    'autopilot_state': 1,
                     'autopilot_daily_budget': '100.00',
                     'retargeting_ad_groups': [2],
                     'enable_ga_tracking': False,
                     'enable_adobe_tracking': False,
                     'adobe_tracking_param': 'cid',
-                    'tracking_code': 'def=123'
+                    'tracking_code': 'def=123',
+                    'autopilot_min_budget': '100'
                 }
             },
             'success': True
@@ -247,13 +250,14 @@ class AdGroupSettingsTest(TestCase):
                     'enable_ga_tracking': True,
                     'adobe_tracking_param': '',
                     'enable_adobe_tracking': False,
-                    'autopilot_state': 2,
+                    'autopilot_state': 1,
                     'autopilot_daily_budget': '100.00',
                     'retargeting_ad_groups': [2],
                     'enable_ga_tracking': False,
                     'enable_adobe_tracking': False,
                     'adobe_tracking_param': 'cid',
-                    'tracking_code': 'def=123'
+                    'tracking_code': 'def=123',
+                    'autopilot_min_budget': '100'
                 }
             },
             'success': True
@@ -590,7 +594,7 @@ class AdGroupAgencyTest(TestCase):
                         {u'name': u'GA tracking type (via API or e-mail).', u'value': u'Email'},
                         {u'name': u'Enable Adobe tracking', u'value': u'False'},
                         {u'name': u'Adobe tracking parameter', u'value': u''},
-                        {u'name': u'Auto-Pilot', u'value': u'Paused'},
+                        {u'name': u'Auto-Pilot', u'value': u'Disabled'},
                         {u'name': u'Auto-Pilot\'s Daily Budget', u'value': u'$0.00'},
                     ],
                     u'show_old_settings': False
@@ -618,7 +622,7 @@ class AdGroupAgencyTest(TestCase):
                         {u'name': u'GA tracking type (via API or e-mail).', u'old_value': u'Email', u'value': u'Email'},
                         {u'name': u'Enable Adobe tracking', u'old_value': u'False', u'value': u'False'},
                         {u'name': u'Adobe tracking parameter', u'old_value': u'', u'value': u''},
-                        {u'name': u'Auto-Pilot', u'old_value': u'Paused', u'value': u'Paused'},
+                        {u'name': u'Auto-Pilot', u'old_value': u'Disabled', u'value': u'Disabled'},
                         {u'name': u'Auto-Pilot\'s Daily Budget', u'old_value': u'$0.00', u'value': u'$0.00'},
                     ],
                     u'show_old_settings': True

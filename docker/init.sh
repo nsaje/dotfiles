@@ -12,16 +12,22 @@ msg "fetching build artifact from given URL"
 DEST=/app/zemanta-eins
 mkdir -p $DEST/
 cd $DEST/ && \
-curl -H "Authorization: token ${PACKAGE_TOKEN}" \
-     -L "${PACKAGE_URL}" | tar -xz -C $DEST/
 
-if [ "$?" != "0" ]; then
-        echo "[ERROR] Unable to download application. Check your GitHub.com credentials"
-        exit -1
-else
-        echo "[INFO] App download successfull"
+if [ ! -f "$DEST/manage.py" ] ; then
+    if [ -z "${PACKAGE_TOKEN}" ]; then
+        curl -L "${PACKAGE_URL}" | tar -xz -C $DEST/
+    else
+        curl -H "Authorization: token ${PACKAGE_TOKEN}" \
+             -L "${PACKAGE_URL}" | tar -xz -C $DEST/
+    fi
+
+    if [ "$?" != "0" ]; then
+            echo "[ERROR] Unable to download application. Check your GitHub.com credentials"
+            exit -1
+    else
+            echo "[INFO] App download successfull"
+    fi
 fi
-
 
 
 msg "Configuration stage"

@@ -743,8 +743,11 @@ class AccountsAccountsTable(object):
             raise exc.MissingDataError()
 
         has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
+
         show_archived = show_archived == 'true' and\
             user.has_perm('zemauth.view_archived_entities')
+
+        has_view_managers_permission = user.has_perm('zemauth.can_see_managers_in_accounts_table')
 
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
         account_ids = set(acc.id for acc in accounts)
@@ -775,9 +778,17 @@ class AccountsAccountsTable(object):
 
         account_budget, account_total_spend = self.get_budgets(accounts)
 
-        totals_data['budget'] = Decimal(sum(account_budget.itervalues()))
-        totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
-        totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
+        projections = {}
+        if user.has_perm('zemauth.can_see_projections'):
+            projections = bcm_helpers.get_projections(accounts, start_date, end_date)
+            totals_data['spend_projection'] = sum(projections['spend_projection'].itervalues())
+            totals_data['credit_projection'] = sum(projections['credit_projection'].itervalues())
+
+        show_budgets = user.has_perm('zemauth.all_accounts_budget_view')
+        if show_budgets:
+            totals_data['budget'] = Decimal(sum(account_budget.itervalues()))
+            totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
+            totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
 
         flat_fees = None
         if user.has_perm('zemauth.can_view_flat_fees'):
@@ -805,9 +816,12 @@ class AccountsAccountsTable(object):
             accounts_data,
             last_success_actions_joined,
             account_budget,
+            projections,
             account_total_spend,
             has_view_archived_permission,
             show_archived,
+            show_budgets,
+            has_view_managers_permission,
             flat_fees,
             order=order,
         )
@@ -916,8 +930,9 @@ class AccountsAccountsTable(object):
 
         return account_budget, account_total_spend
 
-    def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions, account_budget,
-                 account_total_spend, has_view_archived_permission, show_archived, flat_fees, order=None):
+    def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions,
+                 account_budget, projections, account_total_spend, has_view_archived_permission,
+                 show_archived, show_budgets, has_view_managers_permission, flat_fees, order=None):
         rows = []
 
         # map settings for quicker access
@@ -948,6 +963,15 @@ class AccountsAccountsTable(object):
                not reports.api.row_has_conversion_goal_data(account_data):
                 continue
 
+            if has_view_managers_permission:
+                row['default_account_manager'] = None
+                row['default_sales_representative'] = None
+                if account_settings:
+                    row['default_account_manager'] = helpers.get_user_full_name_or_email(
+                        account_settings.default_account_manager, default_value=None)
+                    row['default_sales_representative'] = helpers.get_user_full_name_or_email(
+                        account_settings.default_sales_representative, default_value=None)
+
             row['status'] = accounts_status_dict[account.id]
 
             if has_view_archived_permission:
@@ -959,10 +983,14 @@ class AccountsAccountsTable(object):
 
             row.update(account_data)
 
-            row['budget'] = account_budget.get(aid, Decimal('0.0'))
+            if projections:
+                row['credit_projection'] = projections['credit_projection'][aid]
+                row['spend_projection'] = projections['spend_projection'][aid]
 
-            row['available_budget'] = row['budget'] - account_total_spend.get(aid, Decimal('0.0'))
-            row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
+            if show_budgets:
+                row['budget'] = account_budget.get(aid, Decimal('0.0'))
+                row['available_budget'] = row['budget'] - account_total_spend.get(aid, Decimal('0.0'))
+                row['unspent_budget'] = row['budget'] - Decimal(row.get('cost') or 0)
 
             if flat_fees:
                 row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
@@ -1486,7 +1514,6 @@ class CampaignAdGroupsTable(object):
             last_sync = last_actions.get(ad_group.pk)
 
             row['last_sync'] = last_sync
-            row['status_setting'] = ad_groups_status_dict[ad_group.id]
             row['editable_fields'] = self.get_editable_fields(ad_group, row)
             rows.append(row)
 
@@ -1507,16 +1534,16 @@ class CampaignAdGroupsTable(object):
         return totals_data
 
     def get_editable_fields(self, ad_group, row):
-        status_setting = {
+        state = {
             'enabled': True,
             'message': None
         }
-        if row['status_setting'] == constants.AdGroupSettingsState.INACTIVE \
+        if row['state'] == constants.AdGroupSettingsState.INACTIVE \
                 and not validation_helpers.ad_group_has_available_budget(ad_group):
-            status_setting['enabled'] = False
-            status_setting['message'] = 'Cannot enable ad group without available budget.'
+            state['enabled'] = False
+            state['message'] = 'Cannot enable ad group without available budget.'
 
-        return {'status_setting': status_setting}
+        return {'state': state}
 
 
 class AccountCampaignsTable(object):

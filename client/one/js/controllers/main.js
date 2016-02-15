@@ -1,5 +1,5 @@
 /* globals oneApp, $, angular */
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemNavigationService', 'accountsAccess', function ( $scope, $state, $location, $document, $q, $modalStack, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemNavigationService, accountsAccess) {
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemNavigationService', 'accountsAccess', function ( $scope, $state, $location, $document, $q, $modalStack, $timeout, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemNavigationService, accountsAccess) {
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
@@ -10,10 +10,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.enablePublisherFilter = false;
     $scope.showSelectedPublisher = null;
-
-    // TODO: move to localstorage
-    $scope.infoboxEnabled = false;
-    $scope.infoboxVisible = false;
+    $scope.localStoragePrefix = 'main';
 
     $scope.remindToAddBudget = $q.defer();
 
@@ -21,6 +18,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.account = null;
     $scope.campaign = null;
     $scope.adGroup = null;
+
+    $scope.infoboxEnabled = false;
+    $scope.infoboxVisible = false;
+    $scope.graphVisible = true;
+    $scope.navigationPaneVisible = true;
 
     $scope.user.automaticallyCreateAdGroup = false;
 
@@ -47,8 +49,25 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return !$scope.user.permissions[permission];
     };
 
-    $scope.toggleInfoboxVisibility = function () {
+    $scope.toggleInfobox = function () {
         $scope.infoboxVisible = !$scope.infoboxVisible;
+        $scope.reflowGraph();
+    };
+
+    $scope.toggleGraph = function () {
+        $scope.graphVisible = !$scope.graphVisible;
+        $scope.reflowGraph();
+    };
+
+    $scope.toggleNavigationPane = function () {
+        $scope.navigationPaneVisible = !$scope.navigationPaneVisible;
+        $scope.reflowGraph();
+    };
+
+    $scope.reflowGraph = function () {
+        $timeout(function () {
+             $scope.$broadcast('highchartsng.reflow');
+       }, 0);
     };
 
     $scope.getDefaultAllAccountsState = function () {
@@ -221,15 +240,23 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
     $scope.setBreadcrumbAndTitle = function (breadcrumb, title) {
         $scope.breadcrumb = breadcrumb;
-        if ($scope.canAccessAllAccounts() && $scope.accountsAccess.hasAccounts) {
+        if ($scope.canAccessAllAccounts() && $scope.accountsAccess.accountsCount > 0) {
             $scope.breadcrumb.unshift({
-                name: 'All accounts',
+                name: $scope.getBreadcrumbAllAccountsName(),
                 state: $scope.getDefaultAllAccountsState(),
                 disabled: !$scope.canAccessAllAccounts(),
             });
         }
 
         $document.prop('title', title + ' | Zemanta');
+    };
+
+    $scope.getBreadcrumbAllAccountsName = function () {
+        if ($scope.hasPermission('dash.group_account_automatically_add')) {
+            return 'All accounts';
+        }
+
+        return 'My accounts';
     };
 
     $scope.setModels = function (models) {
@@ -272,13 +299,38 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return false;
     };
 
+    $scope.hasInfoboxPermission = function () {
+        if ($state.is('main.adGroups.adsPlus') ||
+            $state.is('main.adGroups.sources') ||
+            $state.is('main.adGroups.publishers')) {
+            return $scope.hasPermission('zemauth.can_access_ad_group_infobox');
+        }
+
+        if ($state.is('main.campaigns.ad_groups') ||
+            $state.is('main.campaigns.sources')) {
+            return $scope.hasPermission('zemauth.can_access_campaign_infobox');
+        }
+
+        if ($state.is('main.accounts.campaigns') ||
+            $state.is('main.accounts.sources')) {
+            return $scope.hasPermission('zemauth.can_access_account_infobox');
+        }
+
+        if ($state.is('main.allAccounts.accounts') ||
+            $state.is('main.allAccounts.sources')) {
+            return $scope.hasPermission('zemauth.can_access_all_accounts_infobox');
+        }
+
+        return false;
+    };
+
     $scope.$on('$stateChangeSuccess', function () {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();
 
         // infobox will be visible only on certain views and
         // is entirely housed within main atm
-        $scope.infoboxEnabled = $scope.isInfoboxEnabled();
+        $scope.infoboxEnabled = $scope.isInfoboxEnabled() && $scope.hasInfoboxPermission();
 
         // Redirect from default state
         var state = null;
@@ -293,7 +345,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         } else if ($state.is('main.adGroups')) {
             state = $scope.getDefaultAdGroupState();
         } else if ($state.is('main') && $scope.accountsAccess.hasAccounts) {
-            if ($scope.canAccessAllAccounts()) {
+            if ($scope.canAccessAllAccounts() && $scope.accountsAccess.accountsCount > 1) {
                 state = 'main.allAccounts.accounts';
             } else {
                 id = $scope.accountsAccess.defaultAccountId;
@@ -381,7 +433,17 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         $scope.setPublisherFilterVisible(newValue);
     }, true);
 
-    zemFullStoryService.identify($scope.user);
-    zemIntercomService.boot($scope.user);
-    zemNavigationService.reload();
+    
+    $scope.init = function () {
+        zemFullStoryService.identify($scope.user);
+        zemIntercomService.boot($scope.user);
+        zemNavigationService.reload();
+
+        var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
+        userSettings.registerGlobal('infoboxVisible');
+        userSettings.registerGlobal('graphVisible');
+        userSettings.registerGlobal('navigationPaneVisible');
+    };
+
+    $scope.init();
 }]);

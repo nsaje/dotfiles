@@ -29,7 +29,7 @@ OB_PUBLISHERS_KEY_FORMAT = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/{ad_g
 
 
 class RSPublishersModel(redshift.RSModel):
-    TABLE_NAME = 'joint_publishers_1_3'
+    TABLE_NAME = 'joint_publishers_1_4'
 
     # fields that are always returned (app-based naming)
     DEFAULT_RETURNED_FIELDS_APP = [
