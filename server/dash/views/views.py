@@ -541,6 +541,7 @@ class CampaignOverview(api_common.BaseApiView):
         }
         return self.create_api_response(response)
 
+    @statsd_helper.statsd_timer('dash.api', 'campaign_overview_basic')
     def _basic_settings(self, user, campaign, campaign_settings):
         settings = []
 
@@ -604,6 +605,7 @@ class CampaignOverview(api_common.BaseApiView):
 
         return settings, daily_cap_value
 
+    @statsd_helper.statsd_timer('dash.api', 'campaign_overview_performance')
     def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc):
         settings = []
 
