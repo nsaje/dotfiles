@@ -544,33 +544,11 @@ class CampaignOverview(api_common.BaseApiView):
     def _basic_settings(self, user, campaign, campaign_settings):
         settings = []
 
-        start_date = None
-        end_date = None
-        never_finishes = False
-
         daily_cap_value = infobox_helpers.calculate_daily_campaign_cap(campaign)
 
-        ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-        ad_groups_settings = models.AdGroupSettings.objects.filter(
-            ad_group__in=ad_groups
-        ).group_current_settings()
-
-        for ad_group_settings in ad_groups_settings:
-            adg_start_date = ad_group_settings.start_date
-            adg_end_date = ad_group_settings.end_date
-            if start_date is None:
-                start_date = adg_start_date
-            else:
-                start_date = min(start_date, adg_start_date)
-
-            if adg_end_date is None:
-                never_finishes = True
-
-            if end_date is None:
-                end_date = adg_end_date
-            else:
-                end_date = max(end_date, adg_end_date or end_date)
-
+        start_date, end_date, never_finishes = self._calculate_flight_dates(
+            campaign
+        )
         if never_finishes:
             end_date = None
 
@@ -641,6 +619,33 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.extend(common_settings)
         return settings, is_delivering
+
+    def _calculate_flight_dates(self, campaign):
+        start_date = None
+        end_date = None
+        never_finishes = False
+
+        ad_groups_settings = models.AdGroupSettings.objects.filter(
+            ad_group__campaign=campaign
+        ).group_current_settings().values_list('start_date', 'end_date')
+        for ad_group_settings in ad_groups_settings:
+            adg_start_date = ad_group_settings[0]
+            adg_end_date = ad_group_settings[1]
+
+            if start_date is None:
+                start_date = adg_start_date
+            else:
+                start_date = min(start_date, adg_start_date)
+
+            if adg_end_date is None:
+                never_finishes = True
+
+            if end_date is None:
+                end_date = adg_end_date
+            else:
+                end_date = max(end_date, adg_end_date or end_date)
+
+        return start_date, end_date, never_finishes
 
     def get_campaign_status(self, campaign):
         ad_groups = models.AdGroup.objects.filter(campaign=campaign)
