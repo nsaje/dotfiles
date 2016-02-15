@@ -647,15 +647,6 @@ class CampaignOverview(api_common.BaseApiView):
 
         return start_date, end_date, never_finishes
 
-    def get_campaign_status(self, campaign):
-        ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-        ad_groups_settings = models.AdGroupSettings.objects.filter(
-            ad_group__in=ad_groups
-        ) .group_current_settings()
-
-        return helpers.get_ad_group_state_by_sources_running_status(
-            ad_groups, ad_groups_settings, [], 'campaign_id')
-
 
 class AccountOverview(api_common.BaseApiView):
 
