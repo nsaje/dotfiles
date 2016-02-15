@@ -1,4 +1,4 @@
-/* globals $,constants,oneApp,angular,oneApp,defaults */
+/* globals $,constants,oneApp,angular,defaults */
 oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', '$filter', function ($scope, $modalInstance, api, $state, $timeout, $filter) {
     $scope.uploadBatchStatusConstants = constants.uploadBatchStatus;
 
@@ -19,6 +19,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
         $scope.errors = null;
         $scope.batchId = null;
         $scope.uploadCanceled = false;
+        $scope.cancelActionFailed = false;
     }
 
     $scope.getProgressPercentage = function () {
@@ -54,9 +55,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
                         $scope.batchSize = data.batchSize;
                         $scope.uploadStatus = data.status;
 
-                        if (data.status === constants.uploadBatchStatus.FAILED) {
-                            $scope.errors = data.errors;
-                        }
+                        $scope.errors = data.errors;
                     },
                     function () {
                         $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
@@ -135,7 +134,18 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
             if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
                 $scope.$dismiss();
             }
+        }, function () {
+            $scope.cancelActionFailed = true;
         });
+    };
+
+    $scope.isCancelDisabled = function () {
+        if ($scope.cancelActionFailed) {
+            return true;
+        }
+        // unsupported for cancel
+        var unsupportedStep = $scope.step === 4 && $scope.count >= $scope.batchSize;
+        return unsupportedStep && $scope.uploadStatus === constants.uploadBatchStatus.IN_PROGRESS;
     };
 
     $scope.viewUploadedAds = function () {

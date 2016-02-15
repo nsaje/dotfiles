@@ -140,7 +140,7 @@
                 <button type="button" class="btn btn-add" ng-click="upload()">Try again</button>
             </div>
             <div class="col-xs-3" ng-if="uploadStatus !== uploadBatchStatusConstants.DONE">
-                <button type="button" class="btn btn-default" ng-click="cancel()">Cancel upload</button>
+                <button type="button" class="btn btn-default" ng-click="cancel()" ng-disabled="isCancelDisabled()">Cancel upload</button>
             </div>
         </div>
     </form>
