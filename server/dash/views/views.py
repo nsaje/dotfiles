@@ -630,11 +630,10 @@ class CampaignOverview(api_common.BaseApiView):
         settings = []
 
         yesterday_cost = infobox_helpers.get_yesterday_campaign_spend(user, campaign) or 0
-        campaign_daily_budget = infobox_helpers.calculate_daily_campaign_cap(campaign)
 
         settings.append(infobox_helpers.create_yesterday_spend_setting(
             yesterday_cost,
-           campaign_daily_budget
+            daily_cap_cc
         ).as_dict())
 
         common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
