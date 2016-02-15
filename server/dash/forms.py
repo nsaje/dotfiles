@@ -122,7 +122,7 @@ class AdGroupSettingsForm(forms.Form):
 
         # ACTIVE state is only valid when there is budget to spend
         if state == constants.AdGroupSettingsState.ACTIVE and\
-           not validation_helpers.ad_group_has_available_budget(self.ad_group):
+                not validation_helpers.ad_group_has_available_budget(self.ad_group):
             raise forms.ValidationError('Cannot enable ad group without available budget.')
 
         return state
