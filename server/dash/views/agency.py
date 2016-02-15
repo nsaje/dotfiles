@@ -9,8 +9,6 @@ from django.conf import settings
 from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
-from actionlog import models as actionlog_models
-from actionlog import constants as actionlog_constants
 from actionlog import zwei_actions
 from dash.views import helpers
 from dash import forms
@@ -18,6 +16,7 @@ from dash import models
 from dash import api
 from dash import budget
 from dash import constants
+from dash import validation_helpers
 import automation.settings
 from reports import redshift
 from utils import api_common
@@ -68,26 +67,14 @@ class AdGroupSettings(api_common.BaseApiView):
 
         resource = json.loads(request.body)
 
-        form = forms.AdGroupSettingsForm(resource.get('settings', {}), ad_group=ad_group)
+        form = forms.AdGroupSettingsForm(ad_group, request.user, resource.get('settings', {}))
         if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
-
-        # ACTIVE state is only valid when there is budget to spend
-        if form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE and\
-           not helpers.ad_group_has_available_budget(ad_group):
-
-            form.add_error('state', 'Cannot enable ad group without available budget.')
             raise exc.ValidationError(errors=dict(form.errors))
 
         self.set_ad_group(ad_group, form.cleaned_data)
 
         new_settings = current_settings.copy_settings()
-        self.set_settings(
-            new_settings, form.cleaned_data,
-            can_set_ad_group_max_cpc=request.user.has_perm('zemauth.can_set_ad_group_max_cpc'),
-            can_set_ga_tracking_params=request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'),
-            can_set_adobe_tracking_params=request.user.has_perm('zemauth.can_toggle_adobe_performance_tracking'),
-            can_set_adgroup_to_auto_pilot=request.user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'))
+        self.set_settings(new_settings, form.cleaned_data, request.user)
 
         # update ad group name
         current_settings.ad_group_name = previous_ad_group_name
@@ -138,7 +125,8 @@ class AdGroupSettings(api_common.BaseApiView):
                 'autopilot_state': settings.autopilot_state,
                 'autopilot_daily_budget':
                     '{:.2f}'.format(settings.autopilot_daily_budget)
-                    if settings.autopilot_daily_budget is not None else ''
+                    if settings.autopilot_daily_budget is not None else '',
+                'retargeting_ad_groups': settings.retargeting_ad_groups
             }
 
         return result
@@ -146,12 +134,7 @@ class AdGroupSettings(api_common.BaseApiView):
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
 
-    def set_settings(self, settings, resource,
-                     can_set_ad_group_max_cpc,
-                     can_set_ga_tracking_params,
-                     can_set_adobe_tracking_params,
-                     can_set_adgroup_to_auto_pilot):
-
+    def set_settings(self, settings, resource, user):
         settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
@@ -160,20 +143,23 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_regions = resource['target_regions']
         settings.ad_group_name = resource['name']
 
-        if can_set_ad_group_max_cpc:
+        if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
             settings.cpc_cc = resource['cpc_cc']
 
-        if can_set_ga_tracking_params:
+        if user.has_perm('zemauth.can_toggle_ga_performance_tracking'):
             settings.enable_ga_tracking = resource['enable_ga_tracking']
             settings.tracking_code = resource['tracking_code']
 
-        if can_set_adobe_tracking_params:
+        if user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
             settings.enable_adobe_tracking = resource['enable_adobe_tracking']
             settings.adobe_tracking_param = resource['adobe_tracking_param']
 
-        if can_set_adgroup_to_auto_pilot:
+        if user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
             settings.autopilot_state = resource['autopilot_state']
             settings.autopilot_daily_budget = resource['autopilot_daily_budget']
+
+        if user.has_perm('zemauth.can_view_retargeting_settings'):
+            settings.retargeting_ad_groups = resource['retargeting_ad_groups']
 
     def _send_update_actions(self, ad_group, current_settings, new_settings, request):
         actionlogs_to_send = []
@@ -243,7 +229,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
 
         # ACTIVE state is only valid when there is budget to spend
         if state == constants.AdGroupSettingsState.ACTIVE and \
-                not helpers.ad_group_has_available_budget(ad_group):
+                not validation_helpers.ad_group_has_available_budget(ad_group):
             raise exc.ValidationError('Cannot enable ad group without available budget.')
 
 

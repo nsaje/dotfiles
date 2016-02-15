@@ -1228,7 +1228,6 @@ class AdGroup(models.Model):
         super(AdGroup, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
-
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(campaign__users__id=user.id) |

@@ -3,6 +3,7 @@ from decimal import Decimal
 from django import forms
 
 import utils.string_helper
+from dash import budget
 
 
 def validate_daily_budget_cc(daily_budget_cc, source_type):
@@ -73,3 +74,15 @@ def validate_ad_group_cpc_cc(cpc_cc, ad_group):
 def has_too_many_decimal_places(num, decimal_places):
     rounded_num = num.quantize(Decimal('1.{}'.format('0' * decimal_places)))
     return rounded_num != num
+
+
+def ad_group_has_available_budget(ad_group):
+    if ad_group.campaign.account.uses_credits:
+        return any(ad_group.campaign.budgets.all().filter_active())
+
+    campaign_budget = budget.CampaignBudget(ad_group.campaign)
+
+    total = campaign_budget.get_total()
+    spend = campaign_budget.get_spend()
+
+    return total > spend
