@@ -184,7 +184,7 @@ class AccountCreditItemView(api_common.BaseApiView):
                 {
                     'campaign': str(b.campaign),
                     'id': b.pk,
-                    'total': b.amount,
+                    'total': b.allocated_amount(),
                     'spend': b.get_spend_data(use_decimal=True)['total'],
                     'start_date': b.start_date,
                     'end_date': b.end_date,
