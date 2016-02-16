@@ -109,7 +109,7 @@ class AdGroupSettingsTest(TestCase):
 
         self.assertEqual(
             models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
-            u'AdGroup name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
+            u'Ad group name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
 
     def test_get_changes_text(self):
         old_settings = models.AdGroupSettings(ad_group_id=1)
@@ -130,7 +130,7 @@ Display URL set to "example.com", \
 Brand name set to "Example", \
 State set to "Enabled", \
 Call to action set to "Call to action", \
-AdGroup name set to "AdGroup name", \
+Ad group name set to "AdGroup name", \
 Start date set to "2014-06-04", \
 Retargeting ad groups set to "test adgroup 1, test adgroup 2"')
 
@@ -150,7 +150,7 @@ End date set to "2014-06-05", \
 Max CPC bid set to "$1.00", \
 Device targeting set to "Mobile", \
 State set to "Enabled", \
-AdGroup name set to "AdGroup name", \
+Ad group name set to "AdGroup name", \
 Start date set to "2014-06-04"')
 
 

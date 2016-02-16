@@ -1538,7 +1538,7 @@ class AdGroupSettings(SettingsBase):
             'brand_name': 'Brand name',
             'description': 'Description',
             'call_to_action': 'Call to action',
-            'ad_group_name': 'AdGroup name',
+            'ad_group_name': 'Ad group name',
             'enable_ga_tracking': 'Enable GA tracking',
             'ga_tracking_type': 'GA tracking type (via API or e-mail).',
             'autopilot_state': 'Auto-Pilot',
