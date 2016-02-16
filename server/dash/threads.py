@@ -57,12 +57,13 @@ class UpdateUploadBatchThread(Thread):
             message = self.bump_queue.get()
             batch.refresh_from_db()
             if message == 'inserted_content_ads':
-                models.UploadBatch.objects.filter(pk=batch.id).update(inserted_content_ads=F('inserted_content_ads') + 1)
+                models.UploadBatch.objects.filter(pk=batch.id).update(
+                    inserted_content_ads=F('inserted_content_ads') + 1)
             elif message == 'propagated_content_ads':
-                models.UploadBatch.objects.filter(pk=batch.id).update(propagated_content_ads=F('propagated_content_ads') + 1)
+                models.UploadBatch.objects.filter(pk=batch.id).update(
+                    propagated_content_ads=F('propagated_content_ads') + 1)
             else:
                 # die
-                print 'IM DYING'
                 break
 
             if batch.cancelled:
