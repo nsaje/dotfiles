@@ -290,6 +290,12 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(flight_time_setting.as_dict())
 
+        max_cpc_setting = infobox_helpers.OverviewSetting(
+            'Maximum CPC:',
+            lc_helper.default_currency(ad_group_settings.cpc_cc) if ad_group_settings.cpc_cc is not None else '',
+        )
+        settings.append(max_cpc_setting.as_dict())
+
         campaign_settings = ad_group.campaign.get_current_settings()
         campaign_target_devices = campaign_settings.target_devices
 
