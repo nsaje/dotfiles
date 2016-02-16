@@ -40,7 +40,6 @@ class OverviewSetting(object):
         self.tooltip = tooltip
         self.section_start = section_start
 
-
     def comment(self, details_label, details_description):
         ret = copy.deepcopy(self)
         ret.details_label = details_label
@@ -246,17 +245,13 @@ def goals_and_spend_settings(user, campaign):
 
     total_campaign_spend_to_date, media_campaign_spend_to_date = get_total_and_media_campaign_spend(user, campaign)
     ideal_campaign_spend_to_date = get_ideal_campaign_spend(user, campaign)
-
     ratio = 0
     if ideal_campaign_spend_to_date > 0:
-        ratio = min(
-            total_campaign_spend_to_date / ideal_campaign_spend_to_date,
-            1
-        )
+        ratio = total_campaign_spend_to_date / ideal_campaign_spend_to_date
     campaign_pacing_settings = OverviewSetting(
         'Campaign pacing:',
-        '{:.2f}%'.format(ratio * 100),
-        description=utils.lc_helper.default_currency(media_campaign_spend_to_date)
+        utils.lc_helper.default_currency(media_campaign_spend_to_date),
+        description='{:.2f}% on plan'.format(ratio * 100),
     ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
     settings.append(campaign_pacing_settings.as_dict())
 
