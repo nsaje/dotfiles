@@ -623,6 +623,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.header.levelVerbose = data.data.header.level_verbose;
                         data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
                         data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);
                         deferred.resolve(data.data);
@@ -1198,6 +1199,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.header.levelVerbose = data.data.header.level_verbose;
                         data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
                         data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);
                         deferred.resolve(data.data);
@@ -1478,6 +1480,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.header.levelVerbose = data.data.header.level_verbose;
                         data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
                         data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);
                         deferred.resolve(data.data);
@@ -1530,6 +1533,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.header.levelVerbose = data.data.header.level_verbose;
                         data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
                         if (data.data.performanceSettings) {
                             data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);

@@ -255,7 +255,8 @@ class AdGroupOverview(api_common.BaseApiView):
         header = {
             'title': ad_group_settings.ad_group_name,
             'active': running_status == constants.AdGroupRunningStatus.ACTIVE,
-            'level': constants.InfoboxLevel.ADGROUP
+            'level': constants.InfoboxLevel.ADGROUP,
+            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP),
         }
 
         basic_settings, daily_cap = self._basic_settings(request.user, ad_group, ad_group_settings)
@@ -535,7 +536,8 @@ class CampaignOverview(api_common.BaseApiView):
         header = {
             'title': campaign.name,
             'active': infobox_helpers.is_campaign_active(campaign),
-            'level': constants.InfoboxLevel.CAMPAIGN
+           'level': constants.InfoboxLevel.CAMPAIGN,
+            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.CAMPAIGN),
         }
 
         basic_settings, daily_cap =\
@@ -681,7 +683,8 @@ class AccountOverview(api_common.BaseApiView):
         header = {
             'title': account.name,
             'active': False,
-            'level': constants.InfoboxLevel.ACCOUNT
+            'level': constants.InfoboxLevel.ACCOUNT,
+            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT),
         }
 
         basic_settings = self._basic_settings(account)
@@ -1876,7 +1879,8 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         header = {
             'title': 'All accounts',
-            'level': constants.InfoboxLevel.ALL_ACCOUNTS
+            'level': constants.InfoboxLevel.ALL_ACCOUNTS,
+            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ALL_ACCOUNTS),
         }
 
         response = {

@@ -3,7 +3,7 @@
         <div class="infobox-header-row">
             <div class="infobox-header-cell infobox-title infobox-status" ng-if="header.active !== undefined" ng-class="{'infobox-active-icon': header.active, 'infobox-inactive-icon': !header.active}">{{ '\u25CF' }}</div>
             <div class="infobox-header-title-cell">
-                <div class="infobox-title">{{header.title}}</div>
+                <div class="infobox-title"><span class="infobox-title-level" ng-show="header">{{header.levelVerbose}}: </span>{{header.title}}</div>
                 <div ng-if="header.subtitle !== undefined" class="infobox-subtitle">{{header.subtitle}}</div>
             </div>
         
