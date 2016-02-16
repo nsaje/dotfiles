@@ -49,18 +49,6 @@ def _bump_nr_processed(batch):
     models.UploadBatch.objects.filter(pk=batch.id).update(processed_content_ads=F('processed_content_ads') + 1)
 
 
-def _bump_nr_propagated(batch):
-    # update progress in another thread to escape transaction
-    t = threads.UpdateUploadBatchThread(batch.id, bump_propagated=True)
-    t.start_and_join()
-
-
-def _bump_nr_inserted(batch):
-    # update progress in another thread to escape transaction
-    t = threads.UpdateUploadBatchThread(batch.id, bump_inserted=True)
-    t.start_and_join()
-
-
 def process_async(content_ads_data, filename, batch, upload_form_cleaned_fields, ad_group, request):
     ad_group_sources = [s for s in models.AdGroupSource.objects.filter(ad_group_id=ad_group.id)
                         if s.can_manage_content_ads and s.source.can_manage_content_ads()]
@@ -77,6 +65,10 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
     actions = []
     try:
         _check_upload_cancelled(batch)
+
+        upload_updater = threads.UpdateUploadBatchThread(batch.id)
+        upload_updater.daemon = True
+        upload_updater.start()
 
         # ensure content ads are only commited to DB
         # if all of them are successfully processed
@@ -101,19 +93,20 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
 
                 rows.append(row)
 
-                _bump_nr_inserted(batch)
+                upload_updater.bump_inserted()
 
             if num_errors > 0:
                 # raise exception to rollback transaction
                 raise UploadFailedException()
 
-            actions = api.submit_content_ads(all_content_ad_sources, request, partial(_bump_nr_propagated, batch))
+            actions = api.submit_content_ads(all_content_ad_sources, request, upload_updater.bump_propagated)
 
             batch.status = constants.UploadBatchStatus.DONE
             batch.save()
 
             _add_to_history(request, batch, ad_group)
-            _check_upload_cancelled(batch)
+            upload_updater.finish()
+            upload_updater.join()
 
     except UploadFailedException:
         batch.error_report_key = _save_error_report(rows, filename)
