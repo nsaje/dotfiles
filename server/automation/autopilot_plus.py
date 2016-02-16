@@ -112,19 +112,47 @@ def set_autopilot_changes(cpc_changes, budget_changes=None):
 
 
 def prefetch_autopilot_data(ad_groups):
-    # TODO: Split into many functions!
+    enabled_ag_sources_settings = _get_autopilot_enabled_active_sources(ad_groups)
+    sources = [s.ad_group_source.source.id for s in enabled_ag_sources_settings]
+    yesterday_data, days_ago_data, campaign_goals = _fetch_data(ad_groups, sources)
+    data = {}
+    for source_setting in enabled_ag_sources_settings:
+        ag_source = source_setting.ad_group_source
+        adg = ag_source.ad_group
+        columns = autopilot_settings.GOALS_COLUMNS.get(campaign_goals.get(adg.campaign))
+        row, yesterdays_spend_cc, yesterdays_clicks = _find_corresponding_source_data(
+            ag_source, days_ago_data, yesterday_data)
+        if adg not in data:
+            data[adg] = {}
+        data[adg][ag_source] = {}
+        spend_perc = yesterdays_spend_cc / source_setting.daily_budget_cc
+        data[adg][ag_source]['spend_perc'] = spend_perc if spend_perc else Decimal('0')
+        data[adg][ag_source]['yesterdays_spend_cc'] = yesterdays_spend_cc
+        data[adg][ag_source]['yesterdays_clicks'] = yesterdays_clicks
+        data[adg][ag_source]['old_budget'] = source_setting.daily_budget_cc
+        data[adg][ag_source]['old_cpc_cc'] = source_setting.cpc_cc
+        for col in columns:
+            if col == 'spend_perc':
+                continue
+            data[adg][ag_source][col] = autopilot_settings.GOALS_WORST_VALUE.get(col)
+            if col in row and row[col]:
+                data[adg][ag_source][col] = row[col]
+    return data
+
+
+def _get_autopilot_enabled_active_sources(ad_groups):
+    ag_sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, ad_groups)
+    ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(
+        ad_group_source_id__in=ag_sources).group_current_settings().select_related('ad_group_source__source')
+    return [ag_source_setting for ag_source_setting in ag_sources_settings if
+            ag_source_setting.state == dash.constants.AdGroupSettingsState.ACTIVE]
+
+
+def _fetch_data(ad_groups, sources):
     today = dates_helper.local_today()
     today = datetime.date(2016, 2, 13) # TODO REMOVE #############################################################################
     yesterday = today - datetime.timedelta(days=1)
     days_ago = yesterday - datetime.timedelta(days=autopilot_settings.AUTOPILOT_DATA_LOOKBACK_DAYS)
-
-    ag_sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, ad_groups)
-    ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(
-        ad_group_source_id__in=ag_sources).group_current_settings().select_related('ad_group_source__source')
-    enabled_ag_sources_settings = [ag_source_setting for ag_source_setting in ag_sources_settings if
-                                   ag_source_setting.state == dash.constants.AdGroupSettingsState.ACTIVE]
-
-    sources = [s.ad_group_source.source.id for s in enabled_ag_sources_settings]
 
     yesterday_data = reports.api_contentads.query(
         yesterday,
@@ -144,39 +172,23 @@ def prefetch_autopilot_data(ad_groups):
 
     campaign_goals = _get_autopilot_campaigns_goals(ad_groups)
 
-    data = {}
-    for source_setting in enabled_ag_sources_settings:
-        ag_source = source_setting.ad_group_source
-        adg = ag_source.ad_group
-        columns = autopilot_settings.GOALS_COLUMNS.get(campaign_goals.get(adg.campaign))
-        row = []
-        yesterdays_spend_cc = Decimal(0)
-        yesterdays_clicks = 0
-        for r in days_ago_data:
-            if r['ad_group'] == adg.id and r['source'] == ag_source.source.id:
-                row = r
-                break
-        for r in yesterday_data:
-            if r['ad_group'] == adg.id and r['source'] == ag_source.source.id:
-                yesterdays_spend_cc = Decimal(r.get('billing_cost'))
-                yesterdays_clicks = r.get('clicks')
-                break
-        if adg not in data:
-            data[adg] = {}
-        data[adg][ag_source] = {}
-        spend_perc = yesterdays_spend_cc / source_setting.daily_budget_cc
-        data[adg][ag_source]['spend_perc'] = spend_perc if spend_perc else Decimal('0')
-        data[adg][ag_source]['yesterdays_spend_cc'] = yesterdays_spend_cc
-        data[adg][ag_source]['yesterdays_clicks'] = yesterdays_clicks
-        data[adg][ag_source]['old_budget'] = source_setting.daily_budget_cc
-        data[adg][ag_source]['old_cpc_cc'] = source_setting.cpc_cc
-        for col in columns:
-            if col == 'spend_perc':
-                continue
-            data[adg][ag_source][col] = autopilot_settings.GOALS_WORST_VALUE.get(col)
-            if col in row and row[col]:
-                data[adg][ag_source][col] = row[col]
-    return data
+    return yesterday_data, days_ago_data, campaign_goals
+
+
+def _find_corresponding_source_data(ag_source, days_ago_data, yesterday_data):
+    row = []
+    yesterdays_spend_cc = Decimal(0)
+    yesterdays_clicks = 0
+    for r in days_ago_data:
+        if r['ad_group'] == ag_source.ad_group.id and r['source'] == ag_source.source.id:
+            row = r
+            break
+    for r in yesterday_data:
+        if r['ad_group'] == ag_source.ad_group.id and r['source'] == ag_source.source.id:
+            yesterdays_spend_cc = Decimal(r.get('billing_cost'))
+            yesterdays_clicks = r.get('clicks')
+            break
+    return row, yesterdays_spend_cc, yesterdays_clicks
 
 
 def _get_autopilot_campaigns_goals(ad_groups):
