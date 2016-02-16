@@ -226,7 +226,7 @@ class AdGroupSourceSettingsTest(TestCase):
 
 
 class CampaignAdGroups(TestCase):
-    fixtures = ['test_models.yaml', 'test_views.yaml', ]
+    fixtures = ['test_models.yaml', 'test_views.yaml']
 
     def setUp(self):
         self.client = Client()
@@ -326,7 +326,7 @@ class CampaignAdGroups(TestCase):
         self.assertTrue(mock_set_ad_group_source_settings.called)
         named_call_args = mock_set_ad_group_source_settings.call_args[1]
         self.assertEqual(named_call_args['active'], True)
-        self.assertEqual(named_call_args['mobile_only'], False)
+        self.assertEqual(named_call_args['mobile_only'], True)
 
     def test_create_new_settings(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -1559,23 +1559,23 @@ class SharethroughApprovalTest(TestCase):
 
 
 class PublishersBlacklistStatusTest(TransactionTestCase):
-    fixtures = ['test_api.yaml', 'test_models.yaml']
+    fixtures = ['test_api.yaml']
 
     def setUp(self):
         self.client = Client()
         redshift.STATS_DB_NAME = 'default'
         for s in models.SourceType.objects.all():
-            if s.available_actions == None:
+            if s.available_actions is None:
                 s.available_actions = []
-            s.available_actions.append(constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC )
+            s.available_actions.append(constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC)
             s.save()
 
     def _post_publisher_blacklist(self, ad_group_id, data, user_id=3, with_status=False):
         user = User.objects.get(pk=user_id)
         self.client.login(username=user.username, password='secret')
         reversed_url = reverse(
-                'ad_group_publishers_blacklist',
-                kwargs={'ad_group_id': ad_group_id})
+            'ad_group_publishers_blacklist',
+            kwargs={'ad_group_id': ad_group_id})
         response = self.client.post(
             reversed_url,
             data=json.dumps(data),
@@ -1607,8 +1607,7 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
         }
 
     def _fake_cursor_data(self, cursor):
-        cursor().dictfetchall.return_value = [
-        {
+        cursor().dictfetchall.return_value = [{
             'domain': u'zemanta.com',
             'ctr': 0.0,
             'exchange': 'adiant',

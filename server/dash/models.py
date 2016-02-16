@@ -7,7 +7,7 @@ import newrelic.agent
 
 from decimal import Decimal
 import pytz
-from django.db.models import Sum, F, Func
+from django.db.models import Sum, Func
 from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.contrib import auth
@@ -1228,7 +1228,6 @@ class AdGroup(models.Model):
         super(AdGroup, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
-
         def filter_by_user(self, user):
             return self.filter(
                 models.Q(campaign__users__id=user.id) |
@@ -1383,6 +1382,7 @@ class AdGroupSettings(SettingsBase):
         'daily_budget_cc',
         'target_devices',
         'target_regions',
+        'retargeting_ad_groups',
         'tracking_code',
         'archived',
         'display_url',
@@ -1425,6 +1425,7 @@ class AdGroupSettings(SettingsBase):
     )
     target_devices = jsonfield.JSONField(blank=True, default=[])
     target_regions = jsonfield.JSONField(blank=True, default=[])
+    retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
     tracking_code = models.TextField(blank=True)
     enable_ga_tracking = models.BooleanField(default=True)
     ga_tracking_type = models.IntegerField(
@@ -1499,7 +1500,8 @@ class AdGroupSettings(SettingsBase):
     def get_target_names_for_region_type(self, region_type):
         regions_of_type = region_targeting_helper.get_list_for_region_type(region_type)
 
-        return [regions_of_type[target_region] for target_region in self.target_regions or [] if target_region in regions_of_type]
+        return [regions_of_type[target_region] for target_region
+                in self.target_regions or [] if target_region in regions_of_type]
 
     def is_mobile_only(self):
         return bool(self.target_devices) \
@@ -1528,6 +1530,7 @@ class AdGroupSettings(SettingsBase):
             'daily_budget_cc': 'Daily budget',
             'target_devices': 'Device targeting',
             'target_regions': 'Locations',
+            'retargeting_ad_groups': 'Retargeting ad groups',
             'tracking_code': 'Tracking code',
             'state': 'State',
             'archived': 'Archived',
@@ -1535,7 +1538,7 @@ class AdGroupSettings(SettingsBase):
             'brand_name': 'Brand name',
             'description': 'Description',
             'call_to_action': 'Call to action',
-            'ad_group_name': 'AdGroup name',
+            'ad_group_name': 'Ad group name',
             'enable_ga_tracking': 'Enable GA tracking',
             'ga_tracking_type': 'GA tracking type (via API or e-mail).',
             'autopilot_state': 'Auto-Pilot',
@@ -1567,6 +1570,9 @@ class AdGroupSettings(SettingsBase):
                 value = ', '.join(constants.AdTargetLocation.get_text(x) for x in value)
             else:
                 value = 'worldwide'
+        elif prop_name == 'retargeting_ad_groups':
+            names = AdGroup.objects.filter(pk__in=value).values_list('name', flat=True)
+            value = ', '.join(names)
         elif prop_name in ('archived', 'enable_ga_tracking', 'enable_adobe_tracking'):
             value = str(value)
         elif prop_name == 'ga_tracking_type':
@@ -1590,6 +1596,9 @@ class AdGroupSettings(SettingsBase):
         for key, value in changes.iteritems():
             if key in ['display_url', 'brand_name', 'description', 'call_to_action'] and\
                     not user.has_perm('zemauth.new_content_ads_tab'):
+                continue
+            if key == 'retargeting_ad_groups' and\
+                    not user.has_perm('zemauth.can_view_retargeting_settings'):
                 continue
 
             prop = cls.get_human_prop_name(key)

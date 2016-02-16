@@ -12,6 +12,7 @@ from dash import constants
 from dash import bcm_helpers
 from dash import stats_helper
 from dash import publisher_helpers
+from dash import validation_helpers
 
 import utils.pagination
 from utils import exc
@@ -1538,7 +1539,7 @@ class CampaignAdGroupsTable(object):
             'message': None
         }
         if row['state'] == constants.AdGroupSettingsState.INACTIVE \
-                and not helpers.ad_group_has_available_budget(ad_group):
+                and not validation_helpers.ad_group_has_available_budget(ad_group):
             state['enabled'] = False
             state['message'] = 'Cannot enable ad group without available budget.'
 
