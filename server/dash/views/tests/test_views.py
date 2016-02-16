@@ -2649,6 +2649,9 @@ class CampaignOverviewTest(TestCase):
         location_setting = [s for s in settings if 'location' in s['value'].lower()][0]
         self.assertEqual('Location: US', location_setting['value'])
 
+        budget_setting = self._get_setting(settings, 'daily budget')
+        self.assertEqual('$50.00', budget_setting['value'])
+
         budget_setting = self._get_setting(settings, 'campaign budget')
         self.assertEqual('$0.00', budget_setting['value'])
         self.assertEqual('$80.00', budget_setting['description'])
