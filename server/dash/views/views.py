@@ -15,6 +15,7 @@ import unicodecsv
 import slugify
 import hmac
 import hashlib
+import threading
 
 from collections import OrderedDict
 
@@ -223,6 +224,20 @@ class CampaignRestore(api_common.BaseApiView):
 
 class AdGroupOverview(api_common.BaseApiView):
 
+    class AsyncQuery(threading.Thread):
+
+        def __init__(self, user, ad_group):
+            super(AdGroupOverview.AsyncQuery, self).__init__()
+            self.user = user
+            self.ad_group = ad_group
+            self.yesterday_cost = None
+
+        def run(self):
+            self.yesterday_cost = infobox_helpers.get_yesterday_adgroup_spend(
+                self.user,
+                self.ad_group
+            ) or 0
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_overview')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_see_infobox'):
@@ -231,6 +246,10 @@ class AdGroupOverview(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        async_perf_query = AdGroupOverview.AsyncQuery(request.user, ad_group)
+        async_perf_query.start()
+
         ad_group_settings = ad_group.get_current_settings()
         running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
         header = {
@@ -239,9 +258,9 @@ class AdGroupOverview(api_common.BaseApiView):
             'level': constants.InfoboxLevel.ADGROUP
         }
 
-        basic_settings = self._basic_settings(request.user, ad_group, ad_group_settings)
+        basic_settings, daily_cap = self._basic_settings(request.user, ad_group, ad_group_settings)
         performance_settings, is_delivering = self._performance_settings(
-            ad_group, request.user, ad_group_settings
+            ad_group, request.user, ad_group_settings, daily_cap, async_perf_query
         )
         for setting in performance_settings[1:]:
             setting['section_start'] = True
@@ -329,10 +348,10 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(post_click_tracking_setting.as_dict())
 
-        self.daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
+        daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
         daily_cap_setting = infobox_helpers.OverviewSetting(
             'Daily budget:',
-            lc_helper.default_currency(self.daily_cap) if self.daily_cap is not None else '',
+            lc_helper.default_currency(daily_cap) if daily_cap is not None else '',
             tooltip='Daily media budget'
         )
         settings.append(daily_cap_setting.as_dict())
@@ -351,22 +370,21 @@ class AdGroupOverview(api_common.BaseApiView):
             lc_helper.default_currency(total_media_available),
         )
         settings.append(campaign_budget_setting.as_dict())
-        return settings
+        return settings, daily_cap
 
-    def _performance_settings(self, ad_group, user, ad_group_settings):
+    def _performance_settings(self, ad_group, user, ad_group_settings, daily_cap, async_query):
         settings = []
-
-        yesterday_cost = infobox_helpers.get_yesterday_adgroup_spend(user, ad_group) or 0
-        ad_group_daily_budget = self.daily_cap
-
-        settings.append(infobox_helpers.create_yesterday_spend_setting(
-            yesterday_cost,
-            ad_group_daily_budget
-        ).as_dict())
-
         common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
             user, ad_group.campaign
         )
+
+        async_query.join()
+        yesterday_cost = async_query.yesterday_cost
+
+        settings.append(infobox_helpers.create_yesterday_spend_setting(
+            yesterday_cost,
+            daily_cap
+        ).as_dict())
         settings.extend(common_settings)
         return settings, is_delivering
 
@@ -544,33 +562,11 @@ class CampaignOverview(api_common.BaseApiView):
     def _basic_settings(self, user, campaign, campaign_settings):
         settings = []
 
-        start_date = None
-        end_date = None
-        never_finishes = False
-
         daily_cap_value = infobox_helpers.calculate_daily_campaign_cap(campaign)
 
-        ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-        ad_groups_settings = models.AdGroupSettings.objects.filter(
-            ad_group__in=ad_groups
-        ).group_current_settings()
-
-        for ad_group_settings in ad_groups_settings:
-            adg_start_date = ad_group_settings.start_date
-            adg_end_date = ad_group_settings.end_date
-            if start_date is None:
-                start_date = adg_start_date
-            else:
-                start_date = min(start_date, adg_start_date)
-
-            if adg_end_date is None:
-                never_finishes = True
-
-            if end_date is None:
-                end_date = adg_end_date
-            else:
-                end_date = max(end_date, adg_end_date or end_date)
-
+        start_date, end_date, never_finishes = self._calculate_flight_dates(
+            campaign
+        )
         if never_finishes:
             end_date = None
 
@@ -631,11 +627,10 @@ class CampaignOverview(api_common.BaseApiView):
         settings = []
 
         yesterday_cost = infobox_helpers.get_yesterday_campaign_spend(user, campaign) or 0
-        campaign_daily_budget = infobox_helpers.calculate_daily_campaign_cap(campaign)
 
         settings.append(infobox_helpers.create_yesterday_spend_setting(
             yesterday_cost,
-           campaign_daily_budget
+            daily_cap_cc
         ).as_dict())
 
         common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
@@ -643,6 +638,33 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.extend(common_settings)
         return settings, is_delivering
+
+    def _calculate_flight_dates(self, campaign):
+        start_date = None
+        end_date = None
+        never_finishes = False
+
+        ad_groups_settings = models.AdGroupSettings.objects.filter(
+            ad_group__campaign=campaign
+        ).group_current_settings().values_list('start_date', 'end_date')
+        for ad_group_settings in ad_groups_settings:
+            adg_start_date = ad_group_settings[0]
+            adg_end_date = ad_group_settings[1]
+
+            if start_date is None:
+                start_date = adg_start_date
+            else:
+                start_date = min(start_date, adg_start_date)
+
+            if adg_end_date is None:
+                never_finishes = True
+
+            if end_date is None:
+                end_date = adg_end_date
+            else:
+                end_date = max(end_date, adg_end_date or end_date)
+
+        return start_date, end_date, never_finishes
 
 
 class AccountOverview(api_common.BaseApiView):
