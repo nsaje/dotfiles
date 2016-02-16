@@ -33,7 +33,7 @@ class OverviewSetting(object):
         self.value = value
         self.description = description
         self.details_label = None
-        self.details_hide_label =  None
+        self.details_hide_label = None
         self.details_content = None
         self.icon = None
         self.warning = warning
@@ -44,7 +44,7 @@ class OverviewSetting(object):
     def comment(self, details_label, details_hide_label, details_description):
         ret = copy.deepcopy(self)
         ret.details_label = details_label
-        ret.details_hide_label =  details_hide_label
+        ret.details_hide_label = details_hide_label
         ret.details_content = details_description
         return ret
 
@@ -132,6 +132,7 @@ def get_total_and_media_campaign_spend(user, campaign, until_date=None):
         sum(map(lambda bli: bli['total'], all_budget_spends_at_date)),
         sum(map(lambda bli: bli['media'], all_budget_spends_at_date))
     )
+
 
 @statsd_timer('dash.infobox_helpers', 'get_media_campaign_spend')
 def get_total_media_campaign_budget(user, campaign, until_date=None):
