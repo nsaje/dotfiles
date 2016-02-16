@@ -364,19 +364,7 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(daily_cap_setting.as_dict())
 
-        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(
-            ad_group.campaign
-        )
-        total_media_spend = infobox_helpers.get_media_campaign_spend(
-            user,
-            ad_group.campaign
-        )
-
-        campaign_budget_setting = infobox_helpers.OverviewSetting(
-            'Campaign budget:',
-            lc_helper.default_currency(total_media_spend),
-            lc_helper.default_currency(total_media_available),
-        )
+        campaign_budget_setting = infobox_helpers.create_total_campaign_budget_setting(user, ad_group.campaign)
         settings.append(campaign_budget_setting.as_dict())
         return settings, daily_cap
 
@@ -619,14 +607,7 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(daily_cap.as_dict())
 
-        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(campaign)
-        total_media_spend = infobox_helpers.get_media_campaign_spend(user, campaign)
-
-        campaign_budget_setting = infobox_helpers.OverviewSetting(
-            'Campaign budget:',
-            lc_helper.default_currency(total_media_spend),
-            lc_helper.default_currency(total_media_available),
-        )
+        campaign_budget_setting = infobox_helpers.create_total_campaign_budget_setting(user, campaign)
         settings.append(campaign_budget_setting.as_dict())
 
         return settings, daily_cap_value

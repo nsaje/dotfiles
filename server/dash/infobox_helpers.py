@@ -375,6 +375,18 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
     return yesterday_spend_setting
 
 
+def create_total_campaign_budget_setting(user, campaign):
+    total_media_available = calculate_available_media_campaign_budget(campaign)
+    total_media_spend = get_media_campaign_spend(user, campaign)
+
+    setting = OverviewSetting(
+        'Campaign budget:',
+        utils.lc_helper.default_currency(total_media_spend),
+        utils.lc_helper.default_currency(total_media_available),
+    )
+    return setting
+
+
 @statsd_timer('dash.infobox_helpers', 'count_active_accounts')
 def count_active_accounts():
     account_ids = set(
