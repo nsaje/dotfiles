@@ -2607,8 +2607,58 @@ class CampaignOverviewTest(TestCase):
             'source_id': 9,
             'cost_cc_sum': 0.0
         }]
+
+        campaign = models.Campaign.objects.get(pk=1)
+        start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
+        end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
+
+        credit = models.CreditLineItem.objects.create(
+            account=campaign.account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=constants.CreditLineItemStatus.SIGNED,
+            created_by=self.user,
+        )
+
+        models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=100,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=self.user,
+        )
+
         response = self._get_campaign_overview(1)
         self.assertTrue(response['success'])
+
+        header = response['data']['header']
+        self.assertEqual(u'test campaign 1 \u010c\u017e\u0161', header['title'])
+        self.assertFalse(header['active'])
+
+        settings = response['data']['basic_settings'] +\
+            response['data']['performance_settings']
+
+        flight_setting = self._get_setting(settings, 'flight')
+        self.assertEqual('03/02 - 04/02', flight_setting['value'])
+
+        device_setting = self._get_setting(settings, 'targeting')
+        self.assertEqual('Device: Mobile, Desktop', device_setting['value'])
+
+        location_setting = [s for s in settings if 'location' in s['value'].lower()][0]
+        self.assertEqual('Location: US', location_setting['value'])
+
+        budget_setting = self._get_setting(settings, 'campaign budget')
+        self.assertEqual('$0.00', budget_setting['value'])
+        self.assertEqual('$80.00', budget_setting['description'])
+
+        pacing_setting = self._get_setting(settings, 'pacing')
+        self.assertEqual('0.00%', pacing_setting['value'])
+        self.assertEqual('sad', pacing_setting['icon'])
+
+        goal_setting = [s for s in settings if 'goal' in s['name'].lower()]
+        self.assertEqual([], goal_setting)
 
 
 class AccountOverviewTest(TestCase):

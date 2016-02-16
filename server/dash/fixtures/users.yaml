@@ -8,6 +8,7 @@
     is_staff: false
     is_superuser: false
   model: zemauth.user
+  pk: 100
 
 - fields:
     username: 'chuck.norris'
@@ -17,3 +18,4 @@
     is_staff: false
     is_superuser: false
   model: zemauth.user
+  pk: 101
