@@ -42,14 +42,16 @@ class AutopilotLogAdmin(admin.ModelAdmin):
     list_display = (
         'ad_group',
         'ad_group_source',
+        'autopilot_type',
         'previous_cpc_cc',
         'new_cpc_cc',
-        'previous_daily_budget_cc',
-        'new_daily_budget_cc',
+        'previous_daily_budget',
+        'new_daily_budget',
         'yesterdays_spend_cc',
         'yesterdays_clicks',
         'created_dt',
-        'comments'
+        'cpc_comments',
+        'budget_comments'
     )
     readonly_fields = ['created_dt']
 

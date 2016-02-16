@@ -29,3 +29,13 @@ class CpcChangeComment(ConstantBase):
         UNDER_SOURCE_MIN_CPC: 'new bid CPC would not meet media source\'s minimum CPC constraint',
         OVER_AD_GROUP_MAX_CPC: 'new bid CPC would exceed ad group\'s maximum CPC constraints'
     }
+
+
+class DailyBudgetChangeComment(ConstantBase):
+    NO_ACTIVE_SOURCES_WITH_SPEND = 1
+    NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET = 2
+
+    _VALUES = {
+        NO_ACTIVE_SOURCES_WITH_SPEND: '',
+        NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET: ''
+    }

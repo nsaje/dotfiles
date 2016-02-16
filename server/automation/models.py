@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 import dash.models
+import dash.constants
+from automation import constants
 
 
 class CampaignBudgetDepletionNotification(models.Model):
@@ -100,7 +102,7 @@ class AutopilotAdGroupSourceBidCpcLog(models.Model):
     comments = models.CharField(max_length=1024, null=True, blank=True)
 
     def __unicode__(self):
-        return '{0} {1}'.format(
+        return '{0} {1} {2}'.format(
             self.campaign,
             self.ad_group,
             self.ad_group_source)
@@ -116,6 +118,10 @@ class AutopilotLog(models.Model):
         dash.models.AdGroupSource,
         related_name='+',
         on_delete=models.PROTECT
+    )
+    autopilot_type = models.IntegerField(
+        default=dash.constants.AdGroupSettingsAutopilotState.INACTIVE,
+        choices=dash.constants.AdGroupSettingsAutopilotState.get_choices()
     )
     created_dt = models.DateTimeField(
         auto_now_add=True,
@@ -147,24 +153,24 @@ class AutopilotLog(models.Model):
         null=True,
         verbose_name='New CPC'
     )
-    previous_daily_budget_cc = models.DecimalField(
+    previous_daily_budget = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
         null=True,
         verbose_name='Previous daily budget'
     )
-    new_daily_budget_cc = models.DecimalField(
+    new_daily_budget = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         blank=True,
         null=True,
         verbose_name='New daily budget'
     )
-    comments = models.CharField(max_length=1024, null=True, blank=True)
+    cpc_comments = models.CharField(max_length=1024, null=True, blank=True)
+    budget_comments = models.CharField(max_length=1024, null=True, blank=True)
 
     def __unicode__(self):
         return '{0} {1}'.format(
-            self.campaign,
             self.ad_group,
             self.ad_group_source)
