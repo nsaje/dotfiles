@@ -2541,22 +2541,26 @@ class AdGroupOverviewTest(TestCase):
 
 
 class CampaignOverviewTest(TestCase):
-    fixtures = ['test_api.yaml']
+    fixtures = ['test_api', 'users']
 
     def setUp(self):
         self.client = Client()
+        self.user = zemauth.models.User.objects.get(email='chuck.norris@zemanta.com')
         redshift.STATS_DB_NAME = 'default'
 
-        permission = Permission.objects.get(codename='can_see_infobox')
-        permission_2 = Permission.objects.get(codename='can_access_campaign_infobox')
-        user = zemauth.models.User.objects.get(pk=2)
-        user.user_permissions.add(permission)
-        user.user_permissions.add(permission_2)
-        user.save()
+    def setUpPermissions(self):
+        permissions = [
+            'can_see_infobox',
+            'can_access_campaign_infobox'
+        ]
+        for p in permissions:
+            self.user.user_permissions.add(Permission.objects.get(codename=p))
+        self.user.save()
+        campaign = models.Campaign.objects.get(pk=1)
+        campaign.users.add(self.user)
 
     def _get_campaign_overview(self, campaign_id, user_id=2, with_status=False):
-        user = User.objects.get(pk=user_id)
-        self.client.login(username=user.username, password='secret')
+        self.client.login(username=self.user.username, password='norris')
         reversed_url = reverse(
                 'campaign_overview',
                 kwargs={'campaign_id': campaign_id})
@@ -2571,6 +2575,7 @@ class CampaignOverviewTest(TestCase):
 
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
+        self.setUpPermissions()
         cursor().dictfetchall.return_value = [{
             'adgroup_id': 1,
             'source_id': 9,
