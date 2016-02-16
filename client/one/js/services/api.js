@@ -638,6 +638,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         function convertFromApi (setting) {
             setting.detailsLabel = setting.details_label;
+            setting.detailsHideLabel = setting.details_hide_label;
             setting.detailsContent = setting.details_content;
             return setting;
         }
@@ -1214,6 +1215,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         function convertFromApi (setting) {
             setting.detailsLabel = setting.details_label;
+            setting.detailsHideLabel = setting.details_hide_label;
             setting.detailsContent = setting.details_content;
             return setting;
         }
@@ -1495,6 +1497,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         function convertFromApi (setting) {
             setting.detailsLabel = setting.details_label;
+            setting.detailsHideLabel = setting.details_hide_label;
             setting.detailsContent = setting.details_content;
             return setting;
         }
@@ -1550,6 +1553,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         function convertFromApi (setting) {
             setting.detailsLabel = setting.details_label;
+            setting.detailsHideLabel = setting.details_hide_label;
             setting.detailsContent = setting.details_content;
             return setting;
         }

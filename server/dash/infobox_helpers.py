@@ -33,6 +33,7 @@ class OverviewSetting(object):
         self.value = value
         self.description = description
         self.details_label = None
+        self.details_hide_label =  None
         self.details_content = None
         self.icon = None
         self.warning = warning
@@ -40,9 +41,10 @@ class OverviewSetting(object):
         self.tooltip = tooltip
         self.section_start = section_start
 
-    def comment(self, details_label, details_description):
+    def comment(self, details_label, details_hide_label, details_description):
         ret = copy.deepcopy(self)
         ret.details_label = details_label
+        ret.details_hide_label =  details_hide_label
         ret.details_content = details_description
         return ret
 
@@ -87,6 +89,10 @@ def format_flight_time(start_date, end_date):
 def create_region_setting(regions):
     preview_regions = regions[:MAX_PREVIEW_REGIONS]
     full_regions = regions
+
+    if len(full_regions) > 1:
+        preview_regions = []
+
     targeting_region_setting = OverviewSetting(
         '',
         'Location: {regions}'.format(
@@ -95,7 +101,8 @@ def create_region_setting(regions):
     )
     if len(full_regions) > 1:
         targeting_region_setting = targeting_region_setting.comment(
-            'more',
+            'Show more',
+            'Show less',
             ', '.join(full_regions)
         )
     return targeting_region_setting

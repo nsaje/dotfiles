@@ -335,7 +335,8 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         if ad_group_settings.tracking_code:
             tracking_code_settings = tracking_code_settings.comment(
-                'codes',
+                'Show codes',
+                'Hide codes',
                 ad_group_settings.tracking_code
             )
         settings.append(tracking_code_settings.as_dict())
@@ -771,7 +772,8 @@ class AccountOverview(api_common.BaseApiView):
         if pixels.count() > 0:
             slugs = [pixel.slug for pixel in pixels]
             conversion_pixel_setting = conversion_pixel_setting.comment(
-                'more',
+                'Show more',
+                'Show less',
                 ', '.join(slugs),
             )
         settings.append(conversion_pixel_setting.as_dict())

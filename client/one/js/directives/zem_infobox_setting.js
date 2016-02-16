@@ -11,6 +11,7 @@ oneApp.directive('zemInfoboxSetting', ['config', '$window', function (config, $w
             valueDescription: '=',
             detailsVisible: '=',
             detailsLabel: '=',
+            detailsHideLabel: '=',
             detailsContent: '=',
             statusActive: '=',
             tooltipText: '=',
