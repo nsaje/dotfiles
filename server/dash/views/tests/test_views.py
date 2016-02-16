@@ -2325,22 +2325,26 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
 
 
 class AdGroupOverviewTest(TestCase):
-    fixtures = ['test_api.yaml']
+    fixtures = ['test_api.yaml', 'users']
 
     def setUp(self):
         self.client = Client()
+        self.user = zemauth.models.User.objects.get(email='chuck.norris@zemanta.com')
         redshift.STATS_DB_NAME = 'default'
 
-        permission = Permission.objects.get(codename='can_see_infobox')
-        permission_2 = Permission.objects.get(codename='can_access_ad_group_infobox')
-        user = zemauth.models.User.objects.get(pk=2)
-        user.user_permissions.add(permission)
-        user.user_permissions.add(permission_2)
-        user.save()
+    def setUpPermissions(self):
+        permissions = [
+            'can_see_infobox',
+            'can_access_ad_group_infobox'
+        ]
+        for p in permissions:
+            self.user.user_permissions.add(Permission.objects.get(codename=p))
+        self.user.save()
+        campaign = models.Campaign.objects.get(pk=1)
+        campaign.users.add(self.user)
 
-    def _get_ad_group_overview(self, ad_group_id, user_id=3, with_status=False):
-        user = User.objects.get(pk=user_id)
-        self.client.login(username=user.username, password='secret')
+    def _get_ad_group_overview(self, ad_group_id, with_status=False):
+        self.client.login(username=self.user.username, password='norris')
         reversed_url = reverse(
                 'ad_group_overview',
                 kwargs={'ad_group_id': ad_group_id})
@@ -2354,8 +2358,35 @@ class AdGroupOverviewTest(TestCase):
     def _get_setting(self, settings, name):
         return [s for s in settings if name in s['name'].lower()][0]
 
+    def test_user_access_1(self):
+        response = self._get_ad_group_overview(1)
+        self.assertFalse(response['success'])
+        self.assertEqual('AuthorizationError', response['data']['error_code'])
+
+        permission = Permission.objects.get(codename='can_see_infobox')
+        self.user.user_permissions.add(permission)
+        self.user.save()
+
+        response = self._get_ad_group_overview(1)
+        self.assertFalse(response['success'])
+        self.assertEqual('AuthorizationError', response['data']['error_code'])
+
+    def test_user_access_2(self):
+        response = self._get_ad_group_overview(1)
+        self.assertFalse(response['success'])
+        self.assertEqual('AuthorizationError', response['data']['error_code'])
+
+        permission_2 = Permission.objects.get(codename='can_access_ad_group_infobox')
+        self.user.user_permissions.add(permission_2)
+        self.user.save()
+
+        response = self._get_ad_group_overview(1)
+        self.assertFalse(response['success'])
+        self.assertEqual('AuthorizationError', response['data']['error_code'])
+
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
+        self.setUpPermissions()
         cursor().dictfetchall.return_value = [{
             'adgroup_id': 1,
             'source_id': 9,
@@ -2372,7 +2403,7 @@ class AdGroupOverviewTest(TestCase):
             end_date=end_date,
             amount=100,
             status=constants.CreditLineItemStatus.SIGNED,
-            created_by=User.objects.get(pk=3)
+            created_by=self.user,
         )
 
         models.BudgetLineItem.objects.create(
@@ -2381,7 +2412,7 @@ class AdGroupOverviewTest(TestCase):
             amount=100,
             start_date=start_date,
             end_date=end_date,
-            created_by=User.objects.get(pk=3)
+            created_by=self.user,
         )
 
         response = self._get_ad_group_overview(1)
@@ -2436,6 +2467,7 @@ class AdGroupOverviewTest(TestCase):
     @patch('reports.redshift.get_cursor')
     @patch('reports.api_contentads.get_actual_yesterday_cost')
     def test_run_mid(self, mock_cost, cursor):
+        self.setUpPermissions()
         start_date = (datetime.datetime.utcnow() - datetime.timedelta(days=15)).date()
         end_date = (datetime.datetime.utcnow() + datetime.timedelta(days=15)).date()
 
@@ -2453,7 +2485,7 @@ class AdGroupOverviewTest(TestCase):
             end_date=end_date,
             amount=100,
             status=constants.CreditLineItemStatus.SIGNED,
-            created_by=User.objects.get(pk=3)
+            created_by=self.user,
         )
 
         budget = models.BudgetLineItem.objects.create(
@@ -2462,7 +2494,7 @@ class AdGroupOverviewTest(TestCase):
             amount=100,
             start_date=start_date,
             end_date=end_date,
-            created_by=User.objects.get(pk=3)
+            created_by=self.user,
         )
 
         reports.models.BudgetDailyStatement.objects.create(

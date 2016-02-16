@@ -1,6 +1,18 @@
+# user: chuck@zemanta.com 
+# pass: norris
+
 - fields:
     email: one-test@zemanta.com
     password: pbkdf2_sha256$12000$rlp6AeDBOQtf$1b2Pt7OZoQM59iYkQWvuOnzU/5toZx4E9kmgsVafszs=
+    date_joined: "2014-06-10T10:00:00"
+    is_staff: false
+    is_superuser: false
+  model: zemauth.user
+
+- fields:
+    username: 'chuck.norris'
+    email: chuck.norris@zemanta.com
+    password: pbkdf2_sha256$20000$PA7jSi8FyyqF$aSGoLmeb89itpPz+xzT2Fh1t07g+6nYlaim5AHWx3x0=
     date_joined: "2014-06-10T10:00:00"
     is_staff: false
     is_superuser: false

@@ -246,7 +246,6 @@ class AdGroupOverview(api_common.BaseApiView):
         for setting in performance_settings[1:]:
             setting['section_start'] = True
 
-
         response = {
             'header': header,
             'basic_settings': basic_settings,
