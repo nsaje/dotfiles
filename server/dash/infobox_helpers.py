@@ -90,14 +90,13 @@ def create_region_setting(regions):
     preview_regions = regions[:MAX_PREVIEW_REGIONS]
     full_regions = regions
 
+    preview_region = ' ' + ', '.join(preview_regions)
     if len(full_regions) > 1:
-        preview_regions = []
+        preview_region = ''
 
     targeting_region_setting = OverviewSetting(
         '',
-        'Location: {regions}'.format(
-            regions=', '.join(preview_regions)
-        )
+        'Location:{regions}'.format(regions=preview_region),
     )
     if len(full_regions) > 1:
         targeting_region_setting = targeting_region_setting.comment(
@@ -133,6 +132,17 @@ def get_total_and_media_campaign_spend(user, campaign, until_date=None):
         sum(map(lambda bli: bli['total'], all_budget_spends_at_date)),
         sum(map(lambda bli: bli['media'], all_budget_spends_at_date))
     )
+
+@statsd_timer('dash.infobox_helpers', 'get_media_campaign_spend')
+def get_total_media_campaign_budget(user, campaign, until_date=None):
+    # campaign budget based on non-depleted budget line items
+    at_date = until_date or datetime.datetime.utcnow().date()
+
+    budgets = _retrieve_active_budgetlineitems([campaign], at_date)
+    ret = Decimal(0)
+    for bli in budgets:
+        ret += bli.amount * (1 - bli.credit.license_fee)
+    return ret
 
 
 @statsd_timer('dash.infobox_helpers', 'get_media_campaign_spend')
@@ -313,7 +323,6 @@ def calculate_available_media_campaign_budget(campaign):
     for bli in budgets:
         available_total_amount = bli.get_available_amount(today)
         available_media_amount = available_total_amount * (1 - bli.credit.license_fee)
-
         ret += available_media_amount
     return ret
 
@@ -376,13 +385,17 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
 
 
 def create_total_campaign_budget_setting(user, campaign):
+    from pudb import set_trace; set_trace()
     total_media_available = calculate_available_media_campaign_budget(campaign)
-    total_media_spend = get_media_campaign_spend(user, campaign)
+    total_media = get_total_media_campaign_budget(user, campaign)
 
     setting = OverviewSetting(
         'Campaign budget:',
-        utils.lc_helper.default_currency(total_media_spend),
-        utils.lc_helper.default_currency(total_media_available),
+        utils.lc_helper.default_currency(total_media),
+        '{} remaining'.format(
+            utils.lc_helper.default_currency(total_media_available)
+        ),
+        tooltip="Campaign media budget"
     )
     return setting
 

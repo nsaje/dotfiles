@@ -2433,7 +2433,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('Device: Desktop, Mobile', device_setting['value'])
 
         region_setting = [s for s in settings if 'location' in s['value'].lower()][0]
-        self.assertEqual('Location: UK', region_setting['value'])
+        self.assertEqual('Location:', region_setting['value'])
         self.assertEqual('UK, US, CA', region_setting['details_content'])
 
         tracking_setting = self._get_setting(settings, 'tracking')
@@ -2448,7 +2448,7 @@ class AdGroupOverviewTest(TestCase):
 
         budget_setting = self._get_setting(settings, 'campaign budget')
         self.assertEqual('$0.00', budget_setting['value'])
-        self.assertEqual('$80.00', budget_setting['description'])
+        self.assertEqual('$80.00 remaining', budget_setting['description'])
 
         pacing_setting = self._get_setting(settings, 'pacing')
         self.assertEqual('$0.00', pacing_setting['value'])
@@ -2654,7 +2654,7 @@ class CampaignOverviewTest(TestCase):
 
         budget_setting = self._get_setting(settings, 'campaign budget')
         self.assertEqual('$0.00', budget_setting['value'])
-        self.assertEqual('$80.00', budget_setting['description'])
+        self.assertEqual('$80.00 remaining', budget_setting['description'])
 
         pacing_setting = self._get_setting(settings, 'pacing')
         self.assertEqual('$0.00', pacing_setting['value'])
