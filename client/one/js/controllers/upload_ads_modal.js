@@ -19,7 +19,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
         $scope.errors = null;
         $scope.batchId = null;
         $scope.uploadCanceled = false;
-        $scope.cancelActionFailed = false;
+        $scope.cancelActionInProgress = false;
     }
 
     $scope.getProgressPercentage = function () {
@@ -56,6 +56,10 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
                         $scope.uploadStatus = data.status;
 
                         $scope.errors = data.errors;
+
+                        if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
+                            $scope.cancelActionInProgress = false;
+                        }
                     },
                     function () {
                         $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
@@ -129,23 +133,26 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
     });
 
     $scope.cancel = function () {
+        $scope.cancelActionInProgress = true;
         api.adGroupAdsPlusUpload.cancel($state.params.id, $scope.batchId).then(function () {
             $scope.uploadCanceled = true;
             if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
                 $scope.$dismiss();
             }
-        }, function () {
-            $scope.cancelActionFailed = true;
         });
     };
 
     $scope.isCancelDisabled = function () {
-        if ($scope.cancelActionFailed) {
+        if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
+            return false;
+        }
+
+        if ($scope.cancelActionInProgress) {
             return true;
         }
+
         // unsupported for cancel
-        var unsupportedStep = $scope.step === 4 && $scope.count >= $scope.batchSize;
-        return unsupportedStep && $scope.uploadStatus === constants.uploadBatchStatus.IN_PROGRESS;
+        return $scope.step === 4 && $scope.count >= $scope.batchSize;
     };
 
     $scope.viewUploadedAds = function () {

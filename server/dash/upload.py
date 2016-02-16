@@ -74,6 +74,7 @@ def process_async(content_ads_data, filename, batch, upload_form_cleaned_fields,
 
 
 def _process_callback(batch, ad_group, ad_group_sources, filename, request, results):
+    actions = []
     try:
         _check_upload_cancelled(batch)
 
@@ -112,6 +113,7 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
             batch.save()
 
             _add_to_history(request, batch, ad_group)
+            _check_upload_cancelled(batch)
 
     except UploadFailedException:
         batch.error_report_key = _save_error_report(rows, filename)
@@ -130,7 +132,8 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
         batch.save()
         return
 
-    actionlog.zwei_actions.send(actions)
+    if actions and not batch.cancelled:
+        actionlog.zwei_actions.send(actions)
 
 
 def _save_error_report(rows, filename):

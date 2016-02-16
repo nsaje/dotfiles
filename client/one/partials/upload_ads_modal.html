@@ -116,7 +116,7 @@
 
             <div class="progress-result" ng-if="uploadStatus === uploadBatchStatusConstants.FAILED && !uploadCanceled">
                 <h4 class="title failed">Ooops, upload failed</h4>
-                <p>Content upload was unsuccessful. {{ getErrorDescription() }}.</p>
+                <p>Content upload was unsuccessful. {{ getErrorDescription() }}</p>
                 <div class="form-group" ng-if="errors.details.reportUrl">
                     <div class="col-xs-6">
                         <a class="btn btn-default btn-sm" href="{{ errors.details.reportUrl }}">Download CSV file with errors</a>
@@ -124,7 +124,7 @@
                 </div>
             </div>
 
-            <div class="progress-result" ng-if="uploadCanceled">
+            <div class="progress-result" ng-if="uploadCanceled && uploadStatus !== uploadBatchStatusConstants.DONE">
                 <h4 class="title failed">Upload canceled</h4>
             </div>
         </div>
@@ -139,8 +139,8 @@
             <div class="col-xs-4" ng-if="uploadStatus === uploadBatchStatusConstants.FAILED">
                 <button type="button" class="btn btn-add" ng-click="upload()">Try again</button>
             </div>
-            <div class="col-xs-3" ng-if="uploadStatus !== uploadBatchStatusConstants.DONE">
-                <button type="button" class="btn btn-default" ng-click="cancel()" ng-disabled="isCancelDisabled()">Cancel upload</button>
+            <div class="col-xs-4" ng-if="uploadStatus !== uploadBatchStatusConstants.DONE">
+                <button type="button" class="btn btn-default" ng-click="cancel()" ng-disabled="isCancelDisabled()">{{ cancelActionInProgress ? "Canceling upload ..." : "Cancel upload" }}</button>
             </div>
         </div>
     </form>
