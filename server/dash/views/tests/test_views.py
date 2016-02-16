@@ -2573,6 +2573,32 @@ class CampaignOverviewTest(TestCase):
     def _get_setting(self, settings, name):
         return [s for s in settings if name in s['name'].lower()][0]
 
+    def test_user_access_1(self):
+        response = self._get_campaign_overview(1)
+        self.assertFalse(response['success'])
+        self.assertEqual('AuthorizationError', response['data']['error_code'])
+
+        permission = Permission.objects.get(codename='can_see_infobox')
+        self.user.user_permissions.add(permission)
+        self.user.save()
+
+        response = self._get_campaign_overview(1)
+        self.assertFalse(response['success'])
+        self.assertEqual('AuthorizationError', response['data']['error_code'])
+
+    def test_user_access_2(self):
+        response = self._get_campaign_overview(1)
+        self.assertFalse(response['success'])
+        self.assertEqual('AuthorizationError', response['data']['error_code'])
+
+        permission_2 = Permission.objects.get(codename='can_access_campaign_infobox')
+        self.user.user_permissions.add(permission_2)
+        self.user.save()
+
+        response = self._get_campaign_overview(1)
+        self.assertFalse(response['success'])
+        self.assertEqual('AuthorizationError', response['data']['error_code'])
+
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
         self.setUpPermissions()
