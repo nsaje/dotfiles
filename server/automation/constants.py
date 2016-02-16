@@ -36,6 +36,7 @@ class DailyBudgetChangeComment(ConstantBase):
     NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET = 2
 
     _VALUES = {
-        NO_ACTIVE_SOURCES_WITH_SPEND: '',
-        NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET: ''
+        NO_ACTIVE_SOURCES_WITH_SPEND: 'Ad Group does not have any active sources with enough spend.' +
+                                      ' Budget was uniformly redistributed.',
+        NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET: 'Budget Auto-Pilot tried assigning wrong ammount of total daily budgets'
     }
