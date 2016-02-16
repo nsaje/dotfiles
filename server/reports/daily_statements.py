@@ -92,7 +92,7 @@ def _get_dates(date, campaign):
         by_date[existing_statement.date][existing_statement.budget_id] = existing_statement
 
     today = dates_helper.utc_datetime_to_local_date(datetime.datetime.utcnow())
-    from_date = min(budget.start_date for budget in budgets)
+    from_date = min(date, *(budget.start_date for budget in budgets))
     to_date = min(max(budget.end_date for budget in budgets), today)
     while True:
         found = False

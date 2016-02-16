@@ -215,7 +215,7 @@ class DailyStatementsTestCase(TestCase):
 
         update_from = datetime.date(2015, 10, 31)
         dates = daily_statements._get_dates(update_from, self.campaign1)
-        self.assertItemsEqual([], dates)
+        self.assertItemsEqual([update_from], dates)
 
     @patch('reports.daily_statements._generate_statements')
     def test_daily_statements_already_exist(self, mock_generate_statements, mock_ad_group_stats, mock_datetime):
