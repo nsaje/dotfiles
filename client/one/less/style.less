@@ -770,11 +770,11 @@ div[datepicker] {
     position: relative;
     text-align: center;
 
-	zem-internal-feature {
-		position: absolute;
+    zem-internal-feature {
+        position: absolute;
 
         margin-left: -4px;
-	}
+    }
 
     .internal {
         .header-button-internal;
@@ -913,19 +913,32 @@ div[datepicker] {
 
 .infobox-title {
     color: @infobox-black;
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 600;
     line-height: 20px;
+}
+
+.infobox-title-level {
+    font-weight: normal;
+    color: @infobox-dark-gray;
 }
 
 .infobox-active-icon {
     color: #00cc18;
     text-align: center;
+    background-image: url('img/adgroup_status_enabled_green.svg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
 }
 
 .infobox-inactive-icon {
     color: @infobox-black;
     text-align: center;
+    background-image: url('img/adgroup_status_paused_gray.svg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
 }
 
 .infobox-icon {
@@ -1415,7 +1428,7 @@ div[datepicker] {
     .help-popover:hover,
     .help-popover:active,
     .help-popover:visited {
-    	.border-radius(0%);
+        .border-radius(0%);
         &:after {
             color: #888;
             font-weight: bold;

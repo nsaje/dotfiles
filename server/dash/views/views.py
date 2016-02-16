@@ -255,7 +255,8 @@ class AdGroupOverview(api_common.BaseApiView):
         header = {
             'title': ad_group_settings.ad_group_name,
             'active': running_status == constants.AdGroupRunningStatus.ACTIVE,
-            'level': constants.InfoboxLevel.ADGROUP
+            'level': constants.InfoboxLevel.ADGROUP,
+            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP),
         }
 
         basic_settings, daily_cap = self._basic_settings(request.user, ad_group, ad_group_settings)
@@ -264,7 +265,6 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         for setting in performance_settings[1:]:
             setting['section_start'] = True
-
 
         response = {
             'header': header,
@@ -289,6 +289,12 @@ class AdGroupOverview(api_common.BaseApiView):
             days_left_description
         )
         settings.append(flight_time_setting.as_dict())
+
+        max_cpc_setting = infobox_helpers.OverviewSetting(
+            'Maximum CPC:',
+            lc_helper.default_currency(ad_group_settings.cpc_cc) if ad_group_settings.cpc_cc is not None else '',
+        )
+        settings.append(max_cpc_setting.as_dict())
 
         campaign_settings = ad_group.campaign.get_current_settings()
         campaign_target_devices = campaign_settings.target_devices
@@ -329,7 +335,8 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         if ad_group_settings.tracking_code:
             tracking_code_settings = tracking_code_settings.comment(
-                'codes',
+                'Show codes',
+                'Hide codes',
                 ad_group_settings.tracking_code
             )
         settings.append(tracking_code_settings.as_dict())
@@ -357,19 +364,7 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(daily_cap_setting.as_dict())
 
-        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(
-            ad_group.campaign
-        )
-        total_media_spend = infobox_helpers.get_media_campaign_spend(
-            user,
-            ad_group.campaign
-        )
-
-        campaign_budget_setting = infobox_helpers.OverviewSetting(
-            'Campaign budget:',
-            lc_helper.default_currency(total_media_spend),
-            lc_helper.default_currency(total_media_available),
-        )
+        campaign_budget_setting = infobox_helpers.create_total_campaign_budget_setting(user, ad_group.campaign)
         settings.append(campaign_budget_setting.as_dict())
         return settings, daily_cap
 
@@ -536,7 +531,8 @@ class CampaignOverview(api_common.BaseApiView):
         header = {
             'title': campaign.name,
             'active': infobox_helpers.is_campaign_active(campaign),
-            'level': constants.InfoboxLevel.CAMPAIGN
+            'level': constants.InfoboxLevel.CAMPAIGN,
+            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.CAMPAIGN),
         }
 
         basic_settings, daily_cap =\
@@ -611,14 +607,7 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(daily_cap.as_dict())
 
-        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(campaign)
-        total_media_spend = infobox_helpers.get_media_campaign_spend(user, campaign)
-
-        campaign_budget_setting = infobox_helpers.OverviewSetting(
-            'Campaign budget:',
-            lc_helper.default_currency(total_media_spend),
-            lc_helper.default_currency(total_media_available),
-        )
+        campaign_budget_setting = infobox_helpers.create_total_campaign_budget_setting(user, campaign)
         settings.append(campaign_budget_setting.as_dict())
 
         return settings, daily_cap_value
@@ -682,7 +671,8 @@ class AccountOverview(api_common.BaseApiView):
         header = {
             'title': account.name,
             'active': False,
-            'level': constants.InfoboxLevel.ACCOUNT
+            'level': constants.InfoboxLevel.ACCOUNT,
+            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT),
         }
 
         basic_settings = self._basic_settings(account)
@@ -763,7 +753,8 @@ class AccountOverview(api_common.BaseApiView):
         if pixels.count() > 0:
             slugs = [pixel.slug for pixel in pixels]
             conversion_pixel_setting = conversion_pixel_setting.comment(
-                'more',
+                'Show more',
+                'Show less',
                 ', '.join(slugs),
             )
         settings.append(conversion_pixel_setting.as_dict())
@@ -1877,7 +1868,8 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         header = {
             'title': 'All accounts',
-            'level': constants.InfoboxLevel.ALL_ACCOUNTS
+            'level': constants.InfoboxLevel.ALL_ACCOUNTS,
+            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ALL_ACCOUNTS),
         }
 
         response = {

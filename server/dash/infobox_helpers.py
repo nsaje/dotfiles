@@ -33,6 +33,7 @@ class OverviewSetting(object):
         self.value = value
         self.description = description
         self.details_label = None
+        self.details_hide_label = None
         self.details_content = None
         self.icon = None
         self.warning = warning
@@ -40,10 +41,10 @@ class OverviewSetting(object):
         self.tooltip = tooltip
         self.section_start = section_start
 
-
-    def comment(self, details_label, details_description):
+    def comment(self, details_label, details_hide_label, details_description):
         ret = copy.deepcopy(self)
         ret.details_label = details_label
+        ret.details_hide_label = details_hide_label
         ret.details_content = details_description
         return ret
 
@@ -88,15 +89,19 @@ def format_flight_time(start_date, end_date):
 def create_region_setting(regions):
     preview_regions = regions[:MAX_PREVIEW_REGIONS]
     full_regions = regions
+
+    preview_region = ' ' + ', '.join(preview_regions)
+    if len(full_regions) > 1:
+        preview_region = ''
+
     targeting_region_setting = OverviewSetting(
         '',
-        'Location: {regions}'.format(
-            regions=', '.join(preview_regions)
-        )
+        'Location:{regions}'.format(regions=preview_region),
     )
     if len(full_regions) > 1:
         targeting_region_setting = targeting_region_setting.comment(
-            'more',
+            'Show more',
+            'Show less',
             ', '.join(full_regions)
         )
     return targeting_region_setting
@@ -127,6 +132,18 @@ def get_total_and_media_campaign_spend(user, campaign, until_date=None):
         sum(map(lambda bli: bli['total'], all_budget_spends_at_date)),
         sum(map(lambda bli: bli['media'], all_budget_spends_at_date))
     )
+
+
+@statsd_timer('dash.infobox_helpers', 'get_media_campaign_spend')
+def get_total_media_campaign_budget(user, campaign, until_date=None):
+    # campaign budget based on non-depleted budget line items
+    at_date = until_date or datetime.datetime.utcnow().date()
+
+    budgets = _retrieve_active_budgetlineitems([campaign], at_date)
+    ret = Decimal(0)
+    for bli in budgets:
+        ret += bli.amount * (1 - bli.credit.license_fee)
+    return ret
 
 
 @statsd_timer('dash.infobox_helpers', 'get_media_campaign_spend')
@@ -246,17 +263,13 @@ def goals_and_spend_settings(user, campaign):
 
     total_campaign_spend_to_date, media_campaign_spend_to_date = get_total_and_media_campaign_spend(user, campaign)
     ideal_campaign_spend_to_date = get_ideal_campaign_spend(user, campaign)
-
     ratio = 0
     if ideal_campaign_spend_to_date > 0:
-        ratio = min(
-            total_campaign_spend_to_date / ideal_campaign_spend_to_date,
-            1
-        )
+        ratio = total_campaign_spend_to_date / ideal_campaign_spend_to_date
     campaign_pacing_settings = OverviewSetting(
         'Campaign pacing:',
-        '{:.2f}%'.format(ratio * 100),
-        description=utils.lc_helper.default_currency(media_campaign_spend_to_date)
+        utils.lc_helper.default_currency(media_campaign_spend_to_date),
+        description='{:.2f}% on plan'.format(ratio * 100),
     ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
     settings.append(campaign_pacing_settings.as_dict())
 
@@ -311,7 +324,6 @@ def calculate_available_media_campaign_budget(campaign):
     for bli in budgets:
         available_total_amount = bli.get_available_amount(today)
         available_media_amount = available_total_amount * (1 - bli.credit.license_fee)
-
         ret += available_media_amount
     return ret
 
@@ -371,6 +383,21 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
         filled_daily_ratio >= 1.0 if filled_daily_ratio else False
     )
     return yesterday_spend_setting
+
+
+def create_total_campaign_budget_setting(user, campaign):
+    total_media_available = calculate_available_media_campaign_budget(campaign)
+    total_media = get_total_media_campaign_budget(user, campaign)
+
+    setting = OverviewSetting(
+        'Campaign budget:',
+        utils.lc_helper.default_currency(total_media),
+        '{} remaining'.format(
+            utils.lc_helper.default_currency(total_media_available)
+        ),
+        tooltip="Campaign media budget"
+    )
+    return setting
 
 
 @statsd_timer('dash.infobox_helpers', 'count_active_accounts')

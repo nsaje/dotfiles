@@ -681,6 +681,22 @@ class InfoBoxAccountHelpersTest(TestCase):
         available_credit = dash.infobox_helpers.calculate_yesterday_account_spend(account)
         self.assertEqual(10, available_credit)
 
+    def test_is_campaign_active(self):
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        self.assertFalse(dash.infobox_helpers.is_campaign_active(campaign))
+
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        adgs = dash.models.AdGroupSettings(
+            ad_group=ad_group,
+            start_date=start_date,
+            end_date=end_date,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+        )
+        adgs.save(None)
+        self.assertTrue(dash.infobox_helpers.is_campaign_active(campaign))
+
 
 class AllAccountsInfoboxHelpersTest(TestCase):
     fixtures = ['test_models.yaml']

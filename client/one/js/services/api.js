@@ -623,6 +623,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.header.levelVerbose = data.data.header.level_verbose;
                         data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
                         data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);
                         deferred.resolve(data.data);
@@ -637,6 +638,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         function convertFromApi (setting) {
             setting.detailsLabel = setting.details_label;
+            setting.detailsHideLabel = setting.details_hide_label;
             setting.detailsContent = setting.details_content;
             return setting;
         }
@@ -1198,6 +1200,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.header.levelVerbose = data.data.header.level_verbose;
                         data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
                         data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);
                         deferred.resolve(data.data);
@@ -1212,6 +1215,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         function convertFromApi (setting) {
             setting.detailsLabel = setting.details_label;
+            setting.detailsHideLabel = setting.details_hide_label;
             setting.detailsContent = setting.details_content;
             return setting;
         }
@@ -1478,6 +1482,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.header.levelVerbose = data.data.header.level_verbose;
                         data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
                         data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);
                         deferred.resolve(data.data);
@@ -1492,6 +1497,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         function convertFromApi (setting) {
             setting.detailsLabel = setting.details_label;
+            setting.detailsHideLabel = setting.details_hide_label;
             setting.detailsContent = setting.details_content;
             return setting;
         }
@@ -1530,6 +1536,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        data.data.header.levelVerbose = data.data.header.level_verbose;
                         data.data.basicSettings = data.data.basic_settings.map(convertFromApi);
                         if (data.data.performanceSettings) {
                             data.data.performanceSettings = data.data.performance_settings.map(convertFromApi);
@@ -1546,6 +1553,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         function convertFromApi (setting) {
             setting.detailsLabel = setting.details_label;
+            setting.detailsHideLabel = setting.details_hide_label;
             setting.detailsContent = setting.details_content;
             return setting;
         }
