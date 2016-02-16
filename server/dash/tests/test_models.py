@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
 from decimal import Decimal
-import textwrap
 
 import pytz
 from django.db.models.signals import pre_save
