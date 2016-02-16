@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 from decimal import Decimal
+import textwrap
 
 import pytz
 from django.db.models.signals import pre_save
@@ -120,19 +121,20 @@ class AdGroupSettingsTest(TestCase):
 
         self.assertEqual(
             models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
-            u'Daily budget set to "$50.00", \
-Locations set to "United States", \
-Description set to "Example description", \
-End date set to "2014-06-05", \
-Max CPC bid set to "$1.00", \
-Device targeting set to "Mobile", \
-Display URL set to "example.com", \
-Brand name set to "Example", \
-State set to "Enabled", \
-Call to action set to "Call to action", \
-Ad group name set to "AdGroup name", \
-Start date set to "2014-06-04", \
-Retargeting ad groups set to "test adgroup 1, test adgroup 2"')
+            'Daily budget set to "$50.00", '
+            'Locations set to "United States", '
+            'Description set to "Example description", '
+            'End date set to "2014-06-05", '
+            'Max CPC bid set to "$1.00", '
+            'Device targeting set to "Mobile", '
+            'Display URL set to "example.com", '
+            'Brand name set to "Example", '
+            'State set to "Enabled", '
+            'Call to action set to "Call to action", '
+            'Ad group name set to "AdGroup name", '
+            'Start date set to "2014-06-04", '
+            'Retargeting ad groups set to "test adgroup 1, test adgroup 2"'
+        )
 
     def test_get_changes_text_no_permissions(self):
         user = User.objects.create()
@@ -144,14 +146,15 @@ Retargeting ad groups set to "test adgroup 1, test adgroup 2"')
 
         self.assertEqual(
             models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
-            u'Daily budget set to "$50.00", \
-Locations set to "United States", \
-End date set to "2014-06-05", \
-Max CPC bid set to "$1.00", \
-Device targeting set to "Mobile", \
-State set to "Enabled", \
-Ad group name set to "AdGroup name", \
-Start date set to "2014-06-04"')
+            'Daily budget set to "$50.00", '
+            'Locations set to "United States", '
+            'End date set to "2014-06-05", '
+            'Max CPC bid set to "$1.00", '
+            'Device targeting set to "Mobile", '
+            'State set to "Enabled", '
+            'Ad group name set to "AdGroup name", '
+            'Start date set to "2014-06-04"'
+        )
 
 
 class AdGroupRunningStatusTest(TestCase):
