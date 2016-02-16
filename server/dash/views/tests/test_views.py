@@ -2447,7 +2447,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('$50.00', budget_setting['value'])
 
         budget_setting = self._get_setting(settings, 'campaign budget')
-        self.assertEqual('$0.00', budget_setting['value'])
+        self.assertEqual('$80.00', budget_setting['value'])
         self.assertEqual('$80.00 remaining', budget_setting['description'])
 
         pacing_setting = self._get_setting(settings, 'pacing')
@@ -2653,7 +2653,7 @@ class CampaignOverviewTest(TestCase):
         self.assertEqual('$50.00', budget_setting['value'])
 
         budget_setting = self._get_setting(settings, 'campaign budget')
-        self.assertEqual('$0.00', budget_setting['value'])
+        self.assertEqual('$80.00', budget_setting['value'])
         self.assertEqual('$80.00 remaining', budget_setting['description'])
 
         pacing_setting = self._get_setting(settings, 'pacing')

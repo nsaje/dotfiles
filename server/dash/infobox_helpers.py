@@ -385,7 +385,6 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
 
 
 def create_total_campaign_budget_setting(user, campaign):
-    from pudb import set_trace; set_trace()
     total_media_available = calculate_available_media_campaign_budget(campaign)
     total_media = get_total_media_campaign_budget(user, campaign)
 
