@@ -446,9 +446,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         $scope.chartHidden = !$scope.chartHidden;
         $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
+        $scope.reflowGraph(0);
     };
 
     var hasMetricData = function (metric) {
@@ -525,9 +523,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             }
         ).finally(function () {
             $scope.loadRequestInProgress = false;
-            $timeout(function () {
-                $scope.$broadcast('highchartsng.reflow');
-            }, 1);
+            $scope.reflowGraph(1);
         });
     };
 
@@ -548,6 +544,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         $scope.infoboxHeader = data.header;
         $scope.infoboxBasicSettings = data.basicSettings;
         $scope.infoboxPerformanceSettings = data.performanceSettings;
+        $scope.reflowGraph(1);
     };
 
     var getInfoboxData = function () {
@@ -562,9 +559,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             api.allAccountsOverview.get().then(
                 function (data) {
                     updateInfoboxData(data);
-                    $timeout(function () {
-                        $scope.$broadcast('highchartsng.reflow');
-                    }, 1);
                 }
             );
         } else if ($scope.level === constants.level.ACCOUNTS) {
@@ -574,9 +568,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             api.accountOverview.get($state.params.id).then(
                 function (data) {
                     updateInfoboxData(data);
-                    $timeout(function () {
-                        $scope.$broadcast('highchartsng.reflow');
-                    }, 1);
                 }
             );
         } else if ($scope.level === constants.level.CAMPAIGNS) {
@@ -586,9 +577,6 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             api.campaignOverview.get($state.params.id).then(
                 function (data) {
                     updateInfoboxData(data);
-                    $timeout(function () {
-                        $scope.$broadcast('highchartsng.reflow');
-                    }, 1);
                 }
             );
         }
