@@ -461,6 +461,11 @@ var constants = {
         IAB26_3: 'IAB26-3',
         IAB26_4: 'IAB26-4',
     },
+    infoboxStatus: {
+        ACTIVE: 'active',
+        INACTIVE: 'inactive',
+        STOPPED: 'stopped',
+    },
     promotionGoal: {
         BRAND_BUILDING: 1,
         TRAFFIC_ACQUISITION: 2,

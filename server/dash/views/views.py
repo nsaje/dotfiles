@@ -251,10 +251,10 @@ class AdGroupOverview(api_common.BaseApiView):
         async_perf_query.start()
 
         ad_group_settings = ad_group.get_current_settings()
-        running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
+
         header = {
             'title': ad_group_settings.ad_group_name,
-            'active': running_status == constants.AdGroupRunningStatus.ACTIVE,
+            'active': infobox_helpers.is_adgroup_active(ad_group, ad_group_settings),
             'level': constants.InfoboxLevel.ADGROUP,
             'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP),
         }
@@ -670,7 +670,7 @@ class AccountOverview(api_common.BaseApiView):
 
         header = {
             'title': account.name,
-            'active': False,
+            'active': constants.InfoboxStatus.INACTIVE,
             'level': constants.InfoboxLevel.ACCOUNT,
             'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT),
         }
