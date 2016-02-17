@@ -693,9 +693,9 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         $scope.initColumns();
 
+        getInfoboxData();
         getDailyStats();
         getTableData();
-        getInfoboxData();
         pollSyncStatus();
     };
 
