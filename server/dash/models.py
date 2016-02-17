@@ -2456,52 +2456,20 @@ class BudgetLineItem(FootprintModel):
         )
 
     def get_spend_data(self, date=None, use_decimal=False):
-        spend_data = {
-            'media_cc': 0,
-            'data_cc': 0,
-            'license_fee_cc': 0,
-            'total_cc': 0,
-        }
-        statements = self.statements.filter(date__lte=date) if date else self.statements.all()
-        spend_data = {
-            (key + '_cc'): nano_to_cc(spend or 0)
-            for key, spend in statements.aggregate(
-                media=models.Sum('media_spend_nano'),
-                data=models.Sum('data_spend_nano'),
-                license_fee=models.Sum('license_fee_nano'),
-            ).iteritems()
-        }
-        spend_data['total_cc'] = sum(spend_data.values())
-        if not use_decimal:
-            return spend_data
-        return {
-            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
-            for key in spend_data.keys()
-        }
+        return reports.budget_helpers.calculate_spend_data(
+            self.statements,
+            date=date,
+            use_decimal=use_decimal
+        )
 
     def get_daily_spend(self, date, use_decimal=False):
-        spend_data = {
-            'media_cc': 0, 'data_cc': 0,
-            'license_fee_cc': 0, 'total_cc': 0,
-        }
-        try:
-            statement = date and self.statements.get(date=date)\
-                or self.get_latest_statement()
-        except ObjectDoesNotExist:
-            pass
-        else:
-            spend_data['media_cc'] = nano_to_cc(statement.media_spend_nano)
-            spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano)
-            spend_data['license_fee_cc'] = nano_to_cc(statement.license_fee_nano)
-            spend_data['total_cc'] = nano_to_cc(
-                statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
-            )
-        if not use_decimal:
-            return spend_data
-        return {
-            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
-            for key in spend_data.keys()
-        }
+        statement = date and self.statements.get(date=date)\
+            or self.get_latest_statement()
+        return reports.budget_helpers.calculate_spend_data(
+            [statement],
+            date=date,
+            use_decimal=use_decimal
+        )
 
     def get_ideal_budget_spend(self, date):
         '''

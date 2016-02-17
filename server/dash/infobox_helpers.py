@@ -172,25 +172,26 @@ def get_yesterday_adgroup_spend(user, ad_group):
 @statsd_timer('dash.infobox_helpers', 'get_yesterday_campaign_spend')
 def get_yesterday_campaign_spend(user, campaign):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
-    budgets = dash.models.BudgetLineItem.objects.filter(campaign=campaign)
-    if len(budgets) == 0:
-        return Decimal(0)
-    all_budget_spends_at_date = [
-        b.get_daily_spend(date=yesterday, use_decimal=True).get('media', Decimal(0)) for b in budgets
-    ]
-    return sum(all_budget_spends_at_date)
+    daily_statements = reports.models.BudgetDailyStatement.objects.filter(
+        budget__campaign=campaign
+        date=yesterday,
+    )
+    return reports.budget_helpers.calculate_spend_data(
+        daily_statements,
+        use_decimal=None
+    ).get('media', Decimal(0))
 
 
 @statsd_timer('dash.infobox_helpers', 'get_yesterday_all_accounts_spend')
 def get_yesterday_all_accounts_spend():
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
-    budgets = dash.models.BudgetLineItem.objects.all()
-    if len(budgets) == 0:
-        return Decimal(0)
-    all_budget_spends_at_date = [
-        b.get_daily_spend(date=yesterday, use_decimal=True).get('media', Decimal(0)) for b in budgets
-    ]
-    return sum(all_budget_spends_at_date)
+    daily_statements = reports.models.BudgetDailyStatement.objects.filter(
+        date=yesterday
+    )
+    return reports.budget_helpers.calculate_spend_data(
+        daily_statements,
+        use_decimal=None
+    ).get('media', Decimal(0))
 
 
 @statsd_timer('dash.infobox_helpers', 'get_mtd_all_accounts_spend')
@@ -340,12 +341,15 @@ def calculate_available_credit(account):
 def calculate_spend_credit(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
-
-    budgets = dash.models.BudgetLineItem.objects.filter(credit__in=credits)
-    all_budget_spends_at_date = [
-        b.get_spend_data(date=today, use_decimal=True) for b in budgets
-    ]
-    return sum(map(lambda bli: bli['media'], all_budget_spends_at_date))
+    statements = reports.models.BudgetDailyStatement.objects.filter(
+        budget__credit__in=credits
+    )
+    spend_data = reports.budget_helpers.calculate_spend_data(
+        statements,
+        date=today,
+        use_decimal=True
+    )
+    return spend_data.get('media', Decimal(0))
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_yesterday_account_spend')
