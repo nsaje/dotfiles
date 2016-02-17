@@ -85,7 +85,7 @@ def init_insert_content_ad_batch(batch, source, request, send=True):
     msg = "insert_content_ad_batch action created: ad_group_source.id: {}".format(
         ad_group_source.id,
     )
-    logger.debug(msg)
+    logger.info(msg)
 
     if send:
         actionlog.zwei_actions.send(action)

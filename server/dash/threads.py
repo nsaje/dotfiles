@@ -1,12 +1,9 @@
 from threading import Thread
 import logging
-import Queue
 
 from django.conf import settings
-from django.db.models import F
 
 from dash import models
-from dash import exceptions
 import actionlog.zwei_actions
 
 logger = logging.getLogger(__name__)
@@ -26,49 +23,25 @@ class SendActionLogsThread(Thread):
 
 
 class UpdateUploadBatchThread(Thread):
-    def __init__(self, batch_id, *args, **kwargs):
+    def __init__(self, batch_id, inserted_content_ads, *args, **kwargs):
         self.batch_id = batch_id
-        self.exception_queue = Queue.Queue()
-        self.bump_queue = Queue.Queue()
+        self.inserted_content_ads = inserted_content_ads
         super(UpdateUploadBatchThread, self).__init__(*args, **kwargs)
 
-    def check_exception(self):
-        try:
-            ex = self.exception_queue.get_nowait()
-            if ex:
-                raise ex
-        except Queue.Empty:
-            pass
-
-    def bump_propagated(self):
-        self.bump_queue.put_nowait('propagated_content_ads')
-        self.check_exception()
-
-    def bump_inserted(self):
-        self.bump_queue.put_nowait('inserted_content_ads')
-        self.check_exception()
-
-    def finish(self):
-        self.bump_queue.put('die')
+    def start_and_join(self):
+        # hack around the fact that all db tests are ran in transaction
+        # not calling parent constructor causes run to be called as a normal
+        # function
+        if settings.TESTING:
+            self.run()
+            return
+        self.start()
+        self.join()
 
     def run(self):
         batch = models.UploadBatch.objects.get(pk=self.batch_id)
-        while True:
-            message = self.bump_queue.get()
-            batch.refresh_from_db()
-            if message == 'inserted_content_ads':
-                models.UploadBatch.objects.filter(pk=batch.id).update(
-                    inserted_content_ads=F('inserted_content_ads') + 1)
-            elif message == 'propagated_content_ads':
-                models.UploadBatch.objects.filter(pk=batch.id).update(
-                    propagated_content_ads=F('propagated_content_ads') + 1)
-            else:
-                # die
-                break
-
-            if batch.cancelled:
-                self.exception_queue.put_nowait(exceptions.UploadCancelledException())
-                break
+        batch.inserted_content_ads = self.inserted_content_ads
+        batch.save()
 
 
 class CreateUpdateContentAdsActions(Thread):

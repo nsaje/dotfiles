@@ -1,37 +1,10 @@
-/* globals $,constants,oneApp,angular,defaults */
+/* globals angular,oneApp,defaults */
 oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$state', '$timeout', '$filter', function ($scope, $modalInstance, api, $state, $timeout, $filter) {
-    $scope.uploadBatchStatusConstants = constants.uploadBatchStatus;
-
+    $scope.errors = null;
     $scope.formData = {};
     // initialize to an empty value - just so that we avoid seeing "undefined"
     // for a moment before the defaults load
     $scope.formData.callToAction = '';
-
-    $scope.steps = [
-        'Uploading', 'Processing imported file', 'Inserting content ads', 'Propagating content ads to media sources',
-    ];
-
-    function resetUploadStatus () {
-        $scope.step = null;
-        $scope.count = null;
-        $scope.batchSize = null;
-        $scope.uploadStatus = null;
-        $scope.errors = null;
-        $scope.batchId = null;
-        $scope.uploadCanceled = false;
-        $scope.cancelActionInProgress = false;
-    }
-
-    $scope.getProgressPercentage = function () {
-        return $scope.batchSize ? $scope.count * 100 / $scope.batchSize : 0;
-    };
-
-    $scope.getErrorDescription = function () {
-        if (!$scope.errors || !$scope.errors.details) {
-            return '';
-        }
-        return $scope.errors.details.description;
-    };
 
     $scope.callToActionSelect2Config = {
         dropdownCssClass: 'service-fee-select2',
@@ -42,34 +15,37 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
                 return {id: term, text: term};
             }
         },
-        data: defaults.callToAction,
+        data: defaults.callToAction
     };
 
     $scope.pollBatchStatus = function (batchId) {
-        if ($scope.uploadStatus === constants.uploadBatchStatus.IN_PROGRESS) {
+        if ($scope.isInProgress) {
             $timeout(function () {
                 api.adGroupAdsPlusUpload.checkStatus($state.params.id, batchId).then(
                     function (data) {
-                        $scope.step = data.step;
-                        $scope.count = data.count;
-                        $scope.batchSize = data.batchSize;
-                        $scope.uploadStatus = data.status;
+                        if (data.status === constants.uploadBatchStatus.DONE) {
+                            $scope.isInProgress = false;
+                            $modalInstance.close();
 
-                        $scope.errors = data.errors;
+                            if ($scope.user.showOnboardingGuidance) {
+                                api.campaignBudget.get($scope.campaign.id).then(function (data) {
+                                    $scope.remindToAddBudget.resolve(data.available <= 0);
+                                });
+                            }
 
-                        if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
-                            $scope.cancelActionInProgress = false;
+                        } else if (data.status === constants.uploadBatchStatus.FAILED) {
+                            $scope.isInProgress = false;
+                            $scope.errors = data.errors;
                         }
+                        $scope.countUploaded = data.count;
+                        $scope.uploadStep = data.step;
+                        $scope.countAll = data.all;
                     },
-                    function () {
-                        $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
+                    function (data) {
+                        $scope.isInProgress = false;
                     }
                 ).finally(function () {
-                    if ($scope.uploadStatus !== constants.uploadBatchStatus.FAILED &&
-                        $scope.uploadStatus !== constants.uploadBatchStatus.DONE) {
-
-                        $scope.pollBatchStatus(batchId);
-                    }
+                    $scope.pollBatchStatus(batchId);
                 });
             }, 1000);
         }
@@ -94,25 +70,28 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
     };
 
     $scope.upload = function () {
-        if ($scope.uploadStatus === constants.uploadBatchStatus.IN_PROGRESS) {
+        if ($scope.isInProgress) {
             return;
         }
 
-        resetUploadStatus();
+        $scope.isInProgress = true;
+        $scope.countUploaded = 0;
+        $scope.uploadStep = 'Uploading';
+        $scope.countAll = 0;
+        $scope.errors = null;
 
         cleanDisplayUrl($scope.formData);
 
         api.adGroupAdsPlusUpload.upload(
             $state.params.id, $scope.formData
         ).then(function (batchId) {
-
-            $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
-            $scope.step = 1;
-            $scope.batchId = batchId;
-
             $scope.pollBatchStatus(batchId);
 
         }, function (data) {
+            $scope.isInProgress = false;
+            $scope.countUploaded = 0;
+            $scope.uploadStep = '';
+            $scope.countAll = 0;
             $scope.errors = data.errors;
         });
     };
@@ -125,46 +104,11 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
             });
     };
 
-    $scope.$watch('formData.file', function (newValue) {
-        if ($scope.formData.batchName !== '' || !newValue) {
-            return;
-        }
+    $scope.$watch('formData.file', function (newValue, oldValue) {
+        if ($scope.formData.batchName !== '') { return; }
+        if (!newValue) { return; }
         $scope.formData.batchName = newValue.name;
     });
 
-    $scope.cancel = function () {
-        $scope.cancelActionInProgress = true;
-        api.adGroupAdsPlusUpload.cancel($state.params.id, $scope.batchId).then(function () {
-            $scope.uploadCanceled = true;
-            if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
-                $scope.$dismiss();
-            }
-        });
-    };
-
-    $scope.isCancelDisabled = function () {
-        if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
-            return false;
-        }
-
-        if ($scope.cancelActionInProgress) {
-            return true;
-        }
-
-        // unsupported for cancel
-        return $scope.step === 4 && $scope.count >= $scope.batchSize;
-    };
-
-    $scope.viewUploadedAds = function () {
-        $modalInstance.close();
-
-        if ($scope.user.showOnboardingGuidance) {
-            api.campaignBudget.get($scope.campaign.id).then(function (data) {
-                $scope.remindToAddBudget.resolve(data.available <= 0);
-            });
-        }
-    };
-
     $scope.init();
-    resetUploadStatus();
 }]);

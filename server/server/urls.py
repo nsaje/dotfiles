@@ -174,11 +174,6 @@ urlpatterns += patterns(
         name='ad_group_ads_plus_upload_status'
     ),
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/(?P<batch_id>\d+)/cancel/',
-        login_required(dash.views.views.AdGroupAdsPlusUploadCancel.as_view()),
-        name='ad_group_ads_plus_upload_cancel'
-    ),
-    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/contentads_plus/upload/(?P<batch_id>\d+)/report/',
         login_required(dash.views.views.AdGroupAdsPlusUploadReport.as_view()),
         name='ad_group_ads_plus_upload_report'
