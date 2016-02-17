@@ -524,6 +524,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             }
         ).finally(function () {
             $scope.loadRequestInProgress = false;
+            $scope.reflowGraph();
         });
     };
 
