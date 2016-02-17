@@ -51,23 +51,23 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
     $scope.toggleInfobox = function () {
         $scope.infoboxVisible = !$scope.infoboxVisible;
-        $scope.reflowGraph();
+        $scope.reflowGraph(0);
     };
 
     $scope.toggleGraph = function () {
         $scope.graphVisible = !$scope.graphVisible;
-        $scope.reflowGraph();
+        $scope.reflowGraph(0);
     };
 
     $scope.toggleNavigationPane = function () {
         $scope.navigationPaneVisible = !$scope.navigationPaneVisible;
-        $scope.reflowGraph();
+        $scope.reflowGraph(0);
     };
 
-    $scope.reflowGraph = function () {
+    $scope.reflowGraph = function (delay) {
         $timeout(function () {
              $scope.$broadcast('highchartsng.reflow');
-       }, 0);
+       }, delay);
     };
 
     $scope.getDefaultAllAccountsState = function () {
