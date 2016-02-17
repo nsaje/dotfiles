@@ -1,4 +1,3 @@
-/* globals describe, beforeEach, module, inject, constants, it, spyOn, expect */
 'use strict';
 
 describe('UploadAdsModalCtrl', function () {
@@ -15,23 +14,22 @@ describe('UploadAdsModalCtrl', function () {
         openedDeferred = $q.defer();
         $modalInstance = {
             close: function () {},
-            opened: openedDeferred.promise,
+            opened: openedDeferred.promise
         };
         api = {
             adGroupAdsPlusUpload: {
                 upload: function () {},
                 checkStatus: function () {},
-                cancel: function () {},
                 getDefaults: function () {
                     return {
-                        then: function () {},
+                        then: function () {}
                     };
-                },
-            },
+                }
+            }
         };
 
         $scope.user = {
-            timezoneOffset: 0,
+            timezoneOffset: 0
         };
 
         $state = _$state_;
@@ -50,7 +48,7 @@ describe('UploadAdsModalCtrl', function () {
 
             $scope.formData = {
                 file: 'testfile',
-                batchName: 'testname',
+                batchName: 'testname'
             };
 
             spyOn(api.adGroupAdsPlusUpload, 'upload').and.callFake(function () {
@@ -67,9 +65,7 @@ describe('UploadAdsModalCtrl', function () {
             $scope.$root.$digest();
 
             expect($scope.pollBatchStatus).toHaveBeenCalledWith(batchId);
-            expect($scope.uploadStatus).toBe(constants.uploadBatchStatus.IN_PROGRESS);
-            expect($scope.step).toBe(1);
-            expect($scope.batchId).toBe(batchId);
+            expect($scope.isInProgress).toBe(true);
         });
 
         it('sets errors in case of validation error', function () {
@@ -92,7 +88,7 @@ describe('UploadAdsModalCtrl', function () {
 
     describe('pollBatchStatus', function () {
         it('does nothing if polling is not in progress', function () {
-            $scope.uploadStatus = null;
+            $scope.isInProgress = false;
             spyOn(api.adGroupAdsPlusUpload, 'checkStatus');
 
             $scope.pollBatchStatus();
@@ -107,14 +103,15 @@ describe('UploadAdsModalCtrl', function () {
                 return deferred.promise;
             });
 
-            $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
+            $scope.isInProgress = true;
+
             $scope.pollBatchStatus();
 
             $timeout.flush();
             deferred.reject();
             $scope.$root.$digest();
 
-            expect($scope.uploadStatus).toBe(constants.uploadBatchStatus.FAILED);
+            expect($scope.isInProgress).toBe(false);
         });
 
         it('schedules another poll', function () {
@@ -124,19 +121,20 @@ describe('UploadAdsModalCtrl', function () {
                 return deferred.promise;
             });
 
-            $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
+            $scope.isInProgress = true;
+
             $scope.pollBatchStatus();
 
             spyOn($scope, 'pollBatchStatus');
 
             $timeout.flush();
-            deferred.resolve({status: constants.uploadBatchStatus.IN_PROGRESS});
+            deferred.resolve({status: 3});
             $scope.$root.$digest();
 
             expect($scope.pollBatchStatus).toHaveBeenCalled();
         });
 
-        it('saves success on success', function () {
+        it('closes dialog on success', function () {
             var deferred = $q.defer();
             var batchId = 123;
 
@@ -144,18 +142,20 @@ describe('UploadAdsModalCtrl', function () {
                 return deferred.promise;
             });
             spyOn($modalInstance, 'close');
-            $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
+
+            $scope.isInProgress = true;
+
             $scope.pollBatchStatus(batchId);
             $timeout.flush();
 
             expect(api.adGroupAdsPlusUpload.checkStatus).toHaveBeenCalledWith(
                 $state.params.id, batchId
             );
-            deferred.resolve({status: constants.uploadBatchStatus.DONE});
+            deferred.resolve({status: 1});
             $scope.$root.$digest();
 
-            expect($scope.uploadStatus).toBe(constants.uploadBatchStatus.DONE);
-            expect($modalInstance.close).not.toHaveBeenCalled();
+            expect($scope.isInProgress).toBe(false);
+            expect($modalInstance.close).toHaveBeenCalled();
         });
 
         it('sets errors in case of failed upload', function () {
@@ -163,7 +163,7 @@ describe('UploadAdsModalCtrl', function () {
             var batchId = 123;
             var data = {
                 status: 2,
-                errors: ['some error'],
+                errors: ['some error']
             };
 
             spyOn(api.adGroupAdsPlusUpload, 'checkStatus').and.callFake(function () {
@@ -171,7 +171,8 @@ describe('UploadAdsModalCtrl', function () {
             });
             spyOn($modalInstance, 'close');
 
-            $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
+            $scope.isInProgress = true;
+
             $scope.pollBatchStatus(batchId);
             $timeout.flush();
 
@@ -181,7 +182,7 @@ describe('UploadAdsModalCtrl', function () {
             deferred.resolve(data);
             $scope.$root.$digest();
 
-            expect($scope.uploadStatus).toBe(constants.uploadBatchStatus.FAILED);
+            expect($scope.isInProgress).toBe(false);
             expect($modalInstance.close).not.toHaveBeenCalled();
             expect($scope.errors).toEqual(data.errors);
         });
