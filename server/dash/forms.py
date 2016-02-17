@@ -861,9 +861,12 @@ class BudgetLineItemAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(BudgetLineItemAdminForm, self).__init__(*args, **kwargs)
         # archived state is stored in settings, we need to have a more stupid query
-        not_archived = [
+        not_archived = set([
             c.id for c in models.Campaign.objects.all() if not c.is_archived()
-        ]
+        ])
+        if self.instance and self.instance.campaign_id:
+            not_archived.add(self.instance.campaign_id)
+
         # workaround to not change model __unicode__ methods
 
         self.fields['campaign'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)

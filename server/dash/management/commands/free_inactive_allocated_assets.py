@@ -30,8 +30,14 @@ class Command(BaseCommand):
         for budget in candidate_budgets:
             if is_verbose:
                 self.stdout.write('Processing {}\n'.format(str(budget)))
-            budget.free_inactive_allocated_assets()
-            if is_verbose:
-                self.stdout.write('Budget has ${} assets freed.\n'.format(
-                    budget.freed_cc * dash.models.CC_TO_DEC_MULTIPLIER
-                ))
+            try:
+                budget.free_inactive_allocated_assets()
+                if is_verbose:
+                    self.stdout.write('Budget has ${} assets freed.\n'.format(
+                        budget.freed_cc * dash.models.CC_TO_DEC_MULTIPLIER
+                    ))
+            except AssertionError:
+                if is_verbose:
+                    self.stdout.write('Assertion error: Budget status is {}.\n'.format(
+                        budget.state_text())
+                    )
