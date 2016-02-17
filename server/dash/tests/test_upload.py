@@ -354,7 +354,8 @@ class ProcessCallbackTest(TestCase):
         self.actionlog_send_patcher = patch('dash.upload.actionlog.zwei_actions.send')
         self.mock_actionlog_send = self.actionlog_send_patcher.start()
 
-        self.mock_upload_update_progress = patch('dash.threads.UpdateUploadBatchThread')
+        progress_update_progress_patcher = patch('dash.threads.UpdateUploadBatchThread')
+        progress_update_progress_patcher.start()
 
     def tearDown(self):
         self.save_error_report_patcher.stop()

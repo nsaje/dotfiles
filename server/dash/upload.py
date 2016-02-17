@@ -65,13 +65,13 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
     upload_status = constants.UploadBatchStatus.FAILED
     num_errors = 0
     cancelled = False
+    rows = []
 
     try:
         with transaction.atomic():
             # ensure content ads are only commited to DB
             # if all of them are successfully processed
 
-            rows = []
             all_content_ad_sources = []
 
             for row, cleaned_data, errors in results:
@@ -122,7 +122,8 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
         batch.error_report_key = _save_error_report(rows, filename)
     batch.save()
 
-    actionlog.zwei_actions.send(actions)
+    if actions:
+        actionlog.zwei_actions.send(actions)
 
 
 def _save_error_report(rows, filename):
