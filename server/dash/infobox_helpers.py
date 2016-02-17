@@ -356,15 +356,14 @@ def calculate_spend_credit(account):
 def calculate_yesterday_account_spend(account):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
     credits = _retrieve_active_creditlineitems(account, yesterday)
-
-    budgets = dash.models.BudgetLineItem.objects.filter(credit__in=credits)
-    if len(budgets) == 0:
-        return Decimal(0)
-
-    all_budget_spends_at_date = [
-        b.get_daily_spend(date=yesterday, use_decimal=True).get('media', 0) for b in budgets
-    ]
-    return sum(all_budget_spends_at_date)
+    daily_statements = reports.models.BudgetDailyStatement.objects.filter(
+        budget__credit__in=credits
+        date=yesterday,
+    )
+    return reports.budget_helpers.calculate_spend_data(
+        daily_statements,
+        use_decimal=None
+    ).get('media', Decimal(0))
 
 
 @statsd_timer('dash.infobox_helpers', 'create_yesterday_spend_setting')
@@ -422,12 +421,12 @@ def calculate_all_accounts_total_budget(start_date, end_date):
     '''
     Total budget in date range is amount of all active
     '''
-    all_amounts = dash.models.BudgetLineItem.objects.all().exclude(
+    all_amounts_aggregate = dash.models.BudgetLineItem.objects.all().exclude(
         start_date__gt=end_date
     ).exclude(
         end_date__lt=start_date
-    ).values_list('amount', flat=True)
-    return sum(all_amounts)
+    ).aggregate(amount_sum=Sum('amount'))
+    return all_amounts_aggregate['amount_sum']
 
 
 def calculate_all_accounts_monthly_budget(today):
@@ -525,10 +524,3 @@ def _compute_daily_cap(ad_groups):
             continue
         ret += adgs_settings.get(adgsid) or 0
     return ret
-
-
-    budget = models.ForeignKey(dash.models.BudgetLineItem, related_name='statements')
-    date = models.DateField()
-    media_spend_nano = models.BigIntegerField()
-    data_spend_nano = models.BigIntegerField()
-    license_fee_nano = models.BigIntegerField()
