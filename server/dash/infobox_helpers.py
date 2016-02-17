@@ -173,12 +173,12 @@ def get_yesterday_adgroup_spend(user, ad_group):
 def get_yesterday_campaign_spend(user, campaign):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
     daily_statements = reports.models.BudgetDailyStatement.objects.filter(
-        budget__campaign=campaign
+        budget__campaign=campaign,
         date=yesterday,
     )
     return reports.budget_helpers.calculate_spend_data(
         daily_statements,
-        use_decimal=None
+        use_decimal=True
     ).get('media', Decimal(0))
 
 
@@ -190,7 +190,7 @@ def get_yesterday_all_accounts_spend():
     )
     return reports.budget_helpers.calculate_spend_data(
         daily_statements,
-        use_decimal=None
+        use_decimal=True
     ).get('media', Decimal(0))
 
 
@@ -355,14 +355,14 @@ def calculate_spend_credit(account):
 @statsd_timer('dash.infobox_helpers', 'calculate_yesterday_account_spend')
 def calculate_yesterday_account_spend(account):
     yesterday = datetime.datetime.utcnow().date() - datetime.timedelta(days=1)
-    credits = _retrieve_active_creditlineitems(account, yesterday)
+    credits = [c.id for c in _retrieve_active_creditlineitems(account, yesterday)]
     daily_statements = reports.models.BudgetDailyStatement.objects.filter(
-        budget__credit__in=credits
+        budget__credit__in=credits,
         date=yesterday,
     )
     return reports.budget_helpers.calculate_spend_data(
         daily_statements,
-        use_decimal=None
+        use_decimal=True
     ).get('media', Decimal(0))
 
 
