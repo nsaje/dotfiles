@@ -98,7 +98,8 @@ def get_projections(accounts, start_date, end_date):
         total = credit.get_allocated_amount()
         overlap = credit.get_overlap(start_date, end_date)
         overlap_days = ((overlap[1] - overlap[0]).days + 1)
-        projections['credit_projection'][credit.account.pk] += (total / credit_days) * overlap_days
+        credit_projection = ((total / credit_days) * overlap_days) if credit_days else 0
+        projections['credit_projection'][credit.account.pk] += credit_projection
 
     reports.models.BudgetDailyStatement.objects.filter(budget__credit__in=account_credits)
     days = (end_date - start_date).days + 1
