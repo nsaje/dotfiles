@@ -734,7 +734,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         ).all()[:1]
         for source in source_settings:
             source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
-            source.save()
+            source.save(None)
 
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE,
