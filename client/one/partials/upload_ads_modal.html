@@ -89,19 +89,59 @@
             <label ng-repeat="error in errors.description" class="control-label small error" for="description-input">{{ error }}</label>
         </div>
 
-        <div class="form-group">
-            <div class="col-xs-3">
-                <button type="button" class="btn btn-add" ng-click="upload()">Upload</button>
-            </div>
-            <div class="col-xs-3">
-                <button type="button" class="btn btn-default" ng-click="$dismiss()">Cancel</button>
-            </div>
-            <div class="col-xs-6" style="padding-top:1px;" ng-show="isInProgress">
-                <div style="display:inline-block" ng-show="countAll > 0">{{ countUploaded }}/{{ countAll }}&nbsp;</div>
-                <div style="display:inline-block" ng-show="uploadStep">{{ uploadStep }}</div>
-                <div class="loader"></div>
+        <div ng-show="!!uploadStatus">
+            <hr />
+            <div ng-if="uploadStatus === uploadBatchStatusConstants.IN_PROGRESS && !uploadCanceled">
+                <div class="progress-steps">
+                    <div class="progress-step-box" ng-repeat="s in steps" ng-if="$index < step">{{$index + 1}}</div>
+
+                    <span class="progress-step-description">{{ steps[step - 1] }}</span>
+
+                    <span class="progress-steps-untouched">
+                        <div class="progress-step-box" ng-repeat="s in steps" ng-if="$index >= step">{{$index + 1}}</div>
+                    </span>
+               </div>
+                <div class="progress" style="width: 100%">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:{{ getProgressPercentage() }}%;"></div>
+                    <div class="progress-text">{{ count }} / {{ batchSize }}</div>
+                    <div class="progress-text inverted" style="width:{{ getProgressPercentage() }}%;">{{ count }} / {{ batchSize }}</div>
+                </div>
+                <p>Please keep the window open while the upload is in progress.</p>
             </div>
 
+            <div class="progress-result" ng-if="uploadStatus === uploadBatchStatusConstants.DONE">
+                <h4 class="title success">Uploading successfuly completed</h4>
+                <p>All content ads were added to the list.</p>
+            </div>
+
+            <div class="progress-result" ng-if="uploadStatus === uploadBatchStatusConstants.FAILED && !uploadCanceled">
+                <h4 class="title failed">Ooops, upload failed</h4>
+                <p>Content upload was unsuccessful. {{ getErrorDescription() }}</p>
+                <div class="form-group" ng-if="errors.details.reportUrl">
+                    <div class="col-xs-6">
+                        <a class="btn btn-default btn-sm" href="{{ errors.details.reportUrl }}">Download CSV file with errors</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="progress-result" ng-if="uploadCanceled && uploadStatus !== uploadBatchStatusConstants.DONE">
+                <h4 class="title failed">Upload canceled</h4>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-xs-4" ng-if="!uploadStatus">
+                <button type="button" class="btn btn-add" ng-click="upload()">Upload</button>
+            </div>
+            <div class="col-xs-4" ng-if="uploadStatus === uploadBatchStatusConstants.DONE">
+                <button type="button" class="btn btn-add" ng-click="viewUploadedAds()">View uploaded ads</button>
+            </div>
+            <div class="col-xs-4" ng-if="uploadStatus === uploadBatchStatusConstants.FAILED">
+                <button type="button" class="btn btn-add" ng-click="upload()">Try again</button>
+            </div>
+            <div class="col-xs-4" ng-if="uploadStatus !== uploadBatchStatusConstants.DONE">
+                <button type="button" class="btn btn-default" ng-click="cancel()" ng-disabled="isCancelDisabled()">{{ cancelActionInProgress ? "Canceling upload ..." : "Cancel upload" }}</button>
+            </div>
         </div>
     </form>
 </div>

@@ -20,6 +20,7 @@ from utils import email_helper
 from dash import models
 from dash import api
 from dash import constants
+from dash import exceptions
 from dash import image_helper
 from dash import threads
 from dash.forms import AdGroupAdsPlusUploadForm, MANDATORY_CSV_FIELDS, OPTIONAL_CSV_FIELDS  # to get fields & validators
@@ -36,6 +37,18 @@ class UploadFailedException(Exception):
     pass
 
 
+def _check_upload_cancelled(batch):
+    batch.refresh_from_db()
+    if batch.cancelled:
+        raise exceptions.UploadCancelledException()
+
+
+def _bump_nr_processed(batch):
+    # be careful not to save the 'batch' object directly as it will save other fields with it - update
+    # counter atomically. Check if cancelled in the next step
+    models.UploadBatch.objects.filter(pk=batch.id).update(processed_content_ads=F('processed_content_ads') + 1)
+
+
 def process_async(content_ads_data, filename, batch, upload_form_cleaned_fields, ad_group, request):
     ad_group_sources = [s for s in models.AdGroupSource.objects.filter(ad_group_id=ad_group.id)
                         if s.can_manage_content_ads and s.source.can_manage_content_ads()]
@@ -49,10 +62,16 @@ def process_async(content_ads_data, filename, batch, upload_form_cleaned_fields,
 
 
 def _process_callback(batch, ad_group, ad_group_sources, filename, request, results):
+    actions = []
     try:
+        _check_upload_cancelled(batch)
+
+        upload_updater = threads.UpdateUploadBatchThread(batch.id)
+        upload_updater.daemon = True
+        upload_updater.start()
+
         # ensure content ads are only commited to DB
         # if all of them are successfully processed
-        count_inserted = 0
         with transaction.atomic():
             rows = []
             all_content_ad_sources = []
@@ -74,21 +93,20 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
 
                 rows.append(row)
 
-                # update progress in another thread to escape transaction
-                count_inserted += 1
-                t = threads.UpdateUploadBatchThread(batch.id, count_inserted)
-                t.start_and_join()
+                upload_updater.bump_inserted()
 
             if num_errors > 0:
                 # raise exception to rollback transaction
                 raise UploadFailedException()
 
-            actions = api.submit_content_ads(all_content_ad_sources, request)
+            actions = api.submit_content_ads(all_content_ad_sources, request, upload_updater.bump_propagated)
 
             batch.status = constants.UploadBatchStatus.DONE
             batch.save()
 
             _add_to_history(request, batch, ad_group)
+            upload_updater.finish()
+            upload_updater.join()
 
     except UploadFailedException:
         batch.error_report_key = _save_error_report(rows, filename)
@@ -96,13 +114,19 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
         batch.num_errors = num_errors
         batch.save()
         return
+    except exceptions.UploadCancelledException as e:
+        logger.info('Content ads upload was cancelled, batch id: {}'.format(batch.id))
+        batch.cancelled = True
+        batch.status = constants.UploadBatchStatus.FAILED
+        batch.save()
     except Exception as e:
         logger.exception('Exception in ProcessUploadThread: {0}'.format(e))
         batch.status = constants.UploadBatchStatus.FAILED
         batch.save()
         return
 
-    actionlog.zwei_actions.send(actions)
+    if actions and not batch.cancelled:
+        actionlog.zwei_actions.send(actions)
 
 
 def _save_error_report(rows, filename):
@@ -209,9 +233,7 @@ def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
             except ValidationError as e:
                 errors.extend(e.messages)
 
-        # atomically update counter
-        batch.processed_content_ads = F('processed_content_ads') + 1
-        batch.save()
+        _bump_nr_processed(batch)
 
         return row, data, errors
     except Exception as e:
