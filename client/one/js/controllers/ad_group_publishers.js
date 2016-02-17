@@ -17,9 +17,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.size = $scope.sizeRange[0];
     $scope.rows = [];
     $scope.isSyncInProgress = false;
-    $scope.infoboxHeader = null;
-    $scope.infoboxBasicSettings = null;
-    $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.pagination = {
         currentPage: 1
@@ -703,6 +700,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             }
         ).finally(function () {
             $scope.loadRequestInProgress = false;
+            $scope.reflowGraph(1);
         });
     };
 /*    if ($window.isDemo) {
@@ -777,12 +775,16 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
+        if (!$scope.hasPermission('zemauth.can_access_ad_group_infobox')) {
+            return;
+        }
 
         api.adGroupOverview.get($state.params.id).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
+                $scope.reflowGraph(1);
             }
         );
     };

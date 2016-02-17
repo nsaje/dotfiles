@@ -17,9 +17,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     $scope.chartData = undefined;
     $scope.chartMetricOptions = options.adGroupChartMetrics;
     $scope.localStoragePrefix = 'adGroupContentAdsPlus';
-    $scope.infoboxHeader = null;
-    $scope.infoboxBasicSettings = null;
-    $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.adGroups.settings';
 
     $scope.lastSyncDate = null;
@@ -757,6 +754,7 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             }
         ).finally(function () {
             $scope.loadRequestInProgress = false;
+            $scope.reflowGraph(1);
         });
     };
 
@@ -955,12 +953,16 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
+        if (!$scope.hasPermission('zemauth.can_access_ad_group_infobox')) {
+            return;
+        }
 
         api.adGroupOverview.get($state.params.id).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
+                $scope.reflowGraph(1);
             }
         );
     };

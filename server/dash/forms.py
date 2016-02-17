@@ -102,9 +102,34 @@ class AdGroupSettingsForm(forms.Form):
         required=False
     )
 
-    def __init__(self, *args, **kwargs):
-        self.ad_group = kwargs.pop('ad_group')
+    retargeting_ad_groups = forms.ModelMultipleChoiceField(
+        required=False,
+        queryset=None,
+        error_messages={
+            'invalid_choice': 'Invalid ad group selection.'
+        }
+    )
+
+    def __init__(self, ad_group, user, *args, **kwargs):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
+
+        self.ad_group = ad_group
+        self.fields['retargeting_ad_groups'].queryset = models.AdGroup.objects.filter(
+            campaign__account=ad_group.campaign.account).filter_by_user(user)
+
+    def clean_state(self):
+        state = self.cleaned_data.get('state')
+
+        # ACTIVE state is only valid when there is budget to spend
+        if state == constants.AdGroupSettingsState.ACTIVE and\
+                not validation_helpers.ad_group_has_available_budget(self.ad_group):
+            raise forms.ValidationError('Cannot enable ad group without available budget.')
+
+        return state
+
+    def clean_retargeting_ad_groups(self):
+        ad_groups = self.cleaned_data.get('retargeting_ad_groups')
+        return [ag.id for ag in ad_groups]
 
     def clean_end_date(self):
         state = self.cleaned_data.get('state')
@@ -836,9 +861,12 @@ class BudgetLineItemAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(BudgetLineItemAdminForm, self).__init__(*args, **kwargs)
         # archived state is stored in settings, we need to have a more stupid query
-        not_archived = [
+        not_archived = set([
             c.id for c in models.Campaign.objects.all() if not c.is_archived()
-        ]
+        ])
+        if self.instance and self.instance.campaign_id:
+            not_archived.add(self.instance.campaign_id)
+
         # workaround to not change model __unicode__ methods
 
         self.fields['campaign'].label_from_instance = lambda obj: u'{} - {}'.format(obj.id, obj.name)

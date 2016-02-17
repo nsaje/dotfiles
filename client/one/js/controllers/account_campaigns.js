@@ -466,12 +466,16 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
+        if (!$scope.hasPermission('zemauth.can_access_account_infobox')) {
+            return;
+        }
 
         api.accountOverview.get($state.params.id).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
+                $scope.reflowGraph(1);
             }
         );
     };
@@ -538,6 +542,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             }
         ).finally(function () {
             $scope.getTableDataRequestInProgress = false;
+            $scope.reflowGraph(1);
         });
     };
 

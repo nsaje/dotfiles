@@ -21,6 +21,7 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     name: 'Test Account 1'
+    uses_credits: False
   model: dash.account
   pk: 1
 

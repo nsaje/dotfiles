@@ -58,6 +58,7 @@
         users: [1, 2, 3]
         allowed_sources: [1,2,3,4,5,6,7,8,9]
         name: 'test account 1 Čžš'
+        uses_credits: False
     model: dash.account
     pk: 1
 
@@ -293,6 +294,12 @@
         ad_group_name: 'AdGroup name'
         start_date: '2015-03-02'
         end_date: '2015-04-02'
+        enable_ga_tracking: True
+        enable_adobe_tracking: True
+        adobe_tracking_param: 'pid'
+        autopilot_state: 1
+        autopilot_daily_budget: '50.0000'
+        retargeting_ad_groups: [3]
     model: dash.adgroupsettings
     pk: 1
 

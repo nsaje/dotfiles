@@ -16,9 +16,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.order = '-cost';
     $scope.sources = [];
     $scope.sourcesWaiting = null;
-    $scope.infoboxHeader = null;
-    $scope.infoboxBasicSettings = null;
-    $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.localStoragePrefix = 'adGroupSources';
 
@@ -566,6 +563,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             }
         ).finally(function () {
             $scope.loadRequestInProgress = false;
+            $scope.reflowGraph(1);
         });
     };
     if ($window.isDemo) {
@@ -665,12 +663,16 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
+        if (!$scope.hasPermission('zemauth.can_access_ad_group_infobox')) {
+            return;
+        }
 
         api.adGroupOverview.get($state.params.id).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
+                $scope.reflowGraph(1);
             }
         );
     };

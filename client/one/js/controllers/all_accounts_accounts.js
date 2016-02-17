@@ -473,12 +473,16 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
+        if (!$scope.hasPermission('zemauth.can_access_all_accounts_infobox')) {
+            return;
+        }
 
         api.allAccountsOverview.get().then(
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
+                $scope.reflowGraph(1);
             }
         );
     };
@@ -523,6 +527,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             }
         ).finally(function () {
             $scope.loadRequestInProgress = false;
+            $scope.reflowGraph(1);
         });
     };
 

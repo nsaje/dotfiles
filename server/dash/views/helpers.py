@@ -16,7 +16,6 @@ import actionlog.zwei_actions
 from dash import models
 from dash import constants
 from dash import api
-from dash import budget
 from utils import exc
 from utils import statsd_helper
 from utils import email_helper
@@ -1008,20 +1007,6 @@ def log_useraction_if_necessary(request, user_action_type, account=None, campaig
             ad_group_settings_id=ad_group.get_current_settings().id if ad_group else None
         )
         user_action_log.save()
-
-
-def ad_group_has_available_budget(ad_group):
-    if ad_group.campaign.account.uses_credits:
-        return any(ad_group.campaign.budgets.all().filter_active())
-
-    campaign_budget = budget.CampaignBudget(ad_group.campaign)
-
-    total = campaign_budget.get_total()
-    spend = campaign_budget.get_spend()
-
-    available = total - spend
-
-    return bool(available)
 
 
 def get_source_default_settings(source):

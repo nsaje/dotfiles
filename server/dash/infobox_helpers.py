@@ -2,6 +2,7 @@ import calendar
 import copy
 import datetime
 import exceptions
+import utils.lc_helper
 
 import reports.api_helpers
 
@@ -14,6 +15,8 @@ import reports.api_contentads
 from utils.statsd_helper import statsd_timer
 
 from decimal import Decimal
+
+MAX_PREVIEW_REGIONS = 1
 
 
 class OverviewSetting(object):
@@ -30,6 +33,7 @@ class OverviewSetting(object):
         self.value = value
         self.description = description
         self.details_label = None
+        self.details_hide_label = None
         self.details_content = None
         self.icon = None
         self.warning = warning
@@ -37,10 +41,10 @@ class OverviewSetting(object):
         self.tooltip = tooltip
         self.section_start = section_start
 
-
-    def comment(self, details_label, details_description):
+    def comment(self, details_label, details_hide_label, details_description):
         ret = copy.deepcopy(self)
         ret.details_label = details_label
+        ret.details_hide_label = details_hide_label
         ret.details_content = details_description
         return ret
 
@@ -82,6 +86,27 @@ def format_flight_time(start_date, end_date):
     return flight_time, flight_time_left_days
 
 
+def create_region_setting(regions):
+    preview_regions = regions[:MAX_PREVIEW_REGIONS]
+    full_regions = regions
+
+    preview_region = ' ' + ', '.join(preview_regions)
+    if len(full_regions) > 1:
+        preview_region = ''
+
+    targeting_region_setting = OverviewSetting(
+        '',
+        'Location:{regions}'.format(regions=preview_region),
+    )
+    if len(full_regions) > 1:
+        targeting_region_setting = targeting_region_setting.comment(
+            'Show more',
+            'Show less',
+            ', '.join(full_regions)
+        )
+    return targeting_region_setting
+
+
 @statsd_timer('dash.infobox_helpers', 'get_ideal_campaign_spend')
 def get_ideal_campaign_spend(user, campaign, until_date=None):
     at_date = until_date or datetime.datetime.today().date()
@@ -110,9 +135,22 @@ def get_total_and_media_campaign_spend(user, campaign, until_date=None):
 
 
 @statsd_timer('dash.infobox_helpers', 'get_media_campaign_spend')
+def get_total_media_campaign_budget(user, campaign, until_date=None):
+    # campaign budget based on non-depleted budget line items
+    at_date = until_date or datetime.datetime.utcnow().date()
+
+    budgets = _retrieve_active_budgetlineitems([campaign], at_date)
+    ret = Decimal(0)
+    for bli in budgets:
+        ret += bli.amount * (1 - bli.credit.license_fee)
+    return ret
+
+
+@statsd_timer('dash.infobox_helpers', 'get_media_campaign_spend')
 def get_media_campaign_spend(user, campaign, until_date=None):
     # campaign budget based on non-depleted budget line items
     at_date = until_date or datetime.datetime.utcnow().date()
+
     budgets = _retrieve_active_budgetlineitems([campaign], at_date)
     ret = Decimal(0)
     for bli in budgets:
@@ -225,51 +263,16 @@ def goals_and_spend_settings(user, campaign):
 
     total_campaign_spend_to_date, media_campaign_spend_to_date = get_total_and_media_campaign_spend(user, campaign)
     ideal_campaign_spend_to_date = get_ideal_campaign_spend(user, campaign)
-
     ratio = 0
     if ideal_campaign_spend_to_date > 0:
-        ratio = min(
-            total_campaign_spend_to_date / ideal_campaign_spend_to_date,
-            1
-        )
+        ratio = total_campaign_spend_to_date / ideal_campaign_spend_to_date
     campaign_pacing_settings = OverviewSetting(
         'Campaign pacing:',
-        '{:.2f}%'.format(ratio * 100),
-        description='${:.2f}'.format(media_campaign_spend_to_date)
+        utils.lc_helper.default_currency(media_campaign_spend_to_date),
+        description='{:.2f}% on plan'.format(ratio * 100),
     ).performance(total_campaign_spend_to_date >= ideal_campaign_spend_to_date)
     settings.append(campaign_pacing_settings.as_dict())
 
-    # TODO: Campaign goals will be disabled until Campaign KPI's ticket gets delivered
-    """
-    campaign_settings = campaign.get_current_settings()
-    campaign_goals = [(
-        campaign_settings.campaign_goal,
-        campaign_settings.goal_quantity,
-    )
-    ]
-    for i, (goal, quantity) in enumerate(campaign_goals):
-        text = dash.constants.CampaignGoal.get_text(goal)
-        name = 'Campaign goals:' if i == 0 else ''
-
-        try:
-            goal_value = get_goal_value(user, campaign, campaign_settings, goal)
-        except NotImplementedError:
-            goal_value = None
-        goal_diff, description, success = get_goal_difference(
-            goal,
-            float(quantity),
-            goal_value
-        )
-        goal_setting = OverviewSetting(
-            name,
-            '{actual_goal} {value}'.format(
-                actual_goal=format_goal_value(goal_value, goal),
-                value=text
-            ),
-            description
-        ).performance(success)
-        settings.append(goal_setting.as_dict())
-    """
     is_delivering = ideal_campaign_spend_to_date >= total_campaign_spend_to_date
     return settings, is_delivering
 
@@ -288,10 +291,7 @@ def calculate_daily_ad_group_cap(ad_group):
     """
     Daily media cap
     """
-    return sum(map(
-        _retrieve_daily_cap,
-        dash.models.AdGroupSource.objects.filter(ad_group=ad_group)
-    ))
+    return _compute_daily_cap([ad_group])
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_daily_campaign_cap')
@@ -299,12 +299,7 @@ def calculate_daily_campaign_cap(campaign):
     ad_groups = dash.models.AdGroup.objects.filter(
         campaign=campaign
     ).exclude_archived()
-    return sum(map(
-        _retrieve_daily_cap,
-        dash.models.AdGroupSource.objects.filter(
-            ad_group=ad_groups
-        )
-    ))
+    return _compute_daily_cap(ad_groups)
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_daily_account_cap')
@@ -313,12 +308,10 @@ def calculate_daily_account_cap(account):
     ad_groups = dash.models.AdGroup.objects.filter(
         campaign__in=campaigns
     ).exclude_archived()
-    return sum(map(
-        _retrieve_daily_cap,
-        dash.models.AdGroupSource.objects.filter(
-            ad_group=ad_groups
-        )
-    ))
+    ad_groups = dash.models.AdGroup.objects.filter(
+        campaign__in=campaigns
+    ).exclude_archived()
+    return _compute_daily_cap(ad_groups)
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_available_media_campaign_budget')
@@ -331,7 +324,6 @@ def calculate_available_media_campaign_budget(campaign):
     for bli in budgets:
         available_total_amount = bli.get_available_amount(today)
         available_media_amount = available_total_amount * (1 - bli.credit.license_fee)
-
         ret += available_media_amount
     return ret
 
@@ -383,14 +375,29 @@ def create_yesterday_spend_setting(yesterday_cost, daily_budget):
         daily_ratio_description = 'N/A'
 
     yesterday_spend_setting = OverviewSetting(
-        'Yesterday spent:',
-        '${:.2f}'.format(yesterday_cost),
+        'Yesterday spend:',
+        utils.lc_helper.default_currency(yesterday_cost),
         description=daily_ratio_description,
-        tooltip='Yesterday media spent'
+        tooltip='Yesterday media spend'
     ).performance(
         filled_daily_ratio >= 1.0 if filled_daily_ratio else False
     )
     return yesterday_spend_setting
+
+
+def create_total_campaign_budget_setting(user, campaign):
+    total_media_available = calculate_available_media_campaign_budget(campaign)
+    total_media = get_total_media_campaign_budget(user, campaign)
+
+    setting = OverviewSetting(
+        'Campaign budget:',
+        utils.lc_helper.default_currency(total_media),
+        '{} remaining'.format(
+            utils.lc_helper.default_currency(total_media_available)
+        ),
+        tooltip="Campaign media budget"
+    )
+    return setting
 
 
 @statsd_timer('dash.infobox_helpers', 'count_active_accounts')
@@ -460,9 +467,28 @@ def _one_week_ago():
 
 
 def _retrieve_active_budgetlineitems(campaign, date):
-    return dash.models.BudgetLineItem.objects.filter(
-        campaign__in=campaign
-    ).filter_active(date)
+    if campaign:
+        qs = dash.models.BudgetLineItem.objects.filter(
+            campaign__in=campaign
+        )
+    else:
+        qs = dash.models.BudgetLineItem.objects.all()
+    return qs.filter_active(date)
+
+
+@statsd_timer('dash.infobox_helpers', 'is_campaign_active')
+def is_campaign_active(campaign):
+    active = False
+
+    ad_groups_settings = dash.models.AdGroupSettings.objects.filter(
+        ad_group__campaign=campaign
+    ).group_current_settings()
+
+    for ad_group_settings in ad_groups_settings:
+        running_status = dash.models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
+        if running_status == dash.constants.AdGroupRunningStatus.ACTIVE:
+            active = True
+    return active
 
 
 @statsd_timer('dash.infobox_helpers', '_retrieve_active_creditlineitems')
@@ -472,14 +498,26 @@ def _retrieve_active_creditlineitems(account, date):
     ) if credit.is_active(date)]
 
 
-@statsd_timer('dash.infobox_helpers', '_retrieve_daily_cap')
-def _retrieve_daily_cap(ad_group_source):
-    adgs_state = ad_group_source.get_latest_state()
-    # skip inactive adgroup sources
-    if not adgs_state or adgs_state.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
-        return 0
-    adgs_settings = ad_group_source.get_current_settings()
-    if not adgs_settings:
-        return 0
-    # cc is not actually cc
-    return adgs_settings.daily_budget_cc or 0
+@statsd_timer('dash.infobox_helpers', '_compute_daily_cap')
+def _compute_daily_cap(ad_groups):
+    ad_group_sources = dash.models.AdGroupSource.objects.filter(
+        ad_group__in=ad_groups
+    )
+    ad_group_source_states = dash.models.AdGroupSourceState.objects.filter(
+        ad_group_source__in=ad_group_sources
+    ).group_current_states().values_list('ad_group_source__id', 'state')
+
+    adg_state = dict(ad_group_source_states)
+
+    ad_group_source_settings = dash.models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__in=ad_group_sources
+    ).group_current_settings().values_list('ad_group_source__id', 'daily_budget_cc')
+
+    adgs_settings = dict(ad_group_source_settings)
+
+    ret = 0
+    for adgsid, state in adg_state.iteritems():
+        if not state or state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
+            continue
+        ret += adgs_settings.get(adgsid) or 0
+    return ret
