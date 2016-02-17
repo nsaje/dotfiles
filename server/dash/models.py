@@ -1788,7 +1788,9 @@ class UploadBatch(models.Model):
 
     processed_content_ads = models.PositiveIntegerField(null=True)
     inserted_content_ads = models.PositiveIntegerField(null=True)
+    propagated_content_ads = models.PositiveIntegerField(null=True)
     batch_size = models.PositiveIntegerField(null=True)
+    cancelled = models.BooleanField(default=False)
 
     class Meta:
         get_latest_by = 'created_dt'
