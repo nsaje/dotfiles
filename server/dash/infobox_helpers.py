@@ -11,6 +11,7 @@ import dash.budget
 import dash.models
 import zemauth.models
 import reports.api_contentads
+import reports.models
 
 from utils.statsd_helper import statsd_timer
 
@@ -195,13 +196,12 @@ def get_yesterday_all_accounts_spend():
 @statsd_timer('dash.infobox_helpers', 'get_mtd_all_accounts_spend')
 def get_mtd_all_accounts_spend():
     today = datetime.datetime.utcnow().date()
-    budgets = dash.models.BudgetLineItem.objects.all()
-    if len(budgets) == 0:
-        return Decimal(0)
-    all_budget_spends_at_date = [
-        b.get_mtd_spend_data(date=today, use_decimal=True).get('media', Decimal(0)) for b in budgets
-    ]
-    return sum(all_budget_spends_at_date)
+    daily_statements = reports.models.BudgetDailyStatement.objects.all()
+    return reports.budget_helpers.calculate_mtd_spend_data(
+        daily_statements,
+        date=today,
+        use_decimal=True
+    ).get('media', Decimal(0))
 
 
 @statsd_timer('dash.infobox_helpers', 'get_goal_value')
@@ -521,3 +521,10 @@ def _compute_daily_cap(ad_groups):
             continue
         ret += adgs_settings.get(adgsid) or 0
     return ret
+
+
+    budget = models.ForeignKey(dash.models.BudgetLineItem, related_name='statements')
+    date = models.DateField()
+    media_spend_nano = models.BigIntegerField()
+    data_spend_nano = models.BigIntegerField()
+    license_fee_nano = models.BigIntegerField()
