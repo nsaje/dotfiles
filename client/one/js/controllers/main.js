@@ -150,8 +150,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if ($scope.hasPermission('zemauth.campaign_agency_view')) {
             return 'main.campaigns.agency';
         }
-        if ($scope.hasPermission('zemauth.campaign_budget_management_view')) {
-            return 'main.campaings.budget';
+        if ($scope.hasPermission('zemauth.campaign_budget_view')) {
+            return 'main.campaings.budget_plus';
         }
         if ($scope.hasPermission('zemauth.campaign_settings_view')) {
             return 'main.campaigns.settings';

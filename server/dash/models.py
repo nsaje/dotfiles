@@ -189,7 +189,7 @@ class Account(models.Model):
     uses_credits = models.BooleanField(
         null=False,
         blank=False,
-        default=False,
+        default=True,
         verbose_name='Uses credits and budgets accounting'
     )
 
