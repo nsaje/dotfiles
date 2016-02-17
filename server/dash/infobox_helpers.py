@@ -476,7 +476,10 @@ def _retrieve_active_budgetlineitems(campaign, date):
     return qs.filter_active(date)
 
 
-def is_adgroup_active(ad_group, ad_group_settings):
+def is_adgroup_active(ad_group, ad_group_settings=None):
+    if not ad_group_settings:
+        ad_group_settings = ad_group.get_current_settings()
+
     ad_group_source_settings = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source__ad_group=ad_group
     ).group_current_settings()

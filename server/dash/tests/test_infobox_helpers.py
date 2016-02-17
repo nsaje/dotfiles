@@ -681,10 +681,43 @@ class InfoBoxAccountHelpersTest(TestCase):
         available_credit = dash.infobox_helpers.calculate_yesterday_account_spend(account)
         self.assertEqual(10, available_credit)
 
+    def test_is_adgroup_active(self):
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        self.assertEqual(
+            dash.constants.InfoboxStatus.STOPPED,
+            dash.infobox_helpers.is_adgroup_active(ad_group)
+        )
+
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        adgs = dash.models.AdGroupSettings(
+            ad_group=ad_group,
+            start_date=start_date,
+            end_date=end_date,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+            created_dt=datetime.datetime.utcnow()
+        )
+        adgs.save(None)
+
+        source_settings = dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group=ad_group
+        ).all()[:1]
+        for source in source_settings:
+            source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+            source.save(None)
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.ACTIVE,
+            dash.infobox_helpers.is_adgroup_active(ad_group)
+        )
+
     def test_is_campaign_active(self):
         campaign = dash.models.Campaign.objects.get(pk=1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
-        self.assertFalse(dash.infobox_helpers.is_campaign_active(campaign))
+        self.assertEqual(
+            dash.constants.InfoboxStatus.INACTIVE,
+            dash.infobox_helpers.is_campaign_active(campaign)
+        )
 
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
@@ -695,7 +728,18 @@ class InfoBoxAccountHelpersTest(TestCase):
             state=dash.constants.AdGroupSettingsState.ACTIVE,
         )
         adgs.save(None)
-        self.assertTrue(dash.infobox_helpers.is_campaign_active(campaign))
+
+        source_settings = dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group=ad_group
+        ).all()[:1]
+        for source in source_settings:
+            source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+            source.save()
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.ACTIVE,
+            dash.infobox_helpers.is_campaign_active(campaign)
+        )
 
 
 class AllAccountsInfoboxHelpersTest(TestCase):
