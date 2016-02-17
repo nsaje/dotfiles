@@ -504,10 +504,16 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend())
 
     def test_count_active_accounts(self):
+        for adgss in dash.models.AdGroupSourceState.objects.all():
+            adgss.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
+            adgss.save()
+
         self.assertEqual(0, dash.infobox_helpers.count_active_accounts())
 
-        all_adgs = dash.models.AdGroupSource.objects.all()
-        for adgs in all_adgs:
+        all_adgs_1 = dash.models.AdGroupSource.objects.filter(
+            ad_group__campaign__account__id=1
+        )
+        for adgs in all_adgs_1:
             dash.models.AdGroupSourceState.objects.create(
                 ad_group_source=adgs,
                 state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
