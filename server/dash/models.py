@@ -1788,6 +1788,8 @@ class UploadBatch(models.Model):
 
     processed_content_ads = models.PositiveIntegerField(null=True)
     inserted_content_ads = models.PositiveIntegerField(null=True)
+    propagated_content_ads = models.PositiveIntegerField(null=True)
+    cancelled = models.BooleanField(default=False)
     batch_size = models.PositiveIntegerField(null=True)
 
     class Meta:
