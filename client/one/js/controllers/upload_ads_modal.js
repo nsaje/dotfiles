@@ -58,6 +58,8 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
                         $scope.errors = data.errors;
 
                         if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
+                            // dismiss cancel action in progress when we get confirmation
+                            // that upload is no more in progress
                             $scope.cancelActionInProgress = false;
                         }
                     },
@@ -134,11 +136,14 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
 
     $scope.cancel = function () {
         $scope.cancelActionInProgress = true;
+
+        if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
+            $scope.$dismiss();
+            return;
+        }
+
         api.adGroupAdsPlusUpload.cancel($state.params.id, $scope.batchId).then(function () {
             $scope.uploadCanceled = true;
-            if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
-                $scope.$dismiss();
-            }
         });
     };
 
