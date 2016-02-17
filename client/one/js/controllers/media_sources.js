@@ -562,6 +562,9 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             api.allAccountsOverview.get().then(
                 function (data) {
                     updateInfoboxData(data);
+                    $timeout(function () {
+                        $scope.$broadcast('highchartsng.reflow');
+                    }, 1);
                 }
             );
         } else if ($scope.level === constants.level.ACCOUNTS) {
@@ -571,6 +574,9 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             api.accountOverview.get($state.params.id).then(
                 function (data) {
                     updateInfoboxData(data);
+                    $timeout(function () {
+                        $scope.$broadcast('highchartsng.reflow');
+                    }, 1);
                 }
             );
         } else if ($scope.level === constants.level.CAMPAIGNS) {
@@ -580,6 +586,9 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             api.campaignOverview.get($state.params.id).then(
                 function (data) {
                     updateInfoboxData(data);
+                    $timeout(function () {
+                        $scope.$broadcast('highchartsng.reflow');
+                    }, 1);
                 }
             );
         }
