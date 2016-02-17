@@ -16,9 +16,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.order = '-cost';
     $scope.sources = [];
     $scope.sourcesWaiting = null;
-    $scope.infoboxHeader = null;
-    $scope.infoboxBasicSettings = null;
-    $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.localStoragePrefix = 'adGroupSources';
 
@@ -663,6 +660,9 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
 
     var getInfoboxData = function () {
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+        if (!$scope.hasPermission('zemauth.can_access_ad_group_infobox')) {
             return;
         }
 

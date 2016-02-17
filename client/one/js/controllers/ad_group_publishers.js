@@ -17,9 +17,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     $scope.size = $scope.sizeRange[0];
     $scope.rows = [];
     $scope.isSyncInProgress = false;
-    $scope.infoboxHeader = null;
-    $scope.infoboxBasicSettings = null;
-    $scope.infoboxPerformanceSettings = null;
     $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.pagination = {
         currentPage: 1
@@ -775,6 +772,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     var getInfoboxData = function () {
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return;
+        }
+        if (!$scope.hasPermission('zemauth.can_access_ad_group_infobox')) {
             return;
         }
 

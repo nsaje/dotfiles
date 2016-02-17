@@ -1,9 +1,9 @@
 <div class="infobox infobox-background infobox-{{header.level}}">
     <div class="infobox-header" ng-class="{'infobox-header-wo-subtitle': header.subtitle === undefined}">
         <div class="infobox-header-row">
-            <div class="infobox-header-cell" ng-if="header.active !== undefined" ng-class="['infobox-title', {'infobox-active-icon': header.active, 'infobox-inactive-icon': !header.active}, 'infobox-status']">{{ '\u25CF' }}</div>
+            <div class="infobox-header-cell infobox-title infobox-status" ng-if="header.active !== undefined" ng-class="{'infobox-active-icon': header.active, 'infobox-inactive-icon': !header.active}">&nbsp;</div>
             <div class="infobox-header-title-cell">
-                <div class="infobox-title">{{header.title}}</div>
+                <div class="infobox-title"><span class="infobox-title-level" ng-show="header">{{header.levelVerbose}}: </span>{{header.title}}</div>
                 <div ng-if="header.subtitle !== undefined" class="infobox-subtitle">{{header.subtitle}}</div>
             </div>
         
@@ -23,32 +23,34 @@
             <hr ng-if="setting.type === 'hr'"/>
             <zem-infobox-setting 
                 ng-if="setting.type == 'setting'"
-                label="(setting.name || '&nbsp;')"  
+                label="setting.name || '&nbsp;'"
                 value="setting.value" 
                 value-description="setting.description"
                 details-label="setting.detailsLabel"
+                details-hide-label="setting.detailsHideLabel"
                 details-content="setting.detailsContent"
                 warning="setting.warning"
-                icon="(setting.icon || '')"
-                tooltip-text="(setting.tooltip || undefined)">
+                icon="setting.icon || ''"
+                tooltip-text="setting.tooltip">
             </zem-infobox-setting>
         </div>
     </div>
-    <hr ng-if="performanceSettings !== undefined">
-    <div ng-if="performanceSettings !== undefined" class="infobox-footer">
+    <hr ng-if="performanceSettings">
+    <div ng-if="performanceSettings" class="infobox-footer">
         <div ng-repeat="setting in performanceSettings" 
             ng-class="{'infobox-setting-section-start': setting.section_start}">
             <hr ng-if="setting.type === 'hr'"/>
             <zem-infobox-setting 
                 ng-if="setting.type == 'setting'"
-                label="(setting.name || '&nbsp;')"  
+                label="setting.name || '&nbsp;'"
                 value="setting.value" 
                 value-description="setting.description"
                 details-label="setting.detailsLabel"
+                details-hide-label="setting.detailsHideLabel"
                 details-content="setting.detailsContent"
                 warning="setting.warning"
-                icon="(setting.icon || '')"
-                tooltip-text="(setting.tooltip || undefined)">
+                icon="setting.icon || ''"
+                tooltip-text="setting.tooltip">
             </zem-infobox-setting>
         </div>
     </div>

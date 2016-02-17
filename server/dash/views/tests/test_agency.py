@@ -36,8 +36,14 @@ class AdGroupSettingsTest(TestCase):
                 'target_regions': ['693', 'GB'],
                 'name': 'Test ad group name',
                 'id': 1,
-                'autopilot_state': 2,
-                'autopilot_daily_budget': '100.0000'
+                'autopilot_state': 1,
+                'autopilot_daily_budget': '100.0000',
+                'retargeting_ad_groups': [2],
+                'enable_ga_tracking': False,
+                'enable_adobe_tracking': False,
+                'adobe_tracking_param': 'cid',
+                'tracking_code': 'def=123',
+                'autopilot_min_budget': '100'
             }
         }
 
@@ -73,8 +79,14 @@ class AdGroupSettingsTest(TestCase):
                     'target_devices': ['desktop', 'mobile'],
                     'target_regions': ['UK', 'US', 'CA'],
                     'tracking_code': 'param1=foo&param2=bar',
-                    'autopilot_state': 2,
-                    'autopilot_daily_budget': '0.00'
+                    'autopilot_state': 1,
+                    'autopilot_daily_budget': '50.00',
+                    'retargeting_ad_groups': [3],
+                    'enable_ga_tracking': True,
+                    'enable_adobe_tracking': True,
+                    'adobe_tracking_param': 'pid',
+                    'tracking_code': 'param1=foo&param2=bar',
+                    'autopilot_min_budget': '100'
                 }
             },
             'success': True
@@ -123,8 +135,14 @@ class AdGroupSettingsTest(TestCase):
                     'enable_ga_tracking': True,
                     'enable_adobe_tracking': False,
                     'adobe_tracking_param': '',
-                    'autopilot_state': 2,
-                    'autopilot_daily_budget': '100.00'
+                    'autopilot_state': 1,
+                    'autopilot_daily_budget': '100.00',
+                    'retargeting_ad_groups': [2],
+                    'enable_ga_tracking': False,
+                    'enable_adobe_tracking': False,
+                    'adobe_tracking_param': 'cid',
+                    'tracking_code': 'def=123',
+                    'autopilot_min_budget': '100'
                 }
             },
             'success': True
@@ -232,8 +250,14 @@ class AdGroupSettingsTest(TestCase):
                     'enable_ga_tracking': True,
                     'adobe_tracking_param': '',
                     'enable_adobe_tracking': False,
-                    'autopilot_state': 2,
-                    'autopilot_daily_budget': '100.00'
+                    'autopilot_state': 1,
+                    'autopilot_daily_budget': '100.00',
+                    'retargeting_ad_groups': [2],
+                    'enable_ga_tracking': False,
+                    'enable_adobe_tracking': False,
+                    'adobe_tracking_param': 'cid',
+                    'tracking_code': 'def=123',
+                    'autopilot_min_budget': '100'
                 }
             },
             'success': True
@@ -361,6 +385,35 @@ class AdGroupSettingsTest(TestCase):
         self.assertFalse(response_dict['success'])
         self.assertIn('state', response_dict['data']['errors'])
 
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
+    def test_put_set_settings_no_permissions(self, mock_actionlog_api, mock_order_ad_group_settings_update):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+
+        user = User.objects.get(pk=2)
+        user.user_permissions.add(Permission.objects.get(codename='settings_view'))
+
+        client = Client()
+        client.login(username=user.email, password='secret')
+
+        response = client.put(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True
+        )
+
+        response_settings_dict = json.loads(response.content)['data']['settings']
+
+        self.assertNotEqual(response_settings_dict['cpc_cc'], '0.3000')
+        self.assertNotEqual(response_settings_dict['enable_ga_tracking'], False)
+        self.assertNotEqual(response_settings_dict['tracking_code'], 'def=123')
+        self.assertNotEqual(response_settings_dict['enable_adobe_tracking'], False)
+        self.assertNotEqual(response_settings_dict['adobe_tracking_param'], 'cid')
+        self.assertNotEqual(response_settings_dict['autopilot_state'], 2)
+        self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '100.0000')
+        self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
+
 
 class AdGroupSettingsStateTest(TestCase):
     fixtures = ['test_models.yaml', 'test_adgroup_settings_state.yaml']
@@ -374,8 +427,8 @@ class AdGroupSettingsStateTest(TestCase):
     def test_get(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         response = self.client.get(
-                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
-                follow=True,
+            reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+            follow=True,
         )
         self.assertDictEqual(json.loads(response.content), {
             'data': {
@@ -385,17 +438,17 @@ class AdGroupSettingsStateTest(TestCase):
             'success': True
         })
 
-    @patch('dash.views.helpers.ad_group_has_available_budget')
+    @patch('dash.validation_helpers.ad_group_has_available_budget')
     @patch('actionlog.zwei_actions.send')
     def test_activate(self, mock_zwei_send, mock_budget_check):
         ad_group = models.AdGroup.objects.get(pk=2)
         mock_budget_check.return_value = True
 
         response = self.client.post(
-                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
-                json.dumps({'state': 1}),
-                content_type='application/json',
-                follow=True,
+            reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps({'state': 1}),
+            content_type='application/json',
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -403,17 +456,17 @@ class AdGroupSettingsStateTest(TestCase):
         self.assertEqual(len(mock_zwei_send.call_args), 2)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.ACTIVE)
 
-    @patch('dash.views.helpers.ad_group_has_available_budget')
+    @patch('dash.validation_helpers.ad_group_has_available_budget')
     @patch('actionlog.zwei_actions.send')
     def test_activate_already_activated(self, mock_zwei_send, mock_budget_check):
         ad_group = models.AdGroup.objects.get(pk=1)
         mock_budget_check.return_value = True
 
         response = self.client.post(
-                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
-                json.dumps({'state': 1}),
-                content_type='application/json',
-                follow=True,
+            reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps({'state': 1}),
+            content_type='application/json',
+            follow=True,
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(mock_zwei_send.called, False)
@@ -423,10 +476,10 @@ class AdGroupSettingsStateTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=2)
 
         response = self.client.post(
-                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
-                json.dumps({'state': 1}),
-                content_type='application/json',
-                follow=True,
+            reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps({'state': 1}),
+            content_type='application/json',
+            follow=True,
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
@@ -437,10 +490,10 @@ class AdGroupSettingsStateTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=1)
 
         response = self.client.post(
-                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
-                json.dumps({'state': 2}),
-                content_type='application/json',
-                follow=True,
+            reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps({'state': 2}),
+            content_type='application/json',
+            follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -453,10 +506,10 @@ class AdGroupSettingsStateTest(TestCase):
         ad_group = models.AdGroup.objects.get(pk=2)
 
         response = self.client.post(
-                reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
-                json.dumps({'state': 2}),
-                content_type='application/json',
-                follow=True,
+            reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps({'state': 2}),
+            content_type='application/json',
+            follow=True,
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(mock_zwei_send.called, False)
@@ -512,68 +565,69 @@ class AdGroupAgencyTest(TestCase):
         )
 
         mock_is_waiting.assert_called_once(ad_group)
-        test = json.loads(response.content)
         self.assertEqual(json.loads(response.content), {
-            'data': {
-                'can_archive': True,
-                'can_restore': True,
-                'history': [{
-                    'changed_by': 'superuser@test.com',
-                    'changes_text': 'Created settings',
-                    'datetime': '2015-06-05T09:22:23',
-                    'settings': [
-                        {'name': 'State', 'value': 'Paused'},
-                        {'name': 'Start date', 'value': None},
-                        {'name': 'End date', 'value': 'I\'ll stop it myself'},
-                        {'name': 'Max CPC bid', 'value': '$1.00'},
-                        {'name': 'Daily budget', 'value': None},
-                        {'name': 'Device targeting', 'value': ''},
-                        {'name': 'Locations', 'value': 'worldwide'},
-                        {'name': 'Tracking code', 'value': 'test tracking code'},
-                        {'name': 'Archived', 'value': 'False'},
-                        {'name': 'Display URL', 'value': ''},
-                        {'name': 'Brand name', 'value': ''},
-                        {'name': 'Description', 'value': ''},
-                        {'name': 'Call to action', 'value': ''},
-                        {'name': 'AdGroup name', 'value': ''},
-                        {'name': 'Enable GA tracking', 'value': 'True'},
-                        {'name': 'GA tracking type (via API or e-mail).', 'value': 'Email'},
-                        {'name': 'Enable Adobe tracking', 'value': 'False'},
-                        {'name': 'Adobe tracking parameter', 'value': ''},
-                        {'name': 'Auto-Pilot', 'value': 'Paused'},
-                        {'name': 'Auto-Pilot\'s Daily Budget', 'value': '$0.00'},
+            u'data': {
+                u'can_archive': True,
+                u'can_restore': True,
+                u'history': [{
+                    u'changed_by': u'superuser@test.com',
+                    u'changes_text': u'Created settings',
+                    u'datetime': u'2015-06-05T09:22:23',
+                    u'settings': [
+                        {u'name': u'State', u'value': u'Paused'},
+                        {u'name': u'Start date', u'value': None},
+                        {u'name': u'End date', u'value': u'I\'ll stop it myself'},
+                        {u'name': u'Max CPC bid', u'value': u'$1.00'},
+                        {u'name': u'Daily budget', u'value': None},
+                        {u'name': u'Device targeting', u'value': u''},
+                        {u'name': u'Locations', u'value': u'worldwide'},
+                        {u'name': u'Retargeting ad groups', u'value': u''},
+                        {u'name': u'Tracking code', u'value': u'test tracking code'},
+                        {u'name': u'Archived', u'value': u'False'},
+                        {u'name': u'Display URL', u'value': u''},
+                        {u'name': u'Brand name', u'value': u''},
+                        {u'name': u'Description', u'value': u''},
+                        {u'name': u'Call to action', u'value': u''},
+                        {u'name': u'Ad group name', u'value': u''},
+                        {u'name': u'Enable GA tracking', u'value': u'True'},
+                        {u'name': u'GA tracking type (via API or e-mail).', u'value': u'Email'},
+                        {u'name': u'Enable Adobe tracking', u'value': u'False'},
+                        {u'name': u'Adobe tracking parameter', u'value': u''},
+                        {u'name': u'Auto-Pilot', u'value': u'Disabled'},
+                        {u'name': u'Auto-Pilot\'s Daily Budget', u'value': u'$0.00'},
                     ],
-                    'show_old_settings': False
+                    u'show_old_settings': False
                 }, {
-                    'changed_by': 'superuser@test.com',
-                    'changes_text': 'Daily budget set to "$120.00", Max CPC bid set to "$2.00"',
-                    'datetime': '2015-06-05T09:22:24',
-                    'settings': [
-                        {'name': 'State', 'old_value': 'Paused', 'value': 'Paused'},
-                        {'name': 'Start date', 'old_value': None, 'value': None},
-                        {'name': 'End date', 'old_value': 'I\'ll stop it myself', 'value': 'I\'ll stop it myself'},
-                        {'name': 'Max CPC bid', 'old_value': '$1.00', 'value': '$2.00'},
-                        {'name': 'Daily budget', 'old_value': None, 'value': '$120.00'},
-                        {'name': 'Device targeting', 'old_value': '', 'value': ''},
-                        {'name': 'Locations', 'old_value': 'worldwide', 'value': 'worldwide'},
-                        {'name': 'Tracking code', 'old_value': 'test tracking code', 'value': 'test tracking code'},
-                        {'name': 'Archived', 'old_value': 'False', 'value': 'False'},
-                        {'name': 'Display URL', 'old_value': '', 'value': ''},
-                        {'name': 'Brand name', 'old_value': '', 'value': ''},
-                        {'name': 'Description', 'old_value': '', 'value': ''},
-                        {'name': 'Call to action', 'old_value': '', 'value': ''},
-                        {'name': 'AdGroup name', 'old_value': '', 'value': ''},
-                        {'name': 'Enable GA tracking', 'old_value': 'True', 'value': 'True'},
-                        {'name': 'GA tracking type (via API or e-mail).', 'old_value': 'Email', 'value': 'Email'},
-                        {'name': 'Enable Adobe tracking', 'old_value': 'False', 'value': 'False'},
-                        {'name': 'Adobe tracking parameter', 'old_value': '', 'value': ''},
-                        {'name': 'Auto-Pilot', 'old_value': 'Paused', 'value': 'Paused'},
-                        {'name': 'Auto-Pilot\'s Daily Budget', 'old_value': '$0.00', 'value': '$0.00'},
+                    u'changed_by': u'superuser@test.com',
+                    u'changes_text': u'Daily budget set to "$120.00", Max CPC bid set to "$2.00"',
+                    u'datetime': u'2015-06-05T09:22:24',
+                    u'settings': [
+                        {u'name': u'State', u'old_value': u'Paused', u'value': u'Paused'},
+                        {u'name': u'Start date', u'old_value': None, u'value': None},
+                        {u'name': u'End date', u'old_value': u'I\'ll stop it myself', u'value': u'I\'ll stop it myself'},
+                        {u'name': u'Max CPC bid', u'old_value': u'$1.00', u'value': u'$2.00'},
+                        {u'name': u'Daily budget', u'old_value': None, u'value': u'$120.00'},
+                        {u'name': u'Device targeting', u'old_value': u'', u'value': u''},
+                        {u'name': u'Locations', u'old_value': u'worldwide', u'value': u'worldwide'},
+                        {u'name': u'Retargeting ad groups', u'old_value': u'', u'value': u''},
+                        {u'name': u'Tracking code', u'old_value': u'test tracking code', u'value': u'test tracking code'},
+                        {u'name': u'Archived', u'old_value': u'False', u'value': u'False'},
+                        {u'name': u'Display URL', u'old_value': u'', u'value': u''},
+                        {u'name': u'Brand name', u'old_value': u'', u'value': u''},
+                        {u'name': u'Description', u'old_value': u'', u'value': u''},
+                        {u'name': u'Call to action', u'old_value': u'', u'value': u''},
+                        {u'name': u'Ad group name', u'old_value': u'', u'value': u''},
+                        {u'name': u'Enable GA tracking', u'old_value': u'True', u'value': u'True'},
+                        {u'name': u'GA tracking type (via API or e-mail).', u'old_value': u'Email', u'value': u'Email'},
+                        {u'name': u'Enable Adobe tracking', u'old_value': u'False', u'value': u'False'},
+                        {u'name': u'Adobe tracking parameter', u'old_value': u'', u'value': u''},
+                        {u'name': u'Auto-Pilot', u'old_value': u'Disabled', u'value': u'Disabled'},
+                        {u'name': u'Auto-Pilot\'s Daily Budget', u'old_value': u'$0.00', u'value': u'$0.00'},
                     ],
-                    'show_old_settings': True
+                    u'show_old_settings': True
                 }]
             },
-            'success': True
+            u'success': True
         })
 
 

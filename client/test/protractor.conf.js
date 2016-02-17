@@ -25,7 +25,7 @@ exports.config = {
 
         return browser.driver.wait(function () {
             return browser.driver.getCurrentUrl().then(function (url) {
-                return /all_accounts\/accounts/.test(url);
+                return /accounts\/[0-9]+\/campaigns/.test(url);
             });
         }, 10000);
     },

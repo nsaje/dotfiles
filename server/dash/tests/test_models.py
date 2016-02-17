@@ -40,12 +40,13 @@ class AdGroupSettingsTest(TestCase):
             'archived': False,
             'state': 1,
             'cpc_cc': Decimal('1.00'),
-            'daily_budget_cc': Decimal('50'),
+            'daily_budget_cc': Decimal('50.0000'),
             'start_date': datetime.date(2014, 6, 4),
             'end_date': datetime.date(2014, 6, 5),
-            'target_devices': [],
+            'target_devices': ['mobile'],
             'tracking_code': u'',
-            'target_regions': [],
+            'target_regions': ['US'],
+            'retargeting_ad_groups': [1, 2],
             'display_url': 'example.com',
             'brand_name': 'Example',
             'description': 'Example description',
@@ -97,6 +98,62 @@ class AdGroupSettingsTest(TestCase):
             astimezone(pytz.timezone('UTC')).\
             replace(tzinfo=None)
         self.assertTrue(ad_group_settings.get_utc_start_datetime() < dt)
+
+    def test_get_changes_text_unicode(self):
+        old_settings = models.AdGroupSettings.objects.get(id=1)
+        new_settings = models.AdGroupSettings.objects.get(id=1)
+        new_settings.changes_text = None
+        new_settings.ad_group_name = u'Ččšćžđ name'
+
+        user = User.objects.get(pk=1)
+
+        self.assertEqual(
+            models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
+            u'Ad group name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
+
+    def test_get_changes_text(self):
+        old_settings = models.AdGroupSettings(ad_group_id=1)
+        new_settings = models.AdGroupSettings.objects.get(id=1)
+        new_settings.changes_text = None
+
+        user = User.objects.get(pk=1)
+
+        self.assertEqual(
+            models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
+            'Daily budget set to "$50.00", '
+            'Locations set to "United States", '
+            'Description set to "Example description", '
+            'End date set to "2014-06-05", '
+            'Max CPC bid set to "$1.00", '
+            'Device targeting set to "Mobile", '
+            'Display URL set to "example.com", '
+            'Brand name set to "Example", '
+            'State set to "Enabled", '
+            'Call to action set to "Call to action", '
+            'Ad group name set to "AdGroup name", '
+            'Start date set to "2014-06-04", '
+            'Retargeting ad groups set to "test adgroup 1, test adgroup 2"'
+        )
+
+    def test_get_changes_text_no_permissions(self):
+        user = User.objects.create()
+        old_settings = models.AdGroupSettings(ad_group_id=1)
+        new_settings = models.AdGroupSettings.objects.get(id=1)
+        new_settings.changes_text = None
+
+        user = User.objects.create(email="test.user@test.com")
+
+        self.assertEqual(
+            models.AdGroupSettings.get_changes_text(old_settings, new_settings, user),
+            'Daily budget set to "$50.00", '
+            'Locations set to "United States", '
+            'End date set to "2014-06-05", '
+            'Max CPC bid set to "$1.00", '
+            'Device targeting set to "Mobile", '
+            'State set to "Enabled", '
+            'Ad group name set to "AdGroup name", '
+            'Start date set to "2014-06-04"'
+        )
 
 
 class AdGroupRunningStatusTest(TestCase):

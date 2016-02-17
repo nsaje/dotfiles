@@ -5,6 +5,7 @@ import unicodecsv
 import dateutil.parser
 import rfc3987
 import datetime
+from decimal import Decimal
 
 from collections import Counter
 
@@ -12,6 +13,7 @@ from django import forms
 from django.db import transaction
 from django.core import validators
 
+from automation import autopilot_budgets
 from dash import api
 from dash import constants
 from dash import models
@@ -100,9 +102,34 @@ class AdGroupSettingsForm(forms.Form):
         required=False
     )
 
-    def __init__(self, *args, **kwargs):
-        self.ad_group = kwargs.pop('ad_group')
+    retargeting_ad_groups = forms.ModelMultipleChoiceField(
+        required=False,
+        queryset=None,
+        error_messages={
+            'invalid_choice': 'Invalid ad group selection.'
+        }
+    )
+
+    def __init__(self, ad_group, user, *args, **kwargs):
         super(AdGroupSettingsForm, self).__init__(*args, **kwargs)
+
+        self.ad_group = ad_group
+        self.fields['retargeting_ad_groups'].queryset = models.AdGroup.objects.filter(
+            campaign__account=ad_group.campaign.account).filter_by_user(user)
+
+    def clean_state(self):
+        state = self.cleaned_data.get('state')
+
+        # ACTIVE state is only valid when there is budget to spend
+        if state == constants.AdGroupSettingsState.ACTIVE and\
+                not validation_helpers.ad_group_has_available_budget(self.ad_group):
+            raise forms.ValidationError('Cannot enable ad group without available budget.')
+
+        return state
+
+    def clean_retargeting_ad_groups(self):
+        ad_groups = self.cleaned_data.get('retargeting_ad_groups')
+        return [ag.id for ag in ad_groups]
 
     def clean_end_date(self):
         state = self.cleaned_data.get('state')
@@ -161,6 +188,16 @@ class AdGroupSettingsForm(forms.Form):
         cpc_cc = self.cleaned_data.get('cpc_cc')
         validation_helpers.validate_ad_group_cpc_cc(cpc_cc, self.ad_group)
         return cpc_cc
+
+    def clean_autopilot_daily_budget(self):
+        budget = self.cleaned_data.get('autopilot_daily_budget', 0)
+        ap_state = self.cleaned_data.get('autopilot_state')
+        budget_ap_is_active = ap_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        budget_insufficient = budget < autopilot_budgets.get_adgroup_minimum_daily_budget(self.ad_group)
+        if budget_ap_is_active and budget_insufficient:
+            raise forms.ValidationError(message='Total Daily Budget must be at least $' +
+                                        str(autopilot_budgets.get_adgroup_minimum_daily_budget(self.ad_group)))
+        return self.cleaned_data.get('autopilot_daily_budget')
 
 
 class AdGroupSourceSettingsCpcForm(forms.Form):

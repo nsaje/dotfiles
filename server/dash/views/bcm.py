@@ -184,7 +184,7 @@ class AccountCreditItemView(api_common.BaseApiView):
                 {
                     'campaign': str(b.campaign),
                     'id': b.pk,
-                    'total': b.amount,
+                    'total': b.allocated_amount(),
                     'spend': b.get_spend_data(use_decimal=True)['total'],
                     'start_date': b.start_date,
                     'end_date': b.end_date,
@@ -227,15 +227,16 @@ class CampaignBudgetView(api_common.BaseApiView):
 
     def _prepare_item(self, item):
         spend = item.get_spend_data(use_decimal=True)['total']
+        allocated = item.allocated_amount()
         return {
             'id': item.pk,
             'start_date': item.start_date,
             'end_date': item.end_date,
             'state': item.state(),
             'license_fee': helpers.format_decimal_to_percent(item.credit.license_fee) + '%',
-            'total': item.amount,
+            'total': allocated,
             'spend': spend,
-            'available': item.amount - spend,
+            'available': allocated - spend,
             'is_editable': item.is_editable(),
             'is_updatable': item.is_updatable(),
             'comment': item.comment,

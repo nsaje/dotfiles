@@ -28,13 +28,13 @@
         </zem-help-popover>
 
         <div class="infobox-setting-info" ng-show="isSet(detailsLabel) && isSet(detailsContent) && !detailsVisible">
-            <a ng-click="showDetails()" class="infobox-details-link">(Show {{detailsLabel}})</a> 
+            <a ng-click="showDetails()" class="infobox-details-link">({{detailsLabel}})</a> 
         </div>
 
         <div class="infobox-setting-info-dropped" ng-show="isSet(detailsLabel) && isSet(detailsContent) && detailsVisible">
             <div class="infobox-setting-info-dropped-content" ng-show="detailsVisible">{{ detailsContent }}</div>
             <div ng-show="detailsVisible">
-                <a ng-click="hideDetails()" class="infobox-details-link">Hide {{ detailsLabel }}</a>
+                <a ng-click="hideDetails()" class="infobox-details-link">{{ detailsHideLabel }}</a>
             </div>
         </div>
     </div>

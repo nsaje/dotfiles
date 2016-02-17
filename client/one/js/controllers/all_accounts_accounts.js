@@ -473,6 +473,9 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
+        if (!$scope.hasPermission('zemauth.can_access_all_accounts_infobox')) {
+            return;
+        }
 
         api.allAccountsOverview.get().then(
             function (data) {
