@@ -517,6 +517,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
                 $scope.selectRows();
                 zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
+
             },
             function (data) {
                 // error
@@ -524,7 +525,9 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             }
         ).finally(function () {
             $scope.loadRequestInProgress = false;
-            $scope.reflowGraph();
+            $timeout(function () {
+                $scope.$broadcast('highchartsng.reflow');
+            }, 1);
         });
     };
 
