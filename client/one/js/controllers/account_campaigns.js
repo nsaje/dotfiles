@@ -119,6 +119,18 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             initialOrder: 'asc'
         },
         {
+            name: 'Campaign Manager',
+            field: 'campaign_manager',
+            checked: false,
+            type: 'text',
+            totalRow: false,
+            help: 'Campaign manager responsible for the campaign and the communication with the client.',
+            order: true,
+            initialOrder: 'desc',
+            internal: true,
+            shown: true,
+        },
+        {
             name: 'Total Budget',
             field: 'budget',
             checked: true,
@@ -336,6 +348,12 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
                 'visits', 'pageviews', 'percent_new_users',
                 'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'click_discrepancy'
+            ]
+        },
+        {
+            'name': 'Management',
+            'fields': [
+                'campaign_manager'
             ]
         },
         {

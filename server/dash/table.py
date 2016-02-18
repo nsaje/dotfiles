@@ -1552,6 +1552,7 @@ class AccountCampaignsTable(object):
     def get(self, user, account_id, filtered_sources, start_date, end_date, order, show_archived):
         account = helpers.get_account(user, account_id)
 
+        has_view_managers_permission = True #user.has_perm('zemauth.view_archived_entities')
         has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
         show_archived = show_archived == 'true' and\
             user.has_perm('zemauth.view_archived_entities')
@@ -1561,7 +1562,8 @@ class AccountCampaignsTable(object):
 
         campaigns_settings = models.CampaignSettings.objects\
             .filter(campaign__in=campaigns)\
-            .group_current_settings()
+            .group_current_settings()\
+            .select_related('campaign_manager')
 
         reports_api = get_reports_api_module(user)
         stats = reports.api_helpers.filter_by_permissions(reports_api.query(
@@ -1627,6 +1629,7 @@ class AccountCampaignsTable(object):
                 stats,
                 last_success_actions_joined,
                 order,
+                has_view_managers_permission,
                 has_view_archived_permission,
                 show_archived,
                 campaign_budget,
@@ -1684,7 +1687,7 @@ class AccountCampaignsTable(object):
         )
 
     def get_rows(self, user, account, campaigns, campaigns_settings, campaign_status_dict, stats,
-                 last_actions, order, has_view_archived_permission, show_archived,
+                 last_actions, order, has_view_managers_permission, has_view_archived_permission, show_archived,
                  campaign_budget, campaign_spend):
         rows = []
 
@@ -1717,6 +1720,12 @@ class AccountCampaignsTable(object):
                 continue
 
             row['state'] = campaign_status_dict[campaign.id]
+
+            if has_view_managers_permission:
+                row['campaign_manager'] = None
+                if campaign_settings:
+                    row['campaign_manager'] = helpers.get_user_full_name_or_email(
+                        campaign_settings.campaign_manager, default_value=None)
 
             if has_view_archived_permission:
                 row['archived'] = archived
