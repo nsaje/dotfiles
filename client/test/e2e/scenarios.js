@@ -24,6 +24,7 @@ var Tabs = function () {
     this.campaign = {
         adGroups: element(by.cssContainingText('.nav-tabs .tab-title', 'AD GROUPS')),
         agency: element(by.cssContainingText('.nav-tabs .tab-title', 'AGENCY')),
+        budget: element(by.cssContainingText('.nav-tabs .tab-title', 'BUDGET'))
     };
 };
 
