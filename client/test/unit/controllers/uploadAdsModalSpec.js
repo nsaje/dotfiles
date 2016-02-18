@@ -11,6 +11,7 @@ describe('UploadAdsModalCtrl', function () {
         $q = _$q_;
         $timeout = _$timeout_;
         $scope = $rootScope.$new();
+        $scope.$dismiss = function () {};
 
         openedDeferred = $q.defer();
         $modalInstance = {
@@ -186,21 +187,23 @@ describe('UploadAdsModalCtrl', function () {
             expect($scope.errors).toEqual(data.errors);
         });
 
-        if ('sets errors in case cancel failed', function () {
+        it ('sets errors in case cancel failed', function () {
             var deferred = $q.defer();
             var batchId = 123;
+            $scope.batchId = batchId;
+
             var data = {
                 data: {
                     errors: {
                         cancel: 'Some message about error',
-                    }
-                }
+                    },
+                },
             };
 
             spyOn(api.adGroupAdsPlusUpload, 'cancel').and.callFake(function () {
                 return deferred.promise;
             });
-            spyOn($scope, '$dimiss');
+            spyOn($scope, '$dismiss');
 
             $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
             $scope.cancel();
@@ -217,14 +220,15 @@ describe('UploadAdsModalCtrl', function () {
             expect($scope.cancelActionInProgress).toEqual(false);
         });
 
-        if ('sets cancel in progress parameters', function () {
+        it ('sets cancel in progress parameters', function () {
             var deferred = $q.defer();
             var batchId = 123;
+            $scope.batchId = batchId;
 
             spyOn(api.adGroupAdsPlusUpload, 'cancel').and.callFake(function () {
                 return deferred.promise;
             });
-            spyOn($scope, '$dimiss');
+            spyOn($scope, '$dismiss');
 
             $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
             $scope.cancel();
@@ -236,7 +240,7 @@ describe('UploadAdsModalCtrl', function () {
             expect($scope.uploadCanceled).toEqual(false);
             expect($scope.cancelActionInProgress).toEqual(true);
 
-            deferred.resolve(data);
+            deferred.resolve();
             $scope.$root.$digest();
 
             expect($scope.$dismiss).not.toHaveBeenCalled();

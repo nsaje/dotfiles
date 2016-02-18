@@ -1160,7 +1160,6 @@ class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist():
             raise exc.MissingDataException()
 
-
         if batch.propagated_content_ads >= batch.batch_size:
             raise exc.ValidationError(errors={
                 'cancel': 'Cancel action unsupported at this stage',
