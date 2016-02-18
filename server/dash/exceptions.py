@@ -1,0 +1,3 @@
+
+class UploadCancelledException(Exception):
+    pass
