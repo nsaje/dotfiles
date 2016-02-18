@@ -3,10 +3,7 @@ from decimal import Decimal
 from django.db.models import Sum
 
 
-SHORT_NAME_MAX_LENGTH = 22
 CC_TO_DEC_MULTIPLIER = Decimal('0.0001')
-TO_CC_MULTIPLIER = 10**4
-TO_NANO_MULTIPLIER = 10**9
 
 
 def nano_to_cc(num):
@@ -55,6 +52,9 @@ def calculate_mtd_spend_data(statements, date=None, use_decimal=False):
 
 
 def calculate_spend_data(statements, date=None, use_decimal=False):
+    '''
+    Calculate spend data given the relevant statements
+    '''
     spend_data = {
         'media_cc': 0,
         'data_cc': 0,
@@ -79,30 +79,3 @@ def calculate_spend_data(statements, date=None, use_decimal=False):
         key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
         for key in spend_data.keys()
     }
-
-
-"""
-def get_daily_spend(self, date, use_decimal=False):
-    spend_data = {
-        'media_cc': 0, 'data_cc': 0,
-        'license_fee_cc': 0, 'total_cc': 0,
-    }
-    try:
-        statement = date and self.statements.get(date=date)\
-            or self.get_latest_statement()
-    except ObjectDoesNotExist:
-        pass
-    else:
-        spend_data['media_cc'] = nano_to_cc(statement.media_spend_nano)
-        spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano)
-        spend_data['license_fee_cc'] = nano_to_cc(statement.license_fee_nano)
-        spend_data['total_cc'] = nano_to_cc(
-            statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
-        )
-    if not use_decimal:
-        return spend_data
-    return {
-        key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
-        for key in spend_data.keys()
-    }
-"""

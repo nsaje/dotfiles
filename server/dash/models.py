@@ -2453,14 +2453,14 @@ class BudgetLineItem(FootprintModel):
         '''
         Get month-to-date spend data
         '''
-        return reports.budget_helpers.calculate_mtd_spend_data(
+        return budget_helpers.calculate_mtd_spend_data(
             self.statements,
             date=date,
             use_decimal=use_decimal
         )
 
     def get_spend_data(self, date=None, use_decimal=False):
-        return reports.budget_helpers.calculate_spend_data(
+        return budget_helpers.calculate_spend_data(
             self.statements,
             date=date,
             use_decimal=use_decimal
@@ -2469,7 +2469,7 @@ class BudgetLineItem(FootprintModel):
     def get_daily_spend(self, date, use_decimal=False):
         statement = date and self.statements.filter(date=date)\
             or self.get_latest_statement_qs()
-        return reports.budget_helpers.calculate_spend_data(
+        return budget_helpers.calculate_spend_data(
             statement,
             date=date,
             use_decimal=use_decimal

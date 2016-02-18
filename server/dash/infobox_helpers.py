@@ -154,11 +154,14 @@ def get_media_campaign_spend(user, campaign, until_date=None):
     at_date = until_date or datetime.datetime.utcnow().date()
 
     budgets = _retrieve_active_budgetlineitems([campaign], at_date)
-    ret = Decimal(0)
-    for bli in budgets:
-        spend_data = bli.get_spend_data(date=at_date, use_decimal=True)
-        ret += spend_data['media']
-    return ret
+    daily_statements = reports.models.BudgetDailyStatement.objects.filter(
+        budget__in=budgets,
+    )
+    return reports.budget_helpers.calculate_spend_data(
+        daily_statements,
+        date=at_date,
+        use_decimal=True
+    ).get('media', Decimal(0))
 
 
 @statsd_timer('dash.infobox_helpers', 'get_yesterday_adgroup_spend')
