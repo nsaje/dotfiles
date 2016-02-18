@@ -1418,9 +1418,11 @@ class AdGroupAdsPlusUploadCancelTest(TestCase):
         self.assertFalse(batch.cancelled)
         response = self._get_client(superuser=True).get(
             reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-        batch.refresh_from_db()
+
         response_dict = json.loads(response.content)
         self.assertDictEqual(response_dict, {'success': True})
+
+        batch.refresh_from_db()
         self.assertTrue(batch.cancelled)
 
     def test_permission(self):
@@ -1428,6 +1430,19 @@ class AdGroupAdsPlusUploadCancelTest(TestCase):
             reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         self.assertEqual(response.status_code, 403)
+
+    def test_validation(self):
+        batch = models.UploadBatch.objects.get(pk=2)
+        batch.propagated_content_ads = batch.batch_size
+        batch.save()
+
+        response = self._get_client(superuser=True).get(
+            reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+
+        self.assertEqual(response.status_code, 400)
+
+        response_dict = json.loads(response.content)
+        self.assertEqual(response_dict['data']['errors']['cancel'], 'Cancel action unsupported at this stage')
 
 
 class AdGroupSourcesTest(TestCase):
