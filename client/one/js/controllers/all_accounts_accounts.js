@@ -470,10 +470,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
     };
 
     var getInfoboxData = function () {
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            return;
-        }
-        if (!$scope.hasPermission('zemauth.can_access_all_accounts_infobox')) {
+        if (!$scope.hasInfoboxPermission()) {
             return;
         }
 

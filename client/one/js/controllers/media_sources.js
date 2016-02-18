@@ -671,6 +671,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.infoboxLinkTo = 'main.campaigns.settings';
         }
 
+        if (!hasPermission('zemauth.can_see_infobox')) {
+            $scope.hasInfoboxPermission = false;
+        }
+
         userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
         var sourceIds = $location.search().source_ids;

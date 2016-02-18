@@ -660,10 +660,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     };
 
     var getInfoboxData = function () {
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            return;
-        }
-        if (!$scope.hasPermission('zemauth.can_access_ad_group_infobox')) {
+        if (!$scope.hasInfoboxPermission()) {
             return;
         }
 

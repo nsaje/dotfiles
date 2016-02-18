@@ -423,10 +423,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.getInfoboxData = function () {
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            return;
-        }
-        if (!$scope.hasPermission('zemauth.can_access_campaign_infobox')) {
+        if (!$scope.hasInfoboxPermission()) {
             return;
         }
 

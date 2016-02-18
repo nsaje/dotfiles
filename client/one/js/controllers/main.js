@@ -294,6 +294,10 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.hasInfoboxPermission = function () {
+        if (!hasPermission('zemauth.can_see_infobox')) {
+            return false;
+        }
+
         if ($state.is('main.adGroups.adsPlus') ||
             $state.is('main.adGroups.sources') ||
             $state.is('main.adGroups.publishers')) {

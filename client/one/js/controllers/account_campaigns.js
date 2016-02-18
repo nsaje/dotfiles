@@ -457,10 +457,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
     };
 
     var getInfoboxData = function () {
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            return;
-        }
-        if (!$scope.hasPermission('zemauth.can_access_account_infobox')) {
+        if (!$scope.hasInfoboxPermission()) {
             return;
         }
 
