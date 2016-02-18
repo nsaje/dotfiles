@@ -1,4 +1,4 @@
-/*global $,oneApp,moment,constants*/
+/*global $,oneApp,moment,constants,angular*/
 'use strict';
 
 oneApp.directive('zemChart', ['config', '$compile', '$window', function (config, $compile, $window) {
