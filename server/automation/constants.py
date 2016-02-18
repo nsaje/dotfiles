@@ -14,6 +14,8 @@ class CpcChangeComment(ConstantBase):
     OVER_SOURCE_MAX_CPC = 10
     UNDER_SOURCE_MIN_CPC = 11
     OVER_AD_GROUP_MAX_CPC = 12
+    OVER_AUTOPILOT_MAX_CPC = 13
+    UNDER_AUTOPILOT_MIN_CPC = 14
 
     _VALUES = {
         BUDGET_MANUALLY_CHANGED: 'budget was manually changed recently',
@@ -23,12 +25,18 @@ class CpcChangeComment(ConstantBase):
         OPTIMAL_SPEND: 'it is running at optimal price for given budget',
         BUDGET_NOT_SET: 'daily budget was not set',
         CPC_NOT_SET: 'bid CPC was not set',
-        CURRENT_CPC_TOO_HIGH: 'Auto-Pilot can not operate on such high CPC',
-        CURRENT_CPC_TOO_LOW: 'Auto-Pilot can not operate on such low CPC',
-        OVER_SOURCE_MAX_CPC: 'new bid CPC would exceed media source\'s CPC constraints',
-        UNDER_SOURCE_MIN_CPC: 'new bid CPC would not meet media source\'s minimum CPC constraint',
-        OVER_AD_GROUP_MAX_CPC: 'new bid CPC would exceed ad group\'s maximum CPC constraints'
+        CURRENT_CPC_TOO_HIGH: 'Auto-Pilot can not operate on higher CPC',
+        CURRENT_CPC_TOO_LOW: 'Auto-Pilot can not operate on lower CPC',
+        OVER_SOURCE_MAX_CPC: 'higher bid CPC would exceed media source\'s CPC constraint',
+        UNDER_SOURCE_MIN_CPC: 'lower bid CPC would not meet media source\'s minimum CPC constraint',
+        OVER_AD_GROUP_MAX_CPC: 'higher bid CPC would exceed ad group\'s maximum CPC constraint',
+        OVER_AUTOPILOT_MAX_CPC: 'higher bid CPC would exceed Auto-Pilot\'s maximum allowed CPC constraint',
+        UNDER_AUTOPILOT_MIN_CPC: 'lower bid CPC would not meet Auto-Pilot\'s minimum allowed CPC constraint'
     }
+
+    CPC_CHANGE_ALLOWED_COMMENTS = [CURRENT_CPC_TOO_HIGH, CURRENT_CPC_TOO_LOW, OVER_SOURCE_MAX_CPC,
+                                   UNDER_SOURCE_MIN_CPC, OVER_AD_GROUP_MAX_CPC, OVER_AUTOPILOT_MAX_CPC,
+                                   UNDER_AUTOPILOT_MIN_CPC, CURRENT_CPC_TOO_HIGH, CURRENT_CPC_TOO_LOW]
 
 
 class DailyBudgetChangeComment(ConstantBase):

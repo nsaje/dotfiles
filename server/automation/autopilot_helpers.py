@@ -2,22 +2,15 @@ import datetime
 import logging
 import traceback
 
-from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 
 import dash
-from automation import models
 from automation import autopilot_settings
 import automation.helpers
-import automation.constants
-from automation.constants import DailyBudgetChangeComment
+from automation.constants import DailyBudgetChangeComment, CpcChangeComment
 from dash import constants
 import dash.models
-import reports
 from utils import pagerduty_helper, url_helper
-from utils.statsd_helper import statsd_timer
-from utils.statsd_helper import statsd_gauge
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +83,6 @@ Zemanta
         camp_url=url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign_id)),
         changes=''.join(changesText)
     )
-    print body  # TODO REMOVEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
     try:
         send_mail(
             u'Campaign Auto-Pilot Changes - {camp}, {account}'.format(
@@ -98,12 +90,12 @@ Zemanta
                 account=account_name
             ),
             body,
-            u'Zemanta <{}>'.format(automation.settings.AUTOPILOT_EMAIL),
+            u'Zemanta <{}>'.format(automation.autopilot_settings.AUTOPILOT_EMAIL),
             emails,
             fail_silently=False
         )
     except Exception as e:
-        logger.exception(u'Auto-pilot bid CPC e-mail for campaign %s to %s was not sent' +
+        logger.exception(u'Auto-pilot e-mail for campaign %s to %s was not sent' +
                          'because an exception was raised:',
                          campaign_name,
                          u''.join(emails))
@@ -146,13 +138,15 @@ def _get_email_source_changes_text(ag_source, changes):
         else:
             text += u'daily budget did not change and '
     if cpc_changed:
-        text += u'bid CPC changed from ${} to ${}.'.format(
+        text += u'bid CPC changed from ${} to ${}'.format(
             changes['old_cpc_cc'].normalize(),
             changes['new_cpc_cc'].normalize())
+        if changes['cpc_comments']:
+            text += ' because ' + ' and '.join(CpcChangeComment.get_text(c) for c in changes['cpc_comments'])
     elif changes['cpc_comments'] != []:
         text += u'bid CPC remained unchanged at ${} because {}.'.format(
             changes['old_cpc_cc'].normalize(),
-            ' and '.join(automation.constants.CpcChangeComment.get_text(c) for c in changes['cpc_comments']))
+            ' and '.join(CpcChangeComment.get_text(c) for c in changes['cpc_comments']))
     else:
         text += u'bid CPC remained unchanged at ${}.'.format(
             changes['old_cpc_cc'].normalize())

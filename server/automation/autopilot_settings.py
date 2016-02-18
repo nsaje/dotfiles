@@ -29,7 +29,7 @@ AUTOPILOT_OPTIMAL_SPEND = Decimal('-0.1')
 # Budget Autopilot Settings
 MAX_BUDGET_GAIN = Decimal(1.2)
 MAX_BUDGET_LOSS = Decimal(0.8)
-MIN_SOURCE_BUDGET = Decimal(10.0)
+MIN_SOURCE_BUDGET = Decimal(5.0)
 GOALS_COLUMNS = {
     'bounce_and_spend': {'bounce_rate': 0.7, 'spend_perc': Decimal(0.3)}
 }

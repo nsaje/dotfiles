@@ -1,6 +1,8 @@
 import datetime
 from decimal import Decimal
+from django.db import transaction
 import logging
+import traceback
 
 import dash
 from automation import models
@@ -11,7 +13,7 @@ from automation import autopilot_settings
 import automation.constants
 import dash.constants
 import reports.api_contentads
-from utils import pagerduty_helper, url_helper
+from utils import pagerduty_helper
 from utils.statsd_helper import statsd_timer
 from utils.statsd_helper import statsd_gauge
 from utils import dates_helper
@@ -31,19 +33,19 @@ def run_autopilot():
             budget_changes = autopilot_budgets.\
                 get_autopilot_daily_budget_recommendations(adg, adg_settings.autopilot_daily_budget, data[adg])
 
-        cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(adg, data[adg], budget_ap_changes=budget_changes)
-
-        # TODO Next two functions should probs be in transaction.
-        set_autopilot_changes(cpc_changes, budget_changes)
-        persist_autopilot_changes_to_log(cpc_changes, budget_changes, data[adg], adg_settings.autopilot_state)
-
-        # TODO: If no error in above transaction:
-        email_changes_data = _get_autopilot_campaign_changes_data(adg, email_changes_data, cpc_changes, budget_changes)
+        cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(adg, data[adg], budget_changes=budget_changes)
+        try:
+            with transaction.atomic():
+                set_autopilot_changes(cpc_changes, budget_changes)
+                persist_autopilot_changes_to_log(cpc_changes, budget_changes, data[adg], adg_settings.autopilot_state)
+            email_changes_data = _get_autopilot_campaign_changes_data(
+                adg, email_changes_data, cpc_changes, budget_changes)
+        except Exception as e:
+            _report_autopilot_exception(adg, e)
 
     autopilot_helpers.send_autopilot_changes_emails(email_changes_data, data)
 
     # TODO Report to statsd.
-    # TODO Alert if failed to run AP on adgroup.
 
 
 def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, cpc_changes, budget_changes):
@@ -125,7 +127,7 @@ def prefetch_autopilot_data(ad_groups):
         if adg not in data:
             data[adg] = {}
         data[adg][ag_source] = {}
-        spend_perc = yesterdays_spend_cc / source_setting.daily_budget_cc
+        spend_perc = yesterdays_spend_cc / max(source_setting.daily_budget_cc, autopilot_settings.MIN_SOURCE_BUDGET)
         data[adg][ag_source]['spend_perc'] = spend_perc if spend_perc else Decimal('0')
         data[adg][ag_source]['yesterdays_spend_cc'] = yesterdays_spend_cc
         data[adg][ag_source]['yesterdays_clicks'] = yesterdays_clicks
@@ -150,7 +152,6 @@ def _get_autopilot_enabled_active_sources(ad_groups):
 
 def _fetch_data(ad_groups, sources):
     today = dates_helper.local_today()
-    today = datetime.date(2016, 2, 13) # TODO REMOVE #############################################################################
     yesterday = today - datetime.timedelta(days=1)
     days_ago = yesterday - datetime.timedelta(days=autopilot_settings.AUTOPILOT_DATA_LOOKBACK_DAYS)
 
@@ -198,3 +199,20 @@ def _get_autopilot_campaigns_goals(ad_groups):
         if adg.campaign not in goals:
             goals[adg.campaign] = 'bounce_and_spend'
     return goals
+
+
+def _report_autopilot_exception(adg, e):
+    logger.exception(u'Autopilot failed operating on ad group {}-{} because an exception was raised: {}'.format(
+                     adg,
+                     str(adg.id),
+                     traceback.format_exc(e)))
+    desc = {
+        'ad_group': adg.id
+    }
+    pagerduty_helper.trigger(
+        event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+        incident_key='automation_autopilot_error',
+        description=u'Autopilot failed operating on ad group because an exception was raised: {}'.format(
+            traceback.format_exc(e)),
+        details=desc
+    )
