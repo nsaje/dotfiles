@@ -461,7 +461,7 @@ def submit_ad_group_callback(ad_group_source, source_content_ad_id, submission_s
     return actions
 
 
-def submit_content_ads(content_ad_sources, request):
+def submit_content_ads(content_ad_sources, request, update_progress_fn=None):
     actions = []
 
     by_ags = defaultdict(list)
@@ -472,6 +472,7 @@ def submit_content_ads(content_ad_sources, request):
         k = (content_ad_source.content_ad.ad_group_id, content_ad_source.source_id)
         by_ags[k].append(content_ad_source)
 
+    processed_content_ads = set()
     with transaction.atomic():
         for key, ags_content_ad_sources in by_ags.iteritems():
             if not ags_content_ad_sources:
@@ -535,6 +536,11 @@ def submit_content_ads(content_ad_sources, request):
                         send=False
                     )
                 )
+
+                # notify progress change by content ads
+                if content_ad_source.content_ad_id not in processed_content_ads and update_progress_fn is not None:
+                    processed_content_ads.add(content_ad_source.content_ad_id)
+                    update_progress_fn()
 
     return actions
 

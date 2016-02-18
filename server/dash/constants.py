@@ -140,6 +140,18 @@ class InfoboxLevel(ConstantBase):
     }
 
 
+class InfoboxStatus(ConstantBase):
+    ACTIVE = 'active'
+    INACTIVE = 'inactive'
+    STOPPED = 'stopped'
+
+    _VALUES = {
+        ACTIVE: 'Active',
+        INACTIVE: 'Inactive',
+        STOPPED: 'Stopped',
+    }
+
+
 class PublisherBlacklistLevel(ConstantBase):
 
     ADGROUP = 'adgroup'

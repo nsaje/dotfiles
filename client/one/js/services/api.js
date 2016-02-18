@@ -2555,7 +2555,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         result.status = data.data.status;
                         result.count = data.data.count;
                         result.step = data.data.step;
-                        result.all = data.data.all;
+                        result.batchSize = data.data.batch_size;
 
                         if (data.data.errors) {
                             result.errors = convertValidationErrorsFromApi(data.data.errors);
@@ -2569,15 +2569,33 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return deferred.promise;
         };
 
+        this.cancel = function (adGroupId, batchId) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/' + batchId + '/cancel/';
+
+            $http.get(url).success(deferred.resolve, deferred.reject);
+
+            return deferred.promise;
+        };
+
         function convertValidationErrorsFromApi (errors) {
-            return {
+            var converted = {
                 file: errors.content_ads,
                 batchName: errors.batch_name,
                 displayUrl: errors.display_url,
                 brandName: errors.brand_name,
                 description: errors.description,
-                callToAction: errors.call_to_action
+                callToAction: errors.call_to_action,
             };
+
+            if (errors.details) {
+                converted.details = {
+                    reportUrl: errors.details && errors.details.report_url,
+                    description: errors.details && errors.details.description,
+                };
+            }
+
+            return converted;
         }
     }
 

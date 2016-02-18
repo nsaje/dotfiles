@@ -340,8 +340,6 @@ class CleanRowTest(TestCase):
         expected_data.pop('display_url')
         self.assertItemsEqual(errors, [u'Display URL is invalid.'])
         self.assertEqual(data, expected_data)
-        
-        
 
 
 @patch('dash.upload.redirector_helper.insert_redirect')
@@ -355,6 +353,9 @@ class ProcessCallbackTest(TestCase):
 
         self.actionlog_send_patcher = patch('dash.upload.actionlog.zwei_actions.send')
         self.mock_actionlog_send = self.actionlog_send_patcher.start()
+
+        progress_update_progress_patcher = patch('dash.threads.UpdateUploadBatchThread')
+        progress_update_progress_patcher.start()
 
     def tearDown(self):
         self.save_error_report_patcher.stop()
@@ -409,6 +410,7 @@ class ProcessCallbackTest(TestCase):
 
         batch = models.UploadBatch.objects.create(name=batch_name)
         batch.batch_size = 10
+        batch.save()
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
 
         request = HttpRequest()

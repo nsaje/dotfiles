@@ -1277,9 +1277,10 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
         response = self._get_status()
         self.assertEqual(response, {
             'status': constants.UploadBatchStatus.IN_PROGRESS,
-            'step': 'Processing imported file (step 1/3)',
+            'step': 2,
             'count': 55,
-            'all': 100
+            'batch_size': 100,
+            'cancelled': False,
         })
 
         batch.inserted_content_ads = 55
@@ -1289,26 +1290,142 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
         response = self._get_status()
         self.assertEqual(response, {
             'status': constants.UploadBatchStatus.IN_PROGRESS,
-            'step': 'Inserting content ads (step 2/3)',
+            'step': 3,
             'count': 55,
-            'all': 100
+            'batch_size': 100,
+            'cancelled': False,
         })
 
-        # inserting ended
+        # inserting ended, but did not yet switched
         batch.inserted_content_ads = batch.batch_size
         batch.save()
 
         response = self._get_status()
         self.assertEqual(response, {
             'status': constants.UploadBatchStatus.IN_PROGRESS,
-            'step': 'Sending to external sources (step 3/3)',
-            'count': 0,
-            'all': 0
+            'step': 3,
+            'count': 100,
+            'batch_size': 100,
+            'cancelled': False,
+        })
+
+        batch.propagated_content_ads = 22
+        batch.save()
+
+        response = self._get_status()
+        self.assertEqual(response, {
+            'status': constants.UploadBatchStatus.IN_PROGRESS,
+            'step': 4,
+            'count': 22,
+            'batch_size': 100,
+            'cancelled': False,
+        })
+
+    def test_get_cancelled(self):
+        batch = models.UploadBatch.objects.get(pk=2)
+        batch.processed_content_ads = 55
+        batch.status = constants.UploadBatchStatus.FAILED
+        batch.cancelled = True
+        batch.save()
+
+        response = self._get_status()
+        self.assertEqual(response, {
+            'status': constants.UploadBatchStatus.FAILED,
+            'step': 2,
+            'count': 55,
+            'batch_size': 100,
+            'cancelled': True,
+            'errors': {
+                'details': {
+                    'description': 'Content Ads upload was cancelled.'
+                }
+            }
+        })
+
+    def test_get_failed(self):
+        batch = models.UploadBatch.objects.get(pk=2)
+        batch.processed_content_ads = 55
+        batch.status = constants.UploadBatchStatus.FAILED
+        batch.save()
+
+        response = self._get_status()
+        self.assertEqual(response, {
+            'status': constants.UploadBatchStatus.FAILED,
+            'step': 2,
+            'count': 55,
+            'batch_size': 100,
+            'cancelled': False,
+            'errors': {
+                'details': {
+                    'description': 'An error occured while processing file.'
+                }
+            }
+        })
+
+    def test_get_failed_csv_errors(self):
+        batch = models.UploadBatch.objects.get(pk=2)
+        batch.processed_content_ads = 55
+        batch.status = constants.UploadBatchStatus.FAILED
+        batch.error_report_key = 123
+        batch.num_errors = 12
+        batch.save()
+
+        response = self._get_status()
+        self.assertEqual(response, {
+            'status': constants.UploadBatchStatus.FAILED,
+            'step': 2,
+            'count': 55,
+            'batch_size': 100,
+            'cancelled': False,
+            'errors': {
+                'details': {
+                    'report_url': '/api/ad_groups/1/contentads_plus/upload/2/report/',
+                    'description': 'Found 12 errors.'
+                }
+            }
         })
 
     def test_permission(self):
         response = self._get_client(superuser=False).get(
             reverse('ad_group_ads_plus_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+
+        self.assertEqual(response.status_code, 403)
+
+
+class AdGroupAdsPlusUploadCancelTest(TestCase):
+
+    fixtures = ['test_views.yaml']
+
+    def _get_client(self, superuser=True):
+        password = 'secret'
+
+        user_id = 1 if superuser else 2
+        username = User.objects.get(pk=user_id).email
+
+        client = Client()
+        client.login(username=username, password=password)
+
+        return client
+
+    def _get_status(self):
+        response = self._get_client().get(
+            reverse('ad_group_ads_plus_upload_status', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+
+        return json.loads(response.content)['data']
+
+    def test_get(self):
+        batch = models.UploadBatch.objects.get(pk=2)
+        self.assertFalse(batch.cancelled)
+        response = self._get_client(superuser=True).get(
+            reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+        batch.refresh_from_db()
+        response_dict = json.loads(response.content)
+        self.assertDictEqual(response_dict, {'success': True})
+        self.assertTrue(batch.cancelled)
+
+    def test_permission(self):
+        response = self._get_client(superuser=False).get(
+            reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         self.assertEqual(response.status_code, 403)
 
@@ -2419,7 +2536,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertTrue(response['success'])
         header = response['data']['header']
         self.assertEqual(header['title'], u'AdGroup name')
-        self.assertFalse(header['active'])
+        self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
 
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
@@ -2520,7 +2637,7 @@ class AdGroupOverviewTest(TestCase):
         self.assertTrue(response['success'])
         header = response['data']['header']
         self.assertEqual(header['title'], u'AdGroup name')
-        self.assertFalse(header['active'])
+        self.assertEqual(constants.InfoboxStatus.STOPPED, header['active'])
 
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
@@ -2635,7 +2752,7 @@ class CampaignOverviewTest(TestCase):
 
         header = response['data']['header']
         self.assertEqual(u'test campaign 1 \u010c\u017e\u0161', header['title'])
-        self.assertFalse(header['active'])
+        self.assertEqual(constants.InfoboxStatus.INACTIVE, header['active'])
 
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
