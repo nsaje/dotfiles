@@ -233,21 +233,20 @@ def _prefetch_account_budgets(accounts):
 
 
 def _prefetch_campaign_budgets(campaigns):
-    if campaigns and campaigns[0].account.uses_credits:
-        total_budget, spent_budget = bcm_helpers.get_campaign_media_budget_data(
-            camp.pk for camp in campaigns
-        )
+    account = campaigns.itervalues().next().account if campaigns else None
+    if account and account.uses_credits:
+        total_budget, spent_budget = bcm_helpers.get_campaign_media_budget_data(campaigns.keys())
         return {
             camp.id: {
                 'budget': Decimal(total_budget.get(camp.id, 0)),
                 'spent_budget': Decimal(spent_budget.get(camp.id, 0)),
-            } for camp in campaigns
+            } for camp in campaigns.values()
         }
     return {
         camp.id: {
             'budget': Decimal(budget.CampaignBudget(camp).get_total()),
             'spent_budget': Decimal(budget.CampaignBudget(camp).get_spend())
-        } for camp in campaigns
+        } for camp in campaigns.values()
     }
 
 
@@ -315,9 +314,8 @@ def _populate_campaign_stat(stat, campaign, statuses, settings=None, budgets=Non
     stat['campaign'] = campaign
     stat['account'] = campaign.account.name
     if settings:
-        setting = settings[stat['campaign']]
-        stat['campaing_manager'] = \
-            helpers.get_user_full_name_or_email(setting.campaign_manager, default_value=None)
+        stat['campaign_manager'] = \
+            helpers.get_user_full_name_or_email(settings[campaign.id].campaign_manager, default_value=None)
     if budgets:
         stat['budget'] = budgets[campaign.id].get('budget')
         stat['available_budget'] = stat['budget'] - budgets[campaign.id].get('spent_budget')
