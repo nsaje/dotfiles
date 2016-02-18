@@ -679,12 +679,25 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(10, available_credit)
 
     def test_is_adgroup_active(self):
+        # adgroup is inactive and no active sources
         ad_group = dash.models.AdGroup.objects.get(pk=1)
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        adgs = dash.models.AdGroupSettings(
+            ad_group=ad_group,
+            start_date=start_date,
+            end_date=end_date,
+            state=dash.constants.AdGroupSettingsState.INACTIVE,
+            created_dt=datetime.datetime.utcnow()
+        )
+        adgs.save(None)
+
         self.assertEqual(
-            dash.constants.InfoboxStatus.STOPPED,
+            dash.constants.InfoboxStatus.INACTIVE,
             dash.infobox_helpers.is_adgroup_active(ad_group)
         )
 
+        # adgroup is active and sources are active
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
         adgs = dash.models.AdGroupSettings(
@@ -705,6 +718,35 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE,
+            dash.infobox_helpers.is_adgroup_active(ad_group)
+        )
+
+        # adgroup is active but sources are inactive
+        source_settings = dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group=ad_group
+        ).all()
+        for source in source_settings:
+            source.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
+            source.save(None)
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.STOPPED,
+            dash.infobox_helpers.is_adgroup_active(ad_group)
+        )
+
+        # adgroup is inactive but sources are active
+        adgs.state = dash.constants.AdGroupSettingsState.INACTIVE
+        adgs.save(None)
+
+        source_settings = dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group=ad_group
+        ).all()
+        for source in source_settings:
+            source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+            source.save(None)
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.INACTIVE,
             dash.infobox_helpers.is_adgroup_active(ad_group)
         )
 

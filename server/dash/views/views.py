@@ -290,9 +290,11 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(flight_time_setting.as_dict())
 
+
+
         max_cpc_setting = infobox_helpers.OverviewSetting(
             'Maximum CPC:',
-            lc_helper.default_currency(ad_group_settings.cpc_cc) if ad_group_settings.cpc_cc is not None else '',
+            lc_helper.default_currency(ad_group_settings.cpc_cc) if ad_group_settings.cpc_cc is not None else 'No limit',
         )
         settings.append(max_cpc_setting.as_dict())
 
