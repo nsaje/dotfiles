@@ -192,13 +192,12 @@ def _prefetch_flat_fees(accounts, start_date, end_date):
 
 def _prefetch_account_budgets(accounts):
     accounts_budget, accounts_spend = bcm_helpers.get_account_media_budget_data(acc.pk for acc in accounts)
-    result = {
+    return {
         acc.pk: {
             'budget': Decimal(accounts_budget.get(acc.id, 0)),
             'spent_budget': Decimal(accounts_spend.get(acc.id, 0)),
         } for acc in accounts
     }
-    return result
 
 
 def _prefetch_campaign_budgets(campaigns):
