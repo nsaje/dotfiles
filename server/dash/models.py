@@ -2443,10 +2443,11 @@ class BudgetLineItem(FootprintModel):
         return total_cc * (factor_offset + settings.BUDGET_RESERVE_FACTOR)
 
     def get_latest_statement(self):
-        return self.get_latest_statement_qs().first()
+        return self.statements.all().order_by('-date').first()
 
     def get_latest_statement_qs(self):
-        return self.statements.all().order_by('-date')[:1]
+        latest_statement = self.get_latest_statement()
+        return self.statements.filter(id=latest_statement.id)
 
     def get_mtd_spend_data(self, date=None, use_decimal=False):
         '''

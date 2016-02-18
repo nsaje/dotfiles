@@ -5,6 +5,7 @@ import exceptions
 import utils.lc_helper
 
 import reports.api_helpers
+from django.db.models import Sum
 
 import dash.constants
 import dash.budget
@@ -426,7 +427,7 @@ def calculate_all_accounts_total_budget(start_date, end_date):
     ).exclude(
         end_date__lt=start_date
     ).aggregate(amount_sum=Sum('amount'))
-    return all_amounts_aggregate['amount_sum']
+    return all_amounts_aggregate['amount_sum'] or 0
 
 
 def calculate_all_accounts_monthly_budget(today):
