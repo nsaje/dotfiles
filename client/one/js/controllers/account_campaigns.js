@@ -382,12 +382,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         }
     });
 
-    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    });
-
     var getDailyStatsMetrics = function () {
         var values = $scope.chartMetricOptions.map(function (option) {
             return option.value;
