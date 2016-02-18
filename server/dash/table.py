@@ -752,6 +752,7 @@ class AccountsAccountsTable(object):
         accounts = models.Account.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
         account_ids = set(acc.id for acc in accounts)
 
+        # TODO: prefetch account manager and sales representative
         accounts_settings = models.AccountSettings.objects\
             .filter(account__in=accounts)\
             .group_current_settings()

@@ -520,8 +520,7 @@ class AccountSettings(SettingsBase):
         on_delete=models.PROTECT
     )
     default_sales_representative = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
+        settings.AUTH_USER_MODEL, null=True,
         related_name="+",
         on_delete=models.PROTECT
     )
