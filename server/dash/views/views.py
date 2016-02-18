@@ -256,7 +256,7 @@ class AdGroupOverview(api_common.BaseApiView):
             'title': ad_group_settings.ad_group_name,
             'active': infobox_helpers.is_adgroup_active(ad_group, ad_group_settings),
             'level': constants.InfoboxLevel.ADGROUP,
-            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP),
+            'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP)),
         }
 
         basic_settings, daily_cap = self._basic_settings(request.user, ad_group, ad_group_settings)
@@ -534,7 +534,7 @@ class CampaignOverview(api_common.BaseApiView):
             'title': campaign.name,
             'active': infobox_helpers.is_campaign_active(campaign),
             'level': constants.InfoboxLevel.CAMPAIGN,
-            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.CAMPAIGN),
+            'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.CAMPAIGN)),
         }
 
         basic_settings, daily_cap =\
@@ -674,7 +674,7 @@ class AccountOverview(api_common.BaseApiView):
             'title': account.name,
             'active': constants.InfoboxStatus.INACTIVE,
             'level': constants.InfoboxLevel.ACCOUNT,
-            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT),
+            'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT)),
         }
 
         basic_settings = self._basic_settings(account)
@@ -1899,7 +1899,7 @@ class AllAccountsOverview(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         header = {
-            'title': 'All accounts',
+            'title': None,
             'level': constants.InfoboxLevel.ALL_ACCOUNTS,
             'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ALL_ACCOUNTS),
         }
