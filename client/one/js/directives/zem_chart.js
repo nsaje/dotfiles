@@ -1,7 +1,7 @@
 /*global $,oneApp,moment,constants*/
 'use strict';
 
-oneApp.directive('zemChart', ['config', '$compile', function (config, $compile) {
+oneApp.directive('zemChart', ['config', '$compile', '$window', function (config, $compile, $window) {
     return {
         restrict: 'E',
         scope: {
@@ -155,6 +155,15 @@ oneApp.directive('zemChart', ['config', '$compile', function (config, $compile) 
                     }
                 }
             };
+
+            angular.element($window).bind('resize', function () {
+                var chart = $('.chart').highcharts();
+
+                var w = $('.chart').parent().width(),
+                    h = $('.chart').height();
+                // setsize will trigger the graph redraw 
+                chart.setSize(w, h, false);
+            });
 
             $scope.$watch('data', function (newValue, oldValue) {
                 var i = 0;
