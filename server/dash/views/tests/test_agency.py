@@ -96,218 +96,234 @@ class AdGroupSettingsTest(TestCase):
     @patch('dash.views.agency.actionlog_api')
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put(self, mock_log_useraction, mock_actionlog_api, mock_order_ad_group_settings_update):
-        ad_group = models.AdGroup.objects.get(pk=1)
+        with patch('utils.dates_helper.local_today') as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
 
-        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+            ad_group = models.AdGroup.objects.get(pk=1)
 
-        # we need this to track call order across multiple mocks
-        mock_manager = Mock()
-        mock_manager.attach_mock(mock_actionlog_api, 'mock_actionlog_api')
-        mock_manager.attach_mock(mock_order_ad_group_settings_update, 'mock_order_ad_group_settings_update')
+            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
-        old_settings = ad_group.get_current_settings()
-        self.assertIsNotNone(old_settings.pk)
+            # we need this to track call order across multiple mocks
+            mock_manager = Mock()
+            mock_manager.attach_mock(mock_actionlog_api, 'mock_actionlog_api')
+            mock_manager.attach_mock(mock_order_ad_group_settings_update, 'mock_order_ad_group_settings_update')
 
-        response = self.client.put(
-            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True
-        )
+            old_settings = ad_group.get_current_settings()
+            self.assertIsNotNone(old_settings.pk)
 
-        self.assertEqual(json.loads(response.content), {
-            'data': {
-                'action_is_waiting': True,
-                'default_settings': {
-                    'target_devices': ['mobile'],
-                    'target_regions': ['NC', '501'],
+            response = self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True
+            )
+
+            self.assertEqual(json.loads(response.content), {
+                'data': {
+                    'action_is_waiting': True,
+                    'default_settings': {
+                        'target_devices': ['mobile'],
+                        'target_regions': ['NC', '501'],
+                    },
+                    'settings': {
+                        'cpc_cc': '0.30',
+                        'daily_budget_cc': '200.00',
+                        'end_date': str(datetime.date.today()),
+                        'id': '1',
+                        'name': 'Test ad group name',
+                        'start_date': '2015-05-01',
+                        'state': 1,
+                        'target_devices': ['desktop'],
+                        'target_regions': ['693', 'GB'],
+                        'tracking_code': '',
+                        'enable_ga_tracking': True,
+                        'enable_adobe_tracking': False,
+                        'adobe_tracking_param': '',
+                        'autopilot_state': 1,
+                        'autopilot_daily_budget': '100.00',
+                        'retargeting_ad_groups': [2],
+                        'enable_ga_tracking': False,
+                        'enable_adobe_tracking': False,
+                        'adobe_tracking_param': 'cid',
+                        'tracking_code': 'def=123',
+                        'autopilot_min_budget': '100'
+                    }
                 },
-                'settings': {
-                    'cpc_cc': '0.30',
-                    'daily_budget_cc': '200.00',
-                    'end_date': str(datetime.date.today()),
-                    'id': '1',
-                    'name': 'Test ad group name',
-                    'start_date': '2015-05-01',
-                    'state': 1,
-                    'target_devices': ['desktop'],
-                    'target_regions': ['693', 'GB'],
-                    'tracking_code': '',
-                    'enable_ga_tracking': True,
-                    'enable_adobe_tracking': False,
-                    'adobe_tracking_param': '',
-                    'autopilot_state': 1,
-                    'autopilot_daily_budget': '100.00',
-                    'retargeting_ad_groups': [2],
-                    'enable_ga_tracking': False,
-                    'enable_adobe_tracking': False,
-                    'adobe_tracking_param': 'cid',
-                    'tracking_code': 'def=123',
-                    'autopilot_min_budget': '100'
-                }
-            },
-            'success': True
-        })
+                'success': True
+            })
 
-        new_settings = ad_group.get_current_settings()
+            new_settings = ad_group.get_current_settings()
 
-        self.assertEqual(new_settings.display_url, 'example.com')
-        self.assertEqual(new_settings.brand_name, 'Example')
-        self.assertEqual(new_settings.description, 'Example description')
-        self.assertEqual(new_settings.call_to_action, 'Call to action')
+            self.assertEqual(new_settings.display_url, 'example.com')
+            self.assertEqual(new_settings.brand_name, 'Example')
+            self.assertEqual(new_settings.description, 'Example description')
+            self.assertEqual(new_settings.call_to_action, 'Call to action')
 
-        # this checks if updates to other settings happen before
-        # changing the state of the campaign. This fixes a bug where
-        # setting state to enabled and changing end date from past date
-        # to a future date at the same time would cause a failed ActionLog
-        # on Yahoo because enabling campaign is not possible when
-        # end date is in the past.
-        mock_manager.assert_has_calls([
-            call.mock_order_ad_group_settings_update(
-                ad_group, old_settings, new_settings, ANY, send=False),
-            ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
-            call.mock_actionlog_api.init_set_ad_group_state(ad_group, constants.AdGroupSettingsState.ACTIVE,
-                                                            ANY, send=False)
-        ])
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request, constants.UserActionType.SET_AD_GROUP_SETTINGS, ad_group=ad_group)
+            # this checks if updates to other settings happen before
+            # changing the state of the campaign. This fixes a bug where
+            # setting state to enabled and changing end date from past date
+            # to a future date at the same time would cause a failed ActionLog
+            # on Yahoo because enabling campaign is not possible when
+            # end date is in the past.
+            mock_manager.assert_has_calls([
+                call.mock_order_ad_group_settings_update(
+                    ad_group, old_settings, new_settings, ANY, send=False),
+                ANY, ANY,  # this is necessary because calls to __iter__ and __len__ happen
+                call.mock_actionlog_api.init_set_ad_group_state(ad_group, constants.AdGroupSettingsState.ACTIVE,
+                                                                ANY, send=False)
+            ])
+            mock_log_useraction.assert_called_with(
+                response.wsgi_request, constants.UserActionType.SET_AD_GROUP_SETTINGS, ad_group=ad_group)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
     def test_put_without_non_propagated_settings(self, mock_actionlog_api, mock_order_ad_group_settings_update):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
-        old_settings = ad_group.get_current_settings()
+        with patch('utils.dates_helper.local_today') as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
 
-        self.assertIsNotNone(old_settings.pk)
+            ad_group = models.AdGroup.objects.get(pk=1)
+            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+            old_settings = ad_group.get_current_settings()
 
-        self.settings_dict['settings']['cpc_cc'] = None
-        self.settings_dict['settings']['daily_budget_cc'] = None
+            self.assertIsNotNone(old_settings.pk)
 
-        response = self.client.put(
-            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True
-        )
+            self.settings_dict['settings']['cpc_cc'] = None
+            self.settings_dict['settings']['daily_budget_cc'] = None
 
-        response_settings_dict = json.loads(response.content)['data']['settings']
+            response = self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True
+            )
 
-        self.assertEqual(response_settings_dict['cpc_cc'], '')
-        self.assertEqual(response_settings_dict['daily_budget_cc'], '')
+            response_settings_dict = json.loads(response.content)['data']['settings']
 
-        new_settings = ad_group.get_current_settings()
+            self.assertEqual(response_settings_dict['cpc_cc'], '')
+            self.assertEqual(response_settings_dict['daily_budget_cc'], '')
 
-        request = HttpRequest()
-        request.user = User(id=1)
+            new_settings = ad_group.get_current_settings()
 
-        # can it actually be saved to the db
-        new_settings.save(request)
+            request = HttpRequest()
+            request.user = User(id=1)
 
-        self.assertEqual(new_settings.cpc_cc, None)
-        self.assertEqual(new_settings.daily_budget_cc, None)
+            # can it actually be saved to the db
+            new_settings.save(request)
 
-        mock_order_ad_group_settings_update.assert_called_with(
-            ad_group, old_settings, new_settings, ANY, send=False)
+            self.assertEqual(new_settings.cpc_cc, None)
+            self.assertEqual(new_settings.daily_budget_cc, None)
+
+            mock_order_ad_group_settings_update.assert_called_with(
+                ad_group, old_settings, new_settings, ANY, send=False)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
                                            mock_order_ad_group_settings_update):
-        ad_group = models.AdGroup.objects.get(pk=10)
+        with patch('utils.dates_helper.local_today') as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
 
-        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+            ad_group = models.AdGroup.objects.get(pk=10)
 
-        # this ad group does not have settings
-        current_settings = ad_group.get_current_settings()
-        self.assertIsNone(current_settings.pk)
+            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
-        self.settings_dict['settings']['id'] = 10
+            # this ad group does not have settings
+            current_settings = ad_group.get_current_settings()
+            self.assertIsNone(current_settings.pk)
 
-        response = self.client.put(
-            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True
-        )
+            self.settings_dict['settings']['id'] = 10
 
-        self.assertEqual(json.loads(response.content), {
-            'data': {
-                'action_is_waiting': True,
-                'default_settings': {
-                    'target_devices': ['mobile'],
-                    'target_regions': ['NC', '501'],
+            response = self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True
+            )
+
+            self.assertEqual(json.loads(response.content), {
+                'data': {
+                    'action_is_waiting': True,
+                    'default_settings': {
+                        'target_devices': ['mobile'],
+                        'target_regions': ['NC', '501'],
+                    },
+                    'settings': {
+                        'cpc_cc': '0.30',
+                        'daily_budget_cc': '200.00',
+                        'end_date': str(datetime.date.today()),
+                        'id': '10',
+                        'name': 'Test ad group name',
+                        'start_date': '2015-05-01',
+                        'state': 1,
+                        'target_devices': ['desktop'],
+                        'target_regions': ['693', 'GB'],
+                        'tracking_code': '',
+                        'enable_ga_tracking': True,
+                        'adobe_tracking_param': '',
+                        'enable_adobe_tracking': False,
+                        'autopilot_state': 1,
+                        'autopilot_daily_budget': '100.00',
+                        'retargeting_ad_groups': [2],
+                        'enable_ga_tracking': False,
+                        'enable_adobe_tracking': False,
+                        'adobe_tracking_param': 'cid',
+                        'tracking_code': 'def=123',
+                        'autopilot_min_budget': '100'
+                    }
                 },
-                'settings': {
-                    'cpc_cc': '0.30',
-                    'daily_budget_cc': '200.00',
-                    'end_date': str(datetime.date.today()),
-                    'id': '10',
-                    'name': 'Test ad group name',
-                    'start_date': '2015-05-01',
-                    'state': 1,
-                    'target_devices': ['desktop'],
-                    'target_regions': ['693', 'GB'],
-                    'tracking_code': '',
-                    'enable_ga_tracking': True,
-                    'adobe_tracking_param': '',
-                    'enable_adobe_tracking': False,
-                    'autopilot_state': 1,
-                    'autopilot_daily_budget': '100.00',
-                    'retargeting_ad_groups': [2],
-                    'enable_ga_tracking': False,
-                    'enable_adobe_tracking': False,
-                    'adobe_tracking_param': 'cid',
-                    'tracking_code': 'def=123',
-                    'autopilot_min_budget': '100'
-                }
-            },
-            'success': True
-        })
+                'success': True
+            })
 
-        new_settings = ad_group.get_current_settings()
-        self.assertIsNotNone(new_settings.pk)
+            new_settings = ad_group.get_current_settings()
+            self.assertIsNotNone(new_settings.pk)
 
-        mock_actionlog_api.init_set_ad_group_state.assert_called_with(ad_group, constants.AdGroupSettingsState.ACTIVE,
-                                                                      ANY, send=False)
+            mock_actionlog_api.init_set_ad_group_state.assert_called_with(ad_group, constants.AdGroupSettingsState.ACTIVE,
+                                                                        ANY, send=False)
 
-        # uses 'ANY' instead of 'current_settings' because before settings are created, the
-        # 'get_current_settings' returns a new AdGroupSettings instance each time
-        mock_order_ad_group_settings_update.assert_called_with(
-            ad_group, ANY, new_settings, response.wsgi_request, send=False)
+            # uses 'ANY' instead of 'current_settings' because before settings are created, the
+            # 'get_current_settings' returns a new AdGroupSettings instance each time
+            mock_order_ad_group_settings_update.assert_called_with(
+                ad_group, ANY, new_settings, response.wsgi_request, send=False)
 
-        # when saving settings, previous ad_group.name gets added to previous settings
-        # - and the only time it makes a real difference is the first time the settings are
-        # saved
-        current_settings.ad_group_name = 'test adgroup 10'
+            # when saving settings, previous ad_group.name gets added to previous settings
+            # - and the only time it makes a real difference is the first time the settings are
+            # saved
+            current_settings.ad_group_name = 'test adgroup 10'
 
-        self.assertDictEqual(
-            mock_order_ad_group_settings_update.call_args[0][1].get_settings_dict(),
-            current_settings.get_settings_dict()
-        )
+            self.assertDictEqual(
+                mock_order_ad_group_settings_update.call_args[0][1].get_settings_dict(),
+                current_settings.get_settings_dict()
+            )
 
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.SET_AD_GROUP_SETTINGS,
-            ad_group=ad_group)
+            mock_log_useraction.assert_called_with(
+                response.wsgi_request,
+                constants.UserActionType.SET_AD_GROUP_SETTINGS,
+                ad_group=ad_group)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
     def test_put_tracking_codes_with_permission(self, mock_actionlog_api, mock_order_ad_group_settings_update):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+        with patch('utils.dates_helper.local_today') as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
 
-        self.settings_dict['settings']['tracking_code'] = 'asd=123'
-        self.settings_dict['settings']['enable_ga_tracking'] = False
+            ad_group = models.AdGroup.objects.get(pk=1)
+            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
-        response = self.client.put(
-            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True
-        )
+            self.settings_dict['settings']['tracking_code'] = 'asd=123'
+            self.settings_dict['settings']['enable_ga_tracking'] = False
 
-        response_settings_dict = json.loads(response.content)['data']['settings']
+            response = self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True
+            )
 
-        self.assertEqual(response_settings_dict['tracking_code'], 'asd=123')
-        self.assertEqual(response_settings_dict['enable_ga_tracking'], False)
+            response_settings_dict = json.loads(response.content)['data']['settings']
+
+            self.assertEqual(response_settings_dict['tracking_code'], 'asd=123')
+            self.assertEqual(response_settings_dict['enable_ga_tracking'], False)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
@@ -350,21 +366,25 @@ class AdGroupSettingsTest(TestCase):
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
     def test_end_date_in_the_past(self, mock_actionlog_api, mock_order_ad_group_settings_update):
-        ad_group = models.AdGroup.objects.get(pk=1)
+        with patch('utils.dates_helper.local_today') as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
 
-        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+            ad_group = models.AdGroup.objects.get(pk=1)
 
-        self.settings_dict['settings']['end_date'] = '2015-05-02'
+            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
-        response = self.client.put(
-            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True
-        )
+            self.settings_dict['settings']['end_date'] = '2015-05-02'
 
-        response_dict = json.loads(response.content)
-        self.assertFalse(response_dict['success'])
-        self.assertIn('end_date', response_dict['data']['errors'])
+            response = self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True
+            )
+
+            response_dict = json.loads(response.content)
+            self.assertFalse(response_dict['success'])
+            self.assertIn('end_date', response_dict['data']['errors'])
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
@@ -388,31 +408,35 @@ class AdGroupSettingsTest(TestCase):
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
     def test_put_set_settings_no_permissions(self, mock_actionlog_api, mock_order_ad_group_settings_update):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+        with patch('utils.dates_helper.local_today') as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
 
-        user = User.objects.get(pk=2)
-        user.user_permissions.add(Permission.objects.get(codename='settings_view'))
+            ad_group = models.AdGroup.objects.get(pk=1)
+            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
 
-        client = Client()
-        client.login(username=user.email, password='secret')
+            user = User.objects.get(pk=2)
+            user.user_permissions.add(Permission.objects.get(codename='settings_view'))
 
-        response = client.put(
-            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True
-        )
+            client = Client()
+            client.login(username=user.email, password='secret')
 
-        response_settings_dict = json.loads(response.content)['data']['settings']
+            response = client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True
+            )
 
-        self.assertNotEqual(response_settings_dict['cpc_cc'], '0.3000')
-        self.assertNotEqual(response_settings_dict['enable_ga_tracking'], False)
-        self.assertNotEqual(response_settings_dict['tracking_code'], 'def=123')
-        self.assertNotEqual(response_settings_dict['enable_adobe_tracking'], False)
-        self.assertNotEqual(response_settings_dict['adobe_tracking_param'], 'cid')
-        self.assertNotEqual(response_settings_dict['autopilot_state'], 2)
-        self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '100.0000')
-        self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
+            response_settings_dict = json.loads(response.content)['data']['settings']
+
+            self.assertNotEqual(response_settings_dict['cpc_cc'], '0.3000')
+            self.assertNotEqual(response_settings_dict['enable_ga_tracking'], False)
+            self.assertNotEqual(response_settings_dict['tracking_code'], 'def=123')
+            self.assertNotEqual(response_settings_dict['enable_adobe_tracking'], False)
+            self.assertNotEqual(response_settings_dict['adobe_tracking_param'], 'cid')
+            self.assertNotEqual(response_settings_dict['autopilot_state'], 2)
+            self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '100.0000')
+            self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
 
 
 class AdGroupSettingsStateTest(TestCase):
@@ -1562,133 +1586,6 @@ class UserActivationTest(TestCase):
 
         decoded_response = json.loads(response.content)
         self.assertFalse(decoded_response.get('success'), 'Failed sending message')
-
-
-class CampaignBudgetTest(TestCase):
-    fixtures = ['test_views.yaml']
-
-    def setUp(self):
-        with patch('django.utils.timezone.now') as mock_now:
-            mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
-
-    @patch('dash.views.agency.budget.CampaignBudget')
-    def test_get(self, MockCampaignBudget):
-        password = 'secret'
-        self.user = User.objects.get(pk=1)
-        self.client.login(username=self.user.email, password=password)
-
-        MockCampaignBudget.return_value.get_total.return_value = 1000
-        MockCampaignBudget.return_value.get_spend.return_value = 666
-        MockCampaignBudget.return_value.get_history.return_value = [models.CampaignBudgetSettings.
-                                                                    objects.get(pk=1)]
-
-        response = self.client.get(
-            '/api/campaigns/1/budget/'
-        )
-        content = json.loads(response.content)
-
-        self.assertTrue(content['success'])
-        self.assertEqual(content['data']['total'], 1000)
-        self.assertEqual(content['data']['available'], 334)
-        self.assertEqual(content['data']['spend'], 666)
-        self.assertEqual(content['data']['history'], [{
-            'comment': u'Added budget',
-            'revoke': 0.0,
-            'datetime': u'2015-09-23T05:57:22',
-            'user': u'superuser@test.com',
-            'total': 1000.0,
-            'allocate': 1000.0
-        }])
-
-    def test_get_no_permission(self):
-        password = 'secret'
-        self.user = User.objects.get(pk=2)
-        self.client.login(username=self.user.email, password=password)
-
-        permission = Permission.objects.get(codename='campaign_budget_management_view')
-        self.user.user_permissions.remove(permission)
-
-        response = self.client.get(
-            '/api/campaigns/1/budget/'
-        )
-        content = json.loads(response.content)
-
-        self.assertFalse(content['success'])
-        self.assertEqual(response.status_code, 404)
-
-    @patch('dash.views.helpers.log_useraction_if_necessary')
-    @patch('dash.views.agency.budget.CampaignBudget')
-    @patch('dash.views.agency.email_helper.send_budget_notification_email')
-    def test_put(self, mock_send_budget_notification_email, MockCampaignBudget, mock_log_useraction):
-        password = 'secret'
-        self.user = User.objects.get(pk=1)
-        self.client.login(username=self.user.email, password=password)
-
-        MockCampaignBudget.return_value.get_total.return_value = 1000
-        MockCampaignBudget.return_value.get_spend.return_value = 666
-        MockCampaignBudget.return_value.get_history.return_value = [models.CampaignBudgetSettings.
-                                                                    objects.get(pk=1)]
-
-        response = self.client.put(
-            '/api/campaigns/1/budget/',
-            json.dumps({
-                'action': 'allocate',
-                'amount': 1000,
-            }),
-            content_type='application/json',
-        )
-        content = json.loads(response.content)
-
-        campaign = models.Campaign.objects.get(pk=1)
-
-        self.assertTrue(content['success'])
-        self.assertEqual(content['data']['total'], 1000)
-        self.assertEqual(content['data']['available'], 334)
-        self.assertEqual(content['data']['spend'], 666)
-        self.assertEqual(content['data']['history'], [{
-            'comment': u'Added budget',
-            'revoke': 0.0,
-            'datetime': u'2015-09-23T05:57:22',
-            'user': u'superuser@test.com',
-            'total': 1000.0,
-            'allocate': 1000.0
-        }])
-
-        MockCampaignBudget.return_value.edit.assert_called_with(
-            revoke_amount=0, allocate_amount=1000.0, request=response.wsgi_request
-        )
-        mock_send_budget_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
-        mock_log_useraction.assert_called_with(
-            response.wsgi_request,
-            constants.UserActionType.SET_CAMPAIGN_BUDGET,
-            campaign=campaign
-        )
-
-    @patch('dash.views.agency.budget.CampaignBudget')
-    @patch('dash.views.agency.email_helper.send_campaign_notification_email')
-    def test_put_no_permission(self, mock_send_campaign_notification_email, MockCampaignBudget):
-        password = 'secret'
-        self.user = User.objects.get(pk=2)
-        self.client.login(username=self.user.email, password=password)
-
-        permission = Permission.objects.get(codename='campaign_budget_management_view')
-        self.user.user_permissions.remove(permission)
-
-        response = self.client.put(
-            '/api/campaigns/1/budget/',
-            json.dumps({
-                'action': 'allocate',
-                'amount': 1000,
-            }),
-            content_type='application/json',
-        )
-        content = json.loads(response.content)
-
-        self.assertFalse(content['success'])
-        self.assertEqual(response.status_code, 404)
-
-        self.assertFalse(MockCampaignBudget.return_value.edit.called)
-        self.assertFalse(mock_send_campaign_notification_email.called)
 
 
 class CampaignAgencyTest(TestCase):

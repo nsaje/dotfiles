@@ -7,7 +7,6 @@ from collections import OrderedDict
 
 from dash import models
 from dash import stats_helper
-from dash import budget
 from dash import constants
 from dash import bcm_helpers
 from dash.views import helpers
@@ -192,41 +191,24 @@ def _prefetch_flat_fees(accounts, start_date, end_date):
 
 
 def _prefetch_account_budgets(accounts):
-    all_accounts_budget = budget.GlobalBudget().get_total_by_account()
-    all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
+    accounts_budget, accounts_spend = bcm_helpers.get_account_media_budget_data(acc.pk for acc in accounts)
     result = {
-        acc.id: {
-            'budget': Decimal(all_accounts_budget.get(acc.id, 0)),
-            'spent_budget': Decimal(all_accounts_total_spend.get(acc.id, 0))
-        } for acc in accounts if not acc.uses_credits
-    }
-    accounts_budget, accounts_spend = bcm_helpers.get_account_media_budget_data(
-        acc.pk for acc in accounts if acc.uses_credits
-    )
-    result.update({
         acc.pk: {
             'budget': Decimal(accounts_budget.get(acc.id, 0)),
             'spent_budget': Decimal(accounts_spend.get(acc.id, 0)),
-        } for acc in accounts if acc.uses_credits
-    })
+        } for acc in accounts
+    }
     return result
 
 
 def _prefetch_campaign_budgets(campaigns):
-    if campaigns and campaigns[0].account.uses_credits:
-        total_budget, spent_budget = bcm_helpers.get_campaign_media_budget_data(
-            camp.pk for camp in campaigns
-        )
-        return {
-            camp.id: {
-                'budget': Decimal(total_budget.get(camp.id, 0)),
-                'spent_budget': Decimal(spent_budget.get(camp.id, 0)),
-            } for camp in campaigns
-        }
+    total_budget, spent_budget = bcm_helpers.get_campaign_media_budget_data(
+        camp.pk for camp in campaigns
+    )
     return {
         camp.id: {
-            'budget': Decimal(budget.CampaignBudget(camp).get_total()),
-            'spent_budget': Decimal(budget.CampaignBudget(camp).get_spend())
+            'budget': Decimal(total_budget.get(camp.id, 0)),
+            'spent_budget': Decimal(spent_budget.get(camp.id, 0)),
         } for camp in campaigns
     }
 
