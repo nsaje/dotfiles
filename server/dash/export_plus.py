@@ -53,9 +53,9 @@ FIELDNAMES = {
     'flat_fee': 'Recognized Flat Fee',
     'spend_projection': 'Spend projection',
     'credit_projection': 'Total credit',
-    'default_account_manager': 'Account manager',
-    'default_sales_representative': 'Sales representative',
-    'campaign_manager': 'Campaign manager',
+    'default_account_manager': 'Account Manager',
+    'default_sales_representative': 'Sales Representative',
+    'campaign_manager': 'Campaign Manager',
 }
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
