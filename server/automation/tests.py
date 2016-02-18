@@ -310,7 +310,7 @@ class BetaBanditTestCase(test.TestCase):
         ags = models.AdGroupSource.objects.filter(ad_group=4)
         self.assertEqual(ags.count(), 3)
 
-        bandit = automation.autopilot_budgets.BetaBandit(ags)
+        bandit = automation.autopilot_budgets.BetaBandit([a for a in ags])
 
         for i in range(100):
             bandit.add_result(ags[0], True)

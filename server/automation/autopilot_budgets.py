@@ -134,8 +134,9 @@ class BetaBandit(object):
     def __init__(self, sources, backup_sources=[], prior=(1.0, 1.0)):
         self.sources = sources[:]
         self.backup_sources = backup_sources[:]
-        self.trials = {s: 0 for s in sources+backup_sources}
-        self.successes = {s: 0 for s in sources+backup_sources}
+        all_sources = list(set(sources) | set(backup_sources))
+        self.trials = {s: 0 for s in all_sources}
+        self.successes = {s: 0 for s in all_sources}
         self.prior = prior
         self.banned_sources = []
 

@@ -61,7 +61,6 @@ def send_autopilot_changes_emails(email_changes_data, data):
 
 
 def send_autopilot_changes_email(campaign_name, campaign_id, account_name, emails, changes_data):
-    print changes_data
     changesText = []
     for adgroup, adgroup_changes in changes_data.iteritems():
         changesText.append(_get_email_adgroup_text(adgroup))
