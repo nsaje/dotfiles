@@ -476,19 +476,37 @@ def _retrieve_active_budgetlineitems(campaign, date):
     return qs.filter_active(date)
 
 
+def is_adgroup_active(ad_group, ad_group_settings=None):
+    if not ad_group_settings:
+        ad_group_settings = ad_group.get_current_settings()
+
+    ad_group_source_settings = dash.models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__ad_group=ad_group
+    ).group_current_settings()
+
+    running_status = dash.models.AdGroup.get_running_status(ad_group_settings, ad_group_source_settings)
+    state = ad_group_settings.state if ad_group_settings else dash.constants.AdGroupSettingsState.INACTIVE
+
+    infobox_status = dash.constants.InfoboxStatus.ACTIVE
+    if running_status == dash.constants.AdGroupRunningStatus.INACTIVE:
+        infobox_status = dash.constants.InfoboxStatus.STOPPED
+    elif running_status == dash.constants.AdGroupRunningStatus.ACTIVE and\
+            state == dash.constants.AdGroupSettingsState.INACTIVE:
+        infobox_status = dash.constants.InfoboxStatus.INACTIVE
+    return infobox_status
+
+
 @statsd_timer('dash.infobox_helpers', 'is_campaign_active')
 def is_campaign_active(campaign):
-    active = False
-
     ad_groups_settings = dash.models.AdGroupSettings.objects.filter(
         ad_group__campaign=campaign
     ).group_current_settings()
 
     for ad_group_settings in ad_groups_settings:
-        running_status = dash.models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
-        if running_status == dash.constants.AdGroupRunningStatus.ACTIVE:
-            active = True
-    return active
+        ad_group = ad_group_settings.ad_group
+        if is_adgroup_active(ad_group, ad_group_settings) == dash.constants.InfoboxStatus.ACTIVE:
+            return dash.constants.InfoboxStatus.ACTIVE
+    return dash.constants.InfoboxStatus.INACTIVE
 
 
 @statsd_timer('dash.infobox_helpers', '_retrieve_active_creditlineitems')
