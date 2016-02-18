@@ -488,10 +488,12 @@ def is_adgroup_active(ad_group, ad_group_settings=None):
     state = ad_group_settings.state if ad_group_settings else dash.constants.AdGroupSettingsState.INACTIVE
 
     infobox_status = dash.constants.InfoboxStatus.ACTIVE
-    if running_status == dash.constants.AdGroupRunningStatus.INACTIVE:
-        infobox_status = dash.constants.InfoboxStatus.STOPPED
-    elif running_status == dash.constants.AdGroupRunningStatus.ACTIVE and\
+    if running_status == dash.constants.AdGroupRunningStatus.INACTIVE and\
+            state == dash.constants.AdGroupSettingsState.ACTIVE or\
+            running_status == dash.constants.AdGroupRunningStatus.ACTIVE and\
             state == dash.constants.AdGroupSettingsState.INACTIVE:
+        infobox_status = dash.constants.InfoboxStatus.STOPPED
+    elif state == dash.constants.AdGroupSettingsState.INACTIVE:
         infobox_status = dash.constants.InfoboxStatus.INACTIVE
     return infobox_status
 
