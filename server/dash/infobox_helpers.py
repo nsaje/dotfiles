@@ -520,6 +520,19 @@ def is_campaign_active(campaign):
     return dash.constants.InfoboxStatus.INACTIVE
 
 
+@statsd_timer('dash.infobox_helpers', 'is_account_active')
+def is_account_active(account):
+    ad_groups_settings = dash.models.AdGroupSettings.objects.filter(
+        ad_group__campaign__account=account
+    ).group_current_settings()
+
+    for ad_group_settings in ad_groups_settings:
+        ad_group = ad_group_settings.ad_group
+        if is_adgroup_active(ad_group, ad_group_settings) == dash.constants.InfoboxStatus.ACTIVE:
+            return dash.constants.InfoboxStatus.ACTIVE
+    return dash.constants.InfoboxStatus.INACTIVE
+
+
 @statsd_timer('dash.infobox_helpers', '_retrieve_active_creditlineitems')
 def _retrieve_active_creditlineitems(account, date):
     return [credit for credit in dash.models.CreditLineItem.objects.filter(
