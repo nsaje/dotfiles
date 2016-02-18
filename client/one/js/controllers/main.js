@@ -303,16 +303,19 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if ($state.is('main.adGroups.adsPlus') ||
             $state.is('main.adGroups.sources') ||
             $state.is('main.adGroups.publishers')) {
+            $scope.infoboxVisible = true;
             return $scope.hasPermission('zemauth.can_access_ad_group_infobox');
         }
 
         if ($state.is('main.campaigns.ad_groups') ||
             $state.is('main.campaigns.sources')) {
+            $scope.infoboxVisible = true;
             return $scope.hasPermission('zemauth.can_access_campaign_infobox');
         }
 
         if ($state.is('main.accounts.campaigns') ||
             $state.is('main.accounts.sources')) {
+            $scope.infoboxVisible = true;
             return $scope.hasPermission('zemauth.can_access_account_infobox');
         }
 
@@ -440,9 +443,12 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         zemNavigationService.reload();
 
         var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
-        userSettings.registerGlobal('infoboxVisible');
         userSettings.registerGlobal('graphVisible');
         userSettings.registerGlobal('navigationPaneVisible');
+        if ($state.is('main.allAccounts.accounts') ||
+            $state.is('main.allAccounts.sources')) {
+            userSettings.registerGlobal('infoboxVisible');
+        }
     };
 
     $scope.init();
