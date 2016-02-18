@@ -671,7 +671,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.infoboxLinkTo = 'main.campaigns.settings';
         }
 
-        if (!hasPermission('zemauth.can_see_infobox')) {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             $scope.hasInfoboxPermission = false;
         }
 
