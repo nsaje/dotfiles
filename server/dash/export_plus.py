@@ -55,6 +55,7 @@ FIELDNAMES = {
     'credit_projection': 'Total credit',
     'default_account_manager': 'Account manager',
     'default_sales_representative': 'Sales representative',
+    'campaign_manager': 'Campaign manager',
 }
 
 UNEXPORTABLE_FIELDS = ['last_sync', 'supply_dash_url', 'state',
@@ -85,7 +86,7 @@ FORMAT_EMPTY_TO_0 = [
 
 
 def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff_rows,
-                   conversion_goals, include_budgets=False, include_flat_fees=False,
+                   conversion_goals, include_settings=False, include_budgets=False, include_flat_fees=False,
                    include_projections=False, **constraints):
     stats = stats_helper.get_stats_with_conversions(
         user,
@@ -102,7 +103,7 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         stats,
         start_date,
         end_date,
-        include_settings=True,
+        include_settings=include_settings,
         include_budgets=include_budgets,
         include_flat_fees=include_flat_fees,
         include_projections=include_projections)
@@ -119,7 +120,8 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         elif 'ad_group' in dimensions:
             stat = _populate_ad_group_stat(stat, prefetched_data[stat['ad_group']], statuses=statuses)
         elif 'campaign' in dimensions:
-            stat = _populate_campaign_stat(stat, prefetched_data[stat['campaign']], statuses=statuses, budgets=budgets)
+            stat = _populate_campaign_stat(stat, prefetched_data[stat['campaign']],
+                                           settings=settings, statuses=statuses, budgets=budgets)
         elif 'account' in dimensions:
             stat = _populate_account_stat(stat, prefetched_data, statuses,
                                           settings=settings, projections=projections,
@@ -309,9 +311,13 @@ def _populate_ad_group_stat(stat, ad_group, statuses):
     return stat
 
 
-def _populate_campaign_stat(stat, campaign, statuses, budgets=None):
+def _populate_campaign_stat(stat, campaign, statuses, settings=None, budgets=None):
     stat['campaign'] = campaign
     stat['account'] = campaign.account.name
+    if settings:
+        setting = settings[stat['campaign']]
+        stat['campaing_manager'] = \
+            helpers.get_user_full_name_or_email(setting.campaign_manager, default_value=None)
     if budgets:
         stat['budget'] = budgets[campaign.id].get('budget')
         stat['available_budget'] = stat['budget'] - budgets[campaign.id].get('spent_budget')
@@ -510,6 +516,8 @@ class AllAccountsExport(object):
             dimensions.extend(['account', 'campaign', 'ad_group'])
         required_fields.extend(['status'])
 
+        include_settings = any(field in additional_fields for field in
+                               ['default_account_manager', 'default_sales_representative'])
         include_budgets = (
             any([
                 field in additional_fields
@@ -538,6 +546,7 @@ class AllAccountsExport(object):
             order,
             False,
             [],
+            include_settings=include_settings,
             include_budgets=include_budgets,
             include_flat_fees=include_flat_fees,
             include_projections=include_projections,
@@ -575,6 +584,7 @@ class AccountExport(object):
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
+        include_settings = 'campaign_manager' in additional_fields
         include_budgets = any(
             [field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']]) and not by_day
 
@@ -586,6 +596,7 @@ class AccountExport(object):
             order,
             breakdown == 'content_ad',
             [],
+            include_settings=include_settings,
             include_budgets=include_budgets,
             account=account,
             source=filtered_sources)
