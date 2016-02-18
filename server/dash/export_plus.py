@@ -117,10 +117,9 @@ def _generate_rows(dimensions, start_date, end_date, user, ordering, ignore_diff
         if 'content_ad' in dimensions:
             stat = _populate_content_ad_stat(stat, prefetched_data[stat['content_ad']])
         elif 'ad_group' in dimensions:
-            stat = _populate_ad_group_stat(stat, prefetched_data.get(id=stat['ad_group']), statuses=statuses)
+            stat = _populate_ad_group_stat(stat, prefetched_data[stat['ad_group']], statuses=statuses)
         elif 'campaign' in dimensions:
-            stat = _populate_campaign_stat(stat, prefetched_data.get(
-                id=stat['campaign']), statuses=statuses, budgets=budgets)
+            stat = _populate_campaign_stat(stat, prefetched_data[stat['campaign']], statuses=statuses, budgets=budgets)
         elif 'account' in dimensions:
             stat = _populate_account_stat(stat, prefetched_data, statuses,
                                           settings=settings, projections=projections,
@@ -164,11 +163,13 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date,
     elif 'ad_group' in dimensions:
         level = 'ad_group'
         distinct_ad_groups = set(stat['ad_group'] for stat in stats)
-        data = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
+        ad_gorup_qs = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
+        data = {ad_group.id: ad_group for ad_group in ad_gorup_qs}
     elif 'campaign' in dimensions:
         level = 'campaign'
         distinct_campaigns = set(stat['campaign'] for stat in stats)
-        data = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
+        campaign_qs = models.Campaign.objects.select_related('account').filter(id__in=distinct_campaigns)
+        data = {c.id: c for c in campaign_qs}
         if include_settings:
             settings_qs = models.CampaignSettings.objects \
                 .filter(campaign__in=distinct_campaigns) \
