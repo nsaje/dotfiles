@@ -294,7 +294,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.hasInfoboxPermission = function () {
-        if (!hasPermission('zemauth.can_see_infobox')) {
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return false;
         }
 
