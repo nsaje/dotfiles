@@ -127,13 +127,15 @@ def get_total_and_media_campaign_spend(user, campaign, until_date=None):
     if len(budgets) == 0:
         return Decimal(0), Decimal(0)
 
-    all_budget_spends_at_date = [
-        b.get_spend_data(date=at_date, use_decimal=True) for b in budgets
-    ]
-    return (
-        sum(map(lambda bli: bli['total'], all_budget_spends_at_date)),
-        sum(map(lambda bli: bli['media'], all_budget_spends_at_date))
+    daily_statements = reports.models.BudgetDailyStatement.objects.filter(
+        budget__in=budgets,
     )
+    spend_data = reports.budget_helpers.calculate_spend_data(
+        daily_statements,
+        date=at_date,
+        use_decimal=True
+    )
+    return spend_data.get('total', Decimal(0)), spend_data.get('media', Decimal(0))
 
 
 @statsd_timer('dash.infobox_helpers', 'get_media_campaign_spend')
