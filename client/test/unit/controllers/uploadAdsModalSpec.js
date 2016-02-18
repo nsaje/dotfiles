@@ -185,5 +185,64 @@ describe('UploadAdsModalCtrl', function () {
             expect($modalInstance.close).not.toHaveBeenCalled();
             expect($scope.errors).toEqual(data.errors);
         });
+
+        if ('sets errors in case cancel failed', function () {
+            var deferred = $q.defer();
+            var batchId = 123;
+            var data = {
+                data: {
+                    errors: {
+                        cancel: 'Some message about error',
+                    }
+                }
+            };
+
+            spyOn(api.adGroupAdsPlusUpload, 'cancel').and.callFake(function () {
+                return deferred.promise;
+            });
+            spyOn($scope, '$dimiss');
+
+            $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
+            $scope.cancel();
+
+            expect(api.adGroupAdsPlusUpload.cancel).toHaveBeenCalledWith(
+                $state.params.id, batchId
+            );
+            deferred.reject(data);
+            $scope.$root.$digest();
+
+            expect($scope.$dismiss).not.toHaveBeenCalled();
+            expect($scope.cancelErrors).toEqual(data.data.errors);
+            expect($scope.uploadCanceled).toEqual(false);
+            expect($scope.cancelActionInProgress).toEqual(false);
+        });
+
+        if ('sets cancel in progress parameters', function () {
+            var deferred = $q.defer();
+            var batchId = 123;
+
+            spyOn(api.adGroupAdsPlusUpload, 'cancel').and.callFake(function () {
+                return deferred.promise;
+            });
+            spyOn($scope, '$dimiss');
+
+            $scope.uploadStatus = constants.uploadBatchStatus.IN_PROGRESS;
+            $scope.cancel();
+
+            expect(api.adGroupAdsPlusUpload.cancel).toHaveBeenCalledWith(
+                $state.params.id, batchId
+            );
+
+            expect($scope.uploadCanceled).toEqual(false);
+            expect($scope.cancelActionInProgress).toEqual(true);
+
+            deferred.resolve(data);
+            $scope.$root.$digest();
+
+            expect($scope.$dismiss).not.toHaveBeenCalled();
+            expect($scope.cancelErrors).toBe(null);
+            expect($scope.uploadCanceled).toEqual(true);
+            expect($scope.cancelActionInProgress).toEqual(false);
+        });
     });
 });

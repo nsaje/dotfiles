@@ -139,6 +139,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
         api.adGroupAdsPlusUpload.cancel($state.params.id, $scope.batchId).then(function () {
             $scope.uploadCanceled = true;
             $scope.cancelActionInProgress = false;
+            $scope.cancelErrors = null;
         }, function (data) {
             $scope.uploadCanceled = false;
             $scope.cancelActionInProgress = false;
