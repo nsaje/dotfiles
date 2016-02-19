@@ -514,8 +514,12 @@ class AllAccountsExport(object):
             dimensions.extend(['account', 'campaign', 'ad_group'])
         required_fields.extend(['status'])
 
-        include_settings = any(field in additional_fields for field in
-                               ['default_account_manager', 'default_sales_representative'])
+        supported_settings_fields = ['default_account_manager', 'default_sales_representative']
+        include_settings = breakdown == 'account' and \
+                           any(field in additional_fields for field in supported_settings_fields)
+        if not include_settings:
+            exclude_fields.extend(supported_settings_fields)
+
         include_budgets = (
             any([
                 field in additional_fields
@@ -582,7 +586,11 @@ class AccountExport(object):
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
         fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
-        include_settings = 'campaign_manager' in additional_fields
+
+        include_settings = breakdown == 'campaign' and 'campaign_manager' in additional_fields
+        if not include_settings:
+            exclude_fields.append('campaign_manager')
+
         include_budgets = any(
             [field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']]) and not by_day
 
@@ -686,6 +694,7 @@ def filter_allowed_fields(request, fields):
     can_view_flat_fees = request.user.has_perm('zemauth.can_view_flat_fees')
     can_see_projections = request.user.has_perm('zemauth.can_see_projections')
     can_see_managers_in_accounts_table = request.user.has_perm('zemauth.can_see_managers_in_accounts_table')
+    can_see_managers_in_campaigns_table = True
     can_view_budgets = request.user.has_perm('zemauth.all_accounts_budget_view')
 
     for f in fields:
@@ -702,6 +711,8 @@ def filter_allowed_fields(request, fields):
         if f in ('credit_projection', 'spend_projection') and not can_see_projections:
             continue
         if f in ('default_account_manager', 'default_sales_representative') and not can_see_managers_in_accounts_table:
+            continue
+        if f in ('campaign_manager',) and not can_see_managers_in_campaigns_table:
             continue
         if f in ('budget', 'available_budget', 'unspent_budget') and not can_view_budgets:
             continue
