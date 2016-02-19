@@ -259,7 +259,7 @@ def _prefetch_statuses(entities, level, by_source, sources=None):
                             _get_sources_state(ad_group_sources.filter(
                                 source=ad_group_source.source.id, **{by_source_constraints: entity}))
                             for ad_group_source in ad_group_sources.filter(**{by_source_constraints: entity})}
-                for entity in entities}
+                for entity in entities.itervalues()}
 
     ad_groups = models.AdGroup.objects.filter(**{constraints + '__in': entities})
     ad_groups_settings = models.AdGroupSettings.objects.filter(
