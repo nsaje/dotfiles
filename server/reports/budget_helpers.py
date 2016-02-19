@@ -62,7 +62,7 @@ def calculate_spend_data(statements, date=None, use_decimal=False):
         'total_cc': 0,
     }
     if date:
-       statements = statements.filter(date__lte=date)
+        statements = statements.filter(date__lte=date)
 
     spend_data = {
         (key + '_cc'): nano_to_cc(spend or 0)
