@@ -43,6 +43,7 @@
                                 <span ng-switch-when="currency">
                                     <span class="non-editable-currency-field" ng-if="!isFieldEditable(row, col.field)" ng-class="{'currency-3': col.fractionSize === 3}">
                                         <span ng-if="col.settingsField" zem-lazy-popover-append-to-body="true" zem-lazy-popover-html-unsafe="{{ getSettingsFieldMessage(row, col.field) }}" zem-lazy-popover-placement="right" zem-lazy-popover-animation-class="fade">
+                                            <div ng-if="col.adGroupAutopilotOn && row['status_setting'] == col['statusSettingEnabledValue']" class="auto-pilot-icon-row"></div>
                                             {{ (row[col.field] | decimalCurrency:"$":col.fractionSize:"") || 'N/A' }}
                                         </span>
                                         <span ng-if="!col.settingsField">
@@ -146,10 +147,10 @@
                                     zem-lazy-popover-animation-class="fade"
                                     zem-lazy-popover-append-to-body="true"
                                     >
-                                    <input 
-                                        type="checkbox" 
-                                        data-ng-model="row[col.field]" 
-                                        ng-disabled="!row[col.field] && col.disabled || row['disabledSelection']" 
+                                    <input
+                                        type="checkbox"
+                                        data-ng-model="row[col.field]"
+                                        ng-disabled="!row[col.field] && col.disabled || row['disabledSelection']"
                                         data-ng-change="col.selectCallback(row, row[col.field])"
                                         />
                                 </span>

@@ -337,6 +337,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             data.lastChange = data.last_change;
             data.dataStatus = data.data_status;
             data.conversionGoals = data.conversion_goals;
+            data.adGroupAutopilotState = data.ad_group_autopilot_state;
 
             data.notifications = convertNotifications(data.notifications);
 
