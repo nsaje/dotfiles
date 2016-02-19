@@ -25,6 +25,7 @@ from dash import constants
 from dash import region_targeting_helper
 from dash import views
 import reports.constants
+from reports import budget_helpers
 from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
@@ -2437,88 +2438,27 @@ class BudgetLineItem(FootprintModel):
     def get_latest_statement(self):
         return self.statements.all().order_by('-date').first()
 
-    def get_mtd_spend_data(self, date=None, use_decimal=False):
-        '''
-        Get month-to-date spend data
-        '''
-        spend_data = {
-            'media_cc': 0,
-            'data_cc': 0,
-            'license_fee_cc': 0,
-            'total_cc': 0,
-        }
-
-        if not date:
-            date = datetime.datetime.utcnow()
-
-        start_date = datetime.datetime(date.year, date.month, 1)
-        statements = self.statements.filter(
-            date__gte=start_date,
-            date__lte=date
-        ) if date else self.statements.all()
-        spend_data = {
-            (key + '_cc'): nano_to_cc(spend or 0)
-            for key, spend in statements.aggregate(
-                media=models.Sum('media_spend_nano'),
-                data=models.Sum('data_spend_nano'),
-                license_fee=models.Sum('license_fee_nano'),
-            ).iteritems()
-        }
-        spend_data['total_cc'] = sum(spend_data.values())
-        if not use_decimal:
-            return spend_data
-        return {
-            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
-            for key in spend_data.keys()
-        }
+    def get_latest_statement_qs(self):
+        latest_statement = self.get_latest_statement()
+        if not latest_statement:
+            return reports.models.BudgetDailyStatement.objects.none()
+        return self.statements.filter(id=latest_statement.id)
 
     def get_spend_data(self, date=None, use_decimal=False):
-        spend_data = {
-            'media_cc': 0,
-            'data_cc': 0,
-            'license_fee_cc': 0,
-            'total_cc': 0,
-        }
-        statements = self.statements.filter(date__lte=date) if date else self.statements.all()
-        spend_data = {
-            (key + '_cc'): nano_to_cc(spend or 0)
-            for key, spend in statements.aggregate(
-                media=models.Sum('media_spend_nano'),
-                data=models.Sum('data_spend_nano'),
-                license_fee=models.Sum('license_fee_nano'),
-            ).iteritems()
-        }
-        spend_data['total_cc'] = sum(spend_data.values())
-        if not use_decimal:
-            return spend_data
-        return {
-            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
-            for key in spend_data.keys()
-        }
+        return budget_helpers.calculate_spend_data(
+            self.statements,
+            date=date,
+            use_decimal=use_decimal
+        )
 
     def get_daily_spend(self, date, use_decimal=False):
-        spend_data = {
-            'media_cc': 0, 'data_cc': 0,
-            'license_fee_cc': 0, 'total_cc': 0,
-        }
-        try:
-            statement = date and self.statements.get(date=date)\
-                or self.get_latest_statement()
-        except ObjectDoesNotExist:
-            pass
-        else:
-            spend_data['media_cc'] = nano_to_cc(statement.media_spend_nano)
-            spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano)
-            spend_data['license_fee_cc'] = nano_to_cc(statement.license_fee_nano)
-            spend_data['total_cc'] = nano_to_cc(
-                statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
-            )
-        if not use_decimal:
-            return spend_data
-        return {
-            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
-            for key in spend_data.keys()
-        }
+        statement = date and self.statements.filter(date=date)\
+            or self.get_latest_statement_qs()
+        return budget_helpers.calculate_spend_data(
+            statement,
+            date=date,
+            use_decimal=use_decimal
+        )
 
     def get_ideal_budget_spend(self, date):
         '''
