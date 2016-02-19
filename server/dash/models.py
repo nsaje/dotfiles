@@ -2440,6 +2440,8 @@ class BudgetLineItem(FootprintModel):
 
     def get_latest_statement_qs(self):
         latest_statement = self.get_latest_statement()
+        if not latest_statement:
+            return reports.models.BudgetDailyStatement.objects.none()
         return self.statements.filter(id=latest_statement.id)
 
     def get_spend_data(self, date=None, use_decimal=False):
