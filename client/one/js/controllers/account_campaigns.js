@@ -456,7 +456,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         );
     };
 
-    var getInfoboxData = function () {
+    $scope.getInfoboxData = function () {
         if (!$scope.hasInfoboxPermission()) {
             return;
         }
@@ -606,7 +606,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         userSettings.registerWithoutWatch('chartMetric2');
         userSettings.register('order');
         userSettings.registerGlobal('chartHidden');
-
         setChartOptions();
 
         if (campaignIds) {
@@ -627,7 +626,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         initColumns();
         pollSyncStatus();
         getDailyStats();
-        getInfoboxData();
+        $scope.getInfoboxData();
     };
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
