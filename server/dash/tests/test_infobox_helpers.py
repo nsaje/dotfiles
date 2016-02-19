@@ -552,6 +552,24 @@ class InfoBoxAccountHelpersTest(TestCase):
             )
         )
 
+        # test with date after end of budget
+        self.assertEqual(
+            0,
+            dash.infobox_helpers.calculate_all_accounts_total_budget(
+                today + datetime.timedelta(days=365),
+                today + datetime.timedelta(days=364)
+            )
+        )
+
+        # test with date before start of budget
+        self.assertEqual(
+            0,
+            dash.infobox_helpers.calculate_all_accounts_total_budget(
+                today - datetime.timedelta(days=365),
+                today - datetime.timedelta(days=364)
+            )
+        )
+
     def test_calculate_all_accounts_monthly_budget(self):
         today = datetime.datetime.utcnow()
         self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_monthly_budget(today))
