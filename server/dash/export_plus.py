@@ -585,11 +585,12 @@ class AccountExport(object):
 
         required_fields, dimensions = _include_breakdowns(required_fields, dimensions, by_day, by_source)
         order = _adjust_ordering(order, dimensions)
-        fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
 
         include_settings = breakdown == 'campaign' and 'campaign_manager' in additional_fields
         if not include_settings:
             exclude_fields.append('campaign_manager')
+
+        fieldnames = _get_fieldnames(required_fields, additional_fields, exclude=exclude_fields)
 
         include_budgets = any(
             [field in fieldnames for field in ['budget', 'available_budget', 'unspent_budget']]) and not by_day
