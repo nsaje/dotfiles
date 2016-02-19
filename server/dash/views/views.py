@@ -45,7 +45,6 @@ import actionlog.zwei_actions
 import actionlog.models
 import actionlog.constants
 
-from dash import budget
 from dash import models, region_targeting_helper
 from dash import constants
 from dash import api

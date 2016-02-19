@@ -32,8 +32,8 @@ oneApp.directive('zemCustomTableCols', ['config', function (config) {
             };
 
             var updateCategories = function () {
-                $scope.categoryColumns = [];
-                $scope.hasCategories = false;
+                var categoryColumns = [],
+                    hasCategories = false;
 
                 for (var i = 0; i < $scope.categories.length; i++) {
                     var cat = $scope.categories[i];
@@ -43,13 +43,15 @@ oneApp.directive('zemCustomTableCols', ['config', function (config) {
                     });
 
                     if (cols.length > 0) {
-                        $scope.categoryColumns.push({
+                        categoryColumns.push({
                             'columns': cols,
                             'name': cat.name
                         });
-                        $scope.hasCategories = true;
+                        hasCategories = true;
                     }
                 }
+                $scope.categoryColumns = categoryColumns;
+                $scope.hasCategories = hasCategories;
             };
 
             $scope.columnUpdated = function (column) {
