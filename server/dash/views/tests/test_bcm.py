@@ -15,7 +15,7 @@ from reports.models import BudgetDailyStatement
 
 
 class BCMViewTestCase(TestCase):
-    fixtures = ['test_io.yaml']
+    fixtures = ['test_bcm.yaml']
 
     def setUp(self):
         self.user = User.objects.get(pk=1)
