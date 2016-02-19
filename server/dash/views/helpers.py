@@ -956,10 +956,11 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_setting
         return 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
 
     if automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source):
-        return 'This value cannot be edited because the media source is on Auto-Pilot'
+        return 'This value cannot be edited because the media source is on Auto-Pilot.'
 
-    if ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
-        return 'This value cannot be edited because the ad group is on Auto-Pilot'
+    if ad_group_settings.autopilot_state in [constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+                                             constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET]:
+        return 'This value cannot be edited because the ad group is on Auto-Pilot.'
 
     return 'This media source doesn\'t support setting this value through the dashboard.'
 
