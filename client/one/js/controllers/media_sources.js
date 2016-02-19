@@ -556,7 +556,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             if (!$scope.hasPermission('zemauth.can_access_all_accounts_infobox')) {
                 return;
             }
-            api.allAccountsOverview.get().then(
+            api.allAccountsOverview.get($scope.dateRange.startDate, $scope.dateRange.endDate).then(
                 function (data) {
                     updateInfoboxData(data);
                 }
@@ -716,6 +716,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             return;
         }
 
+        // on all accounts some settings depend on date range
+        if ($scope.level === constants.level.ALL_ACCOUNTS) {
+            getInfoboxData();
+        }
         getDailyStats();
         getTableData();
     });

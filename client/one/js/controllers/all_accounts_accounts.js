@@ -474,7 +474,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             return;
         }
 
-        api.allAccountsOverview.get().then(
+        api.allAccountsOverview.get($scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;
@@ -534,6 +534,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             return;
         }
 
+        getInfoboxData();
         getDailyStats();
         getTableData();
     });

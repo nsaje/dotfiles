@@ -1898,6 +1898,9 @@ class AllAccountsOverview(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_access_all_accounts_infobox'):
             raise exc.AuthorizationError()
 
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
         header = {
             'title': None,
             'level': constants.InfoboxLevel.ALL_ACCOUNTS,
@@ -1906,13 +1909,13 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         response = {
             'header': header,
-            'basic_settings': self._basic_settings(),
+            'basic_settings': self._basic_settings(start_date, end_date),
             'performance_settings': None
         }
 
         return self.create_api_response(response)
 
-    def _basic_settings(self):
+    def _basic_settings(self, start_date, end_date):
         settings = []
 
         count_active_accounts = infobox_helpers.count_active_accounts()
@@ -1958,10 +1961,13 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         today = datetime.datetime.utcnow()
         start, end = calendar.monthrange(today.year, today.month)
-        start_date = datetime.datetime(today.year, today.month, 1)
-        end_date = datetime.datetime(today.year, today.month, end)
+        start_date = start_date or datetime.datetime(today.year, today.month, 1)
+        end_date = end_date or datetime.datetime(today.year, today.month, end)
 
-        total_budget = infobox_helpers.calculate_all_accounts_total_budget(start_date, end_date)
+        total_budget = infobox_helpers.calculate_all_accounts_total_budget(
+            start_date,
+            end_date
+        )
         settings.append(infobox_helpers.OverviewSetting(
             'Total budgets:',
             lc_helper.default_currency(total_budget),

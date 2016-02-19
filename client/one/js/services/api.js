@@ -1526,12 +1526,20 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
     function AllAccountsOverview () {
 
-        this.get = function () {
+        this.get = function (startDate, endDate) {
             var deferred = $q.defer();
             var url = '/api/accounts/overview/';
             var config = {
                 params: {}
             };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
 
             $http.get(url, config).
                 success(function (data, status) {
