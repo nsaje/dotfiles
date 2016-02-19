@@ -149,8 +149,8 @@ def _adjust_breakdown_by_day(start_date, stat):
             stat[field] = Decimal(0.0)
 
 
-def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date,
-                        include_settings=False, include_budgets=False, include_flat_fees=False, include_projections=False):
+def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date, include_settings=False,
+                        include_budgets=False, include_flat_fees=False, include_projections=False):
     data = None
     budgets = None
     projections = None
@@ -500,7 +500,7 @@ class AllAccountsExport(object):
 
         supported_settings_fields = ['default_account_manager', 'default_sales_representative']
         include_settings = breakdown == 'account' and \
-                           any(field in additional_fields for field in supported_settings_fields)
+                                        any(field in additional_fields for field in supported_settings_fields)
         if not include_settings:
             exclude_fields.extend(supported_settings_fields)
 
