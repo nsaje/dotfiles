@@ -278,8 +278,11 @@ class AdGroupSettingsTest(TestCase):
             new_settings = ad_group.get_current_settings()
             self.assertIsNotNone(new_settings.pk)
 
-            mock_actionlog_api.init_set_ad_group_state.assert_called_with(ad_group, constants.AdGroupSettingsState.ACTIVE,
-                                                                        ANY, send=False)
+            mock_actionlog_api.init_set_ad_group_state.assert_called_with(
+                ad_group,
+                constants.AdGroupSettingsState.ACTIVE,
+                ANY,
+                send=False)
 
             # uses 'ANY' instead of 'current_settings' because before settings are created, the
             # 'get_current_settings' returns a new AdGroupSettings instance each time
