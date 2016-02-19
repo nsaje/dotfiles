@@ -1,6 +1,5 @@
 import datetime
 from decimal import Decimal
-from utils.dates_helper import local_today
 from django.db.models import Sum
 
 
@@ -28,7 +27,7 @@ def calculate_mtd_spend_data(statements, date=None, use_decimal=False):
     '''
 
     if not date:
-        date = local_today()
+        date = datetime.datetime.utcnow()
 
     start_date = datetime.datetime(date.year, date.month, 1)
     statements = statements.filter(

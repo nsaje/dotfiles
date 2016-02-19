@@ -2442,16 +2442,6 @@ class BudgetLineItem(FootprintModel):
         latest_statement = self.get_latest_statement()
         return self.statements.filter(id=latest_statement.id)
 
-    def get_mtd_spend_data(self, date=None, use_decimal=False):
-        '''
-        Get month-to-date spend data
-        '''
-        return budget_helpers.calculate_mtd_spend_data(
-            self.statements,
-            date=date,
-            use_decimal=use_decimal
-        )
-
     def get_spend_data(self, date=None, use_decimal=False):
         return budget_helpers.calculate_spend_data(
             self.statements,
