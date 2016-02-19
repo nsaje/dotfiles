@@ -14,7 +14,7 @@ create_statement = reports.models.BudgetDailyStatement.objects.create
 
 
 class AccountCampaignBudgetData(TestCase):
-    fixtures = ['test_io.yaml']
+    fixtures = ['test_bcm.yaml']
 
     def setUp(self):
         self.start_date = datetime.date.today() - datetime.timedelta(2)
@@ -66,7 +66,7 @@ class AccountCampaignBudgetData(TestCase):
 
 
 class CreditImportTestCase(TestCase):
-    fixtures = ['test_io.yaml']
+    fixtures = ['test_bcm.yaml']
 
     def test_clean_credit_input(self):
         self.assertEqual(
@@ -121,7 +121,7 @@ class CreditImportTestCase(TestCase):
 
 
 class ProjectionsTestCase(TestCase):
-    fixtures = ['test_io.yaml']
+    fixtures = ['test_bcm.yaml']
 
     def setUp(self):
         self.today = datetime.date.today()
@@ -213,7 +213,7 @@ class ProjectionsTestCase(TestCase):
 
 
 class DeleteCreditTestCase(TestCase):
-    fixtures = ['test_io.yaml']
+    fixtures = ['test_bcm.yaml']
 
     def test_delete(self):
         self.assertEqual(len(dash.models.BudgetLineItem.objects.filter(credit_id=1)), 1)
@@ -226,7 +226,7 @@ class DeleteCreditTestCase(TestCase):
 
 
 class DeleteBudgetTestCase(TestCase):
-    fixtures = ['test_io.yaml']
+    fixtures = ['test_bcm.yaml']
 
     def test_delete(self):
         budget = dash.models.BudgetLineItem.objects.get(pk=1)

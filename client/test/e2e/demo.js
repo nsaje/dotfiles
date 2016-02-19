@@ -28,7 +28,6 @@ var nav, chart, tabs,
             adGroups: element(by.cssContainingText('.nav-tabs .tab-title', 'Ad groups')),
             agency: element(by.cssContainingText('.nav-tabs .tab-title', 'Agency')),
             settings: element(by.cssContainingText('.nav-tabs .tab-title', 'Settings')),
-            budget: element(by.cssContainingText('.nav-tabs .tab-title', 'Budget'))
         };
     };
 
@@ -207,6 +206,7 @@ describe('Media sources and ads', function () {
         element(by.id('call-to-action-input')).sendKeys('Examplify!');
         element(by.id('description-input')).sendKeys('DEMO');
         element(by.cssContainingText('.btn-add', 'Upload')).click();
+        element(by.cssContainingText('.btn-add', 'View uploaded ads')).click();
         expect(
             element.all(by.css('.table-container tbody tr')).count()
         ).toBeGreaterThan(4);

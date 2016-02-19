@@ -320,6 +320,9 @@ a:visited {
     .border-radius(2px);
     .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
 
+    /* bug fix for mac os scroll bars */
+    transform: translateZ(0);
+
 
     li {
         position: relative;
@@ -941,6 +944,15 @@ div[datepicker] {
     background-size: 15px 15px;
 }
 
+.infobox-stopped-icon {
+    color: @infobox-black;
+    text-align: center;
+    background-image: url('img/adgroup_status_paused_red.svg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
+}
+
 .infobox-icon {
     width: 13px;
     height: 13px;
@@ -1229,6 +1241,9 @@ div[datepicker] {
 .select2-drop.select2-drop-above {
     border: 1px solid @default-color;
     .select2-results {
+        /* bug fix for mac os scroll bars */
+        transform: translateZ(0);
+
         li.select2-highlighted {
             background-color: @add-color;
             border-radius: 2px;
@@ -2948,7 +2963,7 @@ div[datepicker] {
 }
 
 .export-select {
-    width: 110px;
+    width: 120px;
     .select2-chosen {
         color: #2488a1;
     }
@@ -3739,6 +3754,93 @@ select.media-source-select {
                     vertical-align: middle;
                 }
             }
+        }
+    }
+}
+
+.progress-result {
+    .title {
+        padding-left: 24px;
+
+        &.failed {
+            color: #CB2027;
+            background: transparent url("img/sad_face.svg") 0% 0% no-repeat;
+        }
+
+        &.success {
+            color: #73BF44;
+            background: transparent url("img/happy_face.svg") 0% 0% no-repeat;
+        }
+    }
+
+    .form-group {
+        margin-top: 20px !important;
+    }
+}
+
+.progress-steps {
+    width: 100%;
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+
+    .progress-step-box {
+        background-color: @default-color; 
+        color: #fff;
+        font-weight: 600;
+        font-size: 18px;
+        text-align: center;
+        padding: 4px 12px;
+        margin-right: 4px;
+
+        display: inline-block;
+
+        &:last-child {
+            margin-right: 0px;
+        }
+    }
+
+    .progress-step-description {
+        padding-top: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #414141;
+    }
+
+    .progress-steps-untouched {
+        float: right;
+    }
+
+    & + .progress {
+        margin-top: 10px !important;
+    }
+}
+
+
+.progress {
+    border-radius: 0px;
+    height: 36px;
+    position: relative;
+
+    .progress-bar {
+        background-color: @default-color;
+        transition: width 0.1s ease;
+    }
+
+    .progress-text {
+        font-size: 16px;
+        padding-top: 7px;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        white-space: nowrap;
+        overflow: hidden;
+        padding-left: 44%;
+
+        color: @default-color;
+        width: 100%;
+
+        &.inverted {
+            color: #fff;
         }
     }
 }

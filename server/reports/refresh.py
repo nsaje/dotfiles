@@ -326,8 +326,10 @@ def _get_raw_ob_pub_data(s3_keys):
                 'adgroup_id': ad_group_id,
                 'date': date,
                 'domain': row['name'],
+                'name': row['name'],
                 'exchange': source.tracking_slug,  # code in publisher views assumes this
                 'external_id': row['ob_id'],
+                'ob_id': row['ob_id'],
                 'clicks': row['clicks'],
                 'cost_micro': 0,
                 'cost_nano': 0

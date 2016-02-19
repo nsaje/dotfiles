@@ -45,7 +45,6 @@ import actionlog.zwei_actions
 import actionlog.models
 import actionlog.constants
 
-from dash import budget
 from dash import models, region_targeting_helper
 from dash import constants
 from dash import api
@@ -251,10 +250,10 @@ class AdGroupOverview(api_common.BaseApiView):
         async_perf_query.start()
 
         ad_group_settings = ad_group.get_current_settings()
-        running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
+
         header = {
             'title': ad_group_settings.ad_group_name,
-            'active': running_status == constants.AdGroupRunningStatus.ACTIVE,
+            'active': infobox_helpers.is_adgroup_active(ad_group, ad_group_settings),
             'level': constants.InfoboxLevel.ADGROUP,
             'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP),
         }
@@ -290,9 +289,11 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(flight_time_setting.as_dict())
 
+
+
         max_cpc_setting = infobox_helpers.OverviewSetting(
             'Maximum CPC:',
-            lc_helper.default_currency(ad_group_settings.cpc_cc) if ad_group_settings.cpc_cc is not None else '',
+            lc_helper.default_currency(ad_group_settings.cpc_cc) if ad_group_settings.cpc_cc is not None else 'No limit',
         )
         settings.append(max_cpc_setting.as_dict())
 
@@ -670,7 +671,7 @@ class AccountOverview(api_common.BaseApiView):
 
         header = {
             'title': account.name,
-            'active': False,
+            'active': constants.InfoboxStatus.INACTIVE,
             'level': constants.InfoboxLevel.ACCOUNT,
             'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT),
         }
@@ -1092,8 +1093,11 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         batch = models.UploadBatch.objects.create(
             name=batch_name,
             processed_content_ads=0,
+            inserted_content_ads=0,
+            propagated_content_ads=0,
             batch_size=len(content_ads),
         )
+        batch.save()
 
         current_settings = ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
@@ -1143,6 +1147,27 @@ class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
         return self.create_csv_response(name, content=content)
 
 
+class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_cancel_get')
+    def get(self, request, ad_group_id, batch_id):
+        if not request.user.has_perm('zemauth.upload_content_ads'):
+            raise exc.ForbiddenError(message='Not allowed')
+
+        helpers.get_ad_group(request.user, ad_group_id)
+
+        try:
+            batch = models.UploadBatch.objects.get(pk=batch_id)
+        except models.UploadBatch.DoesNotExist():
+            raise exc.MissingDataException()
+
+        with transaction.atomic():
+            batch.cancelled = True
+            batch.save()
+
+        return self.create_api_response()
+
+
 class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
@@ -1157,43 +1182,49 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist():
             raise exc.MissingDataException()
 
+        step = 1
+        count = 0
         batch_size = batch.batch_size
-        step_size = batch_size
 
-        if batch.inserted_content_ads is not None and batch.inserted_content_ads >= batch_size:
-            # step past inserting
-            step = 'Sending to external sources (step 3/3)'
-            count = 0
-            step_size = 0
-        elif batch.inserted_content_ads is not None:
-            step = 'Inserting content ads (step 2/3)'
+        if batch.propagated_content_ads > 0:
+            step = 4
+            count = batch.propagated_content_ads
+        elif batch.inserted_content_ads > 0:
+            step = 3
             count = batch.inserted_content_ads
         else:
-            step = 'Processing imported file (step 1/3)'
+            step = 2
             count = batch.processed_content_ads
 
         response_data = {
             'status': batch.status,
+            'count': count,
+            'batch_size': batch_size,
             'step': step,
-            'count': count or 0,
-            'all': step_size
+            'cancelled': batch.cancelled,
         }
 
-        if batch.status == constants.UploadBatchStatus.FAILED:
-            if batch.error_report_key:
-                text = '{} error{}. <a href="{}">Download Report.</a>'.format(
-                    batch.num_errors,
-                    's' if batch.num_errors > 1 else '',
-                    reverse(
-                        'ad_group_ads_plus_upload_report',
-                        kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
-                )
-            else:
-                text = 'An error occured while processing file.'
-
-            response_data['errors'] = {'content_ads': [text]}
+        errors = self._get_error_details(batch, ad_group_id)
+        if errors:
+            response_data['errors'] = {
+                'details': errors,
+            }
 
         return self.create_api_response(response_data)
+
+    def _get_error_details(self, batch, ad_group_id):
+        errors = {}
+        if batch.status == constants.UploadBatchStatus.FAILED:
+            if batch.error_report_key:
+                errors['report_url'] = reverse('ad_group_ads_plus_upload_report',
+                                               kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
+                errors['description'] = 'Found {} error{}.'.format(batch.num_errors, 's' if batch.num_errors > 1 else '')
+            elif batch.cancelled:
+                errors['description'] = 'Content Ads upload was cancelled.'
+            else:
+                errors['description'] = 'An error occured while processing file.'
+
+        return errors
 
 
 class AdGroupContentAdArchive(api_common.BaseApiView):

@@ -1410,67 +1410,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function CampaignBudget () {
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/budget/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve(data.data);
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.save = function (id, data) {
-            var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/budget/';
-            var config = {
-                params: {}
-            };
-
-            $http.put(url, data, config).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve(data.data);
-                }).
-                error(function (data, status, headers, config) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function AccountBudget () {
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/' + id + '/budget/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve(data.data);
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
     function AccountOverview () {
         this.get = function (id) {
             var deferred = $q.defer();
@@ -2555,7 +2494,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         result.status = data.data.status;
                         result.count = data.data.count;
                         result.step = data.data.step;
-                        result.all = data.data.all;
+                        result.batchSize = data.data.batch_size;
 
                         if (data.data.errors) {
                             result.errors = convertValidationErrorsFromApi(data.data.errors);
@@ -2569,15 +2508,33 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return deferred.promise;
         };
 
+        this.cancel = function (adGroupId, batchId) {
+            var deferred = $q.defer();
+            var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/' + batchId + '/cancel/';
+
+            $http.get(url).success(deferred.resolve, deferred.reject);
+
+            return deferred.promise;
+        };
+
         function convertValidationErrorsFromApi (errors) {
-            return {
+            var converted = {
                 file: errors.content_ads,
                 batchName: errors.batch_name,
                 displayUrl: errors.display_url,
                 brandName: errors.brand_name,
                 description: errors.description,
-                callToAction: errors.call_to_action
+                callToAction: errors.call_to_action,
             };
+
+            if (errors.details) {
+                converted.details = {
+                    reportUrl: errors.details && errors.details.report_url,
+                    description: errors.details && errors.details.description,
+                };
+            }
+
+            return converted;
         }
     }
 
@@ -3096,7 +3053,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         campaignAdGroupsTable: new CampaignAdGroupsTable(),
         campaignSettings: new CampaignSettings(),
         campaignAgency: new CampaignAgency(),
-        campaignBudget: new CampaignBudget(),
         campaignSync: new CampaignSync(),
         campaignArchive: new CampaignArchive(),
         campaignOverview: new CampaignOverview(),
@@ -3105,7 +3061,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         accountAccountsTable: new AccountAccountsTable(),
         accountCampaigns: new AccountCampaigns(),
         accountCampaignsTable: new AccountCampaignsTable(),
-        accountBudget: new AccountBudget(),
         accountOverview: new AccountOverview(),
         scheduledReports: new ScheduledReports(),
         accountSync: new AccountSync(),
