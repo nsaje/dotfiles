@@ -1537,7 +1537,7 @@ class AccountCampaignsTable(object):
     def get(self, user, account_id, filtered_sources, start_date, end_date, order, show_archived):
         account = helpers.get_account(user, account_id)
 
-        has_view_managers_permission = True #user.has_perm('zemauth.view_archived_entities')
+        has_view_managers_permission = user.has_perm('zemauth.can_see_managers_in_campaigns_table')
         has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
         show_archived = show_archived == 'true' and\
             user.has_perm('zemauth.view_archived_entities')
