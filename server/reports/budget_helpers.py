@@ -1,5 +1,6 @@
 import datetime
 from decimal import Decimal
+from utils.dates_helper import local_today
 from django.db.models import Sum
 
 
@@ -17,16 +18,17 @@ def nano_to_dec(num):
 def calculate_mtd_spend_data(statements, date=None, use_decimal=False):
     '''
     Get month-to-date spend data
-    '''
-    spend_data = {
+    returns a dict with the following structure
+    {
         'media_cc': 0,
         'data_cc': 0,
         'license_fee_cc': 0,
         'total_cc': 0,
     }
+    '''
 
     if not date:
-        date = datetime.datetime.utcnow()
+        date = local_today()
 
     start_date = datetime.datetime(date.year, date.month, 1)
     statements = statements.filter(
@@ -54,13 +56,14 @@ def calculate_mtd_spend_data(statements, date=None, use_decimal=False):
 def calculate_spend_data(statements, date=None, use_decimal=False):
     '''
     Calculate spend data given the relevant statements
-    '''
-    spend_data = {
+    returns a dict with the following structure
+    {
         'media_cc': 0,
         'data_cc': 0,
         'license_fee_cc': 0,
         'total_cc': 0,
     }
+    '''
     if date:
         statements = statements.filter(date__lte=date)
 
