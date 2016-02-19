@@ -56,14 +56,14 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, goa
             for s in active_sources}
 
 
-def _uniformly_redistribute_remaining_budget(sources, budget_left, new_budgets):
+def _uniformly_redistribute_remaining_budget(sources, budget_left, min_budgets):
     while budget_left >= 1:
         for s in sources:
             budget_left -= Decimal(1.0)
-            new_budgets[s] += Decimal(1)
+            min_budgets[s] += Decimal(1)
             if budget_left <= 0:
                 break
-    return new_budgets
+    return min_budgets
 
 
 def _get_active_sources_with_spend(active_sources, data):
@@ -75,15 +75,15 @@ def _get_active_sources_with_spend(active_sources, data):
 
 
 def _get_autopilot_budget_constraints(active_sources, daily_budget):
-    max_budgets, new_budgets, old_budgets = _get_optimistic_autopilot_budget_constraints(active_sources)
-    if sum(new_budgets.values()) > daily_budget:
-        max_budgets, new_budgets = _get_minimum_autopilot_budget_constraints(active_sources, daily_budget)
-    return max_budgets, new_budgets, old_budgets
+    max_budgets, min_budgets, old_budgets = _get_optimistic_autopilot_budget_constraints(active_sources)
+    if sum(min_budgets.values()) > daily_budget:
+        max_budgets, min_budgets = _get_minimum_autopilot_budget_constraints(active_sources, daily_budget)
+    return max_budgets, min_budgets, old_budgets
 
 
 def _get_optimistic_autopilot_budget_constraints(active_sources):
     max_budgets = {}
-    new_budgets = {}
+    min_budgets = {}
     old_budgets = {}
     ags_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__in=active_sources)\
                                                     .group_current_settings().select_related('ad_group_source')
@@ -94,21 +94,21 @@ def _get_optimistic_autopilot_budget_constraints(active_sources):
             current_budget = autopilot_settings.MIN_SOURCE_BUDGET
         max_budgets[source] = Decimal((current_budget * autopilot_settings.MAX_BUDGET_GAIN).
                                       to_integral_exact(rounding=ROUND_CEILING))
-        new_budgets[source] = max(Decimal((current_budget * autopilot_settings.MAX_BUDGET_LOSS).
+        min_budgets[source] = max(Decimal((current_budget * autopilot_settings.MAX_BUDGET_LOSS).
                                   to_integral_exact(rounding=ROUND_CEILING)), autopilot_settings.MIN_SOURCE_BUDGET,
                                   source.source.source_type.min_daily_budget)
         old_budgets[source] = current_budget
-    return max_budgets, new_budgets, old_budgets
+    return max_budgets, min_budgets, old_budgets
 
 
 def _get_minimum_autopilot_budget_constraints(active_sources, daily_budget):
     max_budgets = {}
-    new_budgets = {}
+    min_budgets = {}
     for source in active_sources:
-        new_budgets[source] = max(autopilot_settings.MIN_SOURCE_BUDGET, source.source.source_type.min_daily_budget)
-        max_budgets[source] = (new_budgets[source] * autopilot_settings.MAX_BUDGET_GAIN).\
+        min_budgets[source] = max(autopilot_settings.MIN_SOURCE_BUDGET, source.source.source_type.min_daily_budget)
+        max_budgets[source] = (min_budgets[source] * autopilot_settings.MAX_BUDGET_GAIN).\
             to_integral_exact(rounding=ROUND_CEILING)
-    return max_budgets, new_budgets
+    return max_budgets, min_budgets
 
 
 def predict_outcome_success(source, data, goal):
