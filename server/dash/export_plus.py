@@ -7,7 +7,6 @@ from collections import OrderedDict
 
 from dash import models
 from dash import stats_helper
-from dash import budget
 from dash import constants
 from dash import bcm_helpers
 from dash.views import helpers
@@ -194,7 +193,7 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date,
             projections = bcm_helpers.get_projections(data, start_date, end_date)
 
     if level in ['account', 'campaign', 'ad_group']:
-        statuses = _prefetch_statuses(data, level, by_source)
+        statuses = _prefetch_statuses(data, level, by_source, constraints.get('source'))
         budgets = None if not include_budgets else _prefetch_budgets(data, level)
     return data, budgets, projections, flat_fees, statuses, settings
 
@@ -212,40 +211,21 @@ def _prefetch_flat_fees(accounts, start_date, end_date):
 
 
 def _prefetch_account_budgets(accounts):
-    all_accounts_budget = budget.GlobalBudget().get_total_by_account()
-    all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
-    result = {
-        acc.id: {
-            'budget': Decimal(all_accounts_budget.get(acc.id, 0)),
-            'spent_budget': Decimal(all_accounts_total_spend.get(acc.id, 0))
-        } for acc in accounts.itervalues() if not acc.uses_credits
-    }
-    accounts_budget, accounts_spend = bcm_helpers.get_account_media_budget_data(
-        acc.pk for acc in accounts.itervalues() if acc.uses_credits
-    )
-    result.update({
+    accounts_budget, accounts_spend = bcm_helpers.get_account_media_budget_data(acc.pk for acc in accounts.values())
+    return {
         acc.pk: {
             'budget': Decimal(accounts_budget.get(acc.id, 0)),
             'spent_budget': Decimal(accounts_spend.get(acc.id, 0)),
-        } for acc in accounts.itervalues() if acc.uses_credits
-    })
-    return result
+        } for acc in accounts.values()
+    }
 
 
 def _prefetch_campaign_budgets(campaigns):
-    account = campaigns.itervalues().next().account if campaigns else None
-    if account and account.uses_credits:
-        total_budget, spent_budget = bcm_helpers.get_campaign_media_budget_data(campaigns.keys())
-        return {
-            camp.id: {
-                'budget': Decimal(total_budget.get(camp.id, 0)),
-                'spent_budget': Decimal(spent_budget.get(camp.id, 0)),
-            } for camp in campaigns.values()
-        }
+    total_budget, spent_budget = bcm_helpers.get_campaign_media_budget_data(campaigns.keys())
     return {
         camp.id: {
-            'budget': Decimal(budget.CampaignBudget(camp).get_total()),
-            'spent_budget': Decimal(budget.CampaignBudget(camp).get_spend())
+            'budget': Decimal(total_budget.get(camp.id, 0)),
+            'spent_budget': Decimal(spent_budget.get(camp.id, 0)),
         } for camp in campaigns.values()
     }
 
@@ -259,7 +239,7 @@ def _prefetch_budgets(data, level):
     return result
 
 
-def _prefetch_statuses(entities, level, by_source):
+def _prefetch_statuses(entities, level, by_source, sources=None):
     if level == 'account':
         model_class = models.Account
         by_source_constraints = 'ad_group__campaign__account'
@@ -284,8 +264,12 @@ def _prefetch_statuses(entities, level, by_source):
     ad_groups = models.AdGroup.objects.filter(**{constraints + '__in': entities})
     ad_groups_settings = models.AdGroupSettings.objects.filter(
         ad_group__in=ad_groups).group_current_settings()
+
+    ad_group_sources_settings = models.AdGroupSourceSettings.objects.filter(
+        ad_group_source__ad_group__in=ad_groups).filter_by_sources(sources).group_current_settings()
+
     return helpers.get_ad_group_state_by_sources_running_status(
-        ad_groups, ad_groups_settings, [], constraints)
+        ad_groups, ad_groups_settings, ad_group_sources_settings, constraints)
 
 
 def _populate_content_ad_stat(stat, content_ad):
@@ -746,6 +730,7 @@ def get_report_from_request(request, account=None, campaign=None, ad_group=None,
     )
 
     granularity = get_granularity_from_type(request.GET.get('type'))
+
     return _get_report(
         request.user,
         helpers.get_stats_start_date(request.GET.get('start_date')),
@@ -767,9 +752,9 @@ def _get_report(
         user,
         start_date,
         end_date,
-        filtered_sources=[],
+        filtered_sources=None,
         order=None,
-        additional_fields=[],
+        additional_fields=None,
         granularity=None,
         breakdown=None,
         by_day=False,
@@ -780,6 +765,12 @@ def _get_report(
 
     if not user.has_perm('zemauth.exports_plus'):
         raise exc.ForbiddenError(message='Not allowed')
+
+    if not filtered_sources:
+        filtered_sources = []
+
+    if not additional_fields:
+        additional_fields = []
 
     account_name = campaign_name = ad_group_name = None
     account_id = campaign_id = ad_group_id = None

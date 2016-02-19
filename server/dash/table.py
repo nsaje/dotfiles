@@ -7,7 +7,6 @@ from django.db.models import Q
 
 from dash.views import helpers
 from dash import models
-from dash import budget
 from dash import constants
 from dash import bcm_helpers
 from dash import stats_helper
@@ -808,7 +807,7 @@ class AccountsAccountsTable(object):
 
         last_sync_joined = helpers.get_last_sync(last_success_actions_joined.values())
 
-        accounts_status_dict = self.get_per_account_status_dict(accounts, filtered_sources)
+        accounts_status_dict = self.get_per_account_running_status_dict(accounts, filtered_sources)
 
         rows = self.get_rows(
             accounts,
@@ -865,7 +864,7 @@ class AccountsAccountsTable(object):
 
         return response
 
-    def get_per_account_status_dict(self, accounts, filtered_sources):
+    def get_per_account_running_status_dict(self, accounts, filtered_sources):
         """
         Returns per account running status based on ad group sources state
         settings and ad group settings state.
@@ -909,22 +908,8 @@ class AccountsAccountsTable(object):
         return account_flat_fees
 
     def get_budgets(self, accounts):
-        bcm_account_ids = set(acc.pk for acc in accounts if acc.uses_credits)
-        legacy_account_ids = set(acc.pk for acc in accounts if not acc.uses_credits)
-
-        all_accounts_budget = budget.GlobalBudget().get_total_by_account()
-        account_budget = {
-            aid: Decimal(all_accounts_budget.get(aid, 0))
-            for aid in legacy_account_ids
-        }
-        all_accounts_total_spend = budget.GlobalBudget().get_spend_by_account()
-        account_total_spend = {
-            aid: Decimal(all_accounts_total_spend.get(aid, 0))
-            for aid in legacy_account_ids
-        }
-
         account_budget, account_total_spend = bcm_helpers.get_account_media_budget_data(
-            bcm_account_ids
+            set(acc.pk for acc in accounts)
         )
         account_total_spend.update(account_budget)
         account_budget.update(account_total_spend)
@@ -1392,7 +1377,7 @@ class CampaignAdGroupsTable(object):
                 filtered_sources
             ) if has_aggregate_postclick_permission(user) else False
 
-        ad_groups_status_dict = self.get_per_ad_group_status_dict(ad_groups, ad_groups_settings, filtered_sources)
+        ad_groups_status_dict = self.get_per_ad_group_running_status_dict(ad_groups, ad_groups_settings, filtered_sources)
 
         e_yesterday_cost, e_yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign)
         yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign, actual=True)
@@ -1437,7 +1422,7 @@ class CampaignAdGroupsTable(object):
 
         return response
 
-    def get_per_ad_group_status_dict(self, ad_groups, ad_groups_settings, filtered_sources):
+    def get_per_ad_group_running_status_dict(self, ad_groups, ad_groups_settings, filtered_sources):
         ad_groups_sources_settings = models.AdGroupSourceSettings.objects\
                                            .filter(ad_group_source__ad_group=ad_groups)\
                                            .filter_by_sources(filtered_sources)\
@@ -1582,19 +1567,11 @@ class AccountCampaignsTable(object):
                 source=filtered_sources,
             ), user)
 
-        campaign_budget, campaign_spend = None, None
-        if not account.uses_credits:
-            totals_stats['budget'] = Decimal(sum(budget.CampaignBudget(campaign).get_total()
-                                                 for campaign in campaigns))
-            total_spend = Decimal(sum(budget.CampaignBudget(campaign).get_spend()
-                                      for campaign in campaigns))
-
-        else:
-            campaign_budget, campaign_spend = bcm_helpers.get_campaign_media_budget_data(
-                c.pk for c in campaigns
-            )
-            totals_stats['budget'] = sum(campaign_budget.itervalues())
-            total_spend = sum(campaign_spend.itervalues())
+        campaign_budget, campaign_spend = bcm_helpers.get_campaign_media_budget_data(
+            c.pk for c in campaigns
+        )
+        totals_stats['budget'] = sum(campaign_budget.itervalues())
+        total_spend = sum(campaign_spend.itervalues())
 
         totals_stats['available_budget'] = totals_stats['budget'] - total_spend
         totals_stats['unspent_budget'] = totals_stats['budget'] - Decimal(totals_stats.get('cost') or 0)
@@ -1617,7 +1594,7 @@ class AccountCampaignsTable(object):
                 filtered_sources,
             ) if has_aggregate_postclick_permission(user) else False
 
-        campaign_status_dict = self.get_per_campaign_status_dict(campaigns, filtered_sources)
+        campaign_status_dict = self.get_per_campaign_running_status_dict(campaigns, filtered_sources)
 
         response = {
             'rows': self.get_rows(
@@ -1656,7 +1633,7 @@ class AccountCampaignsTable(object):
 
         return response
 
-    def get_per_campaign_status_dict(self, campaigns, filtered_sources):
+    def get_per_campaign_running_status_dict(self, campaigns, filtered_sources):
         """
         Returns per campaign status, based on ad group sources settings and ad group settings.
         """
@@ -1736,12 +1713,8 @@ class AccountCampaignsTable(object):
 
             row.update(campaign_stat)
 
-            if not account.uses_credits:
-                row['budget'] = Decimal(budget.CampaignBudget(campaign).get_total())
-                row['available_budget'] = row['budget'] - Decimal(budget.CampaignBudget(campaign).get_spend())
-            else:
-                row['budget'] = Decimal(campaign_budget.get(campaign.pk, Decimal('0.0')))
-                row['available_budget'] = row['budget'] - Decimal(campaign_spend.get(campaign.pk, 0))
+            row['budget'] = Decimal(campaign_budget.get(campaign.pk, Decimal('0.0')))
+            row['available_budget'] = row['budget'] - Decimal(campaign_spend.get(campaign.pk, 0))
             row['unspent_budget'] = row['budget'] - Decimal((row.get('cost') or 0))
 
             rows.append(row)
@@ -1913,7 +1886,6 @@ class PublishersTable(object):
 
     def _can_blacklist_publisher(self, user, publisher_data, count_ob_blacklisted_publishers, source_cache_by_slug):
         publisher_exchange = publisher_data['exchange'].lower()
-        publisher_domain = publisher_data['domain']
         publisher_source = source_cache_by_slug.get(publisher_exchange) or publisher_exchange
 
         known_source = source_cache_by_slug.get(publisher_exchange) is not None
