@@ -144,36 +144,31 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         .state('main.campaigns.ad_groups', {
             url: '/ad_groups',
             templateUrl: '/partials/campaign_ad_groups.html',
-            controller: 'CampaignAdGroupsCtrl'
+            controller: 'CampaignAdGroupsCtrl',
         })
         .state('main.campaigns.sources', {
             url: '/sources',
             templateUrl: '/partials/media_sources.html',
-            controller: 'MediaSourcesCtrl'
+            controller: 'MediaSourcesCtrl',
         })
         .state('main.campaigns.agency', {
             url: '/agency',
             templateUrl: '/partials/campaign_agency.html',
-            controller: 'CampaignAgencyCtrl'
-        })
-        .state('main.campaigns.budget', {
-            url: '/budget',
-            templateUrl: '/partials/campaign_budget.html',
-            controller: 'CampaignBudgetCtrl'
+            controller: 'CampaignAgencyCtrl',
         })
         .state('main.campaigns.archived', {
             url: '/archived',
-            templateUrl: '/partials/campaign_archived.html'
+            templateUrl: '/partials/campaign_archived.html',
         })
         .state('main.campaigns.settings', {
             url: '/settings',
             templateUrl: '/partials/campaign_settings.html',
-            controller: 'CampaignSettingsCtrl'
+            controller: 'CampaignSettingsCtrl',
         })
         .state('main.campaigns.budget_plus', {
             url: '/budget-plus',
             templateUrl: '/partials/campaign_budget_plus.html',
-            controller: 'CampaignBudgetPlusCtrl'
+            controller: 'CampaignBudgetPlusCtrl',
         });
 
 

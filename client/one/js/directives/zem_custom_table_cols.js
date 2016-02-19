@@ -58,19 +58,17 @@ oneApp.directive('zemCustomTableCols', ['config', function (config) {
                 zemCustomTableColsService.save($scope.localStoragePrefix, $scope.columns);
             };
 
-            // use collection watches - watch for changed reference, elements added/removed/reordered.
-            // we don't need to watch for changed properties of elements as those are bound directly.
             $scope.$watch('categories', function (newValue, oldValue) {
                 if (newValue) {
                     updateCategories();
                 }
-            });
+            }, true);
 
             $scope.$watch('columns', function (newValue, oldValue) {
                 if (newValue) {
                     updateCategories();
                 }
-            });
+            }, true);
         }]
     };
 }]);

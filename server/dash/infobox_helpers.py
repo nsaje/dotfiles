@@ -8,7 +8,6 @@ import reports.api_helpers
 from django.db.models import Sum
 
 import dash.constants
-import dash.budget
 import dash.models
 import zemauth.models
 import reports.api_contentads
@@ -311,12 +310,8 @@ def calculate_daily_campaign_cap(campaign):
 
 @statsd_timer('dash.infobox_helpers', 'calculate_daily_account_cap')
 def calculate_daily_account_cap(account):
-    campaigns = dash.models.Campaign.objects.filter(account=account)
     ad_groups = dash.models.AdGroup.objects.filter(
-        campaign__in=campaigns
-    ).exclude_archived()
-    ad_groups = dash.models.AdGroup.objects.filter(
-        campaign__in=campaigns
+        campaign__account=account
     ).exclude_archived()
     return _compute_daily_cap(ad_groups)
 

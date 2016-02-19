@@ -1410,67 +1410,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function CampaignBudget () {
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/budget/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve(data.data);
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.save = function (id, data) {
-            var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/budget/';
-            var config = {
-                params: {}
-            };
-
-            $http.put(url, data, config).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve(data.data);
-                }).
-                error(function (data, status, headers, config) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function AccountBudget () {
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/' + id + '/budget/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve(data.data);
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
     function AccountOverview () {
         this.get = function (id) {
             var deferred = $q.defer();
@@ -3122,7 +3061,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         campaignAdGroupsTable: new CampaignAdGroupsTable(),
         campaignSettings: new CampaignSettings(),
         campaignAgency: new CampaignAgency(),
-        campaignBudget: new CampaignBudget(),
         campaignSync: new CampaignSync(),
         campaignArchive: new CampaignArchive(),
         campaignOverview: new CampaignOverview(),
@@ -3131,7 +3069,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         accountAccountsTable: new AccountAccountsTable(),
         accountCampaigns: new AccountCampaigns(),
         accountCampaignsTable: new AccountCampaignsTable(),
-        accountBudget: new AccountBudget(),
         accountOverview: new AccountOverview(),
         scheduledReports: new ScheduledReports(),
         accountSync: new AccountSync(),
