@@ -358,14 +358,6 @@ class Campaign(models.Model, PermissionMixin):
 
         return settings
 
-    def get_current_budget_settings(self):
-        cbs_latest = None
-        try:
-            cbs_latest = CampaignBudgetSettings.objects.filter(campaign=self).latest()
-        except CampaignBudgetSettings.DoesNotExist:
-            pass
-        return cbs_latest
-
     def can_archive(self):
         for ad_group in self.adgroup_set.all():
             if not ad_group.can_archive():
