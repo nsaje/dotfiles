@@ -93,7 +93,8 @@ class NavigationTreeView(api_common.BaseApiView):
 
     def _load_ad_groups_data(self, user, filtered_sources, include_archived_flag):
         # load necessary objects
-        ad_groups = models.AdGroup.objects.all().filter_by_user(user).filter_by_sources(filtered_sources)
+        ad_groups = models.AdGroup.objects.all().filter_by_user(user).filter_by_sources(
+            filtered_sources).order_by('name')
 
         map_ad_group_source = dict(
             models.AdGroupSource.objects
@@ -128,7 +129,7 @@ class NavigationTreeView(api_common.BaseApiView):
 
     def _load_campaigns_data(self, ad_groups_data, user, filtered_sources, include_archived_flag):
         campaigns = models.Campaign.objects.all().filter_by_user(user).filter_by_sources(
-            filtered_sources)
+            filtered_sources).order_by('name')
 
         map_campaigns_settings = {}
         if include_archived_flag:

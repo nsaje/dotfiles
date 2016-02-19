@@ -32,8 +32,8 @@ oneApp.directive('zemCustomTableCols', ['config', function (config) {
             };
 
             var updateCategories = function () {
-                $scope.categoryColumns = [];
-                $scope.hasCategories = false;
+                var categoryColumns = [],
+                    hasCategories = false;
 
                 for (var i = 0; i < $scope.categories.length; i++) {
                     var cat = $scope.categories[i];
@@ -43,30 +43,34 @@ oneApp.directive('zemCustomTableCols', ['config', function (config) {
                     });
 
                     if (cols.length > 0) {
-                        $scope.categoryColumns.push({
+                        categoryColumns.push({
                             'columns': cols,
                             'name': cat.name
                         });
-                        $scope.hasCategories = true;
+                        hasCategories = true;
                     }
                 }
+                $scope.categoryColumns = categoryColumns;
+                $scope.hasCategories = hasCategories;
             };
 
             $scope.columnUpdated = function (column) {
                 zemCustomTableColsService.save($scope.localStoragePrefix, $scope.columns);
             };
 
+            // use collection watches - watch for changed reference, elements added/removed/reordered.
+            // we don't need to watch for changed properties of elements as those are bound directly.
             $scope.$watch('categories', function (newValue, oldValue) {
                 if (newValue) {
                     updateCategories();
                 }
-            }, true);
+            });
 
             $scope.$watch('columns', function (newValue, oldValue) {
                 if (newValue) {
                     updateCategories();
                 }
-            }, true);
+            });
         }]
     };
 }]);
