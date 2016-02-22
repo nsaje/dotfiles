@@ -1,7 +1,8 @@
+/*global module,beforeEach,it,describe,expect,inject,spyOn*/
 'use strict';
 
 describe('AccountCampaignsCtrl', function () {
-    var $modalStack, $scope, controller, $state, $q, api;
+    var $modalStack, $scope, $state, $q, api;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -15,18 +16,28 @@ describe('AccountCampaignsCtrl', function () {
             $q = _$q_;
             $scope = $rootScope.$new();
 
-            $scope.isPermissionInternal = function () { return true; };
-            $scope.hasPermission = function () { return true; };
-            $scope.hasInfoboxPermission = function () { return false; };
-            $scope.getTableData = function () { return; };
-            $scope.reflowGraph = function () { return; };
+            $scope.isPermissionInternal = function () {
+                return true;
+            };
+            $scope.hasPermission = function () {
+                return true;
+            };
+            $scope.hasInfoboxPermission = function () {
+                return false;
+            };
+            $scope.getTableData = function () {
+                return;
+            };
+            $scope.reflowGraph = function () {
+                return;
+            };
             $scope.account = {id: 1};
             $scope.dateRange = {
                 startDate: {
-                    isSame: function () {}
+                    isSame: function () {},
                 },
                 endDate: {
-                    isSame: function () {}
+                    isSame: function () {},
                 }
             };
 
@@ -34,7 +45,7 @@ describe('AccountCampaignsCtrl', function () {
                 return {
                     then: function () {
                         return {
-                            finally: function () {}
+                            finally: function () {},
                         };
                     }
                 };
@@ -42,19 +53,19 @@ describe('AccountCampaignsCtrl', function () {
 
             api = {
                 accountAgency: {
-                    get: mockApiFunc
+                    get: mockApiFunc,
                 },
                 accountUsers: {
-                    list: mockApiFunc
+                    list: mockApiFunc,
                 },
                 accountOverview: {
-                    get: mockApiFunc
+                    get: mockApiFunc,
                 },
                 accountCampaignsTable: {
-                    get: mockApiFunc
+                    get: mockApiFunc,
                 },
                 dailyStats: {
-                    list: mockApiFunc
+                    list: mockApiFunc,
                 }
             };
 
@@ -92,7 +103,7 @@ describe('AccountCampaignsCtrl', function () {
                             title: 'Test'
                         },
                         basicSettings: {},
-                        performanceSettings: {}
+                        performanceSettings: {},
                     }
                 );
                 return deferred.promise;
@@ -103,7 +114,7 @@ describe('AccountCampaignsCtrl', function () {
             $scope.$digest();
             expect($scope.infoboxHeader).toEqual(
                 {
-                    title: 'Test'
+                    title: 'Test',
                 }
             );
         });
