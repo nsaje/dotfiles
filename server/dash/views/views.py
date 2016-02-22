@@ -690,11 +690,10 @@ class AccountOverview(api_common.BaseApiView):
 
         count_campaigns = models.Campaign.objects.filter(
             account=account
-        ).count()
-
+        ).exclude_archived().count()
         count_adgroups = models.AdGroup.objects.filter(
             campaign__account=account
-        ).count()
+        ).exclude_archived().count()
 
         header['subtitle'] = 'with {count_campaigns} campaigns and {count_adgroups} ad groups'.format(
             count_campaigns=count_campaigns,

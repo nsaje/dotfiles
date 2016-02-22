@@ -4,7 +4,7 @@ import json
 from mock import patch, ANY
 import datetime
 
-from django.test import TestCase, Client, TransactionTestCase
+from django.test import TestCase, Client, TransactionTestCase, RequestFactory
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -2791,10 +2791,13 @@ class AccountOverviewTest(TestCase):
 
         permission = Permission.objects.get(codename='can_see_infobox')
         permission_2 = Permission.objects.get(codename='can_access_account_infobox')
+        permission_3 = Permission.objects.get(codename='view_archived_entities')
         user = zemauth.models.User.objects.get(pk=2)
         user.user_permissions.add(permission)
         user.user_permissions.add(permission_2)
+        user.user_permissions.add(permission_3)
         user.save()
+        self.user = user
 
     def _get_account_overview(self, account_id, user_id=2, with_status=False):
         user = User.objects.get(pk=user_id)
@@ -2814,8 +2817,6 @@ class AccountOverviewTest(TestCase):
     @patch('reports.redshift.get_cursor')
     @patch('dash.models.Account.get_current_settings')
     def test_run_empty(self, mock_current_settings, cursor):
-        account = models.Account.objects.get(pk=1)
-
         settings = models.AccountSettings(
             default_account_manager=zemauth.models.User.objects.get(pk=1),
             default_sales_representative=zemauth.models.User.objects.get(pk=2),
@@ -2831,6 +2832,49 @@ class AccountOverviewTest(TestCase):
         }]
         response = self._get_account_overview(1)
         settings = response['data']['basic_settings']
+        header = response['data']['header']
+
+        self.assertEqual(header['subtitle'], 'with 2 campaigns and 4 ad groups')
+
+        pf_setting = self._get_setting(settings, 'platform fee')
+        self.assertEqual('20.00%', pf_setting['value'])
+        self.assertTrue(response['success'])
+
+    @patch('reports.redshift.get_cursor')
+    @patch('dash.models.Account.get_current_settings')
+    def test_run_empty_non_archived(self, mock_current_settings, cursor):
+        settings = models.AccountSettings(
+            default_account_manager=zemauth.models.User.objects.get(pk=1),
+            default_sales_representative=zemauth.models.User.objects.get(pk=2),
+        )
+
+        mock_current_settings.return_value = settings
+
+        # force one campaign to be archived
+        req = RequestFactory().get('/')
+        req.user = self.user
+
+        campaign_settings = models.Campaign.objects.get(pk=1).get_current_settings()
+        campaign_settings.archived = True
+        campaign_settings.save(req)
+
+
+        adgroup_settings = models.AdGroup.objects.get(pk=1).get_current_settings()
+        adgroup_settings.archived = True
+        adgroup_settings.save(req)
+
+
+        # do some extra setup to the account
+        cursor().dictfetchall.return_value = [{
+            'adgroup_id': 1,
+            'source_id': 9,
+            'cost_cc_sum': 0.0
+        }]
+        response = self._get_account_overview(1)
+        settings = response['data']['basic_settings']
+        header = response['data']['header']
+
+        self.assertEqual(header['subtitle'], 'with 1 campaigns and 3 ad groups')
 
         pf_setting = self._get_setting(settings, 'platform fee')
         self.assertEqual('20.00%', pf_setting['value'])
