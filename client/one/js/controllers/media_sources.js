@@ -547,7 +547,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         $scope.reflowGraph(1);
     };
 
-    var getInfoboxData = function () {
+    $scope.getInfoboxData = function () {
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
@@ -700,7 +700,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         getDailyStats();
         getTableData();
-        getInfoboxData();
+        $scope.getInfoboxData();
         pollSyncStatus();
     };
 
@@ -718,7 +718,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         // on all accounts some settings depend on date range
         if ($scope.level === constants.level.ALL_ACCOUNTS) {
-            getInfoboxData();
+            $scope.getInfoboxData();
         }
         getDailyStats();
         getTableData();
