@@ -2,7 +2,7 @@
 'use strict';
 
 describe('AccountCampaignsCtrl', function () {
-    var $modalStack, $scope, $state, $q, api;
+    var $modalStack, $scope, $state, $q, api, controller;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
