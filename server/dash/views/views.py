@@ -671,7 +671,7 @@ class AccountOverview(api_common.BaseApiView):
 
         header = {
             'title': account.name,
-            'active': infobox_helpers.is_account_active(account),
+            'active': infobox_helpers.get_account_running_status(account),
             'level': constants.InfoboxLevel.ACCOUNT,
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT)),
         }
