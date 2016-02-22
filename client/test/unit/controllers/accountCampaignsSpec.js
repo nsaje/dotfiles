@@ -38,7 +38,7 @@ describe('AccountCampaignsCtrl', function () {
                 },
                 endDate: {
                     isSame: function () {},
-                }
+                },
             };
 
             var mockApiFunc = function () {
@@ -47,7 +47,7 @@ describe('AccountCampaignsCtrl', function () {
                         return {
                             finally: function () {},
                         };
-                    }
+                    },
                 };
             };
 
@@ -66,7 +66,7 @@ describe('AccountCampaignsCtrl', function () {
                 },
                 dailyStats: {
                     list: mockApiFunc,
-                }
+                },
             };
 
             $state = _$state_;
@@ -76,7 +76,7 @@ describe('AccountCampaignsCtrl', function () {
 
             controller = $controller('AccountCampaignsCtrl', 
                 {
-                    $scope: $scope, 
+                    $scope: $scope,
                     api: api,
                 }
             );
@@ -100,7 +100,7 @@ describe('AccountCampaignsCtrl', function () {
                 deferred.resolve(
                     {
                         header: {
-                            title: 'Test'
+                            title: 'Test',
                         },
                         basicSettings: {},
                         performanceSettings: {},
@@ -109,7 +109,9 @@ describe('AccountCampaignsCtrl', function () {
                 return deferred.promise;
             });
 
-            $scope.hasInfoboxPermission = function () { return true; };
+            $scope.hasInfoboxPermission = function () {
+                return true;
+            };
             $scope.getInfoboxData();
             $scope.$digest();
             expect($scope.infoboxHeader).toEqual(
