@@ -54,8 +54,8 @@ class ApiPublishersTest(TestCase):
     def check_aggregations(self):
         required_statements = [
             '"date"',
-            'CASE WHEN SUM("clicks") <> 0 THEN SUM(CAST("cost_micro" AS FLOAT)) / SUM("clicks") ELSE NULL END AS "cpc_micro"',
-            'SUM("cost_micro") AS "cost_micro_sum"',
+            'CASE WHEN SUM("clicks") <> 0 THEN SUM(CAST("cost_nano" AS FLOAT)) / SUM("clicks") ELSE NULL END AS "cpc_nano"',
+            'SUM("cost_nano") AS "cost_nano_sum"',
             'SUM("impressions") AS "impressions_sum"',
             'CASE WHEN SUM("impressions") <> 0 THEN SUM(CAST("clicks" AS FLOAT)) / SUM("impressions") ELSE NULL END AS "ctr"',
             'SUM("clicks") AS "clicks_sum"',
@@ -70,8 +70,8 @@ class ApiPublishersTest(TestCase):
             'impressions_sum': 10560,
             'clicks_sum': 123,
             'ctr': 1.0,
-            'cpc_micro': 1.0,
-            'cost_micro_sum': 26638,
+            'cpc_nano': 1.0,
+            'cost_nano_sum': 26638,
             'date': '2015-01-01',
         }]
 
@@ -152,7 +152,7 @@ class ApiPublishersTest(TestCase):
         self.check_constraints(constraints)
         self.check_aggregations()
         query = self._get_query()
-        self.assertIn("SUM(clicks) = 0, sum(cost_micro) IS NULL, cpc_micro DESC", query)
+        self.assertIn("SUM(clicks) = 0, sum(cost_nano) IS NULL, cpc_nano DESC", query)
 
     def test_query_active(self):
         # this doesn't really test blacklisting but runs the functions to make
@@ -163,8 +163,8 @@ class ApiPublishersTest(TestCase):
             'domain': u'zemanta.com',
             'ctr': 0.0,
             'exchange': 'gumgum',
-            'cpc_micro': 0,
-            'cost_micro_sum': 1e-05,
+            'cpc_nano': 0,
+            'cost_nano_sum': 1e-05,
             'impressions_sum': 1000L,
             'clicks_sum': 0L,
         },
@@ -208,8 +208,8 @@ class ApiPublishersTest(TestCase):
             'domain': u'zemanta.com',
             'ctr': 0.0,
             'exchange': 'gumgum',
-            'cpc_micro': 0,
-            'cost_micro_sum': 1e-05,
+            'cpc_nano': 0,
+            'cost_nano_sum': 1e-05,
             'impressions_sum': 1000L,
             'clicks_sum': 0L,
         },
@@ -253,8 +253,8 @@ class ApiPublishersTest(TestCase):
             'domain': u'zemanta.com',
             'ctr': 0.0,
             'exchange': 'gumgum',
-            'cpc_micro': 0,
-            'cost_micro_sum': 1e-05,
+            'cpc_nano': 0,
+            'cost_nano_sum': 1e-05,
             'impressions_sum': 1000L,
             'clicks_sum': 0L,
         },
@@ -297,8 +297,8 @@ class ApiPublishersMapperTest(TestCase):
                 'exchange': None,
                 'date': None,
                 'clicks_sum': None,
-                'cost_micro_sum': None,
-                'cpc_micro': None,
+                'cost_nano_sum': None,
+                'cpc_nano': None,
                 'ctr': None,
                 'adgroup_id': None,
                 'exchange': None}
@@ -314,8 +314,8 @@ class ApiPublishersMapperTest(TestCase):
                                      'impressions': None})
 
     def test_map_rowdict_to_output_transforms(self):
-        input = {'cpc_micro': 100000,
-                 'cost_micro_sum': 200000,
+        input = {'cpc_nano': 100000,
+                 'cost_nano_sum': 200000,
                  'ctr': 0.2}
         result = api_publishers.rs_pub.map_result_to_app(input, json_fields=[])
         self.assertEqual(result, {'cost': 0.0002,
