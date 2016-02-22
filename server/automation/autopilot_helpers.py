@@ -121,24 +121,27 @@ AdGroup: {adg_name} ({adg_url}):'''.format(
 
 
 def _get_email_source_changes_text(ag_source, changes):
-    cpc_changed = changes['old_cpc_cc'] != changes['new_cpc_cc']
+    cpc_pilot_on = all(c in changes for c in ['old_cpc_cc', 'new_cpc_cc'])
+    cpc_changed = cpc_pilot_on and changes['old_cpc_cc'] != changes['new_cpc_cc']
     budget_pilot_on = all(b in changes for b in ['new_budget', 'old_budget'])
     budget_changed = budget_pilot_on and changes['old_budget'] != changes['new_budget']
 
     text = u'\n- on {} '.format(ag_source.source.name)
     if budget_pilot_on:
         text = _get_budget_changes_text(text, budget_changed, changes)
+        if cpc_pilot_on:
+            text += ' and '
     if cpc_changed:
         text += u'bid CPC changed from ${} to ${}'.format(
             changes['old_cpc_cc'].normalize(),
             changes['new_cpc_cc'].normalize())
         if changes['cpc_comments']:
             text += ' because ' + ' and '.join(CpcChangeComment.get_text(c) for c in changes['cpc_comments'])
-    elif changes['cpc_comments'] != []:
+    elif cpc_pilot_on and changes['cpc_comments'] != []:
         text += u'bid CPC remained unchanged at ${} because {}.'.format(
             changes['old_cpc_cc'].normalize(),
             ' and '.join(CpcChangeComment.get_text(c) for c in changes['cpc_comments']))
-    else:
+    elif cpc_pilot_on and not cpc_changed:
         text += u'bid CPC remained unchanged at ${}.'.format(
             changes['old_cpc_cc'].normalize())
     return text
@@ -146,12 +149,12 @@ def _get_email_source_changes_text(ag_source, changes):
 
 def _get_budget_changes_text(text, budget_changed, changes):
     if budget_changed:
-        text += u'daily budget changed from ${} to ${} and '.format(
+        text += u'daily budget changed from ${} to ${}'.format(
             '{0:.2f}'.format(changes['old_budget']),
             '{0:.2f}'.format(changes['new_budget']))
     elif DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET in changes['budget_comments']:
         text += u'daily budget did not change because ' +\
-            DailyBudgetChangeComment.get_text(DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET) + ' and '
+            DailyBudgetChangeComment.get_text(DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET)
     else:
-        text += u'daily budget did not change and '
+        text += u'daily budget did not change'
     return text

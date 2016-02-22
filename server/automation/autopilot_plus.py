@@ -11,7 +11,7 @@ from automation import autopilot_cpc
 from automation import autopilot_helpers
 from automation import autopilot_settings
 import automation.constants
-import dash.constants
+from dash.constants import AdGroupSettingsState, AdGroupSettingsAutopilotState
 import reports.api_contentads
 from utils import pagerduty_helper
 from utils.statsd_helper import statsd_timer
@@ -21,19 +21,25 @@ from utils import dates_helper
 logger = logging.getLogger(__name__)
 
 
-def run_autopilot():
-    ad_groups_on_ap, ad_group_settings_on_ap = autopilot_helpers.get_active_ad_groups_on_autopilot()
+def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True):
+    if not ad_groups:
+        ad_groups_on_ap, ad_group_settings_on_ap = autopilot_helpers.get_active_ad_groups_on_autopilot()
+    else:
+        ad_groups_on_ap = dash.models.AdGroup.objects.filter(id__in=ad_groups)
+        ad_group_settings_on_ap = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups_on_ap).group_current_settings()\
+            .select_related('ad_group')
     data = prefetch_autopilot_data(ad_groups_on_ap)
     email_changes_data = {}
 
     for adg_settings in ad_group_settings_on_ap:
         adg = adg_settings.ad_group
         budget_changes = {}
-        if adg_settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+        cpc_changes = {}
+        if adjust_budgets and adg_settings.autopilot_state == AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             budget_changes = autopilot_budgets.\
                 get_autopilot_daily_budget_recommendations(adg, adg_settings.autopilot_daily_budget, data[adg])
-
-        cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(adg, data[adg], budget_changes=budget_changes)
+        if adjust_cpcs:
+            cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(adg, data[adg], budget_changes=budget_changes)
         try:
             with transaction.atomic():
                 set_autopilot_changes(cpc_changes, budget_changes)
@@ -53,8 +59,10 @@ def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, cpc_chang
     if camp not in email_changes_data:
         email_changes_data[camp] = {}
     email_changes_data[camp][ad_group] = {}
-    for s in cpc_changes.keys():
-        email_changes_data[camp][ad_group][s] = cpc_changes[s].copy()
+    for s in set(cpc_changes.keys() + budget_changes.keys()):
+        email_changes_data[camp][ad_group][s] = {}
+        if s in cpc_changes:
+            email_changes_data[camp][ad_group][s] = cpc_changes[s].copy()
         if s in budget_changes:
             email_changes_data[camp][ad_group][s].update(budget_changes[s])
     return email_changes_data
@@ -66,13 +74,13 @@ def persist_autopilot_changes_to_log(cpc_changes, budget_changes, data, autopilo
         persist_autopilot_change_to_log(
             ad_group_source=ag_source,
             autopilot_type=autopilot_state,
-            previous_cpc_cc=cpc_changes[ag_source]['old_cpc_cc'],
-            new_cpc_cc=cpc_changes[ag_source]['new_cpc_cc'],
+            previous_cpc_cc=data[ag_source]['old_cpc_cc'],
+            new_cpc_cc=cpc_changes[ag_source]['new_cpc_cc'] if cpc_changes else data[ag_source]['old_cpc_cc'],
             previous_daily_budget=old_budget,
             new_daily_budget=budget_changes[ag_source]['new_budget'] if budget_changes else old_budget,
             yesterdays_spend_cc=data[ag_source]['yesterdays_spend_cc'],
             yesterdays_clicks=data[ag_source]['yesterdays_clicks'],
-            cpc_comments=cpc_changes[ag_source]['cpc_comments'],
+            cpc_comments=cpc_changes[ag_source]['cpc_comments'] if cpc_changes else [],
             budget_comments=budget_changes[ag_source]['budget_comments'] if budget_changes else [])
 
 
@@ -147,7 +155,7 @@ def _get_autopilot_enabled_active_sources(ad_groups):
     ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source_id__in=ag_sources).group_current_settings().select_related('ad_group_source__source')
     return [ag_source_setting for ag_source_setting in ag_sources_settings if
-            ag_source_setting.state == dash.constants.AdGroupSettingsState.ACTIVE]
+            ag_source_setting.state == AdGroupSettingsState.ACTIVE]
 
 
 def _fetch_data(ad_groups, sources):
