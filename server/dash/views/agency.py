@@ -10,7 +10,7 @@ from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
 from actionlog import zwei_actions
-from automation import autopilot_budgets
+from automation import autopilot_budgets, autopilot_plus
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -91,6 +91,9 @@ class AdGroupSettings(api_common.BaseApiView):
 
             email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
             helpers.log_useraction_if_necessary(request, user_action_type, ad_group=ad_group)
+            if 'autopilot_state' in changes and \
+                    changes['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+                automation.autopilot_plus.run_autopilot(ad_groups=[ad_group_id], adjust_cpcs=False, adjust_budgets=True)
 
         response = {
             'settings': self.get_dict(new_settings, ad_group),

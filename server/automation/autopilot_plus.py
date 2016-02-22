@@ -110,10 +110,10 @@ def persist_autopilot_change_to_log(
     ).save()
 
 
-def set_autopilot_changes(cpc_changes, budget_changes=None):
-    for ag_source in cpc_changes.keys():
+def set_autopilot_changes(cpc_changes=None, budget_changes=None):
+    for ag_source in set(cpc_changes.keys() + budget_changes.keys()):
         changes = {}
-        if cpc_changes[ag_source]['old_cpc_cc'] != cpc_changes[ag_source]['new_cpc_cc']:
+        if cpc_changes and cpc_changes[ag_source]['old_cpc_cc'] != cpc_changes[ag_source]['new_cpc_cc']:
             changes['cpc_cc'] = cpc_changes[ag_source]['new_cpc_cc']
         if budget_changes and budget_changes[ag_source]['old_budget'] != budget_changes[ag_source]['new_budget']:
             changes['daily_budget_cc'] = budget_changes[ag_source]['new_budget']
