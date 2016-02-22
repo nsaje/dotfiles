@@ -74,7 +74,7 @@ describe('AccountCampaignsCtrl', function () {
 
             $modalStack = _$modalStack_;
 
-            controller = $controller('AccountCampaignsCtrl', 
+            controller = $controller('AccountCampaignsCtrl',
                 {
                     $scope: $scope,
                     api: api,
