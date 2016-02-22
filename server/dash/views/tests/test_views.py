@@ -2799,7 +2799,7 @@ class AccountOverviewTest(TestCase):
         user.save()
         self.user = user
 
-    def _get_account_overview(self, account_id, user_id=2, with_status=False, archived='true'):
+    def _get_account_overview(self, account_id, user_id=2, with_status=False):
         user = User.objects.get(pk=user_id)
         self.client.login(username=user.username, password='secret')
         reversed_url = reverse(
@@ -2807,7 +2807,6 @@ class AccountOverviewTest(TestCase):
                 kwargs={'account_id': account_id})
         response = self.client.get(
             reversed_url,
-            data={'show_archived': archived},
             follow=True
         )
         return json.loads(response.content)
@@ -2871,7 +2870,7 @@ class AccountOverviewTest(TestCase):
             'source_id': 9,
             'cost_cc_sum': 0.0
         }]
-        response = self._get_account_overview(1, archived='not_archived')
+        response = self._get_account_overview(1)
         settings = response['data']['basic_settings']
         header = response['data']['header']
 

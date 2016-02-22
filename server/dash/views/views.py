@@ -667,9 +667,6 @@ class AccountOverview(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_access_account_infobox'):
             raise exc.AuthorizationError()
 
-        show_archived = request.GET.get('show_archived') == 'true' and\
-            request.user.has_perm('zemauth.view_archived_entities')
-
         account = helpers.get_account(request.user, account_id)
 
         header = {
@@ -691,20 +688,12 @@ class AccountOverview(api_common.BaseApiView):
             'performance_settings': performance_settings,
         }
 
-        if show_archived:
-            count_campaigns = models.Campaign.objects.filter(
-                account=account
-            ).count()
-            count_adgroups = models.AdGroup.objects.filter(
-                campaign__account=account
-            ).count()
-        else:
-            count_campaigns = models.Campaign.objects.filter(
-                account=account
-            ).exclude_archived().count()
-            count_adgroups = models.AdGroup.objects.filter(
-                campaign__account=account
-            ).exclude_archived().count()
+        count_campaigns = models.Campaign.objects.filter(
+            account=account
+        ).exclude_archived().count()
+        count_adgroups = models.AdGroup.objects.filter(
+            campaign__account=account
+        ).exclude_archived().count()
 
         header['subtitle'] = 'with {count_campaigns} campaigns and {count_adgroups} ad groups'.format(
             count_campaigns=count_campaigns,

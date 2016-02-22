@@ -1418,8 +1418,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 params: {}
             };
 
-            addShowArchived(config.params);
-
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
