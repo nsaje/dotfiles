@@ -218,6 +218,44 @@ class AdGroupSettingsTest(TestCase):
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
+    @patch('automation.autopilot_plus.run_autopilot')
+    def test_put_set_budget_autopilot_triggers_budget_reallocation(
+            self, mock_actionlog_api, mock_order_ad_group_settings_update, mock_run_autopilot):
+        with patch('utils.dates_helper.local_today') as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
+
+            ad_group = models.AdGroup.objects.get(pk=1)
+            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+            old_settings = ad_group.get_current_settings()
+            old_settings.autopilot_state = 2
+            old_settings.save(None)
+            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+            self.assertIsNotNone(old_settings.pk)
+            self.settings_dict['settings']['autopilot_state'] = 1
+            self.settings_dict['settings']['autopilot_daily_budget'] = '200.00'
+
+            self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True
+            )
+
+            new_settings = ad_group.get_current_settings()
+
+            request = HttpRequest()
+            request.user = User(id=1)
+
+            # can it actually be saved to the db
+            new_settings.save(request)
+
+            self.assertEqual(new_settings.autopilot_state, 1)
+            self.assertEqual(new_settings.autopilot_daily_budget, Decimal('200'))
+
+            self.assertEqual(mock_run_autopilot.called, True)
+
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
                                            mock_order_ad_group_settings_update):
