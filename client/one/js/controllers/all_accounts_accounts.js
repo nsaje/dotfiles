@@ -469,7 +469,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         );
     };
 
-    var getInfoboxData = function () {
+    $scope.getInfoboxData = function () {
         if (!$scope.hasInfoboxPermission()) {
             return;
         }
@@ -534,7 +534,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             return;
         }
 
-        getInfoboxData();
+        $scope.getInfoboxData();
         getDailyStats();
         getTableData();
     });
@@ -657,7 +657,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         $scope.loadPage();
         getDailyStats();
-        getInfoboxData();
+        $scope.getInfoboxData();
         getTableData();
         initColumns();
     };
