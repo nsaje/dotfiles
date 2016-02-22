@@ -480,7 +480,7 @@ def _retrieve_active_budgetlineitems(campaign, date):
     return qs.filter_active(date)
 
 
-def is_adgroup_active(ad_group, ad_group_settings=None):
+def get_adgroup_running_status(ad_group, ad_group_settings=None):
     if not ad_group_settings:
         ad_group_settings = ad_group.get_current_settings()
 
@@ -510,7 +510,7 @@ def get_campaign_running_status(campaign):
 
     for ad_group_settings in ad_groups_settings:
         ad_group = ad_group_settings.ad_group
-        if is_adgroup_active(ad_group, ad_group_settings) == dash.constants.InfoboxStatus.ACTIVE:
+        if get_adgroup_running_status(ad_group, ad_group_settings) == dash.constants.InfoboxStatus.ACTIVE:
             return dash.constants.InfoboxStatus.ACTIVE
     return dash.constants.InfoboxStatus.INACTIVE
 
@@ -523,7 +523,7 @@ def get_account_running_status(account):
 
     for ad_group_settings in ad_groups_settings:
         ad_group = ad_group_settings.ad_group
-        if is_adgroup_active(ad_group, ad_group_settings) == dash.constants.InfoboxStatus.ACTIVE:
+        if get_adgroup_running_status(ad_group, ad_group_settings) == dash.constants.InfoboxStatus.ACTIVE:
             return dash.constants.InfoboxStatus.ACTIVE
     return dash.constants.InfoboxStatus.INACTIVE
 

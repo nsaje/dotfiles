@@ -690,7 +690,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         available_credit = dash.infobox_helpers.calculate_yesterday_account_spend(account)
         self.assertEqual(10, available_credit)
 
-    def test_is_adgroup_active(self):
+    def test_get_adgroup_running_status(self):
         # adgroup is inactive and no active sources
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         start_date = datetime.datetime.today().date()
@@ -706,7 +706,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.INACTIVE,
-            dash.infobox_helpers.is_adgroup_active(ad_group)
+            dash.infobox_helpers.get_adgroup_running_status(ad_group)
         )
 
         # adgroup is active and sources are active
@@ -730,7 +730,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE,
-            dash.infobox_helpers.is_adgroup_active(ad_group)
+            dash.infobox_helpers.get_adgroup_running_status(ad_group)
         )
 
         # adgroup is active but sources are inactive
@@ -743,7 +743,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.STOPPED,
-            dash.infobox_helpers.is_adgroup_active(ad_group)
+            dash.infobox_helpers.get_adgroup_running_status(ad_group)
         )
 
         # adgroup is inactive but sources are active
@@ -759,7 +759,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.INACTIVE,
-            dash.infobox_helpers.is_adgroup_active(ad_group)
+            dash.infobox_helpers.get_adgroup_running_status(ad_group)
         )
 
     def test_get_campaign_running_status(self):

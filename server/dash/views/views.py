@@ -253,7 +253,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
         header = {
             'title': ad_group_settings.ad_group_name,
-            'active': infobox_helpers.is_adgroup_active(ad_group, ad_group_settings),
+            'active': infobox_helpers.get_adgroup_running_status(ad_group, ad_group_settings),
             'level': constants.InfoboxLevel.ADGROUP,
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP)),
         }
