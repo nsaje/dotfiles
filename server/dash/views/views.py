@@ -531,7 +531,7 @@ class CampaignOverview(api_common.BaseApiView):
 
         header = {
             'title': campaign.name,
-            'active': infobox_helpers.is_campaign_active(campaign),
+            'active': infobox_helpers.get_campaign_running_status(campaign),
             'level': constants.InfoboxLevel.CAMPAIGN,
             'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.CAMPAIGN)),
         }

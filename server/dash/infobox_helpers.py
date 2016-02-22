@@ -502,8 +502,8 @@ def is_adgroup_active(ad_group, ad_group_settings=None):
     return infobox_status
 
 
-@statsd_timer('dash.infobox_helpers', 'is_campaign_active')
-def is_campaign_active(campaign):
+@statsd_timer('dash.infobox_helpers', 'get_campaign_running_status')
+def get_campaign_running_status(campaign):
     ad_groups_settings = dash.models.AdGroupSettings.objects.filter(
         ad_group__campaign=campaign
     ).group_current_settings()

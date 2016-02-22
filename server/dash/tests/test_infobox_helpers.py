@@ -762,12 +762,12 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.infobox_helpers.is_adgroup_active(ad_group)
         )
 
-    def test_is_campaign_active(self):
+    def test_get_campaign_running_status(self):
         campaign = dash.models.Campaign.objects.get(pk=1)
         ad_group = dash.models.AdGroup.objects.get(pk=1)
         self.assertEqual(
             dash.constants.InfoboxStatus.INACTIVE,
-            dash.infobox_helpers.is_campaign_active(campaign)
+            dash.infobox_helpers.get_campaign_running_status(campaign)
         )
 
         start_date = datetime.datetime.today().date()
@@ -789,7 +789,7 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE,
-            dash.infobox_helpers.is_campaign_active(campaign)
+            dash.infobox_helpers.get_campaign_running_status(campaign)
         )
 
     def test_get_account_running_status(self):
