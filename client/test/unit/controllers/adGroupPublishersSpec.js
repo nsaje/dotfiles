@@ -16,7 +16,7 @@ describe('AdGroupPublishersCtrl', function () {
         inject(function ($rootScope, $controller, zemLocalStorageService, _$state_, _$q_) {
             $q = _$q_;
             $scope = $rootScope.$new();
-        
+
             $scope.infoboxHeader = null;
             $scope.infoboxBasicSettings = null;
             $scope.infoboxPerformanceSettings = null;
