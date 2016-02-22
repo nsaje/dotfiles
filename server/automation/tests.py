@@ -271,17 +271,6 @@ class BCMDepletionTestCase(test.TestCase):
 
     @patch('datetime.datetime', DatetimeMock)
     def test_get_available_budgets(self):
-        models.CampaignBudgetSettings(
-            campaign_id=1,
-            total=decimal.Decimal('200.0000'),
-            created_by_id=1,
-        ).save(self.request)
-        models.CampaignBudgetSettings(
-            campaign_id=2,
-            total=decimal.Decimal('300.0000'),
-            created_by_id=1,
-        ).save(self.request)
-
         with patch('reports.api.query') as query:
             query.return_value = {'cost': 200.0}
             self.assertEqual(
