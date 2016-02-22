@@ -36,8 +36,8 @@ class AdGroupSettingsTest(TestCase):
                 'target_regions': ['693', 'GB'],
                 'name': 'Test ad group name',
                 'id': 1,
-                'autopilot_state': 1,
-                'autopilot_daily_budget': '100.0000',
+                'autopilot_state': 2,
+                'autopilot_daily_budget': '150.0000',
                 'retargeting_ad_groups': [2],
                 'enable_ga_tracking': False,
                 'enable_adobe_tracking': False,
@@ -46,7 +46,7 @@ class AdGroupSettingsTest(TestCase):
                 'autopilot_min_budget': '100'
             }
         }
-
+        self.maxDiff = None
         user = User.objects.get(pk=1)
         self.client.login(username=user.email, password='secret')
 
@@ -139,8 +139,8 @@ class AdGroupSettingsTest(TestCase):
                         'enable_ga_tracking': True,
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': '',
-                        'autopilot_state': 1,
-                        'autopilot_daily_budget': '100.00',
+                        'autopilot_state': 2,
+                        'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'enable_ga_tracking': False,
                         'enable_adobe_tracking': False,
@@ -262,8 +262,8 @@ class AdGroupSettingsTest(TestCase):
                         'enable_ga_tracking': True,
                         'adobe_tracking_param': '',
                         'enable_adobe_tracking': False,
-                        'autopilot_state': 1,
-                        'autopilot_daily_budget': '100.00',
+                        'autopilot_state': 2,
+                        'autopilot_daily_budget': '0.00',
                         'retargeting_ad_groups': [2],
                         'enable_ga_tracking': False,
                         'enable_adobe_tracking': False,
@@ -438,7 +438,7 @@ class AdGroupSettingsTest(TestCase):
             self.assertNotEqual(response_settings_dict['enable_adobe_tracking'], False)
             self.assertNotEqual(response_settings_dict['adobe_tracking_param'], 'cid')
             self.assertNotEqual(response_settings_dict['autopilot_state'], 2)
-            self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '100.0000')
+            self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '0.00')
             self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
 
 
