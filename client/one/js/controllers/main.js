@@ -293,7 +293,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return false;
     };
 
-    $scope.hasInfoboxPermission = function () {
+    $scope.hasInfoboxPermission = function () { // eslint-disable-line max-len
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return false;
         }
