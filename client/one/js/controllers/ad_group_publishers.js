@@ -771,7 +771,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         );
     };
 
-    var getInfoboxData = function () {
+    $scope.getInfoboxData = function () {
         if (!$scope.hasInfoboxPermission()) {
             return;
         }
@@ -887,7 +887,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.size = $scope.sizeRange[0];
         }
 
-
         setChartOptions();
 
         if (page !== undefined && $scope.pagination.currentPage !== page) {
@@ -902,7 +901,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         getTableData();
         getDailyStats();
-        getInfoboxData();
+        $scope.getInfoboxData();
         zemFilterService.setShowBlacklistedPublishers(true);
     };
 
