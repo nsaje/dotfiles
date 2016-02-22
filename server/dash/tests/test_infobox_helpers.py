@@ -704,9 +704,10 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
         adgs.save(None)
 
+        ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.INACTIVE,
-            dash.infobox_helpers.get_adgroup_running_status(ad_group)
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
         )
 
         # adgroup is active and sources are active
@@ -728,9 +729,10 @@ class InfoBoxAccountHelpersTest(TestCase):
             source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
             source.save(None)
 
+        ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE,
-            dash.infobox_helpers.get_adgroup_running_status(ad_group)
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
         )
 
         # adgroup is active but sources are inactive
@@ -741,9 +743,10 @@ class InfoBoxAccountHelpersTest(TestCase):
             source.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
             source.save(None)
 
+        ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.STOPPED,
-            dash.infobox_helpers.get_adgroup_running_status(ad_group)
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
         )
 
         # adgroup is inactive but sources are active
@@ -757,9 +760,10 @@ class InfoBoxAccountHelpersTest(TestCase):
             source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
             source.save(None)
 
+        ad_group_settings = ad_group.get_current_settings()
         self.assertEqual(
             dash.constants.InfoboxStatus.INACTIVE,
-            dash.infobox_helpers.get_adgroup_running_status(ad_group)
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
         )
 
     def test_get_campaign_running_status(self):
