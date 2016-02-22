@@ -8,15 +8,13 @@ from reports import redshift
 from utils.command_helpers import ExceptionCommand
 from utils.statsd_helper import statsd_gauge
 
-NANO_FIELDS = ['effective_cost_nano', 'effective_data_cost_nano', 'license_fee_nano']
-
 
 class Command(ExceptionCommand):
 
     def _post_metrics(self, prefix, stats, redshift_sums):
         for stats_key, stats_val in stats.iteritems():
             redshift_stats_val = redshift_sums[stats_key]
-            if stats_key in NANO_FIELDS:
+            if stats_key.endswith('_nano'):
                 stats_key = re.sub(r'_nano$', '', stats_key)
                 stats_val = float(stats_val) / 10**9
                 redshift_stats_val = float(redshift_stats_val) / 10**9
