@@ -253,9 +253,9 @@ class AdGroupOverview(api_common.BaseApiView):
 
         header = {
             'title': ad_group_settings.ad_group_name,
-            'active': infobox_helpers.is_adgroup_active(ad_group, ad_group_settings),
+            'active': infobox_helpers.get_adgroup_running_status(ad_group_settings),
             'level': constants.InfoboxLevel.ADGROUP,
-            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP),
+            'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP)),
         }
 
         basic_settings, daily_cap = self._basic_settings(request.user, ad_group, ad_group_settings)
@@ -531,9 +531,9 @@ class CampaignOverview(api_common.BaseApiView):
 
         header = {
             'title': campaign.name,
-            'active': infobox_helpers.is_campaign_active(campaign),
+            'active': infobox_helpers.get_campaign_running_status(campaign),
             'level': constants.InfoboxLevel.CAMPAIGN,
-            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.CAMPAIGN),
+            'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.CAMPAIGN)),
         }
 
         basic_settings, daily_cap =\
@@ -671,9 +671,9 @@ class AccountOverview(api_common.BaseApiView):
 
         header = {
             'title': account.name,
-            'active': constants.InfoboxStatus.INACTIVE,
+            'active': infobox_helpers.get_account_running_status(account),
             'level': constants.InfoboxLevel.ACCOUNT,
-            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT),
+            'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT)),
         }
 
         basic_settings = self._basic_settings(account)
@@ -1897,21 +1897,24 @@ class AllAccountsOverview(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_access_all_accounts_infobox'):
             raise exc.AuthorizationError()
 
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
         header = {
-            'title': 'All accounts',
+            'title': None,
             'level': constants.InfoboxLevel.ALL_ACCOUNTS,
             'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ALL_ACCOUNTS),
         }
 
         response = {
             'header': header,
-            'basic_settings': self._basic_settings(),
+            'basic_settings': self._basic_settings(start_date, end_date),
             'performance_settings': None
         }
 
         return self.create_api_response(response)
 
-    def _basic_settings(self):
+    def _basic_settings(self, start_date, end_date):
         settings = []
 
         count_active_accounts = infobox_helpers.count_active_accounts()
@@ -1957,10 +1960,13 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         today = datetime.datetime.utcnow()
         start, end = calendar.monthrange(today.year, today.month)
-        start_date = datetime.datetime(today.year, today.month, 1)
-        end_date = datetime.datetime(today.year, today.month, end)
+        start_date = start_date or datetime.datetime(today.year, today.month, 1)
+        end_date = end_date or datetime.datetime(today.year, today.month, end)
 
-        total_budget = infobox_helpers.calculate_all_accounts_total_budget(start_date, end_date)
+        total_budget = infobox_helpers.calculate_all_accounts_total_budget(
+            start_date,
+            end_date
+        )
         settings.append(infobox_helpers.OverviewSetting(
             'Total budgets:',
             lc_helper.default_currency(total_budget),

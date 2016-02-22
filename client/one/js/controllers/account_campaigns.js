@@ -382,12 +382,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         }
     });
 
-    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
-    });
-
     var getDailyStatsMetrics = function () {
         var values = $scope.chartMetricOptions.map(function (option) {
             return option.value;
@@ -462,11 +456,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         );
     };
 
-    var getInfoboxData = function () {
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            return;
-        }
-        if (!$scope.hasPermission('zemauth.can_access_account_infobox')) {
+    $scope.getInfoboxData = function () {
+        if (!$scope.hasInfoboxPermission()) {
             return;
         }
 
@@ -615,7 +606,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         userSettings.registerWithoutWatch('chartMetric2');
         userSettings.register('order');
         userSettings.registerGlobal('chartHidden');
-
         setChartOptions();
 
         if (campaignIds) {
@@ -636,7 +626,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         initColumns();
         pollSyncStatus();
         getDailyStats();
-        getInfoboxData();
+        $scope.getInfoboxData();
     };
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
