@@ -1,4 +1,4 @@
-/*global module,beforeEach,it,describe,expect,inject,spyOn*/
+/* global module,beforeEach,it,describe,expect,inject,spyOn */
 'use strict';
 
 describe('AdGroupPublishersCtrl', function () {
@@ -74,7 +74,7 @@ describe('AdGroupPublishersCtrl', function () {
                 adGroupOverview: {
                     get: mockApiFunc,
                 },
-            }
+            };
 
             $state = _$state_;
             $state.params = {id: 1};

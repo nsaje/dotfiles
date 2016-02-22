@@ -1,4 +1,4 @@
-/*global module,beforeEach,it,describe,expect,inject,spyOn*/
+/* global module,beforeEach,it,describe,expect,inject,spyOn */
 'use strict';
 
 describe('AccountCampaignsCtrl', function () {

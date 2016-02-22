@@ -1,4 +1,4 @@
-/*global module,beforeEach,it,describe,expect,inject,spyOn*/
+/* global module,beforeEach,it,describe,expect,inject,spyOn,constants */
 'use strict';
 
 describe('MediaSourcesCtrl', function () {
@@ -67,7 +67,7 @@ describe('MediaSourcesCtrl', function () {
                 sourcesTable: {
                     get: mockApiFunc,
                 },
-            }
+            };
 
             $state = _$state_;
             $state.params = {id: 1};

@@ -1,4 +1,4 @@
-/*global module,beforeEach,it,describe,expect,inject,spyOn*/
+/* global module,beforeEach,it,describe,expect,inject,spyOn */
 'use strict';
 
 describe('AllAccountsAccountsCtrl', function () {
@@ -63,7 +63,7 @@ describe('AllAccountsAccountsCtrl', function () {
                 allAccountsOverview: {
                     get: mockApiFunc,
                 },
-            }
+            };
 
             $state = _$state_;
             $state.params = {id: 1};
