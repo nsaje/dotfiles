@@ -2,7 +2,7 @@
 'use strict';
 
 describe('AllAccountsAccountsCtrl', function () {
-    var $modalStack, $scope, $state, $q, api, controller;
+    var $scope, $state, $q, api;
 
     beforeEach(module('one'));
     beforeEach(module('stateMock'));
@@ -12,7 +12,7 @@ describe('AllAccountsAccountsCtrl', function () {
     }));
 
     beforeEach(function () {
-        inject(function ($rootScope, $controller, zemLocalStorageService, _$state_, _$q_, _$modalStack_) {
+        inject(function ($rootScope, $controller, zemLocalStorageService, _$state_, _$q_) {
             $q = _$q_;
             $scope = $rootScope.$new();
 
@@ -68,9 +68,7 @@ describe('AllAccountsAccountsCtrl', function () {
             $state = _$state_;
             $state.params = {id: 1};
 
-            $modalStack = _$modalStack_;
-
-            controller = $controller('AllAccountsAccountsCtrl',
+            $controller('AllAccountsAccountsCtrl',
                 {
                     $scope: $scope,
                     api: api,
