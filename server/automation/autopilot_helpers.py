@@ -128,33 +128,36 @@ def _get_email_source_changes_text(ag_source, changes):
 
     text = u'\n- on {} '.format(ag_source.source.name)
     if budget_pilot_on:
-        text = _get_budget_changes_text(text, budget_changed, changes)
-        if cpc_pilot_on:
-            text += ' and '
-    if cpc_changed:
-        text += u'bid CPC changed from ${} to ${}'.format(
-            changes['old_cpc_cc'].normalize(),
-            changes['new_cpc_cc'].normalize())
-        if changes['cpc_comments']:
-            text += ' because ' + ' and '.join(CpcChangeComment.get_text(c) for c in changes['cpc_comments'])
-    elif cpc_pilot_on and changes['cpc_comments'] != []:
-        text += u'bid CPC remained unchanged at ${} because {}.'.format(
-            changes['old_cpc_cc'].normalize(),
-            ' and '.join(CpcChangeComment.get_text(c) for c in changes['cpc_comments']))
-    elif cpc_pilot_on and not cpc_changed:
-        text += u'bid CPC remained unchanged at ${}.'.format(
-            changes['old_cpc_cc'].normalize())
+        text += _get_budget_changes_text(budget_changed, changes)
+        text += u' and ' if cpc_pilot_on else u''
+    if cpc_pilot_on:
+        text += _get_cpc_changes_text(cpc_changed, changes)
     return text
 
 
-def _get_budget_changes_text(text, budget_changed, changes):
+def _get_budget_changes_text(budget_changed, changes):
     if budget_changed:
-        text += u'daily budget changed from ${} to ${}'.format(
+        return u'daily budget changed from ${} to ${}'.format(
             '{0:.2f}'.format(changes['old_budget']),
             '{0:.2f}'.format(changes['new_budget']))
     elif DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET in changes['budget_comments']:
-        text += u'daily budget did not change because ' +\
+        return u'daily budget did not change because ' +\
             DailyBudgetChangeComment.get_text(DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET)
     else:
-        text += u'daily budget did not change'
-    return text
+        return u'daily budget did not change'
+
+
+def _get_cpc_changes_text(cpc_changed, changes):
+    if cpc_changed:
+        text = u'bid CPC changed from ${} to ${}'.format(
+            changes['old_cpc_cc'].normalize(),
+            changes['new_cpc_cc'].normalize())
+        if changes['cpc_comments']:
+            text += u' because ' + u' and '.join(CpcChangeComment.get_text(c) for c in changes['cpc_comments'])
+        return text
+    elif changes['cpc_comments'] != []:
+        return u'bid CPC remained unchanged at ${} because {}.'.format(
+            changes['old_cpc_cc'].normalize(),
+            u' and '.join(CpcChangeComment.get_text(c) for c in changes['cpc_comments']))
+    return u'bid CPC remained unchanged at ${}.'.format(
+        changes['old_cpc_cc'].normalize())
