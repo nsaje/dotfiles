@@ -784,6 +784,13 @@ class AccountOverview(api_common.BaseApiView):
         return settings
 
 
+class AccountRetargetableAdgroups(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'account_overview')
+    def get(self, request, account_id):
+        return self.create_api_response({})
+
+
 class AdGroupState(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_state_get')
