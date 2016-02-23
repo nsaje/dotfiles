@@ -1248,7 +1248,9 @@ class AdGroup(models.Model):
             now = dates_helper.local_today()
             # ad group settings and ad group source settings
             # are fetched in a separate queryset
-            # because
+            # because getting current settings and filtering them
+            # in one qs could cause latest settings to be filtered out
+            # but we want to take only latest settings into account
             latest_ad_group_settings = AdGroupSettings.objects.filter(
                 ad_group__in=self
             ).group_current_settings().values_list('id', flat=True)
