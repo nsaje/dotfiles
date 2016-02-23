@@ -156,79 +156,117 @@ Landing Page,Device Category,Sessions
         # some valid cases
 
         keyword = 'z12341b1_gumgum1z'
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertEqual(2341, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('', pub_par)
 
         keyword = 'z1z12341b1_gumgum1z'
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertEqual(2341, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('', pub_par)
 
         keyword = 'z1z12341b1_gumgum1z1z'
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertEqual(2341, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('', pub_par)
 
         keyword = 'more data here z12341b1_gumgum1z and even more here z1'
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertEqual(2341, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('', pub_par)
+
+        # valid cases with publishers
+        keyword = 'more data here z12341b1_gumgum__publisher.com1z and even more here z1'
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
+        self.assertEqual(2341, caid)
+        self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('publisher.com', pub_par)
+
+        keyword = 'more data here z12341b1_gumgum__publisher%20yeah1z and even more here z1'
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
+        self.assertEqual(2341, caid)
+        self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('publisher yeah', pub_par)
 
         # some invalid cases
 
         keyword = ''
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertIsNone(caid)
         self.assertEqual('', src_par)
+        self.assertEqual('', pub_par)
 
         # no caid
         keyword = 'z1asdfsadfasdhjkl1z'
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertIsNone(caid)
         self.assertEqual('', src_par)
+        self.assertEqual('', pub_par)
+
+        keyword = 'z1asdfsadfasdhjkl__publisher.com1z'
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
+        self.assertIsNone(caid)
+        self.assertEqual('', src_par)
+        self.assertEqual('', pub_par)
 
         # no media source
-        keyword = 'z112351z'
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        keyword = 'z11235__publisher.com1z'
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertIsNone(caid)
         self.assertEqual('', src_par)
+        self.assertEqual('', pub_par)
 
     def test_parse_landing_page(self, cursor):
         parser = parse_v2.GAReportFromCSV("")
 
         # some valid cases
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=55310&_z1_msid=b1_gumgum&_z1_pub=www.test.com&"
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
+        self.assertEqual(55310, caid)
+        self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('www.test.com', pub)
+
         landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=55310&_z1_msid=b1_gumgum"
-        caid, src_par = parser._parse_landing_page(landing_page)
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
         self.assertEqual(55310, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('', pub)
 
-        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=55310&_z1_msid=b1_gumgum?referrer=www.zemanta.com"
-        caid, src_par = parser._parse_landing_page(landing_page)
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=55310&_z1_msid=b1_gumgum&_z1_pub=www.test.com&?referrer=www.zemanta.com"
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
         self.assertEqual(55310, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('www.test.com', pub)
 
-        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_msid=b1_gumgum&_z1_caid=55310?referrer=www.zemanta.com"
-        caid, src_par = parser._parse_landing_page(landing_page)
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_pub=95%25+iOs&&_z1_msid=b1_gumgum&_z1_caid=55310?referrer=www.zemanta.com"
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
         self.assertEqual(55310, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('95% iOs', pub)
 
         # some invalid cases
 
-        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=&_z1_msid=b1_gumgum"
-        caid, src_par = parser._parse_landing_page(landing_page)
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=&_z1_msid=b1_gumgum&_z1_pub=www.test.com&"
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
         self.assertIsNone(caid)
-        self.assertEqual('', src_par)
+        self.assertEqual('', src_par, '')
+        self.assertEqual('', pub)
 
-        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_msid=b1_gumgum"
-        caid, src_par = parser._parse_landing_page(landing_page)
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_msid=b1_gumgum&_z1_pub=www.test.com&"
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
         self.assertIsNone(caid)
-        self.assertEqual('', src_par)
+        self.assertEqual('', src_par, '')
+        self.assertEqual('', pub)
 
-        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid="
-        caid, src_par = parser._parse_landing_page(landing_page)
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=&_z1_pub=www.test.com&"
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
         self.assertIsNone(caid)
-        self.assertEqual('', src_par)
+        self.assertEqual('', src_par, '')
+        self.assertEqual('', pub)
 
     def test_get_goal_name(self, cursor):
         parser = parse_v2.GAReportFromCSV("")
