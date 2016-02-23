@@ -407,8 +407,8 @@ def create_total_campaign_budget_setting(user, campaign):
 @statsd_timer('dash.infobox_helpers', 'count_active_accounts')
 def count_active_accounts():
     account_ids = set(
-        dash.models.AdGroup.objects.all()\
-        .exclude_archived().filter_active()\
+        dash.models.AdGroup.objects.all()
+        .exclude_archived().filter_active()
         .values_list(
             'campaign__account',
             flat=True

@@ -1157,7 +1157,7 @@ class AdGroup(models.Model):
         if not cls.is_ad_group_active(ad_group_settings):
             return constants.AdGroupRunningStatus.INACTIVE
 
-        now = dates_helper.utc_today()
+        now = dates_helper.local_today()
         if ad_group_settings.start_date <= now and\
            (ad_group_settings.end_date is None or now <= ad_group_settings.end_date):
             return constants.AdGroupRunningStatus.ACTIVE
@@ -1245,7 +1245,7 @@ class AdGroup(models.Model):
                 - current date is between start and stop(flight time)
                 - has at least one running mediasource(adgroupsourcesettings)
             """
-            now = dates_helper.utc_today()
+            now = dates_helper.local_today()
             latest_ad_group_settings = AdGroupSettings.objects.filter(
                 ad_group__in=self
             ).group_current_settings().values_list('id', flat=True)
