@@ -1242,7 +1242,7 @@ class AdGroup(models.Model):
             with a fixed amount of queries.
             An adgroup is active if:
                 - it was set as active(adgroupsettings)
-                - current date is between start and stop(fligh time)
+                - current date is between start and stop(flight time)
                 - has at least one running mediasource(adgroupsourcesettings)
             """
             now = dates_helper.utc_today()
