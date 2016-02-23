@@ -18,8 +18,6 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
         $scope.uploadStatus = null;
         $scope.errors = null;
         $scope.batchId = null;
-        $scope.uploadCanceled = false;
-        $scope.cancelActionInProgress = false;
         $scope.cancelErrors = null;
     }
 
@@ -61,9 +59,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
                         $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
                     }
                 ).finally(function () {
-                    if ($scope.uploadStatus !== constants.uploadBatchStatus.FAILED &&
-                        $scope.uploadStatus !== constants.uploadBatchStatus.DONE) {
-
+                    if ($scope.uploadStatus === constants.uploadBatchStatus.IN_PROGRESS) {
                         $scope.pollBatchStatus(batchId);
                     }
                 });
@@ -130,19 +126,14 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
 
     $scope.cancel = function () {
 
-        if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS || $scope.uploadCanceled) {
+        if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
             $scope.$dismiss();
             return;
         }
 
-        $scope.cancelActionInProgress = true;
         api.adGroupAdsPlusUpload.cancel($state.params.id, $scope.batchId).then(function () {
-            $scope.uploadCanceled = true;
-            $scope.cancelActionInProgress = false;
             $scope.cancelErrors = null;
         }, function (data) {
-            $scope.uploadCanceled = false;
-            $scope.cancelActionInProgress = false;
             $scope.cancelErrors = data.data.errors;
         });
     };
@@ -150,10 +141,6 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
     $scope.isCancelDisabled = function () {
         if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
             return false;
-        }
-
-        if ($scope.cancelActionInProgress) {
-            return true;
         }
 
         // unsupported for cancel

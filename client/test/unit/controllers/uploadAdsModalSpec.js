@@ -216,8 +216,6 @@ describe('UploadAdsModalCtrl', function () {
 
             expect($scope.$dismiss).not.toHaveBeenCalled();
             expect($scope.cancelErrors).toEqual(data.data.errors);
-            expect($scope.uploadCanceled).toEqual(false);
-            expect($scope.cancelActionInProgress).toEqual(false);
         });
 
         it ('sets cancel in progress parameters', function () {
@@ -237,16 +235,25 @@ describe('UploadAdsModalCtrl', function () {
                 $state.params.id, batchId
             );
 
-            expect($scope.uploadCanceled).toEqual(false);
-            expect($scope.cancelActionInProgress).toEqual(true);
-
             deferred.resolve();
             $scope.$root.$digest();
 
             expect($scope.$dismiss).not.toHaveBeenCalled();
             expect($scope.cancelErrors).toBe(null);
-            expect($scope.uploadCanceled).toEqual(true);
-            expect($scope.cancelActionInProgress).toEqual(false);
+        });
+
+        it ('close modal when canceling upload that is not in progress', function () {
+            spyOn(api.adGroupAdsPlusUpload, 'cancel');
+            spyOn($scope, '$dismiss');
+
+            $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
+            $scope.cancel();
+
+            expect(api.adGroupAdsPlusUpload.cancel).not.toHaveBeenCalled();
+
+            $scope.$root.$digest();
+
+            expect($scope.$dismiss).toHaveBeenCalled();
         });
     });
 });

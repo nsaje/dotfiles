@@ -5,6 +5,7 @@ import Queue
 from django.conf import settings
 from django.db.models import F
 
+from dash import constants
 from dash import models
 from dash import exceptions
 import actionlog.zwei_actions
@@ -61,7 +62,7 @@ class UpdateUploadBatchThread(Thread):
 
             message = self.bump_queue.get()
 
-            if self._get_upload_batch_attr('cancelled'):
+            if self._get_upload_batch_attr('status') == constants.UploadBatchStatus.CANCELLED:
                 self.exception_queue.put_nowait(exceptions.UploadCancelledException())
                 break
 
