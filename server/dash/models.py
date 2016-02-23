@@ -1157,7 +1157,7 @@ class AdGroup(models.Model):
         if not cls.is_ad_group_active(ad_group_settings):
             return constants.AdGroupRunningStatus.INACTIVE
 
-        now = dates_helper.utc_today()
+        now = dates_helper.local_today()
         if ad_group_settings.start_date <= now and\
            (ad_group_settings.end_date is None or now <= ad_group_settings.end_date):
             return constants.AdGroupRunningStatus.ACTIVE
@@ -1235,6 +1235,48 @@ class AdGroup(models.Model):
             archived_settings = AdGroupSettings.objects.all().group_current_settings()
 
             return self.exclude(pk__in=[s.ad_group_id for s in archived_settings if s.archived])
+
+        def filter_running(self):
+            """
+            This function checks if adgroup is active on arbitrary number of adgroups
+            with a fixed amount of queries.
+            An adgroup is active if:
+                - it was set as active(adgroupsettings)
+                - current date is between start and stop(flight time)
+                - has at least one running mediasource(adgroupsourcesettings)
+            """
+            now = dates_helper.local_today()
+            # ad group settings and ad group source settings
+            # are fetched in a separate queryset
+            # because getting current settings and filtering them
+            # in one qs could cause latest settings to be filtered out
+            # but we want to take only latest settings into account
+            latest_ad_group_settings = AdGroupSettings.objects.filter(
+                ad_group__in=self
+            ).group_current_settings().values_list('id', flat=True)
+
+            ad_group_settings = AdGroupSettings.objects.filter(
+                pk__in=latest_ad_group_settings
+            ).filter(
+                state=constants.AdGroupSettingsState.ACTIVE,
+                start_date__lte=now
+            ).exclude(
+                end_date__isnull=False,
+                end_date__lt=now
+            ).values_list('ad_group__id', flat=True)
+
+            latest_ad_group_source_settings = AdGroupSourceSettings.objects.filter(
+                ad_group_source__ad_group__in=self
+            ).group_current_settings().values_list('id', flat=True)
+
+            ad_group_source_settings = AdGroupSourceSettings.objects.filter(
+                pk__in=latest_ad_group_source_settings
+            ).filter(
+                state=constants.AdGroupSourceSettingsState.ACTIVE
+            ).values_list('ad_group_source__ad_group__id', flat=True)
+
+            ids = set(ad_group_settings) & set(ad_group_source_settings)
+            return self.filter(id__in=ids)
 
     class Meta:
         ordering = ('name',)
