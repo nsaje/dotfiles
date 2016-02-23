@@ -42,9 +42,11 @@ class CpcChangeComment(ConstantBase):
 class DailyBudgetChangeComment(ConstantBase):
     NO_ACTIVE_SOURCES_WITH_SPEND = 1
     NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET = 2
+    INITIALIZE_PILOT_PAUSED_SOURCE = 3
 
     _VALUES = {
         NO_ACTIVE_SOURCES_WITH_SPEND: 'Ad Group does not have any active sources with enough spend.' +
                                       ' Budget was uniformly redistributed.',
-        NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET: 'Budget Auto-Pilot tried assigning wrong ammount of total daily budgets'
+        NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET: 'Budget Auto-Pilot tried assigning wrong ammount of total daily budgets',
+        INITIALIZE_PILOT_PAUSED_SOURCE: 'Budget Auto-Pilot initialization - set paused source to minimum budget.'
     }

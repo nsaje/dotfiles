@@ -21,7 +21,7 @@ from utils import dates_helper
 logger = logging.getLogger(__name__)
 
 
-def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True):
+def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True, initialization=False):
     if not ad_groups:
         ad_groups_on_ap, ad_group_settings_on_ap = autopilot_helpers.get_active_ad_groups_on_autopilot()
     else:
@@ -49,9 +49,35 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True):
         except Exception as e:
             _report_autopilot_exception(adg, e)
 
-    autopilot_helpers.send_autopilot_changes_emails(email_changes_data, data)
+    autopilot_helpers.send_autopilot_changes_emails(email_changes_data, data, initialization)
 
     # TODO Report to statsd.
+
+
+def initialize_budget_autopilot_on_ad_group(ad_group):
+    paused_ad_group_sources = _get_autopilot_active_sources_settings([ad_group], AdGroupSettingsState.INACTIVE)
+    new_budgets = {}
+    data = {}
+    for ag_source_setting in paused_ad_group_sources:
+        ag_source = ag_source_setting.ad_group_source
+        new_budgets[ag_source] = {
+            'old_budget': ag_source_setting.daily_budget_cc,
+            'new_budget': max(autopilot_settings.MIN_SOURCE_BUDGET, ag_source.source.source_type.min_daily_budget),
+            'budget_comments': [automation.constants.DailyBudgetChangeComment.INITIALIZE_PILOT_PAUSED_SOURCE]
+        }
+        data[ag_source] = {
+            'old_cpc_cc': ag_source_setting.cpc_cc,
+            'old_budget': ag_source_setting.daily_budget_cc,
+            'yesterdays_spend_cc': None,
+            'yesterdays_clicks': None
+        }
+    try:
+        with transaction.atomic():
+            set_autopilot_changes({}, new_budgets)
+            persist_autopilot_changes_to_log({}, new_budgets, data, AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
+    except Exception as e:
+        _report_autopilot_exception(ad_group, e)
+    run_autopilot(ad_groups=[ad_group.id], adjust_cpcs=False, adjust_budgets=True, initialization=True)
 
 
 def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, cpc_changes, budget_changes):
@@ -122,7 +148,7 @@ def set_autopilot_changes(cpc_changes=None, budget_changes=None):
 
 
 def prefetch_autopilot_data(ad_groups):
-    enabled_ag_sources_settings = _get_autopilot_enabled_active_sources(ad_groups)
+    enabled_ag_sources_settings = _get_autopilot_active_sources_settings(ad_groups)
     sources = [s.ad_group_source.source.id for s in enabled_ag_sources_settings]
     yesterday_data, days_ago_data, campaign_goals = _fetch_data(ad_groups, sources)
     data = {}
@@ -150,12 +176,14 @@ def prefetch_autopilot_data(ad_groups):
     return data
 
 
-def _get_autopilot_enabled_active_sources(ad_groups):
+def _get_autopilot_active_sources_settings(ad_groups, ad_group_setting_state=AdGroupSettingsState.ACTIVE):
     ag_sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, ad_groups)
     ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source_id__in=ag_sources).group_current_settings().select_related('ad_group_source__source')
-    return [ag_source_setting for ag_source_setting in ag_sources_settings if
-            ag_source_setting.state == AdGroupSettingsState.ACTIVE]
+    if ad_group_setting_state:
+        return [ag_source_setting for ag_source_setting in ag_sources_settings if
+                ag_source_setting.state == ad_group_setting_state]
+    return ag_sources_settings
 
 
 def _fetch_data(ad_groups, sources):

@@ -51,13 +51,21 @@ def update_ad_group_source_values(ad_group_source, changes):
     settings_writer.set(changes, None)
 
 
-def send_autopilot_changes_emails(email_changes_data, data):
+def send_autopilot_changes_emails(email_changes_data, data, initialization):
     for camp, changes_data in email_changes_data.iteritems():
-        send_autopilot_changes_email(camp.name,
-                                     camp.id,
-                                     camp.account.name,
-                                     autopilot_settings.DEBUG_EMAILS,
-                                     changes_data)
+        if initialization:
+            send_budget_autopilot_initialisation_email(
+                camp.name,
+                camp.id,
+                camp.account.name,
+                autopilot_settings.DEBUG_EMAILS,
+                changes_data)
+        else:
+            send_autopilot_changes_email(camp.name,
+                                         camp.id,
+                                         camp.account.name,
+                                         autopilot_settings.DEBUG_EMAILS,
+                                         changes_data)
 
 
 def send_autopilot_changes_email(campaign_name, campaign_id, account_name, emails, changes_data):
@@ -105,7 +113,60 @@ Zemanta
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
             incident_key='automation_autopilot_email',
-            description='Auto-pilot e-mail for campaign was not sent because an exception was raised: {}'.
+            description=u'Auto-pilot e-mail for campaign was not sent because an exception was raised: {}'.
+                        format(traceback.format_exc(e)),
+            details=desc
+        )
+
+
+def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, account_name, emails, changes_data):
+    changesText = []
+    for adgroup, adgroup_changes in changes_data.iteritems():
+        changesText.append(_get_email_adgroup_text(adgroup))
+        for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name):
+            changesText.append(_get_email_source_changes_text(ag_source, adgroup_changes[ag_source]))
+
+    body = u'''Hi account manager of {account}
+
+Your ad group in campaign {camp} has just been put on Bid CPC and Daily Budgets Optimising Auto-Pilot.
+Auto-Pilot made the following changes:{changes}
+- all Paused Media Sources\' Daily Budgets have been set to minimum values.
+
+Please check {camp_url} for details.
+
+Yours truly,
+Zemanta
+    '''
+    body = body.format(
+        camp=campaign_name,
+        account=account_name,
+        camp_url=url_helper.get_full_z1_url('/campaigns/{}/'.format(campaign_id)),
+        changes=''.join(changesText)
+    )
+    try:
+        send_mail(
+            u'Ad Group put on Bid CPC and Daily Budgets Optimising Auto-Pilot - {account}'.format(
+                account=account_name
+            ),
+            body,
+            u'Zemanta <{}>'.format(automation.autopilot_settings.AUTOPILOT_EMAIL),
+            emails,
+            fail_silently=False
+        )
+    except Exception as e:
+        logger.exception(u'Auto-pilot e-mail for initialising budget autopilot on an adroup in ' +
+                         'campaign %s to %s was not sent because an exception was raised:',
+                         campaign_name,
+                         u''.join(emails))
+        desc = {
+            'campaign_name': campaign_name,
+            'email': ''.join(emails)
+        }
+        pagerduty_helper.trigger(
+            event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
+            incident_key='automation_autopilot_budget_initialisation_email',
+            description=u'Auto-pilot e-mail for initialising budget autopilot on an adroup in ' +
+                         'campaign was not sent because an exception was raised: {}'.
                         format(traceback.format_exc(e)),
             details=desc
         )

@@ -218,9 +218,9 @@ class AdGroupSettingsTest(TestCase):
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
-    @patch('automation.autopilot_plus.run_autopilot')
+    @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
     def test_put_set_budget_autopilot_triggers_budget_reallocation(
-            self, mock_actionlog_api, mock_order_ad_group_settings_update, mock_run_autopilot):
+            self, mock_actionlog_api, mock_order_ad_group_settings_update, mock_init_autopilot):
         with patch('utils.dates_helper.local_today') as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
@@ -252,7 +252,7 @@ class AdGroupSettingsTest(TestCase):
             self.assertEqual(new_settings.autopilot_state, 1)
             self.assertEqual(new_settings.autopilot_daily_budget, Decimal('200'))
 
-            self.assertEqual(mock_run_autopilot.called, True)
+            self.assertEqual(mock_init_autopilot.called, True)
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
