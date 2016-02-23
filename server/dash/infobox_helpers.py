@@ -407,10 +407,10 @@ def create_total_campaign_budget_setting(user, campaign):
 @statsd_timer('dash.infobox_helpers', 'count_active_accounts')
 def count_active_accounts():
     account_ids = set(
-        dash.models.AdGroupSourceState.objects.all().group_current_states().filter(
-            state=dash.constants.AdGroupSourceSettingsState.ACTIVE
-        ).values_list(
-            'ad_group_source__ad_group__campaign__account',
+        dash.models.AdGroup.objects.all()\
+        .exclude_archived().filter_active()\
+        .values_list(
+            'campaign__account',
             flat=True
         )
     )
@@ -503,26 +503,24 @@ def get_adgroup_running_status(ad_group_settings):
 
 @statsd_timer('dash.infobox_helpers', 'get_campaign_running_status')
 def get_campaign_running_status(campaign):
-    ad_groups_settings = dash.models.AdGroupSettings.objects.filter(
-        ad_group__campaign=campaign
-    ).group_current_settings()
-
-    for ad_group_settings in ad_groups_settings:
-        if get_adgroup_running_status(ad_group_settings) == dash.constants.InfoboxStatus.ACTIVE:
-            return dash.constants.InfoboxStatus.ACTIVE
-    return dash.constants.InfoboxStatus.INACTIVE
+    count_active = dash.models.AdGroup.objects.filter(
+        campaign=campaign
+    ).filter_active().count()
+    if count_active > 0:
+        return dash.constants.InfoboxStatus.ACTIVE
+    else:
+        return dash.constants.InfoboxStatus.INACTIVE
 
 
 @statsd_timer('dash.infobox_helpers', 'get_account_running_status')
 def get_account_running_status(account):
-    ad_groups_settings = dash.models.AdGroupSettings.objects.filter(
-        ad_group__campaign__account=account
-    ).group_current_settings()
-
-    for ad_group_settings in ad_groups_settings:
-        if get_adgroup_running_status(ad_group_settings) == dash.constants.InfoboxStatus.ACTIVE:
-            return dash.constants.InfoboxStatus.ACTIVE
-    return dash.constants.InfoboxStatus.INACTIVE
+    count_active = dash.models.AdGroup.objects.filter(
+        campaign__account=account
+    ).filter_active().count()
+    if count_active > 0:
+        return dash.constants.InfoboxStatus.ACTIVE
+    else:
+        return dash.constants.InfoboxStatus.INACTIVE
 
 
 @statsd_timer('dash.infobox_helpers', '_retrieve_active_creditlineitems')
