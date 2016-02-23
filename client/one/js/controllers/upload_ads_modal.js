@@ -18,8 +18,7 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
         $scope.uploadStatus = null;
         $scope.errors = null;
         $scope.batchId = null;
-        $scope.uploadCanceled = false;
-        $scope.cancelActionInProgress = false;
+        $scope.cancelErrors = null;
     }
 
     $scope.getProgressPercentage = function () {
@@ -54,22 +53,13 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
                         $scope.count = data.count;
                         $scope.batchSize = data.batchSize;
                         $scope.uploadStatus = data.status;
-
                         $scope.errors = data.errors;
-
-                        if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
-                            // dismiss cancel action in progress when we get confirmation
-                            // that upload is no more in progress
-                            $scope.cancelActionInProgress = false;
-                        }
                     },
                     function () {
                         $scope.uploadStatus = constants.uploadBatchStatus.FAILED;
                     }
                 ).finally(function () {
-                    if ($scope.uploadStatus !== constants.uploadBatchStatus.FAILED &&
-                        $scope.uploadStatus !== constants.uploadBatchStatus.DONE) {
-
+                    if ($scope.uploadStatus === constants.uploadBatchStatus.IN_PROGRESS) {
                         $scope.pollBatchStatus(batchId);
                     }
                 });
@@ -135,7 +125,6 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
     });
 
     $scope.cancel = function () {
-        $scope.cancelActionInProgress = true;
 
         if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
             $scope.$dismiss();
@@ -143,17 +132,15 @@ oneApp.controller('UploadAdsModalCtrl', ['$scope', '$modalInstance', 'api', '$st
         }
 
         api.adGroupAdsPlusUpload.cancel($state.params.id, $scope.batchId).then(function () {
-            $scope.uploadCanceled = true;
+            $scope.cancelErrors = null;
+        }, function (data) {
+            $scope.cancelErrors = data.data.errors;
         });
     };
 
     $scope.isCancelDisabled = function () {
         if ($scope.uploadStatus !== constants.uploadBatchStatus.IN_PROGRESS) {
             return false;
-        }
-
-        if ($scope.cancelActionInProgress) {
-            return true;
         }
 
         // unsupported for cancel
