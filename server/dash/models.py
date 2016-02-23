@@ -1246,9 +1246,13 @@ class AdGroup(models.Model):
                 - has at least one running mediasource(adgroupsourcesettings)
             """
             now = dates_helper.local_today()
+            # ad group settings and ad group source settings
+            # are fetched in a separate queryset
+            # because
             latest_ad_group_settings = AdGroupSettings.objects.filter(
                 ad_group__in=self
             ).group_current_settings().values_list('id', flat=True)
+
             ad_group_settings = AdGroupSettings.objects.filter(
                 pk__in=latest_ad_group_settings
             ).filter(
@@ -1258,14 +1262,17 @@ class AdGroup(models.Model):
                 end_date__isnull=False,
                 end_date__lt=now
             ).values_list('ad_group__id', flat=True)
+
             latest_ad_group_source_settings = AdGroupSourceSettings.objects.filter(
                 ad_group_source__ad_group__in=self
             ).group_current_settings().values_list('id', flat=True)
+
             ad_group_source_settings = AdGroupSourceSettings.objects.filter(
                 pk__in=latest_ad_group_source_settings
             ).filter(
                 state=constants.AdGroupSourceSettingsState.ACTIVE
             ).values_list('ad_group_source__ad_group__id', flat=True)
+
             ids = set(ad_group_settings) & set(ad_group_source_settings)
             return self.filter(id__in=ids)
 
