@@ -408,7 +408,7 @@ def create_total_campaign_budget_setting(user, campaign):
 def count_active_accounts():
     account_ids = set(
         dash.models.AdGroup.objects.all()
-        .exclude_archived().filter_active()
+        .exclude_archived().filter_running()
         .values_list(
             'campaign__account',
             flat=True
@@ -505,7 +505,7 @@ def get_adgroup_running_status(ad_group_settings):
 def get_campaign_running_status(campaign):
     count_active = dash.models.AdGroup.objects.filter(
         campaign=campaign
-    ).filter_active().count()
+    ).filter_running().count()
     if count_active > 0:
         return dash.constants.InfoboxStatus.ACTIVE
     else:
@@ -516,7 +516,7 @@ def get_campaign_running_status(campaign):
 def get_account_running_status(account):
     count_active = dash.models.AdGroup.objects.filter(
         campaign__account=account
-    ).filter_active().count()
+    ).filter_running().count()
     if count_active > 0:
         return dash.constants.InfoboxStatus.ACTIVE
     else:

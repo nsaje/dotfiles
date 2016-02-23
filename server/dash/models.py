@@ -1236,7 +1236,7 @@ class AdGroup(models.Model):
 
             return self.exclude(pk__in=[s.ad_group_id for s in archived_settings if s.archived])
 
-        def filter_active(self):
+        def filter_running(self):
             """
             This function checks if adgroup is active on arbitrary number of adgroups
             with a fixed amount of queries.
