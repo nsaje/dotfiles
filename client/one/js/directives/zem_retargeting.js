@@ -7,6 +7,7 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', 'zem
         scope: {
             selectedAdgroupIds: '=zemSelectedAdgroupIds',
             account: '=zemAccount',
+            retargetableAdgroups: '=zemRetargetableAdgroups' // TODO: bind and use
         },
         templateUrl: '/partials/zem_retargeting.html',
         controller: ['$scope', function ($scope) {
@@ -14,28 +15,29 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', 'zem
             $scope.selected = {adgroup: undefined};
             $scope.campaigns = angular.copy($scope.account.campaigns) || [];
 
+            /*
+            // TODO: campaigns will be set on ad group settings controller init
             zemNavigationService.onUpdate($scope, function () {
                 zemNavigationService.getAccount($scope.account.id).then(function (data) {
                     // make a copy of campaigns so we don't change original objects
                     $scope.campaigns = angular.copy(data.account.campaigns);
                 });
             });
+            */
 
             $scope.selectedAdgroups = function () {
                 var result = [];
-                $scope.campaigns.forEach(function (campaign) {
-                    campaign.adGroups.forEach(function (adgroup) {
-                        if ($scope.selectedAdgroupIds.indexOf(adgroup.id) >= 0) {
-                            result.push(adgroup);
-                        }
-                    });
+                $scope.retargetableAdgroups.forEach(function (adgroup) {
+                    if ($scope.selectedAdgroupIds.indexOf(adgroup.id) >= 0) {
+                        result.push(adgroup);
+                    }
                 });
-
                 return result;
             };
 
             $scope.availableAdgroups = function () {
-                return $scope.campaigns.reduce(function (result, campaign) {
+                return $scope.retargetableAdgroups.reduce(function (result, adgroup) {
+                    // TODO: refactor this to use adgroups directly
                     var adgroups = campaign.adGroups.filter(function (adgroup) {
                         return !adgroup.archived || zemFilterService.isArchivedFilterOn();
                     }).filter(function (adgroup) {
