@@ -7,14 +7,13 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', 'zem
         scope: {
             selectedAdgroupIds: '=zemSelectedAdgroupIds',
             account: '=zemAccount',
-            retargetableAdgroups: '=zemRetargetableAdgroups' // TODO: bind and use
+            retargetableAdgroups: '=zemRetargetableAdgroups'
         },
         templateUrl: '/partials/zem_retargeting.html',
         controller: ['$scope', function ($scope) {
             $scope.config = config;
             $scope.selected = {adgroup: undefined};
-            $scope.campaigns = angular.copy($scope.account.campaigns) || [];
-            $scope.selectAdgroupIds = [];
+            $scope.selectedAdgroupIds = [];
 
             $scope.selectedAdgroups = function () {
                 var result = [];
