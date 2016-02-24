@@ -34,10 +34,6 @@ class CpcChangeComment(ConstantBase):
         UNDER_AUTOPILOT_MIN_CPC: 'lower bid CPC would not meet Auto-Pilot\'s minimum allowed CPC constraint'
     }
 
-    CPC_CHANGE_ALLOWED_COMMENTS = [CURRENT_CPC_TOO_HIGH, CURRENT_CPC_TOO_LOW, OVER_SOURCE_MAX_CPC,
-                                   UNDER_SOURCE_MIN_CPC, OVER_AD_GROUP_MAX_CPC, OVER_AUTOPILOT_MAX_CPC,
-                                   UNDER_AUTOPILOT_MIN_CPC, CURRENT_CPC_TOO_HIGH, CURRENT_CPC_TOO_LOW]
-
 
 class DailyBudgetChangeComment(ConstantBase):
     NO_ACTIVE_SOURCES_WITH_SPEND = 1

@@ -69,7 +69,7 @@ def _uniformly_redistribute_remaining_budget(sources, budget_left, min_budgets):
 def _get_active_sources_with_spend(active_sources, data):
     active_sources_with_spend = []
     for s in active_sources:
-        if data[s].get('spend_perc') > autopilot_settings.AUTOPILOT_MIN_SPEND_PERC:
+        if data[s].get('spend_perc') >= autopilot_settings.AUTOPILOT_MIN_SPEND_PERC:
             active_sources_with_spend.append(s)
     return active_sources_with_spend
 
@@ -77,7 +77,7 @@ def _get_active_sources_with_spend(active_sources, data):
 def _get_autopilot_budget_constraints(active_sources, daily_budget):
     max_budgets, min_budgets, old_budgets = _get_optimistic_autopilot_budget_constraints(active_sources)
     if sum(min_budgets.values()) > daily_budget:
-        max_budgets, min_budgets = _get_minimum_autopilot_budget_constraints(active_sources, daily_budget)
+        max_budgets, min_budgets = _get_minimum_autopilot_budget_constraints(active_sources)
     return max_budgets, min_budgets, old_budgets
 
 
@@ -101,7 +101,7 @@ def _get_optimistic_autopilot_budget_constraints(active_sources):
     return max_budgets, min_budgets, old_budgets
 
 
-def _get_minimum_autopilot_budget_constraints(active_sources, daily_budget):
+def _get_minimum_autopilot_budget_constraints(active_sources):
     max_budgets = {}
     min_budgets = {}
     for source in active_sources:

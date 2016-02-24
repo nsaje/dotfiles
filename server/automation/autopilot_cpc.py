@@ -17,13 +17,11 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
         daily_budget = budget_changes[ag_source]['new_budget'] if budget_changes else data[ag_source]['old_budget']
         old_cpc_cc = data[ag_source]['old_cpc_cc']
         yesterdays_spend = data[ag_source]['yesterdays_spend_cc']
-        underspend_perc = yesterdays_spend / max(daily_budget, autopilot_settings.MIN_SOURCE_BUDGET) - 1
         if not autopilot_helpers.ad_group_source_is_synced(ag_source):
             cpc_change_comments.append(CpcChangeComment.OLD_DATA)
 
         proposed_cpc, calculation_comments = calculate_new_autopilot_cpc(
             old_cpc_cc,
-            underspend_perc,
             daily_budget,
             yesterdays_spend)
         cpc_change_comments += calculation_comments
@@ -31,7 +29,7 @@ def get_autopilot_cpc_recommendations(ad_group, data, budget_changes=None):
         proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments)
         new_cpc_cc = proposed_cpc
         cpc_change_not_allowed_comments = set(cpc_change_comments) -\
-            set(CpcChangeComment.CPC_CHANGE_ALLOWED_COMMENTS)
+            set(autopilot_settings.CPC_CHANGE_ALLOWED_COMMENTS)
         if cpc_change_not_allowed_comments:
             cpc_change_comments = cpc_change_not_allowed_comments
             new_cpc_cc = old_cpc_cc
@@ -49,7 +47,8 @@ def _round_cpc(num):
         rounding=decimal.ROUND_UP)
 
 
-def calculate_new_autopilot_cpc(current_cpc, underspend_perc, current_daily_budget, yesterdays_spend):
+def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_spend):
+    underspend_perc = yesterdays_spend / max(current_daily_budget, autopilot_settings.MIN_SOURCE_BUDGET) - 1
     current_cpc, cpc_change_comments = _get_calculate_cpc_comments(current_cpc, current_daily_budget, yesterdays_spend)
     if cpc_change_comments:
         return (current_cpc, cpc_change_comments)
@@ -76,9 +75,9 @@ def calculate_new_autopilot_cpc(current_cpc, underspend_perc, current_daily_budg
 
 def _get_calculate_cpc_comments(current_cpc, current_daily_budget, yesterdays_spend):
     cpc_change_comments = []
-    if current_daily_budget is None or current_daily_budget <= 0:
+    if not current_daily_budget or current_daily_budget <= 0:
         cpc_change_comments.append(CpcChangeComment.BUDGET_NOT_SET)
-    if current_cpc is None or current_cpc <= 0:
+    if not current_cpc or current_cpc <= 0:
         cpc_change_comments.append(CpcChangeComment.CPC_NOT_SET)
     if current_cpc > autopilot_settings.AUTOPILOT_MAX_CPC:
         current_cpc = autopilot_settings.AUTOPILOT_MAX_CPC
@@ -108,8 +107,7 @@ def _threshold_increasing_cpc(current_cpc, new_cpc):
 
 
 def _threshold_source_constraints(proposed_cpc, source, cpc_change_comments):
-    min_cpc = source.source_type.min_cpc
-    max_cpc = source.source_type.max_cpc
+    min_cpc, max_cpc = _get_source_type_min_max_cpc(source.source_type)
     if proposed_cpc > max_cpc:
         cpc_change_comments += [CpcChangeComment.OVER_SOURCE_MAX_CPC]
         return max_cpc
@@ -117,6 +115,10 @@ def _threshold_source_constraints(proposed_cpc, source, cpc_change_comments):
         cpc_change_comments += [CpcChangeComment.UNDER_SOURCE_MIN_CPC]
         return min_cpc
     return proposed_cpc
+
+
+def _get_source_type_min_max_cpc(source_type):
+    return source_type.min_cpc, source_type.max_cpc
 
 
 def _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments):

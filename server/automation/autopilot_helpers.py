@@ -1,6 +1,7 @@
 import datetime
 import logging
 import traceback
+import textwrap
 
 from django.core.mail import send_mail
 
@@ -72,18 +73,19 @@ def send_autopilot_changes_email(campaign_name, campaign_id, account_name, email
     changesText = []
     for adgroup, adgroup_changes in changes_data.iteritems():
         changesText.append(_get_email_adgroup_text(adgroup))
-        for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name):
+        for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
             changesText.append(_get_email_source_changes_text(ag_source, adgroup_changes[ag_source]))
 
-    body = u'''Hi account manager of {account}
+    body = textwrap.dedent(u'''\
+    Hi account manager of {account}
 
-On the ad groups in campaign {camp}, which are set to auto-pilot, the system made the following changes:{changes}
+    On the ad groups in campaign {camp}, which are set to auto-pilot, the system made the following changes:{changes}
 
-Please check {camp_url} for details.
+    Please check {camp_url} for details.
 
-Yours truly,
-Zemanta
-    '''
+    Yours truly,
+    Zemanta
+    ''')
     body = body.format(
         camp=campaign_name,
         account=account_name,
@@ -123,20 +125,21 @@ def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, accou
     changesText = []
     for adgroup, adgroup_changes in changes_data.iteritems():
         changesText.append(_get_email_adgroup_text(adgroup))
-        for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name):
+        for ag_source in sorted(adgroup_changes, key=lambda ag_source: ag_source.source.name.lower()):
             changesText.append(_get_email_source_changes_text(ag_source, adgroup_changes[ag_source]))
 
-    body = u'''Hi account manager of {account}
+    body = textwrap.dedent(u'''\
+    Hi account manager of {account}
 
-Your ad group in campaign {camp} has just been put on Bid CPC and Daily Budgets Optimising Auto-Pilot.
-Auto-Pilot made the following changes:{changes}
-- all Paused Media Sources\' Daily Budgets have been set to minimum values.
+    Your ad group in campaign {camp} has just been put on Bid CPC and Daily Budgets Optimising Auto-Pilot.
+    Auto-Pilot made the following changes:{changes}
+    - all Paused Media Sources\' Daily Budgets have been set to minimum values.
 
-Please check {camp_url} for details.
+    Please check {camp_url} for details.
 
-Yours truly,
-Zemanta
-    '''
+    Yours truly,
+    Zemanta
+    ''')
     body = body.format(
         camp=campaign_name,
         account=account_name,

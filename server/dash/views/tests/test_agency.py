@@ -46,7 +46,7 @@ class AdGroupSettingsTest(TestCase):
                 'autopilot_min_budget': '100'
             }
         }
-        self.maxDiff = None
+
         user = User.objects.get(pk=1)
         self.client.login(username=user.email, password='secret')
 

@@ -97,43 +97,21 @@ def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, cpc_chang
 def persist_autopilot_changes_to_log(cpc_changes, budget_changes, data, autopilot_state):
     for ag_source in data.keys():
         old_budget = data[ag_source]['old_budget']
-        persist_autopilot_change_to_log(
-            ad_group_source=ag_source,
+        models.AutopilotLog(
+            ad_group=ag_source.ad_group,
             autopilot_type=autopilot_state,
+            ad_group_source=ag_source,
             previous_cpc_cc=data[ag_source]['old_cpc_cc'],
             new_cpc_cc=cpc_changes[ag_source]['new_cpc_cc'] if cpc_changes else data[ag_source]['old_cpc_cc'],
             previous_daily_budget=old_budget,
             new_daily_budget=budget_changes[ag_source]['new_budget'] if budget_changes else old_budget,
             yesterdays_spend_cc=data[ag_source]['yesterdays_spend_cc'],
             yesterdays_clicks=data[ag_source]['yesterdays_clicks'],
-            cpc_comments=cpc_changes[ag_source]['cpc_comments'] if cpc_changes else [],
-            budget_comments=budget_changes[ag_source]['budget_comments'] if budget_changes else [])
-
-
-def persist_autopilot_change_to_log(
-        ad_group_source,
-        autopilot_type,
-        previous_cpc_cc,
-        new_cpc_cc,
-        previous_daily_budget,
-        new_daily_budget,
-        yesterdays_spend_cc,
-        yesterdays_clicks,
-        cpc_comments,
-        budget_comments):
-    models.AutopilotLog(
-        ad_group=ad_group_source.ad_group,
-        autopilot_type=autopilot_type,
-        ad_group_source=ad_group_source,
-        previous_cpc_cc=previous_cpc_cc,
-        new_cpc_cc=new_cpc_cc,
-        previous_daily_budget=previous_daily_budget,
-        new_daily_budget=new_daily_budget,
-        yesterdays_spend_cc=yesterdays_spend_cc,
-        yesterdays_clicks=yesterdays_clicks,
-        cpc_comments=', '.join(automation.constants.CpcChangeComment.get_text(comment) for comment in cpc_comments),
-        budget_comments=', '.join(automation.constants.DailyBudgetChangeComment.get_text(c) for c in budget_comments)
-    ).save()
+            cpc_comments=', '.join(automation.constants.CpcChangeComment.get_text(comment) for comment in
+                                   cpc_changes[ag_source]['cpc_comments']) if cpc_changes else '',
+            budget_comments=', '.join(automation.constants.DailyBudgetChangeComment.get_text(c) for c in
+                                      budget_changes[ag_source]['budget_comments']) if budget_changes else ''
+        ).save()
 
 
 def set_autopilot_changes(cpc_changes=None, budget_changes=None):
