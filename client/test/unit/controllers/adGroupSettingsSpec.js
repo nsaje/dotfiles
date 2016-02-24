@@ -27,7 +27,7 @@ describe('AdGroupSettingsCtrlSpec', function () {
             adGroupSettings: {
                 get: mockApiFunc
             },
-        }
+        };
 
         $controller('AdGroupSettingsCtrl', {$scope: $scope, api: api});
     }));
