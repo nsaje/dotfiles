@@ -2917,6 +2917,18 @@ class AccountRetargetableAdgroupsTest(TestCase):
         response = self._get_retargetable_adgroups(1)
         self.assertEqual('AuthorizationError', response['data']['error_code'])
 
+    def test_essential(self):
+        self._permissions(self.user)
+
+        response = self._get_retargetable_adgroups(1)
+        self.assertTrue(response['success'])
+
+        adgroups = response['data']
+        self.assertEqual(4, len(adgroups))
+        self.assertTrue(all([adgroup['archived'] == False for adgroup in adgroups]))
+        self.assertTrue(3, len([adg for adg in adgroups if adg['campaign_id'] == 1]))
+        self.assertTrue(1, len([adg for adg in adgroups if adg['campaign_id'] == 2]))
+
 
 class AllAccountsOverviewTest(TestCase):
     fixtures = ['test_api.yaml']
