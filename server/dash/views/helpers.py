@@ -152,22 +152,13 @@ def is_sync_recent(sync_times):
     return last_sync >= min_sync_date
 
 
-def _get_adgroups_for(modelcls, modelobjects, exclude_archived=True):
-    if modelcls is models.AdGroup:
-        return modelobjects
-
-    ad_group_qs = None
+def _get_adgroups_for(modelcls, modelobjects):
     if modelcls is models.Account:
-        ad_group_qs = models.AdGroup.objects.filter(campaign__account__in=modelobjects)
-    elif modelcls is models.Campaign:
-        ad_group_qs = models.AdGroup.objects.filter(campaign__in=modelobjects)
-    else:
-        raise AssertionError
-
-    if exclude_archived:
-        ad_group_qs = ad_group_qs.exclude_archived()
-
-    return ad_group_qs
+        return models.AdGroup.objects.filter(campaign__account__in=modelobjects)
+    if modelcls is models.Campaign:
+        return models.AdGroup.objects.filter(campaign__in=modelobjects)
+    assert modelcls is models.AdGroup
+    return modelobjects
 
 
 def get_active_ad_group_sources(modelcls, modelobjects):
