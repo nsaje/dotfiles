@@ -861,7 +861,8 @@ def _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings):
 
     if not ad_group_source.source.can_update_cpc() or\
             _is_end_date_past(ad_group_settings) or\
-            automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source):
+            automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source) or\
+            ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
         enabled = False
         message = _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
 
@@ -877,7 +878,8 @@ def _get_editable_fields_daily_budget(ad_group_source, ad_group_settings):
 
     if not ad_group_source.source.can_update_daily_budget_automatic() and\
        not ad_group_source.source.can_update_daily_budget_manual() or\
-       _is_end_date_past(ad_group_settings):
+       _is_end_date_past(ad_group_settings) or\
+       ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         enabled = False
         message = _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
 
@@ -954,7 +956,11 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_setting
         return 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
 
     if automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source):
-        return 'This value cannot be edited because the media source is on Auto-Pilot'
+        return 'This value cannot be edited because the media source is on Auto-Pilot.'
+
+    if ad_group_settings.autopilot_state in [constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+                                             constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET]:
+        return 'This value cannot be edited because the ad group is on Auto-Pilot.'
 
     return 'This media source doesn\'t support setting this value through the dashboard.'
 

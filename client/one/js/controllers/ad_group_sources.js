@@ -239,6 +239,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             order: true,
             settingsField: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
             initialOrder: 'desc',
+            statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             onSave: function (sourceId, value, onSuccess, onError) {
                 var data = {cpc_cc: value};
 
@@ -251,7 +252,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                         onError(errors.cpc);
                     }
                 );
-            }
+            },
+            adGroupAutopilotOn: function () {
+                return $scope.adGroupAutopilotState !== constants.adGroupSettingsAutopilotState.INACTIVE;
+            },
         },
         {
             name: 'Current Bid CPC',
@@ -278,6 +282,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             order: true,
             settingsField: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
             initialOrder: 'desc',
+            statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             onSave: function (sourceId, value, onSuccess, onError) {
                 var data = {daily_budget_cc: value};
 
@@ -290,7 +295,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                         onError(errors.dailyBudget);
                     }
                 );
-            }
+            },
+            adGroupAutopilotOn: function () {
+                return $scope.adGroupAutopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
+            },
         },
         {
             name: 'Current Daily Budget',
@@ -550,9 +558,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.notifications = data.notifications;
                 $scope.lastChange = data.lastChange;
                 $scope.dataStatus = data.dataStatus;
-
+                $scope.adGroupAutopilotState = data.adGroupAutopilotState;
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
-
                 $scope.selectRows();
                 $scope.pollSourcesTableUpdates();
                 zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
