@@ -179,9 +179,9 @@ def get_active_ad_group_sources(modelcls, modelobjects):
         normal_adgroups = _get_adgroups_for(modelcls, normal_objects)
         adgroups = list(real_corresponding_adgroups) + list(normal_adgroups)
 
-        archived_adgroups_settings = models.AdGroupSettings.objects.\
-            filter(archived=True, ad_group__in=adgroups).\
-            group_current_settings()
+        archived_adgroups_settings = models.AdGroupSettings.objects. \
+            group_current_settings().\
+            filter(archived=True, ad_group__in=adgroups)
         archived_adgroup_ids = [setting.ad_group_id for setting in archived_adgroups_settings]
         inactive_adgroup_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=adgroups)
         inactive_adgroup_source_ids = [adgroup_source.pk for adgroup_source in inactive_adgroup_sources]
