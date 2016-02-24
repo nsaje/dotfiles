@@ -811,7 +811,6 @@ class AccountRetargetableAdgroups(api_common.BaseApiView):
             }
             for ad_group in ad_groups
         ]
-
         return self.create_api_response(response)
 
 

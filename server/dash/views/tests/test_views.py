@@ -2888,6 +2888,36 @@ class AccountOverviewTest(TestCase):
         self.assertTrue(response['success'])
 
 
+class AccountRetargetableAdgroupsTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.client = Client()
+        redshift.STATS_DB_NAME = 'default'
+        self.user = zemauth.models.User.objects.get(pk=2)
+
+    def _permissions(self, user):
+        permission = Permission.objects.get(codename='can_view_retargeting_settings')
+        user.user_permissions.add(permission)
+        user.save()
+
+    def _get_retargetable_adgroups(self, account_id, user_id=2, with_status=False):
+        user = User.objects.get(pk=user_id)
+        self.client.login(username=user.username, password='secret')
+        reversed_url = reverse(
+                'account_retargetable_adgroups',
+                kwargs={'account_id': account_id})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return json.loads(response.content)
+
+    def test_permission(self):
+        response = self._get_retargetable_adgroups(1)
+        self.assertEqual('AuthorizationError', response['data']['error_code'])
+
+
 class AllAccountsOverviewTest(TestCase):
     fixtures = ['test_api.yaml']
 
