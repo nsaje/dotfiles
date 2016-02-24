@@ -1,3 +1,5 @@
+import re
+
 from django.db.models import Sum
 
 import reports.models
@@ -11,17 +13,24 @@ class Command(ExceptionCommand):
 
     def _post_metrics(self, prefix, stats, redshift_sums):
         for stats_key, stats_val in stats.iteritems():
+            redshift_stats_val = redshift_sums[stats_key]
+            if stats_key.endswith('_nano'):
+                stats_key = re.sub(r'_nano$', '', stats_key)
+                stats_val = float(stats_val) / 10**9
+                redshift_stats_val = float(redshift_stats_val) / 10**9
+
             cads_total_name = '{prefix}.{stat_name}_total'.format(
                 prefix=prefix,
                 stat_name=stats_key
             )
+
             statsd_gauge(cads_total_name, stats_val)
 
-            redshift_stat_name = '{prefix}.{stat_name}_total_aggr'.format(
+            redshift_stats_name = '{prefix}.{stat_name}_total_aggr'.format(
                 prefix=prefix,
                 stat_name=stats_key
             )
-            statsd_gauge(redshift_stat_name, redshift_sums[stats_key])
+            statsd_gauge(redshift_stats_name, redshift_stats_val)
 
     def handle(self, *args, **options):
 

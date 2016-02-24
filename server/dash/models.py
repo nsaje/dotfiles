@@ -25,6 +25,7 @@ from dash import constants
 from dash import region_targeting_helper
 from dash import views
 import reports.constants
+from reports import budget_helpers
 from utils import encryption_helpers
 from utils import statsd_helper
 from utils import exc
@@ -356,14 +357,6 @@ class Campaign(models.Model, PermissionMixin):
             settings = CampaignSettings(campaign=self, **CampaignSettings.get_defaults_dict())
 
         return settings
-
-    def get_current_budget_settings(self):
-        cbs_latest = None
-        try:
-            cbs_latest = CampaignBudgetSettings.objects.filter(campaign=self).latest()
-        except CampaignBudgetSettings.DoesNotExist:
-            pass
-        return cbs_latest
 
     def can_archive(self):
         for ad_group in self.adgroup_set.all():
@@ -1164,7 +1157,7 @@ class AdGroup(models.Model):
         if not cls.is_ad_group_active(ad_group_settings):
             return constants.AdGroupRunningStatus.INACTIVE
 
-        now = dates_helper.utc_today()
+        now = dates_helper.local_today()
         if ad_group_settings.start_date <= now and\
            (ad_group_settings.end_date is None or now <= ad_group_settings.end_date):
             return constants.AdGroupRunningStatus.ACTIVE
@@ -1242,6 +1235,48 @@ class AdGroup(models.Model):
             archived_settings = AdGroupSettings.objects.all().group_current_settings()
 
             return self.exclude(pk__in=[s.ad_group_id for s in archived_settings if s.archived])
+
+        def filter_running(self):
+            """
+            This function checks if adgroup is active on arbitrary number of adgroups
+            with a fixed amount of queries.
+            An adgroup is active if:
+                - it was set as active(adgroupsettings)
+                - current date is between start and stop(flight time)
+                - has at least one running mediasource(adgroupsourcesettings)
+            """
+            now = dates_helper.local_today()
+            # ad group settings and ad group source settings
+            # are fetched in a separate queryset
+            # because getting current settings and filtering them
+            # in one qs could cause latest settings to be filtered out
+            # but we want to take only latest settings into account
+            latest_ad_group_settings = AdGroupSettings.objects.filter(
+                ad_group__in=self
+            ).group_current_settings().values_list('id', flat=True)
+
+            ad_group_settings = AdGroupSettings.objects.filter(
+                pk__in=latest_ad_group_settings
+            ).filter(
+                state=constants.AdGroupSettingsState.ACTIVE,
+                start_date__lte=now
+            ).exclude(
+                end_date__isnull=False,
+                end_date__lt=now
+            ).values_list('ad_group__id', flat=True)
+
+            latest_ad_group_source_settings = AdGroupSourceSettings.objects.filter(
+                ad_group_source__ad_group__in=self
+            ).group_current_settings().values_list('id', flat=True)
+
+            ad_group_source_settings = AdGroupSourceSettings.objects.filter(
+                pk__in=latest_ad_group_source_settings
+            ).filter(
+                state=constants.AdGroupSourceSettingsState.ACTIVE
+            ).values_list('ad_group_source__ad_group__id', flat=True)
+
+            ids = set(ad_group_settings) & set(ad_group_source_settings)
+            return self.filter(id__in=ids)
 
     class Meta:
         ordering = ('name',)
@@ -2437,88 +2472,27 @@ class BudgetLineItem(FootprintModel):
     def get_latest_statement(self):
         return self.statements.all().order_by('-date').first()
 
-    def get_mtd_spend_data(self, date=None, use_decimal=False):
-        '''
-        Get month-to-date spend data
-        '''
-        spend_data = {
-            'media_cc': 0,
-            'data_cc': 0,
-            'license_fee_cc': 0,
-            'total_cc': 0,
-        }
-
-        if not date:
-            date = datetime.datetime.utcnow()
-
-        start_date = datetime.datetime(date.year, date.month, 1)
-        statements = self.statements.filter(
-            date__gte=start_date,
-            date__lte=date
-        ) if date else self.statements.all()
-        spend_data = {
-            (key + '_cc'): nano_to_cc(spend or 0)
-            for key, spend in statements.aggregate(
-                media=models.Sum('media_spend_nano'),
-                data=models.Sum('data_spend_nano'),
-                license_fee=models.Sum('license_fee_nano'),
-            ).iteritems()
-        }
-        spend_data['total_cc'] = sum(spend_data.values())
-        if not use_decimal:
-            return spend_data
-        return {
-            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
-            for key in spend_data.keys()
-        }
+    def get_latest_statement_qs(self):
+        latest_statement = self.get_latest_statement()
+        if not latest_statement:
+            return reports.models.BudgetDailyStatement.objects.none()
+        return self.statements.filter(id=latest_statement.id)
 
     def get_spend_data(self, date=None, use_decimal=False):
-        spend_data = {
-            'media_cc': 0,
-            'data_cc': 0,
-            'license_fee_cc': 0,
-            'total_cc': 0,
-        }
-        statements = self.statements.filter(date__lte=date) if date else self.statements.all()
-        spend_data = {
-            (key + '_cc'): nano_to_cc(spend or 0)
-            for key, spend in statements.aggregate(
-                media=models.Sum('media_spend_nano'),
-                data=models.Sum('data_spend_nano'),
-                license_fee=models.Sum('license_fee_nano'),
-            ).iteritems()
-        }
-        spend_data['total_cc'] = sum(spend_data.values())
-        if not use_decimal:
-            return spend_data
-        return {
-            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
-            for key in spend_data.keys()
-        }
+        return budget_helpers.calculate_spend_data(
+            self.statements,
+            date=date,
+            use_decimal=use_decimal
+        )
 
     def get_daily_spend(self, date, use_decimal=False):
-        spend_data = {
-            'media_cc': 0, 'data_cc': 0,
-            'license_fee_cc': 0, 'total_cc': 0,
-        }
-        try:
-            statement = date and self.statements.get(date=date)\
-                or self.get_latest_statement()
-        except ObjectDoesNotExist:
-            pass
-        else:
-            spend_data['media_cc'] = nano_to_cc(statement.media_spend_nano)
-            spend_data['data_cc'] = nano_to_cc(statement.data_spend_nano)
-            spend_data['license_fee_cc'] = nano_to_cc(statement.license_fee_nano)
-            spend_data['total_cc'] = nano_to_cc(
-                statement.data_spend_nano + statement.media_spend_nano + statement.license_fee_nano
-            )
-        if not use_decimal:
-            return spend_data
-        return {
-            key[:-3]: Decimal(spend_data[key]) * CC_TO_DEC_MULTIPLIER
-            for key in spend_data.keys()
-        }
+        statement = date and self.statements.filter(date=date)\
+            or self.get_latest_statement_qs()
+        return budget_helpers.calculate_spend_data(
+            statement,
+            date=date,
+            use_decimal=use_decimal
+        )
 
     def get_ideal_budget_spend(self, date):
         '''

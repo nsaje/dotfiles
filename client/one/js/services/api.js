@@ -1465,12 +1465,20 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
     function AllAccountsOverview () {
 
-        this.get = function () {
+        this.get = function (startDate, endDate) {
             var deferred = $q.defer();
             var url = '/api/accounts/overview/';
             var config = {
                 params: {}
             };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -2512,7 +2520,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/' + batchId + '/cancel/';
 
-            $http.get(url).success(deferred.resolve, deferred.reject);
+            $http.get(url).success(deferred.resolve).error(deferred.reject);
 
             return deferred.promise;
         };

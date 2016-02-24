@@ -4,10 +4,9 @@ import logging
 import time
 
 from django.conf import settings
-from django.db import transaction
 
 from reports import redshift
-from reports.rs_helpers import from_micro_cpm, from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr
+from reports.rs_helpers import from_nano, from_nano, to_percent, sum_div, sum_agr, unchanged, max_agr
 
 from utils import s3helpers
 
@@ -19,8 +18,8 @@ FORMULA_BILLING_COST = '({} + {} + {})'.format(
     sum_agr('license_fee_nano'),
 )
 FORMULA_TOTAL_COST = '({}*1000 + {}*1000 + {})'.format(
-    sum_agr('cost_micro'),
-    sum_agr('data_cost_micro'),
+    sum_agr('cost_nano'),
+    sum_agr('data_cost_nano'),
     sum_agr('license_fee_nano'),
 )
 
@@ -29,7 +28,7 @@ OB_PUBLISHERS_KEY_FORMAT = 'ob_publishers_raw/{year}/{month:02d}/{day:02d}/{ad_g
 
 
 class RSPublishersModel(redshift.RSModel):
-    TABLE_NAME = 'joint_publishers_1_4'
+    TABLE_NAME = 'publishers_1'
 
     # fields that are always returned (app-based naming)
     DEFAULT_RETURNED_FIELDS_APP = [
@@ -49,32 +48,20 @@ class RSPublishersModel(redshift.RSModel):
         dict(sql='exchange',               app='exchange',     out=unchanged),
         dict(sql='external_id',            app='external_id',  out=unchanged,          calc=max_agr('external_id')),
         dict(sql='date',                   app='date',         out=unchanged),
-        dict(sql='cost_micro_sum',         app='cost',         out=from_micro_cpm,     calc=sum_agr('cost_micro'),                order="SUM(cost_micro) = 0, cost_micro_sum {direction}"),
-        dict(sql='media_cost_micro_sum',   app='media_cost',   out=from_micro_cpm,     calc=sum_agr('cost_micro'),                order="SUM(cost_micro) = 0, cost_micro_sum {direction}"),
-        dict(sql='data_cost_micro_sum',    app='data_cost',    out=from_micro_cpm,     calc=sum_agr('data_cost_micro'),           order="SUM(data_cost_micro) = 0, data_cost_micro_sum {direction}"),
-        dict(sql='cpc_micro',              app='cpc',          out=from_micro_cpm,     calc=sum_div("cost_micro", "clicks"),      order="SUM(clicks) = 0, sum(cost_micro) IS NULL, cpc_micro {direction}"),  # makes sure nulls are last
+        dict(sql='cost_nano_sum',          app='cost',         out=from_nano,          calc=sum_agr('cost_nano'),                 order="SUM(cost_nano) = 0, cost_nano_sum {direction}"),
+        dict(sql='media_cost_nano_sum',    app='media_cost',   out=from_nano,          calc=sum_agr('cost_nano'),                 order="SUM(cost_nano) = 0, cost_nano_sum {direction}"),
+        dict(sql='data_cost_nano_sum',     app='data_cost',    out=from_nano,          calc=sum_agr('data_cost_nano'),            order="SUM(data_cost_nano) = 0, data_cost_nano_sum {direction}"),
+        dict(sql='cpc_nano',               app='cpc',          out=from_nano,          calc=sum_div("cost_nano", "clicks"),       order="SUM(clicks) = 0, sum(cost_nano) IS NULL, cpc_nano {direction}"),  # makes sure nulls are last
         dict(sql='ctr',                    app='ctr',          out=to_percent,         calc=sum_div("clicks", "impressions"),     order="SUM(impressions) IS NULL, ctr {direction}"),
         dict(sql='adgroup_id',             app='ad_group',     out=unchanged),
         dict(sql='license_fee_nano_sum',   app='license_fee',  out=from_nano,          calc=sum_agr('license_fee_nano'),          order="license_fee_nano_sum = 0, license_fee_nano_sum {direction}"),
-        dict(sql='e_media_cost_nano_sum',  app='e_media_cost', out=from_nano,          calc=sum_agr('effective_cost_nano'),       order="effective_cost_nano_sum = 0, cost_micro_sum {direction}"),
-        dict(sql='e_data_cost_nano_sum',   app='e_data_cost',  out=from_nano,          calc=sum_agr('effective_data_cost_nano'),  order="data_cost_micro_sum = 0, data_cost_micro_sum {direction}"),
+        dict(sql='e_media_cost_nano_sum',  app='e_media_cost', out=from_nano,          calc=sum_agr('effective_cost_nano'),       order="effective_cost_nano_sum = 0, cost_nano_sum {direction}"),
+        dict(sql='e_data_cost_nano_sum',   app='e_data_cost',  out=from_nano,          calc=sum_agr('effective_data_cost_nano'),  order="data_cost_nano_sum = 0, data_cost_nano_sum {direction}"),
         dict(sql='billing_cost_nano_sum',  app='billing_cost', out=from_nano,          calc=FORMULA_BILLING_COST,                 order="billing_cost_nano_sum = 0, billing_cost_nano_sum {direction}"),
-        dict(sql='total_cost_nano_sum',    app='total_cost',   out=from_nano,          calc=FORMULA_TOTAL_COST,                   order="total_cost_micro_sum = 0, total_cost_micro_sum {direction}"),
+        dict(sql='total_cost_nano_sum',    app='total_cost',   out=from_nano,          calc=FORMULA_TOTAL_COST,                   order="total_cost_nano_sum = 0, total_cost_nano_sum {direction}"),
     ]
-
-
-class RSOutbrainPublishersModel(RSPublishersModel):
-    TABLE_NAME = 'ob_publishers_2'
-
-    FIELDS = copy.copy(RSPublishersModel.FIELDS) + [
-        # The following are only available for Outbrain tables
-        dict(sql='ob_id',   app='ob_id',   out=lambda v: v),
-        dict(sql='name',    app='name',            out=lambda v: v),
-    ]
-
 
 rs_pub = RSPublishersModel()
-rs_ob_pub = RSOutbrainPublishersModel()
 
 
 def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=None, limit=None, constraints={}, constraints_list=[]):
@@ -146,6 +133,7 @@ def query_blacklisted_publishers(start_date, end_date, breakdown_fields=[], orde
         constraints_list=constraints_list
     )
 
+
 def _aggregate_domains(blacklist):
     # creates a new blacklist that groups all domains that belong to same
     # adgroup_id and exchange into one list (thus reducing query size)
@@ -174,6 +162,7 @@ def _aggregate_domains(blacklist):
             'adgroup_id': adgroup_id
         })
     return ret
+
 
 def _map_blacklist_to_rs_queryset(blacklist):
     if blacklist.get('adgroup_id') is not None:
