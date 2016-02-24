@@ -190,7 +190,7 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date, in
             settings = {s.account.id: s for s in settings_qs}
         flat_fees = _prefetch_flat_fees(data, start_date, end_date)
         if include_projections:
-            projections = bcm_helpers.get_projections(data, start_date, end_date)
+            projections = bcm_helpers.get_projections(data.values(), start_date, end_date)
 
     if level in ['account', 'campaign', 'ad_group']:
         statuses = _prefetch_statuses(data, level, by_source, constraints.get('source'))
@@ -312,7 +312,7 @@ def _populate_campaign_stat(stat, campaign, statuses, settings=None, budgets=Non
 
 def _populate_account_stat(stat, prefetched_data, statuses, settings=None, projections=None,
                            budgets=None, flat_fees=None):
-    if settings:
+    if settings and stat['account'] in settings:
         setting = settings[stat['account']]
         stat['default_account_manager'] = \
             helpers.get_user_full_name_or_email(setting.default_account_manager, default_value=None)
