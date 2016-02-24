@@ -179,7 +179,7 @@ def get_active_ad_group_sources(modelcls, modelobjects):
         normal_adgroups = _get_adgroups_for(modelcls, normal_objects)
         adgroups = list(real_corresponding_adgroups) + list(normal_adgroups)
 
-        adgroup_settings = models.AdGroupSettings.objects.all(). \
+        adgroup_settings = models.AdGroupSettings.objects.\
             filter(ad_group__in=adgroups).\
             group_current_settings()
         archived_adgroup_ids = [setting.ad_group_id for setting in adgroup_settings if setting.archived]
