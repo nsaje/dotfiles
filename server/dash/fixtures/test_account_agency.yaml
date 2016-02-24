@@ -37,7 +37,6 @@
         name: Account 111
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
-        uses_credits: false
         modified_by: 1
         allowed_sources: [2,3]
     model: dash.account
@@ -173,7 +172,6 @@
         name: Account 200
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
-        uses_credits: false
         modified_by: 1
     model: dash.account
     pk: 200
@@ -182,7 +180,6 @@
         name: Account 201
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
-        uses_credits: false
         modified_by: 1
     model: dash.account
     pk: 201
@@ -191,7 +188,6 @@
         name: Account 202
         created_dt: '2015-09-23T09:57:22'
         modified_dt: '2015-09-23T09:57:22'
-        uses_credits: false
         modified_by: 1
     model: dash.account
     pk: 202

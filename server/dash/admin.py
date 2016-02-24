@@ -618,22 +618,6 @@ def reject_ad_group_sources(modeladmin, request, queryset):
 reject_ad_group_sources.short_description = 'Mark selected ad group sources and their content ads as REJECTED'
 
 
-def completely_delete_credit_line_items(modeladmin, request, queryset):
-    for credit in queryset:
-        if credit.account.uses_credits:
-            continue
-        bcmh.delete_credit(credit)
-completely_delete_credit_line_items.short_description = 'Delete from DB'
-
-
-def completely_delete_budget_line_items(modeladmin, request, queryset):
-    for budget in queryset:
-        if budget.credit.account.uses_credits:
-            continue
-        bcmh.delete_budget(budget)
-completely_delete_budget_line_items.short_description = 'Delete from DB'
-
-
 class AdGroupSourceAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = (
         'ad_group_',
@@ -1032,7 +1016,6 @@ class CreditLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     readonly_fields = ('created_dt', 'created_by',)
     search_fields = ('account__name', 'amount')
     form = dash_forms.CreditLineItemAdminForm
-    actions = [completely_delete_credit_line_items]
 
 
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
@@ -1050,7 +1033,6 @@ class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     readonly_fields = ('created_dt', 'created_by', 'freed_cc')
     search_fields = ('campaign__name', 'campaign__account__name', 'amount')
     form = dash_forms.BudgetLineItemAdminForm
-    actions = [completely_delete_budget_line_items]
 
 
 class ScheduledExportReportLogAdmin(admin.ModelAdmin):

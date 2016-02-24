@@ -1411,67 +1411,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function CampaignBudget () {
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/budget/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve(data.data);
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-
-        this.save = function (id, data) {
-            var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/budget/';
-            var config = {
-                params: {}
-            };
-
-            $http.put(url, data, config).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve(data.data);
-                }).
-                error(function (data, status, headers, config) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function AccountBudget () {
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/accounts/' + id + '/budget/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    if (!data || !data.data) {
-                        deferred.reject(data);
-                    }
-                    deferred.resolve(data.data);
-                }).
-                error(function (data, status, headers) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
     function AccountOverview () {
         this.get = function (id) {
             var deferred = $q.defer();
@@ -1527,12 +1466,20 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
     function AllAccountsOverview () {
 
-        this.get = function () {
+        this.get = function (startDate, endDate) {
             var deferred = $q.defer();
             var url = '/api/accounts/overview/';
             var config = {
                 params: {}
             };
+
+            if (startDate) {
+                config.params.start_date = startDate.format();
+            }
+
+            if (endDate) {
+                config.params.end_date = endDate.format();
+            }
 
             $http.get(url, config).
                 success(function (data, status) {
@@ -2574,7 +2521,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/' + batchId + '/cancel/';
 
-            $http.get(url).success(deferred.resolve, deferred.reject);
+            $http.get(url).success(deferred.resolve).error(deferred.reject);
 
             return deferred.promise;
         };
@@ -3115,7 +3062,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         campaignAdGroupsTable: new CampaignAdGroupsTable(),
         campaignSettings: new CampaignSettings(),
         campaignAgency: new CampaignAgency(),
-        campaignBudget: new CampaignBudget(),
         campaignSync: new CampaignSync(),
         campaignArchive: new CampaignArchive(),
         campaignOverview: new CampaignOverview(),
@@ -3124,7 +3070,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         accountAccountsTable: new AccountAccountsTable(),
         accountCampaigns: new AccountCampaigns(),
         accountCampaignsTable: new AccountCampaignsTable(),
-        accountBudget: new AccountBudget(),
         accountOverview: new AccountOverview(),
         scheduledReports: new ScheduledReports(),
         accountSync: new AccountSync(),

@@ -4,7 +4,7 @@ import json
 from mock import patch, ANY
 import datetime
 
-from django.test import TestCase, Client, TransactionTestCase
+from django.test import TestCase, Client, TransactionTestCase, RequestFactory
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -1280,7 +1280,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 2,
             'count': 55,
             'batch_size': 100,
-            'cancelled': False,
         })
 
         batch.inserted_content_ads = 55
@@ -1293,7 +1292,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 3,
             'count': 55,
             'batch_size': 100,
-            'cancelled': False,
         })
 
         # inserting ended, but did not yet switched
@@ -1306,7 +1304,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 3,
             'count': 100,
             'batch_size': 100,
-            'cancelled': False,
         })
 
         batch.propagated_content_ads = 22
@@ -1318,23 +1315,20 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 4,
             'count': 22,
             'batch_size': 100,
-            'cancelled': False,
         })
 
     def test_get_cancelled(self):
         batch = models.UploadBatch.objects.get(pk=2)
         batch.processed_content_ads = 55
-        batch.status = constants.UploadBatchStatus.FAILED
-        batch.cancelled = True
+        batch.status = constants.UploadBatchStatus.CANCELLED
         batch.save()
 
         response = self._get_status()
         self.assertEqual(response, {
-            'status': constants.UploadBatchStatus.FAILED,
+            'status': constants.UploadBatchStatus.CANCELLED,
             'step': 2,
             'count': 55,
             'batch_size': 100,
-            'cancelled': True,
             'errors': {
                 'details': {
                     'description': 'Content Ads upload was cancelled.'
@@ -1354,7 +1348,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 2,
             'count': 55,
             'batch_size': 100,
-            'cancelled': False,
             'errors': {
                 'details': {
                     'description': 'An error occured while processing file.'
@@ -1376,7 +1369,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 2,
             'count': 55,
             'batch_size': 100,
-            'cancelled': False,
             'errors': {
                 'details': {
                     'report_url': '/api/ad_groups/1/contentads_plus/upload/2/report/',
@@ -1418,16 +1410,31 @@ class AdGroupAdsPlusUploadCancelTest(TestCase):
         self.assertFalse(batch.cancelled)
         response = self._get_client(superuser=True).get(
             reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-        batch.refresh_from_db()
+
         response_dict = json.loads(response.content)
         self.assertDictEqual(response_dict, {'success': True})
-        self.assertTrue(batch.cancelled)
+
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, constants.UploadBatchStatus.CANCELLED)
 
     def test_permission(self):
         response = self._get_client(superuser=False).get(
             reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         self.assertEqual(response.status_code, 403)
+
+    def test_validation(self):
+        batch = models.UploadBatch.objects.get(pk=2)
+        batch.propagated_content_ads = batch.batch_size
+        batch.save()
+
+        response = self._get_client(superuser=True).get(
+            reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+
+        self.assertEqual(response.status_code, 400)
+
+        response_dict = json.loads(response.content)
+        self.assertEqual(response_dict['data']['errors']['cancel'], 'Cancel action unsupported at this stage')
 
 
 class AdGroupSourcesTest(TestCase):
@@ -1728,8 +1735,8 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             'domain': u'zemanta.com',
             'ctr': 0.0,
             'exchange': 'adiant',
-            'cpc_micro': 0,
-            'cost_micro_sum': 1e-05,
+            'cpc_nano': 0,
+            'cost_nano_sum': 1e-05,
             'impressions_sum': 1000L,
             'clicks_sum': 0L,
         },
@@ -1825,8 +1832,8 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             'domain': u'掌上留园－6park',  # an actual domain from production
             'ctr': 0.0,
             'exchange': 'adiant',
-            'cpc_micro': 0,
-            'cost_micro_sum': 1e-05,
+            'cpc_nano': 0,
+            'cost_nano_sum': 1e-05,
             'impressions_sum': 1000L,
             'clicks_sum': 0L,
         },
@@ -2311,8 +2318,8 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             'ctr': 0.0,
             'exchange': 'outbrain',
             'external_id': 'sfdafkl1230899012asldas',
-            'cpc_micro': 0,
-            'cost_micro_sum': 1e-05,
+            'cpc_nano': 0,
+            'cost_nano_sum': 1e-05,
             'impressions_sum': 1000L,
             'clicks_sum': 0L,
         },
@@ -2365,8 +2372,8 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             'ctr': 0.0,
             'exchange': 'outbrain',
             'external_id': 'sfdafkl1230899012asldas',
-            'cpc_micro': 0,
-            'cost_micro_sum': 1e-05,
+            'cpc_nano': 0,
+            'cost_nano_sum': 1e-05,
             'impressions_sum': 1000L,
             'clicks_sum': 0L,
         },
@@ -2411,8 +2418,8 @@ class PublishersBlacklistStatusTest(TransactionTestCase):
             'ctr': 0.0,
             'exchange': 'outbrain',
             'external_id': 'sfdafkl1230899012asldas',
-            'cpc_micro': 0,
-            'cost_micro_sum': 1e-05,
+            'cpc_nano': 0,
+            'cost_nano_sum': 1e-05,
             'impressions_sum': 1000L,
             'clicks_sum': 0L,
         },
@@ -2791,10 +2798,13 @@ class AccountOverviewTest(TestCase):
 
         permission = Permission.objects.get(codename='can_see_infobox')
         permission_2 = Permission.objects.get(codename='can_access_account_infobox')
+        permission_3 = Permission.objects.get(codename='view_archived_entities')
         user = zemauth.models.User.objects.get(pk=2)
         user.user_permissions.add(permission)
         user.user_permissions.add(permission_2)
+        user.user_permissions.add(permission_3)
         user.save()
+        self.user = user
 
     def _get_account_overview(self, account_id, user_id=2, with_status=False):
         user = User.objects.get(pk=user_id)
@@ -2814,8 +2824,6 @@ class AccountOverviewTest(TestCase):
     @patch('reports.redshift.get_cursor')
     @patch('dash.models.Account.get_current_settings')
     def test_run_empty(self, mock_current_settings, cursor):
-        account = models.Account.objects.get(pk=1)
-
         settings = models.AccountSettings(
             default_account_manager=zemauth.models.User.objects.get(pk=1),
             default_sales_representative=zemauth.models.User.objects.get(pk=2),
@@ -2831,6 +2839,49 @@ class AccountOverviewTest(TestCase):
         }]
         response = self._get_account_overview(1)
         settings = response['data']['basic_settings']
+        header = response['data']['header']
+
+        self.assertEqual(header['subtitle'], 'with 2 campaigns and 4 ad groups')
+
+        pf_setting = self._get_setting(settings, 'platform fee')
+        self.assertEqual('20.00%', pf_setting['value'])
+        self.assertTrue(response['success'])
+
+    @patch('reports.redshift.get_cursor')
+    @patch('dash.models.Account.get_current_settings')
+    def test_run_empty_non_archived(self, mock_current_settings, cursor):
+        settings = models.AccountSettings(
+            default_account_manager=zemauth.models.User.objects.get(pk=1),
+            default_sales_representative=zemauth.models.User.objects.get(pk=2),
+        )
+
+        mock_current_settings.return_value = settings
+
+        # force one campaign to be archived
+        req = RequestFactory().get('/')
+        req.user = self.user
+
+        campaign_settings = models.Campaign.objects.get(pk=1).get_current_settings()
+        campaign_settings.archived = True
+        campaign_settings.save(req)
+
+
+        adgroup_settings = models.AdGroup.objects.get(pk=1).get_current_settings()
+        adgroup_settings.archived = True
+        adgroup_settings.save(req)
+
+
+        # do some extra setup to the account
+        cursor().dictfetchall.return_value = [{
+            'adgroup_id': 1,
+            'source_id': 9,
+            'cost_cc_sum': 0.0
+        }]
+        response = self._get_account_overview(1)
+        settings = response['data']['basic_settings']
+        header = response['data']['header']
+
+        self.assertEqual(header['subtitle'], 'with 1 campaigns and 3 ad groups')
 
         pf_setting = self._get_setting(settings, 'platform fee')
         self.assertEqual('20.00%', pf_setting['value'])

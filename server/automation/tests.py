@@ -257,46 +257,30 @@ class BCMDepletionTestCase(test.TestCase):
         self.request.user = User.objects.get(pk=1)
         refresh.refresh_adgroup_stats()
 
-    def test_split_legacy_campaigns(self):
-        bcm_campaigns, legacy_campaigns = helpers.split_legacy_campaigns(
-            self.campaigns
-        )
-        self.assertEqual(
-            set((1, 2)),
-            set(c.pk for c in legacy_campaigns)
-        )
-        self.assertEqual(
-            set((3, 4)),
-            set(c.pk for c in bcm_campaigns)
-        )
-
     @patch('datetime.datetime', DatetimeMock)
     def test_get_yesterdays_spends(self):
-        with patch('reports.api.get_yesterday_cost') as get_yesterday_cost:
-            get_yesterday_cost.return_value = {'test': 100.0}
-            self.assertEqual(
-                helpers.get_yesterdays_spends(self.campaigns),
-                {1: 100.0, 2: 100.0, 3: 55.0, 4: 77.0},
-            )
+        self.assertEqual(
+            helpers.get_yesterdays_spends(self.campaigns),
+            {
+                1: decimal.Decimal('0.0'),
+                2: decimal.Decimal('0.0'),
+                3: decimal.Decimal('55.0'),
+                4: decimal.Decimal('77.0')
+            },
+        )
 
     @patch('datetime.datetime', DatetimeMock)
     def test_get_available_budgets(self):
-        models.CampaignBudgetSettings(
-            campaign_id=1,
-            total=decimal.Decimal('200.0000'),
-            created_by_id=1,
-        ).save(self.request)
-        models.CampaignBudgetSettings(
-            campaign_id=2,
-            total=decimal.Decimal('300.0000'),
-            created_by_id=1,
-        ).save(self.request)
-
         with patch('reports.api.query') as query:
             query.return_value = {'cost': 200.0}
             self.assertEqual(
                 helpers.get_available_budgets(self.campaigns),
-                {1: 0.0, 2: 100.0, 3: 49879.0, 4: 49923.0},
+                {
+                    1: decimal.Decimal('0.0'),
+                    2: decimal.Decimal('100.0000'),
+                    3: decimal.Decimal('49879.0000'),
+                    4: decimal.Decimal('49923.0000')
+                },
             )
 
 
@@ -310,7 +294,7 @@ class BetaBanditTestCase(test.TestCase):
         ags = models.AdGroupSource.objects.filter(ad_group=4)
         self.assertEqual(ags.count(), 3)
 
-        bandit = automation.autopilot_budgets.BetaBandit(ags)
+        bandit = automation.autopilot_budgets.BetaBandit([a for a in ags])
 
         for i in range(100):
             bandit.add_result(ags[0], True)

@@ -4,12 +4,6 @@ import decimal
 def unchanged(val):
     return val
 
-def from_micro_cpm(num):
-    if num is None:
-        return None
-    else:
-        # we divide first by a million (since we use fixed point) and then by additional thousand (cpm)
-        return num * 1.0 / 1000000000
 
 def from_cc(num):
     if num is None:
@@ -17,11 +11,13 @@ def from_cc(num):
 
     return float(decimal.Decimal(round(num)) / decimal.Decimal(10000))
 
+
 def from_nano(num):
     if num is None:
         return None
 
     return float(decimal.Decimal(round(num)) / decimal.Decimal(10**9))
+
 
 def to_percent(num):
     if num is None:

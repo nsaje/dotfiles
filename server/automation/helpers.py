@@ -6,7 +6,6 @@ from django.db import transaction
 
 import dash
 import dash.constants
-import dash.budget
 import decimal
 import reports.api
 import dash.views.helpers
@@ -15,59 +14,23 @@ import utils.dates_helper
 from actionlog import zwei_actions
 
 
-def split_legacy_campaigns(campaigns):
-    updated, legacy = [], []
-    for campaign in campaigns:
-        if campaign.account.uses_credits:
-            updated.append(campaign)
-        else:
-            legacy.append(campaign)
-    return updated, legacy
-
-
 def get_yesterdays_spends(campaigns):
-    bcm_campaigns, legacy_campaigns = split_legacy_campaigns(campaigns)
-    spends = {}
-    spends.update({
-        campaign.id: decimal.Decimal(sum(reports.api.get_yesterday_cost(dict(campaign=campaign)).values()))
-        for campaign in legacy_campaigns
-    })
     yesterday = utils.dates_helper.local_today() - datetime.timedelta(1)
-    spends.update({
+    spends = {
         campaign.id: _get_total_campaign_spend(campaign, yesterday)
-        for campaign in bcm_campaigns
-    })
+        for campaign in campaigns
+    }
 
     return spends
 
 
 def get_available_budgets(campaigns):
-    bcm_campaigns, legacy_campaigns = split_legacy_campaigns(campaigns)
-    available_budgets = {}
-
-    total_budgets = _get_total_legacy_budgets(legacy_campaigns)
-    total_spends = _get_total_legacy_spends(legacy_campaigns)
-    available_budgets.update({
-        k: decimal.Decimal(total_budgets[k]) - decimal.Decimal(total_spends[k])
-        for k in total_budgets if k in total_spends
-    })
-
-    available_budgets.update({
+    available_budgets = {
         campaign.id: decimal.Decimal(_get_total_available_budget(campaign))
-        for campaign in bcm_campaigns
-    })
+        for campaign in campaigns
+    }
 
     return available_budgets
-
-
-def _get_total_legacy_budgets(campaigns):
-    return {campaign.id: dash.budget.CampaignBudget(campaign).get_total()
-            for campaign in campaigns}
-
-
-def _get_total_legacy_spends(campaigns):
-    return {campaign.id: dash.budget.CampaignBudget(campaign).get_spend()
-            for campaign in campaigns}
 
 
 def _get_total_available_budget(campaign, date=None):

@@ -516,6 +516,7 @@ var constants = {
         DONE: 1,
         FAILED: 2,
         IN_PROGRESS: 3,
+        CANCELLED: 4,
     },
     contentAdSourceState: {
         ACTIVE: 1,

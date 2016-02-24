@@ -182,38 +182,6 @@ def load_publishers(s3_key):
     _execute(query, params)
 
 
-@statsd_timer('reports.redshift', 'delete_publishers_b1')
-def delete_publishers_b1(date):
-    query = 'DELETE FROM b1_publishers_1 WHERE date = %s'
-    params = [date.isoformat()]
-    _execute(query, params)
-
-
-@statsd_timer('reports.redshift', 'load_publishers_b1')
-def load_publishers_b1(s3_key):
-    query = "COPY b1_publishers_1 FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
-
-    credentials = _get_aws_credentials_string(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
-    params = [S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_key), credentials]
-    _execute(query, params)
-
-
-@statsd_timer('reports.redshift', 'delete_publishers_ob')
-def delete_publishers_ob(date):
-    query = 'DELETE FROM ob_publishers_2 WHERE date = %s'
-    params = [date.isoformat()]
-    _execute(query, params)
-
-
-@statsd_timer('reports.redshift', 'load_publishers_ob')
-def load_publishers_ob(s3_key):
-    query = "COPY ob_publishers_2 FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
-
-    credentials = _get_aws_credentials_string(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
-    params = [S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_key), credentials]
-    _execute(query, params)
-
-
 def _get_row_string(cursor, cols, row):
     template_string = '(' + ','.join(itertools.repeat('%s', len(cols))) + ')'
     return cursor.mogrify(template_string, [row[col] for col in cols])

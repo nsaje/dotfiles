@@ -10,12 +10,11 @@ from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
 from actionlog import zwei_actions
-from automation import autopilot_budgets
+from automation import autopilot_budgets, autopilot_plus
 from dash.views import helpers
 from dash import forms
 from dash import models
 from dash import api
-from dash import budget
 from dash import constants
 from dash import validation_helpers
 import automation.settings
@@ -92,6 +91,9 @@ class AdGroupSettings(api_common.BaseApiView):
 
             email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
             helpers.log_useraction_if_necessary(request, user_action_type, ad_group=ad_group)
+            if 'autopilot_daily_budget' in changes or 'autopilot_state' in changes and \
+                    changes['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+                automation.autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group=ad_group)
 
         response = {
             'settings': self.get_dict(new_settings, ad_group),
@@ -566,78 +568,6 @@ class CampaignSettings(api_common.BaseApiView):
 
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']
-
-
-class CampaignBudget(api_common.BaseApiView):
-
-    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_get')
-    def get(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-
-        if not request.user.has_perm('zemauth.campaign_budget_management_view'):
-            raise exc.MissingDataError()
-
-        response = self.get_response(campaign)
-        return self.create_api_response(response)
-
-    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
-    def put(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-
-        if not request.user.has_perm('zemauth.campaign_budget_management_view'):
-            raise exc.MissingDataError()
-
-        campaign_budget = budget.CampaignBudget(campaign)
-
-        budget_change = json.loads(request.body)
-
-        form = forms.CampaignBudgetForm(budget_change)
-
-        if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
-
-        campaign_budget.edit(
-            allocate_amount=form.get_allocate_amount(),
-            revoke_amount=form.get_revoke_amount(),
-            request=request,
-        )
-
-        current_budget_settings = campaign.get_current_budget_settings()
-        if current_budget_settings:
-            email_helper.send_budget_notification_email(campaign, request, current_budget_settings.comment)
-            helpers.log_useraction_if_necessary(
-                request, constants.UserActionType.SET_CAMPAIGN_BUDGET, campaign=campaign)
-
-        response = self.get_response(campaign)
-        return self.create_api_response(response)
-
-    def get_response(self, campaign):
-        campaign_budget = budget.CampaignBudget(campaign)
-
-        total = campaign_budget.get_total()
-        spend = campaign_budget.get_spend()
-        available = total - spend
-
-        response = {
-            'total': total,
-            'available': available,
-            'spend': spend,
-            'history': self.format_history(campaign_budget.get_history())
-        }
-        return response
-
-    def format_history(self, history):
-        result = []
-        for h in history:
-            item = {}
-            item['datetime'] = h.created_dt
-            item['user'] = h.created_by.email
-            item['allocate'] = float(h.allocate)
-            item['revoke'] = float(h.revoke)
-            item['total'] = float(h.total)
-            item['comment'] = h.comment
-            result.append(item)
-        return result
 
 
 class AccountConversionPixels(api_common.BaseApiView):

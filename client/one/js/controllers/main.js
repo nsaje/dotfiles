@@ -20,7 +20,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.adGroup = null;
 
     $scope.infoboxEnabled = false;
-    $scope.infoboxVisible = false;
     $scope.graphVisible = true;
     $scope.navigationPaneVisible = true;
 
@@ -47,11 +46,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         }
 
         return !$scope.user.permissions[permission];
-    };
-
-    $scope.toggleInfobox = function () {
-        $scope.infoboxVisible = !$scope.infoboxVisible;
-        $scope.reflowGraph(0);
     };
 
     $scope.toggleGraph = function () {
@@ -299,23 +293,24 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return false;
     };
 
-    $scope.hasInfoboxPermission = function () {
+    $scope.hasInfoboxPermission = function () { // eslint-disable-line max-len
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return false;
+        }
+
         if ($state.is('main.adGroups.adsPlus') ||
             $state.is('main.adGroups.sources') ||
             $state.is('main.adGroups.publishers')) {
-            $scope.infoboxVisible = true;
             return $scope.hasPermission('zemauth.can_access_ad_group_infobox');
         }
 
         if ($state.is('main.campaigns.ad_groups') ||
             $state.is('main.campaigns.sources')) {
-            $scope.infoboxVisible = true;
             return $scope.hasPermission('zemauth.can_access_campaign_infobox');
         }
 
         if ($state.is('main.accounts.campaigns') ||
             $state.is('main.accounts.sources')) {
-            $scope.infoboxVisible = true;
             return $scope.hasPermission('zemauth.can_access_account_infobox');
         }
 
@@ -325,6 +320,18 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         }
 
         return false;
+    };
+
+    $scope.isChartVisible = function () {
+        return $state.is('main.adGroups.adsPlus') ||
+            $state.is('main.adGroups.sources') ||
+            $state.is('main.adGroups.publishers') ||
+            $state.is('main.campaigns.ad_groups') ||
+            $state.is('main.campaigns.sources') || 
+            $state.is('main.accounts.campaigns') ||
+            $state.is('main.accounts.sources') || 
+            $state.is('main.allAccounts.accounts') ||
+            $state.is('main.allAccounts.sources');
     };
 
     $scope.$on('$stateChangeSuccess', function () {
@@ -445,10 +452,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
         userSettings.registerGlobal('graphVisible');
         userSettings.registerGlobal('navigationPaneVisible');
-        if ($state.is('main.allAccounts.accounts') ||
-            $state.is('main.allAccounts.sources')) {
-            userSettings.registerGlobal('infoboxVisible');
-        }
     };
 
     $scope.init();

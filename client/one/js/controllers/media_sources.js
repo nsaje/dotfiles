@@ -547,7 +547,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         $scope.reflowGraph(1);
     };
 
-    var getInfoboxData = function () {
+    $scope.getInfoboxData = function () {
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
@@ -556,7 +556,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             if (!$scope.hasPermission('zemauth.can_access_all_accounts_infobox')) {
                 return;
             }
-            api.allAccountsOverview.get().then(
+            api.allAccountsOverview.get($scope.dateRange.startDate, $scope.dateRange.endDate).then(
                 function (data) {
                     updateInfoboxData(data);
                 }
@@ -671,6 +671,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.infoboxLinkTo = 'main.campaigns.settings';
         }
 
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            $scope.hasInfoboxPermission = false;
+        }
+
         userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
         var sourceIds = $location.search().source_ids;
@@ -696,7 +700,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         getDailyStats();
         getTableData();
-        getInfoboxData();
+        $scope.getInfoboxData();
         pollSyncStatus();
     };
 
@@ -712,6 +716,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             return;
         }
 
+        // on all accounts some settings depend on date range
+        if ($scope.level === constants.level.ALL_ACCOUNTS) {
+            $scope.getInfoboxData();
+        }
         getDailyStats();
         getTableData();
     });
