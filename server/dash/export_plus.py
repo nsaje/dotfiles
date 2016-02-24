@@ -312,7 +312,7 @@ def _populate_campaign_stat(stat, campaign, statuses, settings=None, budgets=Non
 
 def _populate_account_stat(stat, prefetched_data, statuses, settings=None, projections=None,
                            budgets=None, flat_fees=None):
-    if settings:
+    if settings and stat['account'] in settings:
         setting = settings[stat['account']]
         stat['default_account_manager'] = \
             helpers.get_user_full_name_or_email(setting.default_account_manager, default_value=None)
