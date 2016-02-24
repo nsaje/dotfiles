@@ -187,7 +187,7 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date, in
                 .filter(account__in=accounts) \
                 .group_current_settings() \
                 .select_related('default_account_manager', 'default_sales_representative')
-            settings = {s.account.id: s for s in settings_qs}
+            settings = {s.account_id: s for s in settings_qs}
         flat_fees = _prefetch_flat_fees(data, start_date, end_date)
         if include_projections:
             projections = bcm_helpers.get_projections(data.values(), start_date, end_date)
@@ -266,7 +266,9 @@ def _prefetch_statuses(entities, level, by_source, sources=None):
         ad_group__in=ad_groups).group_current_settings()
 
     ad_group_sources_settings = models.AdGroupSourceSettings.objects.filter(
-        ad_group_source__ad_group__in=ad_groups).filter_by_sources(sources).group_current_settings()
+        ad_group_source__ad_group__in=ad_groups).filter_by_sources(sources)\
+                                                .group_current_settings()\
+                                                .select_related('ad_group_source')
 
     return helpers.get_ad_group_state_by_sources_running_status(
         ad_groups, ad_groups_settings, ad_group_sources_settings, constraints)

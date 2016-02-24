@@ -86,7 +86,7 @@ def get_projections(accounts, start_date, end_date):
         status=dash.constants.CreditLineItemStatus.SIGNED,
     ).exclude(
         Q(end_date__lt=start_date) | Q(start_date__gt=end_date)
-    ).select_related('account')
+    ).select_related('budgets', 'account')
     for credit in account_credits:
         budgets = credit.budgets.all()
         credit_days = 0
