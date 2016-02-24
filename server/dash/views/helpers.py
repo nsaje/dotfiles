@@ -175,29 +175,25 @@ def get_active_ad_group_sources(modelcls, modelobjects):
         real_corresponding_adgroups = [x.real_ad_group
                                        for x in models.DemoAdGroupRealAdGroup.objects
                                        .filter(demo_ad_group__in=demo_adgroups)]
+
         normal_adgroups = _get_adgroups_for(modelcls, normal_objects)
         adgroups = list(real_corresponding_adgroups) + list(normal_adgroups)
 
-        inactive_adgroup_sources_qs = actionlog.api.get_ad_group_sources_waiting(
-            ad_group=adgroups
-        )
-        inactive_adgroup_sources = [ags.id for ags in inactive_adgroup_sources_qs]
-
-        archived_adgroups_settings = models.AdGroupSettings.objects\
-            .filter(archived=True, ad_group__in=adgroups)\
-            .group_current_settings()
-        archived_adgroups = [setting.ad_group_id for setting in archived_adgroups_settings]
+        archived_adgroups_settings = models.AdGroupSettings.objects.\
+            filter(archived=True, ad_group__in=adgroups).\
+            group_current_settings()
+        archived_adgroup_ids = [setting.ad_group_id for setting in archived_adgroups_settings]
+        inactive_adgroup_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=adgroups)
+        inactive_adgroup_source_ids = [adgroup_source.pk for adgroup_source in inactive_adgroup_sources]
 
         active_ad_group_sources = models.AdGroupSource.objects \
             .filter(
                 # deprecated sources are not shown in the demo at all
-                ~Q(pk__in=inactive_adgroup_sources) &
-                ~Q(ad_group__in=archived_adgroups) &
-                (
-                    Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) |
-                    Q(ad_group__in=normal_adgroups)
-                )
+                Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) |
+                Q(ad_group__in=normal_adgroups)
             ).\
+            exclude(pk__in=inactive_adgroup_source_ids).\
+            exclude(ad_group__in=archived_adgroup_ids).\
             select_related('source__source_type').\
             select_related('ad_group')
 
