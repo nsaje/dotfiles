@@ -211,7 +211,7 @@ def _prefetch_flat_fees(accounts, start_date, end_date):
 
 
 def _prefetch_account_budgets(accounts):
-    accounts_budget, accounts_spend = bcm_helpers.get_account_media_budget_data(acc.pk for acc in accounts.values())
+    accounts_budget, accounts_spend = bcm_helpers.get_account_media_budget_data(accounts.keys())
     return {
         acc.pk: {
             'budget': Decimal(accounts_budget.get(acc.id, 0)),
@@ -679,7 +679,7 @@ def filter_allowed_fields(request, fields):
     can_view_flat_fees = request.user.has_perm('zemauth.can_view_flat_fees')
     can_see_projections = request.user.has_perm('zemauth.can_see_projections')
     can_see_managers_in_accounts_table = request.user.has_perm('zemauth.can_see_managers_in_accounts_table')
-    can_see_managers_in_campaigns_table = True
+    can_see_managers_in_campaigns_table = request.user.has_perm('zemauth.can_see_managers_in_campaigns_table')
     can_view_budgets = request.user.has_perm('zemauth.all_accounts_budget_view')
 
     for f in fields:
