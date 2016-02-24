@@ -503,11 +503,21 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend())
 
     def test_count_active_accounts(self):
+        today = datetime.datetime.utcnow()
+
         for adgss in dash.models.AdGroupSourceState.objects.all():
             adgss.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
             adgss.save()
 
         self.assertEqual(0, dash.infobox_helpers.count_active_accounts())
+
+        all_adgset = dash.models.AdGroupSettings.objects.filter(
+            ad_group__campaign__account__id=1
+        )
+        for adgset in all_adgset:
+            adgset.start_date = today
+            adgset.end_date = today + datetime.timedelta(days=1)
+            adgset.save(None)
 
         all_adgs_1 = dash.models.AdGroupSource.objects.filter(
             ad_group__campaign__account__id=1

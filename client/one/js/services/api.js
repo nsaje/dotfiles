@@ -2520,7 +2520,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/' + batchId + '/cancel/';
 
-            $http.get(url).success(deferred.resolve, deferred.reject);
+            $http.get(url).success(deferred.resolve).error(deferred.reject);
 
             return deferred.promise;
         };

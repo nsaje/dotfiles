@@ -1160,9 +1160,14 @@ class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist():
             raise exc.MissingDataException()
 
+        if batch.propagated_content_ads >= batch.batch_size:
+            raise exc.ValidationError(errors={
+                'cancel': 'Cancel action unsupported at this stage',
+            })
+
         with transaction.atomic():
-            batch.cancelled = True
-            batch.save()
+            batch.status = constants.UploadBatchStatus.CANCELLED
+            batch.save(update_fields=['status'])
 
         return self.create_api_response()
 
@@ -1200,7 +1205,6 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
             'count': count,
             'batch_size': batch_size,
             'step': step,
-            'cancelled': batch.cancelled,
         }
 
         errors = self._get_error_details(batch, ad_group_id)
@@ -1218,10 +1222,10 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
                 errors['report_url'] = reverse('ad_group_ads_plus_upload_report',
                                                kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
                 errors['description'] = 'Found {} error{}.'.format(batch.num_errors, 's' if batch.num_errors > 1 else '')
-            elif batch.cancelled:
-                errors['description'] = 'Content Ads upload was cancelled.'
             else:
                 errors['description'] = 'An error occured while processing file.'
+        elif batch.status == constants.UploadBatchStatus.CANCELLED:
+                errors['description'] = 'Content Ads upload was cancelled.'
 
         return errors
 

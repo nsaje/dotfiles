@@ -1280,7 +1280,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 2,
             'count': 55,
             'batch_size': 100,
-            'cancelled': False,
         })
 
         batch.inserted_content_ads = 55
@@ -1293,7 +1292,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 3,
             'count': 55,
             'batch_size': 100,
-            'cancelled': False,
         })
 
         # inserting ended, but did not yet switched
@@ -1306,7 +1304,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 3,
             'count': 100,
             'batch_size': 100,
-            'cancelled': False,
         })
 
         batch.propagated_content_ads = 22
@@ -1318,23 +1315,20 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 4,
             'count': 22,
             'batch_size': 100,
-            'cancelled': False,
         })
 
     def test_get_cancelled(self):
         batch = models.UploadBatch.objects.get(pk=2)
         batch.processed_content_ads = 55
-        batch.status = constants.UploadBatchStatus.FAILED
-        batch.cancelled = True
+        batch.status = constants.UploadBatchStatus.CANCELLED
         batch.save()
 
         response = self._get_status()
         self.assertEqual(response, {
-            'status': constants.UploadBatchStatus.FAILED,
+            'status': constants.UploadBatchStatus.CANCELLED,
             'step': 2,
             'count': 55,
             'batch_size': 100,
-            'cancelled': True,
             'errors': {
                 'details': {
                     'description': 'Content Ads upload was cancelled.'
@@ -1354,7 +1348,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 2,
             'count': 55,
             'batch_size': 100,
-            'cancelled': False,
             'errors': {
                 'details': {
                     'description': 'An error occured while processing file.'
@@ -1376,7 +1369,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 2,
             'count': 55,
             'batch_size': 100,
-            'cancelled': False,
             'errors': {
                 'details': {
                     'report_url': '/api/ad_groups/1/contentads_plus/upload/2/report/',
@@ -1418,16 +1410,31 @@ class AdGroupAdsPlusUploadCancelTest(TestCase):
         self.assertFalse(batch.cancelled)
         response = self._get_client(superuser=True).get(
             reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-        batch.refresh_from_db()
+
         response_dict = json.loads(response.content)
         self.assertDictEqual(response_dict, {'success': True})
-        self.assertTrue(batch.cancelled)
+
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, constants.UploadBatchStatus.CANCELLED)
 
     def test_permission(self):
         response = self._get_client(superuser=False).get(
             reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         self.assertEqual(response.status_code, 403)
+
+    def test_validation(self):
+        batch = models.UploadBatch.objects.get(pk=2)
+        batch.propagated_content_ads = batch.batch_size
+        batch.save()
+
+        response = self._get_client(superuser=True).get(
+            reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+
+        self.assertEqual(response.status_code, 400)
+
+        response_dict = json.loads(response.content)
+        self.assertEqual(response_dict['data']['errors']['cancel'], 'Cancel action unsupported at this stage')
 
 
 class AdGroupSourcesTest(TestCase):

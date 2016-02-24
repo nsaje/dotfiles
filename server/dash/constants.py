@@ -1143,11 +1143,13 @@ class UploadBatchStatus(ConstantBase):
     DONE = 1
     FAILED = 2
     IN_PROGRESS = 3
+    CANCELLED = 4
 
     _VALUES = {
         DONE: 'Done',
         FAILED: 'Failed',
-        IN_PROGRESS: 'In progress'
+        IN_PROGRESS: 'In progress',
+        CANCELLED: 'Cancelled',
     }
 
 
