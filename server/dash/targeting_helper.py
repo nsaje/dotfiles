@@ -1,5 +1,6 @@
 from dash import constants
 from dash import regions
+from dash import models
 
 
 def get_list_for_region_type(region_type):
@@ -34,8 +35,8 @@ def can_modify_selected_target_regions_manually(source, *settings):
 
 
 def can_target_existing_regions(source, *settings):
-        return can_modify_selected_target_regions_automatically(source, *settings) or \
-               can_modify_selected_target_regions_manually(source, *settings)
+    return can_modify_selected_target_regions_automatically(source, *settings) or \
+            can_modify_selected_target_regions_manually(source, *settings)
 
 
 def _get_region_types(*settings):
@@ -49,3 +50,25 @@ def _get_region_types(*settings):
                 break
 
     return region_types
+
+
+def can_retarget(source, ad_group_settings):
+    if source.can_modify_retargeting_automatically():
+        return True
+
+    # get all adgroup settings from this account
+    account = ad_group_settings.ad_group.campaign.account
+    other_adgss = models.AdGroupSettings.objects.filter(
+        ad_group__campaign_account=account
+    ).group_current_settings().exclude(
+        ad_group=ad_group_settings.ad_group
+    ).only('retargeting_ad_groups')
+
+    # check if anyone is retargeting this ad_group
+    if any([ad_group_settings.ad_group.id in other_adgs
+            for other_adgs in other_adgss]):
+        # if not we can still add this source
+        # TODO: Should there be an
+        return False
+    else:
+        return True

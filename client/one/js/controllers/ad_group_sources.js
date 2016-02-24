@@ -802,13 +802,21 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             function (data) {
                 var sources = [];
                 for (var source, i = 0; i < data.sources.length; i++) {
+                    var notification = null;
+                    if (!source.canTargetExistingRegions) {
+                        notification = source.name + ' doesn\'t support DMA targeting. Turn off DMA targeting to add ' + source.name + '.';
+                    } 
+                    if (!source.canRetarget) {
+                        notification = (notification ? notification + ' ' : '') + source.name + ' doesn\'t support retargeting. Turn off retargeting to add ' + source.name + '.';
+                    } 
+
                     source = data.sources[i];
                     sources.push({
                         name: source.name,
                         value: source.id,
                         hasPermission: true,
                         disabled: !source.canTargetExistingRegions,
-                        notification: (!source.canTargetExistingRegions ? source.name + ' doesn\'t support DMA targeting. Turn off DMA targeting to add ' + source.name + '.' : undefined)
+                        notification: notification,
                     });
                 }
 

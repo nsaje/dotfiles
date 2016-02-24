@@ -1563,10 +1563,37 @@ class AdGroupSourcesTest(TestCase):
 
         response_dict = json.loads(response.content)
         self.assertItemsEqual(response_dict['data']['sources'], [
+            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False, 'can_retarget': False},  # should return False when DMAs used
+            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': False},
+            {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False, 'can_retarget': False},
+        ])
+
+    def test_retargeting_support(self):
+        """
+        username = User.objects.get(pk=1).email
+        self.client.login(username=username, password='secret')
+
+        ad_group_source = models.AdGroupSource.objects.get(id=3)
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC
+        ]
+        ad_group_source.source.source_type.save()
+
+        response = self.client.get(
+            reverse(
+                'ad_group_sources',
+                kwargs={'ad_group_id': 2}),
+            follow=True
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertItemsEqual(response_dict['data']['sources'], [
             {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False},  # should return False when DMAs used
             {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
             {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False},
         ])
+        """
+
 
     def test_available_sources(self):
         response = self.client.get(

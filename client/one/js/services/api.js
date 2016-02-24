@@ -178,7 +178,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 sources.push({
                     id: source.id,
                     name: source.name,
-                    canTargetExistingRegions: source.can_target_existing_regions
+                    canTargetExistingRegions: source.can_target_existing_regions,
+                    canRetarget: source.can_retarget,
                 });
             }
 

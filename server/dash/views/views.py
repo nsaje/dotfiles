@@ -510,7 +510,8 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group)
         ad_group_source.save(request)
-        active_source_state = targeting_helper.can_target_existing_regions(source, ad_group_settings)
+        active_source_state = targeting_helper.can_target_existing_regions(source, ad_group_settings) and\
+            targeting_helper.can_retarget(source, ad_group_settings)
         helpers.set_ad_group_source_settings(request, ad_group_source, source_settings,
                                              mobile_only=ad_group_settings.is_mobile_only(),
                                              active=active_source_state)
@@ -862,7 +863,8 @@ class AdGroupSources(api_common.BaseApiView):
                 'id': source.id,
                 'name': source.name,
                 'can_target_existing_regions': targeting_helper.can_target_existing_regions(
-                        source, ad_group_settings)
+                        source, ad_group_settings),
+                'can_retarget': targeting_helper.can_retarget(source, ad_group_settings),
             })
 
         sources_waiting = set([ad_group_source.source.name for ad_group_source
@@ -879,16 +881,22 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group_settings = ad_group.get_current_settings()
 
         source_id = json.loads(request.body)['source_id']
         source = models.Source.objects.get(id=source_id)
 
+        from pudb import set_trace; set_trace()
         if models.AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
             raise exc.ValidationError(
                 '{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
 
-        if not targeting_helper.can_target_existing_regions(source, ad_group.get_current_settings()):
+        if not targeting_helper.can_target_existing_regions(source, ad_group_settings):
             raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'
+                                      .format(source.name))
+
+        if not targeting_helper.can_retarget(source, ad_group_settings):
+            raise exc.ValidationError('{} media source can not be added because it does not support retargeting.'
                                       .format(source.name))
 
         default_settings = helpers.get_source_default_settings(source)
