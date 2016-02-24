@@ -139,6 +139,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         {
             name: 'Status',
             field: 'stateText',
+            unselectable: true,
             checked: true,
             type: 'text',
             shown: true,
