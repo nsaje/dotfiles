@@ -127,8 +127,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             help: 'Campaign manager responsible for the campaign and the communication with the client.',
             order: true,
             initialOrder: 'desc',
-            internal: true,
-            shown: true,
+            internal: $scope.isPermissionInternal('zemauth.can_see_managers_in_campaigns_table'),
+            shown: $scope.hasPermission('zemauth.can_see_managers_in_campaigns_table'),
         },
         {
             name: 'Total Budget',
