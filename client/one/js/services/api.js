@@ -1442,8 +1442,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
     }
 
-
-    function AccountRetargetableAdGroups() {
+    function AccountRetargetableAdGroups () {
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/accounts/' + id + '/retargetable-adgroups/';

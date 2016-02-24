@@ -2925,7 +2925,7 @@ class AccountRetargetableAdgroupsTest(TestCase):
 
         adgroups = response['data']
         self.assertEqual(4, len(adgroups))
-        self.assertTrue(all([adgroup['archived'] == False for adgroup in adgroups]))
+        self.assertTrue(all([not adgroup['archived'] for adgroup in adgroups]))
         self.assertTrue(3, len([adg for adg in adgroups if adg['campaign_id'] == 1]))
         self.assertTrue(1, len([adg for adg in adgroups if adg['campaign_id'] == 2]))
 

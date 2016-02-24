@@ -1,13 +1,13 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
-oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', 'zemNavigationService', function (config, zemFilterService, $state, zemNavigationService) { // eslint-disable-line max-len
+oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', function (config, zemFilterService, $state) { // eslint-disable-line max-len
     return {
         restrict: 'E',
         scope: {
             selectedAdgroupIds: '=zemSelectedAdgroupIds',
             account: '=zemAccount',
-            retargetableAdgroups: '=zemRetargetableAdgroups'
+            retargetableAdgroups: '=zemRetargetableAdgroups',
         },
         templateUrl: '/partials/zem_retargeting.html',
         controller: ['$scope', function ($scope) {

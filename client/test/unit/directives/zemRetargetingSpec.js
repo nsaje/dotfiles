@@ -2,33 +2,31 @@
 'use strict';
 
 describe('zemRetargeting', function () {
-    var $scope, element, isolate, zemFilterService, zemNavigationService, $q;
+    var $scope, element, isolate, zemFilterService;
 
     var template = '<zem-retargeting zem-selected-adgroup-ids="selectedAdgroupIds" zem-retargetable-adgroups="retargetableAdgroups" zem-account="account"></zem-locations>';
 
     beforeEach(module('one'));
 
-    beforeEach(inject(function ($compile, $rootScope, _zemFilterService_, _zemNavigationService_, _$q_) {
+    beforeEach(inject(function ($compile, $rootScope, _zemFilterService_) {
         $scope = $rootScope.$new();
 
         zemFilterService = _zemFilterService_;
-        zemNavigationService = _zemNavigationService_;
-        $q = _$q_;
 
         $scope.selectedAdgroupIds = [];
         $scope.retargetableAdgroups = [
-        {
-            id: 1,
-            archived: false,
-        },
-        {
-            id: 2,
-            archived: true,
-        }, 
-        {
-            id: 3,
-            archived: false,
-        },
+            {
+                id: 1,
+                archived: false,
+            },
+            {
+                id: 2,
+                archived: true,
+            },
+            {
+                id: 3,
+                archived: false,
+            },
         ];
         $scope.account = {id: 1};
 
