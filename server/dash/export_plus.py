@@ -164,8 +164,8 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date, in
     elif 'ad_group' in dimensions:
         level = 'ad_group'
         distinct_ad_groups = set(stat['ad_group'] for stat in stats)
-        ad_gorup_qs = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
-        data = {ad_group.id: ad_group for ad_group in ad_gorup_qs}
+        ad_group_qs = models.AdGroup.objects.select_related('campaign__account').filter(id__in=distinct_ad_groups)
+        data = {ad_group.id: ad_group for ad_group in ad_group_qs}
     elif 'campaign' in dimensions:
         level = 'campaign'
         distinct_campaigns = set(stat['campaign'] for stat in stats)
