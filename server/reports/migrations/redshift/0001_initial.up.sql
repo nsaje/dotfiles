@@ -18,7 +18,7 @@ CREATE TABLE contentadstats (
     pageviews integer,
     total_time_on_site integer,
 
-    conversions varchar(512)
+    conversions varchar(2048)
 )
 DISTSTYLE EVEN
 SORTKEY (date);
