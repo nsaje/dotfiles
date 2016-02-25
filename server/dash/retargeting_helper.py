@@ -41,7 +41,7 @@ def can_add_source_with_retargeting(source, ad_group_settings):
 def filter_retargetable(ad_groups):
     adgss = models.AdGroupSource.objects.filter(
         ad_group__in=ad_groups
-    ).select_related('ad_group', 'source').distinct('source')
+    ).select_related('ad_group', 'source')
 
     for adgs in adgss:
         if not adgs.source.can_modify_retargeting_automatically():

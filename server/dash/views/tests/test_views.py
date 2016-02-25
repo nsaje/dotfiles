@@ -2956,13 +2956,6 @@ class AccountRetargetableAdgroupsTest(TestCase):
         response = self._get_retargetable_adgroups(1)
         self.assertTrue(response['success'])
 
-        for adg in models.AdGroup.objects.filter(
-                campaign__account=1
-            ):
-            print adg.id, adg.name
-            for source in adg.sources.all():
-                print '\t* ', source.id
-
         adgroups = response['data']
         self.assertEqual(2, len(adgroups))
         # one adgroup has no sources and the other one source that supports
