@@ -120,7 +120,6 @@
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
         source_type: 1
-        maintenance: false
     model: dash.source
     pk: 1
 

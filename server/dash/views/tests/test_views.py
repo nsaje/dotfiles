@@ -316,6 +316,12 @@ class CampaignAdGroups(TestCase):
 
     @patch('dash.views.helpers.set_ad_group_source_settings')
     def test_create_ad_group_source(self, mock_set_ad_group_source_settings):
+        # adblade must not be in maintenance for this particular test
+        # so it supports retargeting - which is checked on adgroupsourc creation
+        adblade = models.Source.objects.filter(name__icontains='adblade').first()
+        adblade.maintenance = False
+        adblade.save()
+
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         source_settings = models.DefaultSourceSettings.objects.get(pk=1)
         request = None
@@ -1563,7 +1569,7 @@ class AdGroupSourcesTest(TestCase):
 
         response_dict = json.loads(response.content)
         self.assertItemsEqual(response_dict['data']['sources'], [
-            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False, 'can_retarget': False},  # should return False when DMAs used
+            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False, 'can_retarget': True},  # should return False when DMAs used
             {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': False},
             {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False, 'can_retarget': True},
         ])
