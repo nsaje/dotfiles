@@ -22,7 +22,7 @@ from django.core.validators import validate_email
 import utils.string_helper
 
 from dash import constants
-from dash import targeting_helper
+from dash import region_targeting_helper
 from dash import views
 import reports.constants
 from reports import budget_helpers
@@ -1523,17 +1523,17 @@ class AdGroupSettings(SettingsBase):
         return dt
 
     def targets_region_type(self, region_type):
-        regions = targeting_helper.get_list_for_region_type(region_type)
+        regions = region_targeting_helper.get_list_for_region_type(region_type)
 
         return any(target_region in regions for target_region in self.target_regions or [])
 
     def get_targets_for_region_type(self, region_type):
-        regions_of_type = targeting_helper.get_list_for_region_type(region_type)
+        regions_of_type = region_targeting_helper.get_list_for_region_type(region_type)
 
         return [target_region for target_region in self.target_regions or [] if target_region in regions_of_type]
 
     def get_target_names_for_region_type(self, region_type):
-        regions_of_type = targeting_helper.get_list_for_region_type(region_type)
+        regions_of_type = region_targeting_helper.get_list_for_region_type(region_type)
 
         return [regions_of_type[target_region] for target_region
                 in self.target_regions or [] if target_region in regions_of_type]

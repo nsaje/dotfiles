@@ -20,7 +20,7 @@ from dash import exc
 from dash import models
 from dash import constants
 from dash import consistency
-from dash import targeting_helper
+from dash import region_targeting_helper
 from dash import views
 from dash import publisher_helpers
 from dash import threads
@@ -356,8 +356,8 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
 def _set_target_region_manual_property_if_needed(ad_group_source, ad_group_settings, request):
     source = ad_group_source.source
     # if we could not select target regions automatically, see if we can select them manually
-    if not targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) and \
-            targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings):
+    if not region_targeting_helper.can_modify_selected_target_regions_automatically(source, ad_group_settings) and \
+            region_targeting_helper.can_modify_selected_target_regions_manually(source, ad_group_settings):
         new_field_value = _get_manual_action_target_regions_value(
                 ad_group_source,
                 None,
@@ -775,7 +775,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 source.update_tracking_codes_on_content_ads()) or
                field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or
                field_name == 'ad_group_name' and source.can_modify_ad_group_name() or
-               field_name == 'target_regions' and targeting_helper.can_modify_selected_target_regions_automatically(
+               field_name == 'target_regions' and region_targeting_helper.can_modify_selected_target_regions_automatically(
                    source, current_settings, new_settings)) and not force_manual_change:
                 new_field_name = field_name
                 if field_name == 'ad_group_name':
@@ -824,7 +824,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     new_field_value = _substitute_tracking_macros(new_field_value, tracking_slug)
 
                 if field_name == 'target_regions':
-                    if not targeting_helper.can_modify_selected_target_regions_manually(source, current_settings, new_settings):
+                    if not region_targeting_helper.can_modify_selected_target_regions_manually(source, current_settings, new_settings):
                         continue
 
                     new_field_value = _get_manual_action_target_regions_value(
