@@ -167,11 +167,6 @@ LOGGING = {
             'level': 'WARNING',
             'propagate': True
         },
-        'qinspect': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
         '': {
             'handlers': ['file', 'console', 'sentry'],
             'level': 'INFO',
