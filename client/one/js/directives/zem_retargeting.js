@@ -38,7 +38,7 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', func
             };
 
             $scope.groupByCampaign = function (adgroup) {
-                return adgroup.campaign_name;
+                return adgroup.campaignName;
             };
 
             $scope.removeSelectedAdgroup = function (adgroup) {

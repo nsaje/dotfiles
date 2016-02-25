@@ -338,6 +338,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             data.lastChange = data.last_change;
             data.dataStatus = data.data_status;
             data.conversionGoals = data.conversion_goals;
+            data.adGroupAutopilotState = data.ad_group_autopilot_state;
 
             data.notifications = convertNotifications(data.notifications);
 
@@ -1454,6 +1455,10 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             $http.get(url, config).
                 success(function (data, status) {
                     if (data && data.data) {
+                        for (var i = 0; i < data.data.length; i++) {
+                            var row = data.data[i];
+                            data.data[i] = convertRow(row);
+                        }
                         deferred.resolve(data.data);
                     }
                 }).
@@ -1463,6 +1468,11 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             return deferred.promise;
         };
+
+        function convertRow (row) {
+            row.campaignName = row.campaign_name;
+            return row;
+        }
     }
 
     function AllAccountsBudget () {

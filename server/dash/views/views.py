@@ -794,12 +794,14 @@ class AccountRetargetableAdgroups(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
         ad_groups = retargeting_helper.filter_retargetable(
-            models.AdGroup.objects.filter(campaign__account=account)
+            ad_groups = models.AdGroup.objects.filter(
+                campaign__account=account
+            ).select_related('campaign')
         )
 
-        ad_group_settings = models.AdGroupSettings.objects.filter(
+        ad_group_settings = models.AdGroupSettings.objects.all().filter(
             ad_group__campaign__account=account
-        ).only('id', 'archived')
+        ).group_current_settings().only('id', 'archived')
         archived_map = {adgs.id: adgs.archived for adgs in ad_group_settings}
 
         response = [
@@ -807,7 +809,6 @@ class AccountRetargetableAdgroups(api_common.BaseApiView):
                 'id': ad_group.id,
                 'name': ad_group.name,
                 'archived': archived_map.get(ad_group.id) or False,
-                'campaign_id': ad_group.campaign.id,
                 'campaign_name': ad_group.campaign.name,
             }
             for ad_group in ad_groups
