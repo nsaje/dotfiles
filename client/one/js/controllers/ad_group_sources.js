@@ -620,6 +620,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             );
         }
 
+        if ($scope.hasPermission('zemauth.aggregate_postclick_engagement')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+            );
+        }
+
         if ($scope.hasPermission('zemauth.conversion_reports')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
                 $scope.chartMetricOptions,
@@ -627,7 +634,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.isPermissionInternal('zemauth.conversion_reports'),
                 true
             );
-
         }
 
         if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
