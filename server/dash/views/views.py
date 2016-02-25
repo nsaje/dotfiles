@@ -45,7 +45,7 @@ import actionlog.zwei_actions
 import actionlog.models
 import actionlog.constants
 
-from dash import models, targeting_helper
+from dash import models, targeting_helper, retargeting_helper
 from dash import constants
 from dash import api
 from dash import forms
@@ -511,7 +511,7 @@ class CampaignAdGroups(api_common.BaseApiView):
         ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group)
         ad_group_source.save(request)
         active_source_state = targeting_helper.can_target_existing_regions(source, ad_group_settings) and\
-            targeting_helper.can_retarget(source, ad_group_settings)
+            retargeting_helper.can_be_retargeted(source, ad_group_settings)
         helpers.set_ad_group_source_settings(request, ad_group_source, source_settings,
                                              mobile_only=ad_group_settings.is_mobile_only(),
                                              active=active_source_state)
@@ -793,8 +793,8 @@ class AccountRetargetableAdgroups(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
-        ad_groups = models.AdGroup.objects.filter(
-            campaign__account=account
+        ad_groups = retargeting_helper.filter_retargetable(
+            models.AdGroup.objects.filter(campaign__account=account)
         )
 
         ad_group_settings = models.AdGroupSettings.objects.filter(
@@ -924,8 +924,8 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'
                                       .format(source.name))
 
-        if not targeting_helper.can_add_source_with_retargeting(source, ad_group_settings) or\
-                not targeting_helper.can_be_retargeted(source, ad_group_settings):
+        if not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings) or\
+                not retargeting_helper.can_be_retargeted(source, ad_group_settings):
             raise exc.ValidationError('{} media source can not be added because it does not support retargeting.'
                                       .format(source.name))
 

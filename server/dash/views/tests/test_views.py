@@ -1565,7 +1565,7 @@ class AdGroupSourcesTest(TestCase):
         self.assertItemsEqual(response_dict['data']['sources'], [
             {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False, 'can_retarget': False},  # should return False when DMAs used
             {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': False},
-            {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False, 'can_retarget': False},
+            {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False, 'can_retarget': True},
         ])
 
     def test_retargeting_support(self):
@@ -2950,11 +2950,19 @@ class AccountRetargetableAdgroupsTest(TestCase):
         response = self._get_retargetable_adgroups(1)
         self.assertTrue(response['success'])
 
+        for adg in models.AdGroup.objects.filter(
+                campaign__account=1
+            ):
+            print adg.id, adg.name
+            for source in adg.sources.all():
+                print '\t* ', source.id
+
         adgroups = response['data']
-        self.assertEqual(4, len(adgroups))
+        self.assertEqual(2, len(adgroups))
+        # one adgroup has no sources and the other one source that supports
+        # retargeting
+        self.assertEqual([9, 10], sorted([adg['id'] for adg in adgroups]))
         self.assertTrue(all([not adgroup['archived'] for adgroup in adgroups]))
-        self.assertTrue(3, len([adg for adg in adgroups if adg['campaign_id'] == 1]))
-        self.assertTrue(1, len([adg for adg in adgroups if adg['campaign_id'] == 2]))
 
 
 class AllAccountsOverviewTest(TestCase):

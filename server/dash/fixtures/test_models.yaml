@@ -103,12 +103,13 @@
 
 -   fields:
         type: 'adblade'
+        available_actions: [20]
     model: dash.sourcetype
     pk: 1
 
 -   fields:
         type: 'bidder'
-        available_actions: [19]
+        available_actions: [19, 20]
     model: dash.sourcetype
     pk: 2
 
@@ -119,6 +120,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
         source_type: 1
+        maintenance: false
     model: dash.source
     pk: 1
 
