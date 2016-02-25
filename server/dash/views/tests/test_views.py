@@ -2922,7 +2922,7 @@ class AccountOverviewTest(TestCase):
 
 
 """
-TODO: Move tset
+TODO: Move test
 class AccountRetargetableAdgroupsTest(TestCase):
     fixtures = ['test_api.yaml']
 
