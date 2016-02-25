@@ -119,7 +119,7 @@ try:
     # Whether to log duplicate queries (default: False)
     QUERY_INSPECT_LOG_QUERIES = True
     # Whether to log queries that are above an absolute limit (default: None - disabled)
-    QUERY_INSPECT_ABSOLUTE_LIMIT = 1000 # in milliseconds
+    QUERY_INSPECT_ABSOLUTE_LIMIT = 1000  # in milliseconds
     # Whether to include tracebacks in the logs (default: False)
     QUERY_INSPECT_LOG_TRACEBACKS = True
 except ImportError:
