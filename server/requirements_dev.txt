@@ -7,4 +7,7 @@ coverage==3.7.1
 # for visualizing project models
 django-extensions==1.3.7
 
+# for detecting slow queries
+django-queryinspect==0.1.0
+
 git+git://github.com/Zemanta/ci-metric-push.git#cipush
