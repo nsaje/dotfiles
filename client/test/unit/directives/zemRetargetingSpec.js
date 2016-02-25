@@ -4,7 +4,8 @@
 describe('zemRetargeting', function () {
     var $scope, element, isolate, zemFilterService;
 
-    var template = '<zem-retargeting zem-selected-adgroup-ids="selectedAdgroupIds" zem-retargetable-adgroups="retargetableAdgroups" zem-account="account"></zem-locations>';
+    var template = '<zem-retargeting zem-selected-adgroup-ids="selectedAdgroupIds" zem-retargetable-adgroups="retargetableAdgroups" zem-account="account"></zem-locations>'; // eslint-disable-line max-len
+
 
     beforeEach(module('one'));
 
