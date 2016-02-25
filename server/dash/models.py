@@ -91,8 +91,17 @@ class PermissionMixin(object):
 
 class QuerySetManager(models.Manager):
 
+    def __init__(self, *args, **kwargs):
+        # defines relations that always need to be included in 'select_related'
+        # whenever a model that defines this is beign retrieved.
+        self.initially_related = kwargs.get('initially_related')
+        super(QuerySetManager, self).__init__(*args, **kwargs)
+
     def get_queryset(self):
-        return self.model.QuerySet(self.model)
+        qs = self.model.QuerySet(self.model)
+        if self.initially_related:
+            qs = qs.select_related(*self._initially_related)
+        return qs
 
 
 class DemoManager(models.Manager):
