@@ -17,6 +17,7 @@ from dash import models
 from dash import api
 from dash import constants
 from dash import validation_helpers
+from dash import retargeting_helper
 import automation.settings
 from reports import redshift
 from utils import api_common
@@ -52,6 +53,7 @@ class AdGroupSettings(api_common.BaseApiView):
             'settings': self.get_dict(settings, ad_group),
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
+            'retargetable_adgroups': self.get_retargetable_adgroups(request, ad_group_id),
         }
         return self.create_api_response(response)
 
@@ -191,6 +193,37 @@ class AdGroupSettings(api_common.BaseApiView):
             'target_devices': settings.target_devices,
             'target_regions': settings.target_regions
         }
+
+    def get_retargetable_adgroups(self, request, ad_group_id):
+        '''
+        Get adgroups that can retarget this adgroup
+        '''
+        if not request.user.has_perm('zemauth.can_view_retargeting_settings'):
+            raise exc.AuthorizationError()
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        account = ad_group.campaign.account
+
+        ad_groups = retargeting_helper.filter_retargetable(
+            ad_groups = models.AdGroup.objects.filter(
+                campaign__account=account
+            ).select_related('campaign')
+        )
+
+        ad_group_settings = models.AdGroupSettings.objects.all().filter(
+            ad_group__campaign__account=account
+        ).group_current_settings().only('id', 'archived')
+        archived_map = {adgs.id: adgs.archived for adgs in ad_group_settings}
+
+        return [
+            {
+                'id': ad_group.id,
+                'name': ad_group.name,
+                'archived': archived_map.get(ad_group.id) or False,
+                'campaign_name': ad_group.campaign.name,
+            }
+            for ad_group in ad_groups
+        ]
 
 
 class AdGroupSettingsState(api_common.BaseApiView):

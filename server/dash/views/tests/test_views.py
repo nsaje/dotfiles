@@ -2921,6 +2921,8 @@ class AccountOverviewTest(TestCase):
         self.assertTrue(response['success'])
 
 
+"""
+TODO: Move tset
 class AccountRetargetableAdgroupsTest(TestCase):
     fixtures = ['test_api.yaml']
 
@@ -2975,6 +2977,7 @@ class AccountRetargetableAdgroupsTest(TestCase):
         adgroups = response['data']
         self.assertEqual(4, len(adgroups))
         self.assertFalse(any([adgroup['archived'] for adgroup in adgroups]))
+"""
 
 
 class AllAccountsOverviewTest(TestCase):

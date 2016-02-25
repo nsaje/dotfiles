@@ -785,37 +785,6 @@ class AccountOverview(api_common.BaseApiView):
         return settings
 
 
-class AccountRetargetableAdgroups(api_common.BaseApiView):
-
-    @statsd_helper.statsd_timer('dash.api', 'account_overview')
-    def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.can_view_retargeting_settings'):
-            raise exc.AuthorizationError()
-
-        account = helpers.get_account(request.user, account_id)
-        ad_groups = retargeting_helper.filter_retargetable(
-            ad_groups = models.AdGroup.objects.filter(
-                campaign__account=account
-            ).select_related('campaign')
-        )
-
-        ad_group_settings = models.AdGroupSettings.objects.all().filter(
-            ad_group__campaign__account=account
-        ).group_current_settings().only('id', 'archived')
-        archived_map = {adgs.id: adgs.archived for adgs in ad_group_settings}
-
-        response = [
-            {
-                'id': ad_group.id,
-                'name': ad_group.name,
-                'archived': archived_map.get(ad_group.id) or False,
-                'campaign_name': ad_group.campaign.name,
-            }
-            for ad_group in ad_groups
-        ]
-        return self.create_api_response(response)
-
-
 class AdGroupState(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_state_get')
