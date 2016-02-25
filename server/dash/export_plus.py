@@ -179,6 +179,7 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date, in
             settings = {s.campaign.id: s for s in settings_qs}
     elif 'account' in dimensions:
         level = 'account'
+
         accounts = set(stat['account'] for stat in stats)
         accounts_qs = models.Account.objects.filter(id__in=accounts)
         data = {a.id: a for a in accounts_qs}
@@ -198,9 +199,9 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date, in
     return data, budgets, projections, flat_fees, statuses, settings
 
 
-def _prefetch_flat_fees(accounts, start_date, end_date):
+def _prefetch_flat_fees(accounts_dict, start_date, end_date):
     account_flat_fees = {}
-    for credit in models.CreditLineItem.objects.filter(account__in=accounts):
+    for credit in models.CreditLineItem.objects.filter(account_id__in=accounts_dict.keys()):
         if not credit.flat_fee_cc:
             continue
         if credit.account_id not in account_flat_fees:
