@@ -806,7 +806,6 @@ class AccountRetargetableAdgroups(api_common.BaseApiView):
                 'id': ad_group.id,
                 'name': ad_group.name,
                 'archived': archived_map.get(ad_group.id) or False,
-                'campaign_id': ad_group.campaign.id,
                 'campaign_name': ad_group.campaign.name,
             }
             for ad_group in ad_groups

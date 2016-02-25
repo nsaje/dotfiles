@@ -2926,8 +2926,21 @@ class AccountRetargetableAdgroupsTest(TestCase):
         adgroups = response['data']
         self.assertEqual(4, len(adgroups))
         self.assertTrue(all([not adgroup['archived'] for adgroup in adgroups]))
-        self.assertTrue(3, len([adg for adg in adgroups if adg['campaign_id'] == 1]))
-        self.assertTrue(1, len([adg for adg in adgroups if adg['campaign_id'] == 2]))
+
+        req = RequestFactory().get('/')
+        req.user = self.user
+        for adgs in models.AdGroup.objects.filter(
+                campaign__account__id=1
+            ):
+            adgs.archived = True
+            adgs.save(req)
+
+        response = self._get_retargetable_adgroups(1)
+        self.assertTrue(response['success'])
+
+        adgroups = response['data']
+        self.assertEqual(4, len(adgroups))
+        self.assertFalse(any([adgroup['archived'] for adgroup in adgroups]))
 
 
 class AllAccountsOverviewTest(TestCase):
