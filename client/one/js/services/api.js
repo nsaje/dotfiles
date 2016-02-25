@@ -1470,8 +1470,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         function convertRow (row) {
             row.campaignName = row.campaign_name;
-            return row
-        };
+            return row;
+        }
     }
 
     function AllAccountsBudget () {

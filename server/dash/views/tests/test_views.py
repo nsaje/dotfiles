@@ -2929,9 +2929,7 @@ class AccountRetargetableAdgroupsTest(TestCase):
 
         req = RequestFactory().get('/')
         req.user = self.user
-        for adgs in models.AdGroup.objects.filter(
-                campaign__account__id=1
-            ):
+        for adgs in models.AdGroup.objects.filter(campaign__account__id=1):
             adgs.archived = True
             adgs.save(req)
 
