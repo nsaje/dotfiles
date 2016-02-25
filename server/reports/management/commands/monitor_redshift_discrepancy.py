@@ -55,8 +55,9 @@ class Command(ExceptionCommand):
             license_fee_nano=Sum('license_fee_nano')
         )
 
-        redshift_sums = redshift.sum_of_stats()
+        rs_sums = redshift.sum_of_stats()
+        rs_sums_with_diffs = redshift.sum_of_stats(with_diffs=True)
 
-        self._post_metrics('reports.contentadstats', cad_stats, redshift_sums)
-        self._post_metrics('reports.contentadstats', cad_post_stats, redshift_sums)
-        self._post_metrics('reports.daily_statements', ds_stats, redshift_sums)
+        self._post_metrics('reports.contentadstats', cad_stats, rs_sums)
+        self._post_metrics('reports.contentadstats', cad_post_stats, rs_sums)
+        self._post_metrics('reports.daily_statements', ds_stats, rs_sums_with_diffs)
