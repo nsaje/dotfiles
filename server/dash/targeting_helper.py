@@ -1,6 +1,5 @@
 from dash import constants
 from dash import regions
-from dash import models
 
 
 def get_list_for_region_type(region_type):
