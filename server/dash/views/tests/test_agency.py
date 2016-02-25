@@ -65,6 +65,19 @@ class AdGroupSettingsTest(TestCase):
                     'target_devices': ['mobile'],
                     'target_regions': ['NC', '501'],
                 },
+                "retargetable_adgroups": [
+                    {
+                        "campaign_name": "test campaign 1",
+                        "archived": False,
+                        "id": 10, "name": "test adgroup 10"
+                    },
+                    {
+                        "campaign_name": "test campaign 1",
+                        "archived": False,
+                        "id": 9,
+                        "name": "test adgroup 9"
+                    }
+                ],
                 'settings': {
                     'adobe_tracking_param': '',
                     'cpc_cc': '',
