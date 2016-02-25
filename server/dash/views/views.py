@@ -864,7 +864,7 @@ class AdGroupSources(api_common.BaseApiView):
                 'name': source.name,
                 'can_target_existing_regions': targeting_helper.can_target_existing_regions(
                         source, ad_group_settings),
-                'can_retarget': targeting_helper.can_retarget(source, ad_group_settings),
+                'can_retarget': source.can_modify_retargeting_automatically(),
             })
 
         sources_waiting = set([ad_group_source.source.name for ad_group_source
@@ -886,7 +886,6 @@ class AdGroupSources(api_common.BaseApiView):
         source_id = json.loads(request.body)['source_id']
         source = models.Source.objects.get(id=source_id)
 
-        from pudb import set_trace; set_trace()
         if models.AdGroupSource.objects.filter(source=source, ad_group=ad_group).exists():
             raise exc.ValidationError(
                 '{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
@@ -895,7 +894,8 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'
                                       .format(source.name))
 
-        if not targeting_helper.can_retarget(source, ad_group_settings):
+        if not targeting_helper.can_add_source_with_retargeting(source, ad_group_settings) or\
+                not targeting_helper.can_be_retargeted(source, ad_group_settings):
             raise exc.ValidationError('{} media source can not be added because it does not support retargeting.'
                                       .format(source.name))
 
