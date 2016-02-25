@@ -535,6 +535,7 @@ class SourcesTable(object):
                     ad_group_sources_settings,
                     sources_states
                 )
+            response['ad_group_autopilot_state'] = level_sources_table.ad_group_settings.autopilot_state
 
         return response
 
