@@ -23,7 +23,7 @@ class DatetimeMock(datetime):
 
     @classmethod
     def utcnow(cls):
-        return datetime(2014, 06, 05, 9, 58, 25)
+        return datetime(2014, 6, 5, 9, 58, 25)
 
 
 class BudgetDepletionTestCase(test.TestCase):
