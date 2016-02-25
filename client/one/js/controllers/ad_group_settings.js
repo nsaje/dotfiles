@@ -13,6 +13,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.saved = null;
     $scope.discarded = null;
     $scope.minEndDate = new Date();
+    $scope.retargetableAdGroups = [];
 
     // isOpen has to be an object property instead
     // of being directly on $scope because
@@ -61,6 +62,17 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
             function (data) {
                 // error
                 return;
+            }
+        ).finally(function () {
+            $scope.loadRequestInProgress = false;
+        });
+    };
+
+    $scope.getRetargetableAdGroups = function () {
+        $scope.loadRequestInProgress = true;
+        api.accountRetargetableAdGroups.get($scope.account.id).then(
+            function (data) {
+                $scope.retargetableAdGroups = data;
             }
         ).finally(function () {
             $scope.loadRequestInProgress = false;
@@ -201,7 +213,12 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         }
     });
 
-    if (!$scope.adGroup.archived) {
-        $scope.getSettings($state.params.id);
-    }
+    var init = function () {
+        if (!$scope.adGroup.archived) {
+            $scope.getSettings($state.params.id);
+            $scope.getRetargetableAdGroups();
+        }
+    };
+
+    init();
 }]);

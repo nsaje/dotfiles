@@ -348,6 +348,11 @@ urlpatterns += patterns(
         login_required(dash.views.views.AccountRestore.as_view()),
     ),
     url(
+        r'^api/accounts/(?P<account_id>\d+)/retargetable-adgroups/',
+        login_required(dash.views.views.AccountRetargetableAdgroups.as_view()),
+        name='account_retargetable_adgroups',
+    ),
+    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/archive/',
         login_required(dash.views.views.CampaignArchive.as_view()),
     ),
