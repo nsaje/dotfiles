@@ -111,7 +111,7 @@ def sum_contentadstats():
 
 
 @statsd_timer('reports.redshift', 'sum_of_stats')
-def sum_of_stats():
+def sum_of_stats(with_diffs=False):
     query = '''SELECT SUM(impressions) as impressions, SUM(visits) as visits,
     SUM(clicks) as clicks,
     SUM(cost_cc) as cost_cc,
@@ -123,8 +123,12 @@ def sum_of_stats():
     SUM(effective_cost_nano) as effective_cost_nano,
     SUM(effective_data_cost_nano) as effective_data_cost_nano,
     SUM(license_fee_nano) as license_fee_nano
-    FROM contentadstats WHERE content_ad_id != %s'''
-    params = [REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
+    FROM contentadstats'''
+
+    params = []
+    if not with_diffs:
+        query += ' WHERE content_ad_id != %s'
+        params.append(REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID)
 
     cursor = get_cursor()
     cursor.execute(query, params)
