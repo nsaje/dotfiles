@@ -131,7 +131,7 @@ def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, accou
     body = textwrap.dedent(u'''\
     Hi account manager of {account}
 
-    Your ad group in campaign {camp} has just been put on Bid CPC and Daily Budgets Optimising Auto-Pilot.
+    Bid CPC and Daily Budgets Optimising Auto-Pilot's settings on Your ad group in campaign {camp} have been changed.
     Auto-Pilot made the following changes:{changes}
     - all Paused Media Sources\' Daily Budgets have been set to minimum values.
 

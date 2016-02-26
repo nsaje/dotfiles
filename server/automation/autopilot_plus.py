@@ -21,7 +21,7 @@ from utils import dates_helper
 logger = logging.getLogger(__name__)
 
 
-def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True, initialization=False):
+def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True, send_mail=False, initialization=False):
     if not ad_groups:
         ad_groups_on_ap, ad_group_settings_on_ap = autopilot_helpers.get_active_ad_groups_on_autopilot()
     else:
@@ -29,7 +29,7 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True, initial
         ad_group_settings_on_ap = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups_on_ap).\
             group_current_settings().select_related('ad_group')
     data = prefetch_autopilot_data(ad_groups_on_ap)
-    email_changes_data = {}
+    changes_data = {}
 
     for adg_settings in ad_group_settings_on_ap:
         adg = adg_settings.ad_group
@@ -44,21 +44,35 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True, initial
             with transaction.atomic():
                 set_autopilot_changes(cpc_changes, budget_changes)
                 persist_autopilot_changes_to_log(cpc_changes, budget_changes, data[adg], adg_settings.autopilot_state)
-            email_changes_data = _get_autopilot_campaign_changes_data(
-                adg, email_changes_data, cpc_changes, budget_changes)
+            changes_data = _get_autopilot_campaign_changes_data(
+                adg, changes_data, cpc_changes, budget_changes)
         except Exception as e:
             _report_autopilot_exception(adg, e)
-
-    autopilot_helpers.send_autopilot_changes_emails(email_changes_data, data, initialization)
-
+    if send_mail:
+        autopilot_helpers.send_autopilot_changes_emails(changes_data, data, initialization)
+    return changes_data
     # TODO Report to statsd.
 
 
-def initialize_budget_autopilot_on_ad_group(ad_group):
-    paused_ad_group_sources = _get_autopilot_active_sources_settings([ad_group], AdGroupSettingsState.INACTIVE)
+def initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False):
+    paused_sources_changes = _set_paused_ad_group_sources_to_minimum_values(ad_group)
+    autopilot_changes_data = run_autopilot(ad_groups=[ad_group.id], adjust_cpcs=False,
+                                           adjust_budgets=True, initialization=True, send_mail=send_mail)
+    changed_sources = set()
+    for source, changes in paused_sources_changes.iteritems():
+        if changes['old_budget'] != changes['new_budget']:
+            changed_sources.add(source)
+    for source, changes in autopilot_changes_data[ad_group.campaign][ad_group].iteritems():
+        if changes['old_budget'] != changes['new_budget']:
+            changed_sources.add(source)
+    return changed_sources
+
+
+def _set_paused_ad_group_sources_to_minimum_values(ad_group):
+    ad_group_sources = _get_autopilot_active_sources_settings([ad_group], AdGroupSettingsState.INACTIVE)
     new_budgets = {}
     data = {}
-    for ag_source_setting in paused_ad_group_sources:
+    for ag_source_setting in ad_group_sources:
         ag_source = ag_source_setting.ad_group_source
         new_budgets[ag_source] = {
             'old_budget': ag_source_setting.daily_budget_cc,
@@ -76,8 +90,8 @@ def initialize_budget_autopilot_on_ad_group(ad_group):
             set_autopilot_changes({}, new_budgets)
             persist_autopilot_changes_to_log({}, new_budgets, data, AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
     except Exception as e:
-        _report_autopilot_exception(ad_group, e)
-    run_autopilot(ad_groups=[ad_group.id], adjust_cpcs=False, adjust_budgets=True, initialization=True)
+        _report_autopilot_exception(ad_group_sources, e)
+    return new_budgets
 
 
 def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, cpc_changes, budget_changes):
@@ -215,18 +229,17 @@ def _get_autopilot_campaigns_goals(ad_groups):
     return goals
 
 
-def _report_autopilot_exception(adg, e):
-    logger.exception(u'Autopilot failed operating on ad group {}-{} because an exception was raised: {}'.format(
-                     adg,
-                     str(adg.id),
+def _report_autopilot_exception(element, e):
+    logger.exception(u'Autopilot failed operating on {} because an exception was raised: {}'.format(
+                     element,
                      traceback.format_exc(e)))
     desc = {
-        'ad_group': adg.id
+        'element': element
     }
     pagerduty_helper.trigger(
         event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
         incident_key='automation_autopilot_error',
-        description=u'Autopilot failed operating on ad group because an exception was raised: {}'.format(
+        description=u'Autopilot failed operating on element because an exception was raised: {}'.format(
             traceback.format_exc(e)),
         details=desc
     )

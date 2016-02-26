@@ -38,6 +38,8 @@ from utils import exc
 from utils import s3helpers
 from utils import email_helper
 
+from automation import autopilot_plus
+
 import actionlog.api
 import actionlog.api_contentads
 import actionlog.sync
@@ -1035,14 +1037,21 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
                                             ad_group=ad_group)
 
+        autopilot_changed_sources_text = ''
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
+                'state' in resource:
+            changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False)
+            autopilot_changed_sources_text = ', '.join([s.source.name for s in changed_sources])
         return self.create_api_response({
             'editable_fields': helpers.get_editable_fields(
                 ad_group_source,
-                ad_group_source.ad_group.get_current_settings(),
+                ad_group_settings,
                 ad_group_source.get_current_settings_or_none(),
                 request.user,
                 allowed_sources,
-            )
+            ),
+            'autopilot_changed_sources': autopilot_changed_sources_text
         })
 
 
