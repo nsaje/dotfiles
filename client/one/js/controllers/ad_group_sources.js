@@ -161,6 +161,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                     newSettings.autopilot_state = autopilotValue;
                 }
                 $scope.loadRequestInProgress = true;
+                $scope.autopilotChanges = '';
                 api.adGroupSourceSettings.save(
                     $state.params.id,
                     sourceId,

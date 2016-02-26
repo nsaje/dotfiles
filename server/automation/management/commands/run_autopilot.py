@@ -12,4 +12,4 @@ class Command(ExceptionCommand):
     def handle(self, *args, **options):
         logger.info('Running Daily Budget adjusting Auto-Pilot.')
 
-        automation.autopilot_plus.run_autopilot()
+        automation.autopilot_plus.run_autopilot(send_mail=True)
