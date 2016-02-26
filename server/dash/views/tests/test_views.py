@@ -1615,33 +1615,6 @@ class AdGroupSourcesTest(TestCase):
             {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False, 'can_retarget': True},
         ])
 
-    def test_retargeting_support(self):
-        """
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password='secret')
-
-        ad_group_source = models.AdGroupSource.objects.get(id=3)
-        ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC
-        ]
-        ad_group_source.source.source_type.save()
-
-        response = self.client.get(
-            reverse(
-                'ad_group_sources',
-                kwargs={'ad_group_id': 2}),
-            follow=True
-        )
-
-        response_dict = json.loads(response.content)
-        self.assertItemsEqual(response_dict['data']['sources'], [
-            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False},  # should return False when DMAs used
-            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
-            {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False},
-        ])
-        """
-
-
     def test_available_sources(self):
         response = self.client.get(
                 reverse('ad_group_sources', kwargs={'ad_group_id': 1}),
@@ -1690,6 +1663,35 @@ class AdGroupSourcesTest(TestCase):
                            in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
         self.assertIn(source, ad_group_sources)
         self.assertIn(source, waiting_sources)
+
+
+    def test_put_with_retargeting(self):
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        request = RequestFactory()
+        request.user = User(id=1)
+
+        current_settings = ad_group.get_current_settings()
+        current_settings.retargeting_ad_groups = [2]
+        current_settings.save(request)
+
+        source = models.Source.objects.get(pk=9)
+        st = source.source_type
+        st.available_actions.remove(constants.SourceAction.CAN_MODIFY_RETARGETING)
+        st.save()
+
+        response = self.client.put(
+                reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
+                data=json.dumps({'source_id': '9'})
+        )
+        self.assertEqual(response.status_code, 400)
+
+        ad_group_sources = ad_group.sources.all()
+        waiting_sources = (ad_group_source.source for ad_group_source
+                           in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
+        self.assertNotIn(source, ad_group_sources)
+        self.assertNotIn(source, waiting_sources)
 
     def test_put_existing_source(self):
         response = self.client.put(
