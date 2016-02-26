@@ -199,7 +199,7 @@ class AdGroupSettings(api_common.BaseApiView):
         Get adgroups that can retarget this adgroup
         '''
         if not request.user.has_perm('zemauth.can_view_retargeting_settings'):
-            raise exc.AuthorizationError()
+            return []
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         account = ad_group.campaign.account
