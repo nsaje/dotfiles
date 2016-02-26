@@ -231,6 +231,7 @@ class CampaignAdGroups(TestCase):
     def setUp(self):
         self.client = Client()
         user = User.objects.get(pk=1)
+        self.user = user
         self.client.login(username=user.email, password='secret')
 
     @patch('utils.redirector_helper.insert_adgroup')
@@ -287,7 +288,6 @@ class CampaignAdGroups(TestCase):
         self.assertIsNotNone(ad_group_settings)
         self.assertEqual(len(actions), 0)
 
-
     @patch('actionlog.api.create_campaign')
     def test_add_media_sources(self, mock_create_campaign):
         ad_group = models.AdGroup.objects.get(pk=2)
@@ -313,6 +313,47 @@ class CampaignAdGroups(TestCase):
                 ad_group_settings.changes_text,
                 'Created settings and automatically created campaigns for 1 sources (AdBlade)'
         )
+
+
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.all().filter(
+            ad_group_source__ad_group=ad_group
+        ).group_current_settings()
+        self.assertTrue(all(
+            [adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings]
+        ))
+
+    @patch('actionlog.api.create_campaign')
+    def test_add_media_sources_with_retargeting(self, mock_create_campaign):
+        ad_group = models.AdGroup.objects.get(pk=2)
+
+        # remove ability to retarget from all sources
+        for source_type in models.SourceType.objects.all():
+            source_type.available_actions = [
+                action for action in source_type.available_actions if action != constants.SourceAction.CAN_MODIFY_RETARGETING
+            ]
+            source_type.save()
+
+        request = RequestFactory()
+        request.user = self.user
+
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_settings.retargeting_ad_groups = 1
+        ad_group_settings.save(request)
+        request = None
+
+        view = views.CampaignAdGroups()
+        actions = view._add_media_sources(ad_group, ad_group_settings, request)
+
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        waiting_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
+        added_source = models.Source.objects.get(pk=1)
+
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.all().filter(
+            ad_group_source__ad_group=ad_group
+        ).group_current_settings()
+        self.assertTrue(all(
+            [adgss.state == constants.AdGroupSourceSettingsState.INACTIVE for adgss in ad_group_source_settings]
+        ))
 
     @patch('dash.views.helpers.set_ad_group_source_settings')
     def test_create_ad_group_source(self, mock_set_ad_group_source_settings):

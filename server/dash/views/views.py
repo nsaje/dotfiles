@@ -474,7 +474,6 @@ class CampaignAdGroups(api_common.BaseApiView):
         sources = ad_group.campaign.account.allowed_sources.all()
         actions = []
         added_sources = []
-
         for source in sources:
             try:
                 source_default_settings = helpers.get_source_default_settings(source)
