@@ -181,16 +181,21 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         var i = 0;
         var monthsCount = 3;
         var formatStr = 'MMMM YYYY';
-        var currentMonth = null;
+        var currentMonthStart = null;
+        var currentMonthEnd = null;
 
         result.Yesterday = [
             zemMoment().subtract('days', 1).startOf('day'),
             zemMoment().subtract('days', 1).endOf('day'),
         ];
         result['Last 30 Days'] = [zemMoment().subtract('days', 30), zemMoment().subtract('days', 1)];
-        currentMonth = zemMoment().startOf('month');
-        result[currentMonth.format(formatStr)] = [currentMonth, zemMoment().subtract('days', 1)];
 
+        currentMonthStart = zemMoment().startOf('month');
+        currentMonthEnd = zemMoment();
+        if (currentMonthEnd.date() > 1) currentMonthEnd.subtract('days', 1);
+        result[currentMonthStart.format(formatStr)] = [currentMonthStart, currentMonthEnd];
+
+        debugger;
         for (i = 0; i < monthsCount; i++) {
             result[zemMoment().subtract('month', i + 1).format(formatStr)] = [
                 zemMoment().subtract('month', i + 1).startOf('month'),
