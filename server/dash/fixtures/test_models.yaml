@@ -183,6 +183,16 @@
     model: dash.adgroup
     pk: 3
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        modified_by: 1
+        campaign: 1
+        name: 'test adgroup 4 on budget autopilot'
+    model: dash.adgroup
+    pk: 4
+
+
 # test adgroupsettings
 
 -   fields:
@@ -221,6 +231,31 @@
     model: dash.adgroupsettings
     pk: 2
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        ad_group: 4
+        state: 1
+        start_date: '2014-06-04'
+        end_date: '2014-06-05'
+        cpc_cc: '1.00'
+        daily_budget_cc: '50.'
+        autopilot_state: 1
+        autopilot_daily_budget: '200.'
+        tracking_code: ''
+        archived: false
+        display_url: 'example.com'
+        brand_name: 'Example'
+        description: 'Example description'
+        call_to_action: 'Call to action'
+        ad_group_name: 'AdGroup name'
+        target_devices: ['mobile']
+        target_regions: ['US']
+        retargeting_ad_groups: [1, 2]
+    model: dash.adgroupsettings
+    pk: 3
+
+
 # test campaignsettings
 
 -   fields:
@@ -256,6 +291,13 @@
     model: dash.adgroupsource
     pk: 2
 
+-   fields:
+        source: 1
+        ad_group: 4
+        source_campaign_key: '["fake"]'
+    model: dash.adgroupsource
+    pk: 3
+
 # test adgroupsourcesettings
 
 -   fields:
@@ -267,3 +309,11 @@
     model: dash.adgroupsourcesettings
     pk: 1
 
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        ad_group_source: 3
+        cpc_cc: '0.12'
+        daily_budget_cc: '50.'
+        state: 1
+    model: dash.adgroupsourcesettings
+    pk: 2
