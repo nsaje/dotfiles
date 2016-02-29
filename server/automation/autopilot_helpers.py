@@ -52,6 +52,14 @@ def update_ad_group_source_values(ad_group_source, changes):
     settings_writer.set(changes, None)
 
 
+def get_ad_group_sources_minimum_cpc(ad_group_source):
+    return max(autopilot_settings.AUTOPILOT_MIN_CPC, ad_group_source.source.source_type.min_cpc)
+
+
+def get_ad_group_sources_minimum_daily_budget(ad_group_source):
+    return max(autopilot_settings.MIN_SOURCE_BUDGET, ad_group_source.source.source_type.min_daily_budget)
+
+
 def send_autopilot_changes_emails(email_changes_data, data, initialization):
     for camp, changes_data in email_changes_data.iteritems():
         if initialization:
