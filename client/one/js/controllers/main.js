@@ -185,24 +185,25 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         var currentMonthEnd = null;
 
         result.Yesterday = [
-            zemMoment().subtract('days', 1).startOf('day'),
-            zemMoment().subtract('days', 1).endOf('day'),
+            zemMoment().subtract(1, 'days').startOf('day'),
+            zemMoment().subtract(1, 'days').endOf('day'),
         ];
-        result['Last 30 Days'] = [zemMoment().subtract('days', 30), zemMoment().subtract('days', 1)];
+
+        result['Last 30 Days'] = [zemMoment().subtract(30, 'days'), zemMoment().subtract(1, 'days')];
 
         currentMonthStart = zemMoment().startOf('month');
         currentMonthEnd = zemMoment();
-        if (currentMonthEnd.date() > 1) currentMonthEnd.subtract('days', 1);
+        if (currentMonthEnd.date() > 1) currentMonthEnd.subtract(1, 'days');
         result[currentMonthStart.format(formatStr)] = [currentMonthStart, currentMonthEnd];
 
         for (i = 0; i < monthsCount; i++) {
-            result[zemMoment().subtract('month', i + 1).format(formatStr)] = [
-                zemMoment().subtract('month', i + 1).startOf('month'),
-                zemMoment().subtract('month', i + 1).endOf('month'),
+            result[zemMoment().subtract(i + 1, 'month').format(formatStr)] = [
+                zemMoment().subtract(i + 1, 'month').startOf('month'),
+                zemMoment().subtract(i + 1, 'month').endOf('month'),
             ];
         }
 
-        result['Year to date'] = [zemMoment().startOf('year'), zemMoment().subtract('days', 1)];
+        result['Year to date'] = [zemMoment().startOf('year'), zemMoment().subtract(1, 'days')];
 
         return result;
     };
@@ -227,8 +228,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.dateRange = {
-        startDate: zemMoment().subtract('day', 29).hours(0).minutes(0).seconds(0).milliseconds(0),
-        endDate: zemMoment().subtract('day', 1).endOf('day'),
+        startDate: zemMoment().subtract(29, 'day').hours(0).minutes(0).seconds(0).milliseconds(0),
+        endDate: zemMoment().subtract(1, 'day').endOf('day'),
     };
 
     $scope.setDateRangeFromSearch();
