@@ -52,8 +52,7 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
                 adg, changes_data, cpc_changes, budget_changes)
         except Exception as e:
             _report_autopilot_exception(adg, e)
-    if send_mail:
-        autopilot_helpers.send_autopilot_changes_emails(changes_data, data, initialization)
+    autopilot_helpers.send_autopilot_changes_emails(changes_data, data, initialization, send=send_mail)
     if report_to_statsd:
         _report_adgroups_data_to_statsd(ad_group_settings_on_ap)
         _report_new_budgets_on_ap_to_statsd(ad_group_settings_on_ap)
@@ -82,13 +81,16 @@ def _set_paused_ad_group_sources_to_minimum_values(ad_group):
     for ag_source_setting in ad_group_sources:
         ag_source = ag_source_setting.ad_group_source
         new_budgets[ag_source] = {
-            'old_budget': ag_source_setting.daily_budget_cc,
-            'new_budget': autopilot_helpers.get_ad_group_sources_minimum_cpc(ag_source),
+            'old_budget': ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else
+            autopilot_helpers.get_ad_group_sources_minimum_cpc(ag_source),
+            'new_budget': autopilot_helpers.get_ad_group_sources_minimum_daily_budget(ag_source),
             'budget_comments': [automation.constants.DailyBudgetChangeComment.INITIALIZE_PILOT_PAUSED_SOURCE]
         }
         data[ag_source] = {
-            'old_cpc_cc': ag_source_setting.cpc_cc,
-            'old_budget': ag_source_setting.daily_budget_cc,
+            'old_cpc_cc': ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else
+            autopilot_helpers.get_ad_group_sources_minimum_cpc(ag_source),
+            'old_budget': ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else
+            autopilot_helpers.get_ad_group_sources_minimum_daily_budget(ag_source),
             'yesterdays_spend_cc': None,
             'yesterdays_clicks': None
         }
@@ -159,21 +161,27 @@ def prefetch_autopilot_data(ad_groups):
             ag_source, days_ago_data, yesterday_data)
         if adg not in data:
             data[adg] = {}
-        data[adg][ag_source] = {}
-        spend_perc = yesterdays_spend_cc / max(source_setting.daily_budget_cc, autopilot_settings.MIN_SOURCE_BUDGET)
-        data[adg][ag_source]['spend_perc'] = spend_perc if spend_perc else Decimal('0')
-        data[adg][ag_source]['yesterdays_spend_cc'] = yesterdays_spend_cc
-        data[adg][ag_source]['yesterdays_clicks'] = yesterdays_clicks
-        data[adg][ag_source]['old_budget'] = source_setting.daily_budget_cc if source_setting.daily_budget_cc else\
-            autopilot_helpers.get_ad_group_sources_minimum_daily_budget(ag_source)
-        data[adg][ag_source]['old_cpc_cc'] = source_setting.cpc_cc if source_setting.cpc_cc else\
-            autopilot_helpers.get_ad_group_sources_minimum_cpc(ag_source)
+        data[adg][ag_source] = _populate_prefetch_adgroup_source_data(ag_source, source_setting,
+                                                                      yesterdays_spend_cc, yesterdays_clicks)
         for col in columns:
             if col == 'spend_perc':
                 continue
             data[adg][ag_source][col] = autopilot_settings.GOALS_WORST_VALUE.get(col)
             if col in row and row[col]:
                 data[adg][ag_source][col] = row[col]
+    return data
+
+
+def _populate_prefetch_adgroup_source_data(ag_source, ag_source_setting, yesterdays_spend_cc, yesterdays_clicks):
+    data = {}
+    spend_perc = yesterdays_spend_cc / max(ag_source_setting.daily_budget_cc, autopilot_settings.MIN_SOURCE_BUDGET)
+    data['spend_perc'] = spend_perc if spend_perc else Decimal('0')
+    data['yesterdays_spend_cc'] = yesterdays_spend_cc
+    data['yesterdays_clicks'] = yesterdays_clicks
+    data['old_budget'] = ag_source_setting.daily_budget_cc if ag_source_setting.daily_budget_cc else\
+        autopilot_helpers.get_ad_group_sources_minimum_daily_budget(ag_source)
+    data['old_cpc_cc'] = ag_source_setting.cpc_cc if ag_source_setting.cpc_cc else\
+        autopilot_helpers.get_ad_group_sources_minimum_cpc(ag_source)
     return data
 
 

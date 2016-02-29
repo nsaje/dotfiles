@@ -60,7 +60,9 @@ def get_ad_group_sources_minimum_daily_budget(ad_group_source):
     return max(autopilot_settings.MIN_SOURCE_BUDGET, ad_group_source.source.source_type.min_daily_budget)
 
 
-def send_autopilot_changes_emails(email_changes_data, data, initialization):
+def send_autopilot_changes_emails(email_changes_data, data, initialization, send=True):
+    if not send:
+        return
     for camp, changes_data in email_changes_data.iteritems():
         if initialization:
             send_budget_autopilot_initialisation_email(
