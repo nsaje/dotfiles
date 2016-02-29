@@ -48,15 +48,15 @@ INSTALLED_APPS = (
     'automation',
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
-)
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
 
 ROOT_URLCONF = 'server.urls'
 
@@ -107,6 +107,24 @@ DEFAULT_FROM_EMAIL = ''
 MAILGUN_API_KEY = ''
 
 DEMO_USERS = tuple()
+
+try:
+    import qinspect
+    MIDDLEWARE_CLASSES.append('qinspect.middleware.QueryInspectMiddleware'),
+    # Query inspector settings, https://github.com/dobarkod/django-queryinspect
+    # Whether the Query Inspector should do anything (default: False)
+    QUERY_INSPECT_ENABLED = True
+    # Whether to log the stats via Django logging (default: True)
+    QUERY_INSPECT_LOG_STATS = True
+    # Whether to log duplicate queries (default: False)
+    QUERY_INSPECT_LOG_QUERIES = True
+    # Whether to log queries that are above an absolute limit (default: None - disabled)
+    QUERY_INSPECT_ABSOLUTE_LIMIT = 1000  # in milliseconds
+    # Whether to include tracebacks in the logs (default: False)
+    QUERY_INSPECT_LOG_TRACEBACKS = True
+except ImportError:
+    pass
+
 
 from celeryconfig import *
 from localsettings import *
@@ -166,6 +184,11 @@ LOGGING = {
             'handlers': ['file', 'console'],
             'level': 'WARNING',
             'propagate': True
+        },
+        'qinspect': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
         },
         '': {
             'handlers': ['file', 'console', 'sentry'],

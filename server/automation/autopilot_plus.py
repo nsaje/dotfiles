@@ -114,7 +114,7 @@ def persist_autopilot_changes_to_log(cpc_changes, budget_changes, data, autopilo
         ).save()
 
 
-def set_autopilot_changes(cpc_changes=None, budget_changes=None):
+def set_autopilot_changes(cpc_changes={}, budget_changes={}):
     for ag_source in set(cpc_changes.keys() + budget_changes.keys()):
         changes = {}
         if cpc_changes and cpc_changes[ag_source]['old_cpc_cc'] != cpc_changes[ag_source]['new_cpc_cc']:
