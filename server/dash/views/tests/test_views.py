@@ -224,6 +224,28 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
+    def test_adgroup_on_budget_autopilot_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap):
+        self._set_ad_group_end_date(days_delta=3)
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '4', 'source_id': '1'}),
+            data=json.dumps({'state': '2'})
+        )
+        mock_budget_ap.assert_called_with(models.AdGroup.objects.get(id=4), send_mail=False)
+        self.assertEqual(response.status_code, 200)
+
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
+    def test_adgroup_not_on_budget_autopilot_not_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap):
+        self._set_ad_group_end_date(days_delta=3)
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'state': '2'})
+        )
+        self.assertEqual(mock_budget_ap.called, False)
+        self.assertEqual(response.status_code, 200)
+
 
 class CampaignAdGroups(TestCase):
     fixtures = ['test_models.yaml', 'test_views.yaml']

@@ -18,6 +18,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.sourcesWaiting = null;
     $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.localStoragePrefix = 'adGroupSources';
+    $scope.autopilotChanges = '';
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
@@ -159,6 +160,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 if (autopilotValue) {
                     newSettings.autopilot_state = autopilotValue;
                 }
+                $scope.loadRequestInProgress = true;
+                $scope.autopilotChanges = '';
                 api.adGroupSourceSettings.save(
                     $state.params.id,
                     sourceId,
@@ -170,10 +173,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                                 row.editable_fields = data.editable_fields;
                             }
                         });
+                        $scope.autopilotChanges = data.autopilot_changed_sources;
                         $scope.pollSourcesTableUpdates();
 
                         // reload ad group to update its status
                         zemNavigationService.reloadAdGroup($state.params.id);
+                        $scope.loadRequestInProgress = false;
                     }
                 );
             },

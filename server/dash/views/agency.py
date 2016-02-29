@@ -93,7 +93,7 @@ class AdGroupSettings(api_common.BaseApiView):
             helpers.log_useraction_if_necessary(request, user_action_type, ad_group=ad_group)
             if 'autopilot_daily_budget' in changes or 'autopilot_state' in changes and \
                     changes['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-                automation.autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group=ad_group)
+                autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group=ad_group, send_mail=True)
 
         response = {
             'settings': self.get_dict(new_settings, ad_group),

@@ -107,7 +107,6 @@
   model: dash.adgroup
   pk: 3
 
-
 - fields:
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
