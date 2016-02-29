@@ -179,6 +179,7 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date, in
             settings = {s.campaign.id: s for s in settings_qs}
     elif 'account' in dimensions:
         level = 'account'
+
         accounts = set(stat['account'] for stat in stats)
         accounts_qs = models.Account.objects.filter(id__in=accounts)
         data = {a.id: a for a in accounts_qs}
@@ -187,7 +188,7 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date, in
                 .filter(account__in=accounts) \
                 .group_current_settings() \
                 .select_related('default_account_manager', 'default_sales_representative')
-            settings = {s.account.id: s for s in settings_qs}
+            settings = {s.account_id: s for s in settings_qs}
         flat_fees = _prefetch_flat_fees(data, start_date, end_date)
         if include_projections:
             projections = bcm_helpers.get_projections(data.values(), start_date, end_date)
@@ -198,9 +199,9 @@ def _prefetch_rows_data(dimensions, constraints, stats, start_date, end_date, in
     return data, budgets, projections, flat_fees, statuses, settings
 
 
-def _prefetch_flat_fees(accounts, start_date, end_date):
+def _prefetch_flat_fees(accounts_dict, start_date, end_date):
     account_flat_fees = {}
-    for credit in models.CreditLineItem.objects.filter(account__in=accounts):
+    for credit in models.CreditLineItem.objects.filter(account_id__in=accounts_dict.keys()):
         if not credit.flat_fee_cc:
             continue
         if credit.account_id not in account_flat_fees:
@@ -266,7 +267,9 @@ def _prefetch_statuses(entities, level, by_source, sources=None):
         ad_group__in=ad_groups).group_current_settings()
 
     ad_group_sources_settings = models.AdGroupSourceSettings.objects.filter(
-        ad_group_source__ad_group__in=ad_groups).filter_by_sources(sources).group_current_settings()
+        ad_group_source__ad_group__in=ad_groups).filter_by_sources(sources)\
+                                                .group_current_settings()\
+                                                .select_related('ad_group_source')
 
     return helpers.get_ad_group_state_by_sources_running_status(
         ad_groups, ad_groups_settings, ad_group_sources_settings, constraints)

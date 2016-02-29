@@ -120,29 +120,41 @@ class DemoManager(models.Manager):
 
 class FootprintModel(models.Model):
 
+    # Fields that are foreign keys only need to be compared by key
+    # and not by value. With this dict we define which are foreign
+    # keys that don't need to be monitored by value.
+    FOREIGN_KEYS_FIELDS = {}
+
     def __init__(self, *args, **kwargs):
         super(FootprintModel, self).__init__(*args, **kwargs)
         if not self.pk:
             return
         self._footprint()
 
+    def _get_value_fieldname(self, fieldname):
+        if fieldname in self.FOREIGN_KEYS_FIELDS:
+            return self.FOREIGN_KEYS_FIELDS[fieldname]
+        return fieldname
+
     def has_changed(self, field=None):
         if not self.pk:
             return False
         if field:
-            return self._orig[field] != getattr(self, field)
+            return self._orig[field] != getattr(self, self._get_value_fieldname(field))
         for f in self._meta.fields:
-            if self._orig[f.name] != getattr(self, f.name):
+            if self._orig[f.name] != getattr(self, self._get_value_fieldname(f.name)):
                 return True
         return False
 
     def previous_value(self, field):
+        if field in self.FOREIGN_KEYS_FIELDS:
+            raise Exception("Previous value not stored as an object")
         return self.pk and self._orig[field]
 
     def _footprint(self):
         self._orig = {}
         for f in self._meta.fields:
-            self._orig[f.name] = getattr(self, f.name)
+            self._orig[f.name] = getattr(self, self._get_value_fieldname(f.name))
 
     def save(self, *args, **kwargs):
         super(FootprintModel, self).save(*args, **kwargs)
@@ -2183,6 +2195,11 @@ class CreditLineItem(FootprintModel):
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
 
+    FOREIGN_KEYS_FIELDS = {
+        'account': 'account_id',
+        'created_by': 'created_by_id',
+    }
+
     objects = QuerySetManager()
 
     def is_active(self, date=None):
@@ -2375,6 +2392,12 @@ class BudgetLineItem(FootprintModel):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
+
+    FOREIGN_KEYS_FIELDS = {
+        'campaign': 'campaign_id',
+        'credit': 'credit_id',
+        'created_by': 'created_by_id',
+    }
 
     objects = QuerySetManager()
 
@@ -2777,3 +2800,6 @@ class GAAnalyticsAccount(models.Model):
     account = models.ForeignKey(Account, null=False, blank=False, on_delete=models.PROTECT)
     ga_account_id = models.CharField(max_length=127, blank=False, null=False)
     ga_web_property_id = models.CharField(max_length=127, blank=False, null=False)
+
+    def __unicode__(self):
+        return self.account.name

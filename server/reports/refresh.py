@@ -441,19 +441,21 @@ def refresh_contentadstats_diff(date, campaign):
         metric_keys = ('impressions', 'clicks', 'cost_cc', 'data_cost_cc',
                        'visits', 'new_visits', 'bounced_visits', 'pageviews', 'total_time_on_site')
 
-        if all(row[key] == 0 for key in metric_keys):
-            continue
-
         missing_keys = set(key for key in metric_keys if row[key] < 0)
         if missing_keys:
-            logger.error(
-                'ad group stats data missing. skipping it in refreshing diffs. '
+            logger.warning(
+                'some ad group stats data missing. skipping those metrics in refreshing diffs. '
                 'ad group id: %s source id: %s date: %s keys: %s',
                 ag_stats.ad_group.id,
                 ag_stats.source.id,
                 date,
                 missing_keys
             )
+
+            for key in missing_keys:
+                row[key] = 0
+
+        if all(row[key] == 0 for key in metric_keys):
             continue
 
         for key in metric_keys:

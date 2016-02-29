@@ -1443,6 +1443,37 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
     }
 
+    function AccountRetargetableAdGroups () {
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/accounts/' + id + '/retargetable-adgroups/';
+            var config = {
+                params: {}
+            };
+
+            $http.get(url, config).
+                success(function (data, status) {
+                    if (data && data.data) {
+                        for (var i = 0; i < data.data.length; i++) {
+                            var row = data.data[i];
+                            data.data[i] = convertRow(row);
+                        }
+                        deferred.resolve(data.data);
+                    }
+                }).
+                error(function (data, status, headers, config) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+
+        function convertRow (row) {
+            row.campaignName = row.campaign_name;
+            return row;
+        }
+    }
+
     function AllAccountsBudget () {
         this.get = function () {
             var deferred = $q.defer();
@@ -3071,6 +3102,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         accountCampaigns: new AccountCampaigns(),
         accountCampaignsTable: new AccountCampaignsTable(),
         accountOverview: new AccountOverview(),
+        accountRetargetableAdGroups: new AccountRetargetableAdGroups(),
         scheduledReports: new ScheduledReports(),
         accountSync: new AccountSync(),
         accountArchive: new AccountArchive(),

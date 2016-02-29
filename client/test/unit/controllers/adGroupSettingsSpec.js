@@ -1,15 +1,35 @@
 'use strict';
 
 describe('AdGroupSettingsCtrlSpec', function () {
-    var $scope;
+    var api, $scope;
 
     beforeEach(module('one'));
 
     beforeEach(inject(function ($rootScope, $controller, _$timeout_, $state) {
         $scope = $rootScope.$new();
         $scope.adGroup = {archived: false};
+        $scope.account = {id: 1};
 
-        $controller('AdGroupSettingsCtrl', {$scope: $scope});
+        var mockApiFunc = function () {
+            return {
+                then: function () {
+                    return {
+                        finally: function () {},
+                    };
+                },
+            };
+        };
+
+        api = {
+            accountRetargetableAdGroups: {
+                get: mockApiFunc
+            },
+            adGroupSettings: {
+                get: mockApiFunc
+            },
+        };
+
+        $controller('AdGroupSettingsCtrl', {$scope: $scope, api: api});
     }));
 
     describe('isDefaultTargetRegions', function () {
