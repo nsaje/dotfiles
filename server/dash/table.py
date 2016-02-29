@@ -660,7 +660,8 @@ class SourcesTable(object):
 
             helpers.copy_stats_to_row(source_data, row)
 
-            bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None]
+            bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None and
+                              s.state == constants.AdGroupSourceSettingsState.ACTIVE]
 
             if ad_group_level:
                 ad_group_source = None
@@ -712,9 +713,12 @@ class SourcesTable(object):
                 if source_settings is not None:
                     row['autopilot_state'] = source_settings.autopilot_state
 
-            elif len(bid_cpc_values) > 0:
-                row['min_bid_cpc'] = float(min(bid_cpc_values))
-                row['max_bid_cpc'] = float(max(bid_cpc_values))
+            else:
+                row['min_bid_cpc'] = None
+                row['max_bid_cpc'] = None
+                if len(bid_cpc_values) > 0:
+                    row['min_bid_cpc'] = float(min(bid_cpc_values))
+                    row['max_bid_cpc'] = float(max(bid_cpc_values))
 
             # add conversion fields
             for field, val in source_data.iteritems():
