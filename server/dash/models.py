@@ -2800,3 +2800,6 @@ class GAAnalyticsAccount(models.Model):
     account = models.ForeignKey(Account, null=False, blank=False, on_delete=models.PROTECT)
     ga_account_id = models.CharField(max_length=127, blank=False, null=False)
     ga_web_property_id = models.CharField(max_length=127, blank=False, null=False)
+
+    def __unicode__(self):
+        return self.account.name
