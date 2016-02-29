@@ -660,10 +660,8 @@ class SourcesTable(object):
 
             helpers.copy_stats_to_row(source_data, row)
 
-            bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None and
-                              s.state == constants.AdGroupSourceSettingsState.ACTIVE]
-
             if ad_group_level:
+                bid_cpc_value = states[0].cpc_cc if len(states) == 1 else None
                 ad_group_source = None
                 for item in ad_group_sources:
                     if item.source.id == source.id:
@@ -696,7 +694,7 @@ class SourcesTable(object):
                    and source_settings.cpc_cc is not None:
                     row['bid_cpc'] = source_settings.cpc_cc
                 else:
-                    row['bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
+                    row['bid_cpc'] = bid_cpc_value
 
                 if user.has_perm('zemauth.set_ad_group_source_settings') \
                    and 'daily_budget' in row['editable_fields'] \
@@ -707,13 +705,15 @@ class SourcesTable(object):
                     row['daily_budget'] = states[0].daily_budget_cc if len(states) else None
 
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
-                    row['current_bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
+                    row['current_bid_cpc'] = bid_cpc_value
                     row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
 
                 if source_settings is not None:
                     row['autopilot_state'] = source_settings.autopilot_state
 
             else:
+                bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None and
+                                  s.state == constants.AdGroupSourceSettingsState.ACTIVE]
                 row['min_bid_cpc'] = None
                 row['max_bid_cpc'] = None
                 if len(bid_cpc_values) > 0:
