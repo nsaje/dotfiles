@@ -58,7 +58,6 @@ class AdGroupSettingsTest(TestCase):
             follow=True
         )
 
-        groups = json.loads(response.content)['data']['retargetable_adgroups']
         self.assertDictEqual(json.loads(response.content), {
             'data': {
                 'action_is_waiting': False,
