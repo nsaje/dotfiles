@@ -10,14 +10,13 @@ from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
 from actionlog import zwei_actions
-from automation import autopilot_budgets, autopilot_plus
+from automation import autopilot_budgets
 from dash.views import helpers
 from dash import forms
 from dash import models
 from dash import api
 from dash import constants
 from dash import validation_helpers
-from dash import retargeting_helper
 import automation.settings
 from reports import redshift
 from utils import api_common
@@ -204,11 +203,9 @@ class AdGroupSettings(api_common.BaseApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         account = ad_group.campaign.account
 
-        ad_groups = retargeting_helper.filter_retargetable(
-            ad_groups = models.AdGroup.objects.filter(
-                campaign__account=account
-            ).select_related('campaign')
-        )
+        ad_groups = ad_groups = models.AdGroup.objects.filter(
+            campaign__account=account
+        ).select_related('campaign').order_by('id')
 
         ad_group_settings = models.AdGroupSettings.objects.all().filter(
             ad_group__campaign__account=account
@@ -217,12 +214,12 @@ class AdGroupSettings(api_common.BaseApiView):
 
         return [
             {
-                'id': ad_group.id,
-                'name': ad_group.name,
-                'archived': archived_map.get(ad_group.id) or False,
-                'campaign_name': ad_group.campaign.name,
+                'id': adg.id,
+                'name': adg.name,
+                'archived': archived_map.get(adg.id) or False,
+                'campaign_name': adg.campaign.name,
             }
-            for ad_group in ad_groups
+            for adg in ad_groups
         ]
 
 

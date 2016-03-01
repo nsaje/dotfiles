@@ -58,7 +58,8 @@ class AdGroupSettingsTest(TestCase):
             follow=True
         )
 
-        self.assertEqual(json.loads(response.content), {
+        groups = json.loads(response.content)['data']['retargetable_adgroups']
+        self.assertDictEqual(json.loads(response.content), {
             'data': {
                 'action_is_waiting': False,
                 'default_settings': {
@@ -69,14 +70,24 @@ class AdGroupSettingsTest(TestCase):
                     {
                         "campaign_name": "test campaign 1",
                         "archived": False,
-                        "id": 10, "name": "test adgroup 10"
+                        "id": 1, "name": "test adgroup 1"
+                    },
+                    {
+                        "campaign_name": "test campaign 2",
+                        "archived": False,
+                        "id": 2, "name": "test adgroup 2"
                     },
                     {
                         "campaign_name": "test campaign 1",
                         "archived": False,
                         "id": 9,
                         "name": "test adgroup 9"
-                    }
+                    },
+                    {
+                        "campaign_name": "test campaign 1",
+                        "archived": False,
+                        "id": 10, "name": "test adgroup 10"
+                    },
                 ],
                 'settings': {
                     'adobe_tracking_param': '',
@@ -531,10 +542,8 @@ class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
         self.assertTrue(response['success'])
 
         adgroups = response['data']['retargetable_adgroups']
-        self.assertEqual(2, len(adgroups))
-        # one adgroup has no sources and the other one source that supports
-        # retargeting
-        self.assertEqual([9, 10], sorted([adg['id'] for adg in adgroups]))
+        self.assertEqual(4, len(adgroups))
+        self.assertEqual([1, 2, 9, 10], sorted([adg['id'] for adg in adgroups]))
         self.assertTrue(all([not adgroup['archived'] for adgroup in adgroups]))
 
         req = RequestFactory().get('/')
@@ -547,7 +556,7 @@ class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
         self.assertTrue(response['success'])
 
         adgroups = response['data']['retargetable_adgroups']
-        self.assertEqual(2, len(adgroups))
+        self.assertEqual(4, len(adgroups))
         self.assertFalse(any([adgroup['archived'] for adgroup in adgroups]))
 
 
