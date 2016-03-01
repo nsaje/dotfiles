@@ -29,7 +29,7 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
     else:
         ad_groups_on_ap = dash.models.AdGroup.objects.filter(id__in=ad_groups)
         ad_group_settings_on_ap = dash.models.AdGroupSettings.objects.filter(ad_group__in=ad_groups_on_ap).\
-            group_current_settings().select_related('ad_group')
+            group_current_settings().select_related('ad_group__campaign__account')
     data = prefetch_autopilot_data(ad_groups_on_ap)
     if not data:
         return {}
