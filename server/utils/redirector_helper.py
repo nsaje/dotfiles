@@ -41,7 +41,7 @@ def update_redirect(url, redirect_id):
     try:
         data = json.dumps({'url': url})
 
-        _call_api_retry(settings.R1_REDIRECTS_API_URL + redirect_id + '/', data, method='PUT')
+        return _call_api_retry(settings.R1_REDIRECTS_API_URL + redirect_id + '/', data, method='PUT')
     except Exception as e:
         logger.exception('Exception in update_redirect')
         raise e

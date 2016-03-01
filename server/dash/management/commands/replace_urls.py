@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
-    """Replaces URLs for a given ad group.
+    help = """Replaces URLs for a given ad group.
 
     Takes an id of the ad group and a .csv file of the following format:
 
@@ -67,7 +67,7 @@ class Command(ExceptionCommand):
             if content_ad.url not in mapping:
                 continue
 
-            content_ad.url = mapping[content_ad.url]
-            content_ad.save()
+            redirect = update_redirect(content_ad.url, content_ad.redirect_id)
 
-            update_redirect(content_ad.url, content_ad.redirect_id)
+            content_ad.url = redirect["redirect"]["url"]
+            content_ad.save()
