@@ -31,7 +31,7 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, goa
 
         # Train bandit
         for s in active_sources_with_spend:
-            for i in range(50):
+            for i in range(5):
                 bandit.add_result(s, predict_outcome_success(s, data[s], goal))
 
         # Redistribute budgets
@@ -41,10 +41,9 @@ def get_autopilot_daily_budget_recommendations(ad_group, daily_budget, data, goa
             if not s:
                 break
             new_budgets[s] += Decimal(1)
+            bandit.add_result(s, predict_outcome_success(s, data[s], goal, new_budget=new_budgets[s]))
             if new_budgets[s] >= s.source.source_type.max_daily_budget:
                 bandit.remove_source(s)
-            elif new_budgets[s] >= max_budgets[s]:
-                bandit.temporarily_ban_source(s)
 
     if sum(new_budgets.values()) != daily_budget:
         logger.warning('Budget Auto-Pilot tried assigning wrong ammount of total daily budgets - Expected: ' +
@@ -111,10 +110,11 @@ def _get_minimum_autopilot_budget_constraints(active_sources):
     return max_budgets, min_budgets
 
 
-def predict_outcome_success(source, data, goal):
+def predict_outcome_success(source, data, goal, new_budget=None):
     # Only 'Volume (% spend) and Bounce Rate' is supported atm, other goals will be supported eventually
     if goal == 'bounce_and_spend':
-        spend_perc = data.get('spend_perc')
+        spend_perc = data.get('spend_perc') if not new_budget else\
+            data.get('yesterdays_spend_cc') / max(new_budget, autopilot_settings.MIN_SOURCE_BUDGET)
         bounce_rate = data.get('bounce_rate')
         pos_bounce_rate = (100 - bounce_rate) / 100
         prob_success = min(float(spend_perc * autopilot_settings.GOALS_COLUMNS.get(goal).get('spend_perc')),
