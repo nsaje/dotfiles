@@ -17,7 +17,6 @@ def supports_retargeting(ad_group):
     '''
     Return true if all active sources on adgroup support retargeting
     '''
-
     latest_adgroup_source_settings = dash.models.AdGroupSourceSettings.objects.all().filter(
         ad_group_source__ad_group=ad_group
     ).group_current_settings().select_related(

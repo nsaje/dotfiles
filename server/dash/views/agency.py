@@ -76,7 +76,7 @@ class AdGroupSettings(api_common.BaseApiView):
         self.set_ad_group(ad_group, form.cleaned_data)
 
         new_settings = current_settings.copy_settings()
-        self.set_settings(new_settings, form.cleaned_data, request.user)
+        self.set_settings(ad_group, new_settings, form.cleaned_data, request.user)
 
         # update ad group name
         current_settings.ad_group_name = previous_ad_group_name
@@ -140,7 +140,7 @@ class AdGroupSettings(api_common.BaseApiView):
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
 
-    def set_settings(self, settings, resource, user):
+    def set_settings(self, ad_group, settings, resource, user):
         settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
@@ -165,7 +165,8 @@ class AdGroupSettings(api_common.BaseApiView):
             if resource['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
                 settings.autopilot_daily_budget = resource['autopilot_daily_budget']
 
-        if user.has_perm('zemauth.can_view_retargeting_settings'):
+        if user.has_perm('zemauth.can_view_retargeting_settings') and\
+                retargeting_helper.supports_retargeting(ad_group):
             settings.retargeting_ad_groups = resource['retargeting_ad_groups']
 
     def _send_update_actions(self, ad_group, current_settings, new_settings, request):

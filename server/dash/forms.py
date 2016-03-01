@@ -129,17 +129,17 @@ class AdGroupSettingsForm(forms.Form):
         return state
 
     def clean_retargeting_ad_groups(self):
-        supports_retargeting, unsupported_sources = retargeting_helper.supports_retargeting(self.ad_group)
-        if not supports_retargeting:
-            raise forms.ValidationError(
-                [
-                    "You have some active media sources that don't support retargeting. "
-                    "To start using it please disable/pause these media sources:",
-                    [s.name for s in unsupported_sources],
-                ]
-            )
-
         ad_groups = self.cleaned_data.get('retargeting_ad_groups')
+        if len(ad_groups) > 0:
+            supports_retargeting, unsupported_sources = retargeting_helper.supports_retargeting(self.ad_group)
+            if not supports_retargeting:
+                raise forms.ValidationError(
+                    [
+                        "You have some active media sources that don't support retargeting. "
+                        "To start using it please disable/pause these media sources:",
+                        [s.name for s in unsupported_sources],
+                    ]
+                )
         return [ag.id for ag in ad_groups]
 
     def clean_end_date(self):
