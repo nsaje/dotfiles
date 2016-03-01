@@ -20,8 +20,9 @@ def supports_retargeting(ad_group):
 
     latest_adgroup_source_settings = dash.models.AdGroupSourceSettings.objects.all().filter(
         ad_group_source__ad_group=ad_group
-    ).group_current_settings().select_related('ad_group_source')
-
+    ).group_current_settings().select_related(
+        'ad_group_source'
+    )
 
     unsupported_sources = []
     for adgroup_source_setting in latest_adgroup_source_settings:
@@ -29,4 +30,5 @@ def supports_retargeting(ad_group):
             continue
         if not adgroup_source_setting.ad_group_source.source.can_modify_retargeting_automatically():
             unsupported_sources.append(adgroup_source_setting.ad_group_source.source)
-    return unsupported_sources == [], unsupported_sources
+
+    return unsupported_sources == [], sorted(unsupported_sources, key=lambda s: s.name)
