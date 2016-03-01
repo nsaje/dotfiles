@@ -24,6 +24,7 @@ class Command(ExceptionCommand):
     If any content ad URL in given ad group matches any of the old URLs,
     it will be replaced with the new URL.
     """
+
     def add_arguments(self, parser):
         parser.add_argument('ad_group_id', nargs=1, type=int)
         parser.add_argument('csv_file', nargs=1, type=argparse.FileType('r'))
