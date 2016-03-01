@@ -194,8 +194,8 @@ def _populate_prefetch_adgroup_source_data(ag_source, ag_source_setting, yesterd
 
 def _get_autopilot_active_sources_settings(ad_groups, ad_group_setting_state=AdGroupSettingsState.ACTIVE):
     ag_sources = dash.views.helpers.get_active_ad_group_sources(dash.models.AdGroup, ad_groups)
-    ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(
-        ad_group_source_id__in=ag_sources).group_current_settings().select_related('ad_group_source__source')
+    ag_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source_id__in=ag_sources).\
+        group_current_settings().select_related('ad_group_source__source__source_type')
     if ad_group_setting_state:
         return [ag_source_setting for ag_source_setting in ag_sources_settings if
                 ag_source_setting.state == ad_group_setting_state]
@@ -278,17 +278,17 @@ def _report_adgroups_data_to_statsd(ad_groups_settings):
     yesterday = dates_helper.local_today() - datetime.timedelta(days=1)
     yesterday_data = reports.api_contentads.query(yesterday, yesterday, breakdown=['ad_group'],
                                                   ad_group=[ags.ad_group for ags in ad_groups_settings])
-    for s in ad_groups_settings:
+    for ad_group_setting in ad_groups_settings:
         yesterday_spend = Decimal('0')
-        for r in yesterday_data:
-            if r['ad_group'] == s.ad_group.id:
-                yesterday_spend = Decimal(r.get('billing_cost'))
+        for row in yesterday_data:
+            if row['ad_group'] == ad_group_setting.ad_group.id:
+                yesterday_spend = Decimal(row.get('billing_cost'))
                 break
-        if s.autopilot_state == AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+        if ad_group_setting.autopilot_state == AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             num_on_budget_ap += 1
-            total_budget_on_budget_ap += s.autopilot_daily_budget
+            total_budget_on_budget_ap += ad_group_setting.autopilot_daily_budget
             yesterday_spend_on_budget_ap += yesterday_spend
-        elif s.autopilot_state == AdGroupSettingsAutopilotState.ACTIVE_CPC:
+        elif ad_group_setting.autopilot_state == AdGroupSettingsAutopilotState.ACTIVE_CPC:
             num_on_cpc_ap += 1
             yesterday_spend_on_cpc_ap += yesterday_spend
     statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_budget_autopilot', num_on_budget_ap)
