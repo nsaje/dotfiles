@@ -17,6 +17,7 @@ from dash import models
 from dash import api
 from dash import constants
 from dash import validation_helpers
+from dash import retargeting_helper
 import automation.settings
 from reports import redshift
 from utils import api_common
