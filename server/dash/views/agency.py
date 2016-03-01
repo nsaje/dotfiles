@@ -10,7 +10,7 @@ from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
 from actionlog import zwei_actions
-from automation import autopilot_budgets
+from automation import autopilot_budgets, autopilot_plus
 from dash.views import helpers
 from dash import forms
 from dash import models
