@@ -37,13 +37,8 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
 
     for adg_settings in ad_group_settings_on_ap:
         adg = adg_settings.ad_group
-        budget_changes = {}
-        cpc_changes = {}
-        if adjust_budgets and adg_settings.autopilot_state == AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-            budget_changes = autopilot_budgets.\
-                get_autopilot_daily_budget_recommendations(adg, adg_settings.autopilot_daily_budget, data[adg])
-        if adjust_cpcs:
-            cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(adg, data[adg], budget_changes=budget_changes)
+        cpc_changes, budget_changes = _get_autopilot_predictions(
+            adjust_budgets, adjust_cpcs, adg, adg_settings, data[adg])
         try:
             with transaction.atomic():
                 set_autopilot_changes(cpc_changes, budget_changes)
@@ -52,11 +47,23 @@ def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
                 adg, changes_data, cpc_changes, budget_changes)
         except Exception as e:
             _report_autopilot_exception(adg, e)
-    autopilot_helpers.send_autopilot_changes_emails(changes_data, data, initialization, send=send_mail)
+    if send_mail:
+        autopilot_helpers.send_autopilot_changes_emails(changes_data, data, initialization)
     if report_to_statsd:
         _report_adgroups_data_to_statsd(ad_group_settings_on_ap)
         _report_new_budgets_on_ap_to_statsd(ad_group_settings_on_ap)
     return changes_data
+
+
+def _get_autopilot_predictions(adjust_budgets, adjust_cpcs, adgroup, adgroup_settings, data):
+    budget_changes = {}
+    cpc_changes = {}
+    if adjust_budgets and adgroup_settings.autopilot_state == AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+        budget_changes = autopilot_budgets.\
+            get_autopilot_daily_budget_recommendations(adgroup, adgroup_settings.autopilot_daily_budget, data)
+    if adjust_cpcs:
+        cpc_changes = autopilot_cpc.get_autopilot_cpc_recommendations(adgroup, data, budget_changes=budget_changes)
+    return cpc_changes, budget_changes
 
 
 def initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False):
