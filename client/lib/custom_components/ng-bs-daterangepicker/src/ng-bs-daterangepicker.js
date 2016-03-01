@@ -35,10 +35,10 @@
                 options.minDate = $attributes.minDate && moment($attributes.minDate);
                 options.maxDate = $attributes.maxDate && moment($attributes.maxDate);
                 options.dateLimit = $attributes.limit && moment.duration.apply(
-                    this, $attributes.limit.split(' ').map(
-                        function (elem, index) {
-                            return (index === 0 && parseInt(elem, 10)) || elem; 
-                        })
+                        this, $attributes.limit.split(' ').map(
+                            function (elem, index) {
+                                return (index === 0 && parseInt(elem, 10)) || elem;
+                            })
                     );
                 options.ranges = $attributes.ranges && $parse($attributes.ranges)($scope);
                 options.applyClass = 'btn-primary';
@@ -87,6 +87,7 @@
                 $attributes.$observe('ranges', function(newValue, oldValue) {
                     if (newValue) {
                         options.ranges = $attributes.ranges && $parse($attributes.ranges)($scope);
+                        angular.forEach(options.ranges, function(value, key){ options.ranges[key] = [moment(value[0]), moment(value[1])]});
                         $element.data('daterangepicker').setOptions(options, dateRangeChanged);
                     }
                 });
@@ -116,3 +117,4 @@
         };
     }]);
 }(angular));
+
