@@ -1,5 +1,6 @@
 from decimal import Decimal
 from mock import patch
+import mock
 
 from django import test
 
@@ -151,3 +152,45 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertTrue(paused_ad_group_source in changed_sources)
         self.assertTrue(changed_source in changed_sources)
         self.assertTrue(not_changed_source not in changed_sources)
+
+    @patch('reports.api_contentads.query')
+    @patch('utils.statsd_helper.statsd_gauge')
+    def test_report_adgroups_data_to_statsd(self, mock_statsd, mock_query):
+        mock_query.return_value = [
+            {'ad_group': 1, 'billing_cost': Decimal('15')},
+            {'ad_group': 3, 'billing_cost': Decimal('10')},
+            {'ad_group': 4, 'billing_cost': Decimal('20')}]
+
+        adgroups = dash.models.AdGroup.objects.filter(id__in=[1, 2, 3, 4])
+        autopilot_plus._report_adgroups_data_to_statsd([adg.get_current_settings() for adg in adgroups])
+
+        mock_statsd.assert_has_calls(
+            [
+                mock.call('automation.autopilot_plus.adgroups_on_budget_autopilot', 2),
+                mock.call('automation.autopilot_plus.adgroups_on_cpc_autopilot', 1),
+                mock.call('automation.autopilot_plus.adgroups_on_budget_autopilot_expected_budget', Decimal('50')),
+                mock.call('automation.autopilot_plus.adgroups_on_budget_autopilot_yesterday_spend', Decimal('35')),
+                mock.call('automation.autopilot_plus.adgroups_on_cpc_autopilot_yesterday_spend', Decimal('10'))
+            ]
+        )
+
+    @patch('reports.api_contentads.query')
+    @patch('utils.statsd_helper.statsd_gauge')
+    def test_report_new_budgets_on_ap_to_statsd(self, mock_statsd, mock_query):
+        mock_query.return_value = [
+            {'ad_group': 1, 'billing_cost': Decimal('15')},
+            {'ad_group': 3, 'billing_cost': Decimal('10')},
+            {'ad_group': 4, 'billing_cost': Decimal('20')}]
+
+        adgroups = dash.models.AdGroup.objects.filter(id__in=[1, 3, 4])
+        autopilot_plus._report_new_budgets_on_ap_to_statsd([adg.get_current_settings() for adg in adgroups])
+
+        mock_statsd.assert_has_calls(
+            [
+                mock.call('automation.autopilot_plus.adgroups_on_budget_autopilot_actual_budget', Decimal('210')),
+                mock.call('automation.autopilot_plus.adgroups_on_cpc_autopilot_actual_budget', Decimal('50')),
+                mock.call('automation.autopilot_plus.adgroups_on_all_autopilot_actual_budget', Decimal('260')),
+                mock.call('automation.autopilot_plus.num_sources_on_cpc_ap', 1),
+                mock.call('automation.autopilot_plus.num_sources_on_budget_ap', 4)
+            ]
+        )

@@ -6,7 +6,7 @@ from random import betavariate, random
 
 import dash
 import dash.views.helpers
-from automation import autopilot_settings
+from automation import autopilot_settings, autopilot_helpers
 from automation.constants import DailyBudgetChangeComment
 
 logger = logging.getLogger(__name__)
@@ -105,7 +105,7 @@ def _get_minimum_autopilot_budget_constraints(active_sources):
     max_budgets = {}
     min_budgets = {}
     for source in active_sources:
-        min_budgets[source] = max(autopilot_settings.MIN_SOURCE_BUDGET, source.source.source_type.min_daily_budget)
+        min_budgets[source] = autopilot_helpers.get_ad_group_sources_minimum_daily_budget(source)
         max_budgets[source] = (min_budgets[source] * autopilot_settings.MAX_BUDGET_GAIN).\
             to_integral_exact(rounding=ROUND_CEILING)
     return max_budgets, min_budgets
