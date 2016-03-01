@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
-    help = "Daily Budgets Auto-Pilot rearranges daily budgets of all active media sources in participating ad groups."
+    help = "Auto-Pilot rearranges daily budgets and bid CPCs of all active media sources in participating ad groups."
 
     @statsd_timer('automation.autopilot_plus', 'run_autopilot_job')
     def handle(self, *args, **options):
