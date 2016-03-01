@@ -195,7 +195,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if (currentMonthEnd.date() > 1) currentMonthEnd.subtract('days', 1);
         result[currentMonthStart.format(formatStr)] = [currentMonthStart, currentMonthEnd];
 
-        debugger;
         for (i = 0; i < monthsCount; i++) {
             result[zemMoment().subtract('month', i + 1).format(formatStr)] = [
                 zemMoment().subtract('month', i + 1).startOf('month'),
