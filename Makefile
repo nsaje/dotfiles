@@ -1,21 +1,30 @@
-run:
+run:	## runs whole stack with docker-compose
 	docker-compose up --force-recreate -d
 
-stop:
+stop:	## stops the whole stack
 	docker-compose stop
 
-kill:
+kill:	## kills the whole stack
 	docker-compose kill
 
-remove:
+remove: ## removes all containers belonging to the stack
 	docker-compose rm
 
 # image management
-build:
+build:	## rebuilds a zemanta/z1 docker image
 	docker pull python:2.7
 	docker build -t zemanta/z1 .
-push:
+push:	## pushes zemanta/z1 docker image to DockerHub
 	docker push zemanta/z1
 
-update: build push
+update: build push ## helper combining build & push
+
+
+#### Support for help/self-documenting feature
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: help
+
+.DEFAULT_GOAL := help
 

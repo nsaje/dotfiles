@@ -471,6 +471,12 @@ a:visited {
         font-size: 12px;
         font-color: #414141;
     }
+
+    &.alert-success {
+        background-color: #f0f9e5;
+        border: 1px solid #c0e68f;
+        font-size: 12px;
+    }
 }
 
 .popover {
@@ -849,6 +855,8 @@ div[datepicker] {
     table-layout: fixed;
     width: 100%;
     height: 34px;
+    height: 34px;
+    line-height: 38px;
 }
 
 .infobox-body {
@@ -885,11 +893,6 @@ div[datepicker] {
     text-align: right;
     width: 50px;
     vertical-align: middle;
-}
-
-.infobox-header-wo-subtitle {
-    height: 34px;
-    line-height: 38px;
 }
 
 .infobox-title {
@@ -938,11 +941,6 @@ div[datepicker] {
     margin-bottom: 0;
     position: absolute;
     top: 2px;
-}
-
-.infobox-subtitle {
-    color: @infobox-black;
-    font-size: 13px;
 }
 
 .infobox-setting {
@@ -2054,6 +2052,10 @@ div[datepicker] {
 
 .page {
     .alert-sync {
+        margin-bottom: 10px;
+    }
+
+    .alert-auto-pilot-changes {
         margin-bottom: 10px;
     }
 

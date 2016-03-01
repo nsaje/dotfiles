@@ -107,7 +107,6 @@
   model: dash.adgroup
   pk: 3
 
-
 - fields:
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
@@ -126,6 +125,7 @@
     state: 1
     cpc_cc: 100.00
     autopilot_state: 1
+    autopilot_daily_budget: 10
   model: dash.adgroupsettings
   pk: 1
 
@@ -135,6 +135,7 @@
     created_by: 1
     state: 2
     autopilot_state: 2
+    autopilot_daily_budget: 20
   model: dash.adgroupsettings
   pk: 2
 
@@ -144,6 +145,7 @@
     created_by: 1
     state: 1
     autopilot_state: 3
+    autopilot_daily_budget: 30
   model: dash.adgroupsettings
   pk: 3
 
@@ -153,6 +155,7 @@
     created_by: 1
     state: 1
     autopilot_state: 1
+    autopilot_daily_budget: 40
   model: dash.adgroupsettings
   pk: 4
 

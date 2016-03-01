@@ -13,7 +13,6 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', func
         controller: ['$scope', function ($scope) {
             $scope.config = config;
             $scope.selected = {adgroup: undefined};
-            $scope.selectedAdgroupIds = [];
 
             $scope.selectedAdgroups = function () {
                 var result = [];
@@ -26,6 +25,10 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', func
             };
 
             $scope.availableAdgroups = function () {
+                if (!$scope.retargetableAdgroups) {
+                    return [];
+                }
+
                 var adgroups = $scope.retargetableAdgroups.filter(function (adgroup) {
                     return !adgroup.archived || zemFilterService.isArchivedFilterOn();
                 }).filter(function (adgroup) {

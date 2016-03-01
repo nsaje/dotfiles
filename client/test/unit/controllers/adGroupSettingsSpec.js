@@ -21,9 +21,6 @@ describe('AdGroupSettingsCtrlSpec', function () {
         };
 
         api = {
-            accountRetargetableAdGroups: {
-                get: mockApiFunc
-            },
             adGroupSettings: {
                 get: mockApiFunc
             },

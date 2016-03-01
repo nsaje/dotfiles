@@ -1058,6 +1058,7 @@ class SourceAction(ConstantBase):
     CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL = 17
     CAN_FETCH_REPORT_BY_PUBLISHER = 18
     CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC = 19
+    CAN_MODIFY_RETARGETING = 20
 
     _VALUES = {
         CAN_UPDATE_STATE: 'Can update state',
@@ -1079,6 +1080,7 @@ class SourceAction(ConstantBase):
         CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL: 'Can modify ad group IAB category manually',
         CAN_FETCH_REPORT_BY_PUBLISHER: 'Can fetch report by publishers',
         CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC: 'Can modify publisher blacklist',
+        CAN_MODIFY_RETARGETING: 'Can modify retargeting settings',
     }
 
 

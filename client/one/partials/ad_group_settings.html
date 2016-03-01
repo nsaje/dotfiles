@@ -126,7 +126,7 @@
                 </label>
 
                 <div class="col-xs-6 col-md-4">
-                    <zem-retargeting zem-selected-adgroup-ids="settings.retargetingAdGroups" zem-retargetable-adgroups="retargetableAdGroups" zem-account="account" class="ui-select-bigdrop" ng-disabled="!retargetableAdGroups || retargetableAdGroups.length > 1"></zem-retargeting>
+                    <zem-retargeting zem-selected-adgroup-ids="settings.retargetingAdGroups" zem-retargetable-adgroups="retargetableAdGroups" zem-account="account" class="ui-select-bigdrop"></zem-retargeting>
                 </div>
 
                 <label ng-repeat="error in errors.retargetingIds" class="control-label error">{{ error }}</label>
@@ -221,7 +221,6 @@
                 <div class="col-xs-10">
                     Auto-Pilot will optimize for <b>Bounce Rate</b>.<br/>
                     Minimum Total Daily Budget to run Daily Budget Automation Auto-Pilot on this Ad Group is <b>${{settings.autopilotMinBudget}}</b>.<br/>
-                    If You wish to change optimization objective please change Primary Campaign Goal in Campaign Settings.
                 </div>
             </div>
         </div>
