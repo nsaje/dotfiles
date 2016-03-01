@@ -56,23 +56,13 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.defaultSettings = data.defaultSettings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
+                $scope.retargetableAdGroups = data.retargetableAdGroups;
                 freshSettings.resolve(data.settings.name == 'New ad group');
                 goToContentAds = data.settings.name == 'New ad group';
             },
             function (data) {
                 // error
                 return;
-            }
-        ).finally(function () {
-            $scope.loadRequestInProgress = false;
-        });
-    };
-
-    $scope.getRetargetableAdGroups = function () {
-        $scope.loadRequestInProgress = true;
-        api.accountRetargetableAdGroups.get($scope.account.id).then(
-            function (data) {
-                $scope.retargetableAdGroups = data;
             }
         ).finally(function () {
             $scope.loadRequestInProgress = false;
@@ -216,7 +206,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     var init = function () {
         if (!$scope.adGroup.archived) {
             $scope.getSettings($state.params.id);
-            $scope.getRetargetableAdGroups();
         }
     };
 

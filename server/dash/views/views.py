@@ -47,7 +47,7 @@ import actionlog.zwei_actions
 import actionlog.models
 import actionlog.constants
 
-from dash import models, region_targeting_helper
+from dash import models, region_targeting_helper, retargeting_helper
 from dash import constants
 from dash import api
 from dash import forms
@@ -476,7 +476,6 @@ class CampaignAdGroups(api_common.BaseApiView):
         sources = ad_group.campaign.account.allowed_sources.all()
         actions = []
         added_sources = []
-
         for source in sources:
             try:
                 source_default_settings = helpers.get_source_default_settings(source)
@@ -512,7 +511,8 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group)
         ad_group_source.save(request)
-        active_source_state = region_targeting_helper.can_target_existing_regions(source, ad_group_settings)
+        active_source_state = region_targeting_helper.can_target_existing_regions(source, ad_group_settings) and\
+            retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
         helpers.set_ad_group_source_settings(request, ad_group_source, source_settings,
                                              mobile_only=ad_group_settings.is_mobile_only(),
                                              active=active_source_state)
@@ -786,35 +786,6 @@ class AccountOverview(api_common.BaseApiView):
         return settings
 
 
-class AccountRetargetableAdgroups(api_common.BaseApiView):
-
-    @statsd_helper.statsd_timer('dash.api', 'account_overview')
-    def get(self, request, account_id):
-        if not request.user.has_perm('zemauth.can_view_retargeting_settings'):
-            raise exc.AuthorizationError()
-
-        account = helpers.get_account(request.user, account_id)
-        ad_groups = models.AdGroup.objects.filter(
-            campaign__account=account
-        ).select_related('campaign')
-
-        ad_group_settings = models.AdGroupSettings.objects.all().filter(
-            ad_group__campaign__account=account
-        ).group_current_settings().only('id', 'archived')
-        archived_map = {adgs.id: adgs.archived for adgs in ad_group_settings}
-
-        response = [
-            {
-                'id': ad_group.id,
-                'name': ad_group.name,
-                'archived': archived_map.get(ad_group.id) or False,
-                'campaign_name': ad_group.campaign.name,
-            }
-            for ad_group in ad_groups
-        ]
-        return self.create_api_response(response)
-
-
 class AdGroupState(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_state_get')
@@ -893,7 +864,8 @@ class AdGroupSources(api_common.BaseApiView):
                 'id': source.id,
                 'name': source.name,
                 'can_target_existing_regions': region_targeting_helper.can_target_existing_regions(
-                        source, ad_group_settings)
+                        source, ad_group_settings),
+                'can_retarget': source.can_modify_retargeting_automatically(),
             })
 
         sources_waiting = set([ad_group_source.source.name for ad_group_source
@@ -910,6 +882,7 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group_settings = ad_group.get_current_settings()
 
         source_id = json.loads(request.body)['source_id']
         source = models.Source.objects.get(id=source_id)
@@ -918,8 +891,12 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.ValidationError(
                 '{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
 
-        if not region_targeting_helper.can_target_existing_regions(source, ad_group.get_current_settings()):
+        if not region_targeting_helper.can_target_existing_regions(source, ad_group_settings):
             raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'
+                                      .format(source.name))
+
+        if not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
+            raise exc.ValidationError('{} media source can not be added because it does not support retargeting.'
                                       .format(source.name))
 
         default_settings = helpers.get_source_default_settings(source)

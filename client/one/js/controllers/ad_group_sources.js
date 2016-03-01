@@ -821,12 +821,20 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 var sources = [];
                 for (var source, i = 0; i < data.sources.length; i++) {
                     source = data.sources[i];
+
+                    var notificationMsg;
+                    if (!source.canTargetExistingRegions) {
+                        notificationMsg = source.name + ' doesn\'t support DMA targeting. Turn off DMA targeting to add ' + source.name + '.';
+                    }
+                    if (!source.canRetarget) {
+                        notificationMsg = (notificationMsg ? notificationMsg + ' ' : '') + source.name + ' doesn\'t support retargeting. Turn off retargeting to add ' + source.name + '.';
+                    }
                     sources.push({
                         name: source.name,
                         value: source.id,
                         hasPermission: true,
                         disabled: !source.canTargetExistingRegions,
-                        notification: (!source.canTargetExistingRegions ? source.name + ' doesn\'t support DMA targeting. Turn off DMA targeting to add ' + source.name + '.' : undefined)
+                        notification: notificationMsg,
                     });
                 }
 

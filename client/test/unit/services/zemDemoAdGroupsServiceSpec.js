@@ -12,7 +12,7 @@ describe('zemDemoAdGroupsService', function () {
         cache = _zemDemoCacheService_;
     }));
 
-    it('ad group managament', function () {
+    it('ad group management', function () {
         var newAdGroup = {ad_group: 1, name: 'New demo ad group'},
             existingAdGroup = {ad_group: 2, name: 'Demo ad group'},
             table = defaults.emptyTable();

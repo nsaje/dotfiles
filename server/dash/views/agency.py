@@ -10,7 +10,7 @@ from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
 from actionlog import zwei_actions
-from automation import autopilot_budgets, autopilot_plus
+from automation import autopilot_budgets
 from dash.views import helpers
 from dash import forms
 from dash import models
@@ -52,6 +52,7 @@ class AdGroupSettings(api_common.BaseApiView):
             'settings': self.get_dict(settings, ad_group),
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
+            'retargetable_adgroups': self.get_retargetable_adgroups(request, ad_group_id),
         }
         return self.create_api_response(response)
 
@@ -191,6 +192,35 @@ class AdGroupSettings(api_common.BaseApiView):
             'target_devices': settings.target_devices,
             'target_regions': settings.target_regions
         }
+
+    def get_retargetable_adgroups(self, request, ad_group_id):
+        '''
+        Get adgroups that can retarget this adgroup
+        '''
+        if not request.user.has_perm('zemauth.can_view_retargeting_settings'):
+            return []
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        account = ad_group.campaign.account
+
+        ad_groups = ad_groups = models.AdGroup.objects.filter(
+            campaign__account=account
+        ).select_related('campaign').order_by('id')
+
+        ad_group_settings = models.AdGroupSettings.objects.all().filter(
+            ad_group__campaign__account=account
+        ).group_current_settings().only('id', 'archived')
+        archived_map = {adgs.id: adgs.archived for adgs in ad_group_settings}
+
+        return [
+            {
+                'id': adg.id,
+                'name': adg.name,
+                'archived': archived_map.get(adg.id) or False,
+                'campaign_name': adg.campaign.name,
+            }
+            for adg in ad_groups
+        ]
 
 
 class AdGroupSettingsState(api_common.BaseApiView):

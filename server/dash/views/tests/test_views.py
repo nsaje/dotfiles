@@ -253,6 +253,7 @@ class CampaignAdGroups(TestCase):
     def setUp(self):
         self.client = Client()
         user = User.objects.get(pk=1)
+        self.user = user
         self.client.login(username=user.email, password='secret')
 
     @patch('utils.redirector_helper.insert_adgroup')
@@ -309,7 +310,6 @@ class CampaignAdGroups(TestCase):
         self.assertIsNotNone(ad_group_settings)
         self.assertEqual(len(actions), 0)
 
-
     @patch('actionlog.api.create_campaign')
     def test_add_media_sources(self, mock_create_campaign):
         ad_group = models.AdGroup.objects.get(pk=2)
@@ -336,8 +336,55 @@ class CampaignAdGroups(TestCase):
                 'Created settings and automatically created campaigns for 1 sources (AdBlade)'
         )
 
+
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.all().filter(
+            ad_group_source__ad_group=ad_group
+        ).group_current_settings()
+        self.assertTrue(all(
+            [adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings]
+        ))
+
+    @patch('actionlog.api.create_campaign')
+    def test_add_media_sources_with_retargeting(self, mock_create_campaign):
+        ad_group = models.AdGroup.objects.get(pk=2)
+
+        # remove ability to retarget from all sources
+        for source_type in models.SourceType.objects.all():
+            source_type.available_actions = [
+                action for action in source_type.available_actions if action != constants.SourceAction.CAN_MODIFY_RETARGETING
+            ]
+            source_type.save()
+
+        request = RequestFactory()
+        request.user = self.user
+
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_settings.retargeting_ad_groups = 1
+        ad_group_settings.save(request)
+        request = None
+
+        view = views.CampaignAdGroups()
+        actions = view._add_media_sources(ad_group, ad_group_settings, request)
+
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        waiting_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
+        added_source = models.Source.objects.get(pk=1)
+
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.all().filter(
+            ad_group_source__ad_group=ad_group
+        ).group_current_settings()
+        self.assertTrue(all(
+            [adgss.state == constants.AdGroupSourceSettingsState.INACTIVE for adgss in ad_group_source_settings]
+        ))
+
     @patch('dash.views.helpers.set_ad_group_source_settings')
     def test_create_ad_group_source(self, mock_set_ad_group_source_settings):
+        # adblade must not be in maintenance for this particular test
+        # so it supports retargeting - which is checked on adgroupsourc creation
+        adblade = models.Source.objects.filter(name__icontains='adblade').first()
+        adblade.maintenance = False
+        adblade.save()
+
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         source_settings = models.DefaultSourceSettings.objects.get(pk=1)
         request = None
@@ -1585,9 +1632,9 @@ class AdGroupSourcesTest(TestCase):
 
         response_dict = json.loads(response.content)
         self.assertItemsEqual(response_dict['data']['sources'], [
-            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False},  # should return False when DMAs used
-            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
-            {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False},
+            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False, 'can_retarget': True},  # should return False when DMAs used
+            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': False},
+            {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False, 'can_retarget': True},
         ])
 
     def test_available_sources(self):
@@ -1638,6 +1685,35 @@ class AdGroupSourcesTest(TestCase):
                            in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
         self.assertIn(source, ad_group_sources)
         self.assertIn(source, waiting_sources)
+
+
+    def test_put_with_retargeting(self):
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        request = RequestFactory()
+        request.user = User(id=1)
+
+        current_settings = ad_group.get_current_settings()
+        current_settings.retargeting_ad_groups = [2]
+        current_settings.save(request)
+
+        source = models.Source.objects.get(pk=9)
+        st = source.source_type
+        st.available_actions.remove(constants.SourceAction.CAN_MODIFY_RETARGETING)
+        st.save()
+
+        response = self.client.put(
+                reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
+                data=json.dumps({'source_id': '9'})
+        )
+        self.assertEqual(response.status_code, 400)
+
+        ad_group_sources = ad_group.sources.all()
+        waiting_sources = (ad_group_source.source for ad_group_source
+                           in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
+        self.assertNotIn(source, ad_group_sources)
+        self.assertNotIn(source, waiting_sources)
 
     def test_put_existing_source(self):
         response = self.client.put(
@@ -2908,59 +2984,6 @@ class AccountOverviewTest(TestCase):
         pf_setting = self._get_setting(settings, 'platform fee')
         self.assertEqual('20.00%', pf_setting['value'])
         self.assertTrue(response['success'])
-
-
-class AccountRetargetableAdgroupsTest(TestCase):
-    fixtures = ['test_api.yaml']
-
-    def setUp(self):
-        self.client = Client()
-        redshift.STATS_DB_NAME = 'default'
-        self.user = zemauth.models.User.objects.get(pk=2)
-
-    def _permissions(self, user):
-        permission = Permission.objects.get(codename='can_view_retargeting_settings')
-        user.user_permissions.add(permission)
-        user.save()
-
-    def _get_retargetable_adgroups(self, account_id, user_id=2, with_status=False):
-        user = User.objects.get(pk=user_id)
-        self.client.login(username=user.username, password='secret')
-        reversed_url = reverse(
-                'account_retargetable_adgroups',
-                kwargs={'account_id': account_id})
-        response = self.client.get(
-            reversed_url,
-            follow=True
-        )
-        return json.loads(response.content)
-
-    def test_permission(self):
-        response = self._get_retargetable_adgroups(1)
-        self.assertEqual('AuthorizationError', response['data']['error_code'])
-
-    def test_essential(self):
-        self._permissions(self.user)
-
-        response = self._get_retargetable_adgroups(1)
-        self.assertTrue(response['success'])
-
-        adgroups = response['data']
-        self.assertEqual(4, len(adgroups))
-        self.assertTrue(all([not adgroup['archived'] for adgroup in adgroups]))
-
-        req = RequestFactory().get('/')
-        req.user = self.user
-        for adgs in models.AdGroup.objects.filter(campaign__account__id=1):
-            adgs.archived = True
-            adgs.save(req)
-
-        response = self._get_retargetable_adgroups(1)
-        self.assertTrue(response['success'])
-
-        adgroups = response['data']
-        self.assertEqual(4, len(adgroups))
-        self.assertFalse(any([adgroup['archived'] for adgroup in adgroups]))
 
 
 class AllAccountsOverviewTest(TestCase):
