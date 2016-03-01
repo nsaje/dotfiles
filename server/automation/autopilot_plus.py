@@ -298,6 +298,8 @@ def _report_new_budgets_on_ap_to_statsd(ad_group_settings):
     total_budget_on_budget_ap = Decimal(0.0)
     total_budget_on_cpc_ap = Decimal(0.0)
     total_budget_on_all_ap = Decimal(0.0)
+    num_sources_on_budget_ap = 0
+    num_sources_on_cpc_ap = 0
     ad_groups_and_ap_types = {adgs.ad_group: adgs.autopilot_state for adgs in ad_group_settings}
     for ag_source_setting in _get_autopilot_active_sources_settings(ad_groups_and_ap_types.keys()):
         ad_group = ag_source_setting.ad_group_source.ad_group
@@ -305,11 +307,15 @@ def _report_new_budgets_on_ap_to_statsd(ad_group_settings):
         total_budget_on_all_ap += daily_budget
         if ad_groups_and_ap_types.get(ad_group) == AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
             total_budget_on_budget_ap += daily_budget
+            num_sources_on_budget_ap += 1
         elif ad_groups_and_ap_types.get(ad_group) == AdGroupSettingsAutopilotState.ACTIVE_CPC:
             total_budget_on_cpc_ap += daily_budget
+            num_sources_on_cpc_ap += 1
     statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_budget_autopilot_actual_budget',
                                total_budget_on_budget_ap)
     statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_cpc_autopilot_actual_budget',
                                total_budget_on_cpc_ap)
     statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_all_autopilot_actual_budget',
                                total_budget_on_all_ap)
+    statsd_helper.statsd_gauge('automation.autopilot_plus.num_sources_on_cpc_ap', num_sources_on_cpc_ap)
+    statsd_helper.statsd_gauge('automation.autopilot_plus.num_sources_on_budget_ap', num_sources_on_budget_ap)

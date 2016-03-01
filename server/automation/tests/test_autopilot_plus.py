@@ -189,6 +189,8 @@ class AutopilotPlusTestCase(test.TestCase):
             [
                 mock.call('automation.autopilot_plus.adgroups_on_budget_autopilot_actual_budget', Decimal('210')),
                 mock.call('automation.autopilot_plus.adgroups_on_cpc_autopilot_actual_budget', Decimal('50')),
-                mock.call('automation.autopilot_plus.adgroups_on_all_autopilot_actual_budget', Decimal('260'))
+                mock.call('automation.autopilot_plus.adgroups_on_all_autopilot_actual_budget', Decimal('260')),
+                mock.call('automation.autopilot_plus.num_sources_on_cpc_ap', 1),
+                mock.call('automation.autopilot_plus.num_sources_on_budget_ap', 4)
             ]
         )
