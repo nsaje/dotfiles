@@ -12,6 +12,6 @@ class Command(ExceptionCommand):
 
     @statsd_timer('automation.autopilot_plus', 'run_autopilot_job')
     def handle(self, *args, **options):
-        logger.info('Running Daily Budget adjusting Auto-Pilot.')
+        logger.info('Running Ad Group Auto-Pilot.')
 
         automation.autopilot_plus.run_autopilot(send_mail=True, report_to_statsd=True)
