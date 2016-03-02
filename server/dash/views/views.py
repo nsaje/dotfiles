@@ -563,7 +563,7 @@ class CampaignOverview(api_common.BaseApiView):
         count_adgroups = infobox_helpers.count_active_adgroups(campaign)
         count_adgroups_setting = infobox_helpers.OverviewSetting(
             'Active ad groups:',
-            count_adgroups,
+            '{}'.format(count_adgroups),
             tooltip='Number of active ad groups'
         )
         settings.append(count_adgroups_setting.as_dict())
@@ -710,7 +710,7 @@ class AccountOverview(api_common.BaseApiView):
         count_campaigns = infobox_helpers.count_active_campaigns(account)
         count_campaigns_setting = infobox_helpers.OverviewSetting(
             'Active campaigns:',
-            count_campaigns,
+            '{}'.format(count_campaigns),
             tooltip='Number of campaigns with at least one active ad group'
         )
         settings.append(count_campaigns_setting.as_dict())

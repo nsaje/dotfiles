@@ -408,10 +408,7 @@ def create_total_campaign_budget_setting(user, campaign):
 def count_active_adgroups(campaign):
     return dash.models.AdGroup.objects.filter(
         campaign=campaign
-    ).filter_running().count().values_list(
-        'id',
-        flat=True
-    )
+    ).filter_running().count()
 
 
 @statsd_timer('dash.infobox_helpers', 'count_active_campaigns')
