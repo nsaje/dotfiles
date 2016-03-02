@@ -1959,7 +1959,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         settings.append(infobox_helpers.OverviewSetting(
             'Weekly self managed actions:',
             weekly_sf_actions,
-            tooltip="Number of actions take by self managed users"
+            tooltip="Number of actions taken by self managed users"
         ))
 
         yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
