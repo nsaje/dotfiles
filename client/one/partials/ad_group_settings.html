@@ -126,7 +126,7 @@
                 </label>
                 <div ng-if="errors.retargetingAdGroups !== undefined" class="col-xs-6 alert alert-info form-alert-box">
                     <div class="form-alert-exclamation">
-                        <span class="glyphicon glyphicon-warning-sign"></span>
+                        <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
                     </div>
                     <div class="form-alert-body">
                         {{ errors.retargetingAdGroups[0] }}                   
