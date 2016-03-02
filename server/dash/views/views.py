@@ -291,8 +291,6 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(flight_time_setting.as_dict())
 
-
-
         max_cpc_setting = infobox_helpers.OverviewSetting(
             'Maximum CPC:',
             lc_helper.default_currency(ad_group_settings.cpc_cc) if ad_group_settings.cpc_cc is not None else 'No limit',
@@ -562,6 +560,20 @@ class CampaignOverview(api_common.BaseApiView):
     def _basic_settings(self, user, campaign, campaign_settings):
         settings = []
 
+        count_adgroups = infobox_helpers.count_active_adgroups(campaign)
+        count_adgroups_setting = infobox_helpers.OverviewSetting(
+            'Active ad groups:',
+            count_adgroups,
+            tooltip='Number of active ad groups'
+        )
+        settings.append(count_adgroups_setting.as_dict())
+
+        campaign_manager_setting = infobox_helpers.OverviewSetting(
+            'Campaign Manager:',
+            infobox_helpers.format_username(campaign_settings.campaign_manager)
+        )
+        settings.append(campaign_manager_setting.as_dict())
+
         daily_cap_value = infobox_helpers.calculate_daily_campaign_cap(campaign)
 
         start_date, end_date, never_finishes = self._calculate_flight_dates(
@@ -690,37 +702,29 @@ class AccountOverview(api_common.BaseApiView):
             'performance_settings': performance_settings,
         }
 
-        count_campaigns = models.Campaign.objects.filter(
-            account=account
-        ).exclude_archived().count()
-        count_adgroups = models.AdGroup.objects.filter(
-            campaign__account=account
-        ).exclude_archived().count()
-
-        header['subtitle'] = 'with {count_campaigns} campaigns and {count_adgroups} ad groups'.format(
-            count_campaigns=count_campaigns,
-            count_adgroups=count_adgroups
-        )
-
         return self.create_api_response(response)
-
-    def _username(self, user):
-        if not user:
-            return 'N/A'
-        return user.get_full_name()
 
     def _basic_settings(self, account):
         settings = []
+
+        count_campaigns = infobox_helpers.count_active_campaigns(account)
+        count_campaigns_setting = infobox_helpers.OverviewSetting(
+            'Active campaigns:',
+            count_campaigns,
+            tooltip='Number of campaigns with at least one active ad group'
+        )
+        settings.append(count_campaigns_setting.as_dict())
+
         account_settings = account.get_current_settings()
         account_manager_setting = infobox_helpers.OverviewSetting(
             'Account Manager:',
-            self._username(account_settings.default_account_manager)
+            infobox_helpers.format_username(account_settings.default_account_manager)
         )
         settings.append(account_manager_setting.as_dict())
 
         sales_manager_setting = infobox_helpers.OverviewSetting(
-            'Sales Manager:',
-            self._username(account_settings.default_sales_representative)
+            'Sales Representative:',
+            infobox_helpers.format_username(account_settings.default_sales_representative)
         )
         settings.append(sales_manager_setting.as_dict())
 
@@ -735,17 +739,10 @@ class AccountOverview(api_common.BaseApiView):
             for i, user in enumerate(all_users):
                 user_one_setting = infobox_helpers.OverviewSetting(
                     'Users:' if i == 0 else '',
-                    self._username(user),
+                    infobox_helpers.format_username(user),
                     section_start=i == 0
                 )
                 settings.append(user_one_setting.as_dict())
-
-        platform_fee_setting = infobox_helpers.OverviewSetting(
-            'Platform fee:',
-            "{:.2f}%".format(account_settings.service_fee * 100),
-            section_start=True
-        )
-        settings.append(platform_fee_setting.as_dict())
 
         pixels = models.ConversionPixel.objects.filter(account=account)
         conversion_pixel_setting = infobox_helpers.OverviewSetting(
@@ -934,7 +931,7 @@ class Account(api_common.BaseApiView):
         account = models.Account(name=create_name(models.Account.objects, 'New account'))
         account.save(request)
 
-        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_ACCOUNT, account=account)
+        helpers.loguseraction_if_necessary(request, constants.UserActionType.CREATE_ACCOUNT, account=account)
 
         response = {
             'name': account.name,
@@ -1939,26 +1936,30 @@ class AllAccountsOverview(api_common.BaseApiView):
         settings.append(infobox_helpers.OverviewSetting(
             'Active accounts:',
             count_active_accounts,
-            section_start=True
+            section_start=True,
+            tooltip='All accounts that have at least one running campaign'
         ))
 
         weekly_logged_users = infobox_helpers.count_weekly_logged_in_users()
         settings.append(infobox_helpers.OverviewSetting(
             'Weekly logged-in users:',
             weekly_logged_users,
+            tooltip="Number of users who logged-in in the past 7 days"
         ))
 
         weekly_active_users = infobox_helpers.count_weekly_active_users()
         settings.append(infobox_helpers.OverviewSetting(
             'Weekly active users:',
             weekly_active_users,
-            section_start=True
+            section_start=True,
+            tooltip='Number of self managed users in the past 7 days'
         ))
 
         weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
         settings.append(infobox_helpers.OverviewSetting(
             'Weekly self managed actions:',
             weekly_sf_actions,
+            tooltip="Number of actions take by self managed users"
         ))
 
         yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
