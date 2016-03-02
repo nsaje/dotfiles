@@ -5,8 +5,6 @@ from constants import CpcChangeComment as cpc_com
 SYNC_IS_RECENT_HOURS = 2
 AUTOMATION_AI_NAME = 'Zemanta Auto-Pilot'
 AUTOPILOT_EMAIL = 'help@zemanta.com'
-DEBUG_EMAILS = ['davorin.kopic@zemanta.com', 'tadej.pavlic@zemanta.com',
-                'urska.kosec@zemanta.com', 'ana.dejanovic@zemanta.com']
 
 
 # CPC Autopilot Settings
