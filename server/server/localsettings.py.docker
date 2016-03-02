@@ -68,6 +68,9 @@ LOG_FILE = '/app/logs/eins-log.log'
 STATSD_HOST = os.environ.get('STATSD_PORT_8125_UDP_ADDR', 'statsd')
 STATSD_PORT = int(os.environ.get('STATSD_PORT_8125_UDP_PORT', '8125'))
 
+TELEGRAF_HOST = os.environ.get('TELEGRAF_PORT_8135_UDP_ADDR', 'telegraf')
+TELEGRAF_PORT = int(os.environ.get('TELEGRAF_PORT_8135_UDP_PORT', '8135'))
+
 # Saucelabs
 SAUCELABS_USERNAME = ''
 SAUCELABS_ACCESS_KEY = ''
