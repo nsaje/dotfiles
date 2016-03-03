@@ -411,31 +411,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         bulkUpdatePublishers(publishersSelected, publishersNotSelected, state, level);
     };
 
-    $scope.columnCategories = [
-        {
-            'name': 'Traffic Acquisition',
-            'fields': [
-                'publisherSelected',
-                'blacklisted',
-                'domain',
-                'domain_link',
-                'exchange',
-                'cost',
-                'cpc',
-                'clicks',
-                'impressions',
-                'ctr',
-                'media_cost',
-                'data_cost',
-                'e_media_cost',
-                'e_data_cost',
-                'total_cost',
-                'billing_cost',
-                'license_fee'
-            ]
-        }
-    ];
-
     $scope.columns = [{
         name: '',
         field: 'publisherSelected',
@@ -645,6 +620,69 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         initialOrder: 'desc'
     }
     ];
+
+    $scope.columnCategories = [
+        {
+            'name': 'Traffic Acquisition',
+            'fields': [
+                'publisherSelected',
+                'blacklisted',
+                'domain',
+                'domain_link',
+                'exchange',
+                'cost',
+                'cpc',
+                'clicks',
+                'impressions',
+                'ctr',
+                'media_cost',
+                'data_cost',
+                'e_media_cost',
+                'e_data_cost',
+                'total_cost',
+                'billing_cost',
+                'license_fee'
+            ]
+        },
+        {
+            'name': 'Audience Metrics',
+            'fields': [
+                'visits', 'pageviews', 'percent_new_users',
+                'bounce_rate', 'pv_per_visit', 'avg_tos',
+                'click_discrepancy'
+            ]
+        },
+        {
+            'name': 'Conversions',
+            'fields': ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']
+        }
+    ];
+
+    $scope.initColumns = function () {
+        zemPostclickMetricsService.insertAcquisitionColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
+            $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
+        );
+
+        zemPostclickMetricsService.insertEngagementColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
+            $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+        );
+
+        // TODO MV: are any other options possible here ??
+        if ($scope.level === constants.level.AD_GROUPS) {
+            zemPostclickMetricsService.insertConversionGoalColumns(
+                $scope.columns,
+                $scope.columns.length - 2,
+                $scope.hasPermission('zemauth.conversion_reports'),
+                $scope.isPermissionInternal('zemauth.conversion_reports')
+            );
+        }
+    };
 
     $scope.loadRequestInProgress = false;
 
@@ -894,6 +932,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.setAdGroupData('page', page);
             $location.search('page', page);
         }
+
+        $scope.initColumns();
 
         $scope.loadPage();
 

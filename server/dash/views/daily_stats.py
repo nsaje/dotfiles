@@ -248,6 +248,8 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
+        # todo mv: prepare post click data
+
         metrics = request.GET.getlist('metrics')
         totals = request.GET.get('totals')
         show_blacklisted_publishers = request.GET.get('show_blacklisted_publishers', constants.PublisherBlacklistFilter.SHOW_ALL)
