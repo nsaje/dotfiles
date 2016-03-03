@@ -179,6 +179,34 @@ It will load the fixtures for you and run server and client applications.
 
 The test suite will be run in your local Chrome browser.
 
+##### Testing databases
+
+In the case you are using staging or other database for running Z1 locally running unit tests can become
+very slow. You can provide additional entries in your DATABASES dictionary with prefix 'testing\_'. When
+running tests these configuration entries will have the prefix 'testing\_' removed and will replace existing
+entries in LOGGING setting.
+
+And example config for using staging when running with ./manage.py runserver and local database for unit testing.
+
+DATABASES = {
+	'default': {
+		'ENGINE': 'django.db.backends.postgresql_psycopg2',
+		'NAME': 'dev',
+		'HOST': 'staging-host.com',
+		'USER': 'staging',
+		'PASSWORD': '...',
+		'PORT': 5432
+	},
+	'testing_default': {
+		'ENGINE': 'django.db.backends.postgresql_psycopg2',
+		'NAME': 'z1',
+		'USER': 'z1',
+		'PASSWORD': '...',
+		'PORT': 5440
+	}
+}
+
+
 ##### Notes on Amazon Redshift and E2E tests
 
 Each time when end-to-end tests are run, a new Amazon Redshift database with a random name is created. This way each e2e test suite run uses its own Amazon Redshift database. How it works:
