@@ -191,9 +191,9 @@ class AdGroupSettingsTest(TestCase):
                 },
                 'warnings': {
                     'retargeting': {
-                        'text': u"You have some active media sources that"
-                            " don't support retargeting. To start using it please disable/pause"
-                            " these media sources:",
+                        'text': "You have some active media sources that"
+                                " don't support retargeting. To start using it please disable/pause"
+                                " these media sources:",
                         'sources': [
                             'AdsNative',
                             'Gravity',
@@ -204,7 +204,6 @@ class AdGroupSettingsTest(TestCase):
             },
             'success': True
         })
-
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')

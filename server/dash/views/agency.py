@@ -110,7 +110,10 @@ class AdGroupSettings(api_common.BaseApiView):
         warnings = {}
         ad_groups = ad_group_settings.retargeting_ad_groups
         if len(ad_groups) > 0:
-            supports_retargeting, unsupported_sources = retargeting_helper.supports_retargeting(ad_group_settings.ad_group)
+            supports_retargeting, unsupported_sources =\
+                retargeting_helper.supports_retargeting(
+                    ad_group_settings.ad_group
+                )
             if not supports_retargeting:
                 retargeting_warning = {
                     'text': "You have some active media sources that don't support retargeting. "
