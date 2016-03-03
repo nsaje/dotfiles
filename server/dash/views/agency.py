@@ -54,6 +54,7 @@ class AdGroupSettings(api_common.BaseApiView):
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
             'retargetable_adgroups': self.get_retargetable_adgroups(request, ad_group_id),
+            'warnings': self.get_warnings(request, ad_group)
         }
         return self.create_api_response(response)
 
@@ -104,6 +105,22 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def get_warnings(self, request, ad_group):
+        warnings = {}
+        resource = json.loads(request.body)
+        ad_groups = resource.get('settings', {}).get('retargeting_ad_groups', [])
+        if len(ad_groups) > 0:
+            supports_retargeting, unsupported_sources = retargeting_helper.supports_retargeting(self.ad_group)
+            if not supports_retargeting:
+                retargeting_warning = {
+                    'text': "You have some active media sources that don't support retargeting. "
+                            "To start using it please disable/pause these media sources:",
+                    'sources': [s.name for s in unsupported_sources]
+                }
+                warnings['retargeting'] = retargeting_warning
+        return warnings
+
 
     def get_dict(self, settings, ad_group):
         result = {}
