@@ -138,7 +138,7 @@ class AdGroupSettingsFormTest(TestCase):
             'target_regions': ['US'],
             'tracking_code': 'code=test',
             'enable_ga_tracking': True,
-            'targeting_ad_groups': [3],
+            'retargeting_ad_groups': [3],
             'enable_adobe_tracking': False,
             'adobe_tracking_param': '',
             'autopilot_state': 2,
