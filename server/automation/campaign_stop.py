@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import datetime
+from decimal import Decimal
 import logging
 
 import dash.constants
 import dash.models
-from utils import dates_helper
+from utils import dates_helper, email_helper, url_helper
 
 logger = logging.getLogger(__name__)
 
@@ -121,8 +122,52 @@ def _get_ad_groups_active_on_date(date, campaign):
 
 
 def _send_campaign_stop_notification_email(campaign):
-    pass
+    subject = 'Your campaign {campaign_name} ({account_name}) is switching to landing mode'
+    body = u'''Hi, campaign manager of {campaign_name}
+
+your campaign {campaign_name} ({account_name}) is being switched to automated landing mode because it is approaching the budget limit.
+
+While landing mode CPCs and daily budgets of media sources will not be available for any changes.
+
+If you don’t want campaign to be switched to the landing mode please visit {campaign_budgets_url} and assign additional budget.
+Yours truly,
+Zemanta
+    '''
+
+    subject.format(
+        campaign_name=campaign.name,
+        account_name=campaign.account.name
+    )
+
+    body = body.format(
+        campaign_name=campaign.name,
+        account_name=campaign.account.name,
+        campaign_budgets_url=url_helper.get_full_z1_url('/campaigns/{}/budget-plus'.format(campaign.pk)),
+    )
+
+    email_helper.send_notification_mail(TEMP_EMAILS, subject, body)
 
 
 def _send_depleting_budget_notification_email(campaign):
-    pass
+    subject = 'Your campaign {campaign_name} ({account_name}) is running out of budget'
+    body = u'''Hi, campaign manager of {campaign_name}
+
+your campaign {campaign_name} ({account_name}) will run out of budget in approximately 3 days if running at current pace. System will automatically turn on the landing mode to hit your targeted budget. While landing mode CPCs and daily budgets of media sources will not be available for any changes.
+
+If you don’t want campaign to end in a few days please add the budget and continue to adjust media sources settings by your needs. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
+
+Yours truly,
+Zemanta
+    '''
+
+    subject.format(
+        campaign_name=campaign.name,
+        account_name=campaign.account.name
+    )
+    body = body.format(
+        campaign_name=campaign.name,
+        account_name=campaign.account.name,
+        campaign_budgets_url=url_helper.get_full_z1_url('/campaigns/{}/budget-plus'.format(campaign.pk)),
+    )
+
+    email_helper.send_notification_mail(TEMP_EMAILS, subject, body)
