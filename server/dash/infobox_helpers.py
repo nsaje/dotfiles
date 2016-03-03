@@ -546,6 +546,7 @@ def get_account_running_status(account):
     else:
         return dash.constants.InfoboxStatus.INACTIVE
 
+
 @statsd_timer('dash.infobox_helpers', '_retrieve_active_creditlineitems')
 def _retrieve_active_creditlineitems(account, date):
     return [credit for credit in dash.models.CreditLineItem.objects.filter(
