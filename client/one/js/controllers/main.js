@@ -191,10 +191,13 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
         result['Last 30 Days'] = [zemMoment().subtract(30, 'days'), zemMoment().subtract(1, 'days')];
 
-        currentMonthStart = zemMoment().startOf('month');
-        currentMonthEnd = zemMoment();
-        if (currentMonthEnd.date() > 1) currentMonthEnd.subtract(1, 'days');
-        result[currentMonthStart.format(formatStr)] = [currentMonthStart, currentMonthEnd];
+        if (zemMoment().date() === 1) {
+            monthsCount += 1;
+        } else {
+            currentMonthStart = zemMoment().startOf('month');
+            currentMonthEnd = zemMoment().subtract(1, 'days');
+            result[currentMonthStart.format(formatStr)] = [currentMonthStart, currentMonthEnd];
+        }
 
         for (i = 0; i < monthsCount; i++) {
             result[zemMoment().subtract(i + 1, 'month').format(formatStr)] = [
