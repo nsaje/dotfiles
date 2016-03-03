@@ -156,30 +156,7 @@ Karma can also auto-watch files and run test on every change:
 karma start test/karma.conf.js
 ```
 
-#### End-to-end testing
-
-Integration testing is done using <a href="https://github.com/angular/protractor">Protractor</a>. 
-
-To setup, first copy the protractor.localconf.js template:
-```bash
-cp test/protractor.localconf.json.template test/protractor.localconf.json
-```
-
-and modify as needed.
-
-Then set your Amazon Redshift testing credentials for the `STATS_E2E_DB_NAME` database in `server/localsettings.py`. Use the template from the `server/localsettings.py.circle-ci` file. The credentials
-can be obtained here: [Amazon Redshift and E2E tests](https://sites.google.com/a/zemanta.com/root/engineering/amazon-redshift-e2e-credentials). These credentials can be the
-same for CircleCI and local testing.
-
-Then from project root run:
-```bash
-./run_e2e.sh
-```
-It will load the fixtures for you and run server and client applications.
-
-The test suite will be run in your local Chrome browser.
-
-##### Testing databases
+#### Testing databases
 
 In the case you are using staging or other database for running Z1 locally running unit tests can become
 very slow. You can provide additional entries in your DATABASES dictionary with prefix 'testing\_'. When
@@ -207,6 +184,29 @@ DATABASES = {
 	}
 }
 ```
+
+#### End-to-end testing
+
+Integration testing is done using <a href="https://github.com/angular/protractor">Protractor</a>. 
+
+To setup, first copy the protractor.localconf.js template:
+```bash
+cp test/protractor.localconf.json.template test/protractor.localconf.json
+```
+
+and modify as needed.
+
+Then set your Amazon Redshift testing credentials for the `STATS_E2E_DB_NAME` database in `server/localsettings.py`. Use the template from the `server/localsettings.py.circle-ci` file. The credentials
+can be obtained here: [Amazon Redshift and E2E tests](https://sites.google.com/a/zemanta.com/root/engineering/amazon-redshift-e2e-credentials). These credentials can be the
+same for CircleCI and local testing.
+
+Then from project root run:
+```bash
+./run_e2e.sh
+```
+It will load the fixtures for you and run server and client applications.
+
+The test suite will be run in your local Chrome browser.
 
 ##### Notes on Amazon Redshift and E2E tests
 
