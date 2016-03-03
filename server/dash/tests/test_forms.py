@@ -122,14 +122,7 @@ class AdGroupSettingsFormTest(TestCase):
             'autopilot_daily_budget': '100.00'
         }
 
-    def _support_retargeting(self):
-        self.data['retargeting_ad_groups'] = []
-
     def test_form(self):
-        for s in models.Source.objects.all():
-            s.maintenance = False
-            s.save()
-
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
 
         self.assertTrue(form.is_valid())
@@ -153,7 +146,6 @@ class AdGroupSettingsFormTest(TestCase):
         })
 
     def test_no_non_propagated_fields(self):
-        self._support_retargeting()
         self.data['cpc_cc'] = None
         self.data['daily_budget_cc'] = None
         self.data['autopilot_state'] = None
@@ -169,7 +161,6 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertEqual(form.cleaned_data.get('autopilot_daily_budget'), None)
 
     def test_errors_on_non_propagated_fields(self):
-        self._support_retargeting()
         self.data['cpc_cc'] = 0.01
         self.data['daily_budget_cc'] = 1
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
@@ -180,13 +171,11 @@ class AdGroupSettingsFormTest(TestCase):
             'daily_budget_cc': ['Please provide budget of at least $10.00.']})
 
     def test_max_cpc_setting_min_value(self):
-        self._support_retargeting()
         self.data['cpc_cc'] = 0.01
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 
     def test_max_cpc_setting_lower_min_source_value(self):
-        self._support_retargeting()
         source = models.Source.objects.get(pk=1)
         source.maintenance = False
         source.deprecated = False
@@ -197,25 +186,21 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertFalse(form.is_valid())
 
     def test_max_cpc_setting_lower_min_deprecated_source(self):
-        self._support_retargeting()
         self.data['cpc_cc'] = 0.1
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
 
     def test_max_cpc_setting_equal_min_source_value(self):
-        self._support_retargeting()
         self.data['cpc_cc'] = 0.12
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
 
     def test_max_cpc_setting_high_value(self):
-        self._support_retargeting()
         self.data['cpc_cc'] = 100
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
 
     def test_default_value_enable_ga_tracking(self):
-        self._support_retargeting()
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_ga_tracking', form.cleaned_data)
@@ -237,7 +222,6 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertFalse(form.cleaned_data['enable_ga_tracking'])
 
     def test_default_value_enable_adobe_tracking(self):
-        self._support_retargeting()
         # should be False if not set
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
