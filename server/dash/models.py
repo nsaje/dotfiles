@@ -327,7 +327,7 @@ class Campaign(models.Model, PermissionMixin):
     groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True)
     landing_mode = models.BooleanField(default=False)
 
     USERS_FIELD = 'users'
@@ -419,7 +419,9 @@ class Campaign(models.Model, PermissionMixin):
             new_settings.save(request)
 
     def save(self, request, *args, **kwargs):
-        self.modified_by = request.user
+        self.modified_by = None
+        if request is not None:
+            self.modified_by = request.user
         super(Campaign, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
