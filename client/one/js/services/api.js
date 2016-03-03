@@ -1024,11 +1024,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var ret = [];
             for (var id in rows) {
                 var row = rows[id];
+                console.log(row);
                 ret.push({
                     id: row.id,
                     name: row.name,
                     archived: row.archived,
                     campaignName: row.campaign_name,
+                    sourceIds: row.source_ids,
                 });
             }
             return ret;

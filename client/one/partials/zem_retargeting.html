@@ -15,7 +15,8 @@
             position='down'>
         <div 
             ng-class="{archived: adgroup.archived}"
-            ng-bind-html="adgroup.name | highlight: $select.search">
+            ng-bind-html="adgroup.name | highlight: $select.search"
+            ui-disable-choice="!adgroup.enabled">
         </div>
     </ui-select-choices>
 </ui-select>

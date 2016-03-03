@@ -37,6 +37,16 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', func
                     return adgroup.id !== parseInt($state.params.id);
                 });
 
+                adgroups.forEach(function (adgroup) {
+                    var enabledAdGroup = true;
+                    zemFilterService.getFilteredSources().forEach(function (source) {
+                        if (adgroup.sourceIds.indexOf(source) === -1) {
+                            enabledAdGroup = false;
+                        }
+                    });
+                    adgroup.enabled = enabledAdGroup;
+                });
+
                 return adgroups;
             };
 
