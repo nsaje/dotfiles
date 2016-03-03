@@ -64,7 +64,6 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
 
     upload_status = constants.UploadBatchStatus.FAILED
     num_errors = 0
-    cancelled = False
     rows = []
 
     try:
@@ -104,7 +103,7 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
         logger.info('Content ads upload failed due to errors in uploaded file, batch id {}'.format(batch.id))
     except exceptions.UploadCancelledException as e:
         logger.info('Content ads upload was cancelled, batch id: {}'.format(batch.id))
-        cancelled = True
+        upload_status = constants.UploadBatchStatus.CANCELLED
     except Exception as e:
         logger.exception('Exception in ProcessUploadThread: {}'.format(e))
     else:
@@ -117,7 +116,6 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
     batch.refresh_from_db()
     batch.status = upload_status
     batch.num_errors = num_errors
-    batch.cancelled = cancelled
     if num_errors:
         batch.error_report_key = _save_error_report(rows, filename)
     batch.save()

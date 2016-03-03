@@ -38,6 +38,8 @@ from utils import exc
 from utils import s3helpers
 from utils import email_helper
 
+from automation import autopilot_plus
+
 import actionlog.api
 import actionlog.api_contentads
 import actionlog.sync
@@ -45,7 +47,7 @@ import actionlog.zwei_actions
 import actionlog.models
 import actionlog.constants
 
-from dash import models, region_targeting_helper
+from dash import models, region_targeting_helper, retargeting_helper
 from dash import constants
 from dash import api
 from dash import forms
@@ -474,7 +476,6 @@ class CampaignAdGroups(api_common.BaseApiView):
         sources = ad_group.campaign.account.allowed_sources.all()
         actions = []
         added_sources = []
-
         for source in sources:
             try:
                 source_default_settings = helpers.get_source_default_settings(source)
@@ -510,7 +511,8 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group)
         ad_group_source.save(request)
-        active_source_state = region_targeting_helper.can_target_existing_regions(source, ad_group_settings)
+        active_source_state = region_targeting_helper.can_target_existing_regions(source, ad_group_settings) and\
+            retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
         helpers.set_ad_group_source_settings(request, ad_group_source, source_settings,
                                              mobile_only=ad_group_settings.is_mobile_only(),
                                              active=active_source_state)
@@ -862,7 +864,8 @@ class AdGroupSources(api_common.BaseApiView):
                 'id': source.id,
                 'name': source.name,
                 'can_target_existing_regions': region_targeting_helper.can_target_existing_regions(
-                        source, ad_group_settings)
+                        source, ad_group_settings),
+                'can_retarget': source.can_modify_retargeting_automatically(),
             })
 
         sources_waiting = set([ad_group_source.source.name for ad_group_source
@@ -879,6 +882,7 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group_settings = ad_group.get_current_settings()
 
         source_id = json.loads(request.body)['source_id']
         source = models.Source.objects.get(id=source_id)
@@ -887,8 +891,12 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.ValidationError(
                 '{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
 
-        if not region_targeting_helper.can_target_existing_regions(source, ad_group.get_current_settings()):
+        if not region_targeting_helper.can_target_existing_regions(source, ad_group_settings):
             raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'
+                                      .format(source.name))
+
+        if not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
+            raise exc.ValidationError('{} media source can not be added because it does not support retargeting.'
                                       .format(source.name))
 
         default_settings = helpers.get_source_default_settings(source)
@@ -1035,14 +1043,21 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
                                             ad_group=ad_group)
 
+        autopilot_changed_sources_text = ''
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
+                'state' in resource:
+            changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False)
+            autopilot_changed_sources_text = ', '.join([s.source.name for s in changed_sources])
         return self.create_api_response({
             'editable_fields': helpers.get_editable_fields(
                 ad_group_source,
-                ad_group_source.ad_group.get_current_settings(),
+                ad_group_settings,
                 ad_group_source.get_current_settings_or_none(),
                 request.user,
                 allowed_sources,
-            )
+            ),
+            'autopilot_changed_sources': autopilot_changed_sources_text
         })
 
 
@@ -1160,9 +1175,14 @@ class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist():
             raise exc.MissingDataException()
 
+        if batch.propagated_content_ads >= batch.batch_size:
+            raise exc.ValidationError(errors={
+                'cancel': 'Cancel action unsupported at this stage',
+            })
+
         with transaction.atomic():
-            batch.cancelled = True
-            batch.save()
+            batch.status = constants.UploadBatchStatus.CANCELLED
+            batch.save(update_fields=['status'])
 
         return self.create_api_response()
 
@@ -1200,7 +1220,6 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
             'count': count,
             'batch_size': batch_size,
             'step': step,
-            'cancelled': batch.cancelled,
         }
 
         errors = self._get_error_details(batch, ad_group_id)
@@ -1218,10 +1237,10 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
                 errors['report_url'] = reverse('ad_group_ads_plus_upload_report',
                                                kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
                 errors['description'] = 'Found {} error{}.'.format(batch.num_errors, 's' if batch.num_errors > 1 else '')
-            elif batch.cancelled:
-                errors['description'] = 'Content Ads upload was cancelled.'
             else:
                 errors['description'] = 'An error occured while processing file.'
+        elif batch.status == constants.UploadBatchStatus.CANCELLED:
+                errors['description'] = 'Content Ads upload was cancelled.'
 
         return errors
 

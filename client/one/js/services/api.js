@@ -178,7 +178,8 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 sources.push({
                     id: source.id,
                     name: source.name,
-                    canTargetExistingRegions: source.can_target_existing_regions
+                    canTargetExistingRegions: source.can_target_existing_regions,
+                    canRetarget: source.can_retarget,
                 });
             }
 
@@ -337,6 +338,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             data.lastChange = data.last_change;
             data.dataStatus = data.data_status;
             data.conversionGoals = data.conversion_goals;
+            data.adGroupAutopilotState = data.ad_group_autopilot_state;
 
             data.notifications = convertNotifications(data.notifications);
 
@@ -1018,6 +1020,20 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             };
         }
 
+        function convertRetargetingAdgroupsFromApi (rows) {
+            var ret = [];
+            for (var id in rows) {
+                var row = rows[id];
+                ret.push({
+                    id: row.id,
+                    name: row.name,
+                    archived: row.archived,
+                    campaignName: row.campaign_name,
+                });
+            }
+            return ret;
+        }
+
         this.get = function (id) {
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + id + '/settings/';
@@ -1027,17 +1043,23 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             $http.get(url, config).
                 success(function (data) {
-                    var settings, defaultSettings;
+                    var settings, defaultSettings, retargetableAdGroups = [];
                     if (data && data.data && data.data.settings) {
                         settings = convertFromApi(data.data.settings);
                     }
                     if (data && data.data && data.data.default_settings) {
                         defaultSettings = convertDefaultSettingsFromApi(data.data.default_settings);
                     }
+
+                    if (data && data.data && data.data.retargetable_adgroups) {
+                        retargetableAdGroups = convertRetargetingAdgroupsFromApi(data.data.retargetable_adgroups);
+                    }
+
                     deferred.resolve({
                         settings: settings,
                         defaultSettings: defaultSettings,
                         actionIsWaiting: data.data.action_is_waiting,
+                        retargetableAdGroups: retargetableAdGroups,
                     });
                 }).
                 error(function (data) {
@@ -1441,6 +1463,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return setting;
         }
     }
+
 
     function AllAccountsBudget () {
         this.get = function () {
@@ -2520,7 +2543,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             var deferred = $q.defer();
             var url = '/api/ad_groups/' + adGroupId + '/contentads_plus/upload/' + batchId + '/cancel/';
 
-            $http.get(url).success(deferred.resolve, deferred.reject);
+            $http.get(url).success(deferred.resolve).error(deferred.reject);
 
             return deferred.promise;
         };

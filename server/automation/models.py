@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 import dash.models
+import dash.constants
+from automation import constants
 
 
 class CampaignBudgetDepletionNotification(models.Model):
@@ -100,7 +102,75 @@ class AutopilotAdGroupSourceBidCpcLog(models.Model):
     comments = models.CharField(max_length=1024, null=True, blank=True)
 
     def __unicode__(self):
-        return '{0} {1}'.format(
+        return '{0} {1} {2}'.format(
             self.campaign,
+            self.ad_group,
+            self.ad_group_source)
+
+
+class AutopilotLog(models.Model):
+    ad_group = models.ForeignKey(
+        dash.models.AdGroup,
+        related_name='+',
+        on_delete=models.PROTECT
+    )
+    ad_group_source = models.ForeignKey(
+        dash.models.AdGroupSource,
+        related_name='+',
+        on_delete=models.PROTECT
+    )
+    autopilot_type = models.IntegerField(
+        default=dash.constants.AdGroupSettingsAutopilotState.INACTIVE,
+        choices=dash.constants.AdGroupSettingsAutopilotState.get_choices()
+    )
+    created_dt = models.DateTimeField(
+        auto_now_add=True,
+        blank=True,
+        null=True,
+        verbose_name='Created at',
+        db_index=True
+    )
+    yesterdays_clicks = models.IntegerField(null=True)
+    yesterdays_spend_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name='Yesterday\'s spend'
+    )
+    previous_cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Previous CPC'
+    )
+    new_cpc_cc = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='New CPC'
+    )
+    previous_daily_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='Previous daily budget'
+    )
+    new_daily_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        verbose_name='New daily budget'
+    )
+    cpc_comments = models.CharField(max_length=1024, null=True, blank=True)
+    budget_comments = models.CharField(max_length=1024, null=True, blank=True)
+
+    def __unicode__(self):
+        return '{0} {1}'.format(
             self.ad_group,
             self.ad_group_source)

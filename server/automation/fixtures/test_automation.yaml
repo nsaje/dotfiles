@@ -107,7 +107,6 @@
   model: dash.adgroup
   pk: 3
 
-
 - fields:
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
@@ -124,6 +123,9 @@
     created_dt: '2014-06-04T09:58:21'
     created_by: 1
     state: 1
+    cpc_cc: 100.00
+    autopilot_state: 1
+    autopilot_daily_budget: 10
   model: dash.adgroupsettings
   pk: 1
 
@@ -132,6 +134,8 @@
     created_dt: '2014-06-04T09:58:21'
     created_by: 1
     state: 2
+    autopilot_state: 2
+    autopilot_daily_budget: 20
   model: dash.adgroupsettings
   pk: 2
 
@@ -140,6 +144,8 @@
     created_dt: '2014-06-04T09:58:21'
     created_by: 1
     state: 1
+    autopilot_state: 3
+    autopilot_daily_budget: 30
   model: dash.adgroupsettings
   pk: 3
 
@@ -148,14 +154,23 @@
     created_dt: '2014-06-04T09:58:21'
     created_by: 1
     state: 1
+    autopilot_state: 1
+    autopilot_daily_budget: 40
   model: dash.adgroupsettings
   pk: 4
 
 # Source Types
 -   fields:
         type: 'adblade'
+        min_daily_budget: '1'
     model: dash.sourcetype
     pk: 1
+
+-   fields:
+        type: 'adblade3'
+        min_daily_budget: '5'
+    model: dash.sourcetype
+    pk: 2
 
 # Sources
 -   fields:
@@ -170,7 +185,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: AdBanana
-        source_type: 1
+        source_type: 2
         tracking_slug: '["fake"]'
     model: dash.source
     pk: 2

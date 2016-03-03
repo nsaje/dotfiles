@@ -1,6 +1,6 @@
 import decimal
 import dash
-import datetime
+from datetime import datetime
 import operator
 from mock import patch
 
@@ -19,11 +19,11 @@ import automation.autopilot_budgets
 from zemauth.models import User
 
 
-class DatetimeMock(datetime.datetime):
+class DatetimeMock(datetime):
 
     @classmethod
     def utcnow(cls):
-        return datetime.datetime(2014, 06, 05, 9, 58, 25)
+        return datetime(2014, 6, 5, 9, 58, 25)
 
 
 class BudgetDepletionTestCase(test.TestCase):
@@ -294,7 +294,7 @@ class BetaBanditTestCase(test.TestCase):
         ags = models.AdGroupSource.objects.filter(ad_group=4)
         self.assertEqual(ags.count(), 3)
 
-        bandit = automation.autopilot_budgets.BetaBandit(ags)
+        bandit = automation.autopilot_budgets.BetaBandit([a for a in ags])
 
         for i in range(100):
             bandit.add_result(ags[0], True)

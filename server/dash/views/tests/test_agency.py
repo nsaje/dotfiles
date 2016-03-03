@@ -6,7 +6,7 @@ import pytz
 from mock import patch, ANY, Mock, call
 from decimal import Decimal
 
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.core import mail
@@ -36,8 +36,8 @@ class AdGroupSettingsTest(TestCase):
                 'target_regions': ['693', 'GB'],
                 'name': 'Test ad group name',
                 'id': 1,
-                'autopilot_state': 1,
-                'autopilot_daily_budget': '100.0000',
+                'autopilot_state': 2,
+                'autopilot_daily_budget': '150.0000',
                 'retargeting_ad_groups': [2],
                 'enable_ga_tracking': False,
                 'enable_adobe_tracking': False,
@@ -58,13 +58,36 @@ class AdGroupSettingsTest(TestCase):
             follow=True
         )
 
-        self.assertEqual(json.loads(response.content), {
+        self.assertDictEqual(json.loads(response.content), {
             'data': {
                 'action_is_waiting': False,
                 'default_settings': {
                     'target_devices': ['mobile'],
                     'target_regions': ['NC', '501'],
                 },
+                "retargetable_adgroups": [
+                    {
+                        "campaign_name": "test campaign 1",
+                        "archived": False,
+                        "id": 1, "name": "test adgroup 1"
+                    },
+                    {
+                        "campaign_name": "test campaign 2",
+                        "archived": False,
+                        "id": 2, "name": "test adgroup 2"
+                    },
+                    {
+                        "campaign_name": "test campaign 1",
+                        "archived": False,
+                        "id": 9,
+                        "name": "test adgroup 9"
+                    },
+                    {
+                        "campaign_name": "test campaign 1",
+                        "archived": False,
+                        "id": 10, "name": "test adgroup 10"
+                    },
+                ],
                 'settings': {
                     'adobe_tracking_param': '',
                     'cpc_cc': '',
@@ -139,8 +162,8 @@ class AdGroupSettingsTest(TestCase):
                         'enable_ga_tracking': True,
                         'enable_adobe_tracking': False,
                         'adobe_tracking_param': '',
-                        'autopilot_state': 1,
-                        'autopilot_daily_budget': '100.00',
+                        'autopilot_state': 2,
+                        'autopilot_daily_budget': '50.00',
                         'retargeting_ad_groups': [2],
                         'enable_ga_tracking': False,
                         'enable_adobe_tracking': False,
@@ -218,6 +241,44 @@ class AdGroupSettingsTest(TestCase):
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
+    @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
+    def test_put_set_budget_autopilot_triggers_budget_reallocation(
+            self, mock_actionlog_api, mock_order_ad_group_settings_update, mock_init_autopilot):
+        with patch('utils.dates_helper.local_today') as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
+
+            ad_group = models.AdGroup.objects.get(pk=1)
+            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+            old_settings = ad_group.get_current_settings()
+            old_settings.autopilot_state = 2
+            old_settings.save(None)
+            mock_actionlog_api.is_waiting_for_set_actions.return_value = True
+            self.assertIsNotNone(old_settings.pk)
+            self.settings_dict['settings']['autopilot_state'] = 1
+            self.settings_dict['settings']['autopilot_daily_budget'] = '200.00'
+
+            self.client.put(
+                reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True
+            )
+
+            new_settings = ad_group.get_current_settings()
+
+            request = HttpRequest()
+            request.user = User(id=1)
+
+            # can it actually be saved to the db
+            new_settings.save(request)
+
+            self.assertEqual(new_settings.autopilot_state, 1)
+            self.assertEqual(new_settings.autopilot_daily_budget, Decimal('200'))
+
+            self.assertEqual(mock_init_autopilot.called, True)
+
+    @patch('dash.views.agency.api.order_ad_group_settings_update')
+    @patch('dash.views.agency.actionlog_api')
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_put_firsttime_create_settings(self, mock_log_useraction, mock_actionlog_api,
                                            mock_order_ad_group_settings_update):
@@ -262,8 +323,8 @@ class AdGroupSettingsTest(TestCase):
                         'enable_ga_tracking': True,
                         'adobe_tracking_param': '',
                         'enable_adobe_tracking': False,
-                        'autopilot_state': 1,
-                        'autopilot_daily_budget': '100.00',
+                        'autopilot_state': 2,
+                        'autopilot_daily_budget': '0.00',
                         'retargeting_ad_groups': [2],
                         'enable_ga_tracking': False,
                         'enable_adobe_tracking': False,
@@ -438,8 +499,64 @@ class AdGroupSettingsTest(TestCase):
             self.assertNotEqual(response_settings_dict['enable_adobe_tracking'], False)
             self.assertNotEqual(response_settings_dict['adobe_tracking_param'], 'cid')
             self.assertNotEqual(response_settings_dict['autopilot_state'], 2)
-            self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '100.0000')
+            self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '0.00')
             self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
+
+
+class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.get(pk=2)
+
+        permission = Permission.objects.get(codename='settings_view')
+        self.user.user_permissions.add(permission)
+        self.user.save()
+
+    def _permissions(self, user):
+        permission = Permission.objects.get(codename='can_view_retargeting_settings')
+        user.user_permissions.add(permission)
+        user.save()
+
+    def _get_retargetable_adgroups(self, ad_group_id, user_id=2, with_status=False):
+        user = User.objects.get(pk=user_id)
+        self.client.login(username=user.username, password='secret')
+
+        reversed_url = reverse('ad_group_settings', kwargs={'ad_group_id': ad_group_id})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return json.loads(response.content)
+
+    def test_permission(self):
+        response = self._get_retargetable_adgroups(1)
+        self.assertEqual([], response['data']['retargetable_adgroups'])
+
+    def test_essential(self):
+        self._permissions(self.user)
+
+        response = self._get_retargetable_adgroups(1)
+        self.assertTrue(response['success'])
+
+        adgroups = response['data']['retargetable_adgroups']
+        self.assertEqual(4, len(adgroups))
+        self.assertEqual([1, 2, 9, 10], sorted([adg['id'] for adg in adgroups]))
+        self.assertTrue(all([not adgroup['archived'] for adgroup in adgroups]))
+
+        req = RequestFactory().get('/')
+        req.user = self.user
+        for adgs in models.AdGroup.objects.filter(campaign__account__id=1):
+            adgs.archived = True
+            adgs.save(req)
+
+        response = self._get_retargetable_adgroups(1)
+        self.assertTrue(response['success'])
+
+        adgroups = response['data']['retargetable_adgroups']
+        self.assertEqual(4, len(adgroups))
+        self.assertFalse(any([adgroup['archived'] for adgroup in adgroups]))
 
 
 class AdGroupSettingsStateTest(TestCase):

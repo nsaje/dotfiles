@@ -224,6 +224,28 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
+    def test_adgroup_on_budget_autopilot_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap):
+        self._set_ad_group_end_date(days_delta=3)
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '4', 'source_id': '1'}),
+            data=json.dumps({'state': '2'})
+        )
+        mock_budget_ap.assert_called_with(models.AdGroup.objects.get(id=4), send_mail=False)
+        self.assertEqual(response.status_code, 200)
+
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
+    def test_adgroup_not_on_budget_autopilot_not_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap):
+        self._set_ad_group_end_date(days_delta=3)
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'state': '2'})
+        )
+        self.assertEqual(mock_budget_ap.called, False)
+        self.assertEqual(response.status_code, 200)
+
 
 class CampaignAdGroups(TestCase):
     fixtures = ['test_models.yaml', 'test_views.yaml']
@@ -231,6 +253,7 @@ class CampaignAdGroups(TestCase):
     def setUp(self):
         self.client = Client()
         user = User.objects.get(pk=1)
+        self.user = user
         self.client.login(username=user.email, password='secret')
 
     @patch('utils.redirector_helper.insert_adgroup')
@@ -287,7 +310,6 @@ class CampaignAdGroups(TestCase):
         self.assertIsNotNone(ad_group_settings)
         self.assertEqual(len(actions), 0)
 
-
     @patch('actionlog.api.create_campaign')
     def test_add_media_sources(self, mock_create_campaign):
         ad_group = models.AdGroup.objects.get(pk=2)
@@ -314,8 +336,55 @@ class CampaignAdGroups(TestCase):
                 'Created settings and automatically created campaigns for 1 sources (AdBlade)'
         )
 
+
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.all().filter(
+            ad_group_source__ad_group=ad_group
+        ).group_current_settings()
+        self.assertTrue(all(
+            [adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings]
+        ))
+
+    @patch('actionlog.api.create_campaign')
+    def test_add_media_sources_with_retargeting(self, mock_create_campaign):
+        ad_group = models.AdGroup.objects.get(pk=2)
+
+        # remove ability to retarget from all sources
+        for source_type in models.SourceType.objects.all():
+            source_type.available_actions = [
+                action for action in source_type.available_actions if action != constants.SourceAction.CAN_MODIFY_RETARGETING
+            ]
+            source_type.save()
+
+        request = RequestFactory()
+        request.user = self.user
+
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_settings.retargeting_ad_groups = 1
+        ad_group_settings.save(request)
+        request = None
+
+        view = views.CampaignAdGroups()
+        actions = view._add_media_sources(ad_group, ad_group_settings, request)
+
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        waiting_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
+        added_source = models.Source.objects.get(pk=1)
+
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.all().filter(
+            ad_group_source__ad_group=ad_group
+        ).group_current_settings()
+        self.assertTrue(all(
+            [adgss.state == constants.AdGroupSourceSettingsState.INACTIVE for adgss in ad_group_source_settings]
+        ))
+
     @patch('dash.views.helpers.set_ad_group_source_settings')
     def test_create_ad_group_source(self, mock_set_ad_group_source_settings):
+        # adblade must not be in maintenance for this particular test
+        # so it supports retargeting - which is checked on adgroupsourc creation
+        adblade = models.Source.objects.filter(name__icontains='adblade').first()
+        adblade.maintenance = False
+        adblade.save()
+
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         source_settings = models.DefaultSourceSettings.objects.get(pk=1)
         request = None
@@ -1280,7 +1349,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 2,
             'count': 55,
             'batch_size': 100,
-            'cancelled': False,
         })
 
         batch.inserted_content_ads = 55
@@ -1293,7 +1361,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 3,
             'count': 55,
             'batch_size': 100,
-            'cancelled': False,
         })
 
         # inserting ended, but did not yet switched
@@ -1306,7 +1373,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 3,
             'count': 100,
             'batch_size': 100,
-            'cancelled': False,
         })
 
         batch.propagated_content_ads = 22
@@ -1318,23 +1384,20 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 4,
             'count': 22,
             'batch_size': 100,
-            'cancelled': False,
         })
 
     def test_get_cancelled(self):
         batch = models.UploadBatch.objects.get(pk=2)
         batch.processed_content_ads = 55
-        batch.status = constants.UploadBatchStatus.FAILED
-        batch.cancelled = True
+        batch.status = constants.UploadBatchStatus.CANCELLED
         batch.save()
 
         response = self._get_status()
         self.assertEqual(response, {
-            'status': constants.UploadBatchStatus.FAILED,
+            'status': constants.UploadBatchStatus.CANCELLED,
             'step': 2,
             'count': 55,
             'batch_size': 100,
-            'cancelled': True,
             'errors': {
                 'details': {
                     'description': 'Content Ads upload was cancelled.'
@@ -1354,7 +1417,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 2,
             'count': 55,
             'batch_size': 100,
-            'cancelled': False,
             'errors': {
                 'details': {
                     'description': 'An error occured while processing file.'
@@ -1376,7 +1438,6 @@ class AdGroupAdsPlusUploadStatusTest(TestCase):
             'step': 2,
             'count': 55,
             'batch_size': 100,
-            'cancelled': False,
             'errors': {
                 'details': {
                     'report_url': '/api/ad_groups/1/contentads_plus/upload/2/report/',
@@ -1418,16 +1479,31 @@ class AdGroupAdsPlusUploadCancelTest(TestCase):
         self.assertFalse(batch.cancelled)
         response = self._get_client(superuser=True).get(
             reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
-        batch.refresh_from_db()
+
         response_dict = json.loads(response.content)
         self.assertDictEqual(response_dict, {'success': True})
-        self.assertTrue(batch.cancelled)
+
+        batch.refresh_from_db()
+        self.assertEqual(batch.status, constants.UploadBatchStatus.CANCELLED)
 
     def test_permission(self):
         response = self._get_client(superuser=False).get(
             reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
 
         self.assertEqual(response.status_code, 403)
+
+    def test_validation(self):
+        batch = models.UploadBatch.objects.get(pk=2)
+        batch.propagated_content_ads = batch.batch_size
+        batch.save()
+
+        response = self._get_client(superuser=True).get(
+            reverse('ad_group_ads_plus_upload_cancel', kwargs={'ad_group_id': 1, 'batch_id': 2}), follow=True)
+
+        self.assertEqual(response.status_code, 400)
+
+        response_dict = json.loads(response.content)
+        self.assertEqual(response_dict['data']['errors']['cancel'], 'Cancel action unsupported at this stage')
 
 
 class AdGroupSourcesTest(TestCase):
@@ -1556,9 +1632,9 @@ class AdGroupSourcesTest(TestCase):
 
         response_dict = json.loads(response.content)
         self.assertItemsEqual(response_dict['data']['sources'], [
-            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False},  # should return False when DMAs used
-            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
-            {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False},
+            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False, 'can_retarget': True},  # should return False when DMAs used
+            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': False},
+            {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False, 'can_retarget': True},
         ])
 
     def test_available_sources(self):
@@ -1609,6 +1685,35 @@ class AdGroupSourcesTest(TestCase):
                            in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
         self.assertIn(source, ad_group_sources)
         self.assertIn(source, waiting_sources)
+
+
+    def test_put_with_retargeting(self):
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        request = RequestFactory()
+        request.user = User(id=1)
+
+        current_settings = ad_group.get_current_settings()
+        current_settings.retargeting_ad_groups = [2]
+        current_settings.save(request)
+
+        source = models.Source.objects.get(pk=9)
+        st = source.source_type
+        st.available_actions.remove(constants.SourceAction.CAN_MODIFY_RETARGETING)
+        st.save()
+
+        response = self.client.put(
+                reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
+                data=json.dumps({'source_id': '9'})
+        )
+        self.assertEqual(response.status_code, 400)
+
+        ad_group_sources = ad_group.sources.all()
+        waiting_sources = (ad_group_source.source for ad_group_source
+                           in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
+        self.assertNotIn(source, ad_group_sources)
+        self.assertNotIn(source, waiting_sources)
 
     def test_put_existing_source(self):
         response = self.client.put(

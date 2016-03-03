@@ -145,13 +145,13 @@
 
 -   fields:
         type: 'b1'
-        available_actions: [4, 19]
+        available_actions: [4, 19, 20]
     model: dash.sourcetype
     pk: 1
 
 -   fields:
         type: 'gravity'
-        available_actions: [1, 2, 3]
+        available_actions: [1, 2, 3, 20]
     model: dash.sourcetype
     pk: 2
 

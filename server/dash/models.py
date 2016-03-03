@@ -120,29 +120,41 @@ class DemoManager(models.Manager):
 
 class FootprintModel(models.Model):
 
+    # Fields that are foreign keys only need to be compared by key
+    # and not by value. With this dict we define which are foreign
+    # keys that don't need to be monitored by value.
+    FOREIGN_KEYS_FIELDS = {}
+
     def __init__(self, *args, **kwargs):
         super(FootprintModel, self).__init__(*args, **kwargs)
         if not self.pk:
             return
         self._footprint()
 
+    def _get_value_fieldname(self, fieldname):
+        if fieldname in self.FOREIGN_KEYS_FIELDS:
+            return self.FOREIGN_KEYS_FIELDS[fieldname]
+        return fieldname
+
     def has_changed(self, field=None):
         if not self.pk:
             return False
         if field:
-            return self._orig[field] != getattr(self, field)
+            return self._orig[field] != getattr(self, self._get_value_fieldname(field))
         for f in self._meta.fields:
-            if self._orig[f.name] != getattr(self, f.name):
+            if self._orig[f.name] != getattr(self, self._get_value_fieldname(f.name)):
                 return True
         return False
 
     def previous_value(self, field):
+        if field in self.FOREIGN_KEYS_FIELDS:
+            raise Exception("Previous value not stored as an object")
         return self.pk and self._orig[field]
 
     def _footprint(self):
         self._orig = {}
         for f in self._meta.fields:
-            self._orig[f.name] = getattr(self, f.name)
+            self._orig[f.name] = getattr(self, self._get_value_fieldname(f.name))
 
     def save(self, *args, **kwargs):
         super(FootprintModel, self).save(*args, **kwargs)
@@ -837,6 +849,10 @@ class SourceType(models.Model):
         elif region_type == constants.RegionType.DMA:
             return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL in self.available_actions
 
+    def can_modify_retargeting_automatically(self):
+        return self.available_actions is not None and\
+            constants.SourceAction.CAN_MODIFY_RETARGETING in self.available_actions
+
     def can_modify_tracking_codes(self):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_MODIFY_TRACKING_CODES in self.available_actions
@@ -967,6 +983,9 @@ class Source(models.Model):
 
     def can_modify_publisher_blacklist_automatically(self):
         return self.source_type.can_modify_publisher_blacklist_automatically() and not self.maintenance and not self.deprecated
+
+    def can_modify_retargeting_automatically(self):
+        return self.source_type.can_modify_retargeting_automatically() and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
@@ -1157,7 +1176,7 @@ class AdGroup(models.Model):
         if not cls.is_ad_group_active(ad_group_settings):
             return constants.AdGroupRunningStatus.INACTIVE
 
-        now = dates_helper.utc_today()
+        now = dates_helper.local_today()
         if ad_group_settings.start_date <= now and\
            (ad_group_settings.end_date is None or now <= ad_group_settings.end_date):
             return constants.AdGroupRunningStatus.ACTIVE
@@ -1235,6 +1254,48 @@ class AdGroup(models.Model):
             archived_settings = AdGroupSettings.objects.all().group_current_settings()
 
             return self.exclude(pk__in=[s.ad_group_id for s in archived_settings if s.archived])
+
+        def filter_running(self):
+            """
+            This function checks if adgroup is active on arbitrary number of adgroups
+            with a fixed amount of queries.
+            An adgroup is active if:
+                - it was set as active(adgroupsettings)
+                - current date is between start and stop(flight time)
+                - has at least one running mediasource(adgroupsourcesettings)
+            """
+            now = dates_helper.local_today()
+            # ad group settings and ad group source settings
+            # are fetched in a separate queryset
+            # because getting current settings and filtering them
+            # in one qs could cause latest settings to be filtered out
+            # but we want to take only latest settings into account
+            latest_ad_group_settings = AdGroupSettings.objects.filter(
+                ad_group__in=self
+            ).group_current_settings().values_list('id', flat=True)
+
+            ad_group_settings = AdGroupSettings.objects.filter(
+                pk__in=latest_ad_group_settings
+            ).filter(
+                state=constants.AdGroupSettingsState.ACTIVE,
+                start_date__lte=now
+            ).exclude(
+                end_date__isnull=False,
+                end_date__lt=now
+            ).values_list('ad_group__id', flat=True)
+
+            latest_ad_group_source_settings = AdGroupSourceSettings.objects.filter(
+                ad_group_source__ad_group__in=self
+            ).group_current_settings().values_list('id', flat=True)
+
+            ad_group_source_settings = AdGroupSourceSettings.objects.filter(
+                pk__in=latest_ad_group_source_settings
+            ).filter(
+                state=constants.AdGroupSourceSettingsState.ACTIVE
+            ).values_list('ad_group_source__ad_group__id', flat=True)
+
+            ids = set(ad_group_settings) & set(ad_group_source_settings)
+            return self.filter(id__in=ids)
 
     class Meta:
         ordering = ('name',)
@@ -2141,6 +2202,11 @@ class CreditLineItem(FootprintModel):
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
 
+    FOREIGN_KEYS_FIELDS = {
+        'account': 'account_id',
+        'created_by': 'created_by_id',
+    }
+
     objects = QuerySetManager()
 
     def is_active(self, date=None):
@@ -2333,6 +2399,12 @@ class BudgetLineItem(FootprintModel):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
+
+    FOREIGN_KEYS_FIELDS = {
+        'campaign': 'campaign_id',
+        'credit': 'credit_id',
+        'created_by': 'created_by_id',
+    }
 
     objects = QuerySetManager()
 
@@ -2735,3 +2807,6 @@ class GAAnalyticsAccount(models.Model):
     account = models.ForeignKey(Account, null=False, blank=False, on_delete=models.PROTECT)
     ga_account_id = models.CharField(max_length=127, blank=False, null=False)
     ga_web_property_id = models.CharField(max_length=127, blank=False, null=False)
+
+    def __unicode__(self):
+        return self.account.name

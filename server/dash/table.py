@@ -535,6 +535,7 @@ class SourcesTable(object):
                     ad_group_sources_settings,
                     sources_states
                 )
+            response['ad_group_autopilot_state'] = level_sources_table.ad_group_settings.autopilot_state
 
         return response
 
@@ -659,9 +660,8 @@ class SourcesTable(object):
 
             helpers.copy_stats_to_row(source_data, row)
 
-            bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None]
-
             if ad_group_level:
+                bid_cpc_value = states[0].cpc_cc if len(states) == 1 else None
                 ad_group_source = None
                 for item in ad_group_sources:
                     if item.source.id == source.id:
@@ -694,7 +694,7 @@ class SourcesTable(object):
                    and source_settings.cpc_cc is not None:
                     row['bid_cpc'] = source_settings.cpc_cc
                 else:
-                    row['bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
+                    row['bid_cpc'] = bid_cpc_value
 
                 if user.has_perm('zemauth.set_ad_group_source_settings') \
                    and 'daily_budget' in row['editable_fields'] \
@@ -705,15 +705,20 @@ class SourcesTable(object):
                     row['daily_budget'] = states[0].daily_budget_cc if len(states) else None
 
                 if user.has_perm('zemauth.see_current_ad_group_source_state'):
-                    row['current_bid_cpc'] = bid_cpc_values[0] if len(bid_cpc_values) == 1 else None
+                    row['current_bid_cpc'] = bid_cpc_value
                     row['current_daily_budget'] = states[0].daily_budget_cc if len(states) else None
 
                 if source_settings is not None:
                     row['autopilot_state'] = source_settings.autopilot_state
 
-            elif len(bid_cpc_values) > 0:
-                row['min_bid_cpc'] = float(min(bid_cpc_values))
-                row['max_bid_cpc'] = float(max(bid_cpc_values))
+            else:
+                bid_cpc_values = [s.cpc_cc for s in states if s.cpc_cc is not None and
+                                  s.state == constants.AdGroupSourceSettingsState.ACTIVE]
+                row['min_bid_cpc'] = None
+                row['max_bid_cpc'] = None
+                if len(bid_cpc_values) > 0:
+                    row['min_bid_cpc'] = float(min(bid_cpc_values))
+                    row['max_bid_cpc'] = float(max(bid_cpc_values))
 
             # add conversion fields
             for field, val in source_data.iteritems():
@@ -753,7 +758,8 @@ class AccountsAccountsTable(object):
 
         accounts_settings = models.AccountSettings.objects\
             .filter(account__in=accounts)\
-            .group_current_settings()
+            .group_current_settings()\
+            .select_related('default_account_manager', 'default_sales_representative')
 
         size = max(min(int(size or 5), 4294967295), 1)
         if page:
@@ -1536,6 +1542,7 @@ class AccountCampaignsTable(object):
     def get(self, user, account_id, filtered_sources, start_date, end_date, order, show_archived):
         account = helpers.get_account(user, account_id)
 
+        has_view_managers_permission = user.has_perm('zemauth.can_see_managers_in_campaigns_table')
         has_view_archived_permission = user.has_perm('zemauth.view_archived_entities')
         show_archived = show_archived == 'true' and\
             user.has_perm('zemauth.view_archived_entities')
@@ -1545,7 +1552,8 @@ class AccountCampaignsTable(object):
 
         campaigns_settings = models.CampaignSettings.objects\
             .filter(campaign__in=campaigns)\
-            .group_current_settings()
+            .group_current_settings()\
+            .select_related('campaign_manager')
 
         reports_api = get_reports_api_module(user)
         stats = reports.api_helpers.filter_by_permissions(reports_api.query(
@@ -1603,6 +1611,7 @@ class AccountCampaignsTable(object):
                 stats,
                 last_success_actions_joined,
                 order,
+                has_view_managers_permission,
                 has_view_archived_permission,
                 show_archived,
                 campaign_budget,
@@ -1660,7 +1669,7 @@ class AccountCampaignsTable(object):
         )
 
     def get_rows(self, user, account, campaigns, campaigns_settings, campaign_status_dict, stats,
-                 last_actions, order, has_view_archived_permission, show_archived,
+                 last_actions, order, has_view_managers_permission, has_view_archived_permission, show_archived,
                  campaign_budget, campaign_spend):
         rows = []
 
@@ -1693,6 +1702,12 @@ class AccountCampaignsTable(object):
                 continue
 
             row['state'] = campaign_status_dict[campaign.id]
+
+            if has_view_managers_permission:
+                row['campaign_manager'] = None
+                if campaign_settings:
+                    row['campaign_manager'] = helpers.get_user_full_name_or_email(
+                        campaign_settings.campaign_manager, default_value=None)
 
             if has_view_archived_permission:
                 row['archived'] = archived

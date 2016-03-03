@@ -322,6 +322,18 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return false;
     };
 
+    $scope.isChartVisible = function () {
+        return $state.is('main.adGroups.adsPlus') ||
+            $state.is('main.adGroups.sources') ||
+            $state.is('main.adGroups.publishers') ||
+            $state.is('main.campaigns.ad_groups') ||
+            $state.is('main.campaigns.sources') || 
+            $state.is('main.accounts.campaigns') ||
+            $state.is('main.accounts.sources') || 
+            $state.is('main.allAccounts.accounts') ||
+            $state.is('main.allAccounts.sources');
+    };
+
     $scope.$on('$stateChangeSuccess', function () {
         $scope.currentRoute = $state.current;
         $scope.setDateRangeFromSearch();

@@ -304,7 +304,7 @@ def get_ad_group_sources_waiting(**kwargs):
         action_type=constants.ActionType.AUTOMATIC,
         state__in=[constants.ActionState.WAITING, constants.ActionState.FAILED],
         **constraints
-    )
+    ).select_related('ad_group_source')
 
     return [action.ad_group_source for action in actions]
 
