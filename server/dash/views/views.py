@@ -931,7 +931,7 @@ class Account(api_common.BaseApiView):
         account = models.Account(name=create_name(models.Account.objects, 'New account'))
         account.save(request)
 
-        helpers.loguseraction_if_necessary(request, constants.UserActionType.CREATE_ACCOUNT, account=account)
+        helpers.log_useraction_if_necessary(request, constants.UserActionType.CREATE_ACCOUNT, account=account)
 
         response = {
             'name': account.name,
