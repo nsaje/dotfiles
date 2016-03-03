@@ -116,6 +116,96 @@ class AdGroupSettingsTest(TestCase):
             'success': True
         })
 
+    def test_get_not_retargetable(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        for source_type in models.SourceType.objects.all():
+            if source_type.available_actions and constants.SourceAction.CAN_MODIFY_RETARGETING in source_type.available_actions:
+                source_type.available_actions.remove(constants.SourceAction.CAN_MODIFY_RETARGETING)
+            source_type.save()
+
+        req = RequestFactory().get('/')
+        req.user = User(id=1)
+
+        for source_settings in models.AdGroupSourceSettings.objects.all():
+            source_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
+            source_settings.save(req)
+
+        response = self.client.get(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            follow=True
+        )
+
+        self.assertDictEqual(json.loads(response.content), {
+            'data': {
+                'action_is_waiting': False,
+                'default_settings': {
+                    'target_devices': ['mobile'],
+                    'target_regions': ['NC', '501'],
+                },
+                "retargetable_adgroups": [
+                    {
+                        "campaign_name": "test campaign 1",
+                        "archived": False,
+                        "id": 1, "name": "test adgroup 1"
+                    },
+                    {
+                        "campaign_name": "test campaign 2",
+                        "archived": False,
+                        "id": 2, "name": "test adgroup 2"
+                    },
+                    {
+                        "campaign_name": "test campaign 1",
+                        "archived": False,
+                        "id": 9,
+                        "name": "test adgroup 9"
+                    },
+                    {
+                        "campaign_name": "test campaign 1",
+                        "archived": False,
+                        "id": 10, "name": "test adgroup 10"
+                    },
+                ],
+                'settings': {
+                    'adobe_tracking_param': '',
+                    'cpc_cc': '',
+                    'daily_budget_cc': '100.00',
+                    'enable_adobe_tracking': False,
+                    'enable_ga_tracking': True,
+                    'end_date': '2015-04-02',
+                    'id': '1',
+                    'name': 'test adgroup 1',
+                    'start_date': '2015-03-02',
+                    'state': 2,
+                    'target_devices': ['desktop', 'mobile'],
+                    'target_regions': ['UK', 'US', 'CA'],
+                    'tracking_code': 'param1=foo&param2=bar',
+                    'autopilot_state': 1,
+                    'autopilot_daily_budget': '50.00',
+                    'retargeting_ad_groups': [3],
+                    'enable_ga_tracking': True,
+                    'enable_adobe_tracking': True,
+                    'adobe_tracking_param': 'pid',
+                    'tracking_code': 'param1=foo&param2=bar',
+                    'autopilot_min_budget': '100'
+                },
+                'warnings': {
+                    'retargeting': {
+                        'text': u"You have some active media sources that"
+                            " don't support retargeting. To start using it please disable/pause"
+                            " these media sources:",
+                        'sources': [
+                            'AdsNative',
+                            'Gravity',
+                            'Yahoo',
+                        ],
+                    }
+                }
+            },
+            'success': True
+        })
+
+
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
     @patch('dash.views.helpers.log_useraction_if_necessary')
