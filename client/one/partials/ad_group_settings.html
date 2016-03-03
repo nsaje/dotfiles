@@ -124,12 +124,21 @@
                     Retargeting
                     <zem-help-popover content="Content ads will only be shown to people who have already seen an ad from selected ad groups." placement="top"></zem-help-popover>
                 </label>
-
-                <div class="col-xs-6 col-md-4">
-                    <zem-retargeting zem-selected-adgroup-ids="settings.retargetingAdGroups" zem-retargetable-adgroups="retargetableAdGroups" zem-account="account" class="ui-select-bigdrop"></zem-retargeting>
+                <div ng-if="warnings.retargeting !== undefined" class="col-xs-6 alert alert-info form-alert-box">
+                    <div class="form-alert-exclamation">
+                        <img class="warning-icon" ng-src="{{ config.static_url }}/one/img/notification-warning.svg"></img>
+                    </div>
+                    <div class="form-alert-body">
+                        {{ warnings.retargeting.text }}                   
+                        <ul>
+                            <li ng-repeat="source in warnings.retargeting.sources">{{ source }}</label>
+                        </ul>
+                    </div>
                 </div>
 
-                <label ng-repeat="error in errors.retargetingIds" class="control-label error">{{ error }}</label>
+                <div class="col-xs-6 col-md-4 after-form-alert-box">
+                    <zem-retargeting ng-if="warnings.retargeting === undefined" zem-selected-adgroup-ids="settings.retargetingAdGroups" zem-retargetable-adgroups="retargetableAdGroups" zem-account="account" class="ui-select-bigdrop"></zem-retargeting>
+                </div>
             </div>
 
             <div class="form-group" ng-class="{'has-error': !!errors.trackingCode}">

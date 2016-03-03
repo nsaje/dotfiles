@@ -822,7 +822,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 for (var source, i = 0; i < data.sources.length; i++) {
                     source = data.sources[i];
 
-                    var notificationMsg;
+                    var notificationMsg = '';
                     if (!source.canTargetExistingRegions) {
                         notificationMsg = source.name + ' doesn\'t support DMA targeting. Turn off DMA targeting to add ' + source.name + '.';
                     }
