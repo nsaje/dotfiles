@@ -110,7 +110,8 @@ class AdGroupSettingsTest(TestCase):
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
                     'autopilot_min_budget': '100'
-                }
+                },
+                'warnings': {}
             },
             'success': True
         })
