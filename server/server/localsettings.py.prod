@@ -1,0 +1,212 @@
+#!/usr/bin/env python
+
+import socket
+import time
+import os
+
+from secretcrypt import Secret
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+TEMPLATE_DEBUG = DEBUG
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK7AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACSMIGPBgkqhkiG9w0BBwaggYEwfwIBADB6BgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDAN3zo4qfYMJ/NkP2AIBEIBNdJszHvK9nhndxS9hIpiLnMWN1vWYUrQbEEudStHg0Q3vl+mKdIvR3rPNcbXj1YLddebdzXlPBxQdVEX1G7ltCC2O333j2N4gU52naF8=').get()
+
+STATS_DB_NAME = 'stats'
+
+# Database
+# https://docs.djangoproject.com/en/1.7/ref/settings/#databases
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'one',
+        'USER': 'eins23',
+        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKQAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABnMGUGCSqGSIb3DQEHBqBYMFYCAQAwUQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyABkyqY8QJZjwsHy0CARCAJBi/ym1HuIwNqAZf0AuNbRVWUkxTpowAhZ4X79YguiFK81/trQ==').get(),
+        'HOST': 'zemantaone.cmkkg7ghktp5.us-east-1.rds.amazonaws.com',
+        'PORT': 5432,
+        'TEST': {
+            'NAME': 'test_one_%s_%s' % (socket.gethostname(), int(time.time() * 1E6))
+        }
+    },
+    'stats': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'one',
+        'USER': 'eins',
+        'PASSWORD': Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKYAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAABvMG0GCSqGSIb3DQEHBqBgMF4CAQAwWQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxNqKE9myZXmnLwhqUCARCALHbH8JP18GmTUhaxOmWSi2ClezAYVZ+r72uvYNuk3CFW6UOuiQUtXQrujDQU').get(),
+        'HOST_OLD': 'one.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
+        'HOST': '172.26.4.104',
+        'PORT': 5439
+    }
+}
+
+ALLOWED_HOSTS = ['*']
+
+BASE_URL = 'https://one.zemanta.com'
+
+# Email settings
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.mailgun.org'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'postmaster@zemanta.com'
+EMAIL_HOST_PASSWORD = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAzpGjCakrtQfw7D11MCARCAOwKSTJW6VlUIy62SvaX3+b3tcHyyZBLIlJozr0SYzHqQ3q6VrDEHrOCKgTJBtmVSPx+aluzY/KQQ6per').get()
+
+SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = True
+SUPPLY_REPORTS_FROM_EMAIL = 'supplyreports@zemanta.com'
+FROM_EMAIL = 'help@zemanta.com'
+
+MAILGUN_API_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKsAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACDMIGABgkqhkiG9w0BBwagczBxAgEAMGwGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMB6ReHxK8dHsgDDsWAgEQgD9FrHCKTLoFFDsJoY7H8xakPwfy0bifTZoRH6ppPdNcKvILHk0CI2hiHHsGFDjJTnEdi2aOlfVPfoL5Ac8+L3E=').get()  # mustn't be unicode
+
+# Path to log file
+LOG_FILE = '/app/logs/zemanta-eins.server.log'
+
+# Stats
+STATSD_HOST = os.environ.get('STATSD_PORT_8125_UDP_ADDR', 'localhost')
+STATSD_PORT = int(os.environ.get('STATSD_PORT_8125_UDP_PORT', 8125))
+
+TELEGRAF_HOST = '172.17.0.1'
+TELEGRAF_PORT = 8125
+
+# Saucelabs
+SAUCELABS_USERNAME = 'wafelj'
+SAUCELABS_ACCESS_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKsAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACDMIGABgkqhkiG9w0BBwagczBxAgEAMGwGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMJY1fdJ1qxUcMzLbmAgEQgD/0TuxFlrYz8zucDMptj/Wgk+IR97/cGHfvF6C3ahg99gS8OghKNpte/ZMqf9CH+sdErvQ0g09ZOf6u5/cbcko=').get()
+
+# Auth
+GOOGLE_OAUTH_ENABLED = True
+GOOGLE_OAUTH_CLIENT_ID = '922772446122-g263mofafc1jimq6faq62brmu5op5qfb.apps.googleusercontent.com'
+GOOGLE_OAUTH_CLIENT_SECRET = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKfAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB2MHQGCSqGSIb3DQEHBqBnMGUCAQAwYAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAz3Qc5+jr+fM1SLy3cCARCAM/xG/mvM9yS8nqePTlwd6jdhtD7Y4n5WGwTJPVB6qS3YbL6I1A6V8nu5HhLMbrQG/YJrGQ==').get()
+
+# Static files
+BUILD_NUMBER = None
+
+if os.environ.get('BUILD'):
+    BUILD_NUMBER = os.environ.get('BUILD')
+elif os.path.isfile('build_number.txt'):
+    with open('build_number.txt', 'r') as build_number:
+        BUILD_NUMBER = build_number.read().strip()
+
+if BUILD_NUMBER:
+    ROOT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}'.format(BUILD_NUMBER)
+    SERVER_STATIC_URL = ROOT_STATIC_URL + '/server'
+    CLIENT_STATIC_URL = ROOT_STATIC_URL + '/client'
+else:
+    SERVER_STATIC_URL = '/static'
+    CLIENT_STATIC_URL = 'http://0.0.0.0:9999'
+
+
+# Zwei callback base URL
+ZWEI_CALLBACK_BASE_URL = os.environ.get('ZWEI_CALLBACK_BASE_URL', 'https://one-cb.zemanta.com')
+
+# Zwei API
+ZWEI_API_URL = 'https://zwei.zemanta.com/purcel/task/'
+ZWEI_API_TASKS_URL = 'https://zwei.zemanta.com/purcel/tasks/'
+ZWEI_API_GET_DASH_URL_URL = 'https://zwei.zemanta.com/purcel/dash_url/'
+ZWEI_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxbBxaeRkVLiSadrR0CARCAO6QohWauEXIl/R/vAzN8VLeETU79qZGnzYxyAg3bt1dAf2dZgFwu3qUJAW1hJQXZM/n0oSUMUOFWGy5l').get()
+
+# Network credentials encryption key
+CREDENTIALS_ENCRYPTION_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyvY/0jfzrrgNtFqh0CARCAO34sLgm638MGubiIAdZUB1bKIufmrizVhP9dEWXqBftFvKyn0evtcHtEg7/eDG7cBg25nMhDgif7OXiV').get()  # has to be 32 bytes
+
+# Pagerduty settings
+PAGER_DUTY_ENABLED = True
+PAGER_DUTY_URL = 'https://events.pagerduty.com/generic/2010-04-15/create_event.json'
+PAGER_DUTY_ADOPS_SERVICE_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAw5lF3I191Lg8w1NMkCARCAO+tCIGKBBUVGGRvoAHK2hg1Xq/Oi32HWknLKhMFMPJpTi0QV9LU1ne39/y4+Q6PWm/BJYzcFVcCquGhz').get()
+PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAylXmDSRg1yTW7NZXECARCAOy5p4/8cTtbo+v9fyG3Dp8ri9A/KtB63I9PMbty0Ecb3qP+gsuYHc1ZGDP+wofYaUWH2NXqVEZBT1eq9').get()
+PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAzKOhv9CQfPyOGrg+sCARCAO+FjeoXl8gYz7leGpQWkqMjcydX9HVwL/GbCab6yUtHNG7//5Zu2K47YwxsH2yzgpMroOe/XNQEkA+gS').get()
+
+# deprecated
+PAGER_DUTY_SERVICE_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAywV0m60VH72qBo96UCARCAO/gzpBgkCvarjL2K0t11XdGdV6oVTt35bmwhCF14n9K9psen8WNOrTowJsoM9d2EQAwRe35HDpl6Hc7z').get()
+
+# Sentry config
+SENTRY_PUBLIC_KEY = '96ae3fca225743d0b52c08870527386e'
+SENTRY_SECRET_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwYn+tJNvoCzQR/1vwCARCAO7Mj3d1tkc+m/hDo+ySG+pugkfDvrULlVcxm1nPRJSzGAHkhrwKFoJMoUwlab+8QvU2E//vGExuaG0c6').get()
+RAVEN_CONFIG = {
+    'dsn': 'https://%s:%s@app.getsentry.com/29768' % (SENTRY_PUBLIC_KEY, SENTRY_SECRET_KEY),
+}
+# Amazon AWS keys (user_name: zemanta-zwei)
+AWS_ACCESS_KEY_ID = 'AKIAI52YNGCE3IUI2KOA'
+AWS_SECRET_ACCESS_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKwAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACHMIGEBgkqhkiG9w0BBwagdzB1AgEAMHAGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMcmkc1pAE/H0IzEgeAgEQgEPAnLCPUdQnU0KC86lwCboRnifsL7neSVJK6ZBjN8jAY6eCEDZf/CktDIt27ZoUxI8LDODOQgjGtkmMZR6pPE369Y0S').get()
+
+# S3 related settings
+S3_BUCKET = 'zemantaone'
+S3_BUCKET_STATS = 'z1-stats'
+USE_S3 = True
+
+# adgroup-level reports aggregations
+QUERY_AGGREGATE_REPORTS=True
+
+# email of the demo user
+DEMO_USER_EMAIL = 'test.account@zemanta.si'
+DEMO_USER_PASSWORD = 'zemantadsp'
+DEMO_USERS = (
+    DEMO_USER_EMAIL,
+    'demo2@zemanta.si',
+)
+
+# cache settings
+MEMCACHED_ADDR = os.environ.get('MEMCACHED_PORT_11211_TCP_ADDR', '127.0.0.1')
+MEMCACHED_PORT = os.environ.get('MEMCACHED_PORT_11211_TCP_PORT', '11211')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+        'LOCATION': ['%s:%s' % (MEMCACHED_ADDR, MEMCACHED_PORT),
+        ]
+    }
+}
+
+USE_HASH_CACHE = True
+HASH_CACHE_TTL = 24 * 60 * 60
+
+Z3_API_IMAGE_URL = 'https://images-api.zemanta.com/api/image/'
+Z3_API_THUMBNAIL_URL = 'https://images.zemanta.com/api/thumbnail/'
+
+BROKER_TRANSPORT = 'sqs'
+BROKER_USER = AWS_ACCESS_KEY_ID
+BROKER_PASSWORD = AWS_SECRET_ACCESS_KEY
+
+BROKER_URL = BROKER_TRANSPORT + '://' + BROKER_USER + ':' + BROKER_PASSWORD + '@'
+
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_ACCEPT_CONTENT = ['pickle']
+
+SQS_QUEUE_PREFIX = 'prod'
+
+SQS_REGION = 'us-east-1'
+SQS_VISIBILITY_TIMEOUT = 10 * 60
+
+CELERY_DEFAULT_CONVAPI_QUEUE = SQS_QUEUE_PREFIX + '-' +'convapi'
+CELERY_DEFAULT_CONVAPI_V2_QUEUE = SQS_QUEUE_PREFIX + '-' + 'convapi_v2'
+CAMPAIGN_CHANGE_QUEUE = SQS_QUEUE_PREFIX + '-campaign_change'
+DAILY_STATEMENTS_CHANGE_QUEUE = SQS_QUEUE_PREFIX + '-budget-change'
+
+BROKER_TRANSPORT_OPTIONS = {
+    'visibility_timeout': SQS_VISIBILITY_TIMEOUT,
+    'region': SQS_REGION,
+    'polling_interval': 10,
+}
+
+R1_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK0AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACLMIGIBgkqhkiG9w0BBwagezB5AgEAMHQGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMM+bIgTk3Vp2WIweQAgEQgEdO7/pZM+yJASejQtrIp3IorKcBbqqBZzI8y+M9/XCYsr2RH/GZ7KxanjNCjLwG8uJb07vRwdOBZkku/z695V0UPUNXcKFGRg==').get()
+R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
+R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
+R1_VALIDATE_API_URL = 'https://r1.zemanta.com/api/validate/'
+R1_BLANK_REDIRECT_URL = 'https://r1.zemanta.com/r/{redirect_id}/z1/1/{content_ad_id}/'
+#R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions/request/{date}/{account_id}/{slug}/'
+#R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions/result/{job_id}/'
+R1_CONVERSION_STATS_URL = 'https://r1.zemanta.com/api/conversions2/request/{date}/'
+R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions2/result/{job_id}/'
+
+# Budget automation
+DEPLETING_AVAILABLE_BUDGET_SCALAR = 1.5
+DEPLETING_CAMPAIGN_BUDGET_EMAIL = 'help@zemanta.com'
+
+SHARETHROUGH_PARAM_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK0AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACLMIGIBgkqhkiG9w0BBwagezB5AgEAMHQGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMBYoKHtA/dtWrootnAgEQgEdYpjkVH2aLMAefv0DxA/oqMna90SwB7h1DJJ1YT2KME21OSD4z2VMTIiw99UNDQNTgI3U0ex2lXIR3mPD02eervTEyLRJBXQ==').get()
+
+SEND_NOTIFICATION_MAIL = True
+
+#BIDDER_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK0AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACLMIGIBgkqhkiG9w0BBwagezB5AgEAMHQGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMUp4fTNfsoQXvcN/2AgEQgEeK1YVDW481cJcjPEcejHo02KokiSKwmn+c3BiYkuYwwdCB7yzmLd7U8PyK/Ay46O67ZLrBdDtUmqhJCrpJneJiqe/+qnnOBQ==').get()
+BIDDER_API_SIGN_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK0AQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACLMIGIBgkqhkiG9w0BBwagezB5AgEAMHQGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMsbpTkX9V2jgJO4YFAgEQgEfLNjTOPiu5cdWeiSoaNuRCM5aXCIJbWUopbdCjGZ2mrTpQozlt8czEE8zyaHNaLoIEPLx0p5Tc1zjur7bodCCsj1oIYNsORQ==').get()
+
+GA_CLIENT_EMAIL = 'account-1@zemanta-api.iam.gserviceaccount.com'
+GA_PRIVATE_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexK5DgEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAcQMIIHDAYJKoZIhvcNAQcGoIIG/TCCBvkCAQAwggbyBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDATrdLIIL8iV8UFMewIBEICCBsMCFGM0ZgmG+u1wqhg9hyUuXXGjFB612/VpR7mxMn7ZuVi5zg3PxLl6CzCfbvPHrDgJZo+DxMIfRS3iz2JNwzKpLPbO8fmcMJnuZkD7lSlGYZT8vhD8obsHrFJImMOyRF8qmgf3tFqZ4qfQguQpolXHklz9LdCCrPL/vC9ERRs4g2OSTtd0B6eKa/Jk/jLJRLYCHFLy3LZYpCcjx1nkByTkXc9yRR9pU7mM0PXiQoZDsu+qYnBZSEF0CjQbEVcmxrHqkaWJYJ0kvQ1nip8fhlJpob8So456G/LTBXVk3RRIAqAx/6vsdpFWg63CKSFfHBzu1KSkr64HkG8jx5TPnApCDtLgnPIOUq+N6ECtxTXau6+dZrg+tXcFH8J6gjnn781qdbeuM7O+o4rIy91Lg+3BESoTsHPsIui51kDM9M/Gdw1tPziUZgX+7T/JMqK9NVMwNJN4OfqxRN6bOi8v7iW/uK2HjS0b5wDQxxxJuc1pwjbR7Gi+6bq66yPcNVTurs5RnkhKUONeXchOl2IFfuKG1N/TmkywlBGXwxGSI5A0mfKDZnQEUhauZ4xaMbuWjwMk0/PvratLP5wKHeRocpjn6W7p4mpXXQN0S/N0g7U33qJ1r1jKZcUbvcpltWqTLBg56qLyU1Xdg9Q0flj0bYT8/8Hw/IDNXBKRtUHU2w6K77fxmm0I2etVW2eG66cVE09wzld3xC1IyLXRgD3Gsw81KNObvWfcGoZxq0UbNs8cDtzz2QCAKEFVC/9ozub6F/3ZjEFmLwYFHpj5IyNFk24lTHdId4i0ceFWsB+NuRsx1XfHk67OZ5nna7YvHqyGhgmBZouNeOqQ7o8aeYq05rVRe2dzpBBDAUW8dZ9IObr6v83kk4s6LSOORC929qM8r573b4c+DUx6XErR9qEOVuhraoRymt4BoOoapRhiZ7ngQunFrdqKqtcUMMEfNjc65bU0uxUTtykC43ZSw+pd8swcd9BAJvejlLEAOZO/yNdZ0Lrz68SHNK3PymCYhAGtIHkAzKrwnKpd3nC44qoPsPRDtUvAQXj0wh8z7lwJVMMH8MlyZybYEresfoNO8Kghtxpp6/K9UGhrakZAbOym1oQtPYJP9zg5f5W8Upa4tVSQZL+hW4AJqx4JVKJn1SJOg0tKDivdUEuqYzMU5lyngNNngr5bFGiFqnKxI/+IKBuC5pBoq41HsULT8snw2xo5Vo5+5JyuELpUevX1jvNwktzEzhBr5d1+uz00CPnvTc6Xxbfk1wANY7uDOoJZiYjJx3xv4k4xFF7DkA+RZzH6pnktm7Gov/2n44fXJhxkc75I36BEJtF7XV+vhCBfUqQThpswzj40osAb4KG0etUr2tvWzQLq1Kx5y05+FiixWqZyrbc35KhpNu0c5x93EJjziMYPVmS/62RGXbSk+5OFnIoMpnHYCj6+hu0CKERc7VNrzFV9uFKWkL15GlmzQik1qwSDYUx3S4PCQ4XmAlhNMxeaFmEGMvlnF2fAM4wgnJAfHViPBoyJE1LMFAKFJI8lGAUb2XH8bcit6W7Wznaee8r9fEZFPMo4pP7hVxZzPt+quk2IswYNMj5rqSIUjVl8nx4J9zZeO80dE2ZvFDUPOrHv9C+KYF55llM6QWWyZI5gkay/9yNGokIDI0rSvAs1E6+TGK8DU4TuOAEUSOqh9et/GU4yt4EwWBncDA77TyrXMMHIKVx+ObFDKgKEkdoCOTrnwqF1SFSInQtL4OOnv/aDbYdMxSwHKlUmizjmLEcSEpdugViklmDoBkbdkpy/aGLQnIHaTRVpFyGOrW4tQ5Mcp5YOkkA+IszSJ7u4F2kt2Y2AfEmSenVnws0xyJaO7l2dSEf4Ilq6aWVQEZH+tx5MiCDIQoVwRHiSfaNlQVfqPnR9sKKmthe+2DTyML/LlCNKUY+sN2+sop8Dv/d6Fi+b5WxF3htRQnmQC6TWLtor2YnIp2VwYuMfUSHPbD+qvTUGPx8Q2EkQ6BP8HKY+iQeUv3p6uH0lcL+0dbgoZKNN6v9U9fKwKQPb0nwyTTtpSR+XKDgo2HLB1T5mx6y1BUeETmsZgVqgpRW/JuKFwI7gS/ZN4mIH8M6/3JenQp2f5K+hYLox1GL6oKsTo4uxcYKk6A7Ir4wtIxvQyH8l1tpf2F5nlVZDO2FfDTzdGhZ9pOTSb4Cr0Tvtw7UKBShwEbAfZrbr/LCvIkOBMgIo+76bRvafscIkfhzKgvQHyNOLg/axe9JXGrBqLlYWXBjYxOxpXbZEL7dJ4Od0h4fCTlI4/gmdOKnTw+EcuGJWY0Us56f9xZY=').get()
+
+BUDGET_RESERVE_FACTOR = 0.05

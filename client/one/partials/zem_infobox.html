@@ -1,10 +1,9 @@
 <div class="infobox infobox-background infobox-{{header.level}}">
-    <div class="infobox-header" ng-class="{'infobox-header-wo-subtitle': header.subtitle === undefined}">
+    <div class="infobox-header">
         <div class="infobox-header-row">
             <div class="infobox-header-cell infobox-title infobox-status infobox-{{header.active}}-icon" ng-if="header.active !== undefined">&nbsp;</div>
             <div class="infobox-header-title-cell">
                 <div class="infobox-title"><span class="infobox-title-level" ng-show="header">{{header.levelVerbose}}</span>{{header.title}}</div>
-                <div ng-if="header.subtitle !== undefined" class="infobox-subtitle">{{header.subtitle}}</div>
             </div>
         
             <div class="infobox-header-button-cell">

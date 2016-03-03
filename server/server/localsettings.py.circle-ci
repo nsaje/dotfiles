@@ -1,9 +1,13 @@
+#!/usr/bin/env python
+
+from secretcrypt import Secret
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
+SECRET_KEY = Secret('kms:region=us-east-1:CiB50kZLFNrp4uMD3sEwg9I9xA3R2c03wBYCqilvrmwhiBK7AQEBAgB4edJGSxTa6eLjA97BMIPSPcQN0dnNN8AWAqopb65sIYgAAACSMIGPBgkqhkiG9w0BBwaggYEwfwIBADB6BgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDOoit0knmfF+MmprKgIBEIBNiDcq5UTM6wBPguwgFIC1Fdw3KrIpmvShRrU9XJOvk9xQk7F/wTRhZmBDVxH7ynT7KrgqVikdxnrI2I0EJyXREJOUF0luI6sJO2UMyyY=').get()
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -35,9 +39,9 @@ DATABASES = {
     STATS_E2E_DB_NAME: {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'circle_test',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
+        'USER': 'e2ecci',
+        'PASSWORD': Secret('kms:region=us-east-1:CiB50kZLFNrp4uMD3sEwg9I9xA3R2c03wBYCqilvrmwhiBKZAQEBAgB4edJGSxTa6eLjA97BMIPSPcQN0dnNN8AWAqopb65sIYgAAABwMG4GCSqGSIb3DQEHBqBhMF8CAQAwWgYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy/RLbU3xBuasYmmYoCARCALSx2b2/UxDAszGrYIhdg99L2xZ2jOctlNiCFTeeEiDCTJRpjMWcCtF7j7/JqBQ==').get(),
+        'HOST': 'development-cluster.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
         'PORT': 5439,
     }
 }
@@ -49,13 +53,13 @@ EMAIL_USE_TLS = True
 EMAIL_HOST = ''
 EMAIL_PORT = 587
 EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_PASSWORD = Secret('').get()
 
 SEND_NOTIFICATION_MAIL = False
 SUPPLY_REPORTS_FROM_EMAIL = 'supplyreports@zemanta.com'
 FROM_EMAIL = 'help-test@zemanta.com'
 
-MAILGUN_API_KEY = ''
+MAILGUN_API_KEY = Secret('').get()  # mustn't be unicode
 
 # Path to log file
 LOG_FILE = '/home/ubuntu/zemanta-eins.server.log'
@@ -64,14 +68,17 @@ LOG_FILE = '/home/ubuntu/zemanta-eins.server.log'
 STATSD_HOST = ''
 STATSD_PORT = 8125
 
+TELEGRAF_HOST = ''
+TELEGRAF_PORT = 8135
+
 # Saucelabs
 SAUCELABS_USERNAME = ''
-SAUCELABS_ACCESS_KEY = ''
+SAUCELABS_ACCESS_KEY = Secret('').get()
 
 # Auth
 GOOGLE_OAUTH_ENABLED = False
 GOOGLE_OAUTH_CLIENT_ID = ''
-GOOGLE_OAUTH_CLIENT_SECRET = ''
+GOOGLE_OAUTH_CLIENT_SECRET = Secret('').get()
 
 # Static files
 SERVER_STATIC_URL = '/static'
@@ -83,16 +90,17 @@ ZWEI_CALLBACK_BASE_URL = ''
 # Zwei API
 ZWEI_API_TASKS_URL = 'http://127.0.0.1/purcel/tasks/'
 ZWEI_API_GET_DASH_URL_URL = 'http://127.0.0.1/purcel/dash_url/'
-ZWEI_API_SIGN_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+ZWEI_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
 
 # Source credentials encryption key
-CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'  # has to be 32 bytes
+CREDENTIALS_ENCRYPTION_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()  # has to be 32 bytes
 
 # Pagerduty settings
 PAGER_DUTY_ENABLED = False
 PAGER_DUTY_URL = ''
-PAGER_DUTY_ADOPS_SERVICE_KEY = ''
-PAGER_DUTY_SYSOPS_SERVICE_KEY = ''
+PAGER_DUTY_ADOPS_SERVICE_KEY = Secret('').get()
+PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret('').get()
+PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret('').get()
 
 # Sentry config
 RAVEN_CONFIG = {
@@ -101,7 +109,7 @@ RAVEN_CONFIG = {
 
 # Amazon AWS keys
 AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY = ''
+AWS_SECRET_ACCESS_KEY = Secret('').get()
 
 # S3 related settings
 S3_BUCKET = ''
@@ -159,7 +167,7 @@ BROKER_TRANSPORT_OPTIONS = {
     'polling_interval': 10,
 }
 
-R1_API_SIGN_KEY = ''
+R1_API_SIGN_KEY = Secret('').get()
 R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
 R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
 R1_VALIDATE_API_URL = 'https://r1.zemanta.com/api/validate/'
@@ -169,7 +177,9 @@ R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions2/result
 
 BIDDER_API_SIGN_KEY = ''
 
-SHARETHROUGH_PARAM_SIGN_KEY = ''
+SHARETHROUGH_PARAM_SIGN_KEY = Secret('').get()
+
+BIDDER_API_SIGN_KEY = Secret('').get()
 
 # BCM
 BUDGET_RESERVE_FACTOR=0.05

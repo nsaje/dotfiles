@@ -2823,6 +2823,24 @@ class CampaignOverviewTest(TestCase):
 
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
+        req = RequestFactory().get('/')
+        req.user = self.user
+
+        adg_start_date = datetime.datetime.now() - datetime.timedelta(days=1)
+        adg_end_date = datetime.datetime.now() + datetime.timedelta(days=1)
+
+        # make all adgroups active
+        for adgs in models.AdGroupSettings.objects.all():
+            adgs.start_date = adg_start_date
+            adgs.end_date = adg_end_date
+            adgs.state = constants.AdGroupSettingsState.ACTIVE
+            adgs.save(req)
+
+        # make all adgroup sources active
+        for adgss in models.AdGroupSourceSettings.objects.all():
+            adgss.state = constants.AdGroupSourceSettingsState.ACTIVE
+            adgss.save(req)
+
         self.setUpPermissions()
         cursor().dictfetchall.return_value = [{
             'adgroup_id': 1,
@@ -2857,13 +2875,22 @@ class CampaignOverviewTest(TestCase):
 
         header = response['data']['header']
         self.assertEqual(u'test campaign 1 \u010c\u017e\u0161', header['title'])
-        self.assertEqual(constants.InfoboxStatus.INACTIVE, header['active'])
+        self.assertEqual(constants.InfoboxStatus.ACTIVE, header['active'])
 
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
 
+        active_adgroup_settings = self._get_setting(settings, 'active ad groups')
+        self.assertEqual('1', active_adgroup_settings['value'])
+
         flight_setting = self._get_setting(settings, 'flight')
-        self.assertEqual('03/02 - 04/02', flight_setting['value'])
+        self.assertEqual('{sm:02d}/{sd:02d} - {em:02d}/{ed:02d}'.format(
+            sm=adg_start_date.month,
+            sd=adg_start_date.day,
+            em=adg_end_date.month,
+            ed=adg_end_date.day,
+
+        ), flight_setting['value'])
 
         device_setting = self._get_setting(settings, 'targeting')
         self.assertEqual('Device: Mobile, Desktop', device_setting['value'])
@@ -2922,6 +2949,21 @@ class AccountOverviewTest(TestCase):
     @patch('reports.redshift.get_cursor')
     @patch('dash.models.Account.get_current_settings')
     def test_run_empty(self, mock_current_settings, cursor):
+        req = RequestFactory().get('/')
+        req.user = self.user
+
+        # make all adgroups active
+        for adgs in models.AdGroupSettings.objects.all():
+            adgs.start_date = datetime.datetime.now() - datetime.timedelta(days=1)
+            adgs.end_date = datetime.datetime.now() + datetime.timedelta(days=1)
+            adgs.state = constants.AdGroupSettingsState.ACTIVE
+            adgs.save(req)
+
+        # make all adgroup sources active
+        for adgss in models.AdGroupSourceSettings.objects.all():
+            adgss.state = constants.AdGroupSourceSettingsState.ACTIVE
+            adgss.save(req)
+
         settings = models.AccountSettings(
             default_account_manager=zemauth.models.User.objects.get(pk=1),
             default_sales_representative=zemauth.models.User.objects.get(pk=2),
@@ -2937,17 +2979,29 @@ class AccountOverviewTest(TestCase):
         }]
         response = self._get_account_overview(1)
         settings = response['data']['basic_settings']
-        header = response['data']['header']
 
-        self.assertEqual(header['subtitle'], 'with 2 campaigns and 4 ad groups')
-
-        pf_setting = self._get_setting(settings, 'platform fee')
-        self.assertEqual('20.00%', pf_setting['value'])
+        count_setting = self._get_setting(settings, 'active campaigns')
+        # 1 campaign has no adroupsourcesettings
+        self.assertEqual('1', count_setting['value'])
         self.assertTrue(response['success'])
 
     @patch('reports.redshift.get_cursor')
     @patch('dash.models.Account.get_current_settings')
     def test_run_empty_non_archived(self, mock_current_settings, cursor):
+        req = RequestFactory().get('/')
+        req.user = self.user
+
+        # make all adgroups active
+        for adgs in models.AdGroupSettings.objects.all():
+            adgs.start_date = datetime.datetime.now() - datetime.timedelta(days=1)
+            adgs.end_date = datetime.datetime.now() + datetime.timedelta(days=1)
+            adgs.state = constants.AdGroupSettingsState.ACTIVE
+            adgs.save(req)
+
+        # make all adgroup sources active
+        for adgss in models.AdGroupSourceSettings.objects.all():
+            adgss.state = constants.AdGroupSourceSettingsState.ACTIVE
+            adgss.save(req)
         settings = models.AccountSettings(
             default_account_manager=zemauth.models.User.objects.get(pk=1),
             default_sales_representative=zemauth.models.User.objects.get(pk=2),
@@ -2955,19 +3009,13 @@ class AccountOverviewTest(TestCase):
 
         mock_current_settings.return_value = settings
 
-        # force one campaign to be archived
-        req = RequestFactory().get('/')
-        req.user = self.user
-
         campaign_settings = models.Campaign.objects.get(pk=1).get_current_settings()
         campaign_settings.archived = True
         campaign_settings.save(req)
 
-
         adgroup_settings = models.AdGroup.objects.get(pk=1).get_current_settings()
         adgroup_settings.archived = True
         adgroup_settings.save(req)
-
 
         # do some extra setup to the account
         cursor().dictfetchall.return_value = [{
@@ -2977,12 +3025,10 @@ class AccountOverviewTest(TestCase):
         }]
         response = self._get_account_overview(1)
         settings = response['data']['basic_settings']
-        header = response['data']['header']
 
-        self.assertEqual(header['subtitle'], 'with 1 campaigns and 3 ad groups')
-
-        pf_setting = self._get_setting(settings, 'platform fee')
-        self.assertEqual('20.00%', pf_setting['value'])
+        count_setting = self._get_setting(settings, 'active campaigns')
+        # 1 campaign has no adroupsourcesettings
+        self.assertEqual('1', count_setting['value'])
         self.assertTrue(response['success'])
 
 
