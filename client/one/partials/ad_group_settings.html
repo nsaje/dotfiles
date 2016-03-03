@@ -131,13 +131,13 @@
                     <div class="form-alert-body">
                         {{ warnings.retargeting.text }}                   
                         <ul>
-                            <li ng-repeat="source in warning.retargeting.sources">{{ source }}</label>
+                            <li ng-repeat="source in warnings.retargeting.sources">{{ source }}</label>
                         </ul>
                     </div>
                 </div>
 
                 <div class="col-xs-6 col-md-4 after-form-alert-box">
-                    <zem-retargeting zem-selected-adgroup-ids="settings.retargetingAdGroups" zem-retargetable-adgroups="retargetableAdGroups" zem-account="account" class="ui-select-bigdrop"></zem-retargeting>
+                    <zem-retargeting ng-if="warnings.retargeting === undefined" zem-selected-adgroup-ids="settings.retargetingAdGroups" zem-retargetable-adgroups="retargetableAdGroups" zem-account="account" class="ui-select-bigdrop"></zem-retargeting>
                 </div>
             </div>
 
