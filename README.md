@@ -188,6 +188,7 @@ entries in LOGGING setting.
 
 And example config for using staging when running with ./manage.py runserver and local database for unit testing.
 
+```python
 DATABASES = {
 	'default': {
 		'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -205,7 +206,7 @@ DATABASES = {
 		'PORT': 5440
 	}
 }
-
+```
 
 ##### Notes on Amazon Redshift and E2E tests
 
