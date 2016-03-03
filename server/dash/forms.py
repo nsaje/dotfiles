@@ -19,7 +19,6 @@ from dash import constants
 from dash import models
 from dash import regions
 from dash import validation_helpers
-from dash import retargeting_helper
 from utils import dates_helper
 
 from zemauth.models import User as ZemUser
