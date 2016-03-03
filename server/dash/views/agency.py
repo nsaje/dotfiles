@@ -108,19 +108,18 @@ class AdGroupSettings(api_common.BaseApiView):
 
     def get_warnings(self, request, ad_group_settings):
         warnings = {}
-        ad_groups = ad_group_settings.retargeting_ad_groups
-        if len(ad_groups) > 0:
-            supports_retargeting, unsupported_sources =\
-                retargeting_helper.supports_retargeting(
-                    ad_group_settings.ad_group
-                )
-            if not supports_retargeting:
-                retargeting_warning = {
-                    'text': "You have some active media sources that don't support retargeting. "
-                            "To start using it please disable/pause these media sources:",
-                    'sources': [s.name for s in unsupported_sources]
-                }
-                warnings['retargeting'] = retargeting_warning
+
+        supports_retargeting, unsupported_sources =\
+        retargeting_helper.supports_retargeting(
+            ad_group_settings.ad_group
+        )
+        if not supports_retargeting:
+            retargeting_warning = {
+                'text': "You have some active media sources that don't support retargeting. "
+                        "To start using it please disable/pause these media sources:",
+                'sources': [s.name for s in unsupported_sources]
+            }
+            warnings['retargeting'] = retargeting_warning
         return warnings
 
     def get_dict(self, settings, ad_group):
