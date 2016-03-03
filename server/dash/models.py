@@ -17,6 +17,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.core.validators import validate_email
+from timezone_field import TimeZoneField
 
 
 import utils.string_helper
@@ -777,6 +778,8 @@ class SourceType(models.Model):
         verbose_name='Max clicks allowed to delete per daily report',
         help_text='When we receive an empty report, we don\'t override existing data but we mark report aggregation as failed. But for smaller changes (as defined by this parameter), we do override existing data since they are not material. Zero value means no reports will get deleted.',
     )
+
+    budgets_tz = TimeZoneField(default='America/New_York')
 
     def can_update_state(self):
         return self.available_actions is not None and\
