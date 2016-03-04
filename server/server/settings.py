@@ -218,6 +218,19 @@ if TESTING:
     CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_DEFAULT_CONVAPI_QUEUE
     CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_DEFAULT_CONVAPI_V2_QUEUE
 
+    TESTING_DB_PREFIX = 'testing_'
+    testing_databases = {db: DATABASES[db] for db in DATABASES.keys() if db.startswith(TESTING_DB_PREFIX)}
+    for database_name in DATABASES.keys():
+        if database_name.startswith(TESTING_DB_PREFIX):
+            continue
+        testing_db_replacement = 'testing_{}'.format(database_name)
+        if testing_db_replacement in testing_databases:
+            DATABASES[database_name] = testing_databases[testing_db_replacement]
+            print('Using {testdbname} instead of {dbname} for testing...'.format(
+                testdbname=testing_db_replacement,
+                dbname=database_name
+            ))
+
     if len(sys.argv) > 1 and '--redshift' not in sys.argv:
         # if not redshift testing
         DATABASES.pop(STATS_DB_NAME, None)

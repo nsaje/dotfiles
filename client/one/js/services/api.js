@@ -1060,6 +1060,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         defaultSettings: defaultSettings,
                         actionIsWaiting: data.data.action_is_waiting,
                         retargetableAdGroups: retargetableAdGroups,
+                        warnings: data.data.warnings,
                     });
                 }).
                 error(function (data) {

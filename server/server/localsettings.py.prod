@@ -64,6 +64,9 @@ LOG_FILE = '/app/logs/zemanta-eins.server.log'
 STATSD_HOST = os.environ.get('STATSD_PORT_8125_UDP_ADDR', 'localhost')
 STATSD_PORT = int(os.environ.get('STATSD_PORT_8125_UDP_PORT', 8125))
 
+TELEGRAF_HOST = '172.17.0.1'
+TELEGRAF_PORT = 8125
+
 # Saucelabs
 SAUCELABS_USERNAME = 'wafelj'
 SAUCELABS_ACCESS_KEY = Secret('kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKsAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAACDMIGABgkqhkiG9w0BBwagczBxAgEAMGwGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMJY1fdJ1qxUcMzLbmAgEQgD/0TuxFlrYz8zucDMptj/Wgk+IR97/cGHfvF6C3ahg99gS8OghKNpte/ZMqf9CH+sdErvQ0g09ZOf6u5/cbcko=').get()

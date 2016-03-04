@@ -71,6 +71,9 @@ LOG_FILE = '/path/to/log.log'
 STATSD_HOST = 'localhost'
 STATSD_PORT = 8125
 
+TELEGRAF_HOST = ''
+TELEGRAF_PORT = 8135
+
 # Saucelabs
 SAUCELABS_USERNAME = ''
 SAUCELABS_ACCESS_KEY = Secret('').get()
