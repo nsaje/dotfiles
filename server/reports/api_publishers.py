@@ -34,8 +34,8 @@ class RSPublishersModel(redshift.RSModel):
     DEFAULT_RETURNED_FIELDS_APP = [
         "clicks", "impressions", "cost", "data_cost", "media_cost", "ctr", "cpc",
         "e_media_cost", "e_data_cost", "total_cost", "billing_cost", "license_fee",
-        "external_id", "visits", "click_discrepancy", "pageviews", "new_visits",
-        "percent_new_users", "bounce_rate", "pv_per_visit", "avg_tos",
+        # "external_id", "visits", "click_discrepancy", "pageviews", "new_visits",
+        # "percent_new_users", "bounce_rate", "pv_per_visit", "avg_tos",
 
     ]
     # fields that are allowed for breakdowns (app-based naming)
@@ -62,26 +62,26 @@ class RSPublishersModel(redshift.RSModel):
         dict(sql='total_cost_nano_sum',    app='total_cost',   out=from_nano,          calc=FORMULA_TOTAL_COST,                   order="total_cost_nano_sum = 0, total_cost_nano_sum {direction}"),
     ]
 
-    _POSTCLICK_ACQUISITION_FIELDS = [
-        dict(sql='visits_sum',              app='visits',               out=unchanged,          calc=sum_agr('visits')),
-        dict(sql='click_discrepancy',       app='click_discrepancy',    out=to_percent,         calc=click_discrepancy('clicks', 'visits')),
-        dict(sql='pageviews_sum',           app='pageviews',            out=unchanged,          calc=sum_agr('pageviews')),
-    ]
+    # _POSTCLICK_ACQUISITION_FIELDS = [
+    #     dict(sql='visits_sum',              app='visits',               out=unchanged,          calc=sum_agr('visits')),
+    #     dict(sql='click_discrepancy',       app='click_discrepancy',    out=to_percent,         calc=click_discrepancy('clicks', 'visits')),
+    #     dict(sql='pageviews_sum',           app='pageviews',            out=unchanged,          calc=sum_agr('pageviews')),
+    # ]
 
-    _POSTCLICK_ENGAGEMENT_FIELDS = [
-        dict(sql='new_visits_sum',      app='new_visits',           out=unchanged,      calc=sum_agr('new_visits')),
-        dict(sql='percent_new_users',   app='percent_new_users',    out=to_percent,     calc=sum_div('new_visits', 'visits')),
-        dict(sql='bounce_rate',         app='bounce_rate',          out=to_percent,     calc=sum_div('bounced_visits', 'visits')),
-        dict(sql='pv_per_visit',        app='pv_per_visit',         out=unchanged,      calc=sum_div('pageviews', 'visits')),
-        dict(sql='avg_tos',             app='avg_tos',              out=unchanged,      calc=sum_div('total_time_on_site', 'visits')),
-    ]
+    # _POSTCLICK_ENGAGEMENT_FIELDS = [
+    #     dict(sql='new_visits_sum',      app='new_visits',           out=unchanged,      calc=sum_agr('new_visits')),
+    #     dict(sql='percent_new_users',   app='percent_new_users',    out=to_percent,     calc=sum_div('new_visits', 'visits')),
+    #     dict(sql='bounce_rate',         app='bounce_rate',          out=to_percent,     calc=sum_div('bounced_visits', 'visits')),
+    #     dict(sql='pv_per_visit',        app='pv_per_visit',         out=unchanged,      calc=sum_div('pageviews', 'visits')),
+    #     dict(sql='avg_tos',             app='avg_tos',              out=unchanged,      calc=sum_div('total_time_on_site', 'visits')),
+    # ]
 
-    _CONVERSION_GOAL_FIELDS = [
-        dict(sql='conversions', app='conversions', out=decimal_to_int_exact,
-             calc=sum_expr(extract_json_or_null('conversions')), num_json_params=2)
-    ]
+    # _CONVERSION_GOAL_FIELDS = [
+        # dict(sql='conversions', app='conversions', out=decimal_to_int_exact,
+        #      calc=sum_expr(extract_json_or_null('conversions')), num_json_params=2)
+    # ]
 
-    FIELDS = _FIELDS + _POSTCLICK_ACQUISITION_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _CONVERSION_GOAL_FIELDS
+    FIELDS = _FIELDS #+ _POSTCLICK_ACQUISITION_FIELDS + _POSTCLICK_ENGAGEMENT_FIELDS + _CONVERSION_GOAL_FIELDS
 
 
 rs_pub = RSPublishersModel()
