@@ -1022,7 +1022,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         ad_group_settings = ad_group.get_current_settings()
         source = models.Source.objects.get(pk=source_id)
-        if state_form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE and\
+        if 'state' in resource and state_form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE and\
                 not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
             errors.update(
                 {
