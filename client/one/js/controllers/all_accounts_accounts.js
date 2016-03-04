@@ -219,7 +219,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             internal: $scope.isPermissionInternal('zemauth.can_view_actual_costs'),
             shown: $scope.hasPermission('zemauth.can_view_actual_costs')
         },
-
         {
             name: 'Total Spend',
             field: 'billing_cost',
@@ -395,7 +394,6 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             $scope.requestInProgress = false;
         });
     };
-
 
     var getDailyStatsMetrics = function () {
         var values = $scope.chartMetricOptions.map(function (option) {
