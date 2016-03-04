@@ -220,10 +220,8 @@ class Account(models.Model):
 
         settings = AccountSettings.objects.\
             filter(account_id=self.pk).\
-            order_by('-created_dt')
-        if settings:
-            settings = settings[0]
-        else:
+            order_by('-created_dt').first()
+        if not settings:
             settings = AccountSettings(
                 account=self,
                 name=self.name
@@ -359,10 +357,8 @@ class Campaign(models.Model, PermissionMixin):
 
         settings = CampaignSettings.objects.\
             filter(campaign_id=self.pk).\
-            order_by('-created_dt')
-        if settings:
-            settings = settings[0]
-        else:
+            order_by('-created_dt').first()
+        if not settings:
             settings = CampaignSettings(campaign=self, **CampaignSettings.get_defaults_dict())
 
         return settings
@@ -1130,10 +1126,8 @@ class AdGroup(models.Model):
 
         settings = AdGroupSettings.objects.\
             filter(ad_group_id=self.pk).\
-            order_by('-created_dt')
-        if settings:
-            settings = settings[0]
-        else:
+            order_by('created_dt').last()
+        if settings is None:
             settings = AdGroupSettings(ad_group=self, **AdGroupSettings.get_defaults_dict())
 
         return settings
