@@ -13,7 +13,7 @@ TEMP_EMAILS = ['luka.silovinac@zemanta.com', 'urska.kosec@zemanta.com']
 
 
 def switch_low_budget_campaigns_to_landing_mode():
-    for campaign in dash.models.Campaign.objects.filter(landing_mode=False):
+    for campaign in dash.models.Campaign.objects.filter(landing_mode=False).iterator():
         available_tomorrow, max_daily_budget = _get_minimum_remaining_budget(campaign)
         if available_tomorrow < max_daily_budget:
             # TODO: switch to landing mode
