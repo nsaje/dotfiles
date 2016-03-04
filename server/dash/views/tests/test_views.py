@@ -2687,6 +2687,17 @@ class AdGroupOverviewTest(TestCase):
         goal_setting = [s for s in settings if 'goal' in s['name'].lower()]
         self.assertEqual([], goal_setting)
 
+        # try aqgain with retargeting permission
+        permission = Permission.objects.get(codename='can_view_retargeting_settings')
+        self.user.user_permissions.add(permission)
+        self.user.save()
+
+        response = self._get_ad_group_overview(1)
+        settings = response['data']['basic_settings'] +\
+            response['data']['performance_settings']
+        retargeting_setting = self._get_setting(settings, 'retargeting')
+        self.assertEqual('test adgroup 3', retargeting_setting['details_content'])
+
     @patch('reports.redshift.get_cursor')
     @patch('reports.api_contentads.get_actual_yesterday_cost')
     def test_run_mid(self, mock_cost, cursor):
