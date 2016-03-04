@@ -120,11 +120,6 @@ class DemoManager(models.Manager):
 
 class FootprintModel(models.Model):
 
-    # Fields that are foreign keys only need to be compared by key
-    # and not by value. With this dict we define which are foreign
-    # keys that don't need to be monitored by value.
-    FOREIGN_KEYS_FIELDS = {}
-
     def __init__(self, *args, **kwargs):
         super(FootprintModel, self).__init__(*args, **kwargs)
         if not self.pk:
@@ -132,8 +127,9 @@ class FootprintModel(models.Model):
         self._footprint()
 
     def _get_value_fieldname(self, fieldname):
-        if fieldname in self.FOREIGN_KEYS_FIELDS:
-            return self.FOREIGN_KEYS_FIELDS[fieldname]
+        field = self._meta.get_field(fieldname)
+        if field.many_to_one:
+            return field.attname
         return fieldname
 
     def has_changed(self, field=None):
@@ -146,10 +142,11 @@ class FootprintModel(models.Model):
                 return True
         return False
 
-    def previous_value(self, field):
-        if field in self.FOREIGN_KEYS_FIELDS:
+    def previous_value(self, fieldname):
+        field = self._meta.get_field(fieldname)
+        if field.many_to_one:
             raise Exception("Previous value not stored as an object")
-        return self.pk and self._orig[field]
+        return self.pk and self._orig[fieldname]
 
     def _footprint(self):
         self._orig = {}
@@ -2202,11 +2199,6 @@ class CreditLineItem(FootprintModel):
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
 
-    FOREIGN_KEYS_FIELDS = {
-        'account': 'account_id',
-        'created_by': 'created_by_id',
-    }
-
     objects = QuerySetManager()
 
     def is_active(self, date=None):
@@ -2399,12 +2391,6 @@ class BudgetLineItem(FootprintModel):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
-
-    FOREIGN_KEYS_FIELDS = {
-        'campaign': 'campaign_id',
-        'credit': 'credit_id',
-        'created_by': 'created_by_id',
-    }
 
     objects = QuerySetManager()
 
