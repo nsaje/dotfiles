@@ -187,14 +187,24 @@ module.exports = function (grunt) {
             options: {
                 livereload: true
             },
-            one: {
+            one_js:{
                 files: [
                     'one/js/**/*.js',
-                    'one/partials/**/*.html',
-                    'one/img/**/*',
+                ],
+                tasks: ['concat:one']
+            },
+            one_styles: {
+                files: [
                     'one/less/**/*.less',
                 ],
-                //tasks: ['html2js:one', 'concat:one', 'copy:onedev', 'copy:one']
+                tasks: ['less:one']
+            },
+            one_templates: {
+                files: [
+                    'one/partials/**/*.html',
+                    'one/img/**/*',
+                    'one/assets/**/*',
+                ],
                 tasks: ['build:one']
             },
             actionlog: {
@@ -326,7 +336,7 @@ module.exports = function (grunt) {
     require('load-grunt-tasks')(grunt, {scope: 'devDependencies'});
 
     grunt.registerMultiTask('build', 'Build project.', function () { grunt.task.run(this.data); });
-    grunt.registerMultiTask('dist', 'Build project.', function () { grunt.task.run(this.data); });
+    grunt.registerMultiTask('dist', 'Prepare distribution bundle.', function () { grunt.task.run(this.data); });
 
     grunt.registerTask('default', ['ngconstant:prod', 'build', 'dist']);
     grunt.registerTask('test', ['default', 'karma:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
