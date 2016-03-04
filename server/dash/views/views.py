@@ -1022,13 +1022,13 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
         ad_group_settings = ad_group.get_current_settings()
         source = models.Source.objects.get(pk=source_id)
-        if resource.get('state') == constants.AdGroupSettingsState.ACTIVE and\
+        if resource.get('state') == str(constants.AdGroupSettingsState.ACTIVE) and\
                 not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
             errors.update(
-                exc.ForbiddenError(
-                    message='Cannot add media source that does not support '
+                {
+                    'state': 'Cannot add media source that does not support'
                     'retargeting to adgroup with enabled retargeting.'
-                )
+                }
             )
 
         if errors:
