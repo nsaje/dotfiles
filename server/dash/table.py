@@ -1962,14 +1962,15 @@ class PublishersTable(object):
             'impressions': totals_data.get('impressions', 0),
             'ctr': totals_data.get('ctr', 0),
 
-            'visits': totals_data.get('visits', None),
-            'click_discrepancy': totals_data.get('click_discrepancy', None),
-            'pageviews': totals_data.get('pageviews', None),
-            'new_visits': totals_data.get('new_visits', None),
-            'percent_new_users': totals_data.get('percent_new_users', None),
-            'bounce_rate': totals_data.get('bounce_rate', None),
-            'pv_per_visit': totals_data.get('pv_per_visit', None),
-            'avg_tos': totals_data.get('avg_tos', None),
+            # TODO MV: uncomment - and fix tests
+            # 'visits': totals_data.get('visits', None),
+            # 'click_discrepancy': totals_data.get('click_discrepancy', None),
+            # 'pageviews': totals_data.get('pageviews', None),
+            # 'new_visits': totals_data.get('new_visits', None),
+            # 'percent_new_users': totals_data.get('percent_new_users', None),
+            # 'bounce_rate': totals_data.get('bounce_rate', None),
+            # 'pv_per_visit': totals_data.get('pv_per_visit', None),
+            # 'avg_tos': totals_data.get('avg_tos', None),
         }
         if user.has_perm('zemauth.can_view_effective_costs'):
             del result['cost']
