@@ -52,20 +52,31 @@ def update_ad_group_source_values(ad_group_source, changes):
     settings_writer.set(changes, None)
 
 
+def get_ad_group_sources_minimum_cpc(ad_group_source):
+    return max(autopilot_settings.AUTOPILOT_MIN_CPC, ad_group_source.source.source_type.min_cpc)
+
+
+def get_ad_group_sources_minimum_daily_budget(ad_group_source):
+    return max(autopilot_settings.MIN_SOURCE_BUDGET, ad_group_source.source.source_type.min_daily_budget)
+
+
 def send_autopilot_changes_emails(email_changes_data, data, initialization):
     for camp, changes_data in email_changes_data.iteritems():
+        campaign_manager = camp.get_current_settings().campaign_manager
+        email_address = campaign_manager.email if campaign_manager else\
+            camp.account.get_current_settings().default_account_manager.email
         if initialization:
             send_budget_autopilot_initialisation_email(
                 camp.name,
                 camp.id,
                 camp.account.name,
-                autopilot_settings.DEBUG_EMAILS,
+                [email_address],
                 changes_data)
         else:
             send_autopilot_changes_email(camp.name,
                                          camp.id,
                                          camp.account.name,
-                                         autopilot_settings.DEBUG_EMAILS,
+                                         [email_address],
                                          changes_data)
 
 
@@ -131,7 +142,7 @@ def send_budget_autopilot_initialisation_email(campaign_name, campaign_id, accou
     body = textwrap.dedent(u'''\
     Hi account manager of {account}
 
-    Your ad group in campaign {camp} has just been put on Bid CPC and Daily Budgets Optimising Auto-Pilot.
+    Bid CPC and Daily Budgets Optimising Auto-Pilot's settings on Your ad group in campaign {camp} have been changed.
     Auto-Pilot made the following changes:{changes}
     - all Paused Media Sources\' Daily Budgets have been set to minimum values.
 

@@ -6,7 +6,7 @@ import pytz
 from mock import patch, ANY, Mock, call
 from decimal import Decimal
 
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
 from django.core import mail
@@ -58,13 +58,36 @@ class AdGroupSettingsTest(TestCase):
             follow=True
         )
 
-        self.assertEqual(json.loads(response.content), {
+        self.assertDictEqual(json.loads(response.content), {
             'data': {
                 'action_is_waiting': False,
                 'default_settings': {
                     'target_devices': ['mobile'],
                     'target_regions': ['NC', '501'],
                 },
+                "retargetable_adgroups": [
+                    {
+                        "campaign_name": "test campaign 1",
+                        "archived": False,
+                        "id": 1, "name": "test adgroup 1"
+                    },
+                    {
+                        "campaign_name": "test campaign 2",
+                        "archived": False,
+                        "id": 2, "name": "test adgroup 2"
+                    },
+                    {
+                        "campaign_name": "test campaign 1",
+                        "archived": False,
+                        "id": 9,
+                        "name": "test adgroup 9"
+                    },
+                    {
+                        "campaign_name": "test campaign 1",
+                        "archived": False,
+                        "id": 10, "name": "test adgroup 10"
+                    },
+                ],
                 'settings': {
                     'adobe_tracking_param': '',
                     'cpc_cc': '',
@@ -87,10 +110,46 @@ class AdGroupSettingsTest(TestCase):
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
                     'autopilot_min_budget': '100'
-                }
+                },
+                'warnings': {}
             },
             'success': True
         })
+
+    def test_get_not_retargetable(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        for source_type in models.SourceType.objects.all():
+            if source_type.available_actions and constants.SourceAction.CAN_MODIFY_RETARGETING in source_type.available_actions:
+                source_type.available_actions.remove(constants.SourceAction.CAN_MODIFY_RETARGETING)
+            source_type.save()
+
+        req = RequestFactory().get('/')
+        req.user = User(id=1)
+
+        for source_settings in models.AdGroupSourceSettings.objects.all():
+            source_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
+            source_settings.save(req)
+
+        response = self.client.get(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            follow=True
+        )
+
+        self.assertDictEqual(
+            json.loads(response.content)['data']['warnings'], {
+                'retargeting': {
+                    'text': "You have some active media sources that"
+                            " don't support retargeting. To start using it please disable/pause"
+                            " these media sources:",
+                    'sources': [
+                        'AdsNative',
+                        'Gravity',
+                        'Yahoo',
+                    ],
+                }
+            }
+        )
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')
@@ -478,6 +537,62 @@ class AdGroupSettingsTest(TestCase):
             self.assertNotEqual(response_settings_dict['autopilot_state'], 2)
             self.assertNotEqual(response_settings_dict['autopilot_daily_budget'], '0.00')
             self.assertNotEqual(response_settings_dict['retargeting_ad_groups'], [2])
+
+
+class AdGroupSettingsRetargetableAdgroupsTest(TestCase):
+    fixtures = ['test_api.yaml']
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.get(pk=2)
+
+        permission = Permission.objects.get(codename='settings_view')
+        self.user.user_permissions.add(permission)
+        self.user.save()
+
+    def _permissions(self, user):
+        permission = Permission.objects.get(codename='can_view_retargeting_settings')
+        user.user_permissions.add(permission)
+        user.save()
+
+    def _get_retargetable_adgroups(self, ad_group_id, user_id=2, with_status=False):
+        user = User.objects.get(pk=user_id)
+        self.client.login(username=user.username, password='secret')
+
+        reversed_url = reverse('ad_group_settings', kwargs={'ad_group_id': ad_group_id})
+        response = self.client.get(
+            reversed_url,
+            follow=True
+        )
+        return json.loads(response.content)
+
+    def test_permission(self):
+        response = self._get_retargetable_adgroups(1)
+        self.assertEqual([], response['data']['retargetable_adgroups'])
+
+    def test_essential(self):
+        self._permissions(self.user)
+
+        response = self._get_retargetable_adgroups(1)
+        self.assertTrue(response['success'])
+
+        adgroups = response['data']['retargetable_adgroups']
+        self.assertEqual(4, len(adgroups))
+        self.assertEqual([1, 2, 9, 10], sorted([adg['id'] for adg in adgroups]))
+        self.assertTrue(all([not adgroup['archived'] for adgroup in adgroups]))
+
+        req = RequestFactory().get('/')
+        req.user = self.user
+        for adgs in models.AdGroup.objects.filter(campaign__account__id=1):
+            adgs.archived = True
+            adgs.save(req)
+
+        response = self._get_retargetable_adgroups(1)
+        self.assertTrue(response['success'])
+
+        adgroups = response['data']['retargetable_adgroups']
+        self.assertEqual(4, len(adgroups))
+        self.assertFalse(any([adgroup['archived'] for adgroup in adgroups]))
 
 
 class AdGroupSettingsStateTest(TestCase):

@@ -134,3 +134,7 @@ DEADJOE
 # IntelliJ editor
 .idea
 *.iml
+
+# tags script
+rebuild_tags.sh
+tags

@@ -168,7 +168,7 @@ a:visited {
         font-size: 15px;
         font-weight: 600;
         color: #414141;
-        
+
         .sidenote {
             font-weight: 400;
             font-size: 12px;
@@ -213,6 +213,41 @@ a:visited {
 
 .feedback-text {
     padding-left: 5px;
+}
+
+.form-alert-box {
+    display: table;
+    clear: left;
+    margin: 10px 0px 0px 14px;
+    padding-bottom: 0px;
+
+    .form-alert-exclamation {
+        display: table-cell;
+    }
+
+    .form-alert-body {
+        display: table-cell;
+        padding-left: 8px;
+        font-size: 13px;
+        color: #333;
+    }
+
+    ul {
+        margin-top: 5px;
+    }
+
+    li {
+        font-size: 13px;
+        color: #333;
+    }
+
+    .warning-icon {
+        width: 22px;
+    }
+}
+
+.after-form-alert-box {
+    clear: left;
 }
 
 .btn {
@@ -471,6 +506,12 @@ a:visited {
         font-size: 12px;
         font-color: #414141;
     }
+
+    &.alert-success {
+        background-color: #f0f9e5;
+        border: 1px solid #c0e68f;
+        font-size: 12px;
+    }
 }
 
 .popover {
@@ -680,8 +721,8 @@ div[datepicker] {
 }
 
 .graph-infobox-parent {
-    display: table; 
-    table-layout: fixed; 
+    display: table;
+    table-layout: fixed;
     width: 100%;
 }
 
@@ -849,6 +890,8 @@ div[datepicker] {
     table-layout: fixed;
     width: 100%;
     height: 34px;
+    height: 34px;
+    line-height: 38px;
 }
 
 .infobox-body {
@@ -885,11 +928,6 @@ div[datepicker] {
     text-align: right;
     width: 50px;
     vertical-align: middle;
-}
-
-.infobox-header-wo-subtitle {
-    height: 34px;
-    line-height: 38px;
 }
 
 .infobox-title {
@@ -938,11 +976,6 @@ div[datepicker] {
     margin-bottom: 0;
     position: absolute;
     top: 2px;
-}
-
-.infobox-subtitle {
-    color: @infobox-black;
-    font-size: 13px;
 }
 
 .infobox-setting {
@@ -1552,7 +1585,7 @@ div[datepicker] {
                 height: 28px;
                 line-height: 22px;
                 vertical-align: middle;
-                
+
                 .glyphicon {
                     display: inline-block;
                     color: @white;
@@ -1570,7 +1603,7 @@ div[datepicker] {
                 font-size: 19px;
                 line-height: 19px;
             }
-            
+
             .navbar-collapse-container {
                 display: inline-block;
 
@@ -2057,6 +2090,10 @@ div[datepicker] {
         margin-bottom: 10px;
     }
 
+    .alert-auto-pilot-changes {
+        margin-bottom: 10px;
+    }
+
     .table-footnotes {
         text-align: center;
         font-size: 12px;
@@ -2471,6 +2508,12 @@ div[datepicker] {
     display: inline-block;
 }
 
+.auto-pilot-icon-placeholder() {
+    .state-icon-placeholder();
+    background-size: auto;
+    background-position: 0px;
+}
+
 .active-circle-icon {
     .state-icon-placeholder();
     background-image: url('img/active_circle_icon.svg');
@@ -2488,8 +2531,13 @@ div[datepicker] {
 }
 
 .auto-pilot-icon {
-    .state-icon-placeholder();
+    .auto-pilot-icon-placeholder();
     background-image: url('img/auto_pilot_icon.svg');
+}
+
+.auto-pilot-icon-row {
+    .auto-pilot-icon;
+    margin-right: 3px;
 }
 
 .data-status-icon-placeholder() {
@@ -2684,7 +2732,6 @@ div[datepicker] {
         .currency-3 {
             display: inline-block;
             min-width: 6ex;
-            text-align: left;
         }
 
         &.trimmed {
@@ -3467,6 +3514,21 @@ zem-submission-status {
     }
 }
 
+/**
+ * Apply the following class conditionally to parent container
+ * only in case it has contents.
+ */
+.ui-select-bigdrop {
+    .select2-search {
+        border-top: 1px solid #2fa8c7;
+    }
+
+    .ui-select-dropdown {
+        white-space: nowrap;
+        width: auto;
+    }
+}
+
 .select2-result-label .location-dma-tag {
     float: right;
     font-size: 10px;
@@ -3762,7 +3824,7 @@ select.media-source-select {
     padding-right: 0px !important;
 
     .progress-step-box {
-        background-color: @default-color; 
+        background-color: @default-color;
         color: #fff;
         font-weight: 600;
         font-size: 18px;

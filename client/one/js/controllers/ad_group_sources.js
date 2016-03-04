@@ -18,6 +18,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
     $scope.sourcesWaiting = null;
     $scope.infoboxLinkTo = 'main.adGroups.settings';
     $scope.localStoragePrefix = 'adGroupSources';
+    $scope.autopilotChanges = '';
 
     var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
@@ -159,6 +160,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 if (autopilotValue) {
                     newSettings.autopilot_state = autopilotValue;
                 }
+                $scope.loadRequestInProgress = true;
+                $scope.autopilotChanges = '';
                 api.adGroupSourceSettings.save(
                     $state.params.id,
                     sourceId,
@@ -170,10 +173,12 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                                 row.editable_fields = data.editable_fields;
                             }
                         });
+                        $scope.autopilotChanges = data.autopilot_changed_sources;
                         $scope.pollSourcesTableUpdates();
 
                         // reload ad group to update its status
                         zemNavigationService.reloadAdGroup($state.params.id);
+                        $scope.loadRequestInProgress = false;
                     }
                 );
             },
@@ -239,6 +244,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             order: true,
             settingsField: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
             initialOrder: 'desc',
+            statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             onSave: function (sourceId, value, onSuccess, onError) {
                 var data = {cpc_cc: value};
 
@@ -251,7 +257,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                         onError(errors.cpc);
                     }
                 );
-            }
+            },
+            adGroupAutopilotOn: function () {
+                return $scope.adGroupAutopilotState !== constants.adGroupSettingsAutopilotState.INACTIVE;
+            },
         },
         {
             name: 'Current Bid CPC',
@@ -278,6 +287,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             order: true,
             settingsField: $scope.hasPermission('zemauth.set_ad_group_source_settings'),
             initialOrder: 'desc',
+            statusSettingEnabledValue: constants.adGroupSourceSettingsState.ACTIVE,
             onSave: function (sourceId, value, onSuccess, onError) {
                 var data = {daily_budget_cc: value};
 
@@ -290,7 +300,10 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                         onError(errors.dailyBudget);
                     }
                 );
-            }
+            },
+            adGroupAutopilotOn: function () {
+                return $scope.adGroupAutopilotState === constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET;
+            },
         },
         {
             name: 'Current Daily Budget',
@@ -550,9 +563,8 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.notifications = data.notifications;
                 $scope.lastChange = data.lastChange;
                 $scope.dataStatus = data.dataStatus;
-
+                $scope.adGroupAutopilotState = data.adGroupAutopilotState;
                 $scope.isIncompletePostclickMetrics = data.incomplete_postclick_metrics;
-
                 $scope.selectRows();
                 $scope.pollSourcesTableUpdates();
                 zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
@@ -613,6 +625,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             );
         }
 
+        if ($scope.hasPermission('zemauth.aggregate_postclick_engagement')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+            );
+        }
+
         if ($scope.hasPermission('zemauth.conversion_reports')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
                 $scope.chartMetricOptions,
@@ -620,7 +639,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 $scope.isPermissionInternal('zemauth.conversion_reports'),
                 true
             );
-
         }
 
         if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
@@ -803,12 +821,20 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                 var sources = [];
                 for (var source, i = 0; i < data.sources.length; i++) {
                     source = data.sources[i];
+
+                    var notificationMsg = '';
+                    if (!source.canTargetExistingRegions) {
+                        notificationMsg = source.name + ' doesn\'t support DMA targeting. Turn off DMA targeting to add ' + source.name + '.';
+                    }
+                    if (!source.canRetarget) {
+                        notificationMsg = (notificationMsg ? notificationMsg + ' ' : '') + source.name + ' doesn\'t support retargeting. Turn off retargeting to add ' + source.name + '.';
+                    }
                     sources.push({
                         name: source.name,
                         value: source.id,
                         hasPermission: true,
                         disabled: !source.canTargetExistingRegions,
-                        notification: (!source.canTargetExistingRegions ? source.name + ' doesn\'t support DMA targeting. Turn off DMA targeting to add ' + source.name + '.' : undefined)
+                        notification: notificationMsg,
                     });
                 }
 

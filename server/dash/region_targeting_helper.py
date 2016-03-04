@@ -34,8 +34,8 @@ def can_modify_selected_target_regions_manually(source, *settings):
 
 
 def can_target_existing_regions(source, *settings):
-        return can_modify_selected_target_regions_automatically(source, *settings) or \
-               can_modify_selected_target_regions_manually(source, *settings)
+    return can_modify_selected_target_regions_automatically(source, *settings) or \
+            can_modify_selected_target_regions_manually(source, *settings)
 
 
 def _get_region_types(*settings):

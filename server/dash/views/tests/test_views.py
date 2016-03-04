@@ -224,6 +224,28 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
+    def test_adgroup_on_budget_autopilot_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap):
+        self._set_ad_group_end_date(days_delta=3)
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '4', 'source_id': '1'}),
+            data=json.dumps({'state': '2'})
+        )
+        mock_budget_ap.assert_called_with(models.AdGroup.objects.get(id=4), send_mail=False)
+        self.assertEqual(response.status_code, 200)
+
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    @patch('automation.autopilot_plus.initialize_budget_autopilot_on_ad_group')
+    def test_adgroup_not_on_budget_autopilot_not_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap):
+        self._set_ad_group_end_date(days_delta=3)
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'state': '2'})
+        )
+        self.assertEqual(mock_budget_ap.called, False)
+        self.assertEqual(response.status_code, 200)
+
 
 class CampaignAdGroups(TestCase):
     fixtures = ['test_models.yaml', 'test_views.yaml']
@@ -231,6 +253,7 @@ class CampaignAdGroups(TestCase):
     def setUp(self):
         self.client = Client()
         user = User.objects.get(pk=1)
+        self.user = user
         self.client.login(username=user.email, password='secret')
 
     @patch('utils.redirector_helper.insert_adgroup')
@@ -287,7 +310,6 @@ class CampaignAdGroups(TestCase):
         self.assertIsNotNone(ad_group_settings)
         self.assertEqual(len(actions), 0)
 
-
     @patch('actionlog.api.create_campaign')
     def test_add_media_sources(self, mock_create_campaign):
         ad_group = models.AdGroup.objects.get(pk=2)
@@ -314,8 +336,55 @@ class CampaignAdGroups(TestCase):
                 'Created settings and automatically created campaigns for 1 sources (AdBlade)'
         )
 
+
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.all().filter(
+            ad_group_source__ad_group=ad_group
+        ).group_current_settings()
+        self.assertTrue(all(
+            [adgss.state == constants.AdGroupSourceSettingsState.ACTIVE for adgss in ad_group_source_settings]
+        ))
+
+    @patch('actionlog.api.create_campaign')
+    def test_add_media_sources_with_retargeting(self, mock_create_campaign):
+        ad_group = models.AdGroup.objects.get(pk=2)
+
+        # remove ability to retarget from all sources
+        for source_type in models.SourceType.objects.all():
+            source_type.available_actions = [
+                action for action in source_type.available_actions if action != constants.SourceAction.CAN_MODIFY_RETARGETING
+            ]
+            source_type.save()
+
+        request = RequestFactory()
+        request.user = self.user
+
+        ad_group_settings = ad_group.get_current_settings()
+        ad_group_settings.retargeting_ad_groups = 1
+        ad_group_settings.save(request)
+        request = None
+
+        view = views.CampaignAdGroups()
+        actions = view._add_media_sources(ad_group, ad_group_settings, request)
+
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group)
+        waiting_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group)
+        added_source = models.Source.objects.get(pk=1)
+
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.all().filter(
+            ad_group_source__ad_group=ad_group
+        ).group_current_settings()
+        self.assertTrue(all(
+            [adgss.state == constants.AdGroupSourceSettingsState.INACTIVE for adgss in ad_group_source_settings]
+        ))
+
     @patch('dash.views.helpers.set_ad_group_source_settings')
     def test_create_ad_group_source(self, mock_set_ad_group_source_settings):
+        # adblade must not be in maintenance for this particular test
+        # so it supports retargeting - which is checked on adgroupsourc creation
+        adblade = models.Source.objects.filter(name__icontains='adblade').first()
+        adblade.maintenance = False
+        adblade.save()
+
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         source_settings = models.DefaultSourceSettings.objects.get(pk=1)
         request = None
@@ -1563,9 +1632,9 @@ class AdGroupSourcesTest(TestCase):
 
         response_dict = json.loads(response.content)
         self.assertItemsEqual(response_dict['data']['sources'], [
-            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False},  # should return False when DMAs used
-            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True},
-            {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False},
+            {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False, 'can_retarget': True},  # should return False when DMAs used
+            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': False},
+            {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False, 'can_retarget': True},
         ])
 
     def test_available_sources(self):
@@ -1616,6 +1685,35 @@ class AdGroupSourcesTest(TestCase):
                            in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
         self.assertIn(source, ad_group_sources)
         self.assertIn(source, waiting_sources)
+
+
+    def test_put_with_retargeting(self):
+
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        request = RequestFactory()
+        request.user = User(id=1)
+
+        current_settings = ad_group.get_current_settings()
+        current_settings.retargeting_ad_groups = [2]
+        current_settings.save(request)
+
+        source = models.Source.objects.get(pk=9)
+        st = source.source_type
+        st.available_actions.remove(constants.SourceAction.CAN_MODIFY_RETARGETING)
+        st.save()
+
+        response = self.client.put(
+                reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
+                data=json.dumps({'source_id': '9'})
+        )
+        self.assertEqual(response.status_code, 400)
+
+        ad_group_sources = ad_group.sources.all()
+        waiting_sources = (ad_group_source.source for ad_group_source
+                           in actionlog.api.get_ad_group_sources_waiting(ad_group=ad_group))
+        self.assertNotIn(source, ad_group_sources)
+        self.assertNotIn(source, waiting_sources)
 
     def test_put_existing_source(self):
         response = self.client.put(
@@ -2725,6 +2823,24 @@ class CampaignOverviewTest(TestCase):
 
     @patch('reports.redshift.get_cursor')
     def test_run_empty(self, cursor):
+        req = RequestFactory().get('/')
+        req.user = self.user
+
+        adg_start_date = datetime.datetime.now() - datetime.timedelta(days=1)
+        adg_end_date = datetime.datetime.now() + datetime.timedelta(days=1)
+
+        # make all adgroups active
+        for adgs in models.AdGroupSettings.objects.all():
+            adgs.start_date = adg_start_date
+            adgs.end_date = adg_end_date
+            adgs.state = constants.AdGroupSettingsState.ACTIVE
+            adgs.save(req)
+
+        # make all adgroup sources active
+        for adgss in models.AdGroupSourceSettings.objects.all():
+            adgss.state = constants.AdGroupSourceSettingsState.ACTIVE
+            adgss.save(req)
+
         self.setUpPermissions()
         cursor().dictfetchall.return_value = [{
             'adgroup_id': 1,
@@ -2759,13 +2875,22 @@ class CampaignOverviewTest(TestCase):
 
         header = response['data']['header']
         self.assertEqual(u'test campaign 1 \u010c\u017e\u0161', header['title'])
-        self.assertEqual(constants.InfoboxStatus.INACTIVE, header['active'])
+        self.assertEqual(constants.InfoboxStatus.ACTIVE, header['active'])
 
         settings = response['data']['basic_settings'] +\
             response['data']['performance_settings']
 
+        active_adgroup_settings = self._get_setting(settings, 'active ad groups')
+        self.assertEqual('1', active_adgroup_settings['value'])
+
         flight_setting = self._get_setting(settings, 'flight')
-        self.assertEqual('03/02 - 04/02', flight_setting['value'])
+        self.assertEqual('{sm:02d}/{sd:02d} - {em:02d}/{ed:02d}'.format(
+            sm=adg_start_date.month,
+            sd=adg_start_date.day,
+            em=adg_end_date.month,
+            ed=adg_end_date.day,
+
+        ), flight_setting['value'])
 
         device_setting = self._get_setting(settings, 'targeting')
         self.assertEqual('Device: Mobile, Desktop', device_setting['value'])
@@ -2824,6 +2949,21 @@ class AccountOverviewTest(TestCase):
     @patch('reports.redshift.get_cursor')
     @patch('dash.models.Account.get_current_settings')
     def test_run_empty(self, mock_current_settings, cursor):
+        req = RequestFactory().get('/')
+        req.user = self.user
+
+        # make all adgroups active
+        for adgs in models.AdGroupSettings.objects.all():
+            adgs.start_date = datetime.datetime.now() - datetime.timedelta(days=1)
+            adgs.end_date = datetime.datetime.now() + datetime.timedelta(days=1)
+            adgs.state = constants.AdGroupSettingsState.ACTIVE
+            adgs.save(req)
+
+        # make all adgroup sources active
+        for adgss in models.AdGroupSourceSettings.objects.all():
+            adgss.state = constants.AdGroupSourceSettingsState.ACTIVE
+            adgss.save(req)
+
         settings = models.AccountSettings(
             default_account_manager=zemauth.models.User.objects.get(pk=1),
             default_sales_representative=zemauth.models.User.objects.get(pk=2),
@@ -2839,17 +2979,29 @@ class AccountOverviewTest(TestCase):
         }]
         response = self._get_account_overview(1)
         settings = response['data']['basic_settings']
-        header = response['data']['header']
 
-        self.assertEqual(header['subtitle'], 'with 2 campaigns and 4 ad groups')
-
-        pf_setting = self._get_setting(settings, 'platform fee')
-        self.assertEqual('20.00%', pf_setting['value'])
+        count_setting = self._get_setting(settings, 'active campaigns')
+        # 1 campaign has no adroupsourcesettings
+        self.assertEqual('1', count_setting['value'])
         self.assertTrue(response['success'])
 
     @patch('reports.redshift.get_cursor')
     @patch('dash.models.Account.get_current_settings')
     def test_run_empty_non_archived(self, mock_current_settings, cursor):
+        req = RequestFactory().get('/')
+        req.user = self.user
+
+        # make all adgroups active
+        for adgs in models.AdGroupSettings.objects.all():
+            adgs.start_date = datetime.datetime.now() - datetime.timedelta(days=1)
+            adgs.end_date = datetime.datetime.now() + datetime.timedelta(days=1)
+            adgs.state = constants.AdGroupSettingsState.ACTIVE
+            adgs.save(req)
+
+        # make all adgroup sources active
+        for adgss in models.AdGroupSourceSettings.objects.all():
+            adgss.state = constants.AdGroupSourceSettingsState.ACTIVE
+            adgss.save(req)
         settings = models.AccountSettings(
             default_account_manager=zemauth.models.User.objects.get(pk=1),
             default_sales_representative=zemauth.models.User.objects.get(pk=2),
@@ -2857,19 +3009,13 @@ class AccountOverviewTest(TestCase):
 
         mock_current_settings.return_value = settings
 
-        # force one campaign to be archived
-        req = RequestFactory().get('/')
-        req.user = self.user
-
         campaign_settings = models.Campaign.objects.get(pk=1).get_current_settings()
         campaign_settings.archived = True
         campaign_settings.save(req)
 
-
         adgroup_settings = models.AdGroup.objects.get(pk=1).get_current_settings()
         adgroup_settings.archived = True
         adgroup_settings.save(req)
-
 
         # do some extra setup to the account
         cursor().dictfetchall.return_value = [{
@@ -2879,12 +3025,10 @@ class AccountOverviewTest(TestCase):
         }]
         response = self._get_account_overview(1)
         settings = response['data']['basic_settings']
-        header = response['data']['header']
 
-        self.assertEqual(header['subtitle'], 'with 1 campaigns and 3 ad groups')
-
-        pf_setting = self._get_setting(settings, 'platform fee')
-        self.assertEqual('20.00%', pf_setting['value'])
+        count_setting = self._get_setting(settings, 'active campaigns')
+        # 1 campaign has no adroupsourcesettings
+        self.assertEqual('1', count_setting['value'])
         self.assertTrue(response['success'])
 
 

@@ -37,7 +37,7 @@
                 options.dateLimit = $attributes.limit && moment.duration.apply(
                     this, $attributes.limit.split(' ').map(
                         function (elem, index) {
-                            return (index === 0 && parseInt(elem, 10)) || elem; 
+                            return (index === 0 && parseInt(elem, 10)) || elem;
                         })
                     );
                 options.ranges = $attributes.ranges && $parse($attributes.ranges)($scope);
@@ -87,6 +87,9 @@
                 $attributes.$observe('ranges', function(newValue, oldValue) {
                     if (newValue) {
                         options.ranges = $attributes.ranges && $parse($attributes.ranges)($scope);
+                        angular.forEach(options.ranges, function (value, key) {
+                            options.ranges[key] = [moment(value[0]), moment(value[1])];
+                        });
                         $element.data('daterangepicker').setOptions(options, dateRangeChanged);
                     }
                 });
@@ -116,3 +119,4 @@
         };
     }]);
 }(angular));
+

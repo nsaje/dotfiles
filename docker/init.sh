@@ -31,14 +31,13 @@ fi
 
 
 msg "Configuration stage"
-# Either provide local file or CONF_URL+CONF_SECRET
+# Either provide local file or CONF, which will copy localsettings.py.${CONF} to localsettings.py
 cd $DEST
 # you must pass  -v path_to_localsettings:/localsettings.py  setting to docker for this to work
 if [ -f /localsettings.py ]; then
     cp /localsettings.py server/localsettings.py
 else
-    curl "${CONF_URL}" \
-    | openssl enc -d -base64 -aes-256-ecb -k "$(printf $CONF_SECRET)" > server/localsettings.py
+    cp server/localsettings.py.${CONF_ENV} server/localsettings.py
 fi
 
 # Check if all requirements are installed
