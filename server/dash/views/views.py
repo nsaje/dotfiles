@@ -1020,6 +1020,17 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
             errors.update(exc.ForbiddenError(message='Not allowed'))
 
+        ad_group_settings = ad_group.get_current_settings()
+        source = models.Source.objects.get(pk=source_id)
+        if resource.get('state') == constants.AdGroupSettingsState.ACTIVE and\
+                not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
+            errors.update(
+                exc.ForbiddenError(
+                    message='Cannot add media source that does not support '
+                    'retargeting to adgroup with enabled retargeting.'
+                )
+            )
+
         if errors:
             raise exc.ValidationError(errors=errors)
 
@@ -1029,7 +1040,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             resource['daily_budget_cc'] = decimal.Decimal(resource['daily_budget_cc'])
 
         if 'cpc_cc' in resource or 'daily_budget_cc' in resource:
-            end_datetime = ad_group.get_current_settings().get_utc_end_datetime()
+            end_datetime = ad_group_settings.get_utc_end_datetime()
             if end_datetime is not None and end_datetime <= datetime.datetime.utcnow():
                 raise exc.ValidationError()
 
