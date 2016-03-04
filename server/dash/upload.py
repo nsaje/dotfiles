@@ -163,11 +163,14 @@ def _upload_error_report_to_s3(content, filename):
 
 def _create_redirect_id(content_ad):
     try:
-        content_ad.redirect_id = redirector_helper.insert_redirect(
+        redirect = redirector_helper.insert_redirect(
             content_ad.url,
             content_ad.pk,
             content_ad.ad_group_id,
         )
+
+        content_ad.url = redirect["redirect"]["url"]
+        content_ad.redirect_id = redirect["redirectid"]
         content_ad.save()
         return []
     except Exception:

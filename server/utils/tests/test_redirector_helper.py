@@ -68,11 +68,20 @@ class InsertRedirectTest(TestCase):
         redirect_id = "u123456"
 
         response = Mock()
-        response.read.return_value = '{"data": "%s", "status": "ok"}' % redirect_id
+        response.read.return_value = json.dumps({
+            "status": "ok",
+            "data": {
+                "redirectid": redirect_id,
+                "redirect": {
+                    "url": url
+                },
+            },
+        })
         response.getcode = lambda: 200
         mock_urlopen.return_value = response
 
-        self.assertEqual(redirector_helper.insert_redirect(url, content_ad_id, ad_group_id), redirect_id)
+        response_dict = redirector_helper.insert_redirect(url, content_ad_id, ad_group_id)
+        self.assertEqual(response_dict["redirectid"], redirect_id)
 
         call = mock_urlopen.call_args[0][0]
 
@@ -85,11 +94,20 @@ class InsertRedirectTest(TestCase):
         redirect_id = "u123456"
 
         response = Mock()
-        response.read.return_value = '{"data": "%s", "status": "ok"}' % redirect_id
+        response.read.return_value = json.dumps({
+            "status": "ok",
+            "data": {
+                "redirectid": redirect_id,
+                "redirect": {
+                    "url": url
+                }
+            }
+        })
         response.getcode = lambda: 200
         mock_urlopen.return_value = response
 
-        redirector_helper.update_redirect(url, redirect_id)
+        response_dict = redirector_helper.update_redirect(url, redirect_id)
+        self.assertEqual(response_dict["redirectid"], redirect_id)
 
         call = mock_urlopen.call_args[0][0]
 

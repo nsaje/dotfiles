@@ -404,6 +404,24 @@ def create_total_campaign_budget_setting(user, campaign):
     return setting
 
 
+@statsd_timer('dash.infobox_helpers', 'count_active_adgroups')
+def count_active_adgroups(campaign):
+    return dash.models.AdGroup.objects.filter(
+        campaign=campaign
+    ).filter_running().count()
+
+
+@statsd_timer('dash.infobox_helpers', 'count_active_campaigns')
+def count_active_campaigns(account):
+    active_campaign_ids = set(dash.models.AdGroup.objects.filter(
+        campaign__account=account
+    ).filter_running().values_list(
+        'campaign',
+        flat=True
+    ))
+    return len(active_campaign_ids)
+
+
 @statsd_timer('dash.infobox_helpers', 'count_active_accounts')
 def count_active_accounts():
     account_ids = set(
@@ -415,6 +433,12 @@ def count_active_accounts():
         )
     )
     return len(account_ids)
+
+
+def format_username(user):
+    if not user:
+        return 'N/A'
+    return user.get_full_name()
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_all_accounts_total_budget')

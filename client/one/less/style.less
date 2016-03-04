@@ -215,6 +215,41 @@ a:visited {
     padding-left: 5px;
 }
 
+.form-alert-box {
+    display: table;
+    clear: left;
+    margin: 10px 0px 0px 14px;
+    padding-bottom: 0px;
+
+    .form-alert-exclamation {
+        display: table-cell;
+    }
+
+    .form-alert-body {
+        display: table-cell;
+        padding-left: 8px;
+        font-size: 13px;
+        color: #333;
+    }
+
+    ul {
+        margin-top: 5px;
+    }
+
+    li {
+        font-size: 13px;
+        color: #333;
+    }
+
+    .warning-icon {
+        width: 22px;
+    }
+}
+
+.after-form-alert-box {
+    clear: left;
+}
+
 .btn {
     .border-radius(2px);
     .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
@@ -855,6 +890,8 @@ div[datepicker] {
     table-layout: fixed;
     width: 100%;
     height: 34px;
+    height: 34px;
+    line-height: 38px;
 }
 
 .infobox-body {
@@ -891,11 +928,6 @@ div[datepicker] {
     text-align: right;
     width: 50px;
     vertical-align: middle;
-}
-
-.infobox-header-wo-subtitle {
-    height: 34px;
-    line-height: 38px;
 }
 
 .infobox-title {
@@ -944,11 +976,6 @@ div[datepicker] {
     margin-bottom: 0;
     position: absolute;
     top: 2px;
-}
-
-.infobox-subtitle {
-    color: @infobox-black;
-    font-size: 13px;
 }
 
 .infobox-setting {
@@ -3492,14 +3519,14 @@ zem-submission-status {
  * only in case it has contents.
  */
 .ui-select-bigdrop {
-	.select2-search {
-		border-top: 1px solid #2fa8c7;
-	}
+    .select2-search {
+        border-top: 1px solid #2fa8c7;
+    }
 
-	.ui-select-dropdown {
-		white-space: nowrap;
-		width: auto;
-	}
+    .ui-select-dropdown {
+        white-space: nowrap;
+        width: auto;
+    }
 }
 
 .select2-result-label .location-dma-tag {

@@ -329,7 +329,7 @@ def should_send_account_notification_mail(account, user, request):
         )
 
         desc = {
-            'settings_url': account.get_campaign_url(request)
+            'settings_url': account.get_account_url(request)
         }
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.ADOPS,
