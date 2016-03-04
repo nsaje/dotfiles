@@ -2577,7 +2577,11 @@ class AdGroupOverviewTest(TestCase):
         return json.loads(response.content)
 
     def _get_setting(self, settings, name):
-        return [s for s in settings if name in s['name'].lower()][0]
+        ret = [s for s in settings if name in s['name'].lower()]
+        if ret != []:
+            return ret[0]
+        else:
+            return None
 
     def test_user_access_1(self):
         response = self._get_ad_group_overview(1)
@@ -2677,14 +2681,11 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('0.00% on plan', pacing_setting['description'])
         self.assertEqual('sad', pacing_setting['icon'])
 
+        retargeting_setting = self._get_setting(settings, 'retargeting')
+        self.assertIsNone(retargeting_setting, 'no permission')
+
         goal_setting = [s for s in settings if 'goal' in s['name'].lower()]
         self.assertEqual([], goal_setting)
-        # TODO: reintroduce when Campaign goals are wrapped up
-        """
-        goal_setting = self._get_setting(settings, 'goal')
-        self.assertEqual('0.0 below planned', goal_setting['description'])
-        self.assertEqual('happy', goal_setting['icon'])
-        """
 
     @patch('reports.redshift.get_cursor')
     @patch('reports.api_contentads.get_actual_yesterday_cost')
