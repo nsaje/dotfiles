@@ -61,7 +61,7 @@ class Command(ExceptionCommand):
         links = []
         for ad_group_source in ad_group_sources:
             links.append(
-                "{name} / {one_dash_url} / {supply_dash_url}".format(
+                u"{name} / {one_dash_url} / {supply_dash_url}".format(
                     name=ad_group_source.get_external_name(),
                     one_dash_url=get_full_z1_url(
                         '/ad_groups/{}/sources'.format(ad_group_source.ad_group_id)
@@ -72,7 +72,7 @@ class Command(ExceptionCommand):
                 )
             )
 
-        body = textwrap.dedent("""\
+        body = textwrap.dedent(u"""\
         Subject: Content approvals - {date}
 
         Hi!
@@ -90,10 +90,10 @@ class Command(ExceptionCommand):
         date_str = datetime.date.today().strftime('%Y-%m-%d')
         body = body.format(
             date=date_str,
-            ad_group_links='\n'.join(links) if links else '(No new content)'
+            ad_group_links=u'\n'.join(links) if links else u'(No new content)'
         )
 
-        subject = 'Zemanta auto-generated approval email for {} {}'.format(source.name, date_str)
+        subject = u'Zemanta auto-generated approval email for {} {}'.format(source.name, date_str)
         email_list = options['email']
 
         if email_list:

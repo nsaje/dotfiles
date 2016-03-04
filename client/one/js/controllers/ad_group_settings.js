@@ -13,6 +13,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
     $scope.saved = null;
     $scope.discarded = null;
     $scope.minEndDate = new Date();
+    $scope.retargetableAdGroups = [];
+    $scope.warnings = {};
 
     // isOpen has to be an object property instead
     // of being directly on $scope because
@@ -55,6 +57,8 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.defaultSettings = data.defaultSettings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
                 $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
+                $scope.retargetableAdGroups = data.retargetableAdGroups;
+                $scope.warnings = data.warnings;
                 freshSettings.resolve(data.settings.name == 'New ad group');
                 goToContentAds = data.settings.name == 'New ad group';
             },
@@ -201,7 +205,11 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
         }
     });
 
-    if (!$scope.adGroup.archived) {
-        $scope.getSettings($state.params.id);
-    }
+    var init = function () {
+        if (!$scope.adGroup.archived) {
+            $scope.getSettings($state.params.id);
+        }
+    };
+
+    init();
 }]);

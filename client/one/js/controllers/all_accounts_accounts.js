@@ -469,19 +469,17 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
         );
     };
 
-    var getInfoboxData = function () {
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            return;
-        }
-        if (!$scope.hasPermission('zemauth.can_access_all_accounts_infobox')) {
+    $scope.getInfoboxData = function () {
+        if (!$scope.hasInfoboxPermission()) {
             return;
         }
 
-        api.allAccountsOverview.get().then(
+        api.allAccountsOverview.get($scope.dateRange.startDate, $scope.dateRange.endDate).then(
             function (data) {
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
+                $scope.reflowGraph(1);
             }
         );
     };
@@ -526,6 +524,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             }
         ).finally(function () {
             $scope.loadRequestInProgress = false;
+            $scope.reflowGraph(1);
         });
     };
 
@@ -535,6 +534,7 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
             return;
         }
 
+        $scope.getInfoboxData();
         getDailyStats();
         getTableData();
     });
@@ -657,19 +657,13 @@ oneApp.controller('AllAccountsAccountsCtrl', ['$scope', '$state', '$location', '
 
         $scope.loadPage();
         getDailyStats();
-        getInfoboxData();
+        $scope.getInfoboxData();
         getTableData();
         initColumns();
     };
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         $location.search('page', null);
-    });
-
-    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
     });
 
     $scope.init();

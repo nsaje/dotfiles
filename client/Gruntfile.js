@@ -118,11 +118,6 @@ module.exports = function (grunt) {
                 ]
             },
             // This is used for dev instead of uglifying which takes half of build time
-            onedev: {
-                files: [
-                        {src: 'dist/one/zemanta-one.js', dest: 'dist/one/zemanta-one.min.js'},
-                ]
-            },
             one_lib: {
                 files: [
                     {
@@ -192,19 +187,25 @@ module.exports = function (grunt) {
             options: {
                 livereload: true
             },
-            one: {
+            one_js: {
                 files: [
                     'one/js/**/*.js',
-                    'one/partials/**/*.html',
-                    'one/img/**/*'
                 ],
-                tasks: ['html2js:one', 'concat:one', 'copy:onedev', 'copy:one']
+                tasks: ['concat:one']
             },
-            one_css: {
+            one_styles: {
                 files: [
                     'one/less/**/*.less',
                 ],
-                tasks: ['less:one', 'copy:one']
+                tasks: ['less:one']
+            },
+            one_templates: {
+                files: [
+                    'one/partials/**/*.html',
+                    'one/img/**/*',
+                    'one/assets/**/*',
+                ],
+                tasks: ['build:one']
             },
             actionlog: {
                 files: [
@@ -319,11 +320,17 @@ module.exports = function (grunt) {
             }
         },
         build: {
-            one: ['html2js:one', 'concat:one', 'uglify:one', 'less:one', 'copy:one'],
-            one_lib: ['bower_concat:one_lib', 'uglify:one_lib', 'cssmin:one_lib', 'copy:one_lib'],
-            actionlog: ['concat:actionlog', 'uglify:actionlog', 'less:actionlog', 'copy:actionlog'],
-            actionlog_lib: ['bower_concat:actionlog_lib', 'uglify:actionlog_lib', 'cssmin:actionlog_lib']
-        }
+            one: ['html2js:one', 'concat:one', 'less:one', 'copy:one'],
+            one_lib: ['bower_concat:one_lib', 'cssmin:one_lib', 'copy:one_lib'],
+            actionlog: ['concat:actionlog', 'less:actionlog', 'copy:actionlog'],
+            actionlog_lib: ['bower_concat:actionlog_lib', 'cssmin:actionlog_lib'],
+        },
+        dist: {
+            one: ['uglify:one'],
+            one_lib: ['uglify:one_lib'],
+            actionlog: ['uglify:actionlog'],
+            actionlog_lib: ['uglify:actionlog_lib']
+        },
     });
 
     require('load-grunt-tasks')(grunt, {scope: 'devDependencies'});
@@ -331,8 +338,11 @@ module.exports = function (grunt) {
     grunt.registerMultiTask('build', 'Build project.', function () {
         grunt.task.run(this.data);
     });
+    grunt.registerMultiTask('dist', 'Prepare distribution bundle.', function () {
+        grunt.task.run(this.data);
+    });
 
-    grunt.registerTask('default', ['ngconstant:prod', 'build']);
+    grunt.registerTask('default', ['ngconstant:prod', 'build', 'dist']);
     grunt.registerTask('test', ['default', 'karma:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
     grunt.registerTask('e2e', ['protractor:' + (grunt.option('sauce') ? 'sauce' : 'local')]);
     grunt.registerTask('e2e_debug', ['protractor:debug']);

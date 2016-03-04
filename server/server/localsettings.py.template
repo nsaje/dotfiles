@@ -1,11 +1,15 @@
+#!/usr/bin/env python
+
 import os
+
+from secretcrypt import Secret
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
+SECRET_KEY = Secret('plain::=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l').get()
 
 STATS_DB_NAME = 'stats'
 STATS_E2E_DB_NAME = 'stats_e2e'
@@ -53,12 +57,12 @@ EMAIL_USE_TLS = True
 EMAIL_HOST = ''
 EMAIL_PORT = 587
 EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_PASSWORD = Secret('').get()
 
 SEND_NOTIFICATION_MAIL = False
 FROM_EMAIL = 'help-test@zemanta.com'
 
-MAILGUN_API_KEY = ''
+MAILGUN_API_KEY = Secret('').get()
 
 # Path to log file
 LOG_FILE = '/path/to/log.log'
@@ -67,14 +71,17 @@ LOG_FILE = '/path/to/log.log'
 STATSD_HOST = 'localhost'
 STATSD_PORT = 8125
 
+TELEGRAF_HOST = ''
+TELEGRAF_PORT = 8135
+
 # Saucelabs
 SAUCELABS_USERNAME = ''
-SAUCELABS_ACCESS_KEY = ''
+SAUCELABS_ACCESS_KEY = Secret('').get()
 
 # Auth
 GOOGLE_OAUTH_ENABLED = False
 GOOGLE_OAUTH_CLIENT_ID = ''
-GOOGLE_OAUTH_CLIENT_SECRET = ''
+GOOGLE_OAUTH_CLIENT_SECRET = Secret('').get()
 
 # Static files
 BUILD_NUMBER = None
@@ -99,17 +106,17 @@ ZWEI_CALLBACK_BASE_URL = ''
 # Zwei API
 ZWEI_API_TASKS_URL = 'http://127.0.0.1/purcel/tasks/'
 ZWEI_API_GET_DASH_URL_URL = 'http://127.0.0.1/purcel/dash_url/'
-ZWEI_API_SIGN_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+ZWEI_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
 
 # Source credentials encryption key
-CREDENTIALS_ENCRYPTION_KEY = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'  # has to be 32 bytes
+CREDENTIALS_ENCRYPTION_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()  # has to be 32 bytes
 
 # Pagerduty settings
 PAGER_DUTY_ENABLED = False
 PAGER_DUTY_URL = ''
-PAGER_DUTY_ADOPS_SERVICE_KEY = ''
-PAGER_DUTY_SYSOPS_SERVICE_KEY = ''
-PAGER_DUTY_ENGINEERS_SERVICE_KEY = ''
+PAGER_DUTY_ADOPS_SERVICE_KEY = Secret('').get()
+PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret('').get()
+PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret('').get()
 
 # Sentry config
 RAVEN_CONFIG = {
@@ -118,7 +125,7 @@ RAVEN_CONFIG = {
 
 # Amazon AWS keys
 AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY = ''
+AWS_SECRET_ACCESS_KEY = Secret('').get()
 
 # S3 related settings
 S3_BUCKET = ''
@@ -147,7 +154,7 @@ Z3_API_THUMBNAIL_URL = ''
 # QUEUES
 BROKER_TRANSPORT = 'sqs'
 BROKER_USER = AWS_ACCESS_KEY_ID
-BROKER_PASSWORD = AWS_SECRET_ACCESS_KEY
+BROKER_PASSWORD = AWS_SECRET_ACCESS_KEY.get()
 
 BROKER_URL = BROKER_TRANSPORT + '://' + BROKER_USER + ':' + BROKER_PASSWORD + '@'
 
@@ -170,7 +177,7 @@ BROKER_TRANSPORT_OPTIONS = {
     'polling_interval': 10,
 }
 
-R1_API_SIGN_KEY = ''
+R1_API_SIGN_KEY = Secret('').get()
 R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
 R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
 R1_VALIDATE_API_URL = 'https://r1.zemanta.com/api/validate/'
@@ -180,7 +187,9 @@ R1_CONVERSION_STATS_RESULT_URL = 'https://r1.zemanta.com/api/conversions2/result
 
 BIDDER_API_SIGN_KEY = ''
 
-SHARETHROUGH_PARAM_SIGN_KEY = ''
+SHARETHROUGH_PARAM_SIGN_KEY = Secret('').get()
+
+BIDDER_API_SIGN_KEY = Secret('').get()
 
 # BCM
 BUDGET_RESERVE_FACTOR = 0.05

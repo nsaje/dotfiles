@@ -29,7 +29,6 @@
     modified_dt: '2014-06-04T09:58:21'
     modified_by: 1
     name: 'Test Account 2 (BCM)'
-    uses_credits: true
   model: dash.account
   pk: 2
 
@@ -108,7 +107,6 @@
   model: dash.adgroup
   pk: 3
 
-
 - fields:
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
@@ -125,6 +123,9 @@
     created_dt: '2014-06-04T09:58:21'
     created_by: 1
     state: 1
+    cpc_cc: 100.00
+    autopilot_state: 1
+    autopilot_daily_budget: 10
   model: dash.adgroupsettings
   pk: 1
 
@@ -133,6 +134,8 @@
     created_dt: '2014-06-04T09:58:21'
     created_by: 1
     state: 2
+    autopilot_state: 2
+    autopilot_daily_budget: 20
   model: dash.adgroupsettings
   pk: 2
 
@@ -141,6 +144,8 @@
     created_dt: '2014-06-04T09:58:21'
     created_by: 1
     state: 1
+    autopilot_state: 3
+    autopilot_daily_budget: 30
   model: dash.adgroupsettings
   pk: 3
 
@@ -149,14 +154,23 @@
     created_dt: '2014-06-04T09:58:21'
     created_by: 1
     state: 1
+    autopilot_state: 1
+    autopilot_daily_budget: 40
   model: dash.adgroupsettings
   pk: 4
 
 # Source Types
 -   fields:
         type: 'adblade'
+        min_daily_budget: '1'
     model: dash.sourcetype
     pk: 1
+
+-   fields:
+        type: 'adblade3'
+        min_daily_budget: '5'
+    model: dash.sourcetype
+    pk: 2
 
 # Sources
 -   fields:
@@ -171,7 +185,7 @@
         created_dt: '2014-06-04T00:00:00'
         modified_dt: '2014-06-04T00:00:00'
         name: AdBanana
-        source_type: 1
+        source_type: 2
         tracking_slug: '["fake"]'
     model: dash.source
     pk: 2
@@ -303,7 +317,7 @@
     created_dt: '2014-06-04T09:58:21'
     modified_dt: '2014-06-04T09:58:21'
     created_by: 1
-    account: 2
+    account: 1
     start_date: '2014-06-01'
     end_date: '2016-01-01'
     amount: 100000
@@ -313,7 +327,48 @@
   model: dash.creditlineitem
   pk: 1
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    created_by: 1
+    account: 2
+    start_date: '2014-06-01'
+    end_date: '2016-01-01'
+    amount: 100000
+    license_fee: 0.1
+    status: 2
+    comment: 'Test credit'
+  model: dash.creditlineitem
+  pk: 2
+
 # Budget line items
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    created_by: 1
+    credit: 1 # test credit 1
+    campaign: 1
+    start_date: '2014-06-01'
+    end_date: '2016-01-01'
+    amount: 100
+    comment: 'Test case'
+  model: dash.budgetlineitem
+  pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    created_by: 1
+    credit: 1 # test credit 1
+    campaign: 2
+    start_date: '2014-06-01'
+    end_date: '2016-01-01'
+    amount: 100
+    comment: 'Test case'
+  model: dash.budgetlineitem
+  pk: 2
+
 
 - fields:
     created_dt: '2014-06-04T09:58:21'
@@ -326,7 +381,7 @@
     amount: 50000
     comment: 'Test case'
   model: dash.budgetlineitem
-  pk: 1
+  pk: 3
 
 - fields:
     created_dt: '2014-06-04T09:58:21'
@@ -339,13 +394,13 @@
     amount: 50000
     comment: 'Test case'
   model: dash.budgetlineitem
-  pk: 2
+  pk: 4
 
 # Daily statements
 
 - fields:
     date: '2014-06-04'
-    budget: 1
+    budget: 3
     media_spend_nano: 50000000000
     data_spend_nano: 0
     license_fee_nano: 5000000000
@@ -354,7 +409,7 @@
 
 - fields:
     date: '2014-06-03'
-    budget: 1
+    budget: 3
     media_spend_nano: 60000000000
     data_spend_nano: 0
     license_fee_nano: 6000000000
@@ -363,9 +418,18 @@
 
 - fields:
     date: '2014-06-04'
-    budget: 2
+    budget: 4
     media_spend_nano: 70000000000
     data_spend_nano: 0
     license_fee_nano: 7000000000
   model: reports.budgetdailystatement
   pk: 3
+
+- fields:
+    date: '2014-06-04'
+    budget: 1
+    media_spend_nano: 900000000000
+    data_spend_nano: 0
+    license_fee_nano: 10000000000
+  model: reports.budgetdailystatement
+  pk: 4

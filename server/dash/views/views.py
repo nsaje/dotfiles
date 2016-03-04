@@ -15,6 +15,7 @@ import unicodecsv
 import slugify
 import hmac
 import hashlib
+import threading
 
 from collections import OrderedDict
 
@@ -37,6 +38,8 @@ from utils import exc
 from utils import s3helpers
 from utils import email_helper
 
+from automation import autopilot_plus
+
 import actionlog.api
 import actionlog.api_contentads
 import actionlog.sync
@@ -44,8 +47,7 @@ import actionlog.zwei_actions
 import actionlog.models
 import actionlog.constants
 
-from dash import budget
-from dash import models, region_targeting_helper
+from dash import models, region_targeting_helper, retargeting_helper
 from dash import constants
 from dash import api
 from dash import forms
@@ -223,6 +225,20 @@ class CampaignRestore(api_common.BaseApiView):
 
 class AdGroupOverview(api_common.BaseApiView):
 
+    class AsyncQuery(threading.Thread):
+
+        def __init__(self, user, ad_group):
+            super(AdGroupOverview.AsyncQuery, self).__init__()
+            self.user = user
+            self.ad_group = ad_group
+            self.yesterday_cost = None
+
+        def run(self):
+            self.yesterday_cost = infobox_helpers.get_yesterday_adgroup_spend(
+                self.user,
+                self.ad_group
+            ) or 0
+
     @statsd_helper.statsd_timer('dash.api', 'ad_group_overview')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_see_infobox'):
@@ -231,21 +247,25 @@ class AdGroupOverview(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+
+        async_perf_query = AdGroupOverview.AsyncQuery(request.user, ad_group)
+        async_perf_query.start()
+
         ad_group_settings = ad_group.get_current_settings()
-        running_status = models.AdGroup.get_running_status_by_flight_time(ad_group_settings)
+
         header = {
             'title': ad_group_settings.ad_group_name,
-            'active': running_status == constants.AdGroupRunningStatus.ACTIVE,
-            'level': constants.InfoboxLevel.ADGROUP
+            'active': infobox_helpers.get_adgroup_running_status(ad_group_settings),
+            'level': constants.InfoboxLevel.ADGROUP,
+            'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP)),
         }
 
-        basic_settings = self._basic_settings(request.user, ad_group, ad_group_settings)
+        basic_settings, daily_cap = self._basic_settings(request.user, ad_group, ad_group_settings)
         performance_settings, is_delivering = self._performance_settings(
-            ad_group, request.user, ad_group_settings
+            ad_group, request.user, ad_group_settings, daily_cap, async_perf_query
         )
         for setting in performance_settings[1:]:
             setting['section_start'] = True
-
 
         response = {
             'header': header,
@@ -270,6 +290,12 @@ class AdGroupOverview(api_common.BaseApiView):
             days_left_description
         )
         settings.append(flight_time_setting.as_dict())
+
+        max_cpc_setting = infobox_helpers.OverviewSetting(
+            'Maximum CPC:',
+            lc_helper.default_currency(ad_group_settings.cpc_cc) if ad_group_settings.cpc_cc is not None else 'No limit',
+        )
+        settings.append(max_cpc_setting.as_dict())
 
         campaign_settings = ad_group.campaign.get_current_settings()
         campaign_target_devices = campaign_settings.target_devices
@@ -310,7 +336,8 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         if ad_group_settings.tracking_code:
             tracking_code_settings = tracking_code_settings.comment(
-                'codes',
+                'Show codes',
+                'Hide codes',
                 ad_group_settings.tracking_code
             )
         settings.append(tracking_code_settings.as_dict())
@@ -330,44 +357,31 @@ class AdGroupOverview(api_common.BaseApiView):
         )
         settings.append(post_click_tracking_setting.as_dict())
 
-        self.daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
+        daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
         daily_cap_setting = infobox_helpers.OverviewSetting(
             'Daily budget:',
-            lc_helper.default_currency(self.daily_cap) if self.daily_cap is not None else '',
+            lc_helper.default_currency(daily_cap) if daily_cap is not None else '',
             tooltip='Daily media budget'
         )
         settings.append(daily_cap_setting.as_dict())
 
-        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(
-            ad_group.campaign
-        )
-        total_media_spend = infobox_helpers.get_media_campaign_spend(
-            user,
-            ad_group.campaign
-        )
-
-        campaign_budget_setting = infobox_helpers.OverviewSetting(
-            'Campaign budget:',
-            lc_helper.default_currency(total_media_spend),
-            lc_helper.default_currency(total_media_available),
-        )
+        campaign_budget_setting = infobox_helpers.create_total_campaign_budget_setting(user, ad_group.campaign)
         settings.append(campaign_budget_setting.as_dict())
-        return settings
+        return settings, daily_cap
 
-    def _performance_settings(self, ad_group, user, ad_group_settings):
+    def _performance_settings(self, ad_group, user, ad_group_settings, daily_cap, async_query):
         settings = []
-
-        yesterday_cost = infobox_helpers.get_yesterday_adgroup_spend(user, ad_group) or 0
-        ad_group_daily_budget = self.daily_cap
-
-        settings.append(infobox_helpers.create_yesterday_spend_setting(
-            yesterday_cost,
-            ad_group_daily_budget
-        ).as_dict())
-
         common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
             user, ad_group.campaign
         )
+
+        async_query.join()
+        yesterday_cost = async_query.yesterday_cost
+
+        settings.append(infobox_helpers.create_yesterday_spend_setting(
+            yesterday_cost,
+            daily_cap
+        ).as_dict())
         settings.extend(common_settings)
         return settings, is_delivering
 
@@ -460,7 +474,6 @@ class CampaignAdGroups(api_common.BaseApiView):
         sources = ad_group.campaign.account.allowed_sources.all()
         actions = []
         added_sources = []
-
         for source in sources:
             try:
                 source_default_settings = helpers.get_source_default_settings(source)
@@ -496,7 +509,8 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         ad_group_source = helpers.add_source_to_ad_group(source_settings, ad_group)
         ad_group_source.save(request)
-        active_source_state = region_targeting_helper.can_target_existing_regions(source, ad_group_settings)
+        active_source_state = region_targeting_helper.can_target_existing_regions(source, ad_group_settings) and\
+            retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
         helpers.set_ad_group_source_settings(request, ad_group_source, source_settings,
                                              mobile_only=ad_group_settings.is_mobile_only(),
                                              active=active_source_state)
@@ -517,8 +531,9 @@ class CampaignOverview(api_common.BaseApiView):
 
         header = {
             'title': campaign.name,
-            'active': infobox_helpers.is_campaign_active(campaign),
-            'level': constants.InfoboxLevel.CAMPAIGN
+            'active': infobox_helpers.get_campaign_running_status(campaign),
+            'level': constants.InfoboxLevel.CAMPAIGN,
+            'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.CAMPAIGN)),
         }
 
         basic_settings, daily_cap =\
@@ -541,37 +556,29 @@ class CampaignOverview(api_common.BaseApiView):
         }
         return self.create_api_response(response)
 
+    @statsd_helper.statsd_timer('dash.api', 'campaign_overview_basic')
     def _basic_settings(self, user, campaign, campaign_settings):
         settings = []
 
-        start_date = None
-        end_date = None
-        never_finishes = False
+        count_adgroups = infobox_helpers.count_active_adgroups(campaign)
+        count_adgroups_setting = infobox_helpers.OverviewSetting(
+            'Active ad groups:',
+            '{}'.format(count_adgroups),
+            tooltip='Number of active ad groups'
+        )
+        settings.append(count_adgroups_setting.as_dict())
+
+        campaign_manager_setting = infobox_helpers.OverviewSetting(
+            'Campaign Manager:',
+            infobox_helpers.format_username(campaign_settings.campaign_manager)
+        )
+        settings.append(campaign_manager_setting.as_dict())
 
         daily_cap_value = infobox_helpers.calculate_daily_campaign_cap(campaign)
 
-        ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-        for ad_group in ad_groups:
-            if ad_group.is_archived():
-                continue
-
-            ad_group_settings = ad_group.get_current_settings()
-
-            adg_start_date = ad_group_settings.start_date
-            adg_end_date = ad_group_settings.end_date
-            if start_date is None:
-                start_date = adg_start_date
-            else:
-                start_date = min(start_date, adg_start_date)
-
-            if adg_end_date is None:
-                never_finishes = True
-
-            if end_date is None:
-                end_date = adg_end_date
-            else:
-                end_date = max(end_date, adg_end_date or end_date)
-
+        start_date, end_date, never_finishes = self._calculate_flight_dates(
+            campaign
+        )
         if never_finishes:
             end_date = None
 
@@ -615,27 +622,20 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(daily_cap.as_dict())
 
-        total_media_available = infobox_helpers.calculate_available_media_campaign_budget(campaign)
-        total_media_spend = infobox_helpers.get_media_campaign_spend(user, campaign)
-
-        campaign_budget_setting = infobox_helpers.OverviewSetting(
-            'Campaign budget:',
-            lc_helper.default_currency(total_media_spend),
-            lc_helper.default_currency(total_media_available),
-        )
+        campaign_budget_setting = infobox_helpers.create_total_campaign_budget_setting(user, campaign)
         settings.append(campaign_budget_setting.as_dict())
 
         return settings, daily_cap_value
 
+    @statsd_helper.statsd_timer('dash.api', 'campaign_overview_performance')
     def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc):
         settings = []
 
         yesterday_cost = infobox_helpers.get_yesterday_campaign_spend(user, campaign) or 0
-        campaign_daily_budget = infobox_helpers.calculate_daily_campaign_cap(campaign)
 
         settings.append(infobox_helpers.create_yesterday_spend_setting(
             yesterday_cost,
-           campaign_daily_budget
+            daily_cap_cc
         ).as_dict())
 
         common_settings, is_delivering = infobox_helpers.goals_and_spend_settings(
@@ -644,14 +644,32 @@ class CampaignOverview(api_common.BaseApiView):
         settings.extend(common_settings)
         return settings, is_delivering
 
-    def get_campaign_status(self, campaign):
-        ad_groups = models.AdGroup.objects.filter(campaign=campaign)
-        ad_groups_settings = models.AdGroupSettings.objects.filter(
-            ad_group__in=ad_groups
-        ) .group_current_settings()
+    def _calculate_flight_dates(self, campaign):
+        start_date = None
+        end_date = None
+        never_finishes = False
 
-        return helpers.get_ad_group_state_by_sources_running_status(
-            ad_groups, ad_groups_settings, [], 'campaign_id')
+        ad_groups_settings = models.AdGroupSettings.objects.filter(
+            ad_group__campaign=campaign
+        ).group_current_settings().values_list('start_date', 'end_date')
+        for ad_group_settings in ad_groups_settings:
+            adg_start_date = ad_group_settings[0]
+            adg_end_date = ad_group_settings[1]
+
+            if start_date is None:
+                start_date = adg_start_date
+            else:
+                start_date = min(start_date, adg_start_date)
+
+            if adg_end_date is None:
+                never_finishes = True
+
+            if end_date is None:
+                end_date = adg_end_date
+            else:
+                end_date = max(end_date, adg_end_date or end_date)
+
+        return start_date, end_date, never_finishes
 
 
 class AccountOverview(api_common.BaseApiView):
@@ -667,8 +685,9 @@ class AccountOverview(api_common.BaseApiView):
 
         header = {
             'title': account.name,
-            'active': False,
-            'level': constants.InfoboxLevel.ACCOUNT
+            'active': infobox_helpers.get_account_running_status(account),
+            'level': constants.InfoboxLevel.ACCOUNT,
+            'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT)),
         }
 
         basic_settings = self._basic_settings(account)
@@ -683,38 +702,29 @@ class AccountOverview(api_common.BaseApiView):
             'performance_settings': performance_settings,
         }
 
-        count_campaigns = models.Campaign.objects.filter(
-            account=account
-        ).count()
-
-        count_adgroups = models.AdGroup.objects.filter(
-            campaign__account=account
-        ).count()
-
-        header['subtitle'] = 'with {count_campaigns} campaigns and {count_adgroups} ad groups'.format(
-            count_campaigns=count_campaigns,
-            count_adgroups=count_adgroups
-        )
-
         return self.create_api_response(response)
-
-    def _username(self, user):
-        if not user:
-            return 'N/A'
-        return user.get_full_name()
 
     def _basic_settings(self, account):
         settings = []
+
+        count_campaigns = infobox_helpers.count_active_campaigns(account)
+        count_campaigns_setting = infobox_helpers.OverviewSetting(
+            'Active campaigns:',
+            '{}'.format(count_campaigns),
+            tooltip='Number of campaigns with at least one active ad group'
+        )
+        settings.append(count_campaigns_setting.as_dict())
+
         account_settings = account.get_current_settings()
         account_manager_setting = infobox_helpers.OverviewSetting(
             'Account Manager:',
-            self._username(account_settings.default_account_manager)
+            infobox_helpers.format_username(account_settings.default_account_manager)
         )
         settings.append(account_manager_setting.as_dict())
 
         sales_manager_setting = infobox_helpers.OverviewSetting(
-            'Sales Manager:',
-            self._username(account_settings.default_sales_representative)
+            'Sales Representative:',
+            infobox_helpers.format_username(account_settings.default_sales_representative)
         )
         settings.append(sales_manager_setting.as_dict())
 
@@ -729,17 +739,10 @@ class AccountOverview(api_common.BaseApiView):
             for i, user in enumerate(all_users):
                 user_one_setting = infobox_helpers.OverviewSetting(
                     'Users:' if i == 0 else '',
-                    self._username(user),
+                    infobox_helpers.format_username(user),
                     section_start=i == 0
                 )
                 settings.append(user_one_setting.as_dict())
-
-        platform_fee_setting = infobox_helpers.OverviewSetting(
-            'Platform fee:',
-            "{:.2f}%".format(account_settings.service_fee * 100),
-            section_start=True
-        )
-        settings.append(platform_fee_setting.as_dict())
 
         pixels = models.ConversionPixel.objects.filter(account=account)
         conversion_pixel_setting = infobox_helpers.OverviewSetting(
@@ -749,7 +752,8 @@ class AccountOverview(api_common.BaseApiView):
         if pixels.count() > 0:
             slugs = [pixel.slug for pixel in pixels]
             conversion_pixel_setting = conversion_pixel_setting.comment(
-                'more',
+                'Show more',
+                'Show less',
                 ', '.join(slugs),
             )
         settings.append(conversion_pixel_setting.as_dict())
@@ -857,7 +861,8 @@ class AdGroupSources(api_common.BaseApiView):
                 'id': source.id,
                 'name': source.name,
                 'can_target_existing_regions': region_targeting_helper.can_target_existing_regions(
-                        source, ad_group_settings)
+                        source, ad_group_settings),
+                'can_retarget': source.can_modify_retargeting_automatically(),
             })
 
         sources_waiting = set([ad_group_source.source.name for ad_group_source
@@ -874,6 +879,7 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group_settings = ad_group.get_current_settings()
 
         source_id = json.loads(request.body)['source_id']
         source = models.Source.objects.get(id=source_id)
@@ -882,8 +888,12 @@ class AdGroupSources(api_common.BaseApiView):
             raise exc.ValidationError(
                 '{} media source for ad group {} already exists.'.format(source.name, ad_group_id))
 
-        if not region_targeting_helper.can_target_existing_regions(source, ad_group.get_current_settings()):
+        if not region_targeting_helper.can_target_existing_regions(source, ad_group_settings):
             raise exc.ValidationError('{} media source can not be added because it does not support selected region targeting.'
+                                      .format(source.name))
+
+        if not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
+            raise exc.ValidationError('{} media source can not be added because it does not support retargeting.'
                                       .format(source.name))
 
         default_settings = helpers.get_source_default_settings(source)
@@ -1030,14 +1040,21 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         helpers.log_useraction_if_necessary(request, constants.UserActionType.SET_MEDIA_SOURCE_SETTINGS,
                                             ad_group=ad_group)
 
+        autopilot_changed_sources_text = ''
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        if ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and\
+                'state' in resource:
+            changed_sources = autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group, send_mail=False)
+            autopilot_changed_sources_text = ', '.join([s.source.name for s in changed_sources])
         return self.create_api_response({
             'editable_fields': helpers.get_editable_fields(
                 ad_group_source,
-                ad_group_source.ad_group.get_current_settings(),
+                ad_group_settings,
                 ad_group_source.get_current_settings_or_none(),
                 request.user,
                 allowed_sources,
-            )
+            ),
+            'autopilot_changed_sources': autopilot_changed_sources_text
         })
 
 
@@ -1087,8 +1104,11 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
         batch = models.UploadBatch.objects.create(
             name=batch_name,
             processed_content_ads=0,
+            inserted_content_ads=0,
+            propagated_content_ads=0,
             batch_size=len(content_ads),
         )
+        batch.save()
 
         current_settings = ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
@@ -1138,6 +1158,32 @@ class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
         return self.create_csv_response(name, content=content)
 
 
+class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
+
+    @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_cancel_get')
+    def get(self, request, ad_group_id, batch_id):
+        if not request.user.has_perm('zemauth.upload_content_ads'):
+            raise exc.ForbiddenError(message='Not allowed')
+
+        helpers.get_ad_group(request.user, ad_group_id)
+
+        try:
+            batch = models.UploadBatch.objects.get(pk=batch_id)
+        except models.UploadBatch.DoesNotExist():
+            raise exc.MissingDataException()
+
+        if batch.propagated_content_ads >= batch.batch_size:
+            raise exc.ValidationError(errors={
+                'cancel': 'Cancel action unsupported at this stage',
+            })
+
+        with transaction.atomic():
+            batch.status = constants.UploadBatchStatus.CANCELLED
+            batch.save(update_fields=['status'])
+
+        return self.create_api_response()
+
+
 class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
@@ -1152,43 +1198,48 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
         except models.UploadBatch.DoesNotExist():
             raise exc.MissingDataException()
 
+        step = 1
+        count = 0
         batch_size = batch.batch_size
-        step_size = batch_size
 
-        if batch.inserted_content_ads is not None and batch.inserted_content_ads >= batch_size:
-            # step past inserting
-            step = 'Sending to external sources (step 3/3)'
-            count = 0
-            step_size = 0
-        elif batch.inserted_content_ads is not None:
-            step = 'Inserting content ads (step 2/3)'
+        if batch.propagated_content_ads > 0:
+            step = 4
+            count = batch.propagated_content_ads
+        elif batch.inserted_content_ads > 0:
+            step = 3
             count = batch.inserted_content_ads
         else:
-            step = 'Processing imported file (step 1/3)'
+            step = 2
             count = batch.processed_content_ads
 
         response_data = {
             'status': batch.status,
+            'count': count,
+            'batch_size': batch_size,
             'step': step,
-            'count': count or 0,
-            'all': step_size
         }
 
-        if batch.status == constants.UploadBatchStatus.FAILED:
-            if batch.error_report_key:
-                text = '{} error{}. <a href="{}">Download Report.</a>'.format(
-                    batch.num_errors,
-                    's' if batch.num_errors > 1 else '',
-                    reverse(
-                        'ad_group_ads_plus_upload_report',
-                        kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
-                )
-            else:
-                text = 'An error occured while processing file.'
-
-            response_data['errors'] = {'content_ads': [text]}
+        errors = self._get_error_details(batch, ad_group_id)
+        if errors:
+            response_data['errors'] = {
+                'details': errors,
+            }
 
         return self.create_api_response(response_data)
+
+    def _get_error_details(self, batch, ad_group_id):
+        errors = {}
+        if batch.status == constants.UploadBatchStatus.FAILED:
+            if batch.error_report_key:
+                errors['report_url'] = reverse('ad_group_ads_plus_upload_report',
+                                               kwargs={'ad_group_id': ad_group_id, 'batch_id': batch.id})
+                errors['description'] = 'Found {} error{}.'.format(batch.num_errors, 's' if batch.num_errors > 1 else '')
+            else:
+                errors['description'] = 'An error occured while processing file.'
+        elif batch.status == constants.UploadBatchStatus.CANCELLED:
+                errors['description'] = 'Content Ads upload was cancelled.'
+
+        return errors
 
 
 class AdGroupContentAdArchive(api_common.BaseApiView):
@@ -1861,46 +1912,54 @@ class AllAccountsOverview(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_access_all_accounts_infobox'):
             raise exc.AuthorizationError()
 
+        start_date = helpers.get_stats_start_date(request.GET.get('start_date'))
+        end_date = helpers.get_stats_end_date(request.GET.get('end_date'))
+
         header = {
-            'title': 'All accounts',
-            'level': constants.InfoboxLevel.ALL_ACCOUNTS
+            'title': None,
+            'level': constants.InfoboxLevel.ALL_ACCOUNTS,
+            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ALL_ACCOUNTS),
         }
 
         response = {
             'header': header,
-            'basic_settings': self._basic_settings(),
+            'basic_settings': self._basic_settings(start_date, end_date),
             'performance_settings': None
         }
 
         return self.create_api_response(response)
 
-    def _basic_settings(self):
+    def _basic_settings(self, start_date, end_date):
         settings = []
 
         count_active_accounts = infobox_helpers.count_active_accounts()
         settings.append(infobox_helpers.OverviewSetting(
             'Active accounts:',
             count_active_accounts,
-            section_start=True
+            section_start=True,
+            tooltip='All accounts that have at least one running campaign'
         ))
 
         weekly_logged_users = infobox_helpers.count_weekly_logged_in_users()
         settings.append(infobox_helpers.OverviewSetting(
             'Weekly logged-in users:',
             weekly_logged_users,
+            tooltip="Number of users who logged-in in the past 7 days"
         ))
 
         weekly_active_users = infobox_helpers.count_weekly_active_users()
         settings.append(infobox_helpers.OverviewSetting(
             'Weekly active users:',
             weekly_active_users,
-            section_start=True
+            section_start=True,
+            tooltip='Number of self managed users in the past 7 days'
         ))
 
         weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
         settings.append(infobox_helpers.OverviewSetting(
             'Weekly self managed actions:',
             weekly_sf_actions,
+            tooltip="Number of actions taken by self managed users"
         ))
 
         yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
@@ -1920,10 +1979,13 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         today = datetime.datetime.utcnow()
         start, end = calendar.monthrange(today.year, today.month)
-        start_date = datetime.datetime(today.year, today.month, 1)
-        end_date = datetime.datetime(today.year, today.month, end)
+        start_date = start_date or datetime.datetime(today.year, today.month, 1)
+        end_date = end_date or datetime.datetime(today.year, today.month, end)
 
-        total_budget = infobox_helpers.calculate_all_accounts_total_budget(start_date, end_date)
+        total_budget = infobox_helpers.calculate_all_accounts_total_budget(
+            start_date,
+            end_date
+        )
         settings.append(infobox_helpers.OverviewSetting(
             'Total budgets:',
             lc_helper.default_currency(total_budget),

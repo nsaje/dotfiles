@@ -139,6 +139,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
         {
             name: 'Status',
             field: 'stateText',
+            unselectable: true,
             checked: true,
             type: 'text',
             shown: true,
@@ -423,10 +424,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
     };
 
     $scope.getInfoboxData = function () {
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            return;
-        }
-        if (!$scope.hasPermission('zemauth.can_access_campaign_infobox')) {
+        if (!$scope.hasInfoboxPermission()) {
             return;
         }
 
@@ -435,6 +433,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
+                $scope.reflowGraph(1);
             }
         );
     };
@@ -599,6 +598,7 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
             }
         ).finally(function () {
             $scope.getTableDataRequestInProgress = false;
+            $scope.reflowGraph(1);
         });
     };
 

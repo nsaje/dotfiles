@@ -184,50 +184,6 @@ oneApp.config(['$provide', function ($provide) {
             return deferred.promise;
         };
 
-        /* CAMPAIGN BUDGET */
-        $delegate.campaignBudget.get = resetIfErrorWrapper(
-            defaultGetWrapper(
-                '/api/campaigns/{id}/budget/',
-                $delegate.campaignBudget.get,
-                function (cacheId, cachedResponse, deferred) {
-                    return function () {
-                        var data = defaults.budget();
-                        zemDemoCacheService.set(cacheId, data);
-                        deferred = $q.defer();
-                        deferred.resolve(data);
-                    };
-                }
-            )
-        );
-
-        $delegate.campaignBudget.save = function demo (id, data) {
-            var deferred = $q.defer(),
-                cacheId = '/api/campaigns/' + id + '/budget/',
-                cachedResponse = zemDemoCacheService.get(cacheId),
-                newData = angular.extend({}, cachedResponse),
-                actions = {
-                    allocate: function (v) {
-                        newData.total = parseFloat(newData.total) + parseFloat(v);
-                    },
-                    revoke: function (v) {
-                        newData.total = parseFloat(newData.total) - parseFloat(v);
-                    }
-                };
-            actions[data.action](data.amount);
-            newData.history.push({
-                allocate: data.action == 'allocate' ? parseFloat(data.amount) : 0,
-                comment: capitalize(data.action) + 'd $' + data.amount +  '  to the campaign.',
-                datetime: (new Date()).toISOString(),
-                revoke: data.action == 'revoke' ? parseFloat(data.amount) : 0,
-                total: newData.total,
-                user: 'test.account@zemanta.si'
-            });
-            newData.available = parseFloat(newData.total) - parseFloat(newData.spend);
-            zemDemoCacheService.set(cacheId, newData);
-            deferred.resolve(newData);
-            return deferred.promise;
-        };
-
         /* ADD ADGROUP */
         $delegate.campaignAdGroups.create = function demo (id) {
             var deferred = $q.defer(),

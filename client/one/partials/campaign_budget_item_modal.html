@@ -79,7 +79,7 @@
             <div class="col-xs-4">
                 <div class="input-group">
                     <span class="input-group-addon">$</span>
-                    <input id="amount-input" ng-disabled="!budgetItem.credit || !budgetItem.isEditable" type="text" class="form-control" ng-model="budgetItem.amount" zem-currency-input fraction-size="0" />
+                    <input id="amount-input" ng-disabled="!budgetItem.credit || !(budgetItem.isEditable || budgetItem.isUpdatable)" type="text" class="form-control" ng-model="budgetItem.amount" zem-currency-input fraction-size="0" />
                     <div class="input-group-addon">.00</div>
                 </div>
             </div>

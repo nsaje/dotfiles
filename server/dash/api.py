@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 BLOCKED_AD_GROUP_SETTINGS = [
     'state', 'cpc_cc', 'daily_budget_cc', 'display_url',
     'brand_name', 'description', 'call_to_action',
-    'autopilot_state', 'autopilot_daily_budget'
+    'autopilot_state', 'autopilot_daily_budget',
 ]
 
 AUTOMATIC_APPROVAL_OUTBRAIN_ACCOUNT = '0082c33a43e59aa0da8849b5af3448bc7b'
@@ -461,7 +461,7 @@ def submit_ad_group_callback(ad_group_source, source_content_ad_id, submission_s
     return actions
 
 
-def submit_content_ads(content_ad_sources, request):
+def submit_content_ads(content_ad_sources, request, update_progress_fn=None):
     actions = []
 
     by_ags = defaultdict(list)
@@ -472,6 +472,7 @@ def submit_content_ads(content_ad_sources, request):
         k = (content_ad_source.content_ad.ad_group_id, content_ad_source.source_id)
         by_ags[k].append(content_ad_source)
 
+    processed_content_ads = set()
     with transaction.atomic():
         for key, ags_content_ad_sources in by_ags.iteritems():
             if not ags_content_ad_sources:
@@ -535,6 +536,11 @@ def submit_content_ads(content_ad_sources, request):
                         send=False
                     )
                 )
+
+                # notify progress change by content ads
+                if content_ad_source.content_ad_id not in processed_content_ads and update_progress_fn is not None:
+                    processed_content_ads.add(content_ad_source.content_ad_id)
+                    update_progress_fn()
 
     return actions
 
@@ -769,6 +775,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                 source.update_tracking_codes_on_content_ads()) or
                field_name == 'iab_category' and source.can_modify_ad_group_iab_category_automatic() or
                field_name == 'ad_group_name' and source.can_modify_ad_group_name() or
+               field_name == 'retargeting_ad_groups' and source.can_modify_retargeting_automatically() or
                field_name == 'target_regions' and region_targeting_helper.can_modify_selected_target_regions_automatically(
                    source, current_settings, new_settings)) and not force_manual_change:
                 new_field_name = field_name
@@ -808,6 +815,10 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
             else:
                 if field_name in ['enable_ga_tracking', 'enable_adobe_tracking', 'adobe_tracking_param']:
                     # do not create an action - only used for our redirector
+                    continue
+
+                if field_name in ['retargeting_ad_groups']:
+                    # no manual actions for retargeting
                     continue
 
                 if field_name == 'iab_category' and not source.can_modify_ad_group_iab_category_manual():

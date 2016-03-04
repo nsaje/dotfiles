@@ -8,6 +8,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
+from secretcrypt import Secret
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -48,15 +50,15 @@ INSTALLED_APPS = (
     'automation',
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
-)
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
 
 ROOT_URLCONF = 'server.urls'
 
@@ -107,6 +109,24 @@ DEFAULT_FROM_EMAIL = ''
 MAILGUN_API_KEY = ''
 
 DEMO_USERS = tuple()
+
+try:
+    import qinspect
+    MIDDLEWARE_CLASSES.append('qinspect.middleware.QueryInspectMiddleware'),
+    # Query inspector settings, https://github.com/dobarkod/django-queryinspect
+    # Whether the Query Inspector should do anything (default: False)
+    QUERY_INSPECT_ENABLED = True
+    # Whether to log the stats via Django logging (default: True)
+    QUERY_INSPECT_LOG_STATS = True
+    # Whether to log duplicate queries (default: False)
+    QUERY_INSPECT_LOG_QUERIES = True
+    # Whether to log queries that are above an absolute limit (default: None - disabled)
+    QUERY_INSPECT_ABSOLUTE_LIMIT = 1000  # in milliseconds
+    # Whether to include tracebacks in the logs (default: False)
+    QUERY_INSPECT_LOG_TRACEBACKS = True
+except ImportError:
+    pass
+
 
 from celeryconfig import *
 from localsettings import *
@@ -167,6 +187,11 @@ LOGGING = {
             'level': 'WARNING',
             'propagate': True
         },
+        'qinspect': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
         '': {
             'handlers': ['file', 'console', 'sentry'],
             'level': 'INFO',
@@ -193,6 +218,19 @@ if TESTING:
     CELERY_DEFAULT_CONVAPI_QUEUE = CELERY_DEFAULT_CONVAPI_QUEUE
     CELERY_DEFAULT_CONVAPI_V2_QUEUE = CELERY_DEFAULT_CONVAPI_V2_QUEUE
 
+    TESTING_DB_PREFIX = 'testing_'
+    testing_databases = {db: DATABASES[db] for db in DATABASES.keys() if db.startswith(TESTING_DB_PREFIX)}
+    for database_name in DATABASES.keys():
+        if database_name.startswith(TESTING_DB_PREFIX):
+            continue
+        testing_db_replacement = 'testing_{}'.format(database_name)
+        if testing_db_replacement in testing_databases:
+            DATABASES[database_name] = testing_databases[testing_db_replacement]
+            print('Using {testdbname} instead of {dbname} for testing...'.format(
+                testdbname=testing_db_replacement,
+                dbname=database_name
+            ))
+
     if len(sys.argv) > 1 and '--redshift' not in sys.argv:
         # if not redshift testing
         DATABASES.pop(STATS_DB_NAME, None)
@@ -200,7 +238,7 @@ if TESTING:
         STATS_DB_NAME = 'default'
 
 # App specific
-ACTIONLOG_RECENT_HOURS = 5
+ACTIONLOG_RECENT_HOURS = 2
 
 LAST_N_DAY_REPORTS = 3
 
@@ -229,23 +267,13 @@ if os.environ.get('E2E_REDDB'):
     DATABASES[STATS_DB_NAME]['NAME'] = os.environ.get('E2E_REDDB')
     print 'Using e2e Redshift DB named', DATABASES[STATS_DB_NAME]['NAME']
 
-    if os.environ.get('REDSHIFT_E2E_USER'):
-        credentials = {
-            'USER': os.environ.get('REDSHIFT_E2E_USER'),
-            'PASSWORD': os.environ.get('REDSHIFT_E2E_PASS'),
-            'HOST': os.environ.get('REDSHIFT_E2E_HOST')
-        }
-
-        DATABASES[STATS_E2E_DB_NAME].update(credentials)
-    else:
-        credentials = {
-            'USER': DATABASES[STATS_E2E_DB_NAME]['USER'],
-            'PASSWORD': DATABASES[STATS_E2E_DB_NAME]['PASSWORD'],
-            'HOST': DATABASES[STATS_E2E_DB_NAME]['HOST']
-        }
+    credentials = {
+        'USER': DATABASES[STATS_E2E_DB_NAME]['USER'],
+        'PASSWORD': DATABASES[STATS_E2E_DB_NAME]['PASSWORD'],
+        'HOST': DATABASES[STATS_E2E_DB_NAME]['HOST']
+    }
 
     DATABASES[STATS_DB_NAME].update(credentials)
-
 
 if 'e2e' in DATABASES:
     DATABASES['e2e'] = {}

@@ -1,59 +1,47 @@
-/* globals oneApp, angular */
+/* globals oneApp */
 'use strict';
 
-oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', 'zemNavigationService', function (config, zemFilterService, $state, zemNavigationService) { // eslint-disable-line max-len
+oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', function (config, zemFilterService, $state) { // eslint-disable-line max-len
     return {
         restrict: 'E',
         scope: {
             selectedAdgroupIds: '=zemSelectedAdgroupIds',
             account: '=zemAccount',
+            retargetableAdgroups: '=zemRetargetableAdgroups',
         },
         templateUrl: '/partials/zem_retargeting.html',
         controller: ['$scope', function ($scope) {
             $scope.config = config;
             $scope.selected = {adgroup: undefined};
-            $scope.campaigns = angular.copy($scope.account.campaigns) || [];
-
-            zemNavigationService.onUpdate($scope, function () {
-                zemNavigationService.getAccount($scope.account.id).then(function (data) {
-                    // make a copy of campaigns so we don't change original objects
-                    $scope.campaigns = angular.copy(data.account.campaigns);
-                });
-            });
 
             $scope.selectedAdgroups = function () {
                 var result = [];
-                $scope.campaigns.forEach(function (campaign) {
-                    campaign.adGroups.forEach(function (adgroup) {
-                        if ($scope.selectedAdgroupIds.indexOf(adgroup.id) >= 0) {
-                            result.push(adgroup);
-                        }
-                    });
+                $scope.retargetableAdgroups.forEach(function (adgroup) {
+                    if ($scope.selectedAdgroupIds.indexOf(adgroup.id) >= 0) {
+                        result.push(adgroup);
+                    }
                 });
-
                 return result;
             };
 
             $scope.availableAdgroups = function () {
-                return $scope.campaigns.reduce(function (result, campaign) {
-                    var adgroups = campaign.adGroups.filter(function (adgroup) {
-                        return !adgroup.archived || zemFilterService.isArchivedFilterOn();
-                    }).filter(function (adgroup) {
-                        return $scope.selectedAdgroupIds.indexOf(adgroup.id) < 0;
-                    }).filter(function (adgroup) {
-                        return adgroup.id !== parseInt($state.params.id);
-                    }).map(function (adgroup) {
-                        // add campaign info to each item for grouping
-                        adgroup.campaign = campaign;
-                        return adgroup;
-                    });
+                if (!$scope.retargetableAdgroups) {
+                    return [];
+                }
 
-                    return result.concat(adgroups);
-                }, []);
+                var adgroups = $scope.retargetableAdgroups.filter(function (adgroup) {
+                    return !adgroup.archived || zemFilterService.isArchivedFilterOn();
+                }).filter(function (adgroup) {
+                    return $scope.selectedAdgroupIds.indexOf(adgroup.id) < 0;
+                }).filter(function (adgroup) {
+                    return adgroup.id !== parseInt($state.params.id);
+                });
+
+                return adgroups;
             };
 
             $scope.groupByCampaign = function (adgroup) {
-                return adgroup.campaign.name;
+                return adgroup.campaignName;
             };
 
             $scope.removeSelectedAdgroup = function (adgroup) {

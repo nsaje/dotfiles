@@ -16,7 +16,6 @@ import actionlog.zwei_actions
 from dash import models
 from dash import constants
 from dash import api
-from dash import budget
 from utils import exc
 from utils import statsd_helper
 from utils import email_helper
@@ -176,19 +175,25 @@ def get_active_ad_group_sources(modelcls, modelobjects):
         real_corresponding_adgroups = [x.real_ad_group
                                        for x in models.DemoAdGroupRealAdGroup.objects
                                        .filter(demo_ad_group__in=demo_adgroups)]
+
         normal_adgroups = _get_adgroups_for(modelcls, normal_objects)
         adgroups = list(real_corresponding_adgroups) + list(normal_adgroups)
 
-        _inactive_ad_group_sources = actionlog.api.get_ad_group_sources_waiting(
-            ad_group=adgroups
-        )
+        adgroup_settings = models.AdGroupSettings.objects.\
+            filter(ad_group__in=adgroups).\
+            group_current_settings()
+        archived_adgroup_ids = [setting.ad_group_id for setting in adgroup_settings if setting.archived]
+        inactive_adgroup_sources = actionlog.api.get_ad_group_sources_waiting(ad_group=adgroups)
+        inactive_adgroup_source_ids = [adgroup_source.pk for adgroup_source in inactive_adgroup_sources]
 
         active_ad_group_sources = models.AdGroupSource.objects \
             .filter(
                 # deprecated sources are not shown in the demo at all
                 Q(ad_group__in=real_corresponding_adgroups, source__deprecated=False) |
                 Q(ad_group__in=normal_adgroups)
-            ).exclude(pk__in=[ags.id for ags in _inactive_ad_group_sources]).\
+            ).\
+            exclude(pk__in=inactive_adgroup_source_ids).\
+            exclude(ad_group__in=archived_adgroup_ids).\
             select_related('source__source_type').\
             select_related('ad_group')
 
@@ -598,7 +603,7 @@ def get_content_ad_data_status(ad_group, content_ads):
         if not out_of_sync:
             message = 'All data is OK.'
         else:
-            message = 'The status of this Content Ad differs on these media sources: {}.'.format(", ".join(out_of_sync))
+            message = 'The status of this Content Ad differs on these media sources: {}.'.format(", ".join(sorted(out_of_sync)))
 
         data_status[str(content_ad.id)] = {
             'message': message,
@@ -862,7 +867,8 @@ def _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings):
 
     if not ad_group_source.source.can_update_cpc() or\
             _is_end_date_past(ad_group_settings) or\
-            automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source):
+            automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source) or\
+            ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
         enabled = False
         message = _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
 
@@ -878,7 +884,8 @@ def _get_editable_fields_daily_budget(ad_group_source, ad_group_settings):
 
     if not ad_group_source.source.can_update_daily_budget_automatic() and\
        not ad_group_source.source.can_update_daily_budget_manual() or\
-       _is_end_date_past(ad_group_settings):
+       _is_end_date_past(ad_group_settings) or\
+       ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
         enabled = False
         message = _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
 
@@ -955,7 +962,11 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_setting
         return 'The ad group has end date set in the past. No modifications to media source parameters are possible.'
 
     if automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source):
-        return 'This value cannot be edited because the media source is on Auto-Pilot'
+        return 'This value cannot be edited because the media source is on Auto-Pilot.'
+
+    if ad_group_settings.autopilot_state in [constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+                                             constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET]:
+        return 'This value cannot be edited because the ad group is on Auto-Pilot.'
 
     return 'This media source doesn\'t support setting this value through the dashboard.'
 
@@ -1008,20 +1019,6 @@ def log_useraction_if_necessary(request, user_action_type, account=None, campaig
             ad_group_settings_id=ad_group.get_current_settings().id if ad_group else None
         )
         user_action_log.save()
-
-
-def ad_group_has_available_budget(ad_group):
-    if ad_group.campaign.account.uses_credits:
-        return any(ad_group.campaign.budgets.all().filter_active())
-
-    campaign_budget = budget.CampaignBudget(ad_group.campaign)
-
-    total = campaign_budget.get_total()
-    spend = campaign_budget.get_spend()
-
-    available = total - spend
-
-    return bool(available)
 
 
 def get_source_default_settings(source):

@@ -468,7 +468,6 @@ class InfoBoxAccountHelpersTest(TestCase):
 
     def test_get_yesterday_all_accounts_spend(self):
         self.assertEqual(0, dash.infobox_helpers.get_yesterday_all_accounts_spend())
-
         yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         reports.models.BudgetDailyStatement.objects.create(
             budget=self.budget,
@@ -504,10 +503,26 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(10, dash.infobox_helpers.get_mtd_all_accounts_spend())
 
     def test_count_active_accounts(self):
+        today = datetime.datetime.utcnow()
+
+        for adgss in dash.models.AdGroupSourceState.objects.all():
+            adgss.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
+            adgss.save()
+
         self.assertEqual(0, dash.infobox_helpers.count_active_accounts())
 
-        all_adgs = dash.models.AdGroupSource.objects.all()
-        for adgs in all_adgs:
+        all_adgset = dash.models.AdGroupSettings.objects.filter(
+            ad_group__campaign__account__id=1
+        )
+        for adgset in all_adgset:
+            adgset.start_date = today
+            adgset.end_date = today + datetime.timedelta(days=1)
+            adgset.save(None)
+
+        all_adgs_1 = dash.models.AdGroupSource.objects.filter(
+            ad_group__campaign__account__id=1
+        )
+        for adgs in all_adgs_1:
             dash.models.AdGroupSourceState.objects.create(
                 ad_group_source=adgs,
                 state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
@@ -544,6 +559,24 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.infobox_helpers.calculate_all_accounts_total_budget(
                 today - datetime.timedelta(days=60),
                 today
+            )
+        )
+
+        # test with date after end of budget
+        self.assertEqual(
+            0,
+            dash.infobox_helpers.calculate_all_accounts_total_budget(
+                today + datetime.timedelta(days=365),
+                today + datetime.timedelta(days=364)
+            )
+        )
+
+        # test with date before start of budget
+        self.assertEqual(
+            0,
+            dash.infobox_helpers.calculate_all_accounts_total_budget(
+                today - datetime.timedelta(days=365),
+                today - datetime.timedelta(days=364)
             )
         )
 
@@ -632,54 +665,176 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(1, dash.infobox_helpers.count_weekly_active_users())
         self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
-    @mock.patch('dash.models.BudgetLineItem.get_spend_data')
-    def test_calculate_spend_credit(self, mock_get_spend_data):
-        mock_get_spend_data.return_value = {
-            'media': 0,
-            'data': 0,
-            'license_fee': 0,
-            'total': 0
-        }
-
+    def test_calculate_spend_credit(self):
         account = dash.models.Account.objects.get(pk=1)
         available_credit = dash.infobox_helpers.calculate_spend_credit(account)
         self.assertEqual(0, available_credit)
 
-        mock_get_spend_data.return_value = {
-            'media': 10,
-            'data': 10,
-            'license_fee': 10,
-            'total': 30
-        }
+        date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=self.budget,
+            date=date,
+            media_spend_nano=10 * 10**9,
+            data_spend_nano=10 * 10**9,
+            license_fee_nano=10 * 10**9
+        )
 
         account = dash.models.Account.objects.get(pk=1)
         available_credit = dash.infobox_helpers.calculate_spend_credit(account)
         self.assertEqual(10, available_credit)
 
-    @mock.patch('dash.models.BudgetLineItem.get_daily_spend')
-    def test_calculate_yesterday_account_spend(self, mock_get_daily_spend):
-
-        mock_get_daily_spend.return_value = {
-            'media': 0,
-            'data': 0,
-            'license_fee': 0,
-            'total': 0
-        }
-
+    def test_calculate_yesterday_account_spend(self):
         account = dash.models.Account.objects.get(pk=1)
         available_credit = dash.infobox_helpers.calculate_yesterday_account_spend(account)
         self.assertEqual(0, available_credit)
 
-        mock_get_daily_spend.return_value = {
-            'media': 10,
-            'data': 10,
-            'license_fee': 10,
-            'total': 30
-        }
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=self.budget,
+            date=datetime.datetime.utcnow() - datetime.timedelta(days=1),
+            media_spend_nano=10 * 10**9,
+            data_spend_nano=10 * 10**9,
+            license_fee_nano=10 * 10**9,
+        )
 
         account = dash.models.Account.objects.get(pk=1)
         available_credit = dash.infobox_helpers.calculate_yesterday_account_spend(account)
         self.assertEqual(10, available_credit)
+
+    def test_get_adgroup_running_status(self):
+        # adgroup is inactive and no active sources
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        adgs = dash.models.AdGroupSettings(
+            ad_group=ad_group,
+            start_date=start_date,
+            end_date=end_date,
+            state=dash.constants.AdGroupSettingsState.INACTIVE,
+            created_dt=datetime.datetime.utcnow()
+        )
+        adgs.save(None)
+
+        ad_group_settings = ad_group.get_current_settings()
+        self.assertEqual(
+            dash.constants.InfoboxStatus.INACTIVE,
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
+        )
+
+        # adgroup is active and sources are active
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        adgs = dash.models.AdGroupSettings(
+            ad_group=ad_group,
+            start_date=start_date,
+            end_date=end_date,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+            created_dt=datetime.datetime.utcnow()
+        )
+        adgs.save(None)
+
+        source_settings = dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group=ad_group
+        ).all()[:1]
+        for source in source_settings:
+            source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+            source.save(None)
+
+        ad_group_settings = ad_group.get_current_settings()
+        self.assertEqual(
+            dash.constants.InfoboxStatus.ACTIVE,
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
+        )
+
+        # adgroup is active but sources are inactive
+        source_settings = dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group=ad_group
+        ).all()
+        for source in source_settings:
+            source.state = dash.constants.AdGroupSourceSettingsState.INACTIVE
+            source.save(None)
+
+        ad_group_settings = ad_group.get_current_settings()
+        self.assertEqual(
+            dash.constants.InfoboxStatus.STOPPED,
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
+        )
+
+        # adgroup is inactive but sources are active
+        adgs.state = dash.constants.AdGroupSettingsState.INACTIVE
+        adgs.save(None)
+
+        source_settings = dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group=ad_group
+        ).all()
+        for source in source_settings:
+            source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+            source.save(None)
+
+        ad_group_settings = ad_group.get_current_settings()
+        self.assertEqual(
+            dash.constants.InfoboxStatus.INACTIVE,
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
+        )
+
+    def test_get_campaign_running_status(self):
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        self.assertEqual(
+            dash.constants.InfoboxStatus.INACTIVE,
+            dash.infobox_helpers.get_campaign_running_status(campaign)
+        )
+
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        adgs = dash.models.AdGroupSettings(
+            ad_group=ad_group,
+            start_date=start_date,
+            end_date=end_date,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+        )
+        adgs.save(None)
+
+        source_settings = dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group=ad_group
+        ).all()[:1]
+        for source in source_settings:
+            source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+            source.save(None)
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.ACTIVE,
+            dash.infobox_helpers.get_campaign_running_status(campaign)
+        )
+
+    def test_get_account_running_status(self):
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        self.assertEqual(
+            dash.constants.InfoboxStatus.INACTIVE,
+            dash.infobox_helpers.get_account_running_status(campaign.account)
+        )
+
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        adgs = dash.models.AdGroupSettings(
+            ad_group=ad_group,
+            start_date=start_date,
+            end_date=end_date,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+        )
+        adgs.save(None)
+
+        source_settings = dash.models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__ad_group=ad_group
+        ).all()[:1]
+        for source in source_settings:
+            source.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+            source.save(None)
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.ACTIVE,
+            dash.infobox_helpers.get_account_running_status(campaign.account)
+        )
 
 
 class AllAccountsInfoboxHelpersTest(TestCase):

@@ -119,6 +119,18 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             initialOrder: 'asc'
         },
         {
+            name: 'Campaign Manager',
+            field: 'campaign_manager',
+            checked: false,
+            type: 'text',
+            totalRow: false,
+            help: 'Campaign manager responsible for the campaign and the communication with the client.',
+            order: true,
+            initialOrder: 'desc',
+            internal: $scope.isPermissionInternal('zemauth.can_see_managers_in_campaigns_table'),
+            shown: $scope.hasPermission('zemauth.can_see_managers_in_campaigns_table'),
+        },
+        {
             name: 'Total Budget',
             field: 'budget',
             checked: true,
@@ -339,6 +351,12 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             ]
         },
         {
+            'name': 'Management',
+            'fields': [
+                'campaign_manager'
+            ]
+        },
+        {
             'name': 'Data Sync',
             'fields': ['last_sync']
         }
@@ -380,12 +398,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         if (newValue !== oldValue) {
             getDailyStats();
         }
-    });
-
-    $scope.$watch('$parent.infoboxVisible', function (newValue, oldValue) {
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
     });
 
     var getDailyStatsMetrics = function () {
@@ -462,11 +474,8 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         );
     };
 
-    var getInfoboxData = function () {
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            return;
-        }
-        if (!$scope.hasPermission('zemauth.can_access_account_infobox')) {
+    $scope.getInfoboxData = function () {
+        if (!$scope.hasInfoboxPermission()) {
             return;
         }
 
@@ -475,6 +484,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
+                $scope.reflowGraph(1);
             }
         );
     };
@@ -541,6 +551,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
             }
         ).finally(function () {
             $scope.getTableDataRequestInProgress = false;
+            $scope.reflowGraph(1);
         });
     };
 
@@ -613,7 +624,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         userSettings.registerWithoutWatch('chartMetric2');
         userSettings.register('order');
         userSettings.registerGlobal('chartHidden');
-
         setChartOptions();
 
         if (campaignIds) {
@@ -634,7 +644,7 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         initColumns();
         pollSyncStatus();
         getDailyStats();
-        getInfoboxData();
+        $scope.getInfoboxData();
     };
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {

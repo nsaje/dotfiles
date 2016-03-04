@@ -700,6 +700,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             }
         ).finally(function () {
             $scope.loadRequestInProgress = false;
+            $scope.reflowGraph(1);
         });
     };
 /*    if ($window.isDemo) {
@@ -770,11 +771,8 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         );
     };
 
-    var getInfoboxData = function () {
-        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
-            return;
-        }
-        if (!$scope.hasPermission('zemauth.can_access_ad_group_infobox')) {
+    $scope.getInfoboxData = function () {
+        if (!$scope.hasInfoboxPermission()) {
             return;
         }
 
@@ -783,6 +781,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
                 $scope.infoboxHeader = data.header;
                 $scope.infoboxBasicSettings = data.basicSettings;
                 $scope.infoboxPerformanceSettings = data.performanceSettings;
+                $scope.reflowGraph(1);
             }
         );
     };
@@ -888,7 +887,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.size = $scope.sizeRange[0];
         }
 
-
         setChartOptions();
 
         if (page !== undefined && $scope.pagination.currentPage !== page) {
@@ -903,7 +901,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         getTableData();
         getDailyStats();
-        getInfoboxData();
+        $scope.getInfoboxData();
         zemFilterService.setShowBlacklistedPublishers(true);
     };
 

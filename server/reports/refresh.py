@@ -295,9 +295,7 @@ def _get_raw_b1_pub_data(s3_key):
             'external_id': '',
             'clicks': int(row[4]),
             'impressions': int(row[5]),
-            'cost_micro': int(row[6]),
             'cost_nano': int(row[6]),
-            'data_cost_micro': int(row[7]),
             'data_cost_nano': int(row[7]),
         })
 
@@ -329,13 +327,11 @@ def _get_raw_ob_pub_data(s3_keys):
                 'exchange': source.tracking_slug,  # code in publisher views assumes this
                 'external_id': row['ob_id'],
                 'clicks': row['clicks'],
-                'cost_micro': 0,
                 'cost_nano': 0
             }
 
-            if total_clicks * total_cost > 0:
-                new_row['cost_micro'] = int(round(float(row['clicks']) / total_clicks * total_cost)) * DOLLAR_TO_NANO
-                new_row['cost_nano'] = new_row['cost_micro']
+            if total_clicks > 0:
+                new_row['cost_nano'] = int(round((float(row['clicks']) / total_clicks) * total_cost * DOLLAR_TO_NANO))
 
             rows.append(new_row)
 
@@ -358,40 +354,10 @@ def _get_latest_pub_data(date):
     return ob_data + b1_data
 
 
-def process_b1_publishers_stats(date):
-    # TODO: remove when sure that data written to the single new table is ok
-    data = _get_latest_b1_pub_data(date)
-    _augment_pub_data_with_budgets(data)
-    return put_pub_stats_to_s3(date, data, LOAD_B1_PUB_STATS_KEY_FMT)
-
-
-def process_ob_publishers_stats(date):
-    # TODO: remove when sure that data written to the single new table is ok
-    data = _get_latest_ob_pub_data(date)
-    _augment_pub_data_with_budgets(data)
-    return put_pub_stats_to_s3(date, data, LOAD_OB_PUB_STATS_KEY_FMT)
-
-
 def process_publishers_stats(date):
     data = _get_latest_pub_data(date)
     _augment_pub_data_with_budgets(data)
     return put_pub_stats_to_s3(date, data, LOAD_PUB_STATS_KEY_FMT)
-
-
-def refresh_b1_publishers_data(date):
-    # TODO: remove when sure that data written to the single new table is ok
-    s3_key = process_b1_publishers_stats(date)
-    with transaction.atomic(using=settings.STATS_DB_NAME):
-        redshift.delete_publishers_b1(date)
-        redshift.load_publishers_b1(s3_key)
-
-
-def refresh_ob_publishers_data(date):
-    # TODO: remove when sure that data written to the single new table is ok
-    s3_key = process_ob_publishers_stats(date)
-    with transaction.atomic(using=settings.STATS_DB_NAME):
-        redshift.delete_publishers_ob(date)
-        redshift.load_publishers_ob(s3_key)
 
 
 def refresh_publishers_data(date):
@@ -475,19 +441,21 @@ def refresh_contentadstats_diff(date, campaign):
         metric_keys = ('impressions', 'clicks', 'cost_cc', 'data_cost_cc',
                        'visits', 'new_visits', 'bounced_visits', 'pageviews', 'total_time_on_site')
 
-        if all(row[key] == 0 for key in metric_keys):
-            continue
-
         missing_keys = set(key for key in metric_keys if row[key] < 0)
         if missing_keys:
-            logger.error(
-                'ad group stats data missing. skipping it in refreshing diffs. '
+            logger.warning(
+                'some ad group stats data missing. skipping those metrics in refreshing diffs. '
                 'ad group id: %s source id: %s date: %s keys: %s',
                 ag_stats.ad_group.id,
                 ag_stats.source.id,
                 date,
                 missing_keys
             )
+
+            for key in missing_keys:
+                row[key] = 0
+
+        if all(row[key] == 0 for key in metric_keys):
             continue
 
         for key in metric_keys:

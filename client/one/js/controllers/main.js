@@ -20,7 +20,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     $scope.adGroup = null;
 
     $scope.infoboxEnabled = false;
-    $scope.infoboxVisible = false;
     $scope.graphVisible = true;
     $scope.navigationPaneVisible = true;
 
@@ -49,25 +48,20 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return !$scope.user.permissions[permission];
     };
 
-    $scope.toggleInfobox = function () {
-        $scope.infoboxVisible = !$scope.infoboxVisible;
-        $scope.reflowGraph();
-    };
-
     $scope.toggleGraph = function () {
         $scope.graphVisible = !$scope.graphVisible;
-        $scope.reflowGraph();
+        $scope.reflowGraph(0);
     };
 
     $scope.toggleNavigationPane = function () {
         $scope.navigationPaneVisible = !$scope.navigationPaneVisible;
-        $scope.reflowGraph();
+        $scope.reflowGraph(0);
     };
 
-    $scope.reflowGraph = function () {
+    $scope.reflowGraph = function (delay) {
         $timeout(function () {
              $scope.$broadcast('highchartsng.reflow');
-       }, 0);
+       }, delay);
     };
 
     $scope.getDefaultAllAccountsState = function () {
@@ -150,8 +144,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         if ($scope.hasPermission('zemauth.campaign_agency_view')) {
             return 'main.campaigns.agency';
         }
-        if ($scope.hasPermission('zemauth.campaign_budget_management_view')) {
-            return 'main.campaings.budget';
+        if ($scope.hasPermission('zemauth.campaign_budget_view')) {
+            return 'main.campaings.budget_plus';
         }
         if ($scope.hasPermission('zemauth.campaign_settings_view')) {
             return 'main.campaigns.settings';
@@ -187,24 +181,32 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         var i = 0;
         var monthsCount = 3;
         var formatStr = 'MMMM YYYY';
-        var currentMonth = null;
+        var currentMonthStart = null;
+        var currentMonthEnd = null;
 
         result.Yesterday = [
-            zemMoment().subtract('days', 1).startOf('day'),
-            zemMoment().subtract('days', 1).endOf('day'),
+            zemMoment().subtract(1, 'days').startOf('day'),
+            zemMoment().subtract(1, 'days').endOf('day'),
         ];
-        result['Last 30 Days'] = [zemMoment().subtract('days', 30), zemMoment().subtract('days', 1)];
-        currentMonth = zemMoment().startOf('month');
-        result[currentMonth.format(formatStr)] = [currentMonth, zemMoment().subtract('days', 1)];
+
+        result['Last 30 Days'] = [zemMoment().subtract(30, 'days'), zemMoment().subtract(1, 'days')];
+
+        if (zemMoment().date() === 1) {
+            monthsCount += 1;
+        } else {
+            currentMonthStart = zemMoment().startOf('month');
+            currentMonthEnd = zemMoment().subtract(1, 'days');
+            result[currentMonthStart.format(formatStr)] = [currentMonthStart, currentMonthEnd];
+        }
 
         for (i = 0; i < monthsCount; i++) {
-            result[zemMoment().subtract('month', i + 1).format(formatStr)] = [
-                zemMoment().subtract('month', i + 1).startOf('month'),
-                zemMoment().subtract('month', i + 1).endOf('month'),
+            result[zemMoment().subtract(i + 1, 'month').format(formatStr)] = [
+                zemMoment().subtract(i + 1, 'month').startOf('month'),
+                zemMoment().subtract(i + 1, 'month').endOf('month'),
             ];
         }
 
-        result['Year to date'] = [zemMoment().startOf('year'), zemMoment().subtract('days', 1)];
+        result['Year to date'] = [zemMoment().startOf('year'), zemMoment().subtract(1, 'days')];
 
         return result;
     };
@@ -229,8 +231,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
     $scope.maxDateStr = $scope.maxDate.format('YYYY-MM-DD');
     $scope.dateRange = {
-        startDate: zemMoment().subtract('day', 29).hours(0).minutes(0).seconds(0).milliseconds(0),
-        endDate: zemMoment().subtract('day', 1).endOf('day'),
+        startDate: zemMoment().subtract(29, 'day').hours(0).minutes(0).seconds(0).milliseconds(0),
+        endDate: zemMoment().subtract(1, 'day').endOf('day'),
     };
 
     $scope.setDateRangeFromSearch();
@@ -299,7 +301,11 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         return false;
     };
 
-    $scope.hasInfoboxPermission = function () {
+    $scope.hasInfoboxPermission = function () { // eslint-disable-line max-len
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            return false;
+        }
+
         if ($state.is('main.adGroups.adsPlus') ||
             $state.is('main.adGroups.sources') ||
             $state.is('main.adGroups.publishers')) {
@@ -322,6 +328,18 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         }
 
         return false;
+    };
+
+    $scope.isChartVisible = function () {
+        return $state.is('main.adGroups.adsPlus') ||
+            $state.is('main.adGroups.sources') ||
+            $state.is('main.adGroups.publishers') ||
+            $state.is('main.campaigns.ad_groups') ||
+            $state.is('main.campaigns.sources') || 
+            $state.is('main.accounts.campaigns') ||
+            $state.is('main.accounts.sources') || 
+            $state.is('main.allAccounts.accounts') ||
+            $state.is('main.allAccounts.sources');
     };
 
     $scope.$on('$stateChangeSuccess', function () {
@@ -440,7 +458,6 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         zemNavigationService.reload();
 
         var userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
-        userSettings.registerGlobal('infoboxVisible');
         userSettings.registerGlobal('graphVisible');
         userSettings.registerGlobal('navigationPaneVisible');
     };

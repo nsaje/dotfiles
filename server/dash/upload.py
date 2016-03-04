@@ -20,6 +20,7 @@ from utils import email_helper
 from dash import models
 from dash import api
 from dash import constants
+from dash import exceptions
 from dash import image_helper
 from dash import threads
 from dash.forms import AdGroupAdsPlusUploadForm, MANDATORY_CSV_FIELDS, OPTIONAL_CSV_FIELDS  # to get fields & validators
@@ -36,6 +37,12 @@ class UploadFailedException(Exception):
     pass
 
 
+def _bump_nr_processed(batch):
+    # be careful not to save the 'batch' object directly as it will save other fields with it - update
+    # counter atomically. Check if cancelled in the next step
+    models.UploadBatch.objects.filter(pk=batch.id).update(processed_content_ads=F('processed_content_ads') + 1)
+
+
 def process_async(content_ads_data, filename, batch, upload_form_cleaned_fields, ad_group, request):
     ad_group_sources = [s for s in models.AdGroupSource.objects.filter(ad_group_id=ad_group.id)
                         if s.can_manage_content_ads and s.source.can_manage_content_ads()]
@@ -49,19 +56,27 @@ def process_async(content_ads_data, filename, batch, upload_form_cleaned_fields,
 
 
 def _process_callback(batch, ad_group, ad_group_sources, filename, request, results):
+    actions = []
+
+    progress_updater = threads.UpdateUploadBatchThread(batch.id)
+    progress_updater.daemon = True
+    progress_updater.start()
+
+    upload_status = constants.UploadBatchStatus.FAILED
+    num_errors = 0
+    rows = []
+
     try:
-        # ensure content ads are only commited to DB
-        # if all of them are successfully processed
-        count_inserted = 0
         with transaction.atomic():
-            rows = []
+            # ensure content ads are only commited to DB
+            # if all of them are successfully processed
+
             all_content_ad_sources = []
-            num_errors = 0
 
             for row, cleaned_data, errors in results:
                 if not errors:
                     content_ad, content_ad_sources = _create_objects(
-                        cleaned_data, batch, ad_group.id, ad_group_sources)
+                        cleaned_data, batch.id, ad_group.id, ad_group_sources)
 
                     errors = _create_redirect_id(content_ad)
 
@@ -74,35 +89,39 @@ def _process_callback(batch, ad_group, ad_group_sources, filename, request, resu
 
                 rows.append(row)
 
-                # update progress in another thread to escape transaction
-                count_inserted += 1
-                t = threads.UpdateUploadBatchThread(batch.id, count_inserted)
-                t.start_and_join()
+                progress_updater.bump_inserted()
 
             if num_errors > 0:
                 # raise exception to rollback transaction
                 raise UploadFailedException()
 
-            actions = api.submit_content_ads(all_content_ad_sources, request)
-
-            batch.status = constants.UploadBatchStatus.DONE
-            batch.save()
+            actions = api.submit_content_ads(all_content_ad_sources, request, progress_updater.bump_propagated)
 
             _add_to_history(request, batch, ad_group)
 
     except UploadFailedException:
-        batch.error_report_key = _save_error_report(rows, filename)
-        batch.status = constants.UploadBatchStatus.FAILED
-        batch.num_errors = num_errors
-        batch.save()
-        return
+        logger.info('Content ads upload failed due to errors in uploaded file, batch id {}'.format(batch.id))
+    except exceptions.UploadCancelledException as e:
+        logger.info('Content ads upload was cancelled, batch id: {}'.format(batch.id))
+        upload_status = constants.UploadBatchStatus.CANCELLED
     except Exception as e:
-        logger.exception('Exception in ProcessUploadThread: {0}'.format(e))
-        batch.status = constants.UploadBatchStatus.FAILED
-        batch.save()
-        return
+        logger.exception('Exception in ProcessUploadThread: {}'.format(e))
+    else:
+        upload_status = constants.UploadBatchStatus.DONE
+    finally:
+        progress_updater.finish()
+        progress_updater.join()
 
-    actionlog.zwei_actions.send(actions)
+    # reload upload batch after progress updater finishes using it to keep the inserted values
+    batch.refresh_from_db()
+    batch.status = upload_status
+    batch.num_errors = num_errors
+    if num_errors:
+        batch.error_report_key = _save_error_report(rows, filename)
+    batch.save()
+
+    if actions:
+        actionlog.zwei_actions.send(actions)
 
 
 def _save_error_report(rows, filename):
@@ -144,11 +163,14 @@ def _upload_error_report_to_s3(content, filename):
 
 def _create_redirect_id(content_ad):
     try:
-        content_ad.redirect_id = redirector_helper.insert_redirect(
+        redirect = redirector_helper.insert_redirect(
             content_ad.url,
             content_ad.pk,
             content_ad.ad_group_id,
         )
+
+        content_ad.url = redirect["redirect"]["url"]
+        content_ad.redirect_id = redirect["redirectid"]
         content_ad.save()
         return []
     except Exception:
@@ -156,7 +178,7 @@ def _create_redirect_id(content_ad):
         return ['Internal server error while processing request']
 
 
-def _create_objects(data, batch, ad_group_id, ad_group_sources):
+def _create_objects(data, batch_id, ad_group_id, ad_group_sources):
     content_ad = models.ContentAd.objects.create(
         image_id=data['image']['id'],
         image_width=data['image']['width'],
@@ -164,7 +186,7 @@ def _create_objects(data, batch, ad_group_id, ad_group_sources):
         image_hash=data['image']['hash'],
         url=data['url'],
         title=data['title'],
-        batch=batch,
+        batch_id=batch_id,
         display_url=data['display_url'],
         brand_name=data['brand_name'],
         description=data['description'],
@@ -209,9 +231,7 @@ def _clean_row(batch, upload_form_cleaned_fields, ad_group, row):
             except ValidationError as e:
                 errors.extend(e.messages)
 
-        # atomically update counter
-        batch.processed_content_ads = F('processed_content_ads') + 1
-        batch.save()
+        _bump_nr_processed(batch)
 
         return row, data, errors
     except Exception as e:

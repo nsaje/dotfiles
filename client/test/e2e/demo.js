@@ -28,7 +28,6 @@ var nav, chart, tabs,
             adGroups: element(by.cssContainingText('.nav-tabs .tab-title', 'Ad groups')),
             agency: element(by.cssContainingText('.nav-tabs .tab-title', 'Agency')),
             settings: element(by.cssContainingText('.nav-tabs .tab-title', 'Settings')),
-            budget: element(by.cssContainingText('.nav-tabs .tab-title', 'Budget'))
         };
     };
 
@@ -132,44 +131,6 @@ describe('Campaign management', function () {
         });
     }
 
-    function selectFirstCampaignBudget () {
-        var firstCampaign = element.all(by.css('.campaign-group a.campaign-name')).first();
-        firstCampaign.getAttribute('href').then(function (url) {
-            firstCampaign.click();
-            browser.wait(function () {
-                return tabs.campaign.budget.isPresent();
-            }).then(function () {
-                tabs.campaign.budget.click();
-            }, 3500);
-        });
-    }
-
-    function editCampaignBudget () {
-        var deferred = protractor.promise.defer(),
-            total = 0;
-
-        function addBudget () {
-            element(by.id('manage-budget')).clear().sendKeys('200');
-            element(by.cssContainingText('.btn-default', 'Allocate')).click();
-        }
-        function revokeBudget () {
-            element(by.id('manage-budget')).clear().sendKeys('100');
-            element(by.cssContainingText('.btn-red', 'Revoke')).click();
-        }
-        function testBudget () {
-            element(by.id('total-budget')).getText().then(function (val) {
-                expect($toFloat(val)).toBe(total + 100);
-                deferred.fulfill();
-            });
-        }
-        element(by.id('total-budget')).getText().then(function (val) {
-            total = $toFloat(val);
-            addBudget();
-            revokeBudget();
-            testBudget();
-        });
-    }
-
     it ('new campaign with a new ad group', function () {
         expect(demoLoaded).toBe(true);
         newCampaign();
@@ -178,12 +139,6 @@ describe('Campaign management', function () {
         addAdGroup();
         enableAdGroup();
         checkIfPresentInLists();
-    });
-
-    it('allocating budget', function () {
-        expect(demoLoaded).toBe(true);
-        selectFirstCampaignBudget();
-        editCampaignBudget();
     });
 });
 
@@ -251,6 +206,7 @@ describe('Media sources and ads', function () {
         element(by.id('call-to-action-input')).sendKeys('Examplify!');
         element(by.id('description-input')).sendKeys('DEMO');
         element(by.cssContainingText('.btn-add', 'Upload')).click();
+        element(by.cssContainingText('.btn-add', 'View uploaded ads')).click();
         expect(
             element.all(by.css('.table-container tbody tr')).count()
         ).toBeGreaterThan(4);

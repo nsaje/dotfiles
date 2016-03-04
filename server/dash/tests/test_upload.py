@@ -340,8 +340,6 @@ class CleanRowTest(TestCase):
         expected_data.pop('display_url')
         self.assertItemsEqual(errors, [u'Display URL is invalid.'])
         self.assertEqual(data, expected_data)
-        
-        
 
 
 @patch('dash.upload.redirector_helper.insert_redirect')
@@ -355,6 +353,9 @@ class ProcessCallbackTest(TestCase):
 
         self.actionlog_send_patcher = patch('dash.upload.actionlog.zwei_actions.send')
         self.mock_actionlog_send = self.actionlog_send_patcher.start()
+
+        progress_update_progress_patcher = patch('dash.threads.UpdateUploadBatchThread')
+        progress_update_progress_patcher.start()
 
     def tearDown(self):
         self.save_error_report_patcher.stop()
@@ -372,6 +373,7 @@ class ProcessCallbackTest(TestCase):
         redirect_id = "u123456"
 
         url = 'http://example.com'
+        resolved_url = 'http://example.com?bla'
         title = 'test title'
         image_url = 'http://example.com/image'
         crop_areas = '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
@@ -409,6 +411,7 @@ class ProcessCallbackTest(TestCase):
 
         batch = models.UploadBatch.objects.create(name=batch_name)
         batch.batch_size = 10
+        batch.save()
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
 
         request = HttpRequest()
@@ -417,7 +420,12 @@ class ProcessCallbackTest(TestCase):
         user = User.objects.create_user('user@test.com')
         request.user = user
 
-        mock_redirect_insert.return_value = redirect_id
+        mock_redirect_insert.return_value = {
+            "redirectid": redirect_id,
+            "redirect": {
+                "url": resolved_url
+            }
+        }
 
         results = [(row, cleaned_data, errors)]
         upload._process_callback(batch, models.AdGroup.objects.get(pk=ad_group_id), [ad_group_source], filename, request, results)
@@ -428,7 +436,7 @@ class ProcessCallbackTest(TestCase):
 
         content_ad = models.ContentAd.objects.latest()
         self.assertEqual(content_ad.title, title)
-        self.assertEqual(content_ad.url, url)
+        self.assertEqual(content_ad.url, resolved_url)  # should overwrite with resolved if needed
         self.assertEqual(content_ad.ad_group_id, ad_group_id)
         self.assertEqual(content_ad.display_url, cleaned_data['display_url'])
         self.assertEqual(content_ad.brand_name, cleaned_data['brand_name'])
@@ -452,7 +460,7 @@ class ProcessCallbackTest(TestCase):
         )
         self.assertEqual(content_ad_source.state, constants.ContentAdSourceState.ACTIVE)
 
-        mock_redirect_insert.assert_called_with(content_ad.url, content_ad.id, content_ad.ad_group_id)
+        mock_redirect_insert.assert_called_with(url, content_ad.id, content_ad.ad_group_id)
 
         action = ActionLog.objects.get(content_ad_source_id=content_ad_source.id)
         self.assertEqual(action.ad_group_source_id, ad_group_source.id)

@@ -11,6 +11,7 @@ from zemauth.models import User
 
 
 class MockDatetime(datetime.datetime):
+
     @classmethod
     def utcnow(cls):
         return datetime.datetime(2016, 1, 2)
@@ -95,7 +96,6 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test account 1',
-                'usesBCM': False,
             }
         })
 
@@ -107,7 +107,6 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 3,
                 'name': 'test account 3',
-                'usesBCM': False,
             }
         })
 
@@ -118,7 +117,6 @@ class NavigationDataViewTest(TestCase):
             'account': {
                 'id': 2,
                 'name': 'test account 2',
-                'usesBCM': False,
             }
         })
 
@@ -145,7 +143,6 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test account 1',
-                'usesBCM': False,
             },
             'campaign': {
                 'archived': False,
@@ -162,7 +159,6 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 3,
                 'name': 'test account 3',
-                'usesBCM': False,
             },
             'campaign': {
                 'archived': True,
@@ -178,7 +174,6 @@ class NavigationDataViewTest(TestCase):
             'account': {
                 'id': 2,
                 'name': 'test account 2',
-                'usesBCM': False,
             },
             'campaign': {
                 'id': 2,
@@ -210,7 +205,6 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test account 1',
-                'usesBCM': False,
             },
             'campaign': {
                 'archived': False,
@@ -239,7 +233,6 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 2,
                 'name': 'test account 2',
-                'usesBCM': False,
             },
             'campaign': {
                 'archived': False,
@@ -264,7 +257,6 @@ class NavigationDataViewTest(TestCase):
             'account': {
                 'id': 2,
                 'name': 'test account 2',
-                'usesBCM': False,
             },
             'campaign': {
                 'id': 2,
@@ -343,7 +335,6 @@ class NavigationTreeViewTest(TestCase):
             }],
             "id": 1,
             "name": "test account 1",
-            'usesBCM': False,
         }]
         self.assertItemsEqual(response['data'], expected_response)
 
@@ -382,7 +373,6 @@ class NavigationTreeViewTest(TestCase):
             }],
             "id": 1,
             "name": "test account 1",
-            'usesBCM': False,
         }]
         self.assertItemsEqual(response['data'], expected_response)
 
@@ -408,7 +398,6 @@ class NavigationTreeViewTest(TestCase):
             }],
             "id": 2,
             "name": "test account 2",
-            'usesBCM': False,
         }]
 
         self.assertItemsEqual(response['data'], expected_response)
@@ -439,7 +428,6 @@ class NavigationTreeViewTest(TestCase):
             "id": 2,
             "name": "test account 2",
             "archived": False,
-            'usesBCM': False,
         }]
 
         self.assertItemsEqual(response['data'], expected_response)

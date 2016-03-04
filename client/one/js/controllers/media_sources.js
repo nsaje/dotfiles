@@ -446,9 +446,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         $scope.chartHidden = !$scope.chartHidden;
         $scope.chartBtnTitle = $scope.chartHidden ? 'Show chart' : 'Hide chart';
 
-        $timeout(function () {
-            $scope.$broadcast('highchartsng.reflow');
-        }, 0);
+        $scope.reflowGraph(0);
     };
 
     var hasMetricData = function (metric) {
@@ -517,6 +515,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
                 $scope.selectRows();
                 zemPostclickMetricsService.setConversionGoalColumnsDefaults($scope.columns, data.conversionGoals, $scope.hasPermission('zemauth.conversion_reports'));
+
             },
             function (data) {
                 // error
@@ -524,6 +523,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             }
         ).finally(function () {
             $scope.loadRequestInProgress = false;
+            $scope.reflowGraph(1);
         });
     };
 
@@ -544,9 +544,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
         $scope.infoboxHeader = data.header;
         $scope.infoboxBasicSettings = data.basicSettings;
         $scope.infoboxPerformanceSettings = data.performanceSettings;
+        $scope.reflowGraph(1);
     };
 
-    var getInfoboxData = function () {
+    $scope.getInfoboxData = function () {
         if (!$scope.hasPermission('zemauth.can_see_infobox')) {
             return;
         }
@@ -555,7 +556,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             if (!$scope.hasPermission('zemauth.can_access_all_accounts_infobox')) {
                 return;
             }
-            api.allAccountsOverview.get().then(
+            api.allAccountsOverview.get($scope.dateRange.startDate, $scope.dateRange.endDate).then(
                 function (data) {
                     updateInfoboxData(data);
                 }
@@ -670,6 +671,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             $scope.infoboxLinkTo = 'main.campaigns.settings';
         }
 
+        if (!$scope.hasPermission('zemauth.can_see_infobox')) {
+            $scope.hasInfoboxPermission = false;
+        }
+
         userSettings = zemUserSettings.getInstance($scope, $scope.localStoragePrefix);
 
         var sourceIds = $location.search().source_ids;
@@ -695,7 +700,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
 
         getDailyStats();
         getTableData();
-        getInfoboxData();
+        $scope.getInfoboxData();
         pollSyncStatus();
     };
 
@@ -711,6 +716,10 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             return;
         }
 
+        // on all accounts some settings depend on date range
+        if ($scope.level === constants.level.ALL_ACCOUNTS) {
+            $scope.getInfoboxData();
+        }
         getDailyStats();
         getTableData();
     });

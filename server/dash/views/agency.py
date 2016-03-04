@@ -9,16 +9,15 @@ from django.conf import settings
 from django.contrib.auth import models as authmodels
 
 from actionlog import api as actionlog_api
-from actionlog import models as actionlog_models
-from actionlog import constants as actionlog_constants
 from actionlog import zwei_actions
-from automation import autopilot_budgets
+from automation import autopilot_budgets, autopilot_plus
 from dash.views import helpers
 from dash import forms
 from dash import models
 from dash import api
-from dash import budget
 from dash import constants
+from dash import validation_helpers
+from dash import retargeting_helper
 import automation.settings
 from reports import redshift
 from utils import api_common
@@ -54,6 +53,8 @@ class AdGroupSettings(api_common.BaseApiView):
             'settings': self.get_dict(settings, ad_group),
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
+            'retargetable_adgroups': self.get_retargetable_adgroups(request, ad_group_id),
+            'warnings': self.get_warnings(request, settings)
         }
         return self.create_api_response(response)
 
@@ -69,26 +70,14 @@ class AdGroupSettings(api_common.BaseApiView):
 
         resource = json.loads(request.body)
 
-        form = forms.AdGroupSettingsForm(resource.get('settings', {}), ad_group=ad_group)
+        form = forms.AdGroupSettingsForm(ad_group, request.user, resource.get('settings', {}))
         if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
-
-        # ACTIVE state is only valid when there is budget to spend
-        if form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE and\
-           not helpers.ad_group_has_available_budget(ad_group):
-
-            form.add_error('state', 'Cannot enable ad group without available budget.')
             raise exc.ValidationError(errors=dict(form.errors))
 
         self.set_ad_group(ad_group, form.cleaned_data)
 
         new_settings = current_settings.copy_settings()
-        self.set_settings(
-            new_settings, form.cleaned_data,
-            can_set_ad_group_max_cpc=request.user.has_perm('zemauth.can_set_ad_group_max_cpc'),
-            can_set_ga_tracking_params=request.user.has_perm('zemauth.can_toggle_ga_performance_tracking'),
-            can_set_adobe_tracking_params=request.user.has_perm('zemauth.can_toggle_adobe_performance_tracking'),
-            can_set_adgroup_to_auto_pilot=request.user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'))
+        self.set_settings(ad_group, new_settings, form.cleaned_data, request.user)
 
         # update ad group name
         current_settings.ad_group_name = previous_ad_group_name
@@ -105,6 +94,9 @@ class AdGroupSettings(api_common.BaseApiView):
 
             email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
             helpers.log_useraction_if_necessary(request, user_action_type, ad_group=ad_group)
+            if 'autopilot_daily_budget' in changes or 'autopilot_state' in changes and \
+                    changes['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+                autopilot_plus.initialize_budget_autopilot_on_ad_group(ad_group=ad_group, send_mail=True)
 
         response = {
             'settings': self.get_dict(new_settings, ad_group),
@@ -113,6 +105,22 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def get_warnings(self, request, ad_group_settings):
+        warnings = {}
+
+        supports_retargeting, unsupported_sources =\
+            retargeting_helper.supports_retargeting(
+                ad_group_settings.ad_group
+            )
+        if not supports_retargeting:
+            retargeting_warning = {
+                'text': "You have some active media sources that don't support retargeting. "
+                        "To start using it please disable/pause these media sources:",
+                'sources': [s.name for s in unsupported_sources]
+            }
+            warnings['retargeting'] = retargeting_warning
+        return warnings
 
     def get_dict(self, settings, ad_group):
         result = {}
@@ -140,6 +148,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 'autopilot_daily_budget':
                     '{:.2f}'.format(settings.autopilot_daily_budget)
                     if settings.autopilot_daily_budget is not None else '',
+                'retargeting_ad_groups': settings.retargeting_ad_groups,
                 'autopilot_min_budget': autopilot_budgets.get_adgroup_minimum_daily_budget(ad_group)
             }
 
@@ -148,12 +157,7 @@ class AdGroupSettings(api_common.BaseApiView):
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
 
-    def set_settings(self, settings, resource,
-                     can_set_ad_group_max_cpc,
-                     can_set_ga_tracking_params,
-                     can_set_adobe_tracking_params,
-                     can_set_adgroup_to_auto_pilot):
-
+    def set_settings(self, ad_group, settings, resource, user):
         settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
@@ -162,21 +166,25 @@ class AdGroupSettings(api_common.BaseApiView):
         settings.target_regions = resource['target_regions']
         settings.ad_group_name = resource['name']
 
-        if can_set_ad_group_max_cpc:
+        if user.has_perm('zemauth.can_set_ad_group_max_cpc'):
             settings.cpc_cc = resource['cpc_cc']
 
-        if can_set_ga_tracking_params:
+        if user.has_perm('zemauth.can_toggle_ga_performance_tracking'):
             settings.enable_ga_tracking = resource['enable_ga_tracking']
             settings.tracking_code = resource['tracking_code']
 
-        if can_set_adobe_tracking_params:
+        if user.has_perm('zemauth.can_toggle_adobe_performance_tracking'):
             settings.enable_adobe_tracking = resource['enable_adobe_tracking']
             settings.adobe_tracking_param = resource['adobe_tracking_param']
 
-        if can_set_adgroup_to_auto_pilot:
+        if user.has_perm('zemauth.can_set_adgroup_to_auto_pilot'):
             settings.autopilot_state = resource['autopilot_state']
             if resource['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
                 settings.autopilot_daily_budget = resource['autopilot_daily_budget']
+
+        if user.has_perm('zemauth.can_view_retargeting_settings') and\
+                retargeting_helper.supports_retargeting(ad_group):
+            settings.retargeting_ad_groups = resource['retargeting_ad_groups']
 
     def _send_update_actions(self, ad_group, current_settings, new_settings, request):
         actionlogs_to_send = []
@@ -203,6 +211,35 @@ class AdGroupSettings(api_common.BaseApiView):
             'target_devices': settings.target_devices,
             'target_regions': settings.target_regions
         }
+
+    def get_retargetable_adgroups(self, request, ad_group_id):
+        '''
+        Get adgroups that can retarget this adgroup
+        '''
+        if not request.user.has_perm('zemauth.can_view_retargeting_settings'):
+            return []
+
+        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        account = ad_group.campaign.account
+
+        ad_groups = ad_groups = models.AdGroup.objects.filter(
+            campaign__account=account
+        ).select_related('campaign').order_by('id')
+
+        ad_group_settings = models.AdGroupSettings.objects.all().filter(
+            ad_group__campaign__account=account
+        ).group_current_settings().only('id', 'archived')
+        archived_map = {adgs.id: adgs.archived for adgs in ad_group_settings}
+
+        return [
+            {
+                'id': adg.id,
+                'name': adg.name,
+                'archived': archived_map.get(adg.id) or False,
+                'campaign_name': adg.campaign.name,
+            }
+            for adg in ad_groups
+        ]
 
 
 class AdGroupSettingsState(api_common.BaseApiView):
@@ -246,7 +283,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
 
         # ACTIVE state is only valid when there is budget to spend
         if state == constants.AdGroupSettingsState.ACTIVE and \
-                not helpers.ad_group_has_available_budget(ad_group):
+                not validation_helpers.ad_group_has_available_budget(ad_group):
             raise exc.ValidationError('Cannot enable ad group without available budget.')
 
 
@@ -580,78 +617,6 @@ class CampaignSettings(api_common.BaseApiView):
 
     def set_campaign(self, campaign, resource):
         campaign.name = resource['name']
-
-
-class CampaignBudget(api_common.BaseApiView):
-
-    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_get')
-    def get(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-
-        if not request.user.has_perm('zemauth.campaign_budget_management_view'):
-            raise exc.MissingDataError()
-
-        response = self.get_response(campaign)
-        return self.create_api_response(response)
-
-    @statsd_helper.statsd_timer('dash.api', 'campaign_budget_put')
-    def put(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-
-        if not request.user.has_perm('zemauth.campaign_budget_management_view'):
-            raise exc.MissingDataError()
-
-        campaign_budget = budget.CampaignBudget(campaign)
-
-        budget_change = json.loads(request.body)
-
-        form = forms.CampaignBudgetForm(budget_change)
-
-        if not form.is_valid():
-            raise exc.ValidationError(errors=dict(form.errors))
-
-        campaign_budget.edit(
-            allocate_amount=form.get_allocate_amount(),
-            revoke_amount=form.get_revoke_amount(),
-            request=request,
-        )
-
-        current_budget_settings = campaign.get_current_budget_settings()
-        if current_budget_settings:
-            email_helper.send_budget_notification_email(campaign, request, current_budget_settings.comment)
-            helpers.log_useraction_if_necessary(
-                request, constants.UserActionType.SET_CAMPAIGN_BUDGET, campaign=campaign)
-
-        response = self.get_response(campaign)
-        return self.create_api_response(response)
-
-    def get_response(self, campaign):
-        campaign_budget = budget.CampaignBudget(campaign)
-
-        total = campaign_budget.get_total()
-        spend = campaign_budget.get_spend()
-        available = total - spend
-
-        response = {
-            'total': total,
-            'available': available,
-            'spend': spend,
-            'history': self.format_history(campaign_budget.get_history())
-        }
-        return response
-
-    def format_history(self, history):
-        result = []
-        for h in history:
-            item = {}
-            item['datetime'] = h.created_dt
-            item['user'] = h.created_by.email
-            item['allocate'] = float(h.allocate)
-            item['revoke'] = float(h.revoke)
-            item['total'] = float(h.total)
-            item['comment'] = h.comment
-            result.append(item)
-        return result
 
 
 class AccountConversionPixels(api_common.BaseApiView):

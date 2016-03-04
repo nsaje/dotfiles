@@ -9,6 +9,7 @@ from django.contrib.auth.models import Permission
 
 from dash import forms
 from dash import models
+from dash import constants
 from zemauth.models import User
 
 
@@ -93,7 +94,7 @@ class AccountAgencySettingsFormTest(TestCase):
         self.assertTrue(form.has_error('allowed_sources'))
 
     def test_invalid_allowed_sources_non_int_string(self):
-        form = self._gen_allowed_sources_form({'string':{}})
+        form = self._gen_allowed_sources_form({'string': {}})
         self.assertFalse(form.is_valid())
         self.assertTrue(form.has_error('allowed_sources'))
 
@@ -103,6 +104,7 @@ class AdGroupSettingsFormTest(TestCase):
 
     def setUp(self):
         self.ad_group = models.AdGroup.objects.get(pk=1)
+        self.user = User.objects.get(pk=1)
         self.data = {
             'cpc_cc': '1.00',
             'daily_budget_cc': '10.00',
@@ -114,13 +116,14 @@ class AdGroupSettingsFormTest(TestCase):
             'target_devices': ['desktop', 'mobile'],
             'target_regions': ['US'],
             'tracking_code': 'code=test',
+            'retargeting_ad_groups': [3],
             'enable_ga_tracking': True,
             'autopilot_state': 2,
             'autopilot_daily_budget': '100.00'
         }
 
     def test_form(self):
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
 
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data, {
@@ -135,6 +138,7 @@ class AdGroupSettingsFormTest(TestCase):
             'target_regions': ['US'],
             'tracking_code': 'code=test',
             'enable_ga_tracking': True,
+            'retargeting_ad_groups': [3],
             'enable_adobe_tracking': False,
             'adobe_tracking_param': '',
             'autopilot_state': 2,
@@ -147,7 +151,7 @@ class AdGroupSettingsFormTest(TestCase):
         self.data['autopilot_state'] = None
         self.data['autopilot_daily_budget'] = None
 
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
 
         self.assertTrue(form.is_valid())
 
@@ -159,7 +163,7 @@ class AdGroupSettingsFormTest(TestCase):
     def test_errors_on_non_propagated_fields(self):
         self.data['cpc_cc'] = 0.01
         self.data['daily_budget_cc'] = 1
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
 
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors, {
@@ -168,7 +172,7 @@ class AdGroupSettingsFormTest(TestCase):
 
     def test_max_cpc_setting_min_value(self):
         self.data['cpc_cc'] = 0.01
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 
     def test_max_cpc_setting_lower_min_source_value(self):
@@ -178,26 +182,26 @@ class AdGroupSettingsFormTest(TestCase):
         source.save()
 
         self.data['cpc_cc'] = 0.1
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 
     def test_max_cpc_setting_lower_min_deprecated_source(self):
         self.data['cpc_cc'] = 0.1
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
 
     def test_max_cpc_setting_equal_min_source_value(self):
         self.data['cpc_cc'] = 0.12
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
 
     def test_max_cpc_setting_high_value(self):
         self.data['cpc_cc'] = 100
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
 
     def test_default_value_enable_ga_tracking(self):
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_ga_tracking', form.cleaned_data)
         self.assertTrue(form.cleaned_data['enable_ga_tracking'])
@@ -205,21 +209,21 @@ class AdGroupSettingsFormTest(TestCase):
         del self.data['enable_ga_tracking']
 
         # should be True if not set
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_ga_tracking', form.cleaned_data)
         self.assertTrue(form.cleaned_data['enable_ga_tracking'])
 
         self.data['enable_ga_tracking'] = False
 
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_ga_tracking', form.cleaned_data)
         self.assertFalse(form.cleaned_data['enable_ga_tracking'])
 
     def test_default_value_enable_adobe_tracking(self):
         # should be False if not set
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_adobe_tracking', form.cleaned_data)
 
@@ -228,16 +232,30 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertEqual(form.cleaned_data['enable_adobe_tracking'], False)
 
         self.data['enable_adobe_tracking'] = False
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_adobe_tracking', form.cleaned_data)
         self.assertEqual(form.cleaned_data['enable_adobe_tracking'], False)
 
         self.data['enable_adobe_tracking'] = True
-        form = forms.AdGroupSettingsForm(self.data, ad_group=self.ad_group)
+        form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertTrue(form.is_valid())
         self.assertIn('enable_adobe_tracking', form.cleaned_data)
         self.assertEqual(form.cleaned_data['enable_adobe_tracking'], True)
+
+    def test_retargeting_ad_groups_wrong_account(self):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        form = forms.AdGroupSettingsForm(ad_group, self.user, self.data)
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'retargeting_ad_groups': ['Invalid ad group selection.']})
+
+    def test_retargeting_ad_groups_no_access(self):
+        user = User.objects.create(email='testuser@test.com')
+        form = forms.AdGroupSettingsForm(self.ad_group, user, self.data)
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {'retargeting_ad_groups': ['Invalid ad group selection.']})
 
 
 class ConversionGoalFormTestCase(TestCase):

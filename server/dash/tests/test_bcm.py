@@ -20,7 +20,7 @@ create_statement = reports.models.BudgetDailyStatement.objects.create
 
 @patch('dash.forms.dates_helper.local_today', lambda: TODAY)
 class CreditsTestCase(TestCase):
-    fixtures = ['test_io.yaml']
+    fixtures = ['test_bcm.yaml']
 
     def test_creation(self):
         self.assertEqual(models.CreditLineItem.objects.all().count(), 2)
@@ -462,17 +462,9 @@ class CreditsTestCase(TestCase):
 
         request = HttpRequest()
         request.user = User.objects.get(pk=1)
-        c.account.uses_credits = False  # not migrated
-        c.account.save(request)
 
-        c.start_date = TODAY + datetime.timedelta(1)
-        c.save()  # Editing allowed
-        self.assertEqual(c.start_date, models.CreditLineItem.objects.get(pk=1).start_date)
-
-        # return to previous value
         c.start_date = TODAY
         c.save()
-        c.account.uses_credits = True
         c.account.save(request)
 
         with self.assertRaises(ValidationError) as err:
@@ -628,7 +620,7 @@ class CreditsTestCase(TestCase):
 
 @patch('dash.forms.dates_helper.local_today', lambda: TODAY)
 class BudgetsTestCase(TestCase):
-    fixtures = ['test_io.yaml']
+    fixtures = ['test_bcm.yaml']
 
     def test_creation(self):
         self.assertEqual(models.CreditLineItem.objects.all().count(), 2)
@@ -1057,7 +1049,7 @@ class BudgetsTestCase(TestCase):
 
 @patch('dash.forms.dates_helper.local_today', lambda: TODAY)
 class BudgetSpendTestCase(TestCase):
-    fixtures = ['test_io.yaml']
+    fixtures = ['test_bcm.yaml']
 
     def setUp(self):
         self.start_date = TODAY - datetime.timedelta(2)
@@ -1213,7 +1205,7 @@ class BudgetSpendTestCase(TestCase):
 
 @patch('dash.forms.dates_helper.local_today', lambda: TODAY)
 class BudgetReserveTestCase(TestCase):
-    fixtures = ['test_io.yaml']
+    fixtures = ['test_bcm.yaml']
 
     def setUp(self):
         self.start_date = TODAY - datetime.timedelta(10)

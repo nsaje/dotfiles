@@ -168,7 +168,7 @@ a:visited {
         font-size: 15px;
         font-weight: 600;
         color: #414141;
-        
+
         .sidenote {
             font-weight: 400;
             font-size: 12px;
@@ -213,6 +213,41 @@ a:visited {
 
 .feedback-text {
     padding-left: 5px;
+}
+
+.form-alert-box {
+    display: table;
+    clear: left;
+    margin: 10px 0px 0px 14px;
+    padding-bottom: 0px;
+
+    .form-alert-exclamation {
+        display: table-cell;
+    }
+
+    .form-alert-body {
+        display: table-cell;
+        padding-left: 8px;
+        font-size: 13px;
+        color: #333;
+    }
+
+    ul {
+        margin-top: 5px;
+    }
+
+    li {
+        font-size: 13px;
+        color: #333;
+    }
+
+    .warning-icon {
+        width: 22px;
+    }
+}
+
+.after-form-alert-box {
+    clear: left;
 }
 
 .btn {
@@ -319,6 +354,9 @@ a:visited {
     border: 1px solid #d2d2d2;
     .border-radius(2px);
     .box-shadow(0 1px 2px rgba(50, 50, 50, 0.1));
+
+    /* bug fix for mac os scroll bars */
+    transform: translateZ(0);
 
 
     li {
@@ -467,6 +505,12 @@ a:visited {
         border: 1px solid #ede652;
         font-size: 12px;
         font-color: #414141;
+    }
+
+    &.alert-success {
+        background-color: #f0f9e5;
+        border: 1px solid #c0e68f;
+        font-size: 12px;
     }
 }
 
@@ -677,8 +721,8 @@ div[datepicker] {
 }
 
 .graph-infobox-parent {
-    display: table; 
-    table-layout: fixed; 
+    display: table;
+    table-layout: fixed;
     width: 100%;
 }
 
@@ -709,15 +753,7 @@ div[datepicker] {
 .infobox-container {
     display: table-cell;
     width: 350px;
-}
-
-
-.infobox-container-full {
     margin-left: 2%;
-}
-
-.infobox-container-short {
-    display: none;
 }
 
 /**
@@ -735,20 +771,6 @@ div[datepicker] {
         border-top: 8px solid @internal-color;
         border-right: 8px solid transparent;
         z-index: 1000;
-    }
-}
-
-.infobox-button {
-    width: 34px;
-    height: 34px;
-    line-height: 34px;
-    padding: 0px;
-    margin-left: 5px;
-    box-sizing: border-box;
-    position: relative;
-
-    .internal {
-        .header-button-internal;
     }
 }
 
@@ -770,11 +792,11 @@ div[datepicker] {
     position: relative;
     text-align: center;
 
-	zem-internal-feature {
-		position: absolute;
+    zem-internal-feature {
+        position: absolute;
 
         margin-left: -4px;
-	}
+    }
 
     .internal {
         .header-button-internal;
@@ -868,6 +890,8 @@ div[datepicker] {
     table-layout: fixed;
     width: 100%;
     height: 34px;
+    height: 34px;
+    line-height: 38px;
 }
 
 .infobox-body {
@@ -906,26 +930,43 @@ div[datepicker] {
     vertical-align: middle;
 }
 
-.infobox-header-wo-subtitle {
-    height: 34px;
-    line-height: 38px;
-}
-
 .infobox-title {
     color: @infobox-black;
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 600;
     line-height: 20px;
+}
+
+.infobox-title-level {
+    font-weight: normal;
+    color: @infobox-dark-gray;
 }
 
 .infobox-active-icon {
     color: #00cc18;
     text-align: center;
+    background-image: url('img/adgroup_status_enabled_green.svg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
 }
 
 .infobox-inactive-icon {
     color: @infobox-black;
     text-align: center;
+    background-image: url('img/adgroup_status_paused_gray.svg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
+}
+
+.infobox-stopped-icon {
+    color: @infobox-black;
+    text-align: center;
+    background-image: url('img/adgroup_status_paused_red.svg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 15px 15px;
 }
 
 .infobox-icon {
@@ -935,11 +976,6 @@ div[datepicker] {
     margin-bottom: 0;
     position: absolute;
     top: 2px;
-}
-
-.infobox-subtitle {
-    color: @infobox-black;
-    font-size: 13px;
 }
 
 .infobox-setting {
@@ -1216,6 +1252,9 @@ div[datepicker] {
 .select2-drop.select2-drop-above {
     border: 1px solid @default-color;
     .select2-results {
+        /* bug fix for mac os scroll bars */
+        transform: translateZ(0);
+
         li.select2-highlighted {
             background-color: @add-color;
             border-radius: 2px;
@@ -1415,7 +1454,7 @@ div[datepicker] {
     .help-popover:hover,
     .help-popover:active,
     .help-popover:visited {
-    	.border-radius(0%);
+        .border-radius(0%);
         &:after {
             color: #888;
             font-weight: bold;
@@ -1546,7 +1585,7 @@ div[datepicker] {
                 height: 28px;
                 line-height: 22px;
                 vertical-align: middle;
-                
+
                 .glyphicon {
                     display: inline-block;
                     color: @white;
@@ -1564,7 +1603,7 @@ div[datepicker] {
                 font-size: 19px;
                 line-height: 19px;
             }
-            
+
             .navbar-collapse-container {
                 display: inline-block;
 
@@ -2051,6 +2090,10 @@ div[datepicker] {
         margin-bottom: 10px;
     }
 
+    .alert-auto-pilot-changes {
+        margin-bottom: 10px;
+    }
+
     .table-footnotes {
         text-align: center;
         font-size: 12px;
@@ -2465,6 +2508,12 @@ div[datepicker] {
     display: inline-block;
 }
 
+.auto-pilot-icon-placeholder() {
+    .state-icon-placeholder();
+    background-size: auto;
+    background-position: 0px;
+}
+
 .active-circle-icon {
     .state-icon-placeholder();
     background-image: url('img/active_circle_icon.svg');
@@ -2482,8 +2531,13 @@ div[datepicker] {
 }
 
 .auto-pilot-icon {
-    .state-icon-placeholder();
+    .auto-pilot-icon-placeholder();
     background-image: url('img/auto_pilot_icon.svg');
+}
+
+.auto-pilot-icon-row {
+    .auto-pilot-icon;
+    margin-right: 3px;
 }
 
 .data-status-icon-placeholder() {
@@ -2678,7 +2732,6 @@ div[datepicker] {
         .currency-3 {
             display: inline-block;
             min-width: 6ex;
-            text-align: left;
         }
 
         &.trimmed {
@@ -2935,7 +2988,7 @@ div[datepicker] {
 }
 
 .export-select {
-    width: 110px;
+    width: 120px;
     .select2-chosen {
         color: #2488a1;
     }
@@ -3461,6 +3514,21 @@ zem-submission-status {
     }
 }
 
+/**
+ * Apply the following class conditionally to parent container
+ * only in case it has contents.
+ */
+.ui-select-bigdrop {
+    .select2-search {
+        border-top: 1px solid #2fa8c7;
+    }
+
+    .ui-select-dropdown {
+        white-space: nowrap;
+        width: auto;
+    }
+}
+
 .select2-result-label .location-dma-tag {
     float: right;
     font-size: 10px;
@@ -3726,6 +3794,93 @@ select.media-source-select {
                     vertical-align: middle;
                 }
             }
+        }
+    }
+}
+
+.progress-result {
+    .title {
+        padding-left: 24px;
+
+        &.failed {
+            color: #CB2027;
+            background: transparent url("img/sad_face.svg") 0% 0% no-repeat;
+        }
+
+        &.success {
+            color: #73BF44;
+            background: transparent url("img/happy_face.svg") 0% 0% no-repeat;
+        }
+    }
+
+    .form-group {
+        margin-top: 20px !important;
+    }
+}
+
+.progress-steps {
+    width: 100%;
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+
+    .progress-step-box {
+        background-color: @default-color;
+        color: #fff;
+        font-weight: 600;
+        font-size: 18px;
+        text-align: center;
+        padding: 4px 12px;
+        margin-right: 4px;
+
+        display: inline-block;
+
+        &:last-child {
+            margin-right: 0px;
+        }
+    }
+
+    .progress-step-description {
+        padding-top: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #414141;
+    }
+
+    .progress-steps-untouched {
+        float: right;
+    }
+
+    & + .progress {
+        margin-top: 10px !important;
+    }
+}
+
+
+.progress {
+    border-radius: 0px;
+    height: 36px;
+    position: relative;
+
+    .progress-bar {
+        background-color: @default-color;
+        transition: width 0.1s ease;
+    }
+
+    .progress-text {
+        font-size: 16px;
+        padding-top: 7px;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        white-space: nowrap;
+        overflow: hidden;
+        padding-left: 44%;
+
+        color: @default-color;
+        width: 100%;
+
+        &.inverted {
+            color: #fff;
         }
     }
 }

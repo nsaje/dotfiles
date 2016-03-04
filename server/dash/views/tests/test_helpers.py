@@ -979,6 +979,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_settings = ad_group_source.ad_group.get_current_settings()
         ad_group_settings.end_date = None
+        ad_group_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
 
@@ -993,6 +994,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
 
         ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         ad_group_settings.end_date = None
 
         ad_group_source.source.source_type.available_actions = []
@@ -1002,6 +1004,38 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         self.assertEqual(result, {
             'enabled': False,
             'message': 'This media source doesn\'t support setting this value through the dashboard.'
+        })
+
+    def test_get_editable_fields_bid_cpc_adgroup_cpc_autopilot(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = []
+
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This value cannot be edited because the ad group is on Auto-Pilot.'
+        })
+
+    def test_get_editable_fields_bid_cpc_adgroup_budget_autopilot(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        ad_group_settings.end_date = None
+
+        ad_group_source.source.source_type.available_actions = []
+
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This value cannot be edited because the ad group is on Auto-Pilot.'
         })
 
     def test_get_editable_fields_bid_cpc_maintenance(self):
@@ -1041,6 +1075,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_settings = ad_group_source.ad_group.get_current_settings()
         ad_group_settings.end_date = None
+        ad_group_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
 
         ad_group_source.source.source_type.available_actions = [
             constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC
@@ -1058,6 +1093,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_settings = ad_group_source.ad_group.get_current_settings()
         ad_group_settings.end_date = None
+        ad_group_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
 
         ad_group_source.source.source_type.available_actions = []
 
@@ -1066,6 +1102,22 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         self.assertEqual(result, {
             'enabled': False,
             'message': 'This media source doesn\'t support setting this value through the dashboard.'
+        })
+
+    def test_get_editable_fields_daily_budget_adgroup_budget_autopilot(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+        ad_group_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+
+        ad_group_source.source.source_type.available_actions = []
+
+        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This value cannot be edited because the ad group is on Auto-Pilot.'
         })
 
     def test_get_editable_fields_daily_budget_maintenance(self):

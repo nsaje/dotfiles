@@ -111,7 +111,7 @@ def sum_contentadstats():
 
 
 @statsd_timer('reports.redshift', 'sum_of_stats')
-def sum_of_stats():
+def sum_of_stats(with_diffs=False):
     query = '''SELECT SUM(impressions) as impressions, SUM(visits) as visits,
     SUM(clicks) as clicks,
     SUM(cost_cc) as cost_cc,
@@ -123,8 +123,12 @@ def sum_of_stats():
     SUM(effective_cost_nano) as effective_cost_nano,
     SUM(effective_data_cost_nano) as effective_data_cost_nano,
     SUM(license_fee_nano) as license_fee_nano
-    FROM contentadstats WHERE content_ad_id != %s'''
-    params = [REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID]
+    FROM contentadstats'''
+
+    params = []
+    if not with_diffs:
+        query += ' WHERE content_ad_id != %s'
+        params.append(REDSHIFT_ADGROUP_CONTENTAD_DIFF_ID)
 
     cursor = get_cursor()
     cursor.execute(query, params)
@@ -176,38 +180,6 @@ def delete_publishers(date):
 @statsd_timer('reports.redshift', 'load_publishers')
 def load_publishers(s3_key):
     query = "COPY publishers_1 FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
-
-    credentials = _get_aws_credentials_string(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
-    params = [S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_key), credentials]
-    _execute(query, params)
-
-
-@statsd_timer('reports.redshift', 'delete_publishers_b1')
-def delete_publishers_b1(date):
-    query = 'DELETE FROM b1_publishers_1 WHERE date = %s'
-    params = [date.isoformat()]
-    _execute(query, params)
-
-
-@statsd_timer('reports.redshift', 'load_publishers_b1')
-def load_publishers_b1(s3_key):
-    query = "COPY b1_publishers_1 FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
-
-    credentials = _get_aws_credentials_string(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
-    params = [S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_key), credentials]
-    _execute(query, params)
-
-
-@statsd_timer('reports.redshift', 'delete_publishers_ob')
-def delete_publishers_ob(date):
-    query = 'DELETE FROM ob_publishers_2 WHERE date = %s'
-    params = [date.isoformat()]
-    _execute(query, params)
-
-
-@statsd_timer('reports.redshift', 'load_publishers_ob')
-def load_publishers_ob(s3_key):
-    query = "COPY ob_publishers_2 FROM %s CREDENTIALS %s FORMAT JSON 'auto' MAXERROR 0"
 
     credentials = _get_aws_credentials_string(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
     params = [S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_key), credentials]
