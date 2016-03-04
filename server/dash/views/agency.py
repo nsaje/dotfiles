@@ -236,8 +236,9 @@ class AdGroupSettings(api_common.BaseApiView):
         ).values_list('ad_group', 'source')
         adgroup_source_map = {}
         for adgs in all_adgroup_sources:
-            adgroup_source_map[adgs[0]] =\
-                adgroup_source_map.get(adgs[0], []) + [adgs[1]]
+            adgs_set = adgroup_source_map.get(adgs[0], set([]))
+            adgs_set.add(adgs[1])
+            adgroup_source_map[adgs[0]] = adgs_set
 
         return [
             {
