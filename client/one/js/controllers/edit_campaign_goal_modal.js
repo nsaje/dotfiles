@@ -1,11 +1,12 @@
 /* globals oneApp,options,constants */
-oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', function ($scope, $modalInstance) { // eslint-disable-line max-len
+oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api', function ($scope, $modalInstance, api) { // eslint-disable-line max-len
     $scope.conversionGoalTypes = options.conversionGoalTypes;
     $scope.conversionWindows = options.conversionWindows;
-    $scope.campaignGoalKPIs = options.campaignGoalKPIs;
+    $scope.campaignGoalKPIs = options.campaignGoalKPIs.filter($scope.$parent.isGoalAvailable);
     $scope.addConversionGoalInProgress = false;
     $scope.error = false;
     $scope.newCampaignGoal = false;
+    $scope.unit = '';
 
     if ($scope.campaignGoal === undefined) {
         $scope.newCampaignGoal = true;
@@ -15,10 +16,43 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', func
         };
     }
 
-    $scope.errors = {};
+    $scope.errors = {
+        conversionGoal: {}
+    };
 
+    $scope.setDefaultValue = function () {
+        var defaultValue = null;
+        defaults.campaignGoalKPI.forEach(function (kpiDefault) {
+            if (kpiDefault.id == $scope.campaignGoal.type) {
+                defaultValue = kpiDefault.value;
+            }
+        });
+        if (!$scope.newCampaignGoal) {
+            return;
+        }
+        $scope.campaignGoal.value = defaultValue;
+    };
+    
     $scope.save = function () {
-        $modalInstance.close($scope.campaignGoal);
+        var campaign = $scope.campaign;
+
+        $scope.clearErrors('type');
+        $scope.clearErrors('value');
+
+        if (!$scope.validate($scope.campaignGoal, $scope.errors)) {
+            console.log($scope.errors)
+            return;
+        }
+        
+        api.campaignGoalValidation.post(
+            $scope.campaign.id,
+            $scope.campaignGoal
+        ).then(function (response) {
+            $modalInstance.close($scope.campaignGoal);
+        }, function (response) {
+            $scope.errors = api.campaignGoalValidation.convert.errorsFromApi(response);
+        });
+
     };
 
     $scope.clearErrors = function (name) {
@@ -44,12 +78,14 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', func
         return $scope.campaignGoal.conversionGoal.type === constants.conversionGoalType.OMNITURE;
     };
 
-    $scope.updateTypeChange = function () {
+    $scope.updateTypeChange = function (unit) {
         delete $scope.campaignGoal.conversionGoal.goalId;
         delete $scope.campaignGoal.conversionGoal.conversionWindow;
 
         $scope.clearErrors('type');
-        $scope.clearErrors('conversionWindow');
-        $scope.clearErrors('goalId');
+        $scope.clearErrors('conversionGoal');
+        
+        $scope.setDefaultValue();
+        $scope.unit = unit || '';
     };
 }]);
