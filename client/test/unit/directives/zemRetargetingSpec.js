@@ -44,7 +44,7 @@ describe('zemRetargeting', function () {
         $scope.$digest();
         expect($scope.selectedAdgroupIds).toEqual([1]);
         expect(isolate.availableAdgroups().length).toBe(2);
-        expect(isolate.availableAdgroups()[0].id).toBe(3);
+        expect(isolate.availableAdgroups()[0].id).toBe(2);
 
         isolate.addAdgroup({id: 3});
         $scope.$digest();
