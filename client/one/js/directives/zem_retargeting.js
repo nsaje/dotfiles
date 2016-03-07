@@ -47,7 +47,7 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', func
                     );
                     adgroup.tooltip = undefined;
                     if (!adgroup.enabled) {
-                        adgroup.tooltip = "Please disable current filtering to add this ad group";
+                        adgroup.tooltip = 'Please disable current filtering to add this ad group';
                     }
                 });
 
