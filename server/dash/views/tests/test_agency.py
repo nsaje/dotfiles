@@ -69,23 +69,27 @@ class AdGroupSettingsTest(TestCase):
                     {
                         "campaign_name": "test campaign 1",
                         "archived": False,
-                        "id": 1, "name": "test adgroup 1"
+                        "id": 1, "name": "test adgroup 1",
+                        'source_ids': [1, 2, 3, 4, 5, 6, 7]
                     },
                     {
                         "campaign_name": "test campaign 2",
                         "archived": False,
-                        "id": 2, "name": "test adgroup 2"
+                        "id": 2, "name": "test adgroup 2",
+                        'source_ids': [1, 4],
                     },
                     {
                         "campaign_name": "test campaign 1",
                         "archived": False,
                         "id": 9,
-                        "name": "test adgroup 9"
+                        "name": "test adgroup 9",
+                        'source_ids': [2],
                     },
                     {
                         "campaign_name": "test campaign 1",
                         "archived": False,
-                        "id": 10, "name": "test adgroup 10"
+                        "id": 10, "name": "test adgroup 10",
+                        'source_ids': [],
                     },
                 ],
                 'settings': {

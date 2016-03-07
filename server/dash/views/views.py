@@ -367,6 +367,24 @@ class AdGroupOverview(api_common.BaseApiView):
 
         campaign_budget_setting = infobox_helpers.create_total_campaign_budget_setting(user, ad_group.campaign)
         settings.append(campaign_budget_setting.as_dict())
+
+        if user.has_perm('zemauth.can_view_retargeting_settings'):
+            retargeted_adgroup_names = list(models.AdGroup.objects.filter(
+                id__in=ad_group_settings.retargeting_ad_groups
+            ).values_list('name', flat=True))
+            retargetings_setting = infobox_helpers.OverviewSetting(
+                'Retargeting:',
+                'Yes' if retargeted_adgroup_names != [] else 'No',
+                tooltip='Content ads will only be shown to people who have already seen an ad from selected ad groups.'
+            )
+            if retargeted_adgroup_names != []:
+                retargetings_setting = retargetings_setting.comment(
+                    'Show Ad Groups',
+                    'Hide Ad Groups',
+                    ', '.join(retargeted_adgroup_names)
+                )
+            settings.append(retargetings_setting.as_dict())
+
         return settings, daily_cap
 
     def _performance_settings(self, ad_group, user, ad_group_settings, daily_cap, async_query):

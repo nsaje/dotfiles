@@ -12,10 +12,16 @@
     <ui-select-choices 
             group-by="groupByCampaign" 
             repeat="adgroup in availableAdgroups() | filter: {name: $select.search} track by adgroup.id"
-            position='down'>
+            position='down'
+            ui-disable-choice="!adgroup.enabled">
+
         <div 
+            zem-lazy-popover-text="{{adgroup.tooltip}}"
+            zem-lazy-popover-placement="right"
+            zem-lazy-popover-animation-class="fade"
+            zem-lazy-popover-append-to-body="true"
             ng-class="{archived: adgroup.archived}"
-            ng-bind-html="adgroup.name | highlight: $select.search">
+            ng-bind-html="adgroup.id + ' - ' + adgroup.name | highlight: $select.search">
         </div>
     </ui-select-choices>
 </ui-select>
