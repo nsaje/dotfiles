@@ -785,7 +785,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         }
 
         // TODO MV: can level be anything than AD_GROUPS
-        if ($scope.level == constants.level.AD_GROUPS && $scope.hasPermission('zemauth.conversion_reports')) {
+        if ($scope.level === constants.level.AD_GROUPS && $scope.hasPermission('zemauth.conversion_reports')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
                 $scope.chartMetricOptions,
                 options.campaignConversionGoalChartMetrics,

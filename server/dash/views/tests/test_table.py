@@ -892,7 +892,7 @@ class AdGroupPublishersTableTest(TestCase):
                                                         u'percent_new_users': 0.5,
                                                         u'bounce_rate': 0.3,
                                                         u'pv_per_visit': 10,
-                                                        u'avg_tos': 20,})
+                                                        u'avg_tos': 20, })
 
 
     @patch('dash.table.reports.api_publishers.query_active_publishers')
@@ -1316,7 +1316,7 @@ class AdGroupPublishersTableTest(TestCase):
                                                         u'percent_new_users': 0.5,
                                                         u'bounce_rate': 0.3,
                                                         u'pv_per_visit': 10,
-                                                        u'avg_tos': 20,})
+                                                        u'avg_tos': 20, })
 
 
     def test_get_reverse_order(self, mock_query):
