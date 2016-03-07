@@ -1384,8 +1384,8 @@ class CampaignAdGroupsTable(object):
 
         ad_groups_status_dict = self.get_per_ad_group_running_status_dict(ad_groups, ad_groups_settings, filtered_sources)
 
-        e_yesterday_cost, e_yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign)
-        yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign, actual=True)
+        e_yesterday_cost, e_yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign, filtered_sources)
+        yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign, filtered_sources, actual=True)
 
         response = {
             'rows': self.get_rows(
@@ -1437,8 +1437,8 @@ class CampaignAdGroupsTable(object):
         return helpers.get_ad_group_state_by_sources_running_status(
             ad_groups, ad_groups_settings, ad_groups_sources_settings, 'id')
 
-    def get_yesterday_cost(self, reports_api, campaign, actual=False):
-        constraints = dict(campaign=campaign)
+    def get_yesterday_cost(self, reports_api, campaign, filtered_sources, actual=False):
+        constraints = {'campaign': campaign, 'source': filtered_sources}
         breakdown = ['ad_group']
 
         if actual:
