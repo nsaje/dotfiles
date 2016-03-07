@@ -672,16 +672,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.hasPermission('zemauth.view_pubs_postclick_stats'),
             $scope.isPermissionInternal('zemauth.view_pubs_postclick_stats')
         );
-
-        // TODO MV: are any other options possible here ??
-        if ($scope.level === constants.level.AD_GROUPS) {
-            zemPostclickMetricsService.insertConversionGoalColumns(
-                $scope.columns,
-                $scope.columns.length - 1,
-                $scope.hasPermission('zemauth.conversion_reports'),
-                $scope.isPermissionInternal('zemauth.conversion_reports')
-            );
-        }
     };
 
     $scope.loadRequestInProgress = false;
@@ -741,9 +731,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.reflowGraph(1);
         });
     };
-/*    if ($window.isDemo) {
-        $window.demoActions.refreshAdGroupSourcesTable = getTableData;
-    }*/
 
     var getDailyStatsMetrics = function () {
         var values = $scope.chartMetricOptions.map(function (option) {
@@ -778,15 +765,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
                 $scope.chartMetricOptions,
                 $scope.isPermissionInternal('zemauth.view_pubs_postclick_stats')
-            );
-        }
-
-        // TODO MV: can level be anything than AD_GROUPS
-        if ($scope.level === constants.level.AD_GROUPS && $scope.hasPermission('zemauth.conversion_reports')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
-                $scope.chartMetricOptions,
-                options.campaignConversionGoalChartMetrics,
-                $scope.isPermissionInternal('zemauth.conversion_reports')
             );
         }
 

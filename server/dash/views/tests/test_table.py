@@ -1430,7 +1430,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'total_cost': 3,
             u'billing_cost': 3,
             u'license_fee': 0.6,
-            u'data_cost': 0,    # TODO matijav 07.03.2016 why is duplicated ?
             u'impressions': 10560,
             u'clicks': 123,
             u'source_id': 7,
