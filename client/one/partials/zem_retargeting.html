@@ -20,7 +20,7 @@
             zem-lazy-popover-placement="right"
             zem-lazy-popover-animation-class="fade"
             zem-lazy-popover-append-to-body="true"
-            ng-class="{archived: adgroup.archived}"
+            ng-class="{archived: adgroup.archived || !adgroup.enabled}"
             ng-bind-html="adgroup.id + ' - ' + adgroup.name | highlight: $select.search">
         </div>
     </ui-select-choices>
