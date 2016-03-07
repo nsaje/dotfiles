@@ -36,9 +36,9 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', func
                 });
 
                 adgroups.forEach(function (adgroup) {
-                    adgroup.suffix = '';
+                    adgroup.suffix = "";
                     if (adgroup.archived) {
-                        adgroup.suffix = ' (Archived)';
+                        adgroup.suffix = " (Archived)";
                     }
                 });
 
