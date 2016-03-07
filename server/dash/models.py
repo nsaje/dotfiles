@@ -1263,7 +1263,7 @@ class AdGroup(models.Model):
             # but we want to take only latest settings into account
             latest_ad_group_settings = AdGroupSettings.objects.filter(
                 ad_group__in=self
-            ).group_current_settings().values_list('id', flat=True)
+            ).group_current_settings()
 
             ad_group_settings = AdGroupSettings.objects.filter(
                 pk__in=latest_ad_group_settings
@@ -1277,7 +1277,7 @@ class AdGroup(models.Model):
 
             latest_ad_group_source_settings = AdGroupSourceSettings.objects.filter(
                 ad_group_source__ad_group__in=self
-            ).group_current_settings().values_list('id', flat=True)
+            ).group_current_settings()  # .values_list('id', flat=True)
 
             ad_group_source_settings = AdGroupSourceSettings.objects.filter(
                 pk__in=latest_ad_group_source_settings
