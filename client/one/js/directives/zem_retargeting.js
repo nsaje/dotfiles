@@ -45,7 +45,7 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', func
                         }
                     });
                     adgroup.enabled = enabledAdGroup && (
-                        !adgroup.archived || adgroup.archived && zemFilterService.isArchivedFilterOn()
+                        !adgroup.archived || zemFilterService.isArchivedFilterOn()
                     );
                     adgroup.tooltip = undefined;
                     if (!adgroup.enabled) {
