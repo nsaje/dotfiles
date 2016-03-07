@@ -303,9 +303,18 @@ class Account(models.Model):
             ).distinct()
 
         def exclude_archived(self):
-            archived_settings = AccountSettings.objects.all().group_current_settings()
+            related_settings = AccountSettings.objects.all().filter(
+                account__in=self
+            ).group_current_settings()
 
-            return self.exclude(pk__in=[s.account_id for s in archived_settings if s.archived])
+            archived_accounts = AccountSettings.objects.all().filter(
+                pk__in=related_settings
+            ).filter(
+                archived=True
+            ).values_list(
+                'account__id', flat=True
+            )
+            return self.exclude(pk__in=archived_accounts)
 
 
 class Campaign(models.Model, PermissionMixin):
@@ -433,9 +442,18 @@ class Campaign(models.Model, PermissionMixin):
             ).distinct()
 
         def exclude_archived(self):
-            archived_settings = CampaignSettings.objects.all().group_current_settings()
+            related_settings = CampaignSettings.objects.all().filter(
+                campaign__in=self
+            ).group_current_settings()
 
-            return self.exclude(pk__in=[s.campaign_id for s in archived_settings if s.archived])
+            archived_campaigns = CampaignSettings.objects.all().filter(
+                pk__in=related_settings
+            ).filter(
+                archived=True
+            ).values_list(
+                'campaign__id', flat=True
+            )
+            return self.exclude(pk__in=archived_campaigns)
 
 
 class SettingsBase(models.Model):
@@ -1242,9 +1260,17 @@ class AdGroup(models.Model):
             ).distinct()
 
         def exclude_archived(self):
-            archived_settings = AdGroupSettings.objects.all().group_current_settings()
+            related_settings = AdGroupSettings.objects.all().filter(
+                ad_group__in=self
+            ).group_current_settings()
 
-            return self.exclude(pk__in=[s.ad_group_id for s in archived_settings if s.archived])
+            archived_adgroups = AdGroupSettings.objects.filter(
+                pk__in=related_settings
+            ).filter(
+                archived=True
+            ).values_list('ad_group', flat=True)
+
+            return self.exclude(pk__in=archived_adgroups)
 
         def filter_running(self):
             """
@@ -1263,7 +1289,7 @@ class AdGroup(models.Model):
             # but we want to take only latest settings into account
             latest_ad_group_settings = AdGroupSettings.objects.filter(
                 ad_group__in=self
-            ).group_current_settings().values_list('id', flat=True)
+            ).group_current_settings()
 
             ad_group_settings = AdGroupSettings.objects.filter(
                 pk__in=latest_ad_group_settings
@@ -1277,7 +1303,7 @@ class AdGroup(models.Model):
 
             latest_ad_group_source_settings = AdGroupSourceSettings.objects.filter(
                 ad_group_source__ad_group__in=self
-            ).group_current_settings().values_list('id', flat=True)
+            ).group_current_settings()
 
             ad_group_source_settings = AdGroupSourceSettings.objects.filter(
                 pk__in=latest_ad_group_source_settings

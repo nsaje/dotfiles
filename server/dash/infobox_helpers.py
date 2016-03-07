@@ -426,7 +426,7 @@ def count_active_campaigns(account):
 def count_active_accounts():
     account_ids = set(
         dash.models.AdGroup.objects.all()
-        .exclude_archived().filter_running()
+        .filter_running()
         .values_list(
             'campaign__account',
             flat=True
