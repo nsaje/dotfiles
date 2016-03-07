@@ -36,18 +36,9 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', func
                 });
 
                 adgroups.forEach(function (adgroup) {
-                    var enabledAdGroup = true;
-                    zemFilterService.getFilteredSources().forEach(function (source) {
-                        if (adgroup.sourceIds.indexOf(parseInt(source)) === -1) {
-                            enabledAdGroup = false;
-                        }
-                    });
-                    adgroup.enabled = enabledAdGroup && (
-                        !adgroup.archived || zemFilterService.isArchivedFilterOn()
-                    );
-                    adgroup.tooltip = undefined;
-                    if (!adgroup.enabled) {
-                        adgroup.tooltip = 'Please disable current filtering to add this ad group';
+                    adgroup.suffix = '';
+                    if (adgroup.archived) {
+                        adgroup.suffix = ' (Archived)';
                     }
                 });
 

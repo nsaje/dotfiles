@@ -231,22 +231,12 @@ class AdGroupSettings(api_common.BaseApiView):
         ).group_current_settings().values_list('ad_group__id', 'archived')
         archived_map = {adgs[0]: adgs[1] for adgs in ad_group_settings}
 
-        all_adgroup_sources = models.AdGroupSource.objects.filter(
-            ad_group__in=ad_groups
-        ).values_list('ad_group', 'source')
-        adgroup_source_map = {}
-        for adgs in all_adgroup_sources:
-            adgs_set = adgroup_source_map.get(adgs[0], set([]))
-            adgs_set.add(adgs[1])
-            adgroup_source_map[adgs[0]] = adgs_set
-
         return [
             {
                 'id': adg.id,
                 'name': adg.name,
                 'archived': archived_map.get(adg.id) or False,
                 'campaign_name': adg.campaign.name,
-                'source_ids': sorted(adgroup_source_map.get(adg.id, []))
             }
             for adg in ad_groups
         ]
