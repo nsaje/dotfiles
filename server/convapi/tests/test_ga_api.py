@@ -25,8 +25,16 @@ class TestGAApiReport(TestCase):
         expected_key = ('2015-12-07', 42001, 'b1_pubmatic')
         self.assertTrue(expected_key in ga_reports.entries)
         self.assertEqual(
-            '["/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood", "(not set)", "2", "1", "100.0", "1", "10.0"]',
+            '["/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood&_z1_pub=www.test.com", "(not set)", "2", "1", "100.0", "1", "10.0"]',
             ga_reports.entries[expected_key].raw_row)
+
+    @mock.patch.object(GAApiReport, '_get_ga_profiles')
+    @mock.patch.object(GAApiReport, '_get_ga_goals')
+    @mock.patch.object(GAApiReport, '_download_stats_from_ga')
+    def test_merge(self, _download_stats_from_ga_mock, _get_ga_goals_mock, _get_ga_profiles_mock):
+        _get_ga_profiles_mock.return_value = self._create_ga_profiles_mock()
+        _get_ga_goals_mock.return_value = self._create_ga_goals_mock()
+        _download_stats_from_ga_mock.side_effect = self._download_stats_from_ga_side_effect
 
     def _create_ga_profiles_mock(self):
         return {'items': [{'id': '100021248', 'accountId': '2175716', 'webPropertyId': 'UA-2175716-35'}],
@@ -39,11 +47,13 @@ class TestGAApiReport(TestCase):
     def _download_stats_from_ga_side_effect(self, start_date, profile_id, metrics, start_index):
         if metrics == 'ga:sessions,ga:newUsers,ga:bounceRate,ga:pageviews,ga:timeonsite':
             return {'rows': [
-                ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood',
-                 '(not set)', '2', '1', '100.0', '1', '10.0']], 'itemsPerPage': 1000, 'totalResults': 1}
+                ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood&_z1_pub=www.test.com', '(not set)', '2', '1', '100.0', '1', '10.0'],
+                ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood&_z1_pub=www.foo.com', '(not set)', '2', '1', '100.0', '1', '10.0']
+                ], 'itemsPerPage': 1000, 'totalResults': 1}
         elif metrics == 'ga:goal1Completions':
             return {'rows': [
-                ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood',
-                 '(not set)', '2']], 'itemsPerPage': 1000, 'totalResults': 1}
+                ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood&_z1_pub=www.test.com', '(not set)', '2'],
+                ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood&_z1_pub=www.foo.com', '(not set)', '2'],
+                ], 'itemsPerPage': 1000, 'totalResults': 1}
         else:
             raise Exception('Undefined GA metrics: ' + metrics)
