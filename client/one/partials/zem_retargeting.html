@@ -21,7 +21,7 @@
             zem-lazy-popover-animation-class="fade"
             zem-lazy-popover-append-to-body="true"
             ng-class="{archived: adgroup.archived}"
-            ng-bind-html="adgroup.id + ' - ' + adgroup.name | highlight: $select.search">
+            ng-bind-html="adgroup.name + ' (' + adgroup.id + ')' | highlight: $select.search">
         </div>
     </ui-select-choices>
 </ui-select>
