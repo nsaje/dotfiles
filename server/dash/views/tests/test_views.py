@@ -246,6 +246,19 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(mock_budget_ap.called, False)
         self.assertEqual(response.status_code, 200)
 
+    def test_adgroup_w_retargeting_and_source_without(self):
+        for sourceType in models.SourceType.objects.all():
+            if constants.SourceAction.CAN_MODIFY_RETARGETING in sourceType.available_actions:
+                sourceType.available_actions.remove(constants.SourceAction.CAN_MODIFY_RETARGETING)
+                sourceType.save()
+
+        self._set_ad_group_end_date(days_delta=3)
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'state': '1'})
+        )
+        self.assertEqual(response.status_code, 400)
+
 
 class CampaignAdGroups(TestCase):
     fixtures = ['test_models.yaml', 'test_views.yaml']
