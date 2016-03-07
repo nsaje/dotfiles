@@ -35,12 +35,11 @@ def get_ga_service():
 
 
 class GAApiReportRow(ReportRow):
-    def __init__(self, report_date, content_ad_id, source_param, publisher):
+    def __init__(self, report_date, content_ad_id, source_param):
         ReportRow.__init__(self)
         self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id
         self.source_param = source_param
-        self.publisher = publisher
 
         self.visits = 0
         self.new_visits = 0
@@ -106,7 +105,7 @@ class GAApiReport(GAReport):
                                             'ga:sessions,ga:newUsers,ga:bounceRate,ga:pageviews,ga:timeonsite'):
             logger.debug('Processing GA postclick data row: %s', row)
             content_ad_id, media_source_tracking_slug, publisher = self._parse_keyword_or_url(row)
-            report_entry = GAApiReportRow(self.start_date, content_ad_id, media_source_tracking_slug, publisher)
+            report_entry = GAApiReportRow(self.start_date, content_ad_id, media_source_tracking_slug)
             report_entry.set_postclick_stats(row)
             self._update_report_entry_postclick_stats(report_entry)
 
@@ -202,4 +201,8 @@ class GAApiReport(GAReport):
         if existing_goal is None:
             goals[key] = sub_goals
         else:
-            goals[key].update(sub_goals)
+            for sub_goal, value in sub_goals.iteritems():
+                if sub_goal in goals[key]:
+                    goals[key][sub_goal] += value
+                else:
+                    goals[key].update(sub_goals)
