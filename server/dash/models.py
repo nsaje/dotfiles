@@ -1242,9 +1242,17 @@ class AdGroup(models.Model):
             ).distinct()
 
         def exclude_archived(self):
-            archived_settings = AdGroupSettings.objects.all().group_current_settings()
+            related_settings = AdGroupSettings.objects.all().filter(
+                ad_group__in=self
+            ).group_current_settings()
 
-            return self.exclude(pk__in=[s.ad_group_id for s in archived_settings if s.archived])
+            archived_settings = AdGroupSettings.objects.filter(
+                pk__in=related_settings
+            ).filter(
+                archived=True
+            ).values_list('ad_group', flat=True)
+
+            return self.exclude(pk__in=archived_settings)
 
         def filter_running(self):
             """
