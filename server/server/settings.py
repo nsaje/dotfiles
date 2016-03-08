@@ -30,7 +30,7 @@ TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 # Application definition
 
-PROJECT_NAME = 'eins'
+PROJECT_NAME = 'z1'
 
 INSTALLED_APPS = (
     'django.contrib.admin',

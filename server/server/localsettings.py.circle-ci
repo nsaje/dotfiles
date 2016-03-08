@@ -65,11 +65,11 @@ MAILGUN_API_KEY = Secret('').get()  # mustn't be unicode
 LOG_FILE = '/home/ubuntu/zemanta-eins.server.log'
 
 # Metrics reporting
-STATSD_HOST = ''
+STATSD_HOST = 'localhost'
 STATSD_PORT = 8125
 
-TELEGRAF_HOST = ''
-TELEGRAF_PORT = 8135
+STATSD_INFLUX_HOST = 'localhost'
+STATSD_INFLUX_PORT = 8135
 
 # Saucelabs
 SAUCELABS_USERNAME = ''

@@ -18,7 +18,6 @@ XlsxWriter==0.5.7
 xlrd==0.9.3
 python-slugify==1.0.2
 newrelic==2.58.2.45
-statsd==3.0
 raven==5.0.0
 boto==2.32.1
 celery==3.1.19
@@ -44,3 +43,7 @@ google-api-python-client==1.4.2
 
 # for secrets encryption
 secretcrypt==0.4.1
+
+# Statsd and influx
+statsd==3.2.1
+git+https://github.com/Zemanta/django-statsd-influx.git@v0.1
