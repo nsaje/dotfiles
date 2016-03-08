@@ -90,7 +90,7 @@ class SwitchToLandingModeTestCase(TestCase):
 
     fixtures = ['test_campaign_stop.yaml']
 
-    @patch('automation.campaign_stop._send_campaign_stop_notification_email')
+    @patch('utils.email_helper.send_notification_mail')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     def test_send_stop_campaign_email(self, mock_get_mrb, mock_send_email):
         mock_get_mrb.return_value = Decimal('100'), Decimal('150')
@@ -101,9 +101,9 @@ class SwitchToLandingModeTestCase(TestCase):
         c1.save(None)
 
         campaign_stop.switch_low_budget_campaigns_to_landing_mode()
-        mock_send_email.assert_called_once_with(c1)
+        self.assertTrue(mock_send_email.called)
 
-    @patch('automation.campaign_stop._send_depleting_budget_notification_email')
+    @patch('utils.email_helper.send_notification_mail')
     @patch('automation.campaign_stop._get_minimum_remaining_budget')
     def test_send_depleting_budget_notification_email(self, mock_get_mrb, mock_send_email):
         mock_get_mrb.return_value = Decimal('150'), Decimal('100')
@@ -114,7 +114,7 @@ class SwitchToLandingModeTestCase(TestCase):
         c1.save(None)
 
         campaign_stop.switch_low_budget_campaigns_to_landing_mode()
-        mock_send_email.assert_called_once_with(c1)
+        self.assertTrue(mock_send_email.called)
 
 
 class GetMaximumDailyBudgetTestCase(TestCase):
