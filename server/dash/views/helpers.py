@@ -906,7 +906,7 @@ def _get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_g
         message = _get_status_setting_disabled_message_for_target_regions(
             ad_group_source, ad_group_settings, ad_group_source_settings)
     elif ad_group_settings.retargeting_ad_groups != [] and\
-        not ad_group_source.source.can_modify_retargeting_automatically():
+            not ad_group_source.source.can_modify_retargeting_automatically():
         message = 'This source can not be enabled because it does not support retargeting.'
 
     if ad_group_source.source_id not in allowed_sources:
