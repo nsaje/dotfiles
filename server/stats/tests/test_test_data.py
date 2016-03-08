@@ -15,12 +15,8 @@ class TestTestData(TestCase):
 
     def test_get(self):
         params = {
-            'level-1': 'ad_group',
-            'level-2': 'date',
-            'level-3': 'age',
-            'level-1-pagination': '1|10',
-            'level-2-pagination': '1|10',
-            'level-3-pagination': '1|10',
+            'breakdowns': 'ad_group,date,age',
+            'ranges': '1|10,1|10,1|10'
         }
 
         response = self.client.get(
@@ -31,8 +27,7 @@ class TestTestData(TestCase):
 
         result = json.loads(response.content)
 
-        print response.content
-        assert False
+        self.assertTrue(result['success'])
 
 
 
