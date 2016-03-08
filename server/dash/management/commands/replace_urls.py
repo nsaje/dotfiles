@@ -68,7 +68,7 @@ class Command(ExceptionCommand):
             if content_ad.url not in mapping:
                 continue
 
-            redirect = update_redirect(content_ad.url, content_ad.redirect_id)
+            redirect = update_redirect(mapping[content_ad.url], content_ad.redirect_id)
 
             content_ad.url = redirect["redirect"]["url"]
             content_ad.save()

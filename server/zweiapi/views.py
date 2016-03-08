@@ -11,6 +11,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 
+import influx
+
 from django.conf import settings
 
 import newrelic.agent
@@ -31,7 +33,6 @@ import reports.api_publishers
 
 from utils import request_signer
 from utils import statsd_helper
-from utils import influx
 
 logger = logging.getLogger(__name__)
 

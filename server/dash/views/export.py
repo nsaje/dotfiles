@@ -5,6 +5,8 @@ import slugify
 
 from collections import OrderedDict
 
+import influx
+
 from django.conf import settings
 
 from dash.views import helpers
@@ -68,6 +70,7 @@ class ExportApiView(api_common.BaseApiView):
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
+    @influx.timer('dash.export')
     @statsd_helper.statsd_timer('dash.export', 'accounts_campaigns_export_get')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
@@ -145,6 +148,7 @@ class AccountCampaignsExport(api_common.BaseApiView):
 
 
 class CampaignAdGroupsExport(ExportApiView):
+    @influx.timer('dash.export')
     @statsd_helper.statsd_timer('dash.export', 'campaigns_ad_groups_export_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -278,6 +282,7 @@ class CampaignAdGroupsExport(ExportApiView):
 class AdGroupAdsExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 16134
 
+    @influx.timer('dash.export')
     @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_export_allowed_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -311,6 +316,7 @@ class AdGroupAdsExportAllowed(api_common.BaseApiView):
 class AdGroupAdsPlusExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 16134
 
+    @influx.timer('dash.export')
     @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_allowed_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -339,6 +345,7 @@ class AdGroupAdsPlusExportAllowed(api_common.BaseApiView):
 class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
     MAX_ROWS = 8072
 
+    @influx.timer('dash.export')
     @statsd_helper.statsd_timer('dash.export', 'campiagn_ad_group_export_allowed_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -365,6 +372,7 @@ class CampaignAdGroupsExportAllowed(api_common.BaseApiView):
 
 
 class AdGroupAdsExport(ExportApiView):
+    @influx.timer('dash.export')
     @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_export_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -496,6 +504,7 @@ class AdGroupAdsPlusExport(ExportApiView):
         {'key': 'date', 'name': 'Date', 'format': 'date'},
     ] + common_excel_columns
 
+    @influx.timer('dash.export')
     @statsd_helper.statsd_timer('dash.export', 'ad_group_ads_plus_export_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -692,6 +701,7 @@ class AdGroupAdsPlusExport(ExportApiView):
 
 
 class AdGroupSourcesExport(ExportApiView):
+    @influx.timer('dash.export')
     @statsd_helper.statsd_timer('dash.export', 'ad_group_sources_export_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
