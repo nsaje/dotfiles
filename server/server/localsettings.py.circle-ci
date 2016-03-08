@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import os
+
 from secretcrypt import Secret
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -7,7 +9,10 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = Secret('kms:region=us-east-1:CiB50kZLFNrp4uMD3sEwg9I9xA3R2c03wBYCqilvrmwhiBK7AQEBAgB4edJGSxTa6eLjA97BMIPSPcQN0dnNN8AWAqopb65sIYgAAACSMIGPBgkqhkiG9w0BBwaggYEwfwIBADB6BgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDOoit0knmfF+MmprKgIBEIBNiDcq5UTM6wBPguwgFIC1Fdw3KrIpmvShRrU9XJOvk9xQk7F/wTRhZmBDVxH7ynT7KrgqVikdxnrI2I0EJyXREJOUF0luI6sJO2UMyyY=').get()
+if os.environ.get('CIRCLECI'):
+    SECRET_KEY = Secret('kms:region=us-east-1:CiB50kZLFNrp4uMD3sEwg9I9xA3R2c03wBYCqilvrmwhiBK7AQEBAgB4edJGSxTa6eLjA97BMIPSPcQN0dnNN8AWAqopb65sIYgAAACSMIGPBgkqhkiG9w0BBwaggYEwfwIBADB6BgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDOoit0knmfF+MmprKgIBEIBNiDcq5UTM6wBPguwgFIC1Fdw3KrIpmvShRrU9XJOvk9xQk7F/wTRhZmBDVxH7ynT7KrgqVikdxnrI2I0EJyXREJOUF0luI6sJO2UMyyY=').get()
+else:
+    SECRET_KEY = Secret('plain::=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l').get()
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
