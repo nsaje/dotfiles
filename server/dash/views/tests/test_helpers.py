@@ -731,7 +731,10 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         allowed_sources = set([ad_group_source.source_id])
 
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_MODIFY_RETARGETING,
+            constants.SourceAction.CAN_UPDATE_STATE
+        ]
 
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
@@ -742,13 +745,35 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             'message': None
         })
 
+    def test_get_editable_fields_without_retargeting(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        allowed_sources = set([ad_group_source.source_id])
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_STATE
+        ]
+
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This source can not be enabled because it does not support retargeting.'
+        })
+
     def test_get_editable_fields_status_not_in_allowed_sources(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         allowed_sources = set([ad_group_source.source_id])
 
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_MODIFY_RETARGETING,
+            constants.SourceAction.CAN_UPDATE_STATE
+        ]
 
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
