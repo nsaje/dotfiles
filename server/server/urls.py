@@ -14,6 +14,7 @@ import zweiapi.views
 import actionlog.views
 import convapi.views
 import reports.views
+import stats.views
 
 import dash.views.daily_stats
 import dash.views.bcm
@@ -66,6 +67,11 @@ urlpatterns = patterns(
 # Api
 urlpatterns += patterns(
     '',
+    url(
+        r'^api/experimental/stats/testdata/',
+        stats.views.TestData.as_view(),
+        name='stats_test_data'
+    ),
     url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/state/',
         login_required(dash.views.views.AdGroupState.as_view()),
