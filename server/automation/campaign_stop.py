@@ -8,7 +8,12 @@ from utils import dates_helper, email_helper, url_helper
 
 logger = logging.getLogger(__name__)
 
-TEMP_EMAILS = ['luka.silovinac@zemanta.com', 'urska.kosec@zemanta.com']
+TEMP_EMAILS = [
+    'luka.silovinac@zemanta.com',
+    'urska.kosec@zemanta.com',
+    'ana.dejanovic@zemanta.com',
+    'tadej.pavlic@zemanta.com',
+]
 
 
 def switch_low_budget_campaigns_to_landing_mode():
@@ -121,7 +126,7 @@ def _get_ad_groups_active_on_date(date, campaign):
 
 
 def _send_campaign_stop_notification_email(campaign):
-    subject = 'Your campaign {campaign_name} ({account_name}) is switching to landing mode'
+    subject = '[REAL CAMPAIGN STOP] Your campaign {campaign_name} ({account_name}) is switching to landing mode'
     body = u'''Hi, campaign manager of {campaign_name},
 
 your campaign {campaign_name} ({account_name}) has been switched to automated landing mode because it is approaching the budget limit.
@@ -148,7 +153,7 @@ Zemanta'''
 
 
 def _send_depleting_budget_notification_email(campaign):
-    subject = 'Your campaign {campaign_name} ({account_name}) is running out of budget'
+    subject = '[REAL CAMPAIGN STOP] Your campaign {campaign_name} ({account_name}) is running out of budget'
     body = u'''Hi, campaign manager of {campaign_name},
 
 your campaign {campaign_name} ({account_name}) will run out of budget in approximately 3 days. System will automatically turn on the landing mode to hit your budget. While in landing mode CPCs and daily budgets of media sources will not be available for any changes.
