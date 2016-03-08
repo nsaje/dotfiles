@@ -375,6 +375,24 @@ class AdGroupOverview(api_common.BaseApiView):
 
         campaign_budget_setting = infobox_helpers.create_total_campaign_budget_setting(user, ad_group.campaign)
         settings.append(campaign_budget_setting.as_dict())
+
+        if user.has_perm('zemauth.can_view_retargeting_settings'):
+            retargeted_adgroup_names = list(models.AdGroup.objects.filter(
+                id__in=ad_group_settings.retargeting_ad_groups
+            ).values_list('name', flat=True))
+            retargetings_setting = infobox_helpers.OverviewSetting(
+                'Retargeting:',
+                'Yes' if retargeted_adgroup_names != [] else 'No',
+                tooltip='Content ads will only be shown to people who have already seen an ad from selected ad groups.'
+            )
+            if retargeted_adgroup_names != []:
+                retargetings_setting = retargetings_setting.comment(
+                    'Show Ad Groups',
+                    'Hide Ad Groups',
+                    ', '.join(retargeted_adgroup_names)
+                )
+            settings.append(retargetings_setting.as_dict())
+
         return settings, daily_cap
 
     def _performance_settings(self, ad_group, user, ad_group_settings, daily_cap, async_query):
@@ -1042,6 +1060,17 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
             errors.update(exc.ForbiddenError(message='Not allowed'))
 
+        ad_group_settings = ad_group.get_current_settings()
+        source = models.Source.objects.get(pk=source_id)
+        if 'state' in resource and state_form.cleaned_data.get('state') == constants.AdGroupSettingsState.ACTIVE and\
+                not retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings):
+            errors.update(
+                {
+                    'state': 'Cannot enable media source that does not support'
+                    'retargeting on adgroup with retargeting enabled.'
+                }
+            )
+
         if errors:
             raise exc.ValidationError(errors=errors)
 
@@ -1051,7 +1080,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             resource['daily_budget_cc'] = decimal.Decimal(resource['daily_budget_cc'])
 
         if 'cpc_cc' in resource or 'daily_budget_cc' in resource:
-            end_datetime = ad_group.get_current_settings().get_utc_end_datetime()
+            end_datetime = ad_group_settings.get_utc_end_datetime()
             if end_datetime is not None and end_datetime <= datetime.datetime.utcnow():
                 raise exc.ValidationError()
 

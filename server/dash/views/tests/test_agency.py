@@ -69,23 +69,23 @@ class AdGroupSettingsTest(TestCase):
                     {
                         "campaign_name": "test campaign 1",
                         "archived": False,
-                        "id": 1, "name": "test adgroup 1"
+                        "id": 1, "name": "test adgroup 1",
                     },
                     {
                         "campaign_name": "test campaign 2",
                         "archived": False,
-                        "id": 2, "name": "test adgroup 2"
+                        "id": 2, "name": "test adgroup 2",
                     },
                     {
                         "campaign_name": "test campaign 1",
                         "archived": False,
                         "id": 9,
-                        "name": "test adgroup 9"
+                        "name": "test adgroup 9",
                     },
                     {
                         "campaign_name": "test campaign 1",
                         "archived": False,
-                        "id": 10, "name": "test adgroup 10"
+                        "id": 10, "name": "test adgroup 10",
                     },
                 ],
                 'settings': {
@@ -110,10 +110,46 @@ class AdGroupSettingsTest(TestCase):
                     'adobe_tracking_param': 'pid',
                     'tracking_code': 'param1=foo&param2=bar',
                     'autopilot_min_budget': '100'
-                }
+                },
+                'warnings': {}
             },
             'success': True
         })
+
+    def test_get_not_retargetable(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        for source_type in models.SourceType.objects.all():
+            if source_type.available_actions and constants.SourceAction.CAN_MODIFY_RETARGETING in source_type.available_actions:
+                source_type.available_actions.remove(constants.SourceAction.CAN_MODIFY_RETARGETING)
+            source_type.save()
+
+        req = RequestFactory().get('/')
+        req.user = User(id=1)
+
+        for source_settings in models.AdGroupSourceSettings.objects.all():
+            source_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
+            source_settings.save(req)
+
+        response = self.client.get(
+            reverse('ad_group_settings', kwargs={'ad_group_id': ad_group.id}),
+            follow=True
+        )
+
+        self.assertDictEqual(
+            json.loads(response.content)['data']['warnings'], {
+                'retargeting': {
+                    'text': "You have some active media sources that"
+                            " don't support retargeting. To start using it please disable/pause"
+                            " these media sources:",
+                    'sources': [
+                        'AdsNative',
+                        'Gravity',
+                        'Yahoo',
+                    ],
+                }
+            }
+        )
 
     @patch('dash.views.agency.api.order_ad_group_settings_update')
     @patch('dash.views.agency.actionlog_api')

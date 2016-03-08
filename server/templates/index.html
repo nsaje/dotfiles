@@ -7,8 +7,16 @@
 {% js_data %}
 <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one.lib.min.css" />
 <link type="text/css" rel="stylesheet" href="{{ staticUrl }}/one/zemanta-one.min.css" />
+
+{% if debug %}
+<script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.lib.js"></script>
+<script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.js"></script>
+<script src="http://localhost:35729/livereload.js"></script>
+{% else %}
 <script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.lib.min.js"></script>
 <script type="text/javascript" src="{{ staticUrl }}/one/zemanta-one.min.js"></script>
+{% endif %}
+
 {% endblock %}
 
 {% block content %}

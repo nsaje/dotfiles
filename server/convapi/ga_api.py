@@ -104,7 +104,7 @@ class GAApiReport(GAReport):
         for row in self._ga_stats_generator(self.start_date, profiles['items'][0]['id'],
                                             'ga:sessions,ga:newUsers,ga:bounceRate,ga:pageviews,ga:timeonsite'):
             logger.debug('Processing GA postclick data row: %s', row)
-            content_ad_id, media_source_tracking_slug = self._parse_keyword_or_url(row)
+            content_ad_id, media_source_tracking_slug, publisher = self._parse_keyword_or_url(row)
             report_entry = GAApiReportRow(self.start_date, content_ad_id, media_source_tracking_slug)
             report_entry.set_postclick_stats(row)
             self._update_report_entry_postclick_stats(report_entry)
@@ -145,10 +145,10 @@ class GAApiReport(GAReport):
             raise
 
     def _parse_keyword_or_url(self, row):
-        content_ad_id, source_param = self._parse_z11z_keyword(row[1])
+        content_ad_id, source_param, publisher_param = self._parse_z11z_keyword(row[1])
         if content_ad_id is None:
-            content_ad_id, source_param = self._parse_landing_page(row[0])
-        return content_ad_id, source_param
+            content_ad_id, source_param, publisher_param = self._parse_landing_page(row[0])
+        return content_ad_id, source_param, publisher_param
 
     def _update_report_entry_postclick_stats(self, report_entry):
         existing_entry = self.entries.get(report_entry.key())
@@ -191,7 +191,7 @@ class GAApiReport(GAReport):
             existing_entry.merge_conversion_goal_stats_with(report_entry)
 
     def _update_goals(self, goals, row, sub_goal_metadata):
-        content_ad_id, media_source_tracking_slug = self._parse_keyword_or_url(row)
+        content_ad_id, media_source_tracking_slug, publisher_param = self._parse_keyword_or_url(row)
         sub_goals = {}
         for i, metadata in enumerate(sub_goal_metadata):
             sub_goal_name = metadata['name']
@@ -201,4 +201,8 @@ class GAApiReport(GAReport):
         if existing_goal is None:
             goals[key] = sub_goals
         else:
-            goals[key].update(sub_goals)
+            for sub_goal, value in sub_goals.iteritems():
+                if sub_goal in goals[key]:
+                    goals[key][sub_goal] += value
+                else:
+                    goals[key].update(sub_goals)

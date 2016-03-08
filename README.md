@@ -84,6 +84,88 @@ There are Redshift unit tests but they aren't run automatically. You can run the
 python manage.py test --redshift
 ```
 
+### Setting up "eins" and "einsstatic" Docker containers on OSX
+
+This setup is meant for designers to quickly setup development environment and start editing CSS and sending consequent LESS fixes on GitHub.
+
+#### Docker installation
+
+- Install [Docker Toolbox](https://docs.docker.com/mac/step_one/).
+
+- Login to [Docker Hub](https://hub.docker.com/) (create account if needed):
+
+```bash
+docker login
+```
+
+- Run "Docker Quickstart Terminal" app. This will setup default VM in VirtualBox.
+
+#### "eins" and "einsstatic" Docker containers setup
+
+**NOTE: all of the following terminal commands should be executed from the zemanta-eins root directory.**
+
+Make sure default VM is running and correct environmental variables are exported:
+
+```bash
+docker-machine start default
+eval $(docker-machine env default)
+```
+
+Setup VirtualBox portforwarding:
+
+```bash
+VBoxManage controlvm default natpf1 "einsstatic,tcp,127.0.0.1,9999,,9999"
+```
+
+Above command will forward requests to http://localhost:9999 from host's port 9999 to default VM's port 9999. This is needed for serving static content.
+
+Copy localsettings.py.circle-ci to localsettings.py:
+
+```bash
+cp server/server/localsettings.py.circle-ci server/server/localsettings.py
+```
+
+Edit DATABASES setting in **localsettings.py** to look similar to this: (and **insert actual connection details found on [Z1 Staging Data repo](https://github.com/Zemanta/z1-staging-data/blob/master/README.md).**)
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': 0
+    },
+    STATS_DB_NAME: {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': 0
+    }
+}
+```
+
+Run "eins" and "einsstatic" containers for the first time: (be patient, a lot of data has to be downloaded)
+
+```bash
+docker-compose -f docker-compose.yml.eins-einsstatic up -d
+```
+
+Now you can use the "Kitematic" app to start/stop "eins" and "einsstatic" containers. **Important: default VM needs to be running.** If not sure, run this:
+
+```bash
+docker-machine start default
+eval $(docker-machine env default)
+```
+
+#### Accessing z1
+To find the URL to access z1 from the host, run ```docker-machine ip```. Enter returned IP in your browser's address bar, followed by port number 8000 (e.g. http://192.168.99.100:8000/).
+
+Now you have a functioning development environment. Static files are being watched and recompiled on changes automatically.
+
 
 ### Visualize models
 ```bash
@@ -156,9 +238,38 @@ Karma can also auto-watch files and run test on every change:
 karma start test/karma.conf.js
 ```
 
+#### Testing databases
+
+In the case you are using staging or other database for running Z1 locally running unit tests can become
+very slow. You can provide additional entries in your DATABASES dictionary with prefix 'testing\_'. When
+running tests these configuration entries will have the prefix 'testing\_' removed and will replace existing
+entries in LOGGING setting.
+
+And example config for using staging when running with ./manage.py runserver and local database for unit testing.
+
+```python
+DATABASES = {
+	'default': {
+		'ENGINE': 'django.db.backends.postgresql_psycopg2',
+		'NAME': 'dev',
+		'HOST': 'staging-host.com',
+		'USER': 'staging',
+		'PASSWORD': '...',
+		'PORT': 5432
+	},
+	'testing_default': {
+		'ENGINE': 'django.db.backends.postgresql_psycopg2',
+		'NAME': 'z1',
+		'USER': 'z1',
+		'PASSWORD': '...',
+		'PORT': 5440
+	}
+}
+```
+
 #### End-to-end testing
 
-Integration testing is done using <a href="https://github.com/angular/protractor">Protractor</a>. 
+Integration testing is done using <a href="https://github.com/angular/protractor">Protractor</a>.
 
 To setup, first copy the protractor.localconf.js template:
 ```bash
@@ -217,8 +328,8 @@ Clients send us daily reports by landing pages from their Google Analytics. We i
 In the following section, we will review the most important metrics and responses to alerts, attached to them.
 
 ##### Demo Data
-Demo is an important sales tool to convince clients to test or even buy our services. That is way it is important, 
-that data is refreshed. 
+Demo is an important sales tool to convince clients to test or even buy our services. That is way it is important,
+that data is refreshed.
 
 [Is there recent data for demo?](https://metrics.librato.com/metrics/demo.total_recent_impressions?duration=604800)
 [Has data refreshed successfully?](https://metrics.librato.com/metrics/reports.refresh_demo_data_successful?duration=604800)
@@ -237,7 +348,7 @@ There is also an alert, which prevents for automatic action to stay in waiting s
 
 [Oldest automatic action waiting](https://metrics.librato.com/metrics/actionlog.hours_oldest_auto_cmd_waiting)
 
-Zemanta zwei has its own queue, filled with tasks from zemanta one. The queues should not get too full, since this means delay in reporting, which directly effects end user. 
+Zemanta zwei has its own queue, filled with tasks from zemanta one. The queues should not get too full, since this means delay in reporting, which directly effects end user.
 
 [Number of messages](https://metrics.librato.com/metrics/AWS.SQS.ApproximateNumberOfMessagesVisible?duration=10800)
 
@@ -329,6 +440,6 @@ Current monitors:
   - solution: check for changes in `client/one/js/constants/demo.js` and update the transaction monitor accordingly
 - *demo navigation*: navigation with left sidebat and tabs between existing and created campaigns/adgroups
   - causes: production data changes
-  - solution: update the transaction monitor with new demo campaigns and adgroups 
-If any monitor fails in the *first four steps*, there was a problem with login (usually database timeouts etc.). 
+  - solution: update the transaction monitor with new demo campaigns and adgroups
+If any monitor fails in the *first four steps*, there was a problem with login (usually database timeouts etc.).
 

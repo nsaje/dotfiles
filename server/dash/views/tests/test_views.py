@@ -246,6 +246,19 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(mock_budget_ap.called, False)
         self.assertEqual(response.status_code, 200)
 
+    def test_adgroup_w_retargeting_and_source_without(self):
+        for sourceType in models.SourceType.objects.all():
+            if constants.SourceAction.CAN_MODIFY_RETARGETING in sourceType.available_actions:
+                sourceType.available_actions.remove(constants.SourceAction.CAN_MODIFY_RETARGETING)
+                sourceType.save()
+
+        self._set_ad_group_end_date(days_delta=3)
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'state': '1'})
+        )
+        self.assertEqual(response.status_code, 400)
+
 
 class CampaignAdGroups(TestCase):
     fixtures = ['test_models.yaml', 'test_views.yaml']
@@ -2577,7 +2590,11 @@ class AdGroupOverviewTest(TestCase):
         return json.loads(response.content)
 
     def _get_setting(self, settings, name):
-        return [s for s in settings if name in s['name'].lower()][0]
+        ret = [s for s in settings if name in s['name'].lower()]
+        if ret != []:
+            return ret[0]
+        else:
+            return None
 
     def test_user_access_1(self):
         response = self._get_ad_group_overview(1)
@@ -2677,14 +2694,22 @@ class AdGroupOverviewTest(TestCase):
         self.assertEqual('0.00% on plan', pacing_setting['description'])
         self.assertEqual('sad', pacing_setting['icon'])
 
+        retargeting_setting = self._get_setting(settings, 'retargeting')
+        self.assertIsNone(retargeting_setting, 'no permission')
+
         goal_setting = [s for s in settings if 'goal' in s['name'].lower()]
         self.assertEqual([], goal_setting)
-        # TODO: reintroduce when Campaign goals are wrapped up
-        """
-        goal_setting = self._get_setting(settings, 'goal')
-        self.assertEqual('0.0 below planned', goal_setting['description'])
-        self.assertEqual('happy', goal_setting['icon'])
-        """
+
+        # try aqgain with retargeting permission
+        permission = Permission.objects.get(codename='can_view_retargeting_settings')
+        self.user.user_permissions.add(permission)
+        self.user.save()
+
+        response = self._get_ad_group_overview(1)
+        settings = response['data']['basic_settings'] +\
+            response['data']['performance_settings']
+        retargeting_setting = self._get_setting(settings, 'retargeting')
+        self.assertEqual('test adgroup 3', retargeting_setting['details_content'])
 
     @patch('reports.redshift.get_cursor')
     @patch('reports.api_contentads.get_actual_yesterday_cost')

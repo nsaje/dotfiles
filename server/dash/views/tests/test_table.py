@@ -749,6 +749,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
             'domain': 'example.com',
             'exchange': 'adiant',
         }]
@@ -767,6 +775,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 99.0,
             'impressions': 1560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -845,6 +861,14 @@ class AdGroupPublishersTableTest(TestCase):
             u'impressions': 10560,
             u'domain': 'example.com',
             u'domain_link': 'http://example.com',
+            u'visits': 15,
+            u'click_discrepancy': 3,
+            u'pageviews': 100,
+            u'new_visits': 50,
+            u'percent_new_users': 0.5,
+            u'bounce_rate': 0.3,
+            u'pv_per_visit': 10,
+            u'avg_tos': 20,
         }
 
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
@@ -860,7 +884,15 @@ class AdGroupPublishersTableTest(TestCase):
                                                         u'e_data_cost': 1.9,
                                                         u'data_cost': 1.9,
                                                         u'e_media_cost': 2.1,
-                                                        u'impressions': 1560})
+                                                        u'impressions': 1560,
+                                                        u'visits': 15,
+                                                        u'click_discrepancy': 3,
+                                                        u'pageviews': 100,
+                                                        u'new_visits': 50,
+                                                        u'percent_new_users': 0.5,
+                                                        u'bounce_rate': 0.3,
+                                                        u'pv_per_visit': 10,
+                                                        u'avg_tos': 20, })
 
 
     @patch('dash.table.reports.api_publishers.query_active_publishers')
@@ -879,6 +911,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
             'domain': 'example.com',
             'exchange': 'adsnative',
         }]
@@ -894,6 +934,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
         }
         mock_active.side_effect = [mock_stats1, mock_stats2]
 
@@ -961,7 +1009,15 @@ class AdGroupPublishersTableTest(TestCase):
             u'billing_cost': 2.4,
             u'impressions': 10560,
             u'clicks': 123,
-            u'source_id': 1
+            u'source_id': 1,
+            u'visits': 15,
+            u'click_discrepancy': 3,
+            u'pageviews': 100,
+            u'new_visits': 50,
+            u'percent_new_users': 0.5,
+            u'bounce_rate': 0.3,
+            u'pv_per_visit': 10,
+            u'avg_tos': 20,
         })
 
     """
@@ -1115,6 +1171,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
             'domain': 'test_1',
             'exchange': 'outbrain',
         }]
@@ -1133,6 +1197,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 99.0,
             'impressions': 1560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -1213,6 +1285,14 @@ class AdGroupPublishersTableTest(TestCase):
             u'impressions': 10560,
             u'domain': 'test_1',
             u'domain_link': '',
+            u'visits': 15,
+            u'click_discrepancy': 3,
+            u'pageviews': 100,
+            u'new_visits': 50,
+            u'percent_new_users': 0.5,
+            u'bounce_rate': 0.3,
+            u'pv_per_visit': 10,
+            u'avg_tos': 20,
         }
 
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
@@ -1228,7 +1308,15 @@ class AdGroupPublishersTableTest(TestCase):
                                                         u'e_data_cost': 1.9,
                                                         u'data_cost': 1.9,
                                                         u'e_media_cost': 2.1,
-                                                        u'impressions': 1560})
+                                                        u'impressions': 1560,
+                                                        u'visits': 15,
+                                                        u'click_discrepancy': 3,
+                                                        u'pageviews': 100,
+                                                        u'new_visits': 50,
+                                                        u'percent_new_users': 0.5,
+                                                        u'bounce_rate': 0.3,
+                                                        u'pv_per_visit': 10,
+                                                        u'avg_tos': 20, })
 
 
     def test_get_reverse_order(self, mock_query):
@@ -1249,6 +1337,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
             'domain': 'example.com',
             'exchange': 'adiant',
         }]
@@ -1267,6 +1363,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -1326,10 +1430,17 @@ class AdGroupPublishersTableTest(TestCase):
             u'total_cost': 3,
             u'billing_cost': 3,
             u'license_fee': 0.6,
-            u'data_cost': 0,
             u'impressions': 10560,
             u'clicks': 123,
-            u'source_id': 7
+            u'source_id': 7,
+            u'visits': 15,
+            u'click_discrepancy': 3,
+            u'pageviews': 100,
+            u'new_visits': 50,
+            u'percent_new_users': 0.5,
+            u'bounce_rate': 0.3,
+            u'pv_per_visit': 10,
+            u'avg_tos': 20,
         })
 
     def test_actual_hidden(self, mock_query):
@@ -1360,6 +1471,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
             'domain': 'example.com',
             'exchange': 'adiant',
         }]
@@ -1378,6 +1497,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -1436,7 +1563,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'license_fee': 0.6,
             u'impressions': 10560,
             u'clicks': 123,
-            u'source_id': 7
+            u'source_id': 7,
         })
 
 

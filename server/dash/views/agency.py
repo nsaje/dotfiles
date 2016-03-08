@@ -17,6 +17,7 @@ from dash import models
 from dash import api
 from dash import constants
 from dash import validation_helpers
+from dash import retargeting_helper
 import automation.settings
 from reports import redshift
 from utils import api_common
@@ -53,6 +54,7 @@ class AdGroupSettings(api_common.BaseApiView):
             'default_settings': self.get_default_settings_dict(ad_group),
             'action_is_waiting': actionlog_api.is_waiting_for_set_actions(ad_group),
             'retargetable_adgroups': self.get_retargetable_adgroups(request, ad_group_id),
+            'warnings': self.get_warnings(request, settings)
         }
         return self.create_api_response(response)
 
@@ -75,7 +77,7 @@ class AdGroupSettings(api_common.BaseApiView):
         self.set_ad_group(ad_group, form.cleaned_data)
 
         new_settings = current_settings.copy_settings()
-        self.set_settings(new_settings, form.cleaned_data, request.user)
+        self.set_settings(ad_group, new_settings, form.cleaned_data, request.user)
 
         # update ad group name
         current_settings.ad_group_name = previous_ad_group_name
@@ -103,6 +105,22 @@ class AdGroupSettings(api_common.BaseApiView):
         }
 
         return self.create_api_response(response)
+
+    def get_warnings(self, request, ad_group_settings):
+        warnings = {}
+
+        supports_retargeting, unsupported_sources =\
+            retargeting_helper.supports_retargeting(
+                ad_group_settings.ad_group
+            )
+        if not supports_retargeting:
+            retargeting_warning = {
+                'text': "You have some active media sources that don't support retargeting. "
+                        "To start using it please disable/pause these media sources:",
+                'sources': [s.name for s in unsupported_sources]
+            }
+            warnings['retargeting'] = retargeting_warning
+        return warnings
 
     def get_dict(self, settings, ad_group):
         result = {}
@@ -139,7 +157,7 @@ class AdGroupSettings(api_common.BaseApiView):
     def set_ad_group(self, ad_group, resource):
         ad_group.name = resource['name']
 
-    def set_settings(self, settings, resource, user):
+    def set_settings(self, ad_group, settings, resource, user):
         settings.state = resource['state']
         settings.start_date = resource['start_date']
         settings.end_date = resource['end_date']
@@ -164,7 +182,8 @@ class AdGroupSettings(api_common.BaseApiView):
             if resource['autopilot_state'] == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
                 settings.autopilot_daily_budget = resource['autopilot_daily_budget']
 
-        if user.has_perm('zemauth.can_view_retargeting_settings'):
+        if user.has_perm('zemauth.can_view_retargeting_settings') and\
+                retargeting_helper.supports_retargeting(ad_group):
             settings.retargeting_ad_groups = resource['retargeting_ad_groups']
 
     def _send_update_actions(self, ad_group, current_settings, new_settings, request):
@@ -203,14 +222,14 @@ class AdGroupSettings(api_common.BaseApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
         account = ad_group.campaign.account
 
-        ad_groups = ad_groups = models.AdGroup.objects.filter(
+        ad_groups = models.AdGroup.objects.filter(
             campaign__account=account
         ).select_related('campaign').order_by('id')
 
         ad_group_settings = models.AdGroupSettings.objects.all().filter(
             ad_group__campaign__account=account
-        ).group_current_settings().only('id', 'archived')
-        archived_map = {adgs.id: adgs.archived for adgs in ad_group_settings}
+        ).group_current_settings().values_list('ad_group__id', 'archived')
+        archived_map = {adgs[0]: adgs[1] for adgs in ad_group_settings}
 
         return [
             {

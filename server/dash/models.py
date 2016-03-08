@@ -17,6 +17,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.core.validators import validate_email
+from timezone_field import TimeZoneField
 
 
 import utils.string_helper
@@ -120,11 +121,6 @@ class DemoManager(models.Manager):
 
 class FootprintModel(models.Model):
 
-    # Fields that are foreign keys only need to be compared by key
-    # and not by value. With this dict we define which are foreign
-    # keys that don't need to be monitored by value.
-    FOREIGN_KEYS_FIELDS = {}
-
     def __init__(self, *args, **kwargs):
         super(FootprintModel, self).__init__(*args, **kwargs)
         if not self.pk:
@@ -132,8 +128,9 @@ class FootprintModel(models.Model):
         self._footprint()
 
     def _get_value_fieldname(self, fieldname):
-        if fieldname in self.FOREIGN_KEYS_FIELDS:
-            return self.FOREIGN_KEYS_FIELDS[fieldname]
+        field = self._meta.get_field(fieldname)
+        if field.many_to_one:
+            return field.attname
         return fieldname
 
     def has_changed(self, field=None):
@@ -146,10 +143,11 @@ class FootprintModel(models.Model):
                 return True
         return False
 
-    def previous_value(self, field):
-        if field in self.FOREIGN_KEYS_FIELDS:
+    def previous_value(self, fieldname):
+        field = self._meta.get_field(fieldname)
+        if field.many_to_one:
             raise Exception("Previous value not stored as an object")
-        return self.pk and self._orig[field]
+        return self.pk and self._orig[fieldname]
 
     def _footprint(self):
         self._orig = {}
@@ -223,10 +221,8 @@ class Account(models.Model):
 
         settings = AccountSettings.objects.\
             filter(account_id=self.pk).\
-            order_by('-created_dt')
-        if settings:
-            settings = settings[0]
-        else:
+            order_by('-created_dt').first()
+        if not settings:
             settings = AccountSettings(
                 account=self,
                 name=self.name
@@ -308,9 +304,18 @@ class Account(models.Model):
             ).distinct()
 
         def exclude_archived(self):
-            archived_settings = AccountSettings.objects.all().group_current_settings()
+            related_settings = AccountSettings.objects.all().filter(
+                account__in=self
+            ).group_current_settings()
 
-            return self.exclude(pk__in=[s.account_id for s in archived_settings if s.archived])
+            archived_accounts = AccountSettings.objects.all().filter(
+                pk__in=related_settings
+            ).filter(
+                archived=True
+            ).values_list(
+                'account__id', flat=True
+            )
+            return self.exclude(pk__in=archived_accounts)
 
 
 class Campaign(models.Model, PermissionMixin):
@@ -326,7 +331,8 @@ class Campaign(models.Model, PermissionMixin):
     groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True)
+    landing_mode = models.BooleanField(default=False)
 
     USERS_FIELD = 'users'
 
@@ -362,10 +368,8 @@ class Campaign(models.Model, PermissionMixin):
 
         settings = CampaignSettings.objects.\
             filter(campaign_id=self.pk).\
-            order_by('-created_dt')
-        if settings:
-            settings = settings[0]
-        else:
+            order_by('-created_dt').first()
+        if not settings:
             settings = CampaignSettings(campaign=self, **CampaignSettings.get_defaults_dict())
 
         return settings
@@ -417,7 +421,9 @@ class Campaign(models.Model, PermissionMixin):
             new_settings.save(request)
 
     def save(self, request, *args, **kwargs):
-        self.modified_by = request.user
+        self.modified_by = None
+        if request is not None:
+            self.modified_by = request.user
         super(Campaign, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
@@ -440,9 +446,18 @@ class Campaign(models.Model, PermissionMixin):
             ).distinct()
 
         def exclude_archived(self):
-            archived_settings = CampaignSettings.objects.all().group_current_settings()
+            related_settings = CampaignSettings.objects.all().filter(
+                campaign__in=self
+            ).group_current_settings()
 
-            return self.exclude(pk__in=[s.campaign_id for s in archived_settings if s.archived])
+            archived_campaigns = CampaignSettings.objects.all().filter(
+                pk__in=related_settings
+            ).filter(
+                archived=True
+            ).values_list(
+                'campaign__id', flat=True
+            )
+            return self.exclude(pk__in=archived_campaigns)
 
 
 class SettingsBase(models.Model):
@@ -777,6 +792,8 @@ class SourceType(models.Model):
         verbose_name='Max clicks allowed to delete per daily report',
         help_text='When we receive an empty report, we don\'t override existing data but we mark report aggregation as failed. But for smaller changes (as defined by this parameter), we do override existing data since they are not material. Zero value means no reports will get deleted.',
     )
+
+    budgets_tz = TimeZoneField(default='America/New_York')
 
     def can_update_state(self):
         return self.available_actions is not None and\
@@ -1133,10 +1150,8 @@ class AdGroup(models.Model):
 
         settings = AdGroupSettings.objects.\
             filter(ad_group_id=self.pk).\
-            order_by('-created_dt')
-        if settings:
-            settings = settings[0]
-        else:
+            order_by('created_dt').last()
+        if settings is None:
             settings = AdGroupSettings(ad_group=self, **AdGroupSettings.get_defaults_dict())
 
         return settings
@@ -1251,9 +1266,17 @@ class AdGroup(models.Model):
             ).distinct()
 
         def exclude_archived(self):
-            archived_settings = AdGroupSettings.objects.all().group_current_settings()
+            related_settings = AdGroupSettings.objects.all().filter(
+                ad_group__in=self
+            ).group_current_settings()
 
-            return self.exclude(pk__in=[s.ad_group_id for s in archived_settings if s.archived])
+            archived_adgroups = AdGroupSettings.objects.filter(
+                pk__in=related_settings
+            ).filter(
+                archived=True
+            ).values_list('ad_group', flat=True)
+
+            return self.exclude(pk__in=archived_adgroups)
 
         def filter_running(self):
             """
@@ -1272,7 +1295,7 @@ class AdGroup(models.Model):
             # but we want to take only latest settings into account
             latest_ad_group_settings = AdGroupSettings.objects.filter(
                 ad_group__in=self
-            ).group_current_settings().values_list('id', flat=True)
+            ).group_current_settings()
 
             ad_group_settings = AdGroupSettings.objects.filter(
                 pk__in=latest_ad_group_settings
@@ -1286,7 +1309,7 @@ class AdGroup(models.Model):
 
             latest_ad_group_source_settings = AdGroupSourceSettings.objects.filter(
                 ad_group_source__ad_group__in=self
-            ).group_current_settings().values_list('id', flat=True)
+            ).group_current_settings()
 
             ad_group_source_settings = AdGroupSourceSettings.objects.filter(
                 pk__in=latest_ad_group_source_settings
@@ -2202,11 +2225,6 @@ class CreditLineItem(FootprintModel):
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
 
-    FOREIGN_KEYS_FIELDS = {
-        'account': 'account_id',
-        'created_by': 'created_by_id',
-    }
-
     objects = QuerySetManager()
 
     def is_active(self, date=None):
@@ -2399,12 +2417,6 @@ class BudgetLineItem(FootprintModel):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
                                    verbose_name='Created by',
                                    on_delete=models.PROTECT, null=True, blank=True)
-
-    FOREIGN_KEYS_FIELDS = {
-        'campaign': 'campaign_id',
-        'credit': 'credit_id',
-        'created_by': 'created_by_id',
-    }
 
     objects = QuerySetManager()
 

@@ -12,10 +12,9 @@
     <ui-select-choices 
             group-by="groupByCampaign" 
             repeat="adgroup in availableAdgroups() | filter: {name: $select.search} track by adgroup.id"
-            position='down'>
+            position="down">
         <div 
-            ng-class="{archived: adgroup.archived}"
-            ng-bind-html="adgroup.name | highlight: $select.search">
+            ng-bind-html="adgroup.id + ' - ' + adgroup.name + adgroup.suffix | highlight: $select.search">
         </div>
     </ui-select-choices>
 </ui-select>

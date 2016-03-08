@@ -1384,8 +1384,8 @@ class CampaignAdGroupsTable(object):
 
         ad_groups_status_dict = self.get_per_ad_group_running_status_dict(ad_groups, ad_groups_settings, filtered_sources)
 
-        e_yesterday_cost, e_yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign)
-        yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign, actual=True)
+        e_yesterday_cost, e_yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign, filtered_sources)
+        yesterday_cost, yesterday_total_cost = self.get_yesterday_cost(reports_api, campaign, filtered_sources, actual=True)
 
         response = {
             'rows': self.get_rows(
@@ -1437,8 +1437,8 @@ class CampaignAdGroupsTable(object):
         return helpers.get_ad_group_state_by_sources_running_status(
             ad_groups, ad_groups_settings, ad_groups_sources_settings, 'id')
 
-    def get_yesterday_cost(self, reports_api, campaign, actual=False):
-        constraints = dict(campaign=campaign)
+    def get_yesterday_cost(self, reports_api, campaign, filtered_sources, actual=False):
+        constraints = {'campaign': campaign, 'source': filtered_sources}
         breakdown = ['ad_group']
 
         if actual:
@@ -1962,6 +1962,15 @@ class PublishersTable(object):
             'impressions': totals_data.get('impressions', 0),
             'ctr': totals_data.get('ctr', 0),
         }
+        if user.has_perm('zemauth.view_pubs_postclick_stats'):
+            result['visits'] = totals_data.get('visits', None)
+            result['click_discrepancy'] = totals_data.get('click_discrepancy', None)
+            result['pageviews'] = totals_data.get('pageviews', None)
+            result['new_visits'] = totals_data.get('new_visits', None)
+            result['percent_new_users'] = totals_data.get('percent_new_users', None)
+            result['bounce_rate'] = totals_data.get('bounce_rate', None)
+            result['pv_per_visit'] = totals_data.get('pv_per_visit', None)
+            result['avg_tos'] = totals_data.get('avg_tos', None)
         if user.has_perm('zemauth.can_view_effective_costs'):
             del result['cost']
             result['e_data_cost'] = totals_data.get('e_data_cost', 0)
@@ -2003,6 +2012,15 @@ class PublishersTable(object):
                 'ctr': publisher_data.get('ctr', None),
             }
 
+            if user.has_perm('zemauth.view_pubs_postclick_stats'):
+                row['visits'] = publisher_data.get('visits', None)
+                row['click_discrepancy'] = publisher_data.get('click_discrepancy', None)
+                row['pageviews'] = publisher_data.get('pageviews', None)
+                row['new_visits'] = publisher_data.get('new_visits', None)
+                row['percent_new_users'] = publisher_data.get('percent_new_users', None)
+                row['bounce_rate'] = publisher_data.get('bounce_rate', None)
+                row['pv_per_visit'] = publisher_data.get('pv_per_visit', None)
+                row['avg_tos'] = publisher_data.get('avg_tos', None)
             if user.has_perm('zemauth.can_view_effective_costs'):
                 del row['cost']
                 row['e_data_cost'] = publisher_data.get('e_data_cost', 0)
