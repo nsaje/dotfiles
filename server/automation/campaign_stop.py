@@ -71,12 +71,12 @@ def _get_max_daily_budget(date, campaign):
 
     max_daily_budget = 0
     for ad_group_source in ad_group_sources:
-        max_daily_budget += _get_ags_max_daily_budget(date, ad_group_source, ad_group_sources_settings)
+        max_daily_budget += _get_source_max_daily_budget(date, ad_group_source, ad_group_sources_settings)
 
     return max_daily_budget
 
 
-def _get_ags_max_daily_budget(date, ad_group_source, ad_group_sources_settings):
+def _get_source_max_daily_budget(date, ad_group_source, ad_group_sources_settings):
     ad_group_sources_settings = ad_group_sources_settings.order_by('-created_dt')
 
     ags_max_daily_budget = 0
