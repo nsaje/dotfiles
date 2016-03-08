@@ -138,7 +138,7 @@ If you don’t want campaign to be switched to the landing mode please visit {ca
 Yours truly,
 Zemanta'''  # noqa
 
-    subject.format(
+    subject = subject.format(
         campaign_name=campaign.name,
         account_name=campaign.account.name
     )
@@ -163,7 +163,7 @@ If you don’t want campaign to end in a few days please add the budget and cont
 Yours truly,
 Zemanta'''  # noqa
 
-    subject.format(
+    subject = subject.format(
         campaign_name=campaign.name,
         account_name=campaign.account.name
     )
