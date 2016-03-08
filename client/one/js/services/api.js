@@ -1029,7 +1029,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     name: row.name,
                     archived: row.archived,
                     campaignName: row.campaign_name,
-                    sourceIds: row.source_ids,
                 });
             }
             return ret;
