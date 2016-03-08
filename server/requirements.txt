@@ -44,3 +44,6 @@ google-api-python-client==1.4.2
 
 # for secrets encryption
 secretcrypt==0.4.1
+
+django-timezone-field==1.3
+

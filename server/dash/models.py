@@ -17,6 +17,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.core.validators import validate_email
+from timezone_field import TimeZoneField
 
 
 import utils.string_helper
@@ -330,7 +331,8 @@ class Campaign(models.Model, PermissionMixin):
     groups = models.ManyToManyField(auth_models.Group)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True)
+    landing_mode = models.BooleanField(default=False)
 
     USERS_FIELD = 'users'
 
@@ -419,7 +421,9 @@ class Campaign(models.Model, PermissionMixin):
             new_settings.save(request)
 
     def save(self, request, *args, **kwargs):
-        self.modified_by = request.user
+        self.modified_by = None
+        if request is not None:
+            self.modified_by = request.user
         super(Campaign, self).save(*args, **kwargs)
 
     class QuerySet(models.QuerySet):
@@ -788,6 +792,8 @@ class SourceType(models.Model):
         verbose_name='Max clicks allowed to delete per daily report',
         help_text='When we receive an empty report, we don\'t override existing data but we mark report aggregation as failed. But for smaller changes (as defined by this parameter), we do override existing data since they are not material. Zero value means no reports will get deleted.',
     )
+
+    budgets_tz = TimeZoneField(default='America/New_York')
 
     def can_update_state(self):
         return self.available_actions is not None and\

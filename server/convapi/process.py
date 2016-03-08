@@ -53,7 +53,7 @@ def _get_dates_to_sync(conversion_pixels):
             continue
 
         last_sync_dt = conversion_pixel.last_sync_dt - datetime.timedelta(hours=ADDITIONAL_SYNC_HOURS)
-        date = dates_helper.utc_datetime_to_local_date(last_sync_dt)
+        date = dates_helper.utc_to_local_datetime(last_sync_dt).date()
         dates.add(date)
         while date < dates_helper.local_today():
             date = date + datetime.timedelta(days=1)
@@ -196,7 +196,7 @@ def process_touchpoint_conversions(redirects_impressions):
             potential_touchpoint_conversion = {
                 'zuid': zuid,
                 'slug': slug,
-                'date': dates_helper.utc_datetime_to_local_date(impression_ts),
+                'date': dates_helper.utc_to_local_datetime(impression_ts).date(),
                 'conversion_id': impression_id,
                 'conversion_timestamp': impression_ts,
                 'account_id': account_id,
