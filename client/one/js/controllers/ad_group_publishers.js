@@ -672,6 +672,13 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.hasPermission('zemauth.view_pubs_postclick_stats'),
             $scope.isPermissionInternal('zemauth.view_pubs_postclick_stats')
         );
+
+        zemPostclickMetricsService.insertConversionGoalColumns(
+            $scope.columns,
+            $scope.columns.length - 1,
+            $scope.hasPermission('zemauth.view_pubs_conversion_goals'),
+            $scope.isPermissionInternal('zemauth.view_pubs_conversion_goals')
+        );
     };
 
     $scope.loadRequestInProgress = false;
@@ -765,6 +772,14 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
                 $scope.chartMetricOptions,
                 $scope.isPermissionInternal('zemauth.view_pubs_postclick_stats')
+            );
+        }
+
+        if ($scope.hasPermission('zemauth.view_pubs_conversion_goals')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
+                $scope.chartMetricOptions,
+                options.campaignConversionGoalChartMetrics,
+                $scope.isPermissionInternal('zemauth.view_pubs_conversion_goals')
             );
         }
 
