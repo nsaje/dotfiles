@@ -162,12 +162,21 @@
 
 - fields:
     ad_group_id: 4
+    created_dt: '2016-02-28T09:58:21'
+    created_by: 1
+    state: 1
+    end_date: null
+  model: dash.adgroupsettings
+  pk: 7
+
+- fields:
+    ad_group_id: 4
     created_dt: '2016-02-29T09:58:21'
     created_by: 1
     state: 1
     end_date: '2016-02-29'
   model: dash.adgroupsettings
-  pk: 7
+  pk: 8
 
 # Source Types
 -   fields:

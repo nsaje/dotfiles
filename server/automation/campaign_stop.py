@@ -112,10 +112,8 @@ def _get_ad_groups_active_on_date(date, campaign):
             if sett.ad_group_id != ad_group.id:
                 continue
 
-            if sett.end_date and sett.end_date < date:
-                continue
-
-            if sett.state == dash.constants.AdGroupSettingsState.ACTIVE:
+            if (not sett.end_date or sett.end_date >= date) and\
+               sett.state == dash.constants.AdGroupSettingsState.ACTIVE:
                 active_ad_groups.add(ad_group)
                 break
 
