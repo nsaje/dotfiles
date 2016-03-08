@@ -984,6 +984,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = [
             constants.SourceAction.CAN_UPDATE_STATE,
+            constants.SourceAction.CAN_MODIFY_RETARGETING,
             constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         ]
         ad_group_source.ad_group.content_ads_tab_with_cms = False
