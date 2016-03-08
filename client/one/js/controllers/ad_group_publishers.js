@@ -768,14 +768,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             );
         }
 
-        if ($scope.hasPermission('zemauth.view_pubs_conversion_goals')) {
-            $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
-                $scope.chartMetricOptions,
-                options.campaignConversionGoalChartMetrics,
-                $scope.isPermissionInternal('zemauth.view_pubs_conversion_goals')
-            );
-        }
-
         if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
                 $scope.chartMetricOptions,
