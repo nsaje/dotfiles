@@ -24,7 +24,7 @@ TEST_BREAKDOWNS_SEX = ['man', 'woman']
 #                       -> pagination
 #                       -> rows []
 #                       -> ...
-def generate_random_data (breakdowns, level=0, key='Total'):
+def generate_random_data(breakdowns, level=0, key='Total'):
     row = {'data': _generate_random_row(key)}
 
     if level < len(breakdowns):

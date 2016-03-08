@@ -1,5 +1,5 @@
 <div class="page page-all-accounts-accounts">
-    <div class="section">
+    <div class="section" ng-show="false">
         <div class="graph-infobox-parent" ng-class="{'graph-collapsed': !graphVisible, 'graph-hidden': !graphVisible && hasInfoboxPermission()}">
             <div class="graph-infobox-row">
                 <div class="graph-container" ng-class="{'graph-collapsed': !graphVisible, 'graph-hidden': !graphVisible && hasInfoboxPermission(), 'graph-container-short': graphVisible && hasInfoboxPermission()}">
@@ -51,7 +51,8 @@
             We are experiencing a delay synchronizing reporting metrics. <span ng-if="!!lastSyncDate">The last successful sync took place {{ lastSyncDate.fromNow() }}.</span> If you have any questions please contact us at <a href="mailto:help@zemanta.com">help@zemanta.com</a>.
         </alert>
 
-        <zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderRows(order)" zem-table-data-status="dataStatus"></zem-table>
+        <!--<zem-table zem-table-columns="columns" zem-table-rows="rows" zem-table-total-row="totals" zem-table-show-loader="loadRequestInProgress" zem-table-order="order" zem-table-order-callback="orderRows(order)" zem-table-data-status="dataStatus"></zem-table>-->
+        <zem-grid></zem-grid>
 
         <div class="table-footnotes">
             <div ng-switch="lastSyncDate">
@@ -85,3 +86,4 @@
     </div>
     </div>
 </div>
+

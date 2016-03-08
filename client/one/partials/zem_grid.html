@@ -1,0 +1,24 @@
+<div class="zem-table-container">
+    <div class="loader-container">
+        <!--<div class="loader" ng-show="rows.length && showLoader"></div>-->
+
+        <div class="table-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th ng-if="col.shown" ng-repeat="col in dataSource.columns">
+                            <span class="col-title">{{ col }}</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="row in dataSource.rows">
+                        <td ng-repeat="col in row">
+                            <span>- {{col}} -</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
