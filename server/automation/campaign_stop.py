@@ -136,7 +136,7 @@ While in landing mode CPCs and daily budgets of media sources will not be availa
 If you don’t want campaign to be switched to the landing mode please visit {campaign_budgets_url} and assign additional budget.
 
 Yours truly,
-Zemanta'''
+Zemanta'''  # noqa
 
     subject.format(
         campaign_name=campaign.name,
@@ -161,7 +161,7 @@ your campaign {campaign_name} ({account_name}) will run out of budget in approxi
 If you don’t want campaign to end in a few days please add the budget and continue to adjust media sources settings by your needs. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
 
 Yours truly,
-Zemanta'''
+Zemanta'''  # noqa
 
     subject.format(
         campaign_name=campaign.name,
