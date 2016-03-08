@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import datetime
-from decimal import Decimal
 import logging
 
 import dash.constants
@@ -32,8 +31,8 @@ def _get_minimum_remaining_budget(campaign):
     per_budget_remaining_today = {}
     budget_to_distribute = max_daily_budget
     for bli in budgets_active_today.order_by('created_dt'):
-        media_spend_pct = 1 - bli.credit.license_fee
-        spend_available = bli.get_available_amount(date=today - datetime.timedelta(days=1)) * media_spend_pct
+        spend_without_fee_pct = 1 - bli.credit.license_fee
+        spend_available = bli.get_available_amount(date=today - datetime.timedelta(days=1)) * spend_without_fee_pct
         per_budget_remaining_today[bli.id] = max(0, spend_available - budget_to_distribute)
         budget_to_distribute = max(0, budget_to_distribute - spend_available)
 
@@ -42,8 +41,8 @@ def _get_minimum_remaining_budget(campaign):
 
     available_tomorrow = 0
     for bli in budgets_active_tomorrow.order_by('created_dt'):
-        media_spend_pct = 1 - bli.credit.license_fee
-        available_tomorrow += per_budget_remaining_today.get(bli.id, bli.amount * media_spend_pct)
+        spend_without_fee_pct = 1 - bli.credit.license_fee
+        available_tomorrow += per_budget_remaining_today.get(bli.id, bli.amount * spend_without_fee_pct)
 
     return available_tomorrow, max_daily_budget
 
@@ -61,7 +60,7 @@ def _get_max_daily_budget(date, campaign):
         ad_group__in=ad_groups,
     ).select_related('source__source_type')
     ad_group_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(
-        ad_group_source_id=ad_group_sources,
+        ad_group_source__in=ad_group_sources,
         created_dt__lt=date+datetime.timedelta(days=1)
     )
 
@@ -123,16 +122,16 @@ def _get_ad_groups_active_on_date(date, campaign):
 
 def _send_campaign_stop_notification_email(campaign):
     subject = 'Your campaign {campaign_name} ({account_name}) is switching to landing mode'
-    body = u'''Hi, campaign manager of {campaign_name}
+    body = u'''Hi, campaign manager of {campaign_name},
 
-your campaign {campaign_name} ({account_name}) is being switched to automated landing mode because it is approaching the budget limit.
+your campaign {campaign_name} ({account_name}) has been switched to automated landing mode because it is approaching the budget limit.
 
-While landing mode CPCs and daily budgets of media sources will not be available for any changes.
+While in landing mode CPCs and daily budgets of media sources will not be available for any changes.
 
 If you don’t want campaign to be switched to the landing mode please visit {campaign_budgets_url} and assign additional budget.
+
 Yours truly,
-Zemanta
-    '''
+Zemanta'''
 
     subject.format(
         campaign_name=campaign.name,
@@ -150,15 +149,14 @@ Zemanta
 
 def _send_depleting_budget_notification_email(campaign):
     subject = 'Your campaign {campaign_name} ({account_name}) is running out of budget'
-    body = u'''Hi, campaign manager of {campaign_name}
+    body = u'''Hi, campaign manager of {campaign_name},
 
-your campaign {campaign_name} ({account_name}) will run out of budget in approximately 3 days if running at current pace. System will automatically turn on the landing mode to hit your targeted budget. While landing mode CPCs and daily budgets of media sources will not be available for any changes.
+your campaign {campaign_name} ({account_name}) will run out of budget in approximately 3 days. System will automatically turn on the landing mode to hit your budget. While in landing mode CPCs and daily budgets of media sources will not be available for any changes.
 
 If you don’t want campaign to end in a few days please add the budget and continue to adjust media sources settings by your needs. To do so please visit {campaign_budgets_url} and assign budget to your campaign.
 
 Yours truly,
-Zemanta
-    '''
+Zemanta'''
 
     subject.format(
         campaign_name=campaign.name,
