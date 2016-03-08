@@ -5,6 +5,7 @@ import json
 import logging
 import re
 import StringIO
+import urllib
 import xlrd
 
 import dash
@@ -26,7 +27,15 @@ REQUIRED_FIELDS = [
 
 logger = logging.getLogger(__name__)
 
-Z11Z_RE = re.compile('.*z1([0-9]+)([a-zA-Z].+?)1z.*')
+# TODO: maticz, 23.2.2016: We should change this in the future and replace it with a
+# more structured string (eg. key=value pairs or similar).
+Z11Z_RE = re.compile('''
+        .*z1          # placeholder indicating the beginning of zemanta string
+        ([0-9]+)      # content ad id
+        ([a-zA-Z].+?) # exchange slug
+        (?:__(.*)?)?  # optional publisher (separated with __ from the exchange)
+        1z.*          # placeholder indicating the end of zemanta string
+        ''', re.VERBOSE)
 LANDING_PAGE_CAID_RE = re.compile('^[0-9]+')
 LANDING_PAGE_MSID_RE = re.compile('^[_a-zA-Z0-9]+')
 
@@ -299,10 +308,14 @@ class Report(object):
     def _parse_z11z_keyword(self, keyword):
         result = Z11Z_RE.match(keyword)
         if not result:
-            return None, ''
+            return None, '', ''
         else:
-            content_ad_id, source_param = result.group(1), result.group(2)
-        return int(content_ad_id), source_param
+            content_ad_id = result.group(1)
+            source_param = result.group(2)
+            publisher_param = result.group(3) or ''
+            if publisher_param:
+                publisher_param = urllib.unquote(publisher_param)
+        return int(content_ad_id), source_param, publisher_param
 
 
 class GAReport(Report):
@@ -319,7 +332,7 @@ class GAReport(Report):
 
                 content_ad_id = int(content_ad_id_raw)
         except ValueError:
-            return None, ''
+            return None, '', ''
 
         source_param = ''
         if '_z1_msid' in query_params:
@@ -328,15 +341,22 @@ class GAReport(Report):
             if results is not None:
                 source_param = results.group(0)
 
+        # _z1_pub has to have & at the end in order to prevent query string mangling
+        # by our partners.
+        publisher_param = ''
+        if '_z1_pub' in query_params:
+            publisher_param = query_params['_z1_pub'] or ''
+
         if content_ad_id is None or source_param == '':
             logger.warning(
-                    'Could not parse landing page url %s. content_ad_id: %s, source_param: %s',
+                    'Could not parse landing page url %s. content_ad_id: %s, source_param: %s, publisher_param: %s',
                     raw_url,
                     content_ad_id,
-                    source_param
+                    source_param,
+                    publisher_param
             )
-            return None, ''
-        return content_ad_id, source_param
+            return None, '', ''
+        return content_ad_id, source_param, publisher_param
 
 
 class GAReportFromCSV(GAReport):
@@ -413,7 +433,7 @@ class GAReportFromCSV(GAReport):
                 if keyword_or_url.startswith('Day Index') or keyword_or_url.startswith('Hour Index'):
                     break
 
-                content_ad_id, source_param = self._parse_keyword_or_url(keyword_or_url)
+                content_ad_id, source_param, publisher_param = self._parse_keyword_or_url(keyword_or_url)
                 goals = self._parse_goals(self.fieldnames, entry)
                 report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, goals)
                 self.add_imported_visits(report_entry.visits or 0)
@@ -635,7 +655,7 @@ class OmnitureReport(Report):
                     tracking_code_col = key
 
             keyword = omniture_row_dict.get(tracking_code_col, '')
-            content_ad_id, source_param = self._parse_z11z_keyword(keyword)
+            content_ad_id, source_param, publisher_param = self._parse_z11z_keyword(keyword)
             report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param)
             self.add_imported_visits(report_entry.visits or 0)
 

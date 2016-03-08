@@ -156,79 +156,117 @@ Landing Page,Device Category,Sessions
         # some valid cases
 
         keyword = 'z12341b1_gumgum1z'
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertEqual(2341, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('', pub_par)
 
         keyword = 'z1z12341b1_gumgum1z'
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertEqual(2341, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('', pub_par)
 
         keyword = 'z1z12341b1_gumgum1z1z'
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertEqual(2341, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('', pub_par)
 
         keyword = 'more data here z12341b1_gumgum1z and even more here z1'
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertEqual(2341, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('', pub_par)
+
+        # valid cases with publishers
+        keyword = 'more data here z12341b1_gumgum__publisher.com1z and even more here z1'
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
+        self.assertEqual(2341, caid)
+        self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('publisher.com', pub_par)
+
+        keyword = 'more data here z12341b1_gumgum__publisher%20yeah1z and even more here z1'
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
+        self.assertEqual(2341, caid)
+        self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('publisher yeah', pub_par)
 
         # some invalid cases
 
         keyword = ''
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertIsNone(caid)
         self.assertEqual('', src_par)
+        self.assertEqual('', pub_par)
 
         # no caid
         keyword = 'z1asdfsadfasdhjkl1z'
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertIsNone(caid)
         self.assertEqual('', src_par)
+        self.assertEqual('', pub_par)
+
+        keyword = 'z1asdfsadfasdhjkl__publisher.com1z'
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
+        self.assertIsNone(caid)
+        self.assertEqual('', src_par)
+        self.assertEqual('', pub_par)
 
         # no media source
-        keyword = 'z112351z'
-        caid, src_par = parser._parse_z11z_keyword(keyword)
+        keyword = 'z11235__publisher.com1z'
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertIsNone(caid)
         self.assertEqual('', src_par)
+        self.assertEqual('', pub_par)
 
     def test_parse_landing_page(self, cursor):
         parser = parse_v2.GAReportFromCSV("")
 
         # some valid cases
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=55310&_z1_msid=b1_gumgum&_z1_pub=www.test.com&"
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
+        self.assertEqual(55310, caid)
+        self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('www.test.com', pub)
+
         landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=55310&_z1_msid=b1_gumgum"
-        caid, src_par = parser._parse_landing_page(landing_page)
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
         self.assertEqual(55310, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('', pub)
 
-        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=55310&_z1_msid=b1_gumgum?referrer=www.zemanta.com"
-        caid, src_par = parser._parse_landing_page(landing_page)
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=55310&_z1_msid=b1_gumgum&_z1_pub=www.test.com&?referrer=www.zemanta.com"
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
         self.assertEqual(55310, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('www.test.com', pub)
 
-        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_msid=b1_gumgum&_z1_caid=55310?referrer=www.zemanta.com"
-        caid, src_par = parser._parse_landing_page(landing_page)
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_pub=95%25+iOs&&_z1_msid=b1_gumgum&_z1_caid=55310?referrer=www.zemanta.com"
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
         self.assertEqual(55310, caid)
         self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('95% iOs', pub)
 
         # some invalid cases
 
-        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=&_z1_msid=b1_gumgum"
-        caid, src_par = parser._parse_landing_page(landing_page)
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=&_z1_msid=b1_gumgum&_z1_pub=www.test.com&"
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
         self.assertIsNone(caid)
-        self.assertEqual('', src_par)
+        self.assertEqual('', src_par, '')
+        self.assertEqual('', pub)
 
-        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_msid=b1_gumgum"
-        caid, src_par = parser._parse_landing_page(landing_page)
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_msid=b1_gumgum&_z1_pub=www.test.com&"
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
         self.assertIsNone(caid)
-        self.assertEqual('', src_par)
+        self.assertEqual('', src_par, '')
+        self.assertEqual('', pub)
 
-        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid="
-        caid, src_par = parser._parse_landing_page(landing_page)
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=&_z1_pub=www.test.com&"
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
         self.assertIsNone(caid)
-        self.assertEqual('', src_par)
+        self.assertEqual('', src_par, '')
+        self.assertEqual('', pub)
 
     def test_get_goal_name(self, cursor):
         parser = parse_v2.GAReportFromCSV("")
@@ -363,9 +401,9 @@ Day Index,Sessions
 # ----------------------------------------,,,,,,,
 ,,,,,,,
 Landing Page,Device Category,Sessions,Goal Completions,% New Sessions,Avg. Session Duration,Pages / Session,Bounce Rate,New Users
-/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,desktop,6,1,0.00%,<00:00:00,1,1.00%,1
-/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,mobile,6,2,0.00%,00:00:00,1,1.00%,1
-/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo,tablet,6,3,0.00%,00:00:00,1,1.00%,1
+/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo&_z1_pub=www.test.com,desktop,6,1,0.00%,<00:00:00,1,1.00%,1
+/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo&_z1_pub=www.foo.com,mobile,6,2,0.00%,00:00:00,1,1.00%,1
+/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo&_z1_pub=www.bar.com,tablet,6,3,0.00%,00:00:00,1,1.00%,1
 ,,600,96.33%,578,95.50%,1.06,00:00:10,0.00%,0,A$0.00
 ,,,,,,,
 Day Index,Sessions
@@ -615,3 +653,62 @@ Segment: All Visits (No Segment),,,,,,,,,,
         self.assertEqual('2015-09-12', entry.report_date)
 
         self.assertEqual({'Test Event': 5}, entry.goals)
+
+    def test_parse_with_pubs(self):
+        csv_file = """
+######################################################################
+# Company:,Zemanta
+# URL:,.
+# Site:,Global
+# Range:,Sat. 12 Sep. 2015
+# Report:,Tracking Code Report
+# Description:,""
+######################################################################
+# Report Options:
+# Report Type: ,"Ranked"
+# Selected Metrics: ,"Visits, New Sessions, Unique Visitors, Bounce Rate, Pages/Session, Avg. Session Duration, Entries, Bounces, Page Views, Total Seconds Spent"
+# Broken Down by: ,"None"
+# Data Filter: ,"RANDOM"
+# Compare to Report Suite: ,"None"
+# Compare to Segment: ,"None"
+# Item Filter: ,"None"
+# Percent Shown as: ,"Number"
+# Segment: ,"All Visits (No Segment)"
+######################################################################
+#
+# Copyright 2015 Adobe Systems Incorporated. All rights reserved.
+# Use of this document signifies your agreement to the Terms of Use (http://marketing.adobe.com/resources/help/terms.html?type=prod&locale=en_US) and Online Privacy Policy (http://my.omniture.com/x/privacy).
+# Adobe Systems Incorporated products and services are licensed under the following Netratings patents: 5675510 5796952 6115680 6108637 6138155 6643696 and 6763386.
+#
+######################################################################
+
+,Tracking Code,Visits,,New Sessions,Unique Visitors,,Bounce Rate,Pages/Session,Avg. Session Duration,Entries,,Bounces,,Page Views,,Total Seconds Spent,,Test Event (Event 1),
+1.,CSY-PB-ZM-AB-M-z11yahoo__foo.com1z:Gandalf-Is-Coming-Get-Ready-for-Winter-Storms,10,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,40,0.4%,0,0.0%,5,50.0%
+2.,CSY-PB-ZM-AB-MM-z11yahoo__bar.com1z:Gandalf-Is-Coming-Get-Ready-for-Winter-Storms,10,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,40,0.4%,0,0.0%,5,50.0%
+,Total,20,0.5%,100.00%,40,0.5%,100.0%,1.00,605:12:39,40,0.5%,40,0.6%,80,0.4%,0,0.0%,10,50.0%
+""".strip().decode('utf-8')
+
+        report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_file))
+        report.parse()
+        report.validate()
+
+        self.assertTrue(all(entry.is_row_valid() for entry in report.entries.values()))
+
+        self.assertEqual(datetime.date(2015, 9, 12), report.start_date)
+        valid_entries = report.valid_entries()
+        self.assertEqual(1, len(valid_entries))
+        entry = valid_entries[0]
+
+        self.assertEqual(20, entry.visits)
+        self.assertEqual(80, entry.pageviews)
+        self.assertEqual(1, entry.bounce_rate)
+        self.assertEqual(40, entry.new_visits)
+        self.assertEqual(20, entry.bounced_visits)
+        self.assertEqual(0, entry.total_time_on_site)
+
+        self.assertEqual(1, entry.content_ad_id)
+        self.assertEqual('yahoo', entry.source_param)
+
+        self.assertEqual('2015-09-12', entry.report_date)
+
+        self.assertEqual({'Test Event': 10}, entry.goals)
