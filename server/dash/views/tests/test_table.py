@@ -1564,14 +1564,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'impressions': 10560,
             u'clicks': 123,
             u'source_id': 7,
-            u'visits': 15,
-            u'click_discrepancy': 3,
-            u'pageviews': 100,
-            u'new_visits': 50,
-            u'percent_new_users': 0.5,
-            u'bounce_rate': 0.3,
-            u'pv_per_visit': 10,
-            u'avg_tos': 20,
         })
 
 

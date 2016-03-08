@@ -1961,16 +1961,16 @@ class PublishersTable(object):
             'clicks': totals_data.get('clicks', 0),
             'impressions': totals_data.get('impressions', 0),
             'ctr': totals_data.get('ctr', 0),
-
-            'visits': totals_data.get('visits', None),
-            'click_discrepancy': totals_data.get('click_discrepancy', None),
-            'pageviews': totals_data.get('pageviews', None),
-            'new_visits': totals_data.get('new_visits', None),
-            'percent_new_users': totals_data.get('percent_new_users', None),
-            'bounce_rate': totals_data.get('bounce_rate', None),
-            'pv_per_visit': totals_data.get('pv_per_visit', None),
-            'avg_tos': totals_data.get('avg_tos', None),
         }
+        if user.has_perm('zemauth.view_pubs_postclick_stats'):
+            result['visits'] = totals_data.get('visits', None)
+            result['click_discrepancy'] = totals_data.get('click_discrepancy', None)
+            result['pageviews'] = totals_data.get('pageviews', None)
+            result['new_visits'] = totals_data.get('new_visits', None)
+            result['percent_new_users'] = totals_data.get('percent_new_users', None)
+            result['bounce_rate'] = totals_data.get('bounce_rate', None)
+            result['pv_per_visit'] = totals_data.get('pv_per_visit', None)
+            result['avg_tos'] = totals_data.get('avg_tos', None)
         if user.has_perm('zemauth.can_view_effective_costs'):
             del result['cost']
             result['e_data_cost'] = totals_data.get('e_data_cost', 0)
@@ -2010,17 +2010,17 @@ class PublishersTable(object):
                 'clicks': publisher_data.get('clicks', None),
                 'impressions': publisher_data.get('impressions', None),
                 'ctr': publisher_data.get('ctr', None),
-
-                'visits': publisher_data.get('visits', None),
-                'click_discrepancy': publisher_data.get('click_discrepancy', None),
-                'pageviews': publisher_data.get('pageviews', None),
-                'new_visits': publisher_data.get('new_visits', None),
-                'percent_new_users': publisher_data.get('percent_new_users', None),
-                'bounce_rate': publisher_data.get('bounce_rate', None),
-                'pv_per_visit': publisher_data.get('pv_per_visit', None),
-                'avg_tos': publisher_data.get('avg_tos', None),
             }
 
+            if user.has_perm('zemauth.view_pubs_postclick_stats'):
+                row['visits'] = publisher_data.get('visits', None)
+                row['click_discrepancy'] = publisher_data.get('click_discrepancy', None)
+                row['pageviews'] = publisher_data.get('pageviews', None)
+                row['new_visits'] = publisher_data.get('new_visits', None)
+                row['percent_new_users'] = publisher_data.get('percent_new_users', None)
+                row['bounce_rate'] = publisher_data.get('bounce_rate', None)
+                row['pv_per_visit'] = publisher_data.get('pv_per_visit', None)
+                row['avg_tos'] = publisher_data.get('avg_tos', None)
             if user.has_perm('zemauth.can_view_effective_costs'):
                 del row['cost']
                 row['e_data_cost'] = publisher_data.get('e_data_cost', 0)
