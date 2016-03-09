@@ -83,7 +83,6 @@ oneApp.factory('zemOptimisationMetricsService', function () {
         });
     }
 
-
     function createColumnCategories () {
         return {
             'name': 'Campaign Goals',
