@@ -86,15 +86,8 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
         );
     };
 
-    $scope.getCampaignState = function () {
-        api.campaignState.get($state.params.id).then(
-            function (data) {
-                $scope.isCampaignLanding = data.landingMode;
-            },
-            function () {
-                // error
-            }
-        );
+    $scope.isCampaignLanding = function () {
+        return !!$scope.campaign.landing_mode;
     };
 
     $scope.$on('$stateChangeStart', function () {
@@ -108,7 +101,6 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     $scope.setModels(campaignData);
     $scope.tabs = $scope.getTabs();
     $scope.setActiveTab();
-    $scope.getCampaignState();
 
     if ($scope.hasPermission('zemauth.view_archived_entities') && $scope.campaign && $scope.campaign.archived) {
         if ($scope.hasPermission('zemauth.campaign_agency_view')) {

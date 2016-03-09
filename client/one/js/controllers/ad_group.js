@@ -76,14 +76,14 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         });
     };
 
-    $scope.isAdGroupPaused = false;
-    $scope.isCampaignLanding = false;
-
-    // this function is used by ad_grou_ conrollers to set $scope.$scope.isAdGroupPaused
-    $scope.setAdGroupPaused = function (val) {
-        $scope.isAdGroupPaused = val;
+    $scope.isAdGroupPaused = function () {
+        return $scope.adGroup && $scope.adGroup.state === 'paused';
     };
 
+    $scope.isCampaignLanding = function () {
+        return $scope.adGroup && $scope.adGroup.state === 'enabled' &&
+            $scope.campaign && $scope.campaign.landing_mode;
+    };
 
     $scope.setAdGroupData = function (key, value) {
         var data = $scope.adGroupData[$state.params.id] || {};
@@ -126,33 +126,9 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         $scope.setActiveTab();
     });
 
-    $scope.getAdGroupState = function () {
-        api.adGroupState.get($state.params.id).then(
-            function (data) {
-                $scope.setAdGroupPaused(data.state === 2 && !$scope.adGroup.archived);
-            },
-            function () {
-                // error
-            }
-        );
-    };
-
-    $scope.getCampaignState = function () {
-        api.campaignState.get($scope.campaign.id).then(
-            function (data) {
-                $scope.isCampaignLanding = data.landingMode;
-            },
-            function () {
-                // error
-            }
-        );
-    };
-
     $scope.setModels(adGroupData);
     $scope.tabs = $scope.getTabs();
     $scope.setActiveTab();
-    $scope.getAdGroupState();
-    $scope.getCampaignState();
 
     if ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived) {
         if ($scope.hasPermission('zemauth.ad_group_agency_tab_view')) {

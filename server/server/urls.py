@@ -67,10 +67,6 @@ urlpatterns = patterns(
 urlpatterns += patterns(
     '',
     url(
-        r'^api/ad_groups/(?P<ad_group_id>\d+)/state/',
-        login_required(dash.views.views.AdGroupState.as_view()),
-    ),
-    url(
         r'^api/ad_groups/(?P<ad_group_id>\d+)/settings/state/',
         login_required(dash.views.agency.AdGroupSettingsState.as_view()),
         name='ad_group_settings_state'
@@ -270,11 +266,6 @@ urlpatterns += patterns(
     url(
         r'^api/accounts/(?P<account_id>\d+)/campaigns/table/',
         login_required(dash.views.table.AccountCampaignsTable.as_view()),
-    ),
-    url(
-        r'^api/campaigns/(?P<campaign_id>\d+)/state/',
-        login_required(dash.views.views.CampaignState.as_view()),
-        name='campaign_state'
     ),
     url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/table/',

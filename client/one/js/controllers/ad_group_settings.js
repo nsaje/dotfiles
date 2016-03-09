@@ -56,7 +56,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                 $scope.settings = data.settings;
                 $scope.defaultSettings = data.defaultSettings;
                 $scope.actionIsWaiting = data.actionIsWaiting;
-                $scope.setAdGroupPaused($scope.settings.state === constants.adGroupSettingsState.INACTIVE);
                 $scope.retargetableAdGroups = data.retargetableAdGroups;
                 $scope.warnings = data.warnings;
                 freshSettings.resolve(data.settings.name == 'New ad group');
@@ -101,9 +100,7 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
 
         api.adGroupSettings.save($scope.settings).then(
             function (data) {
-                var currAdGroup = $scope.adGroup.id,
-                    adGroupToEdit = null,
-                    status = getAdGroupStatus($scope.settings);
+                var currAdGroup = $scope.adGroup.id;
                 $scope.errors = {};
                 if (prevAdGroup != currAdGroup) {
                     zemNavigationService.updateAdGroupCache(prevAdGroup, {
@@ -120,10 +117,6 @@ oneApp.controller('AdGroupSettingsCtrl', ['$scope', '$state', '$q', '$timeout', 
                         state: data.settings.state === constants.adGroupSourceSettingsState.ACTIVE ? 'enabled' : 'paused',
                         status: status,
                     });
-
-                    $scope.setAdGroupPaused(
-                        $scope.settings.state === constants.adGroupSettingsState.INACTIVE
-                    );
                 }
 
                 $scope.saveRequestInProgress = false;

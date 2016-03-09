@@ -816,29 +816,6 @@ class AccountOverview(api_common.BaseApiView):
         return settings
 
 
-class AdGroupState(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_state_get')
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        settings = ad_group.get_current_settings()
-
-        return self.create_api_response({
-            'state': settings.state if settings else constants.AdGroupSettingsState.INACTIVE,
-        })
-
-
-class CampaignState(api_common.BaseApiView):
-
-    def get(self, request, campaign_id):
-        campaign = helpers.get_campaign(request.user, campaign_id)
-
-        return self.create_api_response({
-            'landing_mode': campaign.landing_mode
-        })
-
-
 class AvailableSources(api_common.BaseApiView):
 
     @influx.timer('dash.api')

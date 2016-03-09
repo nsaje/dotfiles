@@ -627,7 +627,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             $scope.setAdGroupData('page', $scope.pagination.currentPage);
 
             getTableData();
-            $scope.getAdGroupState();
         }
     };
 

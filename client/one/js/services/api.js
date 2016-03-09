@@ -917,29 +917,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
     }
 
-    function AdGroupState () {
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/state/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    var resource;
-                    if (data && data.data && data.data.state) {
-                        resource = data.data.state;
-                    }
-                    deferred.resolve({
-                        state: resource,
-                    });
-                }).
-                error(function (data, status, headers, config) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
     function AdGroupSettings () {
         function convertFromApi (settings) {
             return {
@@ -1704,29 +1681,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                         resource = convertValidationErrorFromApi(data.data.errors);
                     }
                     deferred.reject(resource);
-                });
-
-            return deferred.promise;
-        };
-    }
-
-    function CampaignState () {
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/campaigns/' + id + '/state/';
-
-            $http.get(url).
-                success(function (data) {
-                    var landingMode;
-                    if (data && data.data) {
-                        landingMode = data.data.landing_mode;
-                    }
-                    deferred.resolve({
-                        landingMode: landingMode,
-                    });
-                }).
-                error(function (data) {
-                    deferred.reject(data);
                 });
 
             return deferred.promise;
@@ -3090,7 +3044,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
     return {
         navigation: new Navigation(),
         user: new User(),
-        adGroupState: new AdGroupState(),
         adGroupSettings: new AdGroupSettings(),
         adGroupSettingsState: new AdGroupSettingsState(),
         adGroupAgency: new AdGroupAgency(),
@@ -3106,7 +3059,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         adGroupOverview: new AdGroupOverview(),
         campaignAdGroups: new CampaignAdGroups(),
         campaignAdGroupsTable: new CampaignAdGroupsTable(),
-        campaignState: new CampaignState(),
         campaignSettings: new CampaignSettings(),
         campaignAgency: new CampaignAgency(),
         campaignSync: new CampaignSync(),
