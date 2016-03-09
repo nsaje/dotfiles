@@ -186,6 +186,12 @@ Landing Page,Device Category,Sessions
         self.assertEqual('b1_gumgum', src_par)
         self.assertEqual('publisher.com', pub_par)
 
+        keyword = 'more data here z12341b1_gumgum__publisher%2ecom1z and even more here z1'
+        caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
+        self.assertEqual(2341, caid)
+        self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('publisher.com', pub_par)
+
         keyword = 'more data here z12341b1_gumgum__publisher%20yeah1z and even more here z1'
         caid, src_par, pub_par = parser._parse_z11z_keyword(keyword)
         self.assertEqual(2341, caid)
@@ -237,6 +243,12 @@ Landing Page,Device Category,Sessions
         self.assertEqual('', pub)
 
         landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=55310&_z1_msid=b1_gumgum&_z1_pub=www.test.com&?referrer=www.zemanta.com"
+        caid, src_par, pub = parser._parse_landing_page(landing_page)
+        self.assertEqual(55310, caid)
+        self.assertEqual('b1_gumgum', src_par)
+        self.assertEqual('www.test.com', pub)
+
+        landing_page = "/commandnconquer/f05c20fc-d7e6-42b3-86c6-d8327599c96e/?v=5&_z1_adgid=890&_z1_caid=55310&_z1_msid=b1_gumgum&_z1_pub=www%2Etest%2ecom&?referrer=www.zemanta.com"
         caid, src_par, pub = parser._parse_landing_page(landing_page)
         self.assertEqual(55310, caid)
         self.assertEqual('b1_gumgum', src_par)
