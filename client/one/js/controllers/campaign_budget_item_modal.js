@@ -44,7 +44,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
                 $scope.maxDate = obj.endDate;
                 $scope.initStartDate = moment($scope.minDate, 'MM/DD/YYYY').toDate();
                 $scope.initEndDate = moment($scope.maxDate, 'MM/DD/YYYY').toDate();
-                $scope.budgetItem.amount = obj.total;
+                $scope.budgetItem.amount = parseInt(obj.total);
                 $scope.budgetItem.startDate = $scope.initStartDate;
                 $scope.budgetItem.endDate = $scope.initEndDate;
             });
