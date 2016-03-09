@@ -1168,6 +1168,8 @@ class AdGroupAdsPlusTable(object):
             rows, page, size)
 
         rows = self._add_submission_status_to_rows(user, page_rows, filtered_sources, ad_group)
+        for row in rows:
+            row.update(campaign_goal_helpers.create_goals(row))
 
         total_stats = stats_helper.get_content_ad_stats_with_conversions(
             user,

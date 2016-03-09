@@ -420,14 +420,12 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             );
         }
 
-        console.log($scope.columnCategories);
         zemOptimisationMetricsService.insertAudienceOptimizationColumns(
             $scope.columns,
             $scope.columns.length - 2,
             $scope.hasPermission('zemauth.campaign_goal_optimization'),
             $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
         );
-        console.log($scope.columns);
     };
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {
