@@ -272,6 +272,11 @@ urlpatterns += patterns(
         login_required(dash.views.table.AccountCampaignsTable.as_view()),
     ),
     url(
+        r'^api/campaigns/(?P<campaign_id>\d+)/state/',
+        login_required(dash.views.views.CampaignState.as_view()),
+        name='campaign_state'
+    ),
+    url(
         r'^api/campaigns/(?P<campaign_id>\d+)/ad_groups/table/',
         login_required(dash.views.table.CampaignAdGroupsTable.as_view()),
     ),

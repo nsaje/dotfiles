@@ -3075,8 +3075,8 @@ class AllAccountsOverviewTest(TestCase):
         user = User.objects.get(pk=user_id)
         self.client.login(username=user.username, password='secret')
         reversed_url = reverse(
-                'all_accounts_overview',
-                kwargs={})
+            'all_accounts_overview',
+            kwargs={})
         response = self.client.get(
             reversed_url,
             follow=True
@@ -3086,3 +3086,26 @@ class AllAccountsOverviewTest(TestCase):
     def test_run_empty(self):
         response = self._get_all_accounts_overview(1)
         self.assertTrue(response['success'])
+
+
+class CampaignStateTestCase(TestCase):
+    fixtures = ['test_views.yaml']
+
+    def setUp(self):
+        self.client = Client()
+        self.client.login(username=User.objects.get(id=1).email, password='secret')
+
+    def test_get_campaign_state(self):
+        reversed_url = reverse('campaign_state', kwargs={'campaign_id': 1})
+        response = json.loads(self.client.get(reversed_url, follow=True).content)
+        self.assertTrue(response['success'])
+        self.assertEqual({
+            'landing_mode': False,
+        }, response['data'])
+
+        models.Campaign.objects.filter(id=1).update(landing_mode=True)
+        response = json.loads(self.client.get(reversed_url, follow=True).content)
+        self.assertTrue(response['success'])
+        self.assertEqual({
+            'landing_mode': True,
+        }, response['data'])

@@ -9,4 +9,5 @@
         </tab-heading>
     </tab>
     <span ng-show="isAdGroupPaused"><span class="little-red-square"></span><span class="warning-paused">This Ad Group is currently not running.</span></span>
+    <span ng-show="!isAdGroupPaused && isCampaignLanding"><span class="little-red-square"></span><span class="warning-paused">Campaign is running in landing mode.</span></span>
 </tabset>

@@ -1710,6 +1710,29 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
+    function CampaignState () {
+        this.get = function (id) {
+            var deferred = $q.defer();
+            var url = '/api/campaigns/' + id + '/state/';
+
+            $http.get(url).
+                success(function (data) {
+                    var landingMode;
+                    if (data && data.data) {
+                        landingMode = data.data.landing_mode;
+                    }
+                    deferred.resolve({
+                        landingMode: landingMode,
+                    });
+                }).
+                error(function (data) {
+                    deferred.reject(data);
+                });
+
+            return deferred.promise;
+        };
+    }
+
     function CampaignSettings () {
         function convertSettingsFromApi (settings) {
             return {
@@ -3083,6 +3106,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         adGroupOverview: new AdGroupOverview(),
         campaignAdGroups: new CampaignAdGroups(),
         campaignAdGroupsTable: new CampaignAdGroupsTable(),
+        campaignState: new CampaignState(),
         campaignSettings: new CampaignSettings(),
         campaignAgency: new CampaignAgency(),
         campaignSync: new CampaignSync(),
