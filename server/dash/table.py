@@ -992,6 +992,9 @@ class AccountsAccountsTable(object):
                 row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
                 row['total_fee'] = row['flat_fee'] + Decimal(row.get('license_fee') or 0)
 
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(row))
+
             rows.append(row)
 
         if order:
@@ -1515,6 +1518,10 @@ class CampaignAdGroupsTable(object):
 
             row['last_sync'] = last_sync
             row['editable_fields'] = self.get_editable_fields(ad_group, row)
+
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(row))
+
             rows.append(row)
 
         if order:
@@ -1730,6 +1737,9 @@ class AccountCampaignsTable(object):
             row['budget'] = Decimal(campaign_budget.get(campaign.pk, Decimal('0.0')))
             row['available_budget'] = row['budget'] - Decimal(campaign_spend.get(campaign.pk, 0))
             row['unspent_budget'] = row['budget'] - Decimal((row.get('cost') or 0))
+
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(row))
 
             rows.append(row)
 
