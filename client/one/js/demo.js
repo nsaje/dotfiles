@@ -314,10 +314,6 @@ oneApp.config(['$provide', function ($provide) {
             return deferred.promise;
         };
 
-        $delegate.adGroupState.get = resetIfErrorWrapper(
-            defaultGetWrapper('/api/ad_groups/{id}/state/', $delegate.adGroupState.get)
-        );
-
         $delegate.adGroupAgency.get = resetIfErrorWrapper(
             defaultGetWrapper('/api/ad_groups/{id}/agency/', $delegate.adGroupAgency.get)
         );

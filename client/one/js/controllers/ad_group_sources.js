@@ -801,7 +801,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.setAdGroupData('sourceTotals', $scope.selectedTotals);
         $location.search('source_totals', sourceTotals);
 
-        $scope.getAdGroupState();
         $scope.initColumns();
 
         getTableData();

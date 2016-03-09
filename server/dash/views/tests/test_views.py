@@ -3075,8 +3075,8 @@ class AllAccountsOverviewTest(TestCase):
         user = User.objects.get(pk=user_id)
         self.client.login(username=user.username, password='secret')
         reversed_url = reverse(
-                'all_accounts_overview',
-                kwargs={})
+            'all_accounts_overview',
+            kwargs={})
         response = self.client.get(
             reversed_url,
             follow=True

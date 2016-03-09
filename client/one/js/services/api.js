@@ -917,29 +917,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         }
     }
 
-    function AdGroupState () {
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/state/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    var resource;
-                    if (data && data.data && data.data.state) {
-                        resource = data.data.state;
-                    }
-                    deferred.resolve({
-                        state: resource,
-                    });
-                }).
-                error(function (data, status, headers, config) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
-    }
-
     function AdGroupSettings () {
         function convertFromApi (settings) {
             return {
@@ -3067,7 +3044,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
     return {
         navigation: new Navigation(),
         user: new User(),
-        adGroupState: new AdGroupState(),
         adGroupSettings: new AdGroupSettings(),
         adGroupSettingsState: new AdGroupSettingsState(),
         adGroupAgency: new AdGroupAgency(),

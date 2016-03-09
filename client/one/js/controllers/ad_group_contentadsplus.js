@@ -1,5 +1,5 @@
-/* globals oneApp, options, angular */
-oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService) {
+/* globals oneApp, options, angular, constants */
+oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService) { // eslint-disable-line max-len
     var contentAdsNotLoaded = $q.defer();
 
     $scope.order = '-upload_time';
@@ -627,7 +627,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             $scope.setAdGroupData('page', $scope.pagination.currentPage);
 
             getTableData();
-            $scope.getAdGroupState();
         }
     };
 
@@ -850,7 +849,6 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
         getDailyStats();
         getInfoboxData();
 
-        $scope.getAdGroupState();
         initColumns();
 
         pollSyncStatus();
