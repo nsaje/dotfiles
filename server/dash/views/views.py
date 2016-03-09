@@ -756,7 +756,7 @@ class AccountOverview(api_common.BaseApiView):
         settings.append(account_manager_setting.as_dict())
 
         sales_manager_setting = infobox_helpers.OverviewSetting(
-            'Sales Representative:',
+            'Sales Rep.:',
             infobox_helpers.format_username(account_settings.default_sales_representative)
         )
         settings.append(sales_manager_setting.as_dict())
@@ -769,13 +769,17 @@ class AccountOverview(api_common.BaseApiView):
             )
             settings.append(user_setting.as_dict())
         else:
-            for i, user in enumerate(all_users):
-                user_one_setting = infobox_helpers.OverviewSetting(
-                    'Users:' if i == 0 else '',
-                    infobox_helpers.format_username(user),
-                    section_start=i == 0
-                )
-                settings.append(user_one_setting.as_dict())
+            user_blob = ', '.join([infobox_helpers.format_username(u) for u in all_users])
+            users_setting = infobox_helpers.OverviewSetting(
+                'Users:',
+                '',
+                section_start=True,
+            ).comment(
+                'Show more',
+                'Show less',
+                user_blob
+            )
+            settings.append(users_setting.as_dict())
 
         pixels = models.ConversionPixel.objects.filter(account=account)
         conversion_pixel_setting = infobox_helpers.OverviewSetting(
@@ -790,6 +794,15 @@ class AccountOverview(api_common.BaseApiView):
                 ', '.join(slugs),
             )
         settings.append(conversion_pixel_setting.as_dict())
+
+        allocated_credit = 0  # infobox_helpers.calculate_spend_credit(account)
+        allocated_credit_setting = infobox_helpers.OverviewSetting(
+            'Allocated credit:',
+            lc_helper.default_currency(allocated_credit),
+            description=lc_helper.default_currency(1)
+        )
+        settings.append(allocated_credit_setting.as_dict())
+
         return settings
 
     def _performance_settings(self, account, user):
