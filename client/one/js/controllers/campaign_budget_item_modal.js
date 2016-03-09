@@ -99,7 +99,7 @@ oneApp.controller('CampaignBudgetItemModalCtrl', ['$scope', '$modalInstance', '$
 
             $scope.budgetItem.credit = $scope.availableCredit[0];
 
-            $scope.budgetItem.amount = $scope.getAvailableCredit()[0].total;
+            $scope.budgetItem.amount = parseInt($scope.getAvailableCredit()[0].total);
 
         } else {
             api.campaignBudgetPlus.get(
