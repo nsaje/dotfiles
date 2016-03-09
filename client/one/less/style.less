@@ -2018,7 +2018,7 @@ div[datepicker] {
 }
 
 .content-full {
-    margin-left: 15px;
+    margin-lef7: 15px;
 }
 
 .page {
@@ -2232,6 +2232,83 @@ div[datepicker] {
         display: block;
         max-height: 200px;
         overflow: auto;
+    }
+}
+
+table.grid {
+    width: 100%;
+    border-bottom: 1px solid @border-color;
+    margin-bottom: 10px;
+    thead, tfoot {
+        background-color: #f6f6f6;
+        td, th {
+            font-weight: 600;
+        }
+        th {
+            border-top: 2px solid @default-color;
+        }
+    }
+    th, td {
+        border-top: 1px solid @border-color;
+        text-align: center;
+        vertical-align: middle;
+        padding: 8px;
+        text-align: left;
+
+        ul.row-actions {
+            padding: 0;
+            margin: 0;
+            list-style-type: none;
+            li {
+                display: inline-block;
+                padding: 0;
+                margin: 0;
+                color: #2fa8c7;
+                cursor: pointer;
+                text-decoration: underline;
+            }
+        }
+
+        &.outline {
+            font-weight: 900 !important;
+        }
+
+        &.text-row {
+            max-width: 200px;
+        }
+    }
+
+    tr.row-not-selected td, tr.row-not-selected td i {
+        color: #d2d2d2;
+    }
+
+    tr.level-0{
+        background-color: #f6f6f6;
+        td {
+            font-weight: 600;
+            //border-top: 2px solid @default-color;
+        }
+    }
+
+    tr.level-1{
+        td:first-child{
+            //background-color: #dddddd;
+            //padding-left: 30px;
+        }
+    }
+
+    tr.level-2{
+        td:first-child{
+            background-color: #f2f2f2;
+            padding-left: 30px;
+        }
+    }
+
+    tr.level-3{
+        td:first-child{
+            background-color: #e8e8e8;
+            padding-left: 60px;
+        }
     }
 }
 

@@ -13,6 +13,17 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
             $scope.dataSource = new zemDataSourceService();
             $scope.config = config;
             $scope.constants = constants;
+
+            // TODO: move to filter/template
+            $scope.getRowClass = function (row) {
+                switch (row.options.level) {
+                    case 0: return 'level-0';
+                    case 1: return 'level-1';
+                    case 2: return 'level-2';
+                    case 3: return 'level-3';
+                    default: return 'level-3';
+                }
+            };
         }],
     };
 }]);
