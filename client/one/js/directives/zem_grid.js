@@ -14,6 +14,8 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
             $scope.config = config;
             $scope.constants = constants;
 
+            $scope.getMoreData = function (row){
+            };
             // TODO: move to filter/template
             $scope.getRowClass = function (row) {
                 switch (row.options.level) {

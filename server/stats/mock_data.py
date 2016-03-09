@@ -68,7 +68,7 @@ def _get_breakdown_keys(breakdown):
     pagination = {
         'from': keys_from,
         'to': keys_to,
-        'count': keys_size
+        'size': keys_size
     }
     keys = keys[keys_from:keys_to]
 

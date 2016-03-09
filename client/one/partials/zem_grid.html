@@ -13,7 +13,7 @@
                 </thead>
                 <tbody>
                     <tr ng-repeat="row in dataSource.rows" ng-class="getRowClass(row)">
-                        <td ng-repeat="col in row.data">
+                        <td ng-repeat="col in row.data track by $index">
                             <span>{{col}}</span>
                         </td>
                     </tr>
