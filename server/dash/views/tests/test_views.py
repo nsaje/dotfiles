@@ -1646,7 +1646,7 @@ class AdGroupSourcesTest(TestCase):
         response_dict = json.loads(response.content)
         self.assertItemsEqual(response_dict['data']['sources'], [
             {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False, 'can_retarget': True},  # should return False when DMAs used
-            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': False},
+            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': True},
             {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False, 'can_retarget': True},
         ])
 
