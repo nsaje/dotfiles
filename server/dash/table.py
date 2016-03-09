@@ -727,7 +727,8 @@ class SourcesTable(object):
                     row[field] = val
 
             # add campaign goal optimisation metrics
-            row.update(campaign_goal_helpers.create_goals(source_data))
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(source_data))
 
             rows.append(row)
 
@@ -1168,8 +1169,10 @@ class AdGroupAdsPlusTable(object):
             rows, page, size)
 
         rows = self._add_submission_status_to_rows(user, page_rows, filtered_sources, ad_group)
-        for row in rows:
-            row.update(campaign_goal_helpers.create_goals(row))
+
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            for row in rows:
+                row.update(campaign_goal_helpers.create_goals(row))
 
         total_stats = stats_helper.get_content_ad_stats_with_conversions(
             user,
@@ -2040,6 +2043,9 @@ class PublishersTable(object):
             if publisher_data.get('blacklisted_level'):
                 row['blacklisted_level'] = publisher_data['blacklisted_level']
                 row['blacklisted_level_description'] = publisher_data['blacklisted_level_description']
+
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(publisher_data))
 
             rows.append(row)
 
