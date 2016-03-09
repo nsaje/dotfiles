@@ -12,6 +12,7 @@ from dash import bcm_helpers
 from dash import stats_helper
 from dash import publisher_helpers
 from dash import validation_helpers
+from dash import campaign_goal_helpers
 
 import utils.pagination
 from utils import exc
@@ -724,6 +725,9 @@ class SourcesTable(object):
             for field, val in source_data.iteritems():
                 if field.startswith('G[') and field.endswith('_conversionrate'):
                     row[field] = val
+
+            # add campaign goal optimisation metrics
+            row.update(campaign_goal_helpers.create_goals(source_data))
 
             rows.append(row)
 

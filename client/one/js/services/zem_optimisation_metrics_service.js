@@ -83,7 +83,16 @@ oneApp.factory('zemOptimisationMetricsService', function () {
         });
     }
 
+
+    function createColumnCategories () {
+        return {
+            'name': 'Campaign Goals',
+            'fields': ['total_seconds', 'unbounced_visits', 'total_pageviews', 'avg_cost_per_second', 'avg_cost_per_pageview', 'avg_cost_per_non_bounced_visitor', 'cpa']
+        }
+    }
+
     return {
+        createColumnCategories: createColumnCategories,
         insertAudienceOptimizationColumns: insertAudienceOptimizationColumns,
     };
 });
