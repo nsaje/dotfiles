@@ -250,10 +250,10 @@ class AdGroupSettingsState(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        settings = ad_group.get_current_settings()
+        current_settings = ad_group.get_current_settings()
         return self.create_api_response({
             'id': str(ad_group.pk),
-            'state': settings.state,
+            'state': current_settings.state,
         })
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_state_post')
@@ -266,15 +266,17 @@ class AdGroupSettingsState(api_common.BaseApiView):
         new_state = data.get('state')
         self._validate_state(ad_group, new_state)
 
-        settings = ad_group.get_current_settings()
-        if settings.state != new_state:
-            settings.state = new_state
-            settings.save(request)
-            actionlog_api.init_set_ad_group_state(ad_group, settings.state, request, send=True)
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+
+        if new_settings.state != new_state:
+            new_settings.state = new_state
+            new_settings.save(request)
+            actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=True)
 
         return self.create_api_response({
             'id': str(ad_group.pk),
-            'state': settings.state,
+            'state': new_settings.state,
         })
 
     def _validate_state(self, ad_group, state):

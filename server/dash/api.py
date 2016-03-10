@@ -79,7 +79,7 @@ def update_ad_group_source_state(ad_group_source, conf):
     if need_update:
         logger.info('we have to update %s', conf)
         if ad_group_source_state is None:
-            new_state = models.AdGroupSourceState.objects.create(ad_group_source=ad_group_source)
+            new_state = models.AdGroupSourceState(ad_group_source=ad_group_source)
         else:
             new_state = ad_group_source_state
             new_state.pk = None   # create a new state object as a copy of the old one

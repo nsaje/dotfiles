@@ -108,7 +108,7 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch('automation.autopilot_settings.MIN_SOURCE_BUDGET', Decimal('0.3'))
     def test_set_paused_ad_group_sources_to_minimum_values(self):
         adg = dash.models.AdGroup.objects.get(id=4)
-        paused_ad_group_source_setting = dash.models.AdGroupSourceSettings.objects.get(id=6)
+        paused_ad_group_source_setting = dash.models.AdGroupSourceSettings.objects.get(id=6).copy_settings()
         paused_ad_group_source_setting.state = 2
         paused_ad_group_source_setting.daily_budget_cc = Decimal('100.')
         paused_ad_group_source_setting.save(None)
@@ -128,7 +128,7 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch('automation.autopilot_plus.run_autopilot')
     def test_initialize_budget_autopilot_on_ad_group(self, mock_run_autopilot):
         adg = dash.models.AdGroup.objects.get(id=4)
-        paused_ad_group_source_setting = dash.models.AdGroupSourceSettings.objects.get(id=6)
+        paused_ad_group_source_setting = dash.models.AdGroupSourceSettings.objects.get(id=6).copy_settings()
         paused_ad_group_source_setting.state = 2
         paused_ad_group_source_setting.daily_budget_cc = Decimal('100.')
         paused_ad_group_source_setting.save(None)
