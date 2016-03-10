@@ -13,6 +13,8 @@ import xlrd
 from django.conf import settings
 from django.db import transaction
 
+import influx
+
 from server.celery import app
 from convapi import exc
 from convapi import models
@@ -442,9 +444,9 @@ def process_report_v2(report_task, report_type):
         report_log.visits_reported = report.reported_visits()
 
         statsd_incr('convapi_v2.imported_visits', report_log.visits_imported or 0)
-        influx.incr('convapi_v2.visits', 1, visit_type='imported')
+        influx.incr('convapi_v2.visits', report_log.visits_imported or 0, visit_type='imported')
         statsd_incr('convapi_v2.reported_visits', report_log.visits_reported or 0)
-        influx.incr('convapi_v2.visits', 1, visit_type='reported')
+        influx.incr('convapi_v2.visits', report_log.visits_reported or 0, visit_type='reported')
 
         report_log.state = constants.ReportState.SUCCESS
         statsd_incr('convapi_v2.report.success')

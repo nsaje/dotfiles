@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand
 from django.db.models import Sum, Max
 
+import influx
+
 import reports.api
 import convapi.models
 import dash.models

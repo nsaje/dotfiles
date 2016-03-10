@@ -8,6 +8,8 @@ import StringIO
 import urllib
 import xlrd
 
+import influx
+
 import dash
 from utils import url_helper
 from utils.statsd_helper import statsd_timer
@@ -417,7 +419,7 @@ class GAReportFromCSV(GAReport):
         return any(name in line for line in lines)
 
     @statsd_timer('convapi.parse_v2', 'ga_parse')
-    @influx.timer('convapi.parse_v2.ga_parse')
+    @influx.timer('convapi.parse_v2', source='ga_parse')
     def parse(self):
         report_date, first_column_name = self._parse_header(self._extract_header_lines(self.csv_report_text))
         self.first_column = first_column_name
@@ -613,7 +615,7 @@ class OmnitureReport(Report):
             )
 
     @statsd_timer('convapi.parse_v2', 'omni_parse')
-    @influx.timer('convapi.parse_v2.omni_parse')
+    @influx.timer('convapi.parse_v2', source='omni_parse')
     def parse(self):
         workbook = xlrd.open_workbook(file_contents=self.xlsx_report_blob)
 

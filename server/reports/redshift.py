@@ -3,6 +3,8 @@ import itertools
 from django.conf import settings
 from django.db import connections
 
+import influx
+
 from utils.statsd_helper import statsd_timer
 
 from reports import exc
@@ -159,6 +161,7 @@ def get_pixels_last_verified_dt(account_id=None):
 
 
 @statsd_timer('reports.redshift', 'vacuum_contentadstats')
+@influx.timer('reports.redshift', operation='vacuum_contentadstats')
 def vacuum_contentadstats():
     query = 'VACUUM FULL contentadstats'
     _execute(query, [])
