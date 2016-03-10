@@ -879,7 +879,7 @@ class AdGroupSources(api_common.BaseApiView):
                 'name': source.name,
                 'can_target_existing_regions': region_targeting_helper.can_target_existing_regions(
                         source, ad_group_settings),
-                'can_retarget': source.can_modify_retargeting_automatically(),
+                'can_retarget': retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
             })
 
         sources_waiting = set([ad_group_source.source.name for ad_group_source
