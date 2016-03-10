@@ -370,13 +370,14 @@ def calculate_spend_and_available_budget(account):
         use_decimal=True
     )
     account_budgets = _retrieve_active_budgetlineitems(account.campaign_set.all(), today)
-    remaining_media_data = account_budgets.aggregate(
+    remaining_media = account_budgets.aggregate(
         amount_sum=ExpressionWrapper(
             Sum(F('amount') * (1.0 - F('credit__license_fee'))),
             output_field=models.DecimalField()
         )
     )
-    return spend_data.get('media', Decimal(0)), remaining_media_data['amount_sum'] or 0
+    return spend_data.get('media', Decimal(0)),\
+        (remaining_media['amount_sum'] or 0) - (spend_data.get('media', Decimal(0) or 0))
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_yesterday_account_spend')
