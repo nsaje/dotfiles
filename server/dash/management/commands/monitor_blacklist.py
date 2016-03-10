@@ -2,6 +2,8 @@ import datetime
 import logging
 import dateutil.parser
 
+import influx
+
 from optparse import make_option
 from django.core.management.base import BaseCommand
 
@@ -43,10 +45,13 @@ class Command(ExceptionCommand):
         count_pending = dash.models.PublisherBlacklist.objects.filter(
             status=dash.constants.PublisherStatus.PENDING
         ).count()
+        influx.gauge('dash.blacklisted_publisher.status', count_pending, status='pending')
         statsd_helper.statsd_gauge('dash.blacklisted_publisher.pending', count_pending)
+
         count_blacklisted = dash.models.PublisherBlacklist.objects.filter(
             status=dash.constants.PublisherStatus.BLACKLISTED
         ).count()
+        influx.gauge('dash.blacklisted_publisher.status', count_blacklisted, status='blacklisted')
         statsd_helper.statsd_gauge('dash.blacklisted_publisher.blacklisted', count_blacklisted)
 
     def monitor_adgroup_level(self, blacklisted_before):
@@ -85,6 +90,8 @@ class Command(ExceptionCommand):
             aggregated_impressions += redshift_stats[key][0]
             aggregated_clicks += redshift_stats[key][1]
 
+        influx.gauge('dash.blacklisted_publisher.stats', aggregated_impressions, type='impressions')
+        influx.gauge('dash.blacklisted_publisher.stats', aggregated_clicks, type='clicks')
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.impressions', aggregated_impressions)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.clicks', aggregated_clicks)
         logger.info('Checking for statistics for blacklisted publishers... Done.')
@@ -129,6 +136,9 @@ class Command(ExceptionCommand):
             )
             aggregated_impressions += redshift_stats[key][0]
             aggregated_clicks += redshift_stats[key][1]
+
+        influx.gauge('dash.blacklisted_publisher.stats', aggregated_impressions, type='global_impressions')
+        influx.gauge('dash.blacklisted_publisher.stats', aggregated_clicks, type='global_clicks')
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_impressions', aggregated_impressions)
         statsd_helper.statsd_gauge('dash.blacklisted_publisher_stats.global_clicks', aggregated_clicks)
         logger.info('Checking for statistics for globally blacklisted publishers... Done.')
