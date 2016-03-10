@@ -802,10 +802,10 @@ class AccountOverview(api_common.BaseApiView):
         allocated_credit_setting = infobox_helpers.OverviewSetting(
             'Allocated credit:',
             lc_helper.default_currency(allocated_credit),
-            description='{} remaining'.format(lc_helper.default_currency(
+            description='{} available'.format(lc_helper.default_currency(
                 available_credit
             )),
-            tooltip='Allocated total and remaining credit',
+            tooltip='Allocated total and available credit',
         )
         settings.append(allocated_credit_setting.as_dict())
 
