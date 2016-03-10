@@ -869,7 +869,6 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         self.assertEqual(40, allocated_credit)
         self.assertEqual(60, available_credit)
 
-
         dash.models.BudgetLineItem.objects.create(
             campaign=campaign,
             credit=credit,
@@ -921,7 +920,6 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         self.assertEqual(0, account_spend)
         # as long as there are no budgets available there-s nothing to spend
         self.assertEqual(36, budget_available)
-
 
         dash.models.BudgetLineItem.objects.create(
             campaign=campaign,

@@ -814,7 +814,7 @@ class AccountOverview(api_common.BaseApiView):
     def _performance_settings(self, account, user):
         settings = []
 
-        spent_budget, available_budget=\
+        spent_budget, available_budget = \
             infobox_helpers.calculate_spend_and_available_budget(account)
         spent_credit_setting = infobox_helpers.OverviewSetting(
             'Spent budget:',
