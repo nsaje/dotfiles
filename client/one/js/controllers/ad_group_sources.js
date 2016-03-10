@@ -833,7 +833,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                         name: source.name,
                         value: source.id,
                         hasPermission: true,
-                        disabled: !source.canTargetExistingRegions || !source.canRetarget, 
+                        disabled: !source.canTargetExistingRegions || !source.canRetarget,
                         notification: notificationMsg,
                     });
                 }
