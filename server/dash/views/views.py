@@ -795,11 +795,15 @@ class AccountOverview(api_common.BaseApiView):
             )
         settings.append(conversion_pixel_setting.as_dict())
 
-        allocated_credit = 0  # infobox_helpers.calculate_spend_credit(account)
+        allocated_credit, available_credit =\
+            infobox_helpers.calculate_allocated_and_available_credit(account)
+
         allocated_credit_setting = infobox_helpers.OverviewSetting(
             'Allocated credit:',
             lc_helper.default_currency(allocated_credit),
-            description=lc_helper.default_currency(1)
+            description='{} remaining'.format(lc_helper.default_currency(
+                available_credit
+            ))
         )
         settings.append(allocated_credit_setting.as_dict())
 
@@ -808,12 +812,14 @@ class AccountOverview(api_common.BaseApiView):
     def _performance_settings(self, account, user):
         settings = []
 
-        available_credit = infobox_helpers.calculate_available_credit(account)
-        spent_credit = infobox_helpers.calculate_spend_credit(account)
+        spent_budget, available_budget=\
+            infobox_helpers.calculate_spend_and_available_budget(account)
         spent_credit_setting = infobox_helpers.OverviewSetting(
-            'Spent credit:',
-            lc_helper.default_currency(spent_credit),
-            description=lc_helper.default_currency(available_credit)
+            'Spent budget:',
+            lc_helper.default_currency(spent_budget),
+            description='{} remaining'.format(
+                lc_helper.default_currency(available_budget)
+            )
         )
         settings.append(spent_credit_setting.as_dict())
 
