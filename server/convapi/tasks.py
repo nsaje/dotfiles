@@ -27,6 +27,7 @@ from reports import update
 from utils.compression import unzip
 from utils.csv_utils import convert_to_xls
 from utils.statsd_helper import statsd_incr, statsd_timer
+import influx
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +67,7 @@ def media_source_specified_errors(csvreport):
 
 
 @statsd_timer('convapi', 'report_aggregate')
+@influx.timer('convapi.report_aggregate')
 def report_aggregate(csvreport, sender, recipient, subject, date, text, report_log):
     try:
         for ad_group_report in csvreport.split_by_ad_group():
@@ -84,6 +86,7 @@ def report_aggregate(csvreport, sender, recipient, subject, date, text, report_l
             report_email.aggregate()
 
         statsd_incr('convapi.aggregated_emails')
+        influx.incr('convapi.emails', 1, stage='aggregated')
         report_log.state = constants.ReportState.SUCCESS
         report_log.save()
     except BaseException as e:
@@ -166,6 +169,7 @@ def process_ga_report(ga_report_task):
         if len(csvreport.get_entries()) == 0:
             logger.warning('Report is empty (has no entries)')
             statsd_incr('convapi.aggregated_emails')
+            influx.incr('convapi.emails', 1, stage='aggregated')
             report_log.add_error('Report is empty (has no entries)')
             report_log.state = constants.ReportState.EMPTY_REPORT
             report_log.save()
@@ -187,6 +191,7 @@ def process_ga_report(ga_report_task):
     except exc.EmptyReportException as e:
         logger.warning(e.message)
         statsd_incr('convapi.aggregated_emails')
+        influx.incr('convapi.emails', 1, stage='aggregated')
         report_log.add_error(e.message)
         report_log.state = constants.ReportState.EMPTY_REPORT
         report_log.save()
@@ -437,20 +442,26 @@ def process_report_v2(report_task, report_type):
         report_log.visits_reported = report.reported_visits()
 
         statsd_incr('convapi_v2.imported_visits', report_log.visits_imported or 0)
+        influx.incr('convapi_v2.visits', 1, visit_type='imported')
         statsd_incr('convapi_v2.reported_visits', report_log.visits_reported or 0)
+        influx.incr('convapi_v2.visits', 1, visit_type='reported')
 
         report_log.state = constants.ReportState.SUCCESS
         statsd_incr('convapi_v2.report.success')
+        influx.incr('convapi_v2.report', 1, status='success')
+
         report_log.save()
     except exc.EmptyReportException as e:
         logger.warning(e.message)
         statsd_incr('convapi_v2.report.empty')
+        influx.incr('convapi_v2.report', 1, status='empty')
         report_log.add_error(e.message)
         report_log.state = constants.ReportState.EMPTY_REPORT
         report_log.save()
     except Exception as e:
         logger.warning(e.message)
         statsd_incr('convapi_v2.report.failed')
+        influx.incr('convapi_v2.report', 1, status='failed')
         report_log.add_error(e.message)
         report_log.state = constants.ReportState.FAILED
         report_log.save()
@@ -578,6 +589,7 @@ def _update_report_log_after_parsing(csvreport, report_log, ga_report_task):
         report_log.add_error("Too many errors in urls. Cannot recognize content ad and media sources for some urls:\n %s \n\n %s" % ('\n'.join(map(str, content_ad_errors)), '\n'.join(map(str, media_source_errors))))
         report_log.state = constants.ReportState.FAILED
         statsd_incr('convapi_v2.too_many_errors')
+        influx.incr('convapi_v2.report', 1, status='too_many_errors')
         report_log.save()
 
     if csvreport.is_empty():

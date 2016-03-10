@@ -16,6 +16,7 @@ from convapi import models
 from convapi import constants
 from convapi import tasks
 from convapi import helpers
+import influx
 
 logger = logging.getLogger(__name__)
 
@@ -127,6 +128,8 @@ def mailgun_gareps(request):
         return HttpResponse(status=406)
 
     statsd_incr('convapi.accepted_emails')
+    influx.incr('convapi.emails', 1, stage='accepted')
+
 
     s3_key = None
     attachment_name = ''
