@@ -12,12 +12,24 @@ import dash.models
 import zemauth.models
 import reports.api_contentads
 import reports.models
+import utils.dates_helper
 
 from utils.statsd_helper import statsd_timer
 
 from decimal import Decimal
 
 MAX_PREVIEW_REGIONS = 1
+
+TEST_USERS = [
+    "tadej.pavlic@gmail.com",
+    "gracner.timotej@gmail.com",
+    "nettisunny@gmail.com",
+    "mmelisaratos@gmail.com",
+    "timotej@gracner.net",
+    "dillonferdinandi@gmail.com",
+    "primoz.mavsar@gmail.com",
+    "simon.mihevc@gmail.com",
+]
 
 
 class OverviewSetting(object):
@@ -462,36 +474,47 @@ def calculate_all_accounts_monthly_budget(today):
 
 
 def count_weekly_logged_in_users():
-    now = datetime.datetime.utcnow()
-    one_week_ago = now - datetime.timedelta(days=7)
     return zemauth.models.User.objects.filter(
-        last_login__gte=one_week_ago,
+        last_login__gte=_one_week_ago(),
+        last_login__lte=_until_today(),
     ).exclude(
         email__contains='@zemanta'
+    ).exclude(
+        email__in=TEST_USERS
     ).count()
 
 
-@statsd_timer('dash.infobox_helpers', 'count_weekly_active_users')
-def count_weekly_active_users():
+@statsd_timer('dash.infobox_helpers', 'get_weekly_active_users')
+def get_weekly_active_users():
     return dash.models.UserActionLog.objects.filter(
-        created_dt__gte=_one_week_ago()
+        created_dt__gte=_one_week_ago(),
+        created_dt__lte=_until_today(),
     ).exclude(
         created_by__email__contains='@zemanta'
-    ).select_related('created_by').distinct('created_by').count()
+    ).exclude(
+        created_by__email__in=TEST_USERS
+    ).select_related('created_by').distinct('created_by')
 
 
 @statsd_timer('dash.infobox_helpers', 'count_weekly_selfmanaged_actions')
 def count_weekly_selfmanaged_actions():
     return dash.models.UserActionLog.objects.filter(
-        created_dt__gte=_one_week_ago()
+        created_dt__gte=_one_week_ago(),
+        created_dt__lte=_until_today(),
     ).exclude(
         created_by__email__contains='@zemanta'
-    ).count()
+    ).exclude(
+        created_by__email__in=TEST_USERS
+    ) .count()
 
 
 def _one_week_ago():
-    now = datetime.datetime.utcnow()
+    now = utils.dates_helper.local_midnight_to_utc_time()
     return now - datetime.timedelta(days=7)
+
+
+def _until_today():
+    return utils.dates_helper.local_midnight_to_utc_time()
 
 
 def _retrieve_active_budgetlineitems(campaign, date):

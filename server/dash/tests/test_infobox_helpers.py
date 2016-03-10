@@ -1,7 +1,6 @@
 import datetime
 
 from django.test import TestCase, mock
-from django.http.request import HttpRequest
 
 import zemauth.models
 
@@ -610,24 +609,26 @@ class InfoBoxAccountHelpersTest(TestCase):
         ordinary_john.save()
         return ordinary_john
 
-    def test_count_weekly_logged_in_users(self):
+    def test_get_weekly_logged_in_users(self):
         self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users())
 
         for u in zemauth.models.User.objects.all():
             if 'zemanta' not in u.email:
                 continue
-            u.last_login = datetime.datetime.utcnow()
+            u.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=1)
             u.save()
 
         # zemanta mail should be skipped when counting mails
         self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users())
 
-        self._make_a_john()
+        john = self._make_a_john()
+        john.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+        john.save()
         self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users())
 
     def test_count_weekly_active_users(self):
         # should be 0 by default
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_active_users())
+        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
         for u in zemauth.models.User.objects.all():
@@ -637,32 +638,36 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.models.UserActionLog.objects.create(
                 action_type=dash.constants.UserActionType.UPLOAD_CONTENT_ADS,
                 ad_group=dash.models.AdGroup.objects.get(pk=1),
-                created_dt=datetime.datetime.utcnow(),
+                created_dt=datetime.datetime.utcnow()-datetime.timedelta(hours=24),
                 created_by=u,
             )
 
         # zemanta mail should be skipped when counting mails
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_active_users())
+        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
         john = self._make_a_john()
-        dash.models.UserActionLog.objects.create(
+        ual = dash.models.UserActionLog.objects.create(
             action_type=dash.constants.UserActionType.UPLOAD_CONTENT_ADS,
             ad_group=dash.models.AdGroup.objects.get(pk=1),
-            created_dt=datetime.datetime.utcnow(),
             created_by=john,
         )
+        ual.created_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+        ual.save()
 
-        self.assertEqual(1, dash.infobox_helpers.count_weekly_active_users())
+        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
-        dash.models.UserActionLog.objects.create(
+        ual = dash.models.UserActionLog.objects.create(
             action_type=dash.constants.UserActionType.SET_CAMPAIGN_SETTINGS,
             ad_group=dash.models.AdGroup.objects.get(pk=1),
             created_dt=datetime.datetime.utcnow(),
-            created_by=john,
+            created_by=john
         )
-        self.assertEqual(1, dash.infobox_helpers.count_weekly_active_users())
+        ual.created_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+        ual.save()
+
+        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
     def test_calculate_spend_credit(self):
@@ -860,7 +865,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        credit = dash.models.CreditLineItem.objects.create(
+        dash.models.CreditLineItem.objects.create(
             account=account,
             start_date=start_date,
             end_date=end_date,
