@@ -345,7 +345,7 @@ def calculate_available_media_campaign_budget(campaign):
     return ret
 
 
-@statsd_timer('dash.infobox_helpers', 'calculate_available_credit')
+@statsd_timer('dash.infobox_helpers', 'calculate_allocated_and_available_credit')
 def calculate_allocated_and_available_credit(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
@@ -357,7 +357,7 @@ def calculate_allocated_and_available_credit(account):
         (credit_total['amount_sum'] or 0) - (budget_total['amount_sum'] or 0)
 
 
-@statsd_timer('dash.infobox_helpers', 'calculate_spend_credit')
+@statsd_timer('dash.infobox_helpers', 'calculate_spend_and_available_budget')
 def calculate_spend_and_available_budget(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
