@@ -4,6 +4,8 @@ from django.db import transaction
 import logging
 import traceback
 
+import influx
+
 import dash
 from automation import models
 from automation import autopilot_budgets
@@ -21,6 +23,7 @@ from utils import dates_helper
 logger = logging.getLogger(__name__)
 
 
+@influx.timer('automation.autopilot_plus.run_autopilot')
 @statsd_timer('automation.autopilot_plus', 'run_autopilot')
 def run_autopilot(ad_groups=None, adjust_cpcs=True, adjust_budgets=True,
                   send_mail=False, initialization=False, report_to_statsd=False):
@@ -291,10 +294,18 @@ def _report_adgroups_data_to_statsd(ad_groups_settings):
         elif ad_group_setting.autopilot_state == AdGroupSettingsAutopilotState.ACTIVE_CPC:
             num_on_cpc_ap += 1
             yesterday_spend_on_cpc_ap += yesterday_spend
+
+    influx.gauge('automation.autopilot_plus.adgroups_on', num_on_budget_ap, autopilot='budget_autopilot')
+    influx.gauge('automation.autopilot_plus.adgroups_on', num_on_cpc_ap, autopilot='cpc_autopilot')
     statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_budget_autopilot', num_on_budget_ap)
     statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_cpc_autopilot', num_on_cpc_ap)
+
+    influx.gauge('automation.autopilot_plus.spend', total_budget_on_budget_ap, autopilot='budget_autopilot', type='expected')
     statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_budget_autopilot_expected_budget',
                                total_budget_on_budget_ap)
+
+    influx.gauge('automation.autopilot_plus.spend', yesterday_spend_on_budget_ap, autopilot='budget_autopilot', type='yesterday')
+    influx.gauge('automation.autopilot_plus.spend', yesterday_spend_on_cpc_ap, autopilot='cpc_autopilot', type='yesterday')
     statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_budget_autopilot_yesterday_spend',
                                yesterday_spend_on_budget_ap)
     statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_cpc_autopilot_yesterday_spend',
@@ -318,11 +329,17 @@ def _report_new_budgets_on_ap_to_statsd(ad_group_settings):
         elif ad_groups_and_ap_types.get(ad_group) == AdGroupSettingsAutopilotState.ACTIVE_CPC:
             total_budget_on_cpc_ap += daily_budget
             num_sources_on_cpc_ap += 1
+
+    influx.gauge('automation.autopilot_plus.spend', total_budget_on_cpc_ap, autopilot='cpc_autopilot', type='actual')
+    influx.gauge('automation.autopilot_plus.spend', total_budget_on_budget_ap, autopilot='budget_autopilot', type='actual')
     statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_budget_autopilot_actual_budget',
                                total_budget_on_budget_ap)
     statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_cpc_autopilot_actual_budget',
                                total_budget_on_cpc_ap)
     statsd_helper.statsd_gauge('automation.autopilot_plus.adgroups_on_all_autopilot_actual_budget',
                                total_budget_on_all_ap)
+
+    influx.gauge('automation.autopilot_plus.sources_on', num_sources_on_cpc_ap, autopilot='cpc_autopilot')
+    influx.gauge('automation.autopilot_plus.sources_on', num_sources_on_budget_ap, autopilot='budget_autopilot')
     statsd_helper.statsd_gauge('automation.autopilot_plus.num_sources_on_cpc_ap', num_sources_on_cpc_ap)
     statsd_helper.statsd_gauge('automation.autopilot_plus.num_sources_on_budget_ap', num_sources_on_budget_ap)
