@@ -87,7 +87,7 @@ oneApp.controller('CampaignCtrl', ['$scope', '$state', '$location', 'zemNavigati
     };
 
     $scope.isCampaignLanding = function () {
-        return !!$scope.campaign.landing_mode;
+        return !!$scope.campaign.landingMode;
     };
 
     $scope.$on('$stateChangeStart', function () {

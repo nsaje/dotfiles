@@ -2600,6 +2600,19 @@ div[datepicker] {
     background-image: url('img/adgroup_status_paused_red.svg');
 }
 
+.adgroup-status-landing-mode-icon {
+    .adgroup-status-icon-placeholder();
+    width: 18px;
+    background-position: 18px;
+    background-size: 18px;
+    background-image: url('img/adgroup_status_landing_mode.svg');
+}
+
+.adgroup-status-landing-mode-active-icon {
+    .adgroup-status-landing-mode-icon();
+    background-image: url('img/adgroup_status_landing_mode_white.svg');
+}
+
 #nav-new .nav-name.active, #nav .ad-group-item.active {
     .adgroup-status-enabled-running-icon {
         background-image: url('img/adgroup_status_enabled_green_selected.svg');
