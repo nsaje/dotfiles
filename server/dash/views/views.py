@@ -757,7 +757,8 @@ class AccountOverview(api_common.BaseApiView):
 
         sales_manager_setting = infobox_helpers.OverviewSetting(
             'Sales Rep.:',
-            infobox_helpers.format_username(account_settings.default_sales_representative)
+            infobox_helpers.format_username(account_settings.default_sales_representative),
+            tooltip='Sales Representative'
         )
         settings.append(sales_manager_setting.as_dict())
 
@@ -803,7 +804,8 @@ class AccountOverview(api_common.BaseApiView):
             lc_helper.default_currency(allocated_credit),
             description='{} remaining'.format(lc_helper.default_currency(
                 available_credit
-            ))
+            )),
+            tooltip='Allocated total and remaining credit',
         )
         settings.append(allocated_credit_setting.as_dict())
 
@@ -819,7 +821,8 @@ class AccountOverview(api_common.BaseApiView):
             lc_helper.default_currency(spent_budget),
             description='{} remaining'.format(
                 lc_helper.default_currency(available_budget)
-            )
+            ),
+            tooltip='Spent media and remaining media budget on all active budgets on this account'
         )
         settings.append(spent_credit_setting.as_dict())
 
@@ -829,7 +832,7 @@ class AccountOverview(api_common.BaseApiView):
             infobox_helpers.create_yesterday_spend_setting(
                 yesterday_spent,
                 daily_budget
-            ).as_dict()
+            ).as_dict(),
         )
 
         return settings
