@@ -756,8 +756,9 @@ class AccountOverview(api_common.BaseApiView):
         settings.append(account_manager_setting.as_dict())
 
         sales_manager_setting = infobox_helpers.OverviewSetting(
-            'Sales Representative:',
-            infobox_helpers.format_username(account_settings.default_sales_representative)
+            'Sales Rep.:',
+            infobox_helpers.format_username(account_settings.default_sales_representative),
+            tooltip='Sales Representative'
         )
         settings.append(sales_manager_setting.as_dict())
 
@@ -769,13 +770,17 @@ class AccountOverview(api_common.BaseApiView):
             )
             settings.append(user_setting.as_dict())
         else:
-            for i, user in enumerate(all_users):
-                user_one_setting = infobox_helpers.OverviewSetting(
-                    'Users:' if i == 0 else '',
-                    infobox_helpers.format_username(user),
-                    section_start=i == 0
-                )
-                settings.append(user_one_setting.as_dict())
+            user_blob = ', '.join([infobox_helpers.format_username(u) for u in all_users])
+            users_setting = infobox_helpers.OverviewSetting(
+                'Users:',
+                '',
+                section_start=True,
+            ).comment(
+                'Show more',
+                'Show less',
+                user_blob
+            )
+            settings.append(users_setting.as_dict())
 
         pixels = models.ConversionPixel.objects.filter(account=account)
         conversion_pixel_setting = infobox_helpers.OverviewSetting(
@@ -790,17 +795,34 @@ class AccountOverview(api_common.BaseApiView):
                 ', '.join(slugs),
             )
         settings.append(conversion_pixel_setting.as_dict())
+
+        allocated_credit, available_credit =\
+            infobox_helpers.calculate_allocated_and_available_credit(account)
+
+        allocated_credit_setting = infobox_helpers.OverviewSetting(
+            'Allocated credit:',
+            lc_helper.default_currency(allocated_credit),
+            description='{} available'.format(lc_helper.default_currency(
+                available_credit
+            )),
+            tooltip='Allocated total and available credit',
+        )
+        settings.append(allocated_credit_setting.as_dict())
+
         return settings
 
     def _performance_settings(self, account, user):
         settings = []
 
-        available_credit = infobox_helpers.calculate_available_credit(account)
-        spent_credit = infobox_helpers.calculate_spend_credit(account)
+        spent_budget, available_budget = \
+            infobox_helpers.calculate_spend_and_available_budget(account)
         spent_credit_setting = infobox_helpers.OverviewSetting(
-            'Spent credit:',
-            lc_helper.default_currency(spent_credit),
-            description=lc_helper.default_currency(available_credit)
+            'Spent budget:',
+            lc_helper.default_currency(spent_budget),
+            description='{} remaining'.format(
+                lc_helper.default_currency(available_budget)
+            ),
+            tooltip='Spent media and remaining media budget on all active budgets on this account'
         )
         settings.append(spent_credit_setting.as_dict())
 
@@ -810,7 +832,7 @@ class AccountOverview(api_common.BaseApiView):
             infobox_helpers.create_yesterday_spend_setting(
                 yesterday_spent,
                 daily_budget
-            ).as_dict()
+            ).as_dict(),
         )
 
         return settings
