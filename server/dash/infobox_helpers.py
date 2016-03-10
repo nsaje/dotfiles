@@ -361,15 +361,18 @@ def calculate_allocated_and_available_credit(account):
 def calculate_spend_and_available_budget(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
+    account_budgets = _retrieve_active_budgetlineitems(account.campaign_set.all(), today)
+
     statements = reports.models.BudgetDailyStatement.objects.filter(
-        budget__credit__in=credits
+        budget__credit__in=credits,
+        budget__in=account_budgets
     )
     spend_data = reports.budget_helpers.calculate_spend_data(
         statements,
         date=today,
         use_decimal=True
     )
-    account_budgets = _retrieve_active_budgetlineitems(account.campaign_set.all(), today)
+
     remaining_media = account_budgets.aggregate(
         amount_sum=ExpressionWrapper(
             Sum(F('amount') * (1.0 - F('credit__license_fee'))),

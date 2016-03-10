@@ -773,7 +773,7 @@ class AccountOverview(api_common.BaseApiView):
             user_blob = ', '.join([infobox_helpers.format_username(u) for u in all_users])
             users_setting = infobox_helpers.OverviewSetting(
                 'Users:',
-                '',
+                'Yes' if all_users.count() > 0 else 'No',
                 section_start=True,
             ).comment(
                 'Show more',
