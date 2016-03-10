@@ -1,4 +1,4 @@
-/* globals oneApp,options,constants*/
+/* globals oneApp */
 'use strict';
 
 oneApp.factory('zemOptimisationMetricsService', function () {
@@ -36,7 +36,7 @@ oneApp.factory('zemOptimisationMetricsService', function () {
             totalRow: true,
             order: true,
             initialOrder: 'desc',
-        }, {            
+        }, {
             name: 'Avg. Cost Per Second',
             field: 'avg_cost_per_second',
             checked: true,
@@ -86,8 +86,8 @@ oneApp.factory('zemOptimisationMetricsService', function () {
     function createColumnCategories () {
         return {
             'name': 'Campaign Goals',
-            'fields': ['total_seconds', 'unbounced_visits', 'total_pageviews', 'avg_cost_per_second', 'avg_cost_per_pageview', 'avg_cost_per_non_bounced_visitor', 'cpa']
-        }
+            'fields': ['total_seconds', 'unbounced_visits', 'total_pageviews', 'avg_cost_per_second', 'avg_cost_per_pageview', 'avg_cost_per_non_bounced_visitor', 'cpa'], // eslint-disable-line max-len
+        };
     }
 
     return {
