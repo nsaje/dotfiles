@@ -2,6 +2,7 @@ import dash.models
 
 
 def create_goals(campaign, data):
+    campaign_goals = get_campaign_goal_values(campaign)
     return {
         'total_seconds': 0,
         'unbounced_visits': 0,
@@ -14,6 +15,7 @@ def create_goals(campaign, data):
 
 
 def create_goal_totals(campaign, data):
+    campaign_goals = get_campaign_goal_values(campaign)
     return {
         'total_seconds': 0,
         'unbounced_visits': 0,
@@ -33,5 +35,3 @@ def get_campaign_goal_values(campaign):
     ).order_by(
         '-created_dt'
     ).distinct('campaign_goal')
-
-
