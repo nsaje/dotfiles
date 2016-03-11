@@ -534,7 +534,6 @@ class InfoBoxAccountHelpersTest(TestCase):
 
     def test_calculate_all_accounts_total_budget(self):
         today = datetime.datetime.utcnow().date()
-        day_index = max(0, today.day - 1)
         day_budget_span = (self.budget.end_date - self.budget.start_date).days
         # self.assertEqual(Decimal(self.budget.amount) * (Decimal(day_index)/day_budget_span), dash.infobox_helpers.calculate_all_accounts_monthly_budget(today))
 
@@ -911,7 +910,7 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        dash.models.CreditLineItem.objects.create(
+        credit = dash.models.CreditLineItem.objects.create(
             account=account,
             start_date=start_date,
             end_date=end_date,
