@@ -20,6 +20,7 @@ oneApp.constant('demoDefaults', {
             cpc: '0.40',
             state: 2,
             targetRegions: ['US'],
+            retargetingAdGroups: [],
             targetDevices: [
                 {name: 'Desktop', value: 'desktop', checked: true},
                 {name: 'Mobile', value: 'mobile', checked: true}
@@ -117,6 +118,8 @@ oneApp.constant('demoDefaults', {
             if (!skip[source.id] && !source.deprecated) {
                 sources.push(source);
                 source.canTargetExistingRegions = true;
+                source.canRetarget = true;
+                source.can_retarget = true;
             }
         });
         return sources;
@@ -150,7 +153,7 @@ oneApp.constant('demoDefaults', {
             bounce_rate: null,
             can_edit_budget_and_cpc: true,
             click_discrepancy: null,
-            mainteance: false,
+            maintenance: false,
             clicks: 0,
             editable_fields: {
                 'status_setting': {

@@ -2,6 +2,8 @@ import re
 
 from django.db.models import Sum
 
+import influx
+
 import reports.models
 from reports import redshift
 
@@ -25,12 +27,21 @@ class Command(ExceptionCommand):
             )
 
             statsd_gauge(cads_total_name, stats_val)
+            influx.gauge(cads_total_name, stats_val)
 
             redshift_stats_name = '{prefix}.{stat_name}_total_aggr'.format(
                 prefix=prefix,
                 stat_name=stats_key
             )
             statsd_gauge(redshift_stats_name, redshift_stats_val)
+            influx.gauge(redshift_stats_name, redshift_stats_val)
+
+            diff_stats_name = '{prefix}.{stat_name}_diff'.format(
+                prefix=prefix,
+                stat_name=stats_key
+            )
+            influx.gauge(diff_stats_name, stats_val - redshift_stats_val)
+
 
     def handle(self, *args, **options):
 

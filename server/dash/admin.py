@@ -388,6 +388,7 @@ class SourceTypeAdmin(admin.ModelAdmin):
         'max_daily_budget',
         'cpc_decimal_places',
         'delete_traffic_metrics_threshold',
+        'budgets_tz',
     )
 
     def get_readonly_fields(self, request, obj=None):

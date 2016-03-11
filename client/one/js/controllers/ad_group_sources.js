@@ -801,7 +801,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.setAdGroupData('sourceTotals', $scope.selectedTotals);
         $location.search('source_totals', sourceTotals);
 
-        $scope.getAdGroupState();
         $scope.initColumns();
 
         getTableData();
@@ -833,7 +832,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                         name: source.name,
                         value: source.id,
                         hasPermission: true,
-                        disabled: !source.canTargetExistingRegions,
+                        disabled: !source.canTargetExistingRegions || !source.canRetarget,
                         notification: notificationMsg,
                     });
                 }

@@ -128,7 +128,7 @@
   model: dash.source
   pk: 2
 - fields:
-    available_actions: [1, 2, 3, 4, 6, 7, 8, 9, 10, 11]
+    available_actions: [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 20]
     cpc_decimal_places: null
     delete_traffic_metrics_threshold: 0
     max_cpc: '5.0000'
@@ -139,7 +139,7 @@
   model: dash.sourcetype
   pk: 8
 - fields:
-    available_actions: [1, 2, 3, 5]
+    available_actions: [1, 2, 3, 5, 20]
     cpc_decimal_places: null
     delete_traffic_metrics_threshold: 0
     max_cpc: '1.0000'
@@ -150,7 +150,7 @@
   model: dash.sourcetype
   pk: 7
 - fields:
-    available_actions: [1, 2, 5]
+    available_actions: [1, 2, 5, 20]
     cpc_decimal_places: null
     delete_traffic_metrics_threshold: 0
     max_cpc: '1.0000'
@@ -161,7 +161,7 @@
   model: dash.sourcetype
   pk: 6
 - fields:
-    available_actions: [1, 2, 3, 5]
+    available_actions: [1, 2, 3, 5, 20]
     cpc_decimal_places: null
     delete_traffic_metrics_threshold: 0
     max_cpc: '1.0000'
@@ -172,7 +172,7 @@
   model: dash.sourcetype
   pk: 5
 - fields:
-    available_actions: [5]
+    available_actions: [5, 20]
     cpc_decimal_places: null
     delete_traffic_metrics_threshold: 0
     max_cpc: '1.0000'
@@ -183,7 +183,7 @@
   model: dash.sourcetype
   pk: 1
 - fields:
-    available_actions: [1, 2, 3, 4, 5, 7, 8, 9]
+    available_actions: [1, 2, 3, 4, 5, 7, 8, 9, 20]
     cpc_decimal_places: null
     delete_traffic_metrics_threshold: 0
     max_cpc: '1.2000'
@@ -194,7 +194,7 @@
   model: dash.sourcetype
   pk: 3
 - fields:
-    available_actions: [1, 2, 3, 4, 5, 6, 7, 8]
+    available_actions: [1, 2, 3, 4, 5, 6, 7, 8, 20]
     cpc_decimal_places: null
     delete_traffic_metrics_threshold: 0
     max_cpc: '1.0000'
@@ -205,7 +205,7 @@
   model: dash.sourcetype
   pk: 4
 - fields:
-    available_actions: [1, 2, 5]
+    available_actions: [1, 2, 5, 20]
     cpc_decimal_places: 2
     delete_traffic_metrics_threshold: 20
     max_cpc: '1.0000'

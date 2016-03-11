@@ -5,6 +5,8 @@ from collections import OrderedDict
 from functools import partial
 import json
 
+import influx
+
 from django.conf import settings
 from django.db.models import Q
 
@@ -56,6 +58,7 @@ class ExportAllowed(api_common.BaseApiView):
     ALL_ACC_BD_ADG_MAX_DAYS = 62
     ALL_ACC_BD_CAMP_MAX_DAYS = 160
 
+    @influx.timer('dash.export_plus.allowed_get', type='default')
     @statsd_helper.statsd_timer('dash.export_plus', 'export_plus_allowed_get')
     def get(self, request, level_, id_=None):
         if not request.user.has_perm('zemauth.exports_plus'):
@@ -129,6 +132,7 @@ class SourcesExportAllowed(api_common.BaseApiView):
     ALL_ACC_BD_CAMP_MAX_DAYS = 21
     ALL_ACC_BD_ACC_MAX_DAYS = 62
 
+    @influx.timer('dash.export_plus.allowed_get', type='sources')
     @statsd_helper.statsd_timer('dash.export_plus', 'sources_export_plus_allowed_get')
     def get(self, request, level_, id_=None):
         if not request.user.has_perm('zemauth.exports_plus'):
@@ -216,6 +220,7 @@ class SourcesExportAllowed(api_common.BaseApiView):
 
 
 class AccountCampaignsExport(api_common.BaseApiView):
+    @influx.timer('dash.export_plus.account', type='campaigns')
     @statsd_helper.statsd_timer('dash.export_plus', 'accounts_campaigns_export_plus_get')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
@@ -236,6 +241,7 @@ class AccountCampaignsExport(api_common.BaseApiView):
 
 
 class CampaignAdGroupsExport(ExportApiView):
+    @influx.timer('dash.export_plus.campaign', type='ad_group')
     @statsd_helper.statsd_timer('dash.export_plus', 'campaigns_ad_groups_export_plus_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -256,6 +262,7 @@ class CampaignAdGroupsExport(ExportApiView):
 
 
 class AdGroupAdsPlusExport(ExportApiView):
+    @influx.timer('dash.export_plus.ad_group', type='ads')
     @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_ads_plus_export_plus_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -276,6 +283,7 @@ class AdGroupAdsPlusExport(ExportApiView):
 
 
 class AllAccountsSourcesExport(ExportApiView):
+    @influx.timer('dash.export_plus.all_accounts', type='sources')
     @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_sources_export_plus_get')
     def get(self, request):
         content, filename = export_plus.get_report_from_request(request, by_source=True)
@@ -294,6 +302,7 @@ class AllAccountsSourcesExport(ExportApiView):
 
 
 class AccountSourcesExport(ExportApiView):
+    @influx.timer('dash.export_plus.account', type='sources')
     @statsd_helper.statsd_timer('dash.export_plus', 'account_sources_export_plus_get')
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id)
@@ -314,6 +323,7 @@ class AccountSourcesExport(ExportApiView):
 
 
 class CampaignSourcesExport(ExportApiView):
+    @influx.timer('dash.export_plus.campaign', type='sources')
     @statsd_helper.statsd_timer('dash.export_plus', 'campaign_sources_export_plus_get')
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -334,6 +344,7 @@ class CampaignSourcesExport(ExportApiView):
 
 
 class AdGroupSourcesExport(ExportApiView):
+    @influx.timer('dash.export_plus.ad_group', type='sources')
     @statsd_helper.statsd_timer('dash.export_plus', 'ad_group_sources_export_plus_get')
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -354,6 +365,7 @@ class AdGroupSourcesExport(ExportApiView):
 
 
 class AllAccountsExport(ExportApiView):
+    @influx.timer('dash.export_plus.all_accounts', type='default')
     @statsd_helper.statsd_timer('dash.export_plus', 'all_accounts_export_plus_get')
     def get(self, request):
         content, filename = export_plus.get_report_from_request(request)

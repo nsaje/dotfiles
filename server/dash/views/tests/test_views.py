@@ -1646,7 +1646,7 @@ class AdGroupSourcesTest(TestCase):
         response_dict = json.loads(response.content)
         self.assertItemsEqual(response_dict['data']['sources'], [
             {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False, 'can_retarget': True},  # should return False when DMAs used
-            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': False},
+            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': True},
             {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False, 'can_retarget': True},
         ])
 
@@ -3075,8 +3075,8 @@ class AllAccountsOverviewTest(TestCase):
         user = User.objects.get(pk=user_id)
         self.client.login(username=user.username, password='secret')
         reversed_url = reverse(
-                'all_accounts_overview',
-                kwargs={})
+            'all_accounts_overview',
+            kwargs={})
         response = self.client.get(
             reversed_url,
             follow=True

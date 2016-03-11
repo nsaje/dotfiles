@@ -29,6 +29,8 @@ from django.contrib.auth import login, authenticate
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
 
+import influx
+
 from dash.views import helpers
 
 from utils import lc_helper
@@ -123,6 +125,7 @@ def supply_dash_redirect(request):
 
 class User(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'user_get')
     def get(self, request, user_id):
         response = {}
@@ -159,6 +162,7 @@ def demo_mode(request):
 
 class AccountArchive(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'account_archive_post')
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -174,6 +178,7 @@ class AccountArchive(api_common.BaseApiView):
 
 class AccountRestore(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'account_restore_post')
     def post(self, request, account_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -191,6 +196,7 @@ class AccountRestore(api_common.BaseApiView):
 
 class CampaignArchive(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaign_archive_post')
     def post(self, request, campaign_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -207,6 +213,7 @@ class CampaignArchive(api_common.BaseApiView):
 
 class CampaignRestore(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaign_restore_post')
     def post(self, request, campaign_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -239,6 +246,7 @@ class AdGroupOverview(api_common.BaseApiView):
                 self.ad_group
             ) or 0
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_overview')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_see_infobox'):
@@ -406,6 +414,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
 class AdGroupArchive(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_archive_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -422,6 +431,7 @@ class AdGroupArchive(api_common.BaseApiView):
 
 class AdGroupRestore(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_restore_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -443,6 +453,7 @@ class AdGroupRestore(api_common.BaseApiView):
 
 class CampaignAdGroups(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaigns_ad_group_put')
     def put(self, request, campaign_id):
         if not request.user.has_perm('zemauth.campaign_ad_groups_view'):
@@ -537,6 +548,7 @@ class CampaignAdGroups(api_common.BaseApiView):
 
 class CampaignOverview(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaign_overview')
     def get(self, request, campaign_id):
         if not request.user.has_perm('zemauth.can_see_infobox'):
@@ -574,6 +586,7 @@ class CampaignOverview(api_common.BaseApiView):
         }
         return self.create_api_response(response)
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaign_overview_basic')
     def _basic_settings(self, user, campaign, campaign_settings):
         settings = []
@@ -645,6 +658,7 @@ class CampaignOverview(api_common.BaseApiView):
 
         return settings, daily_cap_value
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'campaign_overview_performance')
     def _performance_settings(self, campaign, user, campaign_settings, daily_cap_cc):
         settings = []
@@ -692,6 +706,7 @@ class CampaignOverview(api_common.BaseApiView):
 
 class AccountOverview(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'account_overview')
     def get(self, request, account_id):
         if not request.user.has_perm('zemauth.can_see_infobox'):
@@ -741,8 +756,9 @@ class AccountOverview(api_common.BaseApiView):
         settings.append(account_manager_setting.as_dict())
 
         sales_manager_setting = infobox_helpers.OverviewSetting(
-            'Sales Representative:',
-            infobox_helpers.format_username(account_settings.default_sales_representative)
+            'Sales Rep.:',
+            infobox_helpers.format_username(account_settings.default_sales_representative),
+            tooltip='Sales Representative'
         )
         settings.append(sales_manager_setting.as_dict())
 
@@ -754,13 +770,17 @@ class AccountOverview(api_common.BaseApiView):
             )
             settings.append(user_setting.as_dict())
         else:
-            for i, user in enumerate(all_users):
-                user_one_setting = infobox_helpers.OverviewSetting(
-                    'Users:' if i == 0 else '',
-                    infobox_helpers.format_username(user),
-                    section_start=i == 0
-                )
-                settings.append(user_one_setting.as_dict())
+            user_blob = ', '.join([infobox_helpers.format_username(u) for u in all_users])
+            users_setting = infobox_helpers.OverviewSetting(
+                'Users:',
+                'Yes' if all_users.count() > 0 else 'No',
+                section_start=True,
+            ).comment(
+                'Show more',
+                'Show less',
+                user_blob
+            )
+            settings.append(users_setting.as_dict())
 
         pixels = models.ConversionPixel.objects.filter(account=account)
         conversion_pixel_setting = infobox_helpers.OverviewSetting(
@@ -775,17 +795,34 @@ class AccountOverview(api_common.BaseApiView):
                 ', '.join(slugs),
             )
         settings.append(conversion_pixel_setting.as_dict())
+
+        allocated_credit, available_credit =\
+            infobox_helpers.calculate_allocated_and_available_credit(account)
+
+        allocated_credit_setting = infobox_helpers.OverviewSetting(
+            'Allocated credit:',
+            lc_helper.default_currency(allocated_credit),
+            description='{} available'.format(lc_helper.default_currency(
+                available_credit
+            )),
+            tooltip='Allocated total and available credit',
+        )
+        settings.append(allocated_credit_setting.as_dict())
+
         return settings
 
     def _performance_settings(self, account, user):
         settings = []
 
-        available_credit = infobox_helpers.calculate_available_credit(account)
-        spent_credit = infobox_helpers.calculate_spend_credit(account)
+        spent_budget, available_budget = \
+            infobox_helpers.calculate_spend_and_available_budget(account)
         spent_credit_setting = infobox_helpers.OverviewSetting(
-            'Spent credit:',
-            lc_helper.default_currency(spent_credit),
-            description=lc_helper.default_currency(available_credit)
+            'Spent budget:',
+            lc_helper.default_currency(spent_budget),
+            description='{} remaining'.format(
+                lc_helper.default_currency(available_budget)
+            ),
+            tooltip='Spent media and remaining media budget on all active budgets on this account'
         )
         settings.append(spent_credit_setting.as_dict())
 
@@ -795,32 +832,15 @@ class AccountOverview(api_common.BaseApiView):
             infobox_helpers.create_yesterday_spend_setting(
                 yesterday_spent,
                 daily_budget
-            ).as_dict()
+            ).as_dict(),
         )
 
         return settings
 
 
-class AdGroupState(api_common.BaseApiView):
-
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_state_get')
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        settings = models.AdGroupSettings.objects.\
-            filter(ad_group=ad_group).\
-            order_by('-created_dt')
-
-        response = {
-            'state': settings[0].state if settings
-            else constants.AdGroupSettingsState.INACTIVE
-        }
-
-        return self.create_api_response(response)
-
-
 class AvailableSources(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'available_sources_get')
     def get(self, request):
         show_archived = request.GET.get('show_archived') == 'true' and\
@@ -850,6 +870,7 @@ class AvailableSources(api_common.BaseApiView):
 
 class AdGroupSources(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
@@ -880,7 +901,7 @@ class AdGroupSources(api_common.BaseApiView):
                 'name': source.name,
                 'can_target_existing_regions': region_targeting_helper.can_target_existing_regions(
                         source, ad_group_settings),
-                'can_retarget': source.can_modify_retargeting_automatically(),
+                'can_retarget': retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
             })
 
         sources_waiting = set([ad_group_source.source.name for ad_group_source
@@ -891,6 +912,7 @@ class AdGroupSources(api_common.BaseApiView):
             'sources_waiting': list(sources_waiting),
         })
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_sources_put')
     def put(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
@@ -941,6 +963,7 @@ class AdGroupSources(api_common.BaseApiView):
 
 class Account(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'account_put')
     def put(self, request):
         if not request.user.has_perm('zemauth.all_accounts_accounts_add_account'):
@@ -961,6 +984,7 @@ class Account(api_common.BaseApiView):
 
 class AccountCampaigns(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'account_campaigns_put')
     def put(self, request, account_id):
         if not request.user.has_perm('zemauth.account_campaigns_view'):
@@ -996,6 +1020,7 @@ class AccountCampaigns(api_common.BaseApiView):
 
 class AdGroupSourceSettings(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_source_settings_put')
     def put(self, request, ad_group_id, source_id):
         if not request.user.has_perm('zemauth.set_ad_group_source_settings'):
@@ -1089,6 +1114,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
 class AdGroupAdsPlusUpload(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_get')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.upload_content_ads'):
@@ -1107,6 +1133,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
             }
         })
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.upload_content_ads'):
@@ -1166,6 +1193,7 @@ class AdGroupAdsPlusUpload(api_common.BaseApiView):
 
 class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_report_get')
     def get(self, request, ad_group_id, batch_id):
         if not request.user.has_perm('zemauth.upload_content_ads'):
@@ -1189,6 +1217,7 @@ class AdGroupAdsPlusUploadReport(api_common.BaseApiView):
 
 class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_cancel_get')
     def get(self, request, ad_group_id, batch_id):
         if not request.user.has_perm('zemauth.upload_content_ads'):
@@ -1215,6 +1244,7 @@ class AdGroupAdsPlusUploadCancel(api_common.BaseApiView):
 
 class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_ads_plus_upload_status_get')
     def get(self, request, ad_group_id, batch_id):
         if not request.user.has_perm('zemauth.upload_content_ads'):
@@ -1273,6 +1303,7 @@ class AdGroupAdsPlusUploadStatus(api_common.BaseApiView):
 
 class AdGroupContentAdArchive(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_archive_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -1324,6 +1355,7 @@ class AdGroupContentAdArchive(api_common.BaseApiView):
 
 class AdGroupContentAdRestore(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_restore_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.archive_restore_entity'):
@@ -1359,6 +1391,7 @@ class AdGroupContentAdRestore(api_common.BaseApiView):
 
 class AdGroupContentAdState(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.set_content_ad_status'):
@@ -1408,6 +1441,7 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict([
 
 class AdGroupContentAdCSV(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_content_ad_state_post')
     def get(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.get_content_ad_csv'):
@@ -1491,6 +1525,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
 
 class PublishersBlacklistStatus(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'ad_group_publisher_blacklist_state_post')
     def post(self, request, ad_group_id):
         if not request.user.has_perm('zemauth.can_modify_publisher_blacklist_status'):
@@ -1934,6 +1969,7 @@ class PublishersBlacklistStatus(api_common.BaseApiView):
 
 class AllAccountsOverview(api_common.BaseApiView):
 
+    @influx.timer('dash.api')
     @statsd_helper.statsd_timer('dash.api', 'all_accounts_overview')
     def get(self, request):
         if not request.user.has_perm('zemauth.can_see_infobox'):

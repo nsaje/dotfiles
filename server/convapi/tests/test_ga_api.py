@@ -62,13 +62,13 @@ class TestGAApiReport(TestCase):
         if metrics == 'ga:sessions,ga:newUsers,ga:bounceRate,ga:pageviews,ga:timeonsite':
             return {'rows': [
                 ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood&_z1_pub=www.test.com', '(not set)', '2', '1', '100.0', '1', '10.0'],
-                ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood&_z1_pub=www.foo.com', '(not set)', '2', '1', '100.0', '1', '10.0'],
+                ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood&_z1_pub=www%2Efoo%2ecom', '(not set)', '2', '1', '100.0', '1', '10.0'],
                 ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42002&_z1_msid=b1_pubmatic&_z1_disga=zemgagood&_z1_pub=www.foo.com', '(not set)', '1', '1', '100.0', '1', '10.0']
                 ], 'itemsPerPage': 1000, 'totalResults': 3}
         elif metrics == 'ga:goal1Completions':
             return {'rows': [
                 ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood&_z1_pub=www.test.com', '(not set)', '2'],
-                ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood&_z1_pub=www.foo.com', '(not set)', '2'],
+                ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42001&_z1_msid=b1_pubmatic&_z1_disga=zemgagood&_z1_pub=www%2Efoo%2ecom', '(not set)', '2'],
                 ['/driving/voltbolt/?_z1_adgid=830&_z1_caid=42002&_z1_msid=b1_pubmatic&_z1_disga=zemgagood&_z1_pub=www.foo.com', '(not set)', '1'],
                 ], 'itemsPerPage': 1000, 'totalResults': 3}
         else:
