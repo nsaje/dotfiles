@@ -548,10 +548,12 @@ def get_adgroup_running_status(ad_group_settings):
     if (running_status == dash.constants.AdGroupRunningStatus.INACTIVE and
             state == dash.constants.AdGroupSettingsState.ACTIVE) or\
             (running_status == dash.constants.AdGroupRunningStatus.ACTIVE and
-            state == dash.constants.AdGroupSettingsState.INACTIVE):
+             state == dash.constants.AdGroupSettingsState.INACTIVE):
         infobox_status = dash.constants.InfoboxStatus.STOPPED
     elif state == dash.constants.AdGroupSettingsState.INACTIVE:
         infobox_status = dash.constants.InfoboxStatus.INACTIVE
+    elif ad_group.campaign.landing_mode:
+        infobox_status = dash.constants.InfoboxStatus.LANDING_MODE
     return infobox_status
 
 
@@ -561,9 +563,10 @@ def get_campaign_running_status(campaign):
         campaign=campaign
     ).filter_running().count()
     if count_active > 0:
+        if campaign.landing_mode:
+            return dash.constants.InfoboxStatus.LANDING_MODE
         return dash.constants.InfoboxStatus.ACTIVE
-    else:
-        return dash.constants.InfoboxStatus.INACTIVE
+    return dash.constants.InfoboxStatus.INACTIVE
 
 
 @statsd_timer('dash.infobox_helpers', 'get_account_running_status')

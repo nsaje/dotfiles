@@ -343,7 +343,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.getAdGroupStatusClass = function (adGroup, campaign) {
-        if (campaign.landingMode) {
+        if (campaign.landingMode && adGroup.state === 'enabled' && adGroup.status === 'running') {
             if ($state.includes('main.adGroups', {id: adGroup.id.toString()})) {
                 return 'adgroup-status-landing-mode-active-icon';
             }
