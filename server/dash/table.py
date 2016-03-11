@@ -804,7 +804,7 @@ class AccountsAccountsTable(object):
             totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
-            result.update(campaign_goal_helpers.create_goal_totals(totals_data))
+            totals_data.update(campaign_goal_helpers.create_goal_totals(totals_data))
 
         flat_fees = None
         if user.has_perm('zemauth.can_view_flat_fees'):
@@ -826,6 +826,7 @@ class AccountsAccountsTable(object):
         accounts_status_dict = self.get_per_account_running_status_dict(accounts, filtered_sources)
 
         rows = self.get_rows(
+            user,
             accounts,
             accounts_settings,
             accounts_status_dict,
@@ -932,7 +933,7 @@ class AccountsAccountsTable(object):
 
         return account_budget, account_total_spend
 
-    def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions,
+    def get_rows(self, user, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions,
                  account_budget, projections, account_total_spend, has_view_archived_permission,
                  show_archived, show_budgets, has_view_managers_permission, flat_fees, order=None):
         rows = []
@@ -1607,7 +1608,7 @@ class AccountCampaignsTable(object):
         totals_stats['unspent_budget'] = totals_stats['budget'] - Decimal(totals_stats.get('cost') or 0)
 
         if user.has_perm('zemauth.campaign_goal_optimization'):
-            totals_data.update(campaign_goal_helpers.create_goal_totals(totals_stats))
+            totals_stats.update(campaign_goal_helpers.create_goal_totals(totals_stats))
 
         account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
         last_success_actions = account_sync.get_latest_success_by_child()
