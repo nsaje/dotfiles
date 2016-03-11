@@ -490,9 +490,9 @@ def calculate_all_accounts_total_budget(start_date, end_date):
     '''
 
     all_blis = dash.models.BudgetLineItem.objects.all()
-    all_blis = all_blis.exclude(
-        Q(start_date__gt=end_date) |
-        Q(end_date__lt=start_date)
+    all_blis = all_blis.filter(
+        start_date__lte=end_date,
+        end_date__gte=start_date
     )
 
     total = Decimal(0)
