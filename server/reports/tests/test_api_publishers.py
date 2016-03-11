@@ -84,7 +84,7 @@ class ApiPublishersTest(TestCase):
 
         stats = api_publishers.query(start_date, end_date, breakdown_fields=breakdown, constraints=constraints)
         constraints.update({'start_date': start_date, 'end_date': end_date})
-        self.assertDictEqual(stats, {
+        self.assertDictEqual(stats[0], {
                                         'clicks': 123,
                                         'cost': 2.6638e-05,
                                         'cpc': 1e-09,
@@ -189,12 +189,13 @@ class ApiPublishersTest(TestCase):
         start_date = datetime.datetime.utcnow()
         end_date = start_date = datetime.timedelta(days=31)
 
+        constraint_list = api_publishers.prepare_active_publishers_constraint_list(blacklist)
         publishers_data = api_publishers.query_active_publishers(
             start_date, end_date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=['-cost'],
             constraints=constraints,
-            blacklist=blacklist
+            constraints_list=constraint_list
         )
 
         self.assertIn(' AND '.join(['NOT (domain=%s AND adgroup_id=%s AND exchange=%s)'] * 2), self._get_query())
@@ -234,12 +235,14 @@ class ApiPublishersTest(TestCase):
         start_date = datetime.datetime.utcnow()
         end_date = start_date = datetime.timedelta(days=31)
 
+        breakdown_fields=['domain', 'exchange']
+        constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields)
         publishers_data = api_publishers.query_blacklisted_publishers(
             start_date, end_date,
-            breakdown_fields=['domain', 'exchange'],
+            breakdown_fields=breakdown_fields,
             order_fields=['-cost'],
             constraints=constraints,
-            blacklist=blacklist
+            constraints_list=constraints_list
         )
 
         self.assertIn(' OR '.join(['(domain=%s AND adgroup_id=%s AND exchange=%s)'] * 2), self._get_query())
@@ -279,12 +282,14 @@ class ApiPublishersTest(TestCase):
         start_date = datetime.datetime.utcnow()
         end_date = start_date = datetime.timedelta(days=31)
 
+        breakdown_fields=['domain', 'exchange']
+        constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields)
         publishers_data = api_publishers.query_blacklisted_publishers(
             start_date, end_date,
-            breakdown_fields=['domain', 'exchange'],
+            breakdown_fields=breakdown_fields,
             order_fields=['-cost'],
             constraints=constraints,
-            blacklist=blacklist
+            constraints_list=constraints_list
         )
 
         self.assertIn('(domain IN (%s,%s) AND adgroup_id=%s AND exchange=%s)', self._get_query())

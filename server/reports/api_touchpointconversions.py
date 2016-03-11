@@ -16,6 +16,7 @@ class RSTouchpointConversionsModel(redshift.RSModel):
         dict(sql='content_ad_id', app='content_ad', out=rs_helpers.unchanged),
         dict(sql='source_id',     app='source',     out=rs_helpers.unchanged),
         dict(sql='slug',          app='slug',       out=rs_helpers.unchanged),
+        dict(sql='publisher',     app="publisher",  out=rs_helpers.unchanged),
     ]
 
     _CONVERSION_FIELDS = [
@@ -36,7 +37,7 @@ class RSTouchpointConversionsModel(redshift.RSModel):
 RSTouchpointConversions = RSTouchpointConversionsModel()
 
 
-def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], constraints={}):
+def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], constraints={}, constraints_list=None):
 
     breakdown = copy.copy(breakdown)
     conversion_goals = copy.copy(conversion_goals)
@@ -48,7 +49,8 @@ def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], con
 
     constraints = db_raw_helpers.extract_obj_ids(constraints)
 
-    constraints_list = []
+    if constraints_list is None:
+        constraints_list = []
     if conversion_goals:
         # create a base object, then OR onto it
         rsq = redshift.RSQ(account=conversion_goals[0].pixel.account_id, slug=conversion_goals[0].pixel.slug,
@@ -56,7 +58,7 @@ def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], con
         for conversion_goal in conversion_goals[1:]:
             rsq |= redshift.RSQ(account=conversion_goal.pixel.account_id, slug=conversion_goal.pixel.slug,
                                 conversion_lag__lte=conversion_goal.conversion_window)
-        constraints_list = [rsq]
+        constraints_list.append(rsq)
 
     cursor = redshift.get_cursor()
 
@@ -73,7 +75,8 @@ def query(start_date, end_date, order=[], breakdown=[], conversion_goals=[], con
         offset=None,
         limit=None,
         constraints=constraints,
-        subquery=subquery
+        subquery=subquery,
+        constraints_list=constraints_list,
     )
 
     cursor.close()

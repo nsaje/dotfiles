@@ -1761,13 +1761,16 @@ class PublishersTable(object):
         if set(models.Source.objects.all()) != set(filtered_sources):
             constraints['exchange'] = map_exchange_to_source_name.keys()
 
+        conversion_goals = adgroup.campaign.conversiongoal_set.all()
         publishers_data, totals_data = self._query_filtered_publishers(
+            user,
             show_blacklisted_publishers,
             start_date,
             end_date,
             adgroup,
             constraints,
-            order
+            order,
+            conversion_goals
         )
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
@@ -1803,6 +1806,13 @@ class PublishersTable(object):
             'order': order,
             'ob_blacklisted_count': count_ob_blacklisted_publishers,
         }
+
+        if user.has_perm('zemauth.view_pubs_conversion_goals'):
+            response['conversion_goals'] = [
+                {'id': cg.get_view_key(conversion_goals), 'name': cg.name}
+                for cg in conversion_goals
+            ]
+
         return response
 
     def _construct_pub_bl_queryset(self, publishers_data, adgroup):
@@ -1911,19 +1921,26 @@ class PublishersTable(object):
         else:
             return False
 
-    def _query_filtered_publishers(self, show_blacklisted_publishers, start_date, end_date, adgroup, constraints, order):
-        if not show_blacklisted_publishers or\
-                show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
-            publishers_data = reports.api_publishers.query(
-                start_date, end_date,
-                breakdown_fields=['domain', 'exchange'],
-                order_fields=[order],
-                constraints=constraints,
-            )
-            totals_data = reports.api_publishers.query(
-                start_date, end_date,
-                constraints=constraints,
-            )
+    def _query_filtered_publishers(self, user, show_blacklisted_publishers, start_date, end_date, adgroup, constraints,
+                                   order, conversion_goals):
+        publishers_data = []
+        totals_data = []
+
+        if not show_blacklisted_publishers or \
+                        show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
+            publishers_data = stats_helper.get_publishers_data_and_conversion_goals(
+                user,
+                reports.api_publishers.query,
+                start_date,
+                end_date,
+                constraints,
+                conversion_goals,
+                False,
+                publisher_breakdown_fields=['domain', 'exchange'],
+                touchpoint_breakdown_fields=['publisher', 'source'],
+                order_fields=[order])
+            totals_data = stats_helper.get_publishers_data_and_conversion_goals(
+                user, reports.api_publishers.query, start_date, end_date, constraints, conversion_goals, True)
         elif show_blacklisted_publishers in (
                 constants.PublisherBlacklistFilter.SHOW_ACTIVE,
                 constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
@@ -1935,22 +1952,34 @@ class PublishersTable(object):
             query_func = None
             if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
                 query_func = reports.api_publishers.query_active_publishers
+                constraints_list = reports.api_publishers.prepare_active_publishers_constraint_list(adg_blacklisted_publishers)
             else:
                 query_func = reports.api_publishers.query_blacklisted_publishers
+                constraints_list = reports.api_publishers.prepare_blacklisted_publishers_constraint_list(adg_blacklisted_publishers, ['domain', 'exchange'])
 
-            publishers_data = query_func(
-                start_date, end_date,
-                breakdown_fields=['domain', 'exchange'],
+            publishers_data = stats_helper.get_publishers_data_and_conversion_goals(
+                user,
+                query_func,
+                start_date,
+                end_date,
+                constraints,
+                conversion_goals,
+                False,
+                publisher_breakdown_fields=['domain', 'exchange'],
+                touchpoint_breakdown_fields=['publisher', 'source'],
                 order_fields=[order],
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-            totals_data = query_func(
-                start_date, end_date,
-                constraints=constraints,
-                blacklist=adg_blacklisted_publishers
-            )
-        return publishers_data, totals_data
+                constraints_list=constraints_list)
+            totals_data = stats_helper.get_publishers_data_and_conversion_goals(
+                user,
+                query_func,
+                start_date,
+                end_date,
+                constraints,
+                conversion_goals,
+                True,
+                constraints_list=constraints_list)
+
+        return publishers_data, totals_data[0]
 
     def get_totals(self,
                    user,
@@ -1981,6 +2010,10 @@ class PublishersTable(object):
             result['total_cost'] = totals_data.get('total_cost', 0)
             result['media_cost'] = totals_data.get('media_cost', 0)
             result['data_cost'] = totals_data.get('data_cost', 0)
+        if user.has_perm('zemauth.view_pubs_conversion_goals'):
+            for key in [k for k in totals_data.keys() if k.startswith('conversion_goal_')]:
+                result[key] = totals_data[key]
+
         return result
 
     def get_rows(self, user, map_exchange_to_source_name, publishers_data):
@@ -2030,6 +2063,9 @@ class PublishersTable(object):
                 row['total_cost'] = publisher_data.get('total_cost', 0)
                 row['media_cost'] = publisher_data.get('media_cost', 0)
                 row['data_cost'] = publisher_data.get('data_cost', 0)
+            if user.has_perm('zemauth.view_pubs_conversion_goals'):
+                for key in [k for k in publisher_data.keys() if k.startswith('conversion_goal_')]:
+                    row[key] = publisher_data[key]
 
             if publisher_data.get('blacklisted_level'):
                 row['blacklisted_level'] = publisher_data['blacklisted_level']

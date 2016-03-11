@@ -1,14 +1,11 @@
 from collections import OrderedDict
 
-import dash.constants
 import reports.api
-import reports.api_helpers
 import reports.api_contentads
+import reports.api_helpers
 import reports.api_touchpointconversions
 import utils.sort_helper
-
-REPORT_GOAL_TYPES = [dash.constants.ConversionGoalType.GA, dash.constants.ConversionGoalType.OMNITURE]
-PIXEL_GOAL_TYPE = dash.constants.ConversionGoalType.PIXEL
+from dash import conversions_helper
 
 
 def get_reports_api_module(can_see_redshift_stats):
@@ -71,6 +68,56 @@ def get_content_ad_stats_with_conversions(
     )
 
 
+def get_publishers_data_and_conversion_goals(user, query_func, start_date, end_date, constraints,
+                                             conversion_goals, total, publisher_breakdown_fields=[],
+                                             touchpoint_breakdown_fields=[], order_fields=[], constraints_list=None):
+    report_conversion_goals = []
+    touchpoint_conversion_goals = []
+    if user.has_perm('zemauth.view_pubs_conversion_goals'):
+        report_conversion_goals = [cg for cg in conversion_goals if cg.type in conversions_helper.REPORT_GOAL_TYPES]
+        touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == conversions_helper.PIXEL_GOAL_TYPE]
+
+    if constraints_list is None:
+        publishers_data = query_func(
+            start_date, end_date,
+            breakdown_fields=publisher_breakdown_fields,
+            order_fields=order_fields,
+            constraints=constraints,
+            conversion_goals=[cg.get_stats_key() for cg in report_conversion_goals],
+        )
+        # touchpoint_data = api_touchpointconversions.query(
+        #     start_date, end_date,
+        #     breakdown=touchpoint_breakdown_fields,
+        #     conversion_goals=touchpoint_conversion_goals,
+        #     constraints=constraints,
+        # )
+    else:
+        publishers_data = query_func(
+            start_date, end_date,
+            breakdown_fields=publisher_breakdown_fields,
+            order_fields=order_fields,
+            constraints=constraints,
+            conversion_goals=[cg.get_stats_key() for cg in report_conversion_goals],
+            constraints_list=constraints_list,
+        )
+        # touchpoint_data = api_touchpointconversions.query(
+        #     start_date, end_date,
+        #     breakdown=touchpoint_breakdown_fields,
+        #     conversion_goals=touchpoint_conversion_goals,
+        #     constraints=constraints,
+        #     constraints_list=constraints_list,
+        # )
+
+    # if total:
+    #     merge_touchpoint_conversion_to_publishers_for_total(publishers_data[0], touchpoint_data)
+    # else:
+    #     merge_touchpoint_conversions_to_publishers_data(publishers_data, touchpoint_data)
+
+    conversions_helper.transform_conversion_goals(publishers_data, conversion_goals)
+
+    return publishers_data
+
+
 def _get_stats_with_conversions(
         user,
         can_see_redshift_stats,
@@ -98,8 +145,8 @@ def _get_stats_with_conversions(
     report_conversion_goals = []
     touchpoint_conversion_goals = []
     if can_see_conversions:
-        report_conversion_goals = [cg for cg in conversion_goals if cg.type in REPORT_GOAL_TYPES]
-        touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == PIXEL_GOAL_TYPE]
+        report_conversion_goals = [cg for cg in conversion_goals if cg.type in conversions_helper.REPORT_GOAL_TYPES]
+        touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == conversions_helper.PIXEL_GOAL_TYPE]
 
     reports_api = get_reports_api_module(can_see_redshift_stats)
     content_ad_stats = reports.api_helpers.filter_by_permissions(reports_api.query(

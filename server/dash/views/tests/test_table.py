@@ -11,7 +11,7 @@ from django.test import TestCase, override_settings
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
-from utils.test_helper import QuerySetMatcher
+from utils.test_helper import QuerySetMatcher, ListMatcher
 from zemauth.models import User
 from dash import models
 from dash import constants
@@ -760,7 +760,7 @@ class AdGroupPublishersTableTest(TestCase):
             'domain': 'example.com',
             'exchange': 'adiant',
         }]
-        mock_stats2 = {
+        mock_stats2 = [{
             'clicks': 323,
             'cost': 2.1,
             'data_cost': 1.9,
@@ -783,7 +783,7 @@ class AdGroupPublishersTableTest(TestCase):
             'bounce_rate': 0.3,
             'pv_per_visit': 10,
             'avg_tos': 20,
-        }
+        }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -809,13 +809,17 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=['domain'],
-            constraints={'ad_group': ad_group.id}
+            constraints={'ad_group': ad_group.id},
+            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
         )
 
         mock_query.assert_any_call(
             date,
             date,
+            breakdown_fields=[],
+            order_fields=[],
             constraints={"ad_group": ad_group.id},
+            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
         )
 
         result = json.loads(response.content)
@@ -852,8 +856,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'total_cost': 2.5,
             u'cpc': 1.3,
             u'ctr': 100.0,
-            u'domain': None,
-            u'domain_link': u'',
             u'blacklisted': u'Active',
             u'can_blacklist_publisher': True,
             u'exchange': 'Adiant',
@@ -869,6 +871,11 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
+            u'conversion_goal_1': 0,
+            u'conversion_goal_2': None,
+            u'conversion_goal_3': None,
+            u'conversion_goal_4': None,
+            u'conversion_goal_5': None,
         }
 
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
@@ -892,7 +899,12 @@ class AdGroupPublishersTableTest(TestCase):
                                                         u'percent_new_users': 0.5,
                                                         u'bounce_rate': 0.3,
                                                         u'pv_per_visit': 10,
-                                                        u'avg_tos': 20, })
+                                                        u'avg_tos': 20,
+                                                        u'conversion_goal_1': 0,
+                                                        u'conversion_goal_2': None,
+                                                        u'conversion_goal_3': None,
+                                                        u'conversion_goal_4': None,
+                                                        u'conversion_goal_5': None, })
 
 
     @patch('dash.table.reports.api_publishers.query_active_publishers')
@@ -922,7 +934,7 @@ class AdGroupPublishersTableTest(TestCase):
             'domain': 'example.com',
             'exchange': 'adsnative',
         }]
-        mock_stats2 = {
+        mock_stats2 = [{
             'clicks': 123,
             'cost': 2.4,
             'media_cost': 2.4,
@@ -942,7 +954,7 @@ class AdGroupPublishersTableTest(TestCase):
             'bounce_rate': 0.3,
             'pv_per_visit': 10,
             'avg_tos': 20,
-        }
+        }]
         mock_active.side_effect = [mock_stats1, mock_stats2]
 
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -966,19 +978,21 @@ class AdGroupPublishersTableTest(TestCase):
         mock_active.assert_any_call(
             date,
             date,
-            blacklist=[],
             breakdown_fields=['domain', 'exchange'],
             order_fields=['domain'],
-            constraints={'ad_group': ad_group.id,
-                        'exchange': ['adsnative']}
+            constraints={'ad_group': ad_group.id, 'exchange': ['adsnative']},
+            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
+            constraints_list=[],
         )
 
         mock_active.assert_any_call(
             date,
             date,
-            blacklist=[],
-            constraints = {"ad_group": ad_group.id,
-                        'exchange': ['adsnative']}
+            breakdown_fields=[],
+            order_fields=[],
+            constraints={"ad_group": ad_group.id, 'exchange': ['adsnative']},
+            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
+            constraints_list=[],
         )
 
         result = json.loads(response.content)
@@ -1018,7 +1032,39 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
+            u'conversion_goal_1': 0,
+            u'conversion_goal_2': None,
+            u'conversion_goal_3': None,
+            u'conversion_goal_4': None,
+            u'conversion_goal_5': None,
         })
+
+        self.assertIn('totals', result['data'])
+        self.assertEqual(result['data']['totals'], {
+            u'ctr': 100.0,
+            u'cpc': 1.3,
+            u'media_cost': 2.4,
+            u'e_media_cost': 2.4,
+            u'data_cost': 0,
+            u'e_data_cost': 0,
+            u'license_fee': 0,
+            u'total_cost': 2.4,
+            u'billing_cost': 2.4,
+            u'impressions': 10560,
+            u'clicks': 123,
+            u'visits': 15,
+            u'click_discrepancy': 3,
+            u'pageviews': 100,
+            u'new_visits': 50,
+            u'percent_new_users': 0.5,
+            u'bounce_rate': 0.3,
+            u'pv_per_visit': 10,
+            u'avg_tos': 20,
+            u'conversion_goal_1': 0,
+            u'conversion_goal_2': None,
+            u'conversion_goal_3': None,
+            u'conversion_goal_4': None,
+            u'conversion_goal_5': None, })
 
     """
     # TODO: Fix this
@@ -1182,7 +1228,7 @@ class AdGroupPublishersTableTest(TestCase):
             'domain': 'test_1',
             'exchange': 'outbrain',
         }]
-        mock_stats2 = {
+        mock_stats2 = [{
             'clicks': 323,
             'cost': 2.1,
             'data_cost': 1.9,
@@ -1205,7 +1251,7 @@ class AdGroupPublishersTableTest(TestCase):
             'bounce_rate': 0.3,
             'pv_per_visit': 10,
             'avg_tos': 20,
-        }
+        }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -1231,13 +1277,17 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=['domain'],
-            constraints={'ad_group': ad_group.id}
+            constraints={'ad_group': ad_group.id},
+            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
         )
 
         mock_query.assert_any_call(
             date,
             date,
+            breakdown_fields=[],
+            order_fields=[],
             constraints={"ad_group": ad_group.id},
+            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
         )
 
         result = json.loads(response.content)
@@ -1293,6 +1343,11 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
+            u'conversion_goal_1': 0,
+            u'conversion_goal_2': None,
+            u'conversion_goal_3': None,
+            u'conversion_goal_4': None,
+            u'conversion_goal_5': None,
         }
 
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
@@ -1316,7 +1371,12 @@ class AdGroupPublishersTableTest(TestCase):
                                                         u'percent_new_users': 0.5,
                                                         u'bounce_rate': 0.3,
                                                         u'pv_per_visit': 10,
-                                                        u'avg_tos': 20, })
+                                                        u'avg_tos': 20,
+                                                        u'conversion_goal_1': 0,
+                                                        u'conversion_goal_2': None,
+                                                        u'conversion_goal_3': None,
+                                                        u'conversion_goal_4': None,
+                                                        u'conversion_goal_5': None, })
 
 
     def test_get_reverse_order(self, mock_query):
@@ -1348,7 +1408,7 @@ class AdGroupPublishersTableTest(TestCase):
             'domain': 'example.com',
             'exchange': 'adiant',
         }]
-        mock_stats2 = {
+        mock_stats2 = [{
             'clicks': 123,
             'cost': 2.4,
             'data_cost': 0,
@@ -1371,7 +1431,7 @@ class AdGroupPublishersTableTest(TestCase):
             'bounce_rate': 0.3,
             'pv_per_visit': 10,
             'avg_tos': 20,
-        }
+        }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -1395,13 +1455,17 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=['-cost'],
-            constraints={'ad_group': ad_group.id, }
+            constraints={'ad_group': ad_group.id, },
+            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            constraints={"ad_group": ad_group.id, }
+            breakdown_fields=[],
+            order_fields=[],
+            constraints={"ad_group": ad_group.id, },
+            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
         )
 
         result = json.loads(response.content)
@@ -1441,6 +1505,11 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
+            u'conversion_goal_1': 0,
+            u'conversion_goal_2': None,
+            u'conversion_goal_3': None,
+            u'conversion_goal_4': None,
+            u'conversion_goal_5': None,
         })
 
     def test_actual_hidden(self, mock_query):
@@ -1482,7 +1551,7 @@ class AdGroupPublishersTableTest(TestCase):
             'domain': 'example.com',
             'exchange': 'adiant',
         }]
-        mock_stats2 = {
+        mock_stats2 = [{
             'clicks': 123,
             'cost': 2.4,
             'data_cost': 0,
@@ -1505,7 +1574,7 @@ class AdGroupPublishersTableTest(TestCase):
             'bounce_rate': 0.3,
             'pv_per_visit': 10,
             'avg_tos': 20,
-        }
+        }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -1529,13 +1598,17 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=['-cost'],
-            constraints={'ad_group': ad_group.id, }
+            constraints={'ad_group': ad_group.id,},
+            conversion_goals=[],
         )
 
         mock_query.assert_any_call(
             date,
             date,
-            constraints={"ad_group": ad_group.id, }
+            breakdown_fields=[],
+            order_fields=[],
+            constraints={"ad_group": ad_group.id, },
+            conversion_goals=[],
         )
 
         result = json.loads(response.content)

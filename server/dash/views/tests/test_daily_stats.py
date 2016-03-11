@@ -438,7 +438,8 @@ class AdGroupPublishersDailyStatsTest(TestCase):
             end_date,
             order_fields=['date'],
             breakdown_fields=['date'],
-            constraints={'ad_group': 1}
+            constraints={'ad_group': 1},
+            conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
         )
 
         self.maxDiff = None
@@ -456,8 +457,30 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                             [start_date.isoformat(), '0.0100'],
                             [end_date.isoformat(), '0.0200']
                         ]
-                    }
+                    },
                 }],
+                'conversion_goals': ListMatcher([
+                        {
+                            'id': 'conversion_goal_5',
+                            'name': 'test conversion goal 5'
+                        },
+                        {
+                            'id': 'conversion_goal_4',
+                            'name': 'test conversion goal 4'
+                        },
+                        {
+                            'id': 'conversion_goal_3',
+                            'name': 'test conversion goal 3'
+                        },
+                        {
+                            'id': 'conversion_goal_2',
+                            'name': 'test conversion goal 2'
+                        },
+                        {
+                            'id': 'conversion_goal_1',
+                            'name': 'test conversion goal'
+                        },
+                    ])
             },
             'success': True
         })
