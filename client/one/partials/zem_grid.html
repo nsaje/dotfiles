@@ -12,12 +12,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="row in dataSource.rows" ng-if="row.visible" ng-class="getRowClass(row)">
+                    <tr ng-repeat="row in dataSource.rows track by $index" ng-if="row.visible" ng-class="getRowClass(row)">
                         <td ng-if="row.type==0" ng-repeat="col in row.data track by $index">
 
-                            <span ng-if="$index===0 && row.dataRow.breakdown">
+                            <span ng-if="$index===0 && row.dataRow.breakdown && row.level>0">
                                 <a ng-click="dataSource.toggleCollapse(row)">
-                                    {{row.collapsed ? ' + ' : ' - '}}
+                                    {{row.collapsed ? '[ + ]' : '[ - ]'}}
                                 </a>
                             </span>
                             <span>{{col}}</span>

@@ -12,53 +12,58 @@ oneApp.factory('zemDataSourceService', ['$http', function ($http) {
 
         this.collapsed = false;
         this.visible = true;
-    };
+
+        this.parent = null;
+    }
 
 
     function DataSource () {
         var that = this;
         this.data = null;
         this.rows = [];
-        this.visibleRows = [];
         this.columns = ['Name'];
         for (var i = 1; i < 11; ++i) {
             this.columns.push('Stat ' + i);
         }
 
-        function parseData (data) {
-            var rows = [];
-            parseBreakdown(data.breakdown, rows, 1);
+        this.breakdowns = ['ad_group', 'age', 'date'];
+        this.defaultPagination = [3, 4, 5];
 
-            var options = {type: 0, level: 0};
+        function parseData (data) {
             var gridRow = new GridRow(0, 0, data);
-            //rows.push({options: options, data: data.data});
+            var rows = parseBreakdown(gridRow, data.breakdown);
+            rows.push(gridRow);
+            return rows;
+        }
+
+        function parseBreakdown (parentGridRow, breakdown) {
+            var rows = [];
+            var level = breakdown.position.length + 1;
+
+            angular.forEach(breakdown.rows, function (row) {
+                var gridRow = new GridRow(0, level, row);
+                gridRow.parent = parentGridRow;
+                rows.push(gridRow);
+                if (row.hasOwnProperty('breakdown')) {
+                    rows = rows.concat(parseBreakdown(gridRow, row.breakdown));
+                }
+            });
+
+            var gridRow = new GridRow(1, level, breakdown);
+            gridRow.parent = parentGridRow;
             rows.push(gridRow);
 
             return rows;
         }
 
-        function parseBreakdown (breakdown, rows, level) {
-            angular.forEach(breakdown.rows, function (row) {
-                var gridRow = new GridRow(0, level, row);
-                rows.push(gridRow);
-
-                if (row.hasOwnProperty('breakdown')) {
-                    parseBreakdown(row.breakdown, rows, level + 1);
-                }
-            });
-
-            // TODO: Move to templates
-            // ["...", showMoreTitle + " < show more >", "", "", "", "", "", "", "", "", ""],
-            //var showMoreTitle = "[showing " + breakdown.rows.length + " out of " + breakdown.pagination.size + "]";
-            var gridRow = new GridRow(1, level, breakdown);
-            rows.push(gridRow);
-
-        }
-
         this.fetchData = function () {
+            debugger;
+
+            var x = _.range(5);
+            var ranges = [[1, this.defaultPagination[0]], [1, this.defaultPagination[1]], []]
             var config = {
                 params: {
-                    breakdowns: 'ad_group,age,date',
+                    breakdowns: this.breakdowns.join(','),
                     ranges: '1|3,1|3,1|3',
                     //breakdowns: 'ad_group,age',
                     //ranges: '1|10,1|4',
@@ -84,7 +89,7 @@ oneApp.factory('zemDataSourceService', ['$http', function ($http) {
 
             var idx = this.rows.indexOf(gridRow);
 
-            gridRow.collapse = !gridRow.collapse;
+            gridRow.collapsed = !gridRow.collapsed;
 
             while (true) {
                 if (idx >= this.rows.length) break;
@@ -92,11 +97,9 @@ oneApp.factory('zemDataSourceService', ['$http', function ($http) {
                 var child = this.rows[++idx];
                 if (child.level <= gridRow.level) break;
 
-                child.visible = !gridRow.collapse;
+                child.visible = !gridRow.collapsed && !child.parent.collapsed;
             }
         };
-
-        this.
 
         this.fetchMore = function (row) {
             var breakdown = row.dataRow;
@@ -137,16 +140,21 @@ oneApp.factory('zemDataSourceService', ['$http', function ($http) {
             var url = '/api/experimental/stats/testdata/';
             $http.get(url, config).success(function (data, status) {
 
+                var start = new Date().getTime();
                 var newbreakdown = data.data.breakdown;
                 for (var i = 0; i < row.level - 1; ++i) {
                     newbreakdown = newbreakdown.rows[0].breakdown;
                 }
 
+                var newRows = parseBreakdown(row.parent, newbreakdown);
+                var idx = that.rows.indexOf(row);
+                newRows.pop();
+                that.rows.splice.apply(that.rows, [idx, 0].concat(newRows));
+
                 breakdown.rows = breakdown.rows.concat(newbreakdown.rows);
                 breakdown.pagination.to = newbreakdown.pagination.to;
 
-                that.rows = parseData(that.data);
-                console.log("done parsing");
+                console.log("Parsing took : " + (new Date().getTime() - start));
 
             }).error(function (data, status, headers, config) {
                 console.log('ERROR: ' + status);
