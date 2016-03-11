@@ -2021,11 +2021,18 @@ class AllAccountsOverview(api_common.BaseApiView):
         ))
 
         weekly_active_user_emails = [u.email for u in weekly_active_users]
-        settings.append(infobox_helpers.OverviewSetting(
+        email_list_setting = infobox_helpers.OverviewSetting(
             'Weekly active users:',
-            ', '.join(weekly_active_user_emails) if weekly_active_user_emails != [] else 'No',
+            'Yes' if weekly_active_user_emails != [] else 'None',
             tooltip='E-mails of self managed users in the past 7 days'
-        ))
+        )
+        if weekly_active_user_emails != []:
+            email_list_setting = email_list_setting.comment(
+                'Show more',
+                'Show less',
+                ', '.join(weekly_active_user_emails),
+            )
+        settings.append(email_list_setting)
 
         weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
         settings.append(infobox_helpers.OverviewSetting(
