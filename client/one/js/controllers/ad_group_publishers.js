@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
+oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemOptimisationMetricsService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemOptimisationMetricsService) {
     $scope.selectedTotals = true;
     $scope.selectedColumnsCount = 0;
     $scope.constants = constants;
@@ -655,7 +655,7 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         {
             'name': 'Conversions',
             'fields': ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']
-        }
+        }, zemOptimisationMetricsService.createColumnCategories(),
     ];
 
     $scope.initColumns = function () {
@@ -671,6 +671,13 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.columns.length - 1,
             $scope.hasPermission('zemauth.view_pubs_postclick_stats'),
             $scope.isPermissionInternal('zemauth.view_pubs_postclick_stats')
+        );
+
+        zemOptimisationMetricsService.insertAudienceOptimizationColumns(
+            $scope.columns,
+            $scope.columns.length - 1,
+            $scope.hasPermission('zemauth.campaign_goal_optimization'),
+            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
         );
     };
 

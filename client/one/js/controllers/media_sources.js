@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', '$timeout', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, $timeout) {
+oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$location', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemOptimisationMetricsService', '$timeout', function ($scope, $state, zemUserSettings, $location, api, zemPostclickMetricsService, zemFilterService, zemOptimisationMetricsService, $timeout) {
     $scope.localStoragePrefix = null;
     $scope.selectedTotals = true;
     $scope.selectedSourceIds = [];
@@ -389,6 +389,7 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
             'name': 'Conversions',
             'fields': ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']
         },
+        zemOptimisationMetricsService.createColumnCategories(),
         {
             'name': 'Data Sync',
             'fields': ['last_sync']
@@ -418,6 +419,13 @@ oneApp.controller('MediaSourcesCtrl', ['$scope', '$state', 'zemUserSettings', '$
                 $scope.isPermissionInternal('zemauth.conversion_reports')
             );
         }
+
+        zemOptimisationMetricsService.insertAudienceOptimizationColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.campaign_goal_optimization'),
+            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
+        );
     };
 
     $scope.$watch('chartMetric1', function (newValue, oldValue) {

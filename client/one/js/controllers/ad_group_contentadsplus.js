@@ -1,5 +1,5 @@
 /* globals oneApp, options, angular, constants */
-oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService) { // eslint-disable-line max-len
+oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal', '$location', '$q', 'api', 'zemUserSettings', '$timeout', 'zemFilterService', 'zemPostclickMetricsService', 'zemOptimisationMetricsService', function ($scope, $window, $state, $modal, $location, $q, api, zemUserSettings, $timeout, zemFilterService, zemPostclickMetricsService, zemOptimisationMetricsService) { // eslint-disable-line max-len
     var contentAdsNotLoaded = $q.defer();
 
     $scope.order = '-upload_time';
@@ -490,7 +490,8 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
     }, {
         name: 'Conversions',
         fields: ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']
-    }];
+    }, zemOptimisationMetricsService.createColumnCategories(),
+    ];
 
     $scope.addContentAds = function () {
         var modalInstance = $modal.open({
@@ -802,6 +803,13 @@ oneApp.controller('AdGroupAdsPlusCtrl', ['$scope', '$window', '$state', '$modal'
             $scope.columns.length - 2,
             $scope.hasPermission('zemauth.conversion_reports'),
             $scope.isPermissionInternal('zemauth.conversion_reports')
+        );
+
+        zemOptimisationMetricsService.insertAudienceOptimizationColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.campaign_goal_optimization'),
+            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
         );
     };
 
