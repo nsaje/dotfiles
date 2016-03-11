@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from django.conf import settings
 
 import newrelic.agent
+import influx
 
 from auth import MailGunRequestAuth, GASourceAuth
 from helpers import store_to_s3
@@ -129,7 +130,6 @@ def mailgun_gareps(request):
 
     statsd_incr('convapi.accepted_emails')
     influx.incr('convapi.emails', 1, stage='accepted')
-
 
     s3_key = None
     attachment_name = ''

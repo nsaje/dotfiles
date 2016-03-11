@@ -6,6 +6,8 @@ import utils.lc_helper
 
 import reports.api_helpers
 from django.db.models import Q
+from django.db import models
+from django.db.models import Sum, F, ExpressionWrapper
 
 import dash.constants
 import dash.models
@@ -328,6 +330,20 @@ def calculate_daily_account_cap(account):
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_available_media_campaign_budget')
+def calculate_available_media_account_budget(account):
+    # campaign budget based on non-depleted budget line items
+    today = datetime.datetime.utcnow().date()
+    budgets = _retrieve_active_budgetlineitems(account.campaign_set.all(), today)
+
+    ret = 0
+    for bli in budgets:
+        available_total_amount = bli.get_available_amount(today)
+        available_media_amount = available_total_amount * (1 - bli.credit.license_fee)
+        ret += available_media_amount
+    return ret
+
+
+@statsd_timer('dash.infobox_helpers', 'calculate_available_media_campaign_budget')
 def calculate_available_media_campaign_budget(campaign):
     # campaign budget based on non-depleted budget line items
     today = datetime.datetime.utcnow().date()
@@ -341,27 +357,42 @@ def calculate_available_media_campaign_budget(campaign):
     return ret
 
 
-@statsd_timer('dash.infobox_helpers', 'calculate_available_credit')
-def calculate_available_credit(account):
+@statsd_timer('dash.infobox_helpers', 'calculate_allocated_and_available_credit')
+def calculate_allocated_and_available_credit(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
+    credit_total = credits.aggregate(amount_sum=Sum('amount'))
+    budget_total = dash.models.BudgetLineItem.objects.filter(
+        credit__in=credits
+    ).aggregate(amount_sum=Sum('amount'))
+    return budget_total['amount_sum'] or 0,\
+        (credit_total['amount_sum'] or 0) - (budget_total['amount_sum'] or 0)
 
-    return sum([credit.effective_amount() * (1 - credit.license_fee) for credit in credits])
 
-
-@statsd_timer('dash.infobox_helpers', 'calculate_spend_credit')
-def calculate_spend_credit(account):
+@statsd_timer('dash.infobox_helpers', 'calculate_spend_and_available_budget')
+def calculate_spend_and_available_budget(account):
     today = datetime.datetime.utcnow().date()
     credits = _retrieve_active_creditlineitems(account, today)
+    account_budgets = _retrieve_active_budgetlineitems(account.campaign_set.all(), today)
+
     statements = reports.models.BudgetDailyStatement.objects.filter(
-        budget__credit__in=credits
+        budget__credit__in=credits,
+        budget__in=account_budgets
     )
     spend_data = reports.budget_helpers.calculate_spend_data(
         statements,
         date=today,
         use_decimal=True
     )
-    return spend_data.get('media', Decimal(0))
+
+    remaining_media = account_budgets.aggregate(
+        amount_sum=ExpressionWrapper(
+            Sum(F('amount') * (1.0 - F('credit__license_fee'))),
+            output_field=models.DecimalField()
+        )
+    )
+    return spend_data.get('media', Decimal(0)),\
+        (remaining_media['amount_sum'] or 0) - (spend_data.get('media', Decimal(0) or 0))
 
 
 @statsd_timer('dash.infobox_helpers', 'calculate_yesterday_account_spend')
@@ -593,9 +624,9 @@ def get_account_running_status(account):
 
 @statsd_timer('dash.infobox_helpers', '_retrieve_active_creditlineitems')
 def _retrieve_active_creditlineitems(account, date):
-    return [credit for credit in dash.models.CreditLineItem.objects.filter(
+    return dash.models.CreditLineItem.objects.filter(
         account=account
-    ) if credit.is_active(date)]
+    ).filter_active()
 
 
 @statsd_timer('dash.infobox_helpers', '_compute_daily_cap')

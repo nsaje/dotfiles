@@ -684,24 +684,6 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
-    def test_calculate_spend_credit(self):
-        account = dash.models.Account.objects.get(pk=1)
-        available_credit = dash.infobox_helpers.calculate_spend_credit(account)
-        self.assertEqual(0, available_credit)
-
-        date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
-        reports.models.BudgetDailyStatement.objects.create(
-            budget=self.budget,
-            date=date,
-            media_spend_nano=10 * 10**9,
-            data_spend_nano=10 * 10**9,
-            license_fee_nano=10 * 10**9
-        )
-
-        account = dash.models.Account.objects.get(pk=1)
-        available_credit = dash.infobox_helpers.calculate_spend_credit(account)
-        self.assertEqual(10, available_credit)
-
     def test_calculate_yesterday_account_spend(self):
         account = dash.models.Account.objects.get(pk=1)
         available_credit = dash.infobox_helpers.calculate_yesterday_account_spend(account)
@@ -871,15 +853,17 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         cap = dash.infobox_helpers.calculate_daily_account_cap(account)
         self.assertEqual(50, cap)
 
-    def test_calculate_available_credit(self):
+    def test_calculate_allocated_and_available_credit(self):
         account = dash.models.Account.objects.get(pk=1)
-        available_credit = dash.infobox_helpers.calculate_available_credit(account)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(0, available_credit)
+        self.assertEqual(0, allocated_credit)
 
         user = zemauth.models.User.objects.get(pk=1)
         start_date = datetime.datetime.today().date()
         end_date = start_date + datetime.timedelta(days=99)
-        dash.models.CreditLineItem.objects.create(
+        credit = dash.models.CreditLineItem.objects.create(
             account=account,
             start_date=start_date,
             end_date=end_date,
@@ -888,5 +872,97 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             created_by=user,
         )
 
-        available_credit = dash.infobox_helpers.calculate_available_credit(account)
-        self.assertEqual(80, available_credit)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(100, available_credit)
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=40,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+        )
+
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(40, allocated_credit)
+        self.assertEqual(60, available_credit)
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=60,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+        )
+
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(100, allocated_credit)
+        self.assertEqual(00, available_credit)
+
+    def test_calculate_spend_and_available_budget(self):
+        account = dash.models.Account.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        account_spend, budget_available = dash.infobox_helpers.calculate_spend_and_available_budget(account)
+        self.assertEqual(0, account_spend)
+        self.assertEqual(0, budget_available)
+
+        user = zemauth.models.User.objects.get(pk=1)
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        dash.models.CreditLineItem.objects.create(
+            account=account,
+            start_date=start_date,
+            end_date=end_date,
+            license_fee=0.1,
+            amount=100,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        account_spend, budget_available = dash.infobox_helpers.calculate_spend_and_available_budget(account)
+        self.assertEqual(0, account_spend)
+        # as long as there are no budgets available there-s nothing to spend
+        self.assertEqual(0, budget_available)
+
+        budget = dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=40,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+        )
+
+        account_spend, budget_available = dash.infobox_helpers.calculate_spend_and_available_budget(account)
+        self.assertEqual(0, account_spend)
+        # as long as there are no budgets available there-s nothing to spend
+        self.assertEqual(36, budget_available)
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=60,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+        )
+
+        account_spend, budget_available = dash.infobox_helpers.calculate_spend_and_available_budget(account)
+        self.assertEqual(0, account_spend)
+        # as long as there are no budgets available there-s nothing to spend
+        self.assertEqual(90, budget_available)
+
+        reports.models.BudgetDailyStatement.objects.create(
+            budget=budget,
+            date=start_date,
+            media_spend_nano=10 * 10**9,
+            data_spend_nano=0,
+            license_fee_nano=0
+        )
+
+        account_spend, budget_available = dash.infobox_helpers.calculate_spend_and_available_budget(account)
+        self.assertEqual(10, account_spend)
+        # as long as there are no budgets available there-s nothing to spend
+        self.assertEqual(80, budget_available)

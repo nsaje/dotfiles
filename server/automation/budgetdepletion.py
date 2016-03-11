@@ -4,6 +4,8 @@ import pytz
 import traceback
 import decimal
 
+import influx
+
 from django.db.models import Q
 from django.conf import settings
 from django.core.mail import send_mail
@@ -173,6 +175,7 @@ Zemanta
         )
 
 
+@influx.timer('automation.budgetdepletion.budget_campaigns', operation='notify_depleting')
 @statsd_timer('automation.budgetdepletion', 'notify_depleting_budget_campaigns')
 def notify_depleting_budget_campaigns():
     campaigns = automation.helpers.get_active_campaigns()
@@ -189,6 +192,7 @@ def notify_depleting_budget_campaigns():
             )
 
 
+@influx.timer('automation.budgetdepletion.budget_campaigns', operation='stop_and_notify_depleted')
 @statsd_timer('automation.budgetdepletion', 'stop_and_notify_depleted_budget_campaigns')
 def stop_and_notify_depleted_budget_campaigns():
     campaigns = automation.helpers.get_active_campaigns()

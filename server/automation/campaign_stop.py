@@ -2,6 +2,8 @@
 import datetime
 import logging
 
+import newrelic.agent
+
 import dash.constants
 import dash.models
 from utils import dates_helper, email_helper, url_helper
@@ -16,6 +18,7 @@ TEMP_EMAILS = [
 ]
 
 
+@newrelic.agent.background_task()
 def switch_low_budget_campaigns_to_landing_mode():
     for campaign in dash.models.Campaign.objects.filter(landing_mode=False).iterator():
         available_tomorrow, max_daily_budget = _get_minimum_remaining_budget(campaign)

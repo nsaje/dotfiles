@@ -148,7 +148,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test campaign 1',
-                'landing_mode': False,
+                'landingMode': False,
             }
         })
 
@@ -165,7 +165,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': True,
                 'id': 3,
                 'name': 'test campaign 3',
-                'landing_mode': False,
+                'landingMode': False,
             }
         })
 
@@ -180,7 +180,7 @@ class NavigationDataViewTest(TestCase):
             'campaign': {
                 'id': 2,
                 'name': 'test campaign 2',
-                'landing_mode': False,
+                'landingMode': False,
             }
         })
 
@@ -213,7 +213,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 1,
                 'name': 'test campaign 1',
-                'landing_mode': False,
+                'landingMode': False,
             },
             'ad_group': {
                 'archived': False,
@@ -242,7 +242,7 @@ class NavigationDataViewTest(TestCase):
                 'archived': False,
                 'id': 2,
                 'name': 'test campaign 2',
-                'landing_mode': False,
+                'landingMode': False,
             },
             'ad_group': {
                 'archived': True,
@@ -266,7 +266,7 @@ class NavigationDataViewTest(TestCase):
             'campaign': {
                 'id': 2,
                 'name': 'test campaign 2',
-                'landing_mode': False,
+                'landingMode': False,
             },
             'ad_group': {
                 'id': 4,
@@ -338,7 +338,7 @@ class NavigationTreeViewTest(TestCase):
                 "archived": False,
                 "id": 1,
                 "name": "test campaign 1",
-                "landing_mode": False,
+                "landingMode": False,
             }],
             "id": 1,
             "name": "test account 1",
@@ -374,7 +374,7 @@ class NavigationTreeViewTest(TestCase):
                     "state": "paused",
                     "status": "stopped"  # source paused
                 }],
-                "landing_mode": False,
+                "landingMode": False,
                 "archived": False,
                 "id": 1,
                 "name": "test campaign 1"
@@ -403,7 +403,7 @@ class NavigationTreeViewTest(TestCase):
                 ],
                 "id": 2,
                 "name": "test campaign 2",
-                "landing_mode": False,
+                "landingMode": False,
             }],
             "id": 2,
             "name": "test account 2",
@@ -433,7 +433,7 @@ class NavigationTreeViewTest(TestCase):
                 "id": 2,
                 "name": "test campaign 2",
                 "archived": False,
-                "landing_mode": False,
+                "landingMode": False,
             }],
             "id": 2,
             "name": "test account 2",
