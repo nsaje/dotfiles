@@ -37,7 +37,7 @@ def get_campaign_dict(campaign, campaign_settings=None, include_archived_flag=Fa
     campaign_dict = {
         'id': campaign.id,
         'name': campaign.name,
-        'landing_mode': campaign.landing_mode,
+        'landingMode': campaign.landing_mode,
     }
 
     if include_archived_flag:

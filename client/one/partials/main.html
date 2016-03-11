@@ -12,7 +12,7 @@
                             <span class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived || account.archived }" ng-if="!canAccessCampaigns()">{{ campaign.name }}</span>
                             <a class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString()}), 'archived': campaign.archived || account.archived }" ng-if="canAccessCampaigns()" zem-in-link="{{ getDefaultCampaignState() }}({ id: campaign.id})">{{ campaign.name }}</a>
                             <div class="nav-group ad-group-group" ng-if="!adGroup.archived || getShowArchived()" ng-repeat="adGroup in campaign.adGroups">
-                                <a class="nav-name ad-group-name" zem-in-link="{{ getDefaultAdGroupState() }}({ id: adGroup.id })" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }), 'archived': adGroup.archived || campaign.archived || account.archived }"><span class="ng-scope" ng-class="'adgroup-status-' + adGroup.state + '-' + adGroup.status + '-icon'"></span>{{ adGroup.name }}</a>
+                                <a class="nav-name ad-group-name" zem-in-link="{{ getDefaultAdGroupState() }}({ id: adGroup.id })" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }), 'archived': adGroup.archived || campaign.archived || account.archived }"><span class="ng-scope" ng-class="getAdGroupStatusClass(adGroup, campaign)"></span>{{ adGroup.name }}</a>
                             </div>
                         </div>
                     </div>
@@ -22,7 +22,7 @@
                                 <span class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived || account.archived }" ng-if="!canAccessCampaigns() ">{{ campaign.name }}</span>
                                 <a class="nav-name campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived }" ng-if="canAccessCampaigns()" zem-in-link="{{ getDefaultCampaignState() }}({ id: campaign.id})">{{ campaign.name }}</a>
                                 <div class="nav-group ad-group-group" ng-if="!adGroup.archived || getShowArchived()" ng-repeat="adGroup in campaign.adGroups">
-                                    <a class="nav-name ad-group-name" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }), 'archived': adGroup.archived }" zem-in-link="{{ getDefaultAdGroupState() }}({ id: adGroup.id })"><span class="ng-scope" ng-class="'adgroup-status-' + adGroup.state + '-' + adGroup.status + '-icon'"></span>{{ adGroup.name }}</a>
+                                    <a class="nav-name ad-group-name" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }), 'archived': adGroup.archived }" zem-in-link="{{ getDefaultAdGroupState() }}({ id: adGroup.id })"><span class="ng-scope" ng-class="getAdGroupStatusClass(adGroup, campaign)"></span>{{ adGroup.name }}</a>
                                 </div>
                             </div>
                         </div>
@@ -39,7 +39,7 @@
                             <a ng-if="canAccessCampaigns()" class="campaign-name" ng-class="{'active': $state.includes('main.campaigns', { id: campaign.id.toString() }), 'archived': campaign.archived }" zem-in-link="{{ $state.includes('*.campaigns.**') ? $state.current.name : getDefaultCampaignState() }}({ id: campaign.id })">{{ campaign.name }}</a>
                             <ul class="list-group ad-groups">
                                 <a class="ad-group-item list-group-item" ng-class="{'active': $state.includes('main.adGroups', { id: adGroup.id.toString() }) }" zem-in-link="{{ $state.includes('*.adGroups.**') ? $state.current.name : getDefaultAdGroupState() }}({ id: adGroup.id })" ng-if="!adGroup.archived || getShowArchived()" ng-repeat="adGroup in campaign.adGroups">
-                                    <span class="ng-scope" ng-class="'adgroup-status-' + adGroup.state + '-' + adGroup.status + '-icon'"></span>
+                                    <span class="ng-scope" ng-class="getAdGroupStatusClass(adGroup, campaign)"></span>
                                     <span class="ad-group-name" ng-class="{'archived': adGroup.archived}">{{ adGroup.name }}</span>
                                 </a>
                             </ul>
