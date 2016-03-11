@@ -2012,12 +2012,19 @@ class AllAccountsOverview(api_common.BaseApiView):
             tooltip="Number of users who logged-in in the past 7 days"
         ))
 
-        weekly_active_users = infobox_helpers.count_weekly_active_users()
+        weekly_active_users = infobox_helpers.get_weekly_active_users()
         settings.append(infobox_helpers.OverviewSetting(
-            'Weekly active users:',
-            weekly_active_users,
+            'Number of weekly active users:',
+            len(weekly_active_users),
             section_start=True,
             tooltip='Number of self managed users in the past 7 days'
+        ))
+
+        weekly_active_user_emails = [u.email for u in weekly_active_users]
+        settings.append(infobox_helpers.OverviewSetting(
+            'Weekly active users:',
+            ', '.join(weekly_active_user_emails) if weekly_active_user_emails != [] else 'No',
+            tooltip='E-mails of self managed users in the past 7 days'
         ))
 
         weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
@@ -2044,8 +2051,8 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         today = datetime.datetime.utcnow()
         start, end = calendar.monthrange(today.year, today.month)
-        start_date = start_date or datetime.datetime(today.year, today.month, 1)
-        end_date = end_date or datetime.datetime(today.year, today.month, end)
+        start_date = start_date or datetime.datetime(today.year, today.month, 1).date()
+        end_date = end_date or datetime.datetime(today.year, today.month, end).date()
 
         total_budget = infobox_helpers.calculate_all_accounts_total_budget(
             start_date,
@@ -2054,13 +2061,15 @@ class AllAccountsOverview(api_common.BaseApiView):
         settings.append(infobox_helpers.OverviewSetting(
             'Total budgets:',
             lc_helper.default_currency(total_budget),
-            section_start=True
+            section_start=True,
+            tooltip='Sum of total budgets in selected date range'
         ))
 
         monthly_budget = infobox_helpers.calculate_all_accounts_monthly_budget(today)
         settings.append(infobox_helpers.OverviewSetting(
             'Monthly budgets:',
-            lc_helper.default_currency(monthly_budget)
+            lc_helper.default_currency(monthly_budget),
+            tooltip='Sum of total budgets from month to date'
         ))
 
         return [setting.as_dict() for setting in settings]

@@ -5,6 +5,7 @@ import exceptions
 import utils.lc_helper
 
 import reports.api_helpers
+from django.db.models import Q
 from django.db import models
 from django.db.models import Sum, F, ExpressionWrapper
 
@@ -13,6 +14,7 @@ import dash.models
 import zemauth.models
 import reports.api_contentads
 import reports.models
+import utils.dates_helper
 
 from utils.statsd_helper import statsd_timer
 
@@ -202,11 +204,10 @@ def get_yesterday_all_accounts_spend():
 
 @statsd_timer('dash.infobox_helpers', 'get_mtd_all_accounts_spend')
 def get_mtd_all_accounts_spend():
-    today = datetime.datetime.utcnow().date()
     daily_statements = reports.models.BudgetDailyStatement.objects.all()
     return reports.budget_helpers.calculate_mtd_spend_data(
         daily_statements,
-        date=today,
+        date=_until_today(),
         use_decimal=True
     ).get('media', Decimal(0))
 
@@ -476,52 +477,85 @@ def calculate_all_accounts_total_budget(start_date, end_date):
     '''
     Total budget in date range is amount of all active
     '''
-    all_amounts_aggregate = dash.models.BudgetLineItem.objects.all().exclude(
-        start_date__gt=end_date
-    ).exclude(
-        end_date__lt=start_date
-    ).aggregate(amount_sum=Sum('amount'))
-    return all_amounts_aggregate['amount_sum'] or 0
+
+    all_blis = dash.models.BudgetLineItem.objects.all()
+    all_blis = all_blis.filter(
+        start_date__lte=end_date,
+        end_date__gte=start_date
+    )
+
+    total = Decimal(0)
+    # the math below basically calculates overlap between budget line item
+    # start and end date and specified-by-user start and end date
+    # when budget falls out of the specified period it is linearly scaled
+    # down so it better represents aproximate total budget in this month
+    for bli in all_blis:
+        out_of_range_days = 0
+        start_diff = (bli.start_date - start_date).days
+        end_diff = (end_date - bli.end_date).days
+
+        if start_diff < 0:
+            out_of_range_days += abs(start_diff)
+        if end_diff < 0:
+            out_of_range_days += abs(end_diff)
+
+        total_budget_duration = (bli.end_date - bli.start_date).days
+        rate_burned_in_range = Decimal(total_budget_duration - out_of_range_days)\
+            / Decimal(total_budget_duration)
+        total += rate_burned_in_range * bli.amount
+
+    return total
 
 
 def calculate_all_accounts_monthly_budget(today):
     start, end = calendar.monthrange(today.year, today.month)
     start_date = datetime.datetime(today.year, today.month, 1)
-    end_date = datetime.datetime(today.year, today.month, end)
-    return calculate_all_accounts_total_budget(start_date, end_date)
+    end_date = _until_today()
+    return calculate_all_accounts_total_budget(start_date.date(), end_date.date())
 
 
 def count_weekly_logged_in_users():
-    now = datetime.datetime.utcnow()
-    one_week_ago = now - datetime.timedelta(days=7)
     return zemauth.models.User.objects.filter(
-        last_login__gte=one_week_ago,
+        last_login__gte=_one_week_ago(),
+        last_login__lte=_until_today(),
     ).exclude(
         email__contains='@zemanta'
+    ).exclude(
+        is_test_user=True
     ).count()
 
 
-@statsd_timer('dash.infobox_helpers', 'count_weekly_active_users')
-def count_weekly_active_users():
+@statsd_timer('dash.infobox_helpers', 'get_weekly_active_users')
+def get_weekly_active_users():
     return dash.models.UserActionLog.objects.filter(
-        created_dt__gte=_one_week_ago()
+        created_dt__gte=_one_week_ago(),
+        created_dt__lte=_until_today(),
     ).exclude(
         created_by__email__contains='@zemanta'
-    ).select_related('created_by').distinct('created_by').count()
+    ).exclude(
+        created_by__is_test_user=True
+    ).select_related('created_by').distinct('created_by')
 
 
 @statsd_timer('dash.infobox_helpers', 'count_weekly_selfmanaged_actions')
 def count_weekly_selfmanaged_actions():
     return dash.models.UserActionLog.objects.filter(
-        created_dt__gte=_one_week_ago()
+        created_dt__gte=_one_week_ago(),
+        created_dt__lte=_until_today(),
     ).exclude(
         created_by__email__contains='@zemanta'
-    ).count()
+    ).exclude(
+        created_by__is_test_user=True
+    ) .count()
 
 
 def _one_week_ago():
-    now = datetime.datetime.utcnow()
+    now = utils.dates_helper.local_midnight_to_utc_time()
     return now - datetime.timedelta(days=7)
+
+
+def _until_today():
+    return utils.dates_helper.local_midnight_to_utc_time()
 
 
 def _retrieve_active_budgetlineitems(campaign, date):
