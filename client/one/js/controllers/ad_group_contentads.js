@@ -372,7 +372,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
             $scope.setAdGroupData('page', $scope.pagination.currentPage);
 
             getTableData();
-            $scope.getAdGroupState();
         }
     };
 

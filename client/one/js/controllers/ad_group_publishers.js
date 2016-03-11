@@ -942,8 +942,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
         $scope.loadPage();
 
-        $scope.getAdGroupState();    // To display message if the adgroup is paused
-
         getTableData();
         getDailyStats();
         $scope.getInfoboxData();

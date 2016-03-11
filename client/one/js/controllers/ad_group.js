@@ -1,5 +1,5 @@
-/*globals oneApp,$,moment*/
-oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'api', 'zemNavigationService', 'adGroupData', function ($scope, $state, $window, $location, api, zemNavigationService, adGroupData) {
+/* globals oneApp,constants */
+oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'api', 'zemNavigationService', 'adGroupData', function ($scope, $state, $window, $location, api, zemNavigationService, adGroupData) { // eslint-disable-line max-len
     $scope.infoboxHeader = null;
     $scope.infoboxBasicSettings = null;
     $scope.infoboxPerformanceSettings = null;
@@ -9,29 +9,36 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
             heading: 'Content Ads',
             route: 'main.adGroups.ads',
             active: true,
-            hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)
+            hidden: ($scope.hasPermission('zemauth.view_archived_entities') &&
+                     $scope.adGroup && $scope.adGroup.archived),
         }, {
             heading: 'Media Sources',
             route: 'main.adGroups.sources',
             active: false,
-            hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)
+            hidden: ($scope.hasPermission('zemauth.view_archived_entities') &&
+                     $scope.adGroup && $scope.adGroup.archived),
         }, {
             heading: 'Publishers',
             route: 'main.adGroups.publishers',
             active: false,
-            hidden: !$scope.hasPermission('zemauth.can_see_publishers') || ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived),
-            internal: $scope.isPermissionInternal('zemauth.can_see_publishers')
+            hidden: !$scope.hasPermission('zemauth.can_see_publishers') ||
+                ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived),
+            internal: $scope.isPermissionInternal('zemauth.can_see_publishers'),
         }, {
             heading: 'Settings',
             route: 'main.adGroups.settings',
             active: false,
-            hidden: (!$scope.hasPermission('dash.settings_view') && !$scope.hasPermission('zemauth.view_archived_entities')) || (!$scope.hasPermission('dash.settings_view') && !($scope.adGroup && $scope.adGroup.archived)) || ($scope.hasPermission('zemauth.ad_group_agency_tab_view') && $scope.hasPermission('zemauth.view_archived_entities') && ($scope.adGroup && $scope.adGroup.archived))
+            hidden: (!$scope.hasPermission('dash.settings_view') &&
+                     !$scope.hasPermission('zemauth.view_archived_entities')) ||
+                (!$scope.hasPermission('dash.settings_view') && !($scope.adGroup && $scope.adGroup.archived)) ||
+                ($scope.hasPermission('zemauth.ad_group_agency_tab_view') &&
+                 $scope.hasPermission('zemauth.view_archived_entities') && ($scope.adGroup && $scope.adGroup.archived)),
         }, {
             heading: 'Agency',
             route: 'main.adGroups.agency',
             active: false,
             hidden: !$scope.hasPermission('zemauth.ad_group_agency_tab_view'),
-            internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view')
+            internal: $scope.isPermissionInternal('zemauth.ad_group_agency_tab_view'),
         }];
 
         if ($scope.adGroup.contentAdsTabWithCMS) {
@@ -39,15 +46,17 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
                 heading: 'Content Ads',
                 route: 'main.adGroups.adsPlus',
                 active: true,
-                hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived)
+                hidden: ($scope.hasPermission('zemauth.view_archived_entities') &&
+                         $scope.adGroup && $scope.adGroup.archived),
             });
         } else if ($scope.hasPermission('zemauth.new_content_ads_tab')) {
             tabs.push({
                 heading: 'Content Ads+',
                 route: 'main.adGroups.adsPlus',
                 active: false,
-                hidden: ($scope.hasPermission('zemauth.view_archived_entities') && $scope.adGroup && $scope.adGroup.archived),
-                internal: $scope.isPermissionInternal('zemauth.new_content_ads_tab')
+                hidden: ($scope.hasPermission('zemauth.view_archived_entities') &&
+                         $scope.adGroup && $scope.adGroup.archived),
+                internal: $scope.isPermissionInternal('zemauth.new_content_ads_tab'),
             });
         }
 
@@ -67,13 +76,14 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         });
     };
 
-    $scope.isAdGroupPaused = false;
-
-    // this function is used by ad_grou_ conrollers to set $scope.$scope.isAdGroupPaused
-    $scope.setAdGroupPaused = function (val) {
-        $scope.isAdGroupPaused = val;
+    $scope.isAdGroupPaused = function () {
+        return $scope.adGroup && $scope.adGroup.state === 'paused';
     };
 
+    $scope.isCampaignLanding = function () {
+        return $scope.adGroup && $scope.adGroup.state === 'enabled' &&
+            $scope.campaign && $scope.campaign.landingMode;
+    };
 
     $scope.setAdGroupData = function (key, value) {
         var data = $scope.adGroupData[$state.params.id] || {};
@@ -89,23 +99,23 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
             name: $scope.account.name,
             state: $scope.getDefaultAccountState(),
             params: {id: $scope.account.id},
-            disabled: !$scope.canAccessAccounts()
+            disabled: !$scope.canAccessAccounts(),
         }, {
-                name: $scope.campaign.name,
-                state: $scope.getDefaultCampaignState(),
-                params: {id: $scope.campaign.id},
-                disabled: !$scope.canAccessCampaigns()
-            }, {
-                name: $scope.adGroup.name,
-                state: $scope.getDefaultAdGroupState(),
-                params: {id: $scope.adGroup.id},
-                disabled: true
-            }],
+            name: $scope.campaign.name,
+            state: $scope.getDefaultCampaignState(),
+            params: {id: $scope.campaign.id},
+            disabled: !$scope.canAccessCampaigns(),
+        }, {
+            name: $scope.adGroup.name,
+            state: $scope.getDefaultAdGroupState(),
+            params: {id: $scope.adGroup.id},
+            disabled: true,
+        }],
             $scope.adGroup.name + ' - ' + $scope.campaign.name
         );
     };
 
-    $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
+    $scope.$on('$stateChangeStart', function () {
         $location.search('source_ids', null);
         $location.search('source_totals', null);
         $location.search('page', null);
@@ -115,17 +125,6 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
         $scope.updateBreadcrumbAndTitle();
         $scope.setActiveTab();
     });
-
-    $scope.getAdGroupState = function () {
-        api.adGroupState.get($state.params.id).then(
-            function (data) {
-                $scope.setAdGroupPaused(data.state === 2 && !$scope.adGroup.archived);
-            },
-            function () {
-                // error
-            }
-        );
-    };
 
     $scope.setModels(adGroupData);
     $scope.tabs = $scope.getTabs();
