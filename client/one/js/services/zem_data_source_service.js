@@ -57,16 +57,15 @@ oneApp.factory('zemDataSourceService', ['$http', function ($http) {
         }
 
         this.fetchData = function () {
-            debugger;
-
-            var x = _.range(5);
-            var ranges = [[1, this.defaultPagination[0]], [1, this.defaultPagination[1]], []]
+            var ranges = [
+                [1, this.defaultPagination[0]].join('|'),
+                [1, this.defaultPagination[1]].join('|'),
+                [1, this.defaultPagination[2]].join('|'),
+            ];
             var config = {
                 params: {
                     breakdowns: this.breakdowns.join(','),
-                    ranges: '1|3,1|3,1|3',
-                    //breakdowns: 'ad_group,age',
-                    //ranges: '1|10,1|4',
+                    ranges: ranges.join(',')
                 },
             };
 
@@ -104,23 +103,19 @@ oneApp.factory('zemDataSourceService', ['$http', function ($http) {
         this.fetchMore = function (row) {
             var breakdown = row.dataRow;
 
-            var qBreakdowns = 'ad_group,age,date';
-            var qRanges = '';
-
-            var breakdowns = ['ad_group', 'age', 'date'];
             var ranges = [];
 
             var from, to;
-            for (var i = 0; i < breakdowns.length; ++i) {
+            for (var i = 0; i < this.breakdowns.length; ++i) {
                 if (row.level > i + 1) {
                     from = breakdown.position[i];
                     to = from + 1;
                 } else if (row.level === i + 1) {
                     from = breakdown.pagination.to;
-                    to = from + 3;
+                    to = from + this.defaultPagination[i];
                 } else {
                     from = 1;
-                    to = 4;
+                    to = this.defaultPagination[i];
                 }
 
                 ranges.push([from, to].join('|'));
@@ -128,7 +123,7 @@ oneApp.factory('zemDataSourceService', ['$http', function ($http) {
 
             var config = {
                 params: {
-                    breakdowns: breakdowns.join(','),
+                    breakdowns: this.breakdowns.join(','),
                     ranges: ranges.join(','),
                 },
             };
