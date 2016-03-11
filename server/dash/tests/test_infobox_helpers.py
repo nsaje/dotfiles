@@ -1,5 +1,6 @@
 import datetime
 
+from decimal import Decimal
 from django.test import TestCase, mock
 
 import zemauth.models
@@ -444,8 +445,8 @@ class InfoBoxAccountHelpersTest(TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
 
-        start_date = datetime.datetime.today().date() - datetime.timedelta(days=62)
-        end_date = start_date + datetime.timedelta(days=99)
+        start_date = datetime.datetime.today().date() - datetime.timedelta(days=30)
+        end_date = datetime.datetime.today().date() + datetime.timedelta(days=30)
 
         self.credit = dash.models.CreditLineItem.objects.create(
             account=account,
@@ -533,7 +534,11 @@ class InfoBoxAccountHelpersTest(TestCase):
 
     def test_calculate_all_accounts_total_budget(self):
         today = datetime.datetime.utcnow().date()
-        self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_total_budget(today, today))
+        day_index = max(0, today.day - 1)
+        day_budget_span = (self.budget.end_date - self.budget.start_date).days
+        # self.assertEqual(Decimal(self.budget.amount) * (Decimal(day_index)/day_budget_span), dash.infobox_helpers.calculate_all_accounts_monthly_budget(today))
+
+        self.assertEqual(100 * (Decimal(1) / day_budget_span), dash.infobox_helpers.calculate_all_accounts_total_budget(today, today + datetime.timedelta(days=1)))
 
         self.assertEqual(0, dash.infobox_helpers.calculate_all_accounts_total_budget(
             today + datetime.timedelta(days=100), today + datetime.timedelta(days=100)
@@ -542,8 +547,8 @@ class InfoBoxAccountHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
 
-        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=62)
-        end_date_1 = start_date_1 + datetime.timedelta(days=15)
+        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=30)
+        end_date_1 = datetime.datetime.utcnow() + datetime.timedelta(days=15)
         dash.models.BudgetLineItem.objects.create(
             campaign=campaign,
             credit=self.credit,
@@ -554,11 +559,11 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
         self.assertEqual(
-            200,
+            (Decimal(50) + Decimal(30.0 / 45) * Decimal(100)).quantize(Decimal('.01')),
             dash.infobox_helpers.calculate_all_accounts_total_budget(
                 today - datetime.timedelta(days=60),
                 today
-            )
+            ).quantize(Decimal('.01'))
         )
 
         # test with date after end of budget
@@ -581,12 +586,18 @@ class InfoBoxAccountHelpersTest(TestCase):
 
     def test_calculate_all_accounts_monthly_budget(self):
         today = datetime.datetime.utcnow()
-        self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_monthly_budget(today))
+        day_index = max(0, today.day - 1)
+        day_budget_span = (self.budget.end_date - self.budget.start_date).days
+
+        self.assertEqual(
+            (Decimal(self.budget.amount) * (Decimal(day_index)/day_budget_span)).quantize(Decimal('.01')),
+            dash.infobox_helpers.calculate_all_accounts_monthly_budget(today).quantize(Decimal('.01'))
+        )
 
         user = zemauth.models.User.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
 
-        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=62)
+        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=30)
         end_date_1 = start_date_1 + datetime.timedelta(days=15)
         dash.models.BudgetLineItem.objects.create(
             campaign=campaign,
@@ -597,7 +608,10 @@ class InfoBoxAccountHelpersTest(TestCase):
             created_by=user,
         )
 
-        self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_monthly_budget(today))
+        self.assertEqual(
+            Decimal(self.budget.amount) * (Decimal(day_index)/day_budget_span),
+            dash.infobox_helpers.calculate_all_accounts_monthly_budget(today)
+        )
 
     def _make_a_john(self):
         ordinary_john = zemauth.models.User.objects.create_user(

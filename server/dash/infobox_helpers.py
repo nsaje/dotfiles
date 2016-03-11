@@ -472,7 +472,7 @@ def calculate_all_accounts_total_budget(start_date, end_date):
     for bli in all_blis:
         out_of_range_days = 0
         start_diff = (bli.start_date - start_date).days
-        end_diff = (bli.end_date - end_date).days
+        end_diff = (end_date - bli.end_date).days
 
         if start_diff < 0:
             out_of_range_days += abs(start_diff)
