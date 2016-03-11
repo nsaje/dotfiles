@@ -1926,8 +1926,7 @@ class PublishersTable(object):
         publishers_data = []
         totals_data = []
 
-        if not show_blacklisted_publishers or \
-                        show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
+        if not show_blacklisted_publishers or show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ALL:
             publishers_data = stats_helper.get_publishers_data_and_conversion_goals(
                 user,
                 reports.api_publishers.query,

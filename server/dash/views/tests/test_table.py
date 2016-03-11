@@ -1598,7 +1598,7 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             breakdown_fields=['domain', 'exchange'],
             order_fields=['-cost'],
-            constraints={'ad_group': ad_group.id,},
+            constraints={'ad_group': ad_group.id, },
             conversion_goals=[],
         )
 
