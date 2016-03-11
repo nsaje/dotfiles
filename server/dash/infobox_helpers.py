@@ -527,14 +527,14 @@ def count_weekly_logged_in_users():
 
 @statsd_timer('dash.infobox_helpers', 'get_weekly_active_users')
 def get_weekly_active_users():
-    return dash.models.UserActionLog.objects.filter(
+    return [action.created_by for action in dash.models.UserActionLog.objects.filter(
         created_dt__gte=_one_week_ago(),
         created_dt__lte=_until_today(),
     ).exclude(
         created_by__email__contains='@zemanta'
     ).exclude(
         created_by__is_test_user=True
-    ).select_related('created_by').distinct('created_by')
+    ).select_related('created_by').distinct('created_by')]
 
 
 @statsd_timer('dash.infobox_helpers', 'count_weekly_selfmanaged_actions')
@@ -546,7 +546,7 @@ def count_weekly_selfmanaged_actions():
         created_by__email__contains='@zemanta'
     ).exclude(
         created_by__is_test_user=True
-    ) .count()
+    ).count()
 
 
 def _one_week_ago():
