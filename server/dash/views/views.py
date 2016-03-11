@@ -2029,8 +2029,8 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         today = datetime.datetime.utcnow()
         start, end = calendar.monthrange(today.year, today.month)
-        start_date = start_date or datetime.datetime(today.year, today.month, 1)
-        end_date = end_date or datetime.datetime(today.year, today.month, end)
+        start_date = start_date or datetime.datetime(today.year, today.month, 1).date()
+        end_date = end_date or datetime.datetime(today.year, today.month, end).date()
 
         total_budget = infobox_helpers.calculate_all_accounts_total_budget(
             start_date,

@@ -532,7 +532,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(1, dash.infobox_helpers.count_active_accounts())
 
     def test_calculate_all_accounts_total_budget(self):
-        today = datetime.datetime.utcnow()
+        today = datetime.datetime.utcnow().date()
         self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_total_budget(today, today))
 
         self.assertEqual(0, dash.infobox_helpers.calculate_all_accounts_total_budget(
