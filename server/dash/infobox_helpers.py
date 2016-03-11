@@ -22,17 +22,6 @@ from decimal import Decimal
 
 MAX_PREVIEW_REGIONS = 1
 
-TEST_USERS = [
-    "tadej.pavlic@gmail.com",
-    "gracner.timotej@gmail.com",
-    "nettisunny@gmail.com",
-    "mmelisaratos@gmail.com",
-    "timotej@gracner.net",
-    "dillonferdinandi@gmail.com",
-    "primoz.mavsar@gmail.com",
-    "simon.mihevc@gmail.com",
-]
-
 
 class OverviewSetting(object):
 
@@ -532,7 +521,7 @@ def count_weekly_logged_in_users():
     ).exclude(
         email__contains='@zemanta'
     ).exclude(
-        email__in=TEST_USERS
+        is_test_user=True
     ).count()
 
 
@@ -544,7 +533,7 @@ def get_weekly_active_users():
     ).exclude(
         created_by__email__contains='@zemanta'
     ).exclude(
-        created_by__email__in=TEST_USERS
+        created_by__is_test_user=True
     ).select_related('created_by').distinct('created_by')
 
 
@@ -556,7 +545,7 @@ def count_weekly_selfmanaged_actions():
     ).exclude(
         created_by__email__contains='@zemanta'
     ).exclude(
-        created_by__email__in=TEST_USERS
+        created_by__is_test_user=True
     ) .count()
 
 

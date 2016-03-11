@@ -87,7 +87,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
 
     is_test_user = models.BooleanField(
         default=False,
-        help_text='Designates whether user is an internal testing user and will not contribute towards certain statistics.'
+        help_text=_('Designates whether user is an internal testing user and will not contribute towards certain statistics.')
     )
 
     objects = UserManager()
