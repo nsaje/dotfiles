@@ -535,10 +535,14 @@ class InfoBoxAccountHelpersTest(TestCase):
     def test_calculate_all_accounts_total_budget(self):
         today = datetime.datetime.utcnow().date()
         day_budget_span = (self.budget.end_date - self.budget.start_date).days
-        # self.assertEqual(Decimal(self.budget.amount) * (Decimal(day_index)/day_budget_span), dash.infobox_helpers.calculate_all_accounts_monthly_budget(today))
 
-        self.assertEqual(100 * (Decimal(1) / day_budget_span), dash.infobox_helpers.calculate_all_accounts_total_budget(today, today + datetime.timedelta(days=1)))
-
+        self.assertEqual(
+            100 * (Decimal(1) / day_budget_span),
+            dash.infobox_helpers.calculate_all_accounts_total_budget(
+                today,
+                today + datetime.timedelta(days=1)
+            )
+        )
         self.assertEqual(0, dash.infobox_helpers.calculate_all_accounts_total_budget(
             today + datetime.timedelta(days=100), today + datetime.timedelta(days=100)
         ))

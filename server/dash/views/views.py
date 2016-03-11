@@ -2020,7 +2020,7 @@ class AllAccountsOverview(api_common.BaseApiView):
             tooltip='Number of self managed users in the past 7 days'
         ))
 
-        weekly_active_user_emails = [u.email for u in weekly_active_users ]
+        weekly_active_user_emails = [u.email for u in weekly_active_users]
         settings.append(infobox_helpers.OverviewSetting(
             'Weekly active users:',
             ', '.join(weekly_active_user_emails) if weekly_active_user_emails != [] else 'No',
