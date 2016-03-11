@@ -35,6 +35,7 @@ def generate_random_data(breakdowns, level=0, key='Total'):
         rows = []
         breakdown['rows'] = rows
         breakdown['pagination'] = pagination
+        breakdown['position'] = [1 for _ in range(level)] # TODO : url for fetching more
 
         for k in keys:
             r = generate_random_data(breakdowns, level + 1, k)

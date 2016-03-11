@@ -12,9 +12,26 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="row in dataSource.rows" ng-class="getRowClass(row)">
-                        <td ng-repeat="col in row.data track by $index">
+                    <tr ng-repeat="row in dataSource.rows" ng-if="row.visible" ng-class="getRowClass(row)">
+                        <td ng-if="row.type==0" ng-repeat="col in row.data track by $index">
+
+                            <span ng-if="$index===0 && row.dataRow.breakdown">
+                                <a ng-click="dataSource.toggleCollapse(row)">
+                                    {{row.collapsed ? ' + ' : ' - '}}
+                                </a>
+                            </span>
                             <span>{{col}}</span>
+                        </td>
+
+                        <td ng-if="row.type==1">
+                            <a ng-click="dataSource.fetchMore(row)">
+                                {{row.dataRow.rows.length}} of {{row.dataRow.pagination.size}} (show more)
+                            </a>
+                        </td>
+                        <td ng-if="row.type==1" colspan="11">
+                            <a ng-click="dataSource.fetchMore(row)">
+                                 ...
+                            </a>
                         </td>
                     </tr>
                 </tbody>

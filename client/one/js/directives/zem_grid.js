@@ -18,7 +18,7 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
             };
             // TODO: move to filter/template
             $scope.getRowClass = function (row) {
-                switch (row.options.level) {
+                switch (row.level) {
                     case 0: return 'level-0';
                     case 1: return 'level-1';
                     case 2: return 'level-2';
