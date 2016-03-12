@@ -792,13 +792,13 @@ class AdGroupPublishersTableTest(TestCase):
 
         mock_stats3 = [{
             'date': date.isoformat(),
-            'conversion_count': 64L,
+            'conversion_count': 64,
             'slug': 'test_goal',
             'source': 7,
             'publisher': 'example.com'
         }]
         mock_stats4 = [{
-            'conversion_count': 64L,
+            'conversion_count': 64,
             'slug': 'test_goal',
         }]
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
@@ -995,13 +995,13 @@ class AdGroupPublishersTableTest(TestCase):
 
         mock_stats3 = [{
             'date': date.isoformat(),
-            'conversion_count': 64L,
+            'conversion_count': 64,
             'slug': 'test_goal',
             'source': 1,
             'publisher': 'example.com'
         }]
         mock_stats4 = [{
-            'conversion_count': 64L,
+            'conversion_count': 64,
             'slug': 'test_goal',
         }]
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
@@ -1326,13 +1326,13 @@ class AdGroupPublishersTableTest(TestCase):
 
         mock_stats3 = [{
             'date': date.isoformat(),
-            'conversion_count': 64L,
+            'conversion_count': 64,
             'slug': 'test_goal',
             'source': 3,
             'publisher': 'test_1'
         }]
         mock_stats4 = [{
-            'conversion_count': 64L,
+            'conversion_count': 64,
             'slug': 'test_goal',
         }]
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
@@ -1535,13 +1535,13 @@ class AdGroupPublishersTableTest(TestCase):
 
         mock_stats3 = [{
             'date': date.isoformat(),
-            'conversion_count': 64L,
+            'conversion_count': 64,
             'slug': 'test_goal',
             'source': 7,
             'publisher': 'example.com'
         }]
         mock_stats4 = [{
-            'conversion_count': 64L,
+            'conversion_count': 64,
             'slug': 'test_goal',
         }]
         mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]

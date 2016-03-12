@@ -425,11 +425,11 @@ class AdGroupPublishersDailyStatsTest(TestCase):
 
         mock_stats2 = [{
             'date': start_date.isoformat(),
-            'conversion_count': 64L,
+            'conversion_count': 64,
             'slug': 'test_goal',
         }, {
             'date': start_date.isoformat(),
-            'conversion_count': 64L,
+            'conversion_count': 64,
             'slug': 'test_goal',
         }]
         mock_touchpointconversins_query.return_value = mock_stats2
