@@ -12,6 +12,7 @@ from dash import bcm_helpers
 from dash import stats_helper
 from dash import publisher_helpers
 from dash import validation_helpers
+from dash import campaign_goal_helpers
 
 import utils.pagination
 from utils import exc
@@ -573,6 +574,9 @@ class SourcesTable(object):
         else:
             result['daily_budget'] = get_current_daily_budget_total(sources_states)
 
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            result.update(campaign_goal_helpers.create_goal_totals(result))
+
         return result
 
     def get_state(self, states):
@@ -725,6 +729,10 @@ class SourcesTable(object):
                 if field.startswith('G[') and field.endswith('_conversionrate'):
                     row[field] = val
 
+            # add campaign goal optimisation metrics
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(source_data))
+
             rows.append(row)
 
         if order:
@@ -795,6 +803,9 @@ class AccountsAccountsTable(object):
             totals_data['available_budget'] = totals_data['budget'] - Decimal(sum(account_total_spend.values()))
             totals_data['unspent_budget'] = totals_data['budget'] - Decimal(totals_data.get('cost') or 0)
 
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            totals_data.update(campaign_goal_helpers.create_goal_totals(totals_data))
+
         flat_fees = None
         if user.has_perm('zemauth.can_view_flat_fees'):
             flat_fees = self.get_flat_fees(start_date, end_date, accounts)
@@ -815,6 +826,7 @@ class AccountsAccountsTable(object):
         accounts_status_dict = self.get_per_account_running_status_dict(accounts, filtered_sources)
 
         rows = self.get_rows(
+            user,
             accounts,
             accounts_settings,
             accounts_status_dict,
@@ -921,7 +933,7 @@ class AccountsAccountsTable(object):
 
         return account_budget, account_total_spend
 
-    def get_rows(self, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions,
+    def get_rows(self, user, accounts, accounts_settings, accounts_status_dict, accounts_data, last_actions,
                  account_budget, projections, account_total_spend, has_view_archived_permission,
                  show_archived, show_budgets, has_view_managers_permission, flat_fees, order=None):
         rows = []
@@ -986,6 +998,9 @@ class AccountsAccountsTable(object):
             if flat_fees:
                 row['flat_fee'] = flat_fees.get(aid, Decimal('0.0'))
                 row['total_fee'] = row['flat_fee'] + Decimal(row.get('license_fee') or 0)
+
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(row))
 
             rows.append(row)
 
@@ -1165,6 +1180,10 @@ class AdGroupAdsPlusTable(object):
 
         rows = self._add_submission_status_to_rows(user, page_rows, filtered_sources, ad_group)
 
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            for row in rows:
+                row.update(campaign_goal_helpers.create_goals(row))
+
         total_stats = stats_helper.get_content_ad_stats_with_conversions(
             user,
             start_date,
@@ -1196,7 +1215,7 @@ class AdGroupAdsPlusTable(object):
         response_dict = {
             'rows': rows,
             'batches': [{'id': batch.id, 'name': batch.name} for batch in batches],
-            'totals': self._get_total_row(total_stats),
+            'totals': self._get_total_row(user, total_stats),
             'order': order,
             'pagination': {
                 'currentPage': current_page,
@@ -1227,9 +1246,11 @@ class AdGroupAdsPlusTable(object):
 
         return response_dict
 
-    def _get_total_row(self, stats):
+    def _get_total_row(self, user, stats):
         totals = {}
         helpers.copy_stats_to_row(stats, totals)
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            totals.update(campaign_goal_helpers.create_goal_totals(stats))
         return totals
 
     def _get_url(self, ad_group, content_ad, is_demo):
@@ -1506,6 +1527,10 @@ class CampaignAdGroupsTable(object):
 
             row['last_sync'] = last_sync
             row['editable_fields'] = self.get_editable_fields(ad_group, row)
+
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(row))
+
             rows.append(row)
 
         if order:
@@ -1521,7 +1546,8 @@ class CampaignAdGroupsTable(object):
             totals_data['e_yesterday_cost'] = e_yesterday_cost
         if not user.has_perm('zemauth.can_view_effective_costs') or user.has_perm('zemauth.can_view_actual_costs'):
             totals_data['yesterday_cost'] = yesterday_cost
-
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            totals_data.update(campaign_goal_helpers.create_goal_totals(totals_data))
         return totals_data
 
     def get_editable_fields(self, ad_group, row):
@@ -1580,6 +1606,9 @@ class AccountCampaignsTable(object):
 
         totals_stats['available_budget'] = totals_stats['budget'] - total_spend
         totals_stats['unspent_budget'] = totals_stats['budget'] - Decimal(totals_stats.get('cost') or 0)
+
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            totals_stats.update(campaign_goal_helpers.create_goal_totals(totals_stats))
 
         account_sync = actionlog.sync.AccountSync(account, sources=filtered_sources)
         last_success_actions = account_sync.get_latest_success_by_child()
@@ -1721,6 +1750,9 @@ class AccountCampaignsTable(object):
             row['budget'] = Decimal(campaign_budget.get(campaign.pk, Decimal('0.0')))
             row['available_budget'] = row['budget'] - Decimal(campaign_spend.get(campaign.pk, 0))
             row['unspent_budget'] = row['budget'] - Decimal((row.get('cost') or 0))
+
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(row))
 
             rows.append(row)
 
@@ -2015,6 +2047,9 @@ class PublishersTable(object):
             for key in [k for k in totals_data.keys() if k.startswith('conversion_goal_')]:
                 result[key] = totals_data[key]
 
+        if user.has_perm('zemauth.campaign_goal_optimization'):
+            result.update(campaign_goal_helpers.create_goal_totals(totals_data))
+
         return result
 
     def get_rows(self, user, map_exchange_to_source_name, publishers_data):
@@ -2071,6 +2106,8 @@ class PublishersTable(object):
             if publisher_data.get('blacklisted_level'):
                 row['blacklisted_level'] = publisher_data['blacklisted_level']
                 row['blacklisted_level_description'] = publisher_data['blacklisted_level_description']
+            if user.has_perm('zemauth.campaign_goal_optimization'):
+                row.update(campaign_goal_helpers.create_goals(publisher_data))
 
             rows.append(row)
 

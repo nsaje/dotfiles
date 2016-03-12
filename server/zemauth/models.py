@@ -85,6 +85,11 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
         help_text='Designates whether user has self-manage access and needs onboarding guidance.'
     )
 
+    is_test_user = models.BooleanField(
+        default=False,
+        help_text=_('Designates whether user is an internal testing user and will not contribute towards certain statistics.')
+    )
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -183,6 +188,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_access_campaign_infobox', 'Can access info box on campaign level'),
             ('can_access_account_infobox', 'Can access info box on account level'),
             ('can_access_all_accounts_infobox', 'Can access info box on all accounts level'),
+            ('campaign_goal_optimization', 'Can view aggregate campaign goal optimisation metrics'),
         )
 
     def get_full_name(self):
