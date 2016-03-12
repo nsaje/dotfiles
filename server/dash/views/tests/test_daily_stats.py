@@ -435,7 +435,8 @@ class AdGroupPublishersDailyStatsTest(TestCase):
         mock_touchpointconversins_query.return_value = mock_stats2
 
         ad_group = models.AdGroup.objects.get(pk=1)
-        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
+        touchpoint_conversion_goal = \
+            ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'metrics': ['cpc', 'clicks'],
@@ -485,31 +486,27 @@ class AdGroupPublishersDailyStatsTest(TestCase):
                     },
                 }],
                 'conversion_goals': ListMatcher([
-                        {
-                            'id': 'conversion_goal_5',
-                            'name': 'test conversion goal 5'
-                        },
-                        {
-                            'id': 'conversion_goal_4',
-                            'name': 'test conversion goal 4'
-                        },
-                        {
-                            'id': 'conversion_goal_3',
-                            'name': 'test conversion goal 3'
-                        },
-                        {
-                            'id': 'conversion_goal_2',
-                            'name': 'test conversion goal 2'
-                        },
-                        {
-                            'id': 'conversion_goal_1',
-                            'name': 'test conversion goal'
-                        },
-                    ])
+                    {
+                        'id': 'conversion_goal_5',
+                        'name': 'test conversion goal 5'
+                    },
+                    {
+                        'id': 'conversion_goal_4',
+                        'name': 'test conversion goal 4'
+                    },
+                    {
+                        'id': 'conversion_goal_3',
+                        'name': 'test conversion goal 3'
+                    },
+                    {
+                        'id': 'conversion_goal_2',
+                        'name': 'test conversion goal 2'
+                    },
+                    {
+                        'id': 'conversion_goal_1',
+                        'name': 'test conversion goal'
+                    },
+                ])
             },
             'success': True
         })
-
-
-
-
