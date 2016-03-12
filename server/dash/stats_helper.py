@@ -5,7 +5,8 @@ import reports.api_contentads
 import reports.api_helpers
 import reports.api_touchpointconversions
 import utils.sort_helper
-from dash import conversions_helper
+from dash import conversions_helper, constants
+from reports import api_touchpointconversions, api_publishers
 
 
 def get_reports_api_module(can_see_redshift_stats):
@@ -70,14 +71,16 @@ def get_content_ad_stats_with_conversions(
 
 def get_publishers_data_and_conversion_goals(user, query_func, start_date, end_date, constraints,
                                              conversion_goals, total, publisher_breakdown_fields=[],
-                                             touchpoint_breakdown_fields=[], order_fields=[], constraints_list=None):
+                                             touchpoint_breakdown_fields=[], order_fields=[], show_blacklisted_publishers=None, adg_blacklisted_publishers=None):
+    can_see_conversion_goals = user.has_perm('zemauth.view_pubs_conversion_goals')
+
     report_conversion_goals = []
     touchpoint_conversion_goals = []
-    if user.has_perm('zemauth.view_pubs_conversion_goals'):
+    if can_see_conversion_goals:
         report_conversion_goals = [cg for cg in conversion_goals if cg.type in conversions_helper.REPORT_GOAL_TYPES]
         touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == conversions_helper.PIXEL_GOAL_TYPE]
 
-    if constraints_list is None:
+    if show_blacklisted_publishers is None:
         publishers_data = query_func(
             start_date, end_date,
             breakdown_fields=publisher_breakdown_fields,
@@ -85,35 +88,46 @@ def get_publishers_data_and_conversion_goals(user, query_func, start_date, end_d
             constraints=constraints,
             conversion_goals=[cg.get_stats_key() for cg in report_conversion_goals],
         )
-        # touchpoint_data = api_touchpointconversions.query(
-        #     start_date, end_date,
-        #     breakdown=touchpoint_breakdown_fields,
-        #     conversion_goals=touchpoint_conversion_goals,
-        #     constraints=constraints,
-        # )
+        if can_see_conversion_goals:
+            touchpoint_data = api_touchpointconversions.query(
+                start_date, end_date,
+                breakdown=touchpoint_breakdown_fields,
+                conversion_goals=touchpoint_conversion_goals,
+                constraints=constraints,
+            )
     else:
+        if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+            publisher_constraints_list = reports.api_publishers.prepare_active_publishers_constraint_list(adg_blacklisted_publishers, False)
+            if can_see_conversion_goals:
+                touchpoint_constraints_list = reports.api_publishers.prepare_active_publishers_constraint_list(adg_blacklisted_publishers, True)
+        else:
+            publisher_constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(adg_blacklisted_publishers, publisher_breakdown_fields, False)
+            if can_see_conversion_goals:
+                touchpoint_constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(adg_blacklisted_publishers, touchpoint_breakdown_fields, True)
+
         publishers_data = query_func(
             start_date, end_date,
             breakdown_fields=publisher_breakdown_fields,
             order_fields=order_fields,
             constraints=constraints,
             conversion_goals=[cg.get_stats_key() for cg in report_conversion_goals],
-            constraints_list=constraints_list,
+            constraints_list=publisher_constraints_list,
         )
-        # touchpoint_data = api_touchpointconversions.query(
-        #     start_date, end_date,
-        #     breakdown=touchpoint_breakdown_fields,
-        #     conversion_goals=touchpoint_conversion_goals,
-        #     constraints=constraints,
-        #     constraints_list=constraints_list,
-        # )
+        if can_see_conversion_goals:
+            touchpoint_data = api_touchpointconversions.query(
+                start_date, end_date,
+                breakdown=touchpoint_breakdown_fields,
+                conversion_goals=touchpoint_conversion_goals,
+                constraints=constraints,
+                constraints_list=touchpoint_constraints_list,
+            )
 
-    # if total:
-    #     merge_touchpoint_conversion_to_publishers_for_total(publishers_data[0], touchpoint_data)
-    # else:
-    #     merge_touchpoint_conversions_to_publishers_data(publishers_data, touchpoint_data)
-
-    conversions_helper.transform_conversion_goals(publishers_data, conversion_goals)
+    if can_see_conversion_goals:
+        if total:
+            conversions_helper.merge_touchpoint_conversion_to_publishers_for_total(publishers_data[0], touchpoint_data)
+        else:
+            conversions_helper.merge_touchpoint_conversions_to_publishers_data(publishers_data, touchpoint_data)
+        conversions_helper.transform_conversion_goals(publishers_data, conversion_goals)
 
     return publishers_data
 

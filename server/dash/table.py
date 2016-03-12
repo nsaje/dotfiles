@@ -1951,10 +1951,8 @@ class PublishersTable(object):
             query_func = None
             if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
                 query_func = reports.api_publishers.query_active_publishers
-                constraints_list = reports.api_publishers.prepare_active_publishers_constraint_list(adg_blacklisted_publishers)
             else:
                 query_func = reports.api_publishers.query_blacklisted_publishers
-                constraints_list = reports.api_publishers.prepare_blacklisted_publishers_constraint_list(adg_blacklisted_publishers, ['domain', 'exchange'])
 
             publishers_data = stats_helper.get_publishers_data_and_conversion_goals(
                 user,
@@ -1967,7 +1965,9 @@ class PublishersTable(object):
                 publisher_breakdown_fields=['domain', 'exchange'],
                 touchpoint_breakdown_fields=['publisher', 'source'],
                 order_fields=[order],
-                constraints_list=constraints_list)
+                show_blacklisted_publishers=show_blacklisted_publishers,
+                adg_blacklisted_publishers=adg_blacklisted_publishers,
+            )
             totals_data = stats_helper.get_publishers_data_and_conversion_goals(
                 user,
                 query_func,
@@ -1976,7 +1976,9 @@ class PublishersTable(object):
                 constraints,
                 conversion_goals,
                 True,
-                constraints_list=constraints_list)
+                show_blacklisted_publishers=show_blacklisted_publishers,
+                adg_blacklisted_publishers=adg_blacklisted_publishers,
+            )
 
         return publishers_data, totals_data[0]
 

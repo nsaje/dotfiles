@@ -16,6 +16,7 @@ from zemauth.models import User
 from dash import models
 from dash import constants
 from dash import table
+from dash import conversions_helper
 from actionlog.models import ActionLog
 import actionlog.constants
 
@@ -718,6 +719,7 @@ class AdGroupSourceTableSupplyDashTest(TestCase):
 @override_settings(
     R1_BLANK_REDIRECT_URL='http://example.com/b/{redirect_id}/z1/1/{content_ad_id}/'
 )
+@patch('dash.table.reports.api_touchpointconversions.query')
 @patch('dash.table.reports.api_publishers.query')
 class AdGroupPublishersTableTest(TestCase):
     fixtures = ['test_api.yaml', 'test_views.yaml']
@@ -731,7 +733,7 @@ class AdGroupPublishersTableTest(TestCase):
         with patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
-    def test_get(self, mock_query):
+    def test_get(self, mock_query, mock_touchpointconversins_query):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
@@ -759,6 +761,7 @@ class AdGroupPublishersTableTest(TestCase):
             'avg_tos': 20,
             'domain': 'example.com',
             'exchange': 'adiant',
+            'conversions': {},
         }]
         mock_stats2 = [{
             'clicks': 323,
@@ -783,10 +786,25 @@ class AdGroupPublishersTableTest(TestCase):
             'bounce_rate': 0.3,
             'pv_per_visit': 10,
             'avg_tos': 20,
+            'conversions': {},
         }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
+        mock_stats3 = [{
+            'date': date.isoformat(),
+            'conversion_count': 64L,
+            'slug': 'test_goal',
+            'source': 7,
+            'publisher': 'example.com'
+        }]
+        mock_stats4 = [{
+            'conversion_count': 64L,
+            'slug': 'test_goal',
+        }]
+        mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
+
         ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -810,7 +828,15 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=['domain', 'exchange'],
             order_fields=['domain'],
             constraints={'ad_group': ad_group.id},
-            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
+            conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+        )
+
+        mock_touchpointconversins_query.assert_any_call(
+            date,
+            date,
+            breakdown=['publisher', 'source'],
+            conversion_goals=[touchpoint_conversion_goal],
+            constraints={'ad_group': ad_group.id},
         )
 
         mock_query.assert_any_call(
@@ -819,7 +845,15 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=[],
             order_fields=[],
             constraints={"ad_group": ad_group.id},
-            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
+            conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+        )
+
+        mock_touchpointconversins_query.assert_any_call(
+            date,
+            date,
+            breakdown=[],
+            conversion_goals=[touchpoint_conversion_goal],
+            constraints={'ad_group': ad_group.id},
         )
 
         result = json.loads(response.content)
@@ -908,7 +942,7 @@ class AdGroupPublishersTableTest(TestCase):
 
 
     @patch('dash.table.reports.api_publishers.query_active_publishers')
-    def test_get_filtered_sources(self, mock_active, mock_query):
+    def test_get_filtered_sources(self, mock_active, mock_query, mock_touchpointconversins_query):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
@@ -933,6 +967,7 @@ class AdGroupPublishersTableTest(TestCase):
             'avg_tos': 20,
             'domain': 'example.com',
             'exchange': 'adsnative',
+            'conversions': {},
         }]
         mock_stats2 = [{
             'clicks': 123,
@@ -954,10 +989,25 @@ class AdGroupPublishersTableTest(TestCase):
             'bounce_rate': 0.3,
             'pv_per_visit': 10,
             'avg_tos': 20,
+            'conversions': {},
         }]
         mock_active.side_effect = [mock_stats1, mock_stats2]
 
+        mock_stats3 = [{
+            'date': date.isoformat(),
+            'conversion_count': 64L,
+            'slug': 'test_goal',
+            'source': 1,
+            'publisher': 'example.com'
+        }]
+        mock_stats4 = [{
+            'conversion_count': 64L,
+            'slug': 'test_goal',
+        }]
+        mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
+
         ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -981,7 +1031,16 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=['domain', 'exchange'],
             order_fields=['domain'],
             constraints={'ad_group': ad_group.id, 'exchange': ['adsnative']},
-            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
+            conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+            constraints_list=[],
+        )
+
+        mock_touchpointconversins_query.assert_any_call(
+            date,
+            date,
+            breakdown=['publisher', 'source'],
+            conversion_goals=[touchpoint_conversion_goal],
+            constraints={'ad_group': ad_group.id, 'exchange': ['adsnative']},
             constraints_list=[],
         )
 
@@ -991,7 +1050,16 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=[],
             order_fields=[],
             constraints={"ad_group": ad_group.id, 'exchange': ['adsnative']},
-            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
+            conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+            constraints_list=[],
+        )
+
+        mock_touchpointconversins_query.assert_any_call(
+            date,
+            date,
+            breakdown=['publisher', 'source'],
+            conversion_goals=[touchpoint_conversion_goal],
+            constraints={'ad_group': ad_group.id, 'exchange': ['adsnative']},
             constraints_list=[],
         )
 
@@ -1191,7 +1259,7 @@ class AdGroupPublishersTableTest(TestCase):
         self.assertDictEqual(result['data']['rows'][0], {u'domain': u'example.com', u'domain_link': u'http://example.com', u'blacklisted': u'Active', u'ctr': 100.0, u'exchange': u'AdsNative', u'cpc': 1.3, u'cost': 2.4, u'impressions': 10560, u'clicks': 123, u'source_id': 1})
     """
 
-    def test_get_outbrain_blacklisted_over_quota(self, mock_query):
+    def test_get_outbrain_blacklisted_over_quota(self, mock_query, mock_touchpointconversins_query):
         date = datetime.date(2015, 2, 22)
 
         for i in xrange(10):
@@ -1227,6 +1295,7 @@ class AdGroupPublishersTableTest(TestCase):
             'avg_tos': 20,
             'domain': 'test_1',
             'exchange': 'outbrain',
+            'conversions': {},
         }]
         mock_stats2 = [{
             'clicks': 323,
@@ -1251,10 +1320,25 @@ class AdGroupPublishersTableTest(TestCase):
             'bounce_rate': 0.3,
             'pv_per_visit': 10,
             'avg_tos': 20,
+            'conversions': {},
         }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
+        mock_stats3 = [{
+            'date': date.isoformat(),
+            'conversion_count': 64L,
+            'slug': 'test_goal',
+            'source': 3,
+            'publisher': 'test_1'
+        }]
+        mock_stats4 = [{
+            'conversion_count': 64L,
+            'slug': 'test_goal',
+        }]
+        mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
+
         ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -1278,7 +1362,15 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=['domain', 'exchange'],
             order_fields=['domain'],
             constraints={'ad_group': ad_group.id},
-            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
+            conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+        )
+
+        mock_touchpointconversins_query.assert_any_call(
+            date,
+            date,
+            breakdown=['publisher', 'source'],
+            conversion_goals=[touchpoint_conversion_goal],
+            constraints={'ad_group': ad_group.id},
         )
 
         mock_query.assert_any_call(
@@ -1287,7 +1379,15 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=[],
             order_fields=[],
             constraints={"ad_group": ad_group.id},
-            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
+            conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+        )
+
+        mock_touchpointconversins_query.assert_any_call(
+            date,
+            date,
+            breakdown=[],
+            conversion_goals=[touchpoint_conversion_goal],
+            constraints={'ad_group': ad_group.id},
         )
 
         result = json.loads(response.content)
@@ -1324,8 +1424,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'total_cost': 2.5,
             u'cpc': 1.3,
             u'ctr': 100.0,
-            u'domain': None,
-            u'domain_link': u'',
             u'blacklisted': u'Blacklisted',
             u'can_blacklist_publisher': False,
             u'blacklisted_level': 'account',
@@ -1378,8 +1476,7 @@ class AdGroupPublishersTableTest(TestCase):
                                                         u'conversion_goal_4': None,
                                                         u'conversion_goal_5': None, })
 
-
-    def test_get_reverse_order(self, mock_query):
+    def test_get_reverse_order(self, mock_query, mock_touchpointconversins_query):
         date = datetime.date(2015, 2, 22)
 
         mock_stats1 = [{
@@ -1407,6 +1504,7 @@ class AdGroupPublishersTableTest(TestCase):
             'avg_tos': 20,
             'domain': 'example.com',
             'exchange': 'adiant',
+            'conversions': {},
         }]
         mock_stats2 = [{
             'clicks': 123,
@@ -1431,10 +1529,25 @@ class AdGroupPublishersTableTest(TestCase):
             'bounce_rate': 0.3,
             'pv_per_visit': 10,
             'avg_tos': 20,
+            'conversions': {},
         }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
+        mock_stats3 = [{
+            'date': date.isoformat(),
+            'conversion_count': 64L,
+            'slug': 'test_goal',
+            'source': 7,
+            'publisher': 'example.com'
+        }]
+        mock_stats4 = [{
+            'conversion_count': 64L,
+            'slug': 'test_goal',
+        }]
+        mock_touchpointconversins_query.side_effect = [mock_stats3, mock_stats4]
+
         ad_group = models.AdGroup.objects.get(pk=1)
+        touchpoint_conversion_goal = ad_group.campaign.conversiongoal_set.filter(type=conversions_helper.PIXEL_GOAL_TYPE)[0]
 
         params = {
             'page': 1,
@@ -1456,7 +1569,15 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=['domain', 'exchange'],
             order_fields=['-cost'],
             constraints={'ad_group': ad_group.id, },
-            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
+            conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+        )
+
+        mock_touchpointconversins_query.assert_any_call(
+            date,
+            date,
+            breakdown=['publisher', 'source'],
+            conversion_goals=[touchpoint_conversion_goal],
+            constraints={'ad_group': ad_group.id},
         )
 
         mock_query.assert_any_call(
@@ -1465,7 +1586,15 @@ class AdGroupPublishersTableTest(TestCase):
             breakdown_fields=[],
             order_fields=[],
             constraints={"ad_group": ad_group.id, },
-            conversion_goals=['omniture__5', 'omniture__4', 'ga__3', 'ga__2'],
+            conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
+        )
+
+        mock_touchpointconversins_query.assert_any_call(
+            date,
+            date,
+            breakdown=[],
+            conversion_goals=[touchpoint_conversion_goal],
+            constraints={'ad_group': ad_group.id},
         )
 
         result = json.loads(response.content)
@@ -1512,7 +1641,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'conversion_goal_5': None,
         })
 
-    def test_actual_hidden(self, mock_query):
+    def test_actual_hidden(self, mock_query, mock_touchpointconversins_query):
         self.user = User.objects.get(pk=2)
         self.client.login(username=self.user.email, password='secret')
 
@@ -1550,6 +1679,7 @@ class AdGroupPublishersTableTest(TestCase):
             'avg_tos': 20,
             'domain': 'example.com',
             'exchange': 'adiant',
+            'conversions': {},
         }]
         mock_stats2 = [{
             'clicks': 123,
@@ -1574,6 +1704,7 @@ class AdGroupPublishersTableTest(TestCase):
             'bounce_rate': 0.3,
             'pv_per_visit': 10,
             'avg_tos': 20,
+            'conversions': {},
         }]
         mock_query.side_effect = [mock_stats1, mock_stats2]
 

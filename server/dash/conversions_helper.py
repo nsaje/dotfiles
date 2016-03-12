@@ -44,12 +44,12 @@ def transform_conversion_goals(rows, conversion_goals):
 
 def merge_touchpoint_conversions_to_publishers_data(publishers_data, touchpoint_conversions):
     touchpoint_sources = [tp['source'] for tp in touchpoint_conversions]
-    sources = models.Source.objects.filter(pk__in=touchpoint_sources)
-    sources_by_id = {source.id: source for source in sources}
+    sources = models.Source.objects.filter(pk__in=touchpoint_sources).values('id', 'bidder_slug')
+    sources_by_id = {source['id']: source['bidder_slug'] for source in sources}
 
     publishers_data_by_key = {(p['exchange'], p['domain']): p for p in publishers_data}
     for tp in touchpoint_conversions:
-        key = (sources_by_id[tp['source']].name.lower(), tp['publisher'])
+        key = (sources_by_id[tp['source']], tp['publisher'])
 
         publisher = publishers_data_by_key[key]
         publisher['conversions'][tp['slug']] = tp['conversion_count']

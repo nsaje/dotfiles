@@ -318,10 +318,8 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                 query_func = None
                 if show_blacklisted_publishers == constants.PublisherBlacklistFilter.SHOW_ACTIVE:
                     query_func = reports.api_publishers.query_active_publishers
-                    constraints_list = reports.api_publishers.prepare_active_publishers_constraint_list(adg_blacklisted_publishers)
                 else:
                     query_func = reports.api_publishers.query_blacklisted_publishers
-                    constraints_list = reports.api_publishers.prepare_blacklisted_publishers_constraint_list(adg_blacklisted_publishers, ['date'])
 
                 totals_stats = stats_helper.get_publishers_data_and_conversion_goals(
                     request.user,
@@ -331,10 +329,12 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                     totals_constraints,
                     conversion_goals,
                     True,
-                    constraints_list=constraints_list,
                     publisher_breakdown_fields=['date'],
                     touchpoint_breakdown_fields=['date'],
-                    order_fields=['date'])
+                    order_fields=['date'],
+                    show_blacklisted_publishers=show_blacklisted_publishers,
+                    adg_blacklisted_publishers=adg_blacklisted_publishers,
+                )
 
         breakdown_stats = []
 

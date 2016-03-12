@@ -189,7 +189,7 @@ class ApiPublishersTest(TestCase):
         start_date = datetime.datetime.utcnow()
         end_date = start_date = datetime.timedelta(days=31)
 
-        constraint_list = api_publishers.prepare_active_publishers_constraint_list(blacklist)
+        constraint_list = api_publishers.prepare_active_publishers_constraint_list(blacklist, False)
         publishers_data = api_publishers.query_active_publishers(
             start_date, end_date,
             breakdown_fields=['domain', 'exchange'],
@@ -236,7 +236,7 @@ class ApiPublishersTest(TestCase):
         end_date = start_date = datetime.timedelta(days=31)
 
         breakdown_fields=['domain', 'exchange']
-        constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields)
+        constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields, False)
         publishers_data = api_publishers.query_blacklisted_publishers(
             start_date, end_date,
             breakdown_fields=breakdown_fields,
@@ -283,7 +283,7 @@ class ApiPublishersTest(TestCase):
         end_date = start_date = datetime.timedelta(days=31)
 
         breakdown_fields=['domain', 'exchange']
-        constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields)
+        constraints_list = api_publishers.prepare_blacklisted_publishers_constraint_list(blacklist, breakdown_fields, False)
         publishers_data = api_publishers.query_blacklisted_publishers(
             start_date, end_date,
             breakdown_fields=breakdown_fields,

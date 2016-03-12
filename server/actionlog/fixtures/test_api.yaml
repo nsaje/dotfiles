@@ -206,6 +206,7 @@
         tracking_slug: 'outbrain'
         source_type: 3
         maintenance: false
+        bidder_slug: 'outbrain'
     model: dash.source
     pk: 3
 
