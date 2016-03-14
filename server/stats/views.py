@@ -19,28 +19,34 @@ TEST_BREAKDOWNS_AGES = ['<18', '18-21', '21-30', '30-40', '30-40', '40-50', '50-
 TEST_BREAKDOWNS_SEX = ['man', 'woman']
 
 
-
 class TestMetaData(api_common.BaseApiView):
     pass
 
 
-# http://localhost:8000/api/experimental/stats/testdata/?level-1=ad_group&level-2=date&level-3=age&level-1-pagination=0|5&level-2-pagination=0|5&level-3-pagination=0|5
+#
+# http://localhost:8000/api/experimental/stats/testdata/?breakdown=ad_group,age,date&ranges=1|3,1|4,1|5&level=0
+#
+# breakdown - comma separated values
+# ranges - comma separated ranges - range = from|to ~ [from, to)
+# level - breakdown level to return
+#
 class TestData(api_common.BaseApiView):
     def get(self, request):
-        # level=from|to|[all]
-
+        # TODO : testing permissions
         breakdown_list = request.GET.get('breakdowns').split(',')
-        range_list = request.GET.get('ranges').split(',')
+        breakdown_range_list = request.GET.get('ranges').split(',')
+        level = int(request.GET.get('level', '0'))
 
-        if len(breakdown_list) != len(range_list):
+        if len(breakdown_list) != len(breakdown_range_list):
             raise ValidationError('')
 
         breakdowns = []
 
-        for breakdown, range in zip(breakdown_list, range_list):
-            range_array = [int(s) for s in range.split('|')]
+        for breakdown, breakdown_range in zip(breakdown_list, breakdown_range_list):
+            range_array = [int(s) for s in breakdown_range.split('|')]
+            range_array.append(range_array[0] + 1) if len(range_array) == 1 else None
             breakdowns.append({'name': breakdown, 'range': range_array})
 
-        data = mock_data.generate_random_data(breakdowns)
-        return self.create_api_response(data)
+        data = mock_data.generate_random_breakdowns(breakdowns, level)
 
+        return self.create_api_response(data)

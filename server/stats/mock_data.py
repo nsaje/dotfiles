@@ -24,7 +24,23 @@ TEST_BREAKDOWNS_SEX = ['man', 'woman']
 #                       -> pagination
 #                       -> rows []
 #                       -> ...
-def generate_random_data(breakdowns, level=0, key='Total'):
+def generate_random_breakdowns(breakdowns, level):
+    breakdown_data = _generate_random_data(breakdowns)
+    return _get_breakdowns_for_level(breakdown_data, level)
+
+
+def _get_breakdowns_for_level(breakdown, level):
+    breakdowns = [breakdown]
+    for _ in range(0, level):
+        nested_breakdowns = []
+        for b in breakdowns:
+            for row in b.rows:
+                nested_breakdowns += [row.breakdown]
+        breakdowns = nested_breakdowns
+    return breakdowns
+
+
+def _generate_random_data(breakdowns, level=0, key='Total'):
     row = {'data': _generate_random_row(key)}
 
     if level < len(breakdowns):
@@ -35,17 +51,17 @@ def generate_random_data(breakdowns, level=0, key='Total'):
         rows = []
         breakdown['rows'] = rows
         breakdown['pagination'] = pagination
-        breakdown['position'] = [1 for _ in range(level)] # TODO : url for fetching more
+        breakdown['position'] = [1 for _ in range(level)]  # TODO : url for fetching more
 
         for k in keys:
-            r = generate_random_data(breakdowns, level + 1, k)
+            r = _generate_random_data(breakdowns, level + 1, k)
             rows.append(r)
 
     return row
 
 
 def _generate_random_row(key):
-    return [key] + [('%.2f' % (random()*10000)) for _ in range(TEST_COLUMNS)]
+    return [key] + [('%.2f' % (random() * 10000)) for _ in range(TEST_COLUMNS)]
 
 
 def _get_breakdown_keys(breakdown):
