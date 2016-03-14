@@ -1,4 +1,4 @@
-/* globals oneApp, $, angular */
+/* globals oneApp, $, angular, constants */
 oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemNavigationService', 'accountsAccess', function ($scope, $state, $location, $document, $q, $modalStack, $timeout, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemNavigationService, accountsAccess) { // eslint-disable-line max-len
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
@@ -343,15 +343,26 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
     };
 
     $scope.getAdGroupStatusClass = function (adGroup, campaign) {
-        if (campaign.landingMode && adGroup.state === 'enabled' && adGroup.status === 'running') {
+        if ((adGroup.state === constants.adGroupSettingsState.INACTIVE &&
+             adGroup.status === constants.adGroupRunningStatus.ACTIVE) ||
+            (adGroup.state === constants.adGroupSettingsState.ACTIVE &&
+            adGroup.status === constants.adGroupRunningStatus.INACTIVE)) {
+            return 'adgroup-status-inactive-icon';
+        }
+
+        if (adGroup.state === constants.adGroupSettingsState.INACTIVE) {
+            return 'adgroup-status-stopped-icon';
+        }
+
+        if (campaign.landingMode) {
             if ($state.includes('main.adGroups', {id: adGroup.id.toString()})) {
-                return 'adgroup-status-landing-mode-active-icon';
+                return 'adgroup-status-landing-mode-selected-icon';
             }
 
             return 'adgroup-status-landing-mode-icon';
         }
 
-        return 'adgroup-status-' + adGroup.state + '-' + adGroup.status + '-icon';
+        return 'adgroup-status-active-icon';
     };
 
     $scope.$on('$stateChangeSuccess', function () {
