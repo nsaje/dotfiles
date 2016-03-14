@@ -17,8 +17,8 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.forms.models import model_to_dict
 from django.core.validators import validate_email
+from django.utils.translation import ugettext_lazy as _
 from timezone_field import TimeZoneField
-
 
 import utils.string_helper
 
@@ -866,10 +866,6 @@ class SourceType(models.Model):
         elif region_type == constants.RegionType.DMA:
             return constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL in self.available_actions
 
-    def can_modify_retargeting_automatically(self):
-        return self.available_actions is not None and\
-            constants.SourceAction.CAN_MODIFY_RETARGETING in self.available_actions
-
     def can_modify_tracking_codes(self):
         return self.available_actions is not None and\
             constants.SourceAction.CAN_MODIFY_TRACKING_CODES in self.available_actions
@@ -942,6 +938,16 @@ class Source(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
     modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
     released = models.BooleanField(default=True)
+    supports_retargeting = models.BooleanField(
+        default=False,
+        help_text=_('Designates whether source supports retargeting automatically.')
+    )
+
+    supports_retargeting_manually = models.BooleanField(
+        default=False,
+        help_text=_('Designates whether source supports retargeting via manual action.')
+    )
+
     content_ad_submission_type = models.IntegerField(
         default=constants.SourceSubmissionType.DEFAULT,
         choices=constants.SourceSubmissionType.get_choices()
@@ -1002,7 +1008,10 @@ class Source(models.Model):
         return self.source_type.can_modify_publisher_blacklist_automatically() and not self.maintenance and not self.deprecated
 
     def can_modify_retargeting_automatically(self):
-        return self.source_type.can_modify_retargeting_automatically() and not self.maintenance and not self.deprecated
+        return self.supports_retargeting and not self.maintenance and not self.deprecated
+
+    def can_modify_retargeting_manually(self):
+        return self.supports_retargeting_manually and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
