@@ -828,8 +828,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     # do not create an action - only used for our redirector
                     continue
 
-                if field_name in ['retargeting_ad_groups']:
-                    # no manual actions for retargeting
+                if field_name in ['retargeting_ad_groups'] and not source.can_modify_retargeting_manually():
                     continue
 
                 if field_name == 'iab_category' and not source.can_modify_ad_group_iab_category_manual():

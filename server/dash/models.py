@@ -1010,6 +1010,9 @@ class Source(models.Model):
     def can_modify_retargeting_automatically(self):
         return self.supports_retargeting and not self.maintenance and not self.deprecated
 
+    def can_modify_retargeting_manually(self):
+        return self.supports_retargeting_manually and not self.maintenance and not self.deprecated
+
     def __unicode__(self):
         return self.name
 
