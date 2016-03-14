@@ -773,7 +773,7 @@ class AccountOverview(api_common.BaseApiView):
             user_blob = ', '.join([infobox_helpers.format_username(u) for u in all_users])
             users_setting = infobox_helpers.OverviewSetting(
                 'Users:',
-                'Yes' if all_users.count() > 0 else 'No',
+                '{}'.format(all_users.count()),
                 section_start=True,
             ).comment(
                 'Show more',
@@ -802,10 +802,10 @@ class AccountOverview(api_common.BaseApiView):
         allocated_credit_setting = infobox_helpers.OverviewSetting(
             'Allocated credit:',
             lc_helper.default_currency(allocated_credit),
-            description='{} available'.format(lc_helper.default_currency(
+            description='{} unallocated'.format(lc_helper.default_currency(
                 available_credit
             )),
-            tooltip='Allocated total and available credit',
+            tooltip='Allocated total and unallocated credit',
         )
         settings.append(allocated_credit_setting.as_dict())
 
@@ -2030,9 +2030,10 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
         settings.append(infobox_helpers.OverviewSetting(
-            'Weekly self managed actions:',
+            'Weekly self-managed actions:',
             weekly_sf_actions,
-            tooltip="Number of actions taken by self managed users"
+            tooltip="Number of actions taken by self-managed users "
+                "in the past 7 days"
         ))
 
         yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
