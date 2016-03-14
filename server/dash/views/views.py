@@ -2033,7 +2033,7 @@ class AllAccountsOverview(api_common.BaseApiView):
             'Weekly self-managed actions:',
             weekly_sf_actions,
             tooltip="Number of actions taken by self-managed users "
-                "in the past 7 days"
+                    "in the past 7 days"
         ))
 
         yesterday_spend = infobox_helpers.get_yesterday_all_accounts_spend()
