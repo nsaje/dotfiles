@@ -119,10 +119,9 @@ class AdGroupSettingsTest(TestCase):
     def test_get_not_retargetable(self):
         ad_group = models.AdGroup.objects.get(pk=1)
 
-        for source_type in models.SourceType.objects.all():
-            if source_type.available_actions and constants.SourceAction.CAN_MODIFY_RETARGETING in source_type.available_actions:
-                source_type.available_actions.remove(constants.SourceAction.CAN_MODIFY_RETARGETING)
-            source_type.save()
+        for source in models.Source.objects.all():
+            source.supports_retargeting = False
+            source.save()
 
         req = RequestFactory().get('/')
         req.user = User(id=1)
