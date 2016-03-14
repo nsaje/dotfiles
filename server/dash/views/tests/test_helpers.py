@@ -3,9 +3,10 @@ import datetime
 import pytz
 
 from django.db import connection
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.conf import settings
 from django.http.request import HttpRequest
+
 
 import actionlog.sync
 from dash.views import helpers
@@ -731,17 +732,22 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             return datetime.datetime(2015, 6, 5, 13, 22, 23)
 
     def test_get_editable_fields_status_setting_enabled(self):
+        req = RequestFactory().get('/')
+        req.user = User.objects.get(pk=1)
+
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source.source.supports_retargeting = True
+        ad_group_source.source.save()
+
         ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         allowed_sources = set([ad_group_source.source_id])
 
         ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.CAN_MODIFY_RETARGETING,
             constants.SourceAction.CAN_UPDATE_STATE
         ]
-
         ad_group_source.ad_group.content_ads_tab_with_cms = False
+        ad_group_source.ad_group.save(req)
 
         result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources)
 
@@ -775,8 +781,8 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         allowed_sources = set([ad_group_source.source_id])
 
+        ad_group_source.source.supports_retargeting = True
         ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.CAN_MODIFY_RETARGETING,
             constants.SourceAction.CAN_UPDATE_STATE
         ]
 
@@ -794,8 +800,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             'enabled': False,
             'message': 'Please contact support to enable this source.'
         })
-
-
 
     def test_get_editable_fields_status_setting_disabled(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
@@ -995,9 +999,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         ad_group_settings.target_regions = ['693']
 
+        ad_group_source.source.supports_retargeting = True
         ad_group_source.source.source_type.available_actions = [
             constants.SourceAction.CAN_UPDATE_STATE,
-            constants.SourceAction.CAN_MODIFY_RETARGETING,
             constants.SourceAction.CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL
         ]
         ad_group_source.ad_group.content_ads_tab_with_cms = False

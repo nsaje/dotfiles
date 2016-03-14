@@ -248,10 +248,9 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_adgroup_w_retargeting_and_source_without(self):
-        for sourceType in models.SourceType.objects.all():
-            if constants.SourceAction.CAN_MODIFY_RETARGETING in sourceType.available_actions:
-                sourceType.available_actions.remove(constants.SourceAction.CAN_MODIFY_RETARGETING)
-                sourceType.save()
+        for source in models.Source.objects.all():
+            source.supports_retargeting = False
+            source.save()
 
         self._set_ad_group_end_date(days_delta=3)
         response = self.client.put(
@@ -363,12 +362,9 @@ class CampaignAdGroups(TestCase):
         ad_group = models.AdGroup.objects.get(pk=2)
 
         # remove ability to retarget from all sources
-        for source_type in models.SourceType.objects.all():
-            source_type.available_actions = [
-                action for action in source_type.available_actions
-                if action != constants.SourceAction.CAN_MODIFY_RETARGETING
-            ]
-            source_type.save()
+        for source in models.Source.objects.all():
+            source.supports_retargeting = False
+            source.save()
 
         request = RequestFactory()
         request.user = self.user
@@ -1644,7 +1640,7 @@ class AdGroupSourcesTest(TestCase):
         response_dict = json.loads(response.content)
         self.assertItemsEqual(response_dict['data']['sources'], [
             {'id': 2, 'name': 'Gravity', 'can_target_existing_regions': False, 'can_retarget': True},  # should return False when DMAs used
-            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': False},
+            {'id': 3, 'name': 'Outbrain', 'can_target_existing_regions': True, 'can_retarget': True},
             {'id': 9, 'name': 'Sharethrough', 'can_target_existing_regions': False, 'can_retarget': True},
         ])
 
@@ -1709,9 +1705,8 @@ class AdGroupSourcesTest(TestCase):
         new_settings.save(request)
 
         source = models.Source.objects.get(pk=9)
-        st = source.source_type
-        st.available_actions.remove(constants.SourceAction.CAN_MODIFY_RETARGETING)
-        st.save()
+        source.supports_retargeting = False
+        source.save()
 
         response = self.client.put(
             reverse('ad_group_sources', kwargs={'ad_group_id': '1'}),
@@ -3081,8 +3076,8 @@ class AllAccountsOverviewTest(TestCase):
         user = User.objects.get(pk=user_id)
         self.client.login(username=user.username, password='secret')
         reversed_url = reverse(
-                'all_accounts_overview',
-                kwargs={})
+            'all_accounts_overview',
+            kwargs={})
         response = self.client.get(
             reversed_url,
             follow=True

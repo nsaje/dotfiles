@@ -59,7 +59,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             if (models.hasOwnProperty('accounts_count')) {
                 models.accountsCount = models.accounts_count;
                 delete models.accounts_count;
-                models.hasAccounts = models.accountsCount>0;
+                models.hasAccounts = models.accountsCount > 0;
             }
 
             if (models.hasOwnProperty('default_account_id')) {
@@ -915,29 +915,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             return deferred.promise;
         }
-    }
-
-    function AdGroupState () {
-        this.get = function (id) {
-            var deferred = $q.defer();
-            var url = '/api/ad_groups/' + id + '/state/';
-
-            $http.get(url).
-                success(function (data, status) {
-                    var resource;
-                    if (data && data.data && data.data.state) {
-                        resource = data.data.state;
-                    }
-                    deferred.resolve({
-                        state: resource,
-                    });
-                }).
-                error(function (data, status, headers, config) {
-                    deferred.reject(data);
-                });
-
-            return deferred.promise;
-        };
     }
 
     function AdGroupSettings () {
@@ -3067,7 +3044,6 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
     return {
         navigation: new Navigation(),
         user: new User(),
-        adGroupState: new AdGroupState(),
         adGroupSettings: new AdGroupSettings(),
         adGroupSettingsState: new AdGroupSettingsState(),
         adGroupAgency: new AdGroupAgency(),

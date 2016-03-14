@@ -757,8 +757,9 @@ class AccountOverview(api_common.BaseApiView):
         settings.append(account_manager_setting.as_dict())
 
         sales_manager_setting = infobox_helpers.OverviewSetting(
-            'Sales Representative:',
-            infobox_helpers.format_username(account_settings.default_sales_representative)
+            'Sales Rep.:',
+            infobox_helpers.format_username(account_settings.default_sales_representative),
+            tooltip='Sales Representative'
         )
         settings.append(sales_manager_setting.as_dict())
 
@@ -770,13 +771,17 @@ class AccountOverview(api_common.BaseApiView):
             )
             settings.append(user_setting.as_dict())
         else:
-            for i, user in enumerate(all_users):
-                user_one_setting = infobox_helpers.OverviewSetting(
-                    'Users:' if i == 0 else '',
-                    infobox_helpers.format_username(user),
-                    section_start=i == 0
-                )
-                settings.append(user_one_setting.as_dict())
+            user_blob = ', '.join([infobox_helpers.format_username(u) for u in all_users])
+            users_setting = infobox_helpers.OverviewSetting(
+                'Users:',
+                'Yes' if all_users.count() > 0 else 'No',
+                section_start=True,
+            ).comment(
+                'Show more',
+                'Show less',
+                user_blob
+            )
+            settings.append(users_setting.as_dict())
 
         pixels = models.ConversionPixel.objects.filter(account=account)
         conversion_pixel_setting = infobox_helpers.OverviewSetting(
@@ -791,17 +796,34 @@ class AccountOverview(api_common.BaseApiView):
                 ', '.join(slugs),
             )
         settings.append(conversion_pixel_setting.as_dict())
+
+        allocated_credit, available_credit =\
+            infobox_helpers.calculate_allocated_and_available_credit(account)
+
+        allocated_credit_setting = infobox_helpers.OverviewSetting(
+            'Allocated credit:',
+            lc_helper.default_currency(allocated_credit),
+            description='{} available'.format(lc_helper.default_currency(
+                available_credit
+            )),
+            tooltip='Allocated total and available credit',
+        )
+        settings.append(allocated_credit_setting.as_dict())
+
         return settings
 
     def _performance_settings(self, account, user):
         settings = []
 
-        available_credit = infobox_helpers.calculate_available_credit(account)
-        spent_credit = infobox_helpers.calculate_spend_credit(account)
+        spent_budget, available_budget = \
+            infobox_helpers.calculate_spend_and_available_budget(account)
         spent_credit_setting = infobox_helpers.OverviewSetting(
-            'Spent credit:',
-            lc_helper.default_currency(spent_credit),
-            description=lc_helper.default_currency(available_credit)
+            'Spent budget:',
+            lc_helper.default_currency(spent_budget),
+            description='{} remaining'.format(
+                lc_helper.default_currency(available_budget)
+            ),
+            tooltip='Spent media and remaining media budget on all active budgets on this account'
         )
         settings.append(spent_credit_setting.as_dict())
 
@@ -811,29 +833,10 @@ class AccountOverview(api_common.BaseApiView):
             infobox_helpers.create_yesterday_spend_setting(
                 yesterday_spent,
                 daily_budget
-            ).as_dict()
+            ).as_dict(),
         )
 
         return settings
-
-
-class AdGroupState(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
-    @statsd_helper.statsd_timer('dash.api', 'ad_group_state_get')
-    def get(self, request, ad_group_id):
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
-
-        settings = models.AdGroupSettings.objects.\
-            filter(ad_group=ad_group).\
-            order_by('-created_dt')
-
-        response = {
-            'state': settings[0].state if settings
-            else constants.AdGroupSettingsState.INACTIVE
-        }
-
-        return self.create_api_response(response)
 
 
 class AvailableSources(api_common.BaseApiView):
@@ -899,7 +902,7 @@ class AdGroupSources(api_common.BaseApiView):
                 'name': source.name,
                 'can_target_existing_regions': region_targeting_helper.can_target_existing_regions(
                         source, ad_group_settings),
-                'can_retarget': source.can_modify_retargeting_automatically(),
+                'can_retarget': retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
             })
 
         sources_waiting = set([ad_group_source.source.name for ad_group_source
@@ -2010,13 +2013,27 @@ class AllAccountsOverview(api_common.BaseApiView):
             tooltip="Number of users who logged-in in the past 7 days"
         ))
 
-        weekly_active_users = infobox_helpers.count_weekly_active_users()
+        weekly_active_users = infobox_helpers.get_weekly_active_users()
         settings.append(infobox_helpers.OverviewSetting(
-            'Weekly active users:',
-            weekly_active_users,
+            'Number of weekly active users:',
+            len(weekly_active_users),
             section_start=True,
             tooltip='Number of self managed users in the past 7 days'
         ))
+
+        weekly_active_user_emails = [u.email for u in weekly_active_users]
+        email_list_setting = infobox_helpers.OverviewSetting(
+            'Weekly active users:',
+            'Yes' if weekly_active_user_emails != [] else 'None',
+            tooltip='E-mails of self managed users in the past 7 days'
+        )
+        if weekly_active_user_emails != []:
+            email_list_setting = email_list_setting.comment(
+                'Show more',
+                'Show less',
+                ', '.join(weekly_active_user_emails),
+            )
+        settings.append(email_list_setting)
 
         weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
         settings.append(infobox_helpers.OverviewSetting(
@@ -2042,8 +2059,8 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         today = datetime.datetime.utcnow()
         start, end = calendar.monthrange(today.year, today.month)
-        start_date = start_date or datetime.datetime(today.year, today.month, 1)
-        end_date = end_date or datetime.datetime(today.year, today.month, end)
+        start_date = start_date or datetime.datetime(today.year, today.month, 1).date()
+        end_date = end_date or datetime.datetime(today.year, today.month, end).date()
 
         total_budget = infobox_helpers.calculate_all_accounts_total_budget(
             start_date,
@@ -2052,13 +2069,15 @@ class AllAccountsOverview(api_common.BaseApiView):
         settings.append(infobox_helpers.OverviewSetting(
             'Total budgets:',
             lc_helper.default_currency(total_budget),
-            section_start=True
+            section_start=True,
+            tooltip='Sum of total budgets in selected date range'
         ))
 
         monthly_budget = infobox_helpers.calculate_all_accounts_monthly_budget(today)
         settings.append(infobox_helpers.OverviewSetting(
             'Monthly budgets:',
-            lc_helper.default_currency(monthly_budget)
+            lc_helper.default_currency(monthly_budget),
+            tooltip='Sum of total budgets from month to date'
         ))
 
         return [setting.as_dict() for setting in settings]

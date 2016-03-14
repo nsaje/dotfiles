@@ -50,9 +50,6 @@ describe('AdGroupPublishersCtrl', function () {
                     isSame: function () {},
                 },
             };
-            $scope.getAdGroupState = function () {
-                return;
-            };
 
             var mockApiFunc = function () {
                 return {
