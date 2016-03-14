@@ -2,6 +2,21 @@
 'use strict';
 
 oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', function (config, zemDataSourceService, $window) {
+
+    function GridRow (type, level, dataRow) {
+        this.dataRow = dataRow;
+        this.data = dataRow.data;
+
+        this.level = level;
+        this.type = type;
+
+        this.collapsed = false;
+        this.visible = true;
+
+        this.parent = null;
+    }
+
+
     return {
         restrict: 'E',
         scope: {
@@ -14,7 +29,55 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
             $scope.config = config;
             $scope.constants = constants;
 
-            this.toggleCollapse = function (gridRow) {
+            $scope.rows = [];
+
+            $scope.load = function () {
+                $scope.dataSource.fetchInitial().then(
+                    function (breakdown){
+                        var totalDataRow = breakdown.rows[0];
+                        var totalRow = new GridRow(0, 0, totalDataRow);
+                        $scope.rows = $scope.parseBreakdown(totalRow, totalDataRow.breakdown);
+                        $scope.rows.push(totalRow);
+                    }, function (error) {
+
+                    }
+                );
+            };
+
+            $scope.loadMore = function (row) {
+                $scope.dataSource.fetchMore(row.dataRow).then(
+                    function (breakdown){
+                        var rows = $scope.parseBreakdown(row, breakdown);
+                        var idx = $scope.rows.indexOf(row);
+                        rows.pop();
+                        $scope.rows.splice.apply($scope.rows, [idx, 0].concat(rows));
+                    }, function (error) {
+
+                    }
+                );
+            };
+
+            $scope.parseBreakdown = function (parentGridRow, breakdown) {
+                var rows = [];
+                var level = breakdown.level;
+
+                breakdown.rows.forEach (function(dataRow) {
+                    var gridRow = new GridRow(0, level, dataRow);
+                    gridRow.parent = parentGridRow;
+                    rows.push(gridRow);
+                    if (dataRow.breakdown) {
+                        rows = rows.concat($scope.parseBreakdown(gridRow, dataRow.breakdown));
+                    }
+                });
+
+                var gridRow = new GridRow(1, level, breakdown);
+                gridRow.parent = parentGridRow;
+                rows.push(gridRow);
+
+                return rows;
+            };
+
+            $scope.toggleCollapse = function (gridRow) {
 
                 var idx = this.rows.indexOf(gridRow);
 
@@ -30,34 +93,6 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
                 }
             };
 
-            function parseData (data) {
-                var gridRow = new GridRow(0, 0, data);
-                var rows = parseBreakdown(gridRow, data.breakdown);
-                rows.push(gridRow);
-                return rows;
-            }
-
-            function parseBreakdown (parentGridRow, breakdown) {
-                var rows = [];
-                var level = breakdown.position.length + 1;
-
-                angular.forEach(breakdown.rows, function (row) {
-                    var gridRow = new GridRow(0, level, row);
-                    gridRow.parent = parentGridRow;
-                    rows.push(gridRow);
-                    if (row.hasOwnProperty('breakdown')) {
-                        rows = rows.concat(parseBreakdown(gridRow, row.breakdown));
-                    }
-                });
-
-                var gridRow = new GridRow(1, level, breakdown);
-                gridRow.parent = parentGridRow;
-                rows.push(gridRow);
-
-                return rows;
-            }
-
-
             // TODO: move to filter/template
             $scope.getRowClass = function (row) {
                 switch (row.level) {
@@ -68,6 +103,8 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
                     default: return 'level-3';
                 }
             };
+
+            $scope.load();
 
         }],
     };
