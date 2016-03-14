@@ -940,7 +940,12 @@ class Source(models.Model):
     released = models.BooleanField(default=True)
     supports_retargeting = models.BooleanField(
         default=False,
-        help_text=_('Designates whether source supports retargeting.')
+        help_text=_('Designates whether source supports retargeting automatically.')
+    )
+
+    supports_retargeting_manually = models.BooleanField(
+        default=False,
+        help_text=_('Designates whether source supports retargeting via manual action.')
     )
 
     content_ad_submission_type = models.IntegerField(
@@ -1004,6 +1009,9 @@ class Source(models.Model):
 
     def can_modify_retargeting_automatically(self):
         return self.supports_retargeting and not self.maintenance and not self.deprecated
+
+    def can_modify_retargeting_manually(self):
+        return self.supports_retargeting_manually and not self.maintenance and not self.deprecated
 
     def __unicode__(self):
         return self.name
