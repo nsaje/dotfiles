@@ -25,7 +25,7 @@ TEST_BREAKDOWNS_SEX = ['man', 'woman']
 #                       -> rows []
 #                       -> ...
 def generate_random_breakdowns(breakdowns, level):
-    top_level_row = _generate_random_breakdown(breakdowns)
+    top_level_row = _generate_random_breakdown(breakdowns, level=1, position=(0,))
     top_level_breakdown = {
         'pagination': {'from': 0, 'to': 1, 'size': 1},
         'rows': [top_level_row],
@@ -46,7 +46,7 @@ def _get_breakdowns_for_level(breakdown, level):
     return breakdowns
 
 
-def _generate_random_breakdown(breakdowns, level=1, position=[0], key='Total'):
+def _generate_random_breakdown(breakdowns, level=1, position=(0,), key='Total'):
     row = {
         'data': _generate_random_row(key),
     }
@@ -63,7 +63,7 @@ def _generate_random_breakdown(breakdowns, level=1, position=[0], key='Total'):
         breakdown['position'] = position
 
         for idx, k in enumerate(keys):
-            r = _generate_random_breakdown(breakdowns, level + 1, position + [idx], k)
+            r = _generate_random_breakdown(breakdowns, level + 1, position + (idx,), k)
             rows.append(r)
 
     return row
