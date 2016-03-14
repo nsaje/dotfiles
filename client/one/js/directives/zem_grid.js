@@ -14,8 +14,50 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
             $scope.config = config;
             $scope.constants = constants;
 
-            $scope.getMoreData = function (row){
+            this.toggleCollapse = function (gridRow) {
+
+                var idx = this.rows.indexOf(gridRow);
+
+                gridRow.collapsed = !gridRow.collapsed;
+
+                while (true) {
+                    if (idx >= this.rows.length) break;
+
+                    var child = this.rows[++idx];
+                    if (child.level <= gridRow.level) break;
+
+                    child.visible = !gridRow.collapsed && !child.parent.collapsed;
+                }
             };
+
+            function parseData (data) {
+                var gridRow = new GridRow(0, 0, data);
+                var rows = parseBreakdown(gridRow, data.breakdown);
+                rows.push(gridRow);
+                return rows;
+            }
+
+            function parseBreakdown (parentGridRow, breakdown) {
+                var rows = [];
+                var level = breakdown.position.length + 1;
+
+                angular.forEach(breakdown.rows, function (row) {
+                    var gridRow = new GridRow(0, level, row);
+                    gridRow.parent = parentGridRow;
+                    rows.push(gridRow);
+                    if (row.hasOwnProperty('breakdown')) {
+                        rows = rows.concat(parseBreakdown(gridRow, row.breakdown));
+                    }
+                });
+
+                var gridRow = new GridRow(1, level, breakdown);
+                gridRow.parent = parentGridRow;
+                rows.push(gridRow);
+
+                return rows;
+            }
+
+
             // TODO: move to filter/template
             $scope.getRowClass = function (row) {
                 switch (row.level) {
@@ -26,6 +68,7 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
                     default: return 'level-3';
                 }
             };
+
         }],
     };
 }]);

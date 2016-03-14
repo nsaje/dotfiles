@@ -19,15 +19,20 @@ oneApp.factory('zemDataSourceService', ['$http', function ($http) {
 
     function DataSource () {
         var that = this;
+
+        this.breakdowns = ['ad_group', 'age', 'date'];
+        this.defaultPagination = [3, 4, 5];
+        this.endpoint = '/api/experimental/stats/testdata/';
+
+        this.metaData = null;
         this.data = null;
+
         this.rows = [];
         this.columns = ['Name'];
         for (var i = 1; i < 11; ++i) {
             this.columns.push('Stat ' + i);
         }
 
-        this.breakdowns = ['ad_group', 'age', 'date'];
-        this.defaultPagination = [3, 4, 5];
 
         function parseData (data) {
             var gridRow = new GridRow(0, 0, data);
@@ -38,7 +43,7 @@ oneApp.factory('zemDataSourceService', ['$http', function ($http) {
 
         function parseBreakdown (parentGridRow, breakdown) {
             var rows = [];
-            var level = breakdown.position.length + 1;
+            var level = breakdown.level;
 
             angular.forEach(breakdown.rows, function (row) {
                 var gridRow = new GridRow(0, level, row);
@@ -56,34 +61,6 @@ oneApp.factory('zemDataSourceService', ['$http', function ($http) {
             return rows;
         }
 
-        this.fetchData = function () {
-            var ranges = [
-                [1, this.defaultPagination[0]].join('|'),
-                [1, this.defaultPagination[1]].join('|'),
-                [1, this.defaultPagination[2]].join('|'),
-            ];
-            var config = {
-                params: {
-                    breakdowns: this.breakdowns.join(','),
-                    ranges: ranges.join(',')
-                },
-            };
-
-
-            var url = '/api/experimental/stats/testdata/';
-            $http.get(url, config).success(function (data, status) {
-
-                var start = new Date().getTime();
-                that.data = data.data;
-                that.rows = parseData(that.data);
-                var end = new Date().getTime();
-                console.log("Parsing took : " + (end - start));
-
-            }).error(function (data, status, headers, config) {
-                console.log('ERROR: ' + status);
-            });
-        };
-
         this.toggleCollapse = function (gridRow) {
 
             var idx = this.rows.indexOf(gridRow);
@@ -100,24 +77,25 @@ oneApp.factory('zemDataSourceService', ['$http', function ($http) {
             }
         };
 
-        this.fetchMore = function (row) {
-            var breakdown = row.dataRow;
+        this.prepareBreakdownConfig = function (breakdown) {
+            var level = 0;
+            if (breakdown) {
+                level = breakdown.level;
+            }
 
             var ranges = [];
-
-            var from, to;
             for (var i = 0; i < this.breakdowns.length; ++i) {
-                if (row.level > i + 1) {
-                    from = breakdown.position[i];
-                    to = from + 1;
-                } else if (row.level === i + 1) {
-                    from = breakdown.pagination.to;
-                    to = from + this.defaultPagination[i];
-                } else {
-                    from = 1;
-                    to = this.defaultPagination[i];
+                var from = 0;
+                var to = this.defaultPagination[i];
+                if (breakdown) {
+                    if (i + 1 < breakdown.level) {
+                        from = breakdown.position[i];
+                        to = from + 1;
+                    } else if (breakdown.level === i + 1) {
+                        from = breakdown.pagination.to;
+                        to = from + this.defaultPagination[i];
+                    }
                 }
-
                 ranges.push([from, to].join('|'));
             }
 
@@ -125,40 +103,63 @@ oneApp.factory('zemDataSourceService', ['$http', function ($http) {
                 params: {
                     breakdowns: this.breakdowns.join(','),
                     ranges: ranges.join(','),
+                    level: level,
                 },
             };
 
-            // check level
-            // check parents - ids/num
-            console.log("Fetch more");
+            return config;
+        };
 
-            var url = '/api/experimental/stats/testdata/';
-            $http.get(url, config).success(function (data, status) {
+        this.insertBreakdown = function (breakdown) {
 
-                var start = new Date().getTime();
-                var newbreakdown = data.data.breakdown;
-                for (var i = 0; i < row.level - 1; ++i) {
-                    newbreakdown = newbreakdown.rows[0].breakdown;
-                }
+            if (breakdown.level === 0) {
+                this.data = breakdown.rows[0];
+                return;
+            }
 
-                var newRows = parseBreakdown(row.parent, newbreakdown);
-                var idx = that.rows.indexOf(row);
-                newRows.pop();
-                that.rows.splice.apply(that.rows, [idx, 0].concat(newRows));
+            var position = breakdown.position
+            var current = this.data.breakdown;
 
-                breakdown.rows = breakdown.rows.concat(newbreakdown.rows);
-                breakdown.pagination.to = newbreakdown.pagination.to;
+            for (var i = 1; i < breakdown.level; ++i) {
+                current = current.rows[position[i]].breakdown;
+            }
 
-                console.log("Parsing took : " + (new Date().getTime() - start));
+            current.rows = current.rows.concat(breakdown.rows);
+            current.pagination.to = breakdown.pagination.to;
+            current.pagination.size += breakdown.pagination.size;
+        };
 
+
+        this.fetchInitial = function () {
+            var config = this.prepareBreakdownConfig();
+            $http.get(this.endpoint, config).success(function (data, status) {
+                that.data = data.data[0].rows[0];
+                that.rows = parseData(that.data);
             }).error(function (data, status, headers, config) {
                 console.log('ERROR: ' + status);
             });
+        };
 
-        }
+        this.fetchMore = function (row) {
+            var breakdown = row.dataRow;
+
+            var config = this.prepareBreakdownConfig(breakdown);
+
+            $http.get(this.endpoint, config).success(function (data, status) {
+                var breakdown = data.data[0];
+                that.insertBreakdown(breakdown);
+
+                var newRows = parseBreakdown(row.parent, breakdown);
+                var idx = that.rows.indexOf(row);
+                newRows.pop();
+                that.rows.splice.apply(that.rows, [idx, 0].concat(newRows)); }).error(function (data, status, headers, config) {
+                console.log('ERROR: ' + status);
+            });
+
+        };
 
 
-        this.fetchData();
+        this.fetchInitial();
     }
 
     return DataSource;

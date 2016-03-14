@@ -28,7 +28,9 @@ def generate_random_breakdowns(breakdowns, level):
     top_level_row = _generate_random_breakdown(breakdowns)
     top_level_breakdown = {
         'pagination': {'from': 0, 'to': 1, 'size': 1},
-        'rows': [top_level_row]
+        'rows': [top_level_row],
+        'position': [],
+        'level': 0
     }
     return _get_breakdowns_for_level(top_level_breakdown, level)
 
@@ -44,22 +46,24 @@ def _get_breakdowns_for_level(breakdown, level):
     return breakdowns
 
 
-def _generate_random_breakdown(breakdowns, level=0, key='Total'):
-    row = {'data': _generate_random_row(key)}
+def _generate_random_breakdown(breakdowns, level=1, position=[0], key='Total'):
+    row = {
+        'data': _generate_random_row(key),
+    }
 
-    if level < len(breakdowns):
+    if level <= len(breakdowns):
         breakdown = {}
         row['breakdown'] = breakdown
 
-        keys, pagination = _get_breakdown_keys(breakdowns[level])
+        keys, pagination = _get_breakdown_keys(breakdowns[level-1])
         rows = []
         breakdown['rows'] = rows
         breakdown['pagination'] = pagination
-        breakdown['level'] = level + 1
-        breakdown['position'] = [1 for _ in range(level)]  # TODO : url for fetching more
+        breakdown['level'] = level
+        breakdown['position'] = position
 
-        for k in keys:
-            r = _generate_random_breakdown(breakdowns, level + 1, k)
+        for idx, k in enumerate(keys):
+            r = _generate_random_breakdown(breakdowns, level + 1, position + [idx], k)
             rows.append(r)
 
     return row
@@ -80,9 +84,9 @@ def _get_breakdown_keys(breakdown):
     elif breakdown['name'] == 'sex':
         keys = TEST_BREAKDOWNS_SEX
 
-    keys_size = len(keys)
+    keys_count = len(keys)
     keys_from = breakdown['range'][0]
-    keys_to = min(breakdown['range'][1], keys_size)
+    keys_to = min(breakdown['range'][1], keys_count)
 
     if keys_from >= keys_to or keys_from < 0:
         raise Exception('Out of bounds')
@@ -90,7 +94,8 @@ def _get_breakdown_keys(breakdown):
     pagination = {
         'from': keys_from,
         'to': keys_to,
-        'size': keys_size
+        'size': keys_to-keys_from,
+        'count': keys_count
     }
     keys = keys[keys_from:keys_to]
 

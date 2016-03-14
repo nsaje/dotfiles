@@ -25,7 +25,7 @@
 
                         <td ng-if="row.type==1">
                             <a ng-click="dataSource.fetchMore(row)">
-                                {{row.dataRow.rows.length}} of {{row.dataRow.pagination.size}} (show more)
+                                {{row.dataRow.pagination.size}} of {{row.dataRow.pagination.count}} (show more)
                             </a>
                         </td>
                         <td ng-if="row.type==1" colspan="11">
