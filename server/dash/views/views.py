@@ -2045,9 +2045,9 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         mtd_spend = infobox_helpers.get_mtd_all_accounts_spend()
         settings.append(infobox_helpers.OverviewSetting(
-            'Spent MTD:',
+            'MTD spend:',
             lc_helper.default_currency(mtd_spend),
-            tooltip='Month-to-date media spent',
+            tooltip='Month-to-date media spend',
         ))
 
         today = datetime.datetime.utcnow()
