@@ -847,7 +847,7 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             date,
             breakdown_fields=['domain', 'exchange'],
-            order_fields=['domain'],
+            order_fields=[],
             constraints={'ad_group': ad_group.id},
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
         )
@@ -1066,7 +1066,7 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             date,
             breakdown_fields=['domain', 'exchange'],
-            order_fields=['domain'],
+            order_fields=[],
             constraints={'ad_group': ad_group.id, 'exchange': ['adsnative']},
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
             constraints_list=[],
@@ -1412,7 +1412,7 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             date,
             breakdown_fields=['domain', 'exchange'],
-            order_fields=['domain'],
+            order_fields=[],
             constraints={'ad_group': ad_group.id},
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
         )
@@ -1635,7 +1635,7 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             date,
             breakdown_fields=['domain', 'exchange'],
-            order_fields=['-cost'],
+            order_fields=[],
             constraints={'ad_group': ad_group.id, },
             conversion_goals=ListMatcher(['omniture__5', 'omniture__4', 'ga__3', 'ga__2']),
         )
@@ -1803,7 +1803,7 @@ class AdGroupPublishersTableTest(TestCase):
             date,
             date,
             breakdown_fields=['domain', 'exchange'],
-            order_fields=['-cost'],
+            order_fields=[],
             constraints={'ad_group': ad_group.id, },
             conversion_goals=[],
         )

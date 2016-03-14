@@ -114,7 +114,7 @@ def query(start_date, end_date, breakdown_fields=[], order_fields=[], offset=Non
 
     cursor.close()
 
-    results = conversions_helper.transform_conversions(results)
+    results = conversions_helper.group_conversions(results)
     return results
 
 

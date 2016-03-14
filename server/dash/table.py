@@ -1801,9 +1801,17 @@ class PublishersTable(object):
             end_date,
             adgroup,
             constraints,
-            order,
             conversion_goals
         )
+
+        if order:
+            order_list = [order]
+
+            # status setting should also be sorted by autopilot state
+            if 'status_setting' in order:
+                order_list.append(('-' if order.startswith('-') else '') + 'autopilot_state')
+
+            publishers_data = sort_results(publishers_data, order_list)
 
         # since we're not dealing with a QuerySet this kind of pagination is braindead, but we'll polish later
         publishers_data, current_page, num_pages, count, start_index, end_index = utils.pagination.paginate(
@@ -1822,6 +1830,7 @@ class PublishersTable(object):
                 user,
                 map_exchange_to_source_name,
                 publishers_data=publishers_data,
+                order=order,
             ),
             'pagination': {
                 'currentPage': current_page,
@@ -1954,7 +1963,7 @@ class PublishersTable(object):
             return False
 
     def _query_filtered_publishers(self, user, show_blacklisted_publishers, start_date, end_date, adgroup, constraints,
-                                   order, conversion_goals):
+                                   conversion_goals):
         publishers_data = []
         totals_data = []
 
@@ -1966,12 +1975,10 @@ class PublishersTable(object):
                 end_date,
                 constraints,
                 conversion_goals,
-                False,
                 publisher_breakdown_fields=['domain', 'exchange'],
-                touchpoint_breakdown_fields=['publisher', 'source'],
-                order_fields=[order])
+                touchpoint_breakdown_fields=['publisher', 'source'])
             totals_data = stats_helper.get_publishers_data_and_conversion_goals(
-                user, reports.api_publishers.query, start_date, end_date, constraints, conversion_goals, True)
+                user, reports.api_publishers.query, start_date, end_date, constraints, conversion_goals)
         elif show_blacklisted_publishers in (
                 constants.PublisherBlacklistFilter.SHOW_ACTIVE,
                 constants.PublisherBlacklistFilter.SHOW_BLACKLISTED,):
@@ -1993,10 +2000,8 @@ class PublishersTable(object):
                 end_date,
                 constraints,
                 conversion_goals,
-                False,
                 publisher_breakdown_fields=['domain', 'exchange'],
                 touchpoint_breakdown_fields=['publisher', 'source'],
-                order_fields=[order],
                 show_blacklisted_publishers=show_blacklisted_publishers,
                 adg_blacklisted_publishers=adg_blacklisted_publishers,
             )
@@ -2007,7 +2012,6 @@ class PublishersTable(object):
                 end_date,
                 constraints,
                 conversion_goals,
-                True,
                 show_blacklisted_publishers=show_blacklisted_publishers,
                 adg_blacklisted_publishers=adg_blacklisted_publishers,
             )
@@ -2052,7 +2056,7 @@ class PublishersTable(object):
 
         return result
 
-    def get_rows(self, user, map_exchange_to_source_name, publishers_data):
+    def get_rows(self, user, map_exchange_to_source_name, publishers_data, order=None):
         rows = []
         for publisher_data in publishers_data:
             exchange = publisher_data.get('exchange', None)

@@ -6,7 +6,7 @@ REPORT_GOAL_TYPES = [dash.constants.ConversionGoalType.GA, dash.constants.Conver
 PIXEL_GOAL_TYPE = dash.constants.ConversionGoalType.PIXEL
 
 
-def transform_conversions(rows):
+def group_conversions(rows):
     results = []
     for row in rows:
         new_row = {}
@@ -21,7 +21,7 @@ def transform_conversions(rows):
     return results
 
 
-def transform_conversion_goals(rows, conversion_goals):
+def transform_to_conversion_goals(rows, conversion_goals):
     report_conversion_goals = [cg for cg in conversion_goals if cg.type in REPORT_GOAL_TYPES]
     touchpoint_conversion_goals = [cg for cg in conversion_goals if cg.type == PIXEL_GOAL_TYPE]
 
@@ -42,19 +42,39 @@ def transform_conversion_goals(rows, conversion_goals):
             del row['conversions']
 
 
-def merge_touchpoint_conversions_to_publishers_data(publishers_data, touchpoint_conversions):
-    touchpoint_sources = [tp['source'] for tp in touchpoint_conversions]
-    sources = models.Source.objects.filter(pk__in=touchpoint_sources).values('id', 'bidder_slug')
-    sources_by_id = {source['id']: source['bidder_slug'] for source in sources}
+def merge_touchpoint_conversions_to_publishers_data(publishers_data,
+                                                    touchpoint_conversions,
+                                                    publisher_breakdown_fields,
+                                                    touchpoint_breakdown_fields):
+    if touchpoint_conversions:
+        def create_key(value, fields):
+            return tuple(value[field] for field in fields)
 
-    publishers_data_by_key = {(p['exchange'], p['domain']): p for p in publishers_data}
-    for tp in touchpoint_conversions:
-        key = (sources_by_id[tp['source']], tp['publisher'])
+        # if source in touchpoint field then do mapping from id to bidder_slug
+        if 'source' in touchpoint_breakdown_fields:
+            touchpoint_sources = [tp['source'] for tp in touchpoint_conversions]
+            sources = models.Source.objects.filter(pk__in=touchpoint_sources).values('id', 'bidder_slug')
+            sources_by_id = {source['id']: source['bidder_slug'] for source in sources}
 
-        publisher = publishers_data_by_key[key]
-        publisher['conversions'][tp['slug']] = tp['conversion_count']
+            for tp in touchpoint_conversions:
+                tp['source'] = sources_by_id[tp['source']]
 
+        publishers_data_by_key = {create_key(p, publisher_breakdown_fields): p for p in publishers_data}
+        touchpoint_data_by_key = {create_key(t, touchpoint_breakdown_fields): t for t in touchpoint_conversions}
 
-def merge_touchpoint_conversion_to_publishers_for_total(total_data, touchpoint_conversions):
-    for tp in touchpoint_conversions:
-        total_data['conversions'][tp['slug']] = tp['conversion_count']
+        for key, val in touchpoint_data_by_key.iteritems():
+            publisher = publishers_data_by_key.get(key, None)
+
+            # TODO matijav 14.03.2016 fix this
+            # if publisher doesn't exist create it from touchpoint data
+            # if publisher is None:
+            #     publisher = {}
+            #     for i in range(len(publisher_breakdown_fields)):
+            #         publisher[publisher_breakdown_fields[i]] = val[touchpoint_breakdown_fields[i]]
+            #
+            #     publishers_data_by_key[create_key(publisher, publisher_breakdown_fields)] = publisher
+            #     publishers_data.append(publisher)
+
+            if publisher:
+                publisher.setdefault('conversions', {})
+                publisher['conversions'][val['slug']] = val['conversion_count']

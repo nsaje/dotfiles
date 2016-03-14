@@ -302,7 +302,6 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                     end_date,
                     totals_constraints,
                     conversion_goals,
-                    True,
                     publisher_breakdown_fields=['date'],
                     touchpoint_breakdown_fields=['date'],
                     order_fields=['date'])
@@ -328,7 +327,6 @@ class AdGroupPublishersDailyStats(BaseDailyStatsView):
                     end_date,
                     totals_constraints,
                     conversion_goals,
-                    True,
                     publisher_breakdown_fields=['date'],
                     touchpoint_breakdown_fields=['date'],
                     order_fields=['date'],

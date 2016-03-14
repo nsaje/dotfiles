@@ -69,9 +69,18 @@ def get_content_ad_stats_with_conversions(
     )
 
 
-def get_publishers_data_and_conversion_goals(user, query_func, start_date, end_date, constraints,
-                                             conversion_goals, total, publisher_breakdown_fields=[],
-                                             touchpoint_breakdown_fields=[], order_fields=[], show_blacklisted_publishers=None, adg_blacklisted_publishers=None):
+def get_publishers_data_and_conversion_goals(
+        user,
+        query_func,
+        start_date,
+        end_date,
+        constraints,
+        conversion_goals,
+        publisher_breakdown_fields=[],
+        touchpoint_breakdown_fields=[],
+        order_fields=[],
+        show_blacklisted_publishers=None,
+        adg_blacklisted_publishers=None):
     can_see_conversion_goals = user.has_perm('zemauth.view_pubs_conversion_goals')
 
     report_conversion_goals = []
@@ -122,12 +131,11 @@ def get_publishers_data_and_conversion_goals(user, query_func, start_date, end_d
                 constraints_list=touchpoint_constraints_list,
             )
 
-    if can_see_conversion_goals:
-        if total:
-            conversions_helper.merge_touchpoint_conversion_to_publishers_for_total(publishers_data[0], touchpoint_data)
-        else:
-            conversions_helper.merge_touchpoint_conversions_to_publishers_data(publishers_data, touchpoint_data)
-        conversions_helper.transform_conversion_goals(publishers_data, conversion_goals)
+    if publishers_data and can_see_conversion_goals:
+        conversions_helper.merge_touchpoint_conversions_to_publishers_data(publishers_data, touchpoint_data,
+                                                                           publisher_breakdown_fields,
+                                                                           touchpoint_breakdown_fields)
+        conversions_helper.transform_to_conversion_goals(publishers_data, conversion_goals)
 
     return publishers_data
 

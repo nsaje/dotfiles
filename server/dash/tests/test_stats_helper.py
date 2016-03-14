@@ -9,6 +9,8 @@ from dash import models
 from dash import stats_helper
 from zemauth.models import User
 
+# TODO matijav 14.03.2016 test get_publishers_data_and_conversion_goals
+
 
 def _update_with_defaults(ret, keys, defaults={}):
     # a value in defaults should be a list that included the value for each new row separately

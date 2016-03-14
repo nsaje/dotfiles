@@ -124,7 +124,7 @@ def query(start_date, end_date, breakdown=[], order=[], ignore_diff_rows=False, 
 
     cursor.close()
 
-    results = conversions_helper.transform_conversions(results)
+    results = conversions_helper.group_conversions(results)
     if breakdown:
         return results
 
