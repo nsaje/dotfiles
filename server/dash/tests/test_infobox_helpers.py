@@ -589,19 +589,19 @@ class InfoBoxAccountHelpersTest(TestCase):
 
     def test_calculate_all_accounts_monthly_budget(self):
         today = datetime.datetime.utcnow()
-        day_index = max(0, today.day - 1)
-        day_budget_span = (self.budget.end_date - self.budget.start_date).days
-
         self.assertEqual(
-            (Decimal(self.budget.amount) * (Decimal(day_index)/day_budget_span)).quantize(Decimal('.01')),
+            Decimal(50.0),
             dash.infobox_helpers.calculate_all_accounts_monthly_budget(today).quantize(Decimal('.01'))
         )
 
         user = zemauth.models.User.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
 
-        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=30)
-        end_date_1 = start_date_1 + datetime.timedelta(days=15)
+        today = datetime.date.today()
+        first_of = datetime.date(today.year, today.month, 1)
+
+        start_date_1 = first_of - datetime.timedelta(days=15)
+        end_date_1 = first_of + datetime.timedelta(days=15)
         dash.models.BudgetLineItem.objects.create(
             campaign=campaign,
             credit=self.credit,
@@ -612,7 +612,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
         self.assertEqual(
-            Decimal(self.budget.amount) * (Decimal(day_index)/day_budget_span),
+            Decimal(100.0),
             dash.infobox_helpers.calculate_all_accounts_monthly_budget(today)
         )
 
@@ -904,7 +904,6 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         self.assertEqual(100, allocated_credit)
         self.assertEqual(00, available_credit)
 
-
     def test_calculate_allocated_and_available_credit_with_freed_budget(self):
         account = dash.models.Account.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
@@ -940,7 +939,6 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(30, allocated_credit)
         self.assertEqual(70, available_credit)
-
 
     def test_calculate_spend_and_available_budget(self):
         account = dash.models.Account.objects.get(pk=1)

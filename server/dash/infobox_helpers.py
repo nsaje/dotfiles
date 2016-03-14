@@ -485,7 +485,7 @@ def calculate_all_accounts_total_budget(start_date, end_date):
 def calculate_all_accounts_monthly_budget(today):
     start, end = calendar.monthrange(today.year, today.month)
     start_date = datetime.datetime(today.year, today.month, 1)
-    end_date = _until_today()
+    end_date = datetime.datetime(today.year, today.month, end)
     return calculate_all_accounts_total_budget(start_date.date(), end_date.date())
 
 
