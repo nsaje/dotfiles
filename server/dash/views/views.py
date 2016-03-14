@@ -770,7 +770,7 @@ class AccountOverview(api_common.BaseApiView):
             )
             settings.append(user_setting.as_dict())
         else:
-            user_blob = ', '.join([infobox_helpers.format_username(u) for u in all_users])
+            user_blob = '<br />'.join([infobox_helpers.format_username(u) for u in all_users])
             users_setting = infobox_helpers.OverviewSetting(
                 'Users:',
                 '{}'.format(all_users.count()),
@@ -2024,7 +2024,7 @@ class AllAccountsOverview(api_common.BaseApiView):
             email_list_setting = email_list_setting.comment(
                 'Show more',
                 'Show less',
-                ',<br />'.join(weekly_active_user_emails),
+                '<br />'.join(weekly_active_user_emails),
             )
         settings.append(email_list_setting)
 
