@@ -759,8 +759,10 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         allowed_sources = set([ad_group_source.source_id])
 
+        ad_group_source.source.supports_retargeting = True
+        ad_group_source.source.save()
+
         ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.CAN_MODIFY_RETARGETING,
             constants.SourceAction.CAN_UPDATE_STATE
         ]
 
