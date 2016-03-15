@@ -2071,7 +2071,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         settings.append(infobox_helpers.OverviewSetting(
             'Monthly budgets:',
             lc_helper.default_currency(monthly_budget),
-            tooltip='Sum of total budgets from month to date'
+            tooltip='Sum of total budgets for current month'
         ))
 
         return [setting.as_dict() for setting in settings]
