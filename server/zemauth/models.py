@@ -181,6 +181,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ('can_access_campaign_infobox', 'Can access info box on campaign level'),
             ('can_access_account_infobox', 'Can access info box on account level'),
             ('can_access_all_accounts_infobox', 'Can access info box on all accounts level'),
+            ('can_access_table_breakdowns_development_features', 'Can access table breakdowns development features'),
         )
 
     def get_full_name(self):

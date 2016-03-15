@@ -1,11 +1,9 @@
 from django.core.exceptions import ValidationError
-from django.shortcuts import render
 
 # Create your views here.
 from stats import mock_data
 from utils import api_common
-from dash.views import helpers
-from random import random
+from utils import exc
 from datetime import datetime
 from datetime import timedelta
 
@@ -32,7 +30,9 @@ class TestMetaData(api_common.BaseApiView):
 #
 class TestData(api_common.BaseApiView):
     def get(self, request):
-        # TODO : testing permissions
+        if not request.user.has_perm('zemauth.can_access_table_breakdowns_development_features'):
+            raise exc.MissingDataError()
+
         breakdown_list = request.GET.get('breakdowns').split(',')
         breakdown_range_list = request.GET.get('ranges').split(',')
         level = int(request.GET.get('level', '0'))

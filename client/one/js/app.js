@@ -215,12 +215,12 @@ oneApp.config(['$stateProvider', '$urlRouterProvider', 'config', function ($stat
         });
 
     $stateProvider
-        .state('development', {
-            url: '/development',
+        .state('main.development', {
+            url: 'development',
             template: '<div ui-view></div>',
             controller: 'DevelopmentCtrl'
         })
-        .state('development.grid', {
+        .state('main.development.grid', {
             url: '/grid',
             templateUrl: '/partials/development_grid.html',
             controller: 'DevelopmentGridCtrl'
