@@ -9,11 +9,11 @@
                     Meet or beat the goal of
                 </label>
                 <div class="col-xs-3" ng-class="{'has-error': errors.type}">
-					<div class="input-group goal-type">
-						<input id="goal-value" type="text" zem-focus-select class="form-control" ng-model="campaignGoal.value" placeholder="0.00" />
-						<div class="input-group-addon" ng-show="!!unit">{{ unit }}</div>
-					</div>
-					<label ng-repeat="error in errors.value" class="error" for="goal-value">{{ error }}</label>
+                    <div class="input-group goal-type">
+                        <input id="goal-value" type="text" zem-focus-select class="form-control" ng-model="campaignGoal.value" placeholder="0.00" />
+                        <div class="input-group-addon" ng-show="!!unit">{{ unit }}</div>
+                    </div>
+                    <label ng-repeat="error in errors.value" class="error" for="goal-value">{{ error }}</label>
                 </div>
                 <div class="col-xs-5" ng-class="{'has-error': errors.value}">
                     <ui-select ng-disabled="!!campaignGoal.id" theme="select2" search-enabled="false" id="goal-type-select" class="form-control" ng-model="campaignGoal.type" on-select="updateTypeChange($select.selected.unit)">
@@ -22,7 +22,7 @@
                             {{goal.name}}
                         </ui-select-choices>
                     </ui-select>
-					<label ng-repeat="error in errors.type" class="error" for="goal-type-select">{{ error }}</label>
+                    <label ng-repeat="error in errors.type" class="error" for="goal-type-select">{{ error }}</label>
                 </div>
             </div>
         </div>
@@ -34,7 +34,7 @@
                     <zem-help-popover content="The name of conversion or goal." placement="top"></zem-help-popover>
                 </label>
                 <div class="col-xs-5">
-					<input type="text" id="goal-name-input" class="form-control" ng-model="campaignGoal.conversionGoal.name" ng-focus="clearErrors('conversionGoal')" placeholder="Name of column in data table" />
+                    <input type="text" id="goal-name-input" class="form-control" ng-model="campaignGoal.conversionGoal.name" ng-focus="clearErrors('conversionGoal')" placeholder="Name of column in data table" />
                 </div>
                 <div class="col-xs-3">
                     <label ng-repeat="error in errors.conversionGoal.name" class="control-label small error" for="goal-name-input">{{ error }}</label>
