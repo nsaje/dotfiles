@@ -796,6 +796,8 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
     def test_get_editable_fields_without_retargeting(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         allowed_sources = set([ad_group_source.source_id])
 
