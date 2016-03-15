@@ -910,6 +910,8 @@ def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_sett
         message = _get_status_setting_disabled_message_for_target_regions(
             ad_group_source, ad_group_settings, ad_group_source_settings)
 
+    # there are cases where a condition is entered(region targeting) but no
+    # error message is output - this is why this is a separate loop
     if message is None and ad_group_settings.retargeting_ad_groups != [] and\
             not (ad_group_source.source.can_modify_retargeting_automatically() or
                  ad_group_source.source.can_modify_retargeting_manually()):
