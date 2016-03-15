@@ -1,7 +1,7 @@
 import datetime
 
+from decimal import Decimal
 from django.test import TestCase, mock
-from django.http.request import HttpRequest
 
 import zemauth.models
 
@@ -445,8 +445,8 @@ class InfoBoxAccountHelpersTest(TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
 
-        start_date = datetime.datetime.today().date() - datetime.timedelta(days=62)
-        end_date = start_date + datetime.timedelta(days=99)
+        start_date = datetime.datetime.today().date() - datetime.timedelta(days=30)
+        end_date = datetime.datetime.today().date() + datetime.timedelta(days=30)
 
         self.credit = dash.models.CreditLineItem.objects.create(
             account=account,
@@ -533,9 +533,16 @@ class InfoBoxAccountHelpersTest(TestCase):
         self.assertEqual(1, dash.infobox_helpers.count_active_accounts())
 
     def test_calculate_all_accounts_total_budget(self):
-        today = datetime.datetime.utcnow()
-        self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_total_budget(today, today))
+        today = datetime.datetime.utcnow().date()
+        day_budget_span = (self.budget.end_date - self.budget.start_date).days
 
+        self.assertEqual(
+            100 * (Decimal(1) / day_budget_span),
+            dash.infobox_helpers.calculate_all_accounts_total_budget(
+                today,
+                today + datetime.timedelta(days=1)
+            )
+        )
         self.assertEqual(0, dash.infobox_helpers.calculate_all_accounts_total_budget(
             today + datetime.timedelta(days=100), today + datetime.timedelta(days=100)
         ))
@@ -543,8 +550,8 @@ class InfoBoxAccountHelpersTest(TestCase):
         user = zemauth.models.User.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
 
-        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=62)
-        end_date_1 = start_date_1 + datetime.timedelta(days=15)
+        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=30)
+        end_date_1 = datetime.datetime.utcnow() + datetime.timedelta(days=15)
         dash.models.BudgetLineItem.objects.create(
             campaign=campaign,
             credit=self.credit,
@@ -555,11 +562,11 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
         self.assertEqual(
-            200,
+            (Decimal(50) + Decimal(30.0 / 45) * Decimal(100)).quantize(Decimal('.01')),
             dash.infobox_helpers.calculate_all_accounts_total_budget(
                 today - datetime.timedelta(days=60),
                 today
-            )
+            ).quantize(Decimal('.01'))
         )
 
         # test with date after end of budget
@@ -582,13 +589,19 @@ class InfoBoxAccountHelpersTest(TestCase):
 
     def test_calculate_all_accounts_monthly_budget(self):
         today = datetime.datetime.utcnow()
-        self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_monthly_budget(today))
+        self.assertEqual(
+            Decimal(50.0),
+            dash.infobox_helpers.calculate_all_accounts_monthly_budget(today).quantize(Decimal('.01'))
+        )
 
         user = zemauth.models.User.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
 
-        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=62)
-        end_date_1 = start_date_1 + datetime.timedelta(days=15)
+        today = datetime.date.today()
+        first_of = datetime.date(today.year, today.month, 1)
+
+        start_date_1 = first_of - datetime.timedelta(days=15)
+        end_date_1 = first_of + datetime.timedelta(days=15)
         dash.models.BudgetLineItem.objects.create(
             campaign=campaign,
             credit=self.credit,
@@ -598,7 +611,10 @@ class InfoBoxAccountHelpersTest(TestCase):
             created_by=user,
         )
 
-        self.assertEqual(100, dash.infobox_helpers.calculate_all_accounts_monthly_budget(today))
+        self.assertEqual(
+            Decimal(100.0),
+            dash.infobox_helpers.calculate_all_accounts_monthly_budget(today)
+        )
 
     def _make_a_john(self):
         ordinary_john = zemauth.models.User.objects.create_user(
@@ -610,24 +626,26 @@ class InfoBoxAccountHelpersTest(TestCase):
         ordinary_john.save()
         return ordinary_john
 
-    def test_count_weekly_logged_in_users(self):
+    def test_get_weekly_logged_in_users(self):
         self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users())
 
         for u in zemauth.models.User.objects.all():
             if 'zemanta' not in u.email:
                 continue
-            u.last_login = datetime.datetime.utcnow()
+            u.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=1)
             u.save()
 
         # zemanta mail should be skipped when counting mails
         self.assertEqual(0, dash.infobox_helpers.count_weekly_logged_in_users())
 
-        self._make_a_john()
+        john = self._make_a_john()
+        john.last_login = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+        john.save()
         self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users())
 
     def test_count_weekly_active_users(self):
         # should be 0 by default
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_active_users())
+        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
         for u in zemauth.models.User.objects.all():
@@ -637,32 +655,36 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.models.UserActionLog.objects.create(
                 action_type=dash.constants.UserActionType.UPLOAD_CONTENT_ADS,
                 ad_group=dash.models.AdGroup.objects.get(pk=1),
-                created_dt=datetime.datetime.utcnow(),
+                created_dt=datetime.datetime.utcnow()-datetime.timedelta(hours=24),
                 created_by=u,
             )
 
         # zemanta mail should be skipped when counting mails
-        self.assertEqual(0, dash.infobox_helpers.count_weekly_active_users())
+        self.assertEqual(0, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(0, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
         john = self._make_a_john()
-        dash.models.UserActionLog.objects.create(
+        ual = dash.models.UserActionLog.objects.create(
             action_type=dash.constants.UserActionType.UPLOAD_CONTENT_ADS,
             ad_group=dash.models.AdGroup.objects.get(pk=1),
-            created_dt=datetime.datetime.utcnow(),
             created_by=john,
         )
+        ual.created_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+        ual.save()
 
-        self.assertEqual(1, dash.infobox_helpers.count_weekly_active_users())
+        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(1, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
-        dash.models.UserActionLog.objects.create(
+        ual = dash.models.UserActionLog.objects.create(
             action_type=dash.constants.UserActionType.SET_CAMPAIGN_SETTINGS,
             ad_group=dash.models.AdGroup.objects.get(pk=1),
             created_dt=datetime.datetime.utcnow(),
-            created_by=john,
+            created_by=john
         )
-        self.assertEqual(1, dash.infobox_helpers.count_weekly_active_users())
+        ual.created_dt = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+        ual.save()
+
+        self.assertEqual(1, len(dash.infobox_helpers.get_weekly_active_users()))
         self.assertEqual(2, dash.infobox_helpers.count_weekly_selfmanaged_actions())
 
     def test_calculate_yesterday_account_spend(self):
@@ -903,6 +925,42 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(100, allocated_credit)
         self.assertEqual(00, available_credit)
+
+    def test_calculate_allocated_and_available_credit_with_freed_budget(self):
+        account = dash.models.Account.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(0, available_credit)
+        self.assertEqual(0, allocated_credit)
+
+        user = zemauth.models.User.objects.get(pk=1)
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        credit = dash.models.CreditLineItem.objects.create(
+            account=account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(100, available_credit)
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=40,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+            freed_cc=10*1e4
+        )
+
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(30, allocated_credit)
+        self.assertEqual(70, available_credit)
 
     def test_calculate_spend_and_available_budget(self):
         account = dash.models.Account.objects.get(pk=1)

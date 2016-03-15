@@ -1,5 +1,5 @@
 /*globals oneApp,constants,moment*/
-oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', function ($window, $location, $scope, $state, $timeout, $q, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService) {
+oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$state', '$timeout', '$q', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemOptimisationMetricsService', function ($window, $location, $scope, $state, $timeout, $q, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemOptimisationMetricsService) { // eslint-disable-line max-len
     $scope.getTableDataRequestInProgress = false;
     $scope.addCampaignRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -356,11 +356,35 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
                 'campaign_manager'
             ]
         },
+        zemOptimisationMetricsService.createColumnCategories(),
         {
             'name': 'Data Sync',
             'fields': ['last_sync']
         }
     ];
+
+    var initColumns = function () {
+        zemPostclickMetricsService.insertAcquisitionColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
+            $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
+        );
+
+        zemPostclickMetricsService.insertEngagementColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
+            $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
+        );
+
+        zemOptimisationMetricsService.insertAudienceOptimizationColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.campaign_goal_optimization'),
+            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
+        );
+    };
 
     $scope.addCampaign = function () {
         var accountId = $state.params.id;
@@ -598,22 +622,6 @@ oneApp.controller('AccountCampaignsCtrl', ['$window', '$location', '$scope', '$s
         $timeout(function () {
             $scope.$broadcast('highchartsng.reflow');
         }, 0);
-    };
-
-    var initColumns = function () {
-        zemPostclickMetricsService.insertAcquisitionColumns(
-            $scope.columns,
-            $scope.columns.length - 2,
-            $scope.hasPermission('zemauth.aggregate_postclick_acquisition'),
-            $scope.isPermissionInternal('zemauth.aggregate_postclick_acquisition')
-        );
-
-        zemPostclickMetricsService.insertEngagementColumns(
-            $scope.columns,
-            $scope.columns.length - 2,
-            $scope.hasPermission('zemauth.aggregate_postclick_engagement'),
-            $scope.isPermissionInternal('zemauth.aggregate_postclick_engagement')
-        );
     };
 
     $scope.init = function () {

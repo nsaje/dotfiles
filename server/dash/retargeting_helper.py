@@ -10,7 +10,8 @@ def can_add_source_with_retargeting(source, ad_group_settings):
     if ad_group_settings.retargeting_ad_groups == []:
         return True
 
-    return source.can_modify_retargeting_automatically()
+    return source.can_modify_retargeting_automatically() or\
+        source.can_modify_retargeting_manually()
 
 
 def supports_retargeting(ad_group):
@@ -27,7 +28,8 @@ def supports_retargeting(ad_group):
     for adgroup_source_setting in latest_adgroup_source_settings:
         if adgroup_source_setting.state != dash.constants.AdGroupSourceSettingsState.ACTIVE:
             continue
-        if not adgroup_source_setting.ad_group_source.source.can_modify_retargeting_automatically():
+        if not (adgroup_source_setting.ad_group_source.source.can_modify_retargeting_automatically() or
+                adgroup_source_setting.ad_group_source.source.can_modify_retargeting_manually()):
             unsupported_sources.append(adgroup_source_setting.ad_group_source.source)
 
     return unsupported_sources == [], sorted(unsupported_sources, key=lambda s: s.name)

@@ -120,6 +120,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: AdBlade
         source_type: 1
+        supports_retargeting: true
     model: dash.source
     pk: 1
 
@@ -131,6 +132,7 @@
         tracking_slug: 'adiant'
         maintenance: false
         deprecated: false
+        supports_retargeting: true
     model: dash.source
     pk: 2
 
