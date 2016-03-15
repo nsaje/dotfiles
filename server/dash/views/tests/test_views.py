@@ -175,6 +175,10 @@ class AdGroupSourceSettingsTest(TestCase):
         settings.end_date = datetime.datetime.utcnow().date() + datetime.timedelta(days=days_delta)
         settings.save(None)
 
+    def _set_campaign_landing_mode(self):
+        self.ad_group.campaign.landing_mode = True
+        self.ad_group.campaign.save(None)
+
     def test_end_date_past(self):
         self._set_ad_group_end_date(-1)
         response = self.client.put(
@@ -192,6 +196,33 @@ class AdGroupSourceSettingsTest(TestCase):
             data=json.dumps({'cpc_cc': '0.15'})
         )
         self.assertEqual(response.status_code, 200)
+
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    def test_set_state_landing_mode(self):
+        self._set_campaign_landing_mode()
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'state': 1})
+        )
+        self.assertEqual(response.status_code, 400)
+
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    def test_set_cpc_landing_mode(self):
+        self._set_campaign_landing_mode()
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'cpc_cc': '0.15'})
+        )
+        self.assertEqual(response.status_code, 400)
+
+    @patch('dash.views.views.api.AdGroupSourceSettingsWriter', MockSettingsWriter)
+    def test_set_daily_budget_landing_mode(self):
+        self._set_campaign_landing_mode()
+        response = self.client.put(
+            reverse('ad_group_source_settings', kwargs={'ad_group_id': '1', 'source_id': '1'}),
+            data=json.dumps({'daily_budget_cc': '15.00'})
+        )
+        self.assertEqual(response.status_code, 400)
 
     @patch('dash.views.helpers.log_useraction_if_necessary')
     def test_logs_user_action(self, mock_log_useraction):

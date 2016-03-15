@@ -726,6 +726,22 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
         self.assertEqual(mock_zwei_send.called, False)
 
     @patch('actionlog.zwei_actions.send')
+    def test_campaign_in_landing_mode(self, mock_zwei_send):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        ad_group.campaign.landing_mode = True
+        ad_group.campaign.save(None)
+
+        response = self.client.post(
+            reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps({'state': 1}),
+            content_type='application/json',
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
+        self.assertEqual(mock_zwei_send.called, False)
+
+    @patch('actionlog.zwei_actions.send')
     def test_inactivate(self, mock_zwei_send):
         ad_group = models.AdGroup.objects.get(pk=1)
 

@@ -261,7 +261,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
             raise exc.AuthorizationError()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
         data = json.loads(request.body)
         new_state = data.get('state')
         self._validate_state(ad_group, new_state)
@@ -281,9 +281,12 @@ class AdGroupSettingsState(api_common.BaseApiView):
         if state is None or state not in constants.AdGroupSettingsState.get_all():
             raise exc.ValidationError()
 
-        # ACTIVE state is only valid when there is budget to spend
+        if ad_group.campaign.landing_mode:
+            raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
+
         if state == constants.AdGroupSettingsState.ACTIVE and \
                 not validation_helpers.ad_group_has_available_budget(ad_group):
+            # ACTIVE state is only valid when there is budget to spend
             raise exc.ValidationError('Cannot enable ad group without available budget.')
 
 

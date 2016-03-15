@@ -744,11 +744,49 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source.ad_group.content_ads_tab_with_cms = False
         ad_group_source.ad_group.save(req)
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources)
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, ad_group_source_settings,
+                                                             allowed_sources)
 
         self.assertEqual(result, {
             'enabled': True,
             'message': None
+        })
+
+    def test_get_editable_fields_status_setting_landing_mode(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+        ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
+        ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
+        allowed_sources = set([ad_group_source.source_id])
+
+        ad_group_source.source.supports_retargeting = True
+        ad_group_source.source.save()
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_STATE
+        ]
+
+        ad_group_source.ad_group.content_ads_tab_with_cms = False
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, ad_group_source_settings,
+                                                             allowed_sources)
+
+        self.assertEqual(result, {
+            'enabled': True,
+            'message': None
+        })
+
+        ad_group_source.ad_group.campaign.landing_mode = True
+        ad_group_source.ad_group.campaign.save(None)
+
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, ad_group_source_settings,
+                                                             allowed_sources)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'Please add additional budget to your campaign to make changes.'
         })
 
     def test_get_editable_fields_without_retargeting(self):
@@ -763,7 +801,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources)
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, ad_group_source_settings,
+                                                             allowed_sources)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -783,14 +823,17 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources)
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, ad_group_source_settings,
+                                                             allowed_sources)
 
         self.assertEqual(result, {
             'enabled': True,
             'message': None
         })
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, set())
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, ad_group_source_settings, set())
         self.assertEqual(result, {
             'enabled': False,
             'message': 'Please contact support to enable this source.'
@@ -806,7 +849,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources)
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, ad_group_source_settings,
+                                                             allowed_sources)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -824,7 +869,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources)
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, ad_group_source_settings,
+                                                             allowed_sources)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -843,7 +890,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.can_manage_content_ads = False
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources)
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, ad_group_source_settings,
+                                                             allowed_sources)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -862,7 +911,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources)
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, ad_group_source_settings,
+                                                             allowed_sources)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -881,7 +932,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources)
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, ad_group_source_settings,
+                                                             allowed_sources)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -900,7 +953,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources)
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, ad_group_source_settings,
+                                                             allowed_sources)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -935,7 +990,8 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
             adgs_settings.save(None)
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, adgs_settings, allowed_sources)
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, adgs_settings, allowed_sources)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -970,7 +1026,8 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
             adgs_settings.save(None)
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, adgs_settings, allowed_sources)
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, adgs_settings, allowed_sources)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -997,7 +1054,8 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
             adgs_settings.save(None)
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source, ad_group_settings, adgs_settings, allowed_sources)
+        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
+                                                             ad_group_settings, adgs_settings, allowed_sources)
 
         self.assertEqual(result, {
             'enabled': True,
@@ -1013,11 +1071,37 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
 
-        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source.ad_group, ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
             'enabled': True,
             'message': None
+        })
+
+    def test_get_editable_fields_bid_cpc_landing_mode(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+        ad_group_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
+
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source.ad_group, ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': True,
+            'message': None
+        })
+
+        ad_group_source.ad_group.campaign.landing_mode = True
+        ad_group_source.ad_group.campaign.save(None)
+
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source.ad_group, ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This value cannot be edited because campaign is in landing mode.'
         })
 
     def test_get_editable_fields_bid_cpc_disabled(self):
@@ -1029,7 +1113,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = []
 
-        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source.ad_group, ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -1045,7 +1129,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = []
 
-        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source.ad_group, ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -1061,7 +1145,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = []
 
-        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source.ad_group, ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -1077,7 +1161,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPC]
         ad_group_source.source.maintenance = True
 
-        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source.ad_group, ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -1093,7 +1177,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = []
 
-        result = helpers._get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source.ad_group, ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -1111,11 +1195,39 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC
         ]
 
-        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+        result = helpers._get_editable_fields_daily_budget(ad_group_source.ad_group, ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
             'enabled': True,
             'message': None
+        })
+
+    def test_get_editable_fields_daily_budget_landing_mode(self):
+        ad_group_source = models.AdGroupSource.objects.get(pk=1)
+
+        ad_group_settings = ad_group_source.ad_group.get_current_settings()
+        ad_group_settings.end_date = None
+        ad_group_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        ad_group_source.source.source_type.available_actions = [
+            constants.SourceAction.CAN_UPDATE_DAILY_BUDGET_AUTOMATIC
+        ]
+
+        result = helpers._get_editable_fields_daily_budget(ad_group_source.ad_group, ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': True,
+            'message': None
+        })
+
+        ad_group_source.ad_group.campaign.landing_mode = True
+        ad_group_source.ad_group.campaign.save(None)
+
+        result = helpers._get_editable_fields_bid_cpc(ad_group_source.ad_group, ad_group_source, ad_group_settings)
+
+        self.assertEqual(result, {
+            'enabled': False,
+            'message': 'This value cannot be edited because campaign is in landing mode.'
         })
 
     def test_get_editable_fields_daily_budget_disabled(self):
@@ -1127,7 +1239,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = []
 
-        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+        result = helpers._get_editable_fields_daily_budget(ad_group_source.ad_group, ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -1143,7 +1255,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = []
 
-        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+        result = helpers._get_editable_fields_daily_budget(ad_group_source.ad_group, ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -1161,7 +1273,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ]
         ad_group_source.source.maintenance = True
 
-        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+        result = helpers._get_editable_fields_daily_budget(ad_group_source.ad_group, ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
             'enabled': False,
@@ -1177,7 +1289,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
 
         ad_group_source.source.source_type.available_actions = []
 
-        result = helpers._get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+        result = helpers._get_editable_fields_daily_budget(ad_group_source.ad_group, ad_group_source, ad_group_settings)
 
         self.assertEqual(result, {
             'enabled': False,

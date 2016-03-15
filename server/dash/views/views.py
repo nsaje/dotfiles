@@ -1027,11 +1027,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             raise exc.ForbiddenError(message='Not allowed')
 
         resource = json.loads(request.body)
-
-        try:
-            ad_group = models.AdGroup.objects.all().filter_by_user(request.user).get(id=ad_group_id)
-        except models.AdGroup.DoesNotExist:
-            raise exc.MissingDataError(message='Requested ad group not found')
+        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
 
         try:
             ad_group_source = models.AdGroupSource.objects.get(ad_group=ad_group, source_id=source_id)
@@ -1058,10 +1054,9 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         if 'autopilot_state' in resource and not autopilot_form.is_valid():
             errors.update(autopilot_form.errors)
 
-        if not request.user.has_perm('zemauth.can_set_media_source_to_auto_pilot') and\
-                'autopilot_state' in resource and\
-                resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
-            errors.update(exc.ForbiddenError(message='Not allowed'))
+        if ad_group.campaign.landing_mode:
+            for key in resource.keys():
+                errors.update({key: 'Not allowed'})
 
         ad_group_settings = ad_group.get_current_settings()
         source = models.Source.objects.get(pk=source_id)
@@ -1073,6 +1068,11 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                     'retargeting on adgroup with retargeting enabled.'
                 }
             )
+
+        if not request.user.has_perm('zemauth.can_set_media_source_to_auto_pilot') and\
+                'autopilot_state' in resource and\
+                resource['autopilot_state'] == constants.AdGroupSourceSettingsAutopilotState.ACTIVE:
+            errors.update(exc.ForbiddenError(message='Not allowed'))
 
         if errors:
             raise exc.ValidationError(errors=errors)
@@ -1102,6 +1102,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             autopilot_changed_sources_text = ', '.join([s.source.name for s in changed_sources])
         return self.create_api_response({
             'editable_fields': helpers.get_editable_fields(
+                ad_group,
                 ad_group_source,
                 ad_group_settings,
                 ad_group_source.get_current_settings_or_none(),
