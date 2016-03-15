@@ -57,23 +57,15 @@ def merge_touchpoint_conversions_to_publishers_data(publishers_data,
             sources_by_id = {source['id']: source['bidder_slug'] for source in sources}
 
             for tp in touchpoint_conversions:
-                tp['source'] = sources_by_id[tp['source']]
+                source = sources_by_id.get(tp['source'], None)
+                if source:
+                    tp['source'] = source
 
         publishers_data_by_key = {create_key(p, publisher_breakdown_fields): p for p in publishers_data}
         touchpoint_data_by_key = {create_key(t, touchpoint_breakdown_fields): t for t in touchpoint_conversions}
 
         for key, val in touchpoint_data_by_key.iteritems():
             publisher = publishers_data_by_key.get(key, None)
-
-            # TODO matijav 14.03.2016 fix this
-            # if publisher doesn't exist create it from touchpoint data
-            # if publisher is None:
-            #     publisher = {}
-            #     for i in range(len(publisher_breakdown_fields)):
-            #         publisher[publisher_breakdown_fields[i]] = val[touchpoint_breakdown_fields[i]]
-            #
-            #     publishers_data_by_key[create_key(publisher, publisher_breakdown_fields)] = publisher
-            #     publishers_data.append(publisher)
 
             if publisher:
                 publisher.setdefault('conversions', {})
