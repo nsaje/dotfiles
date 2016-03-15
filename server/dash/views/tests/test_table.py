@@ -224,13 +224,6 @@ class AdGroupAdsPlusTableTest(TestCase):
             'bounce_rate': 12.0,
             'pv_per_visit': 0.9,
             'avg_tos': 1.0,
-            u'cpa': 0,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
         }
 
         expected_row_2 = {
@@ -271,13 +264,6 @@ class AdGroupAdsPlusTableTest(TestCase):
             'bounce_rate': None,
             'pv_per_visit': None,
             'avg_tos': None,
-            u'cpa': 0,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
         }
         self.assertItemsEqual(sorted(result['data']['rows']), [expected_row_1, expected_row_2])
 
@@ -308,13 +294,6 @@ class AdGroupAdsPlusTableTest(TestCase):
             'bounce_rate': 11.0,
             'pv_per_visit': 0.8,
             'avg_tos': 0.9,
-            'avg_cost_per_non_bounced_visitor': 0,
-            'avg_cost_per_pageview': 0,
-            'avg_cost_per_second': 0,
-            'total_pageviews': 0,
-            'unbounced_visits': 0,
-            'total_seconds': 0,
-            'cpa': 0,
         })
 
         batches = models.UploadBatch.objects.filter(
@@ -890,13 +869,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'cpa': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
         }
 
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
@@ -922,15 +894,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'cpa': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
         })
-
 
     @patch('dash.table.reports.api_publishers.query_active_publishers')
     def test_get_filtered_sources(self, mock_active, mock_query):
@@ -1055,13 +1019,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
-            u'cpa': 0,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
         })
 
     """
@@ -1337,13 +1294,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
-            u'cpa': 0,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
         }
 
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
@@ -1369,15 +1319,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'cpa': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
         })
-
 
     def test_get_reverse_order(self, mock_query):
         date = datetime.date(2015, 2, 22)
@@ -1501,13 +1443,6 @@ class AdGroupPublishersTableTest(TestCase):
             u'bounce_rate': 0.3,
             u'pv_per_visit': 10,
             u'avg_tos': 20,
-            u'cpa': 0,
-            u'total_pageviews': 0,
-            u'unbounced_visits': 0,
-            u'total_seconds': 0,
-            u'avg_cost_per_non_bounced_visitor': 0,
-            u'avg_cost_per_pageview': 0,
-            u'avg_cost_per_second': 0,
         })
 
     def test_actual_hidden(self, mock_query):
