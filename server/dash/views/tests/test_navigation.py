@@ -220,8 +220,8 @@ class NavigationDataViewTest(TestCase):
                 'id': 1,
                 'name': 'test adgroup 1',
                 'contentAdsTabWithCMS': True,
-                'state': 'enabled',
-                'status': 'running'
+                'state': 1,
+                'status': 1,
             }
         })
 
@@ -249,8 +249,8 @@ class NavigationDataViewTest(TestCase):
                 'id': 4,
                 'name': 'test adgroup 4',
                 'contentAdsTabWithCMS': True,
-                'state': 'paused',
-                'status': 'stopped'
+                'state': 2,
+                'status': 2,
             }
         })
 
@@ -272,8 +272,8 @@ class NavigationDataViewTest(TestCase):
                 'id': 4,
                 'name': 'test adgroup 4',
                 'contentAdsTabWithCMS': True,
-                'state': 'paused',
-                'status': 'stopped'
+                'state': 2,
+                'status': 2,
             }
         })
 
@@ -318,22 +318,22 @@ class NavigationTreeViewTest(TestCase):
                     "contentAdsTabWithCMS": True,
                     "id": 1,
                     "name": "test adgroup 1",
-                    "state": "enabled",
-                    "status": "running"
+                    "state": 1,
+                    "status": 1,
                 }, {
                     "archived": False,
                     "contentAdsTabWithCMS": True,
                     "id": 2,
                     "name": "test adgroup 2",
-                    "state": "enabled",
-                    "status": "stopped"  # past dates
+                    "state": 1,
+                    "status": 2,  # past dates
                 }, {
                     "archived": False,
                     "contentAdsTabWithCMS": True,
                     "id": 3,
                     "name": "test adgroup 3",
-                    "state": "paused",
-                    "status": "stopped"
+                    "state": 2,
+                    "status": 2,
                 }],
                 "archived": False,
                 "id": 1,
@@ -357,22 +357,22 @@ class NavigationTreeViewTest(TestCase):
                     "contentAdsTabWithCMS": True,
                     "id": 1,
                     "name": "test adgroup 1",
-                    "state": "enabled",
-                    "status": "stopped"  # source paused
+                    "state": 1,
+                    "status": 2  # source paused
                 }, {
                     "archived": False,
                     "contentAdsTabWithCMS": True,
                     "id": 2,
                     "name": "test adgroup 2",
-                    "state": "enabled",
-                    "status": "stopped"
+                    "state": 1,
+                    "status": 2
                 }, {
                     "archived": False,
                     "contentAdsTabWithCMS": True,
                     "id": 3,
                     "name": "test adgroup 3",
-                    "state": "paused",
-                    "status": "stopped"  # source paused
+                    "state": 2,
+                    "status": 2,  # source paused
                 }],
                 "landingMode": False,
                 "archived": False,
@@ -397,8 +397,8 @@ class NavigationTreeViewTest(TestCase):
                         "contentAdsTabWithCMS": True,
                         "id": 4,
                         "name": "test adgroup 4",
-                        "state": "paused",
-                        "status": "stopped"
+                        "state": 2,
+                        "status": 2,
                     }
                 ],
                 "id": 2,
@@ -426,8 +426,8 @@ class NavigationTreeViewTest(TestCase):
                         "contentAdsTabWithCMS": True,
                         "id": 4,
                         "name": "test adgroup 4",
-                        "state": "paused",
-                        "status": "stopped"
+                        "state": 2,
+                        "status": 2,
                     }
                 ],
                 "id": 2,

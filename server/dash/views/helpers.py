@@ -843,76 +843,76 @@ def _is_end_date_past(ad_group_settings):
     return end_utc_datetime < datetime.datetime.utcnow()
 
 
-def get_editable_fields(ad_group_source, ad_group_settings, ad_group_source_settings, user, allowed_sources):
+def get_editable_fields(ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, user, allowed_sources):
     editable_fields = {}
 
     if not user.has_perm('zemauth.set_ad_group_source_settings'):
         return editable_fields
 
     editable_fields['status_setting'] = _get_editable_fields_status_setting(
+        ad_group,
         ad_group_source,
         ad_group_settings,
         ad_group_source_settings,
         allowed_sources,
     )
-    editable_fields['bid_cpc'] = _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings)
-    editable_fields['daily_budget'] = _get_editable_fields_daily_budget(ad_group_source, ad_group_settings)
+    editable_fields['bid_cpc'] = _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings)
+    editable_fields['daily_budget'] = _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settings)
 
     return editable_fields
 
 
-def _get_editable_fields_bid_cpc(ad_group_source, ad_group_settings):
-    enabled = True
+def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings):
     message = None
 
     if not ad_group_source.source.can_update_cpc() or\
             _is_end_date_past(ad_group_settings) or\
+            ad_group.campaign.landing_mode or\
             automation.autopilot.ad_group_source_is_on_autopilot(ad_group_source) or\
             ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
-        enabled = False
-        message = _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
+        message = _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings)
 
     return {
-        'enabled': enabled,
+        'enabled': message is None,
         'message': message
     }
 
 
-def _get_editable_fields_daily_budget(ad_group_source, ad_group_settings):
-    enabled = True
+def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settings):
     message = None
 
     if not ad_group_source.source.can_update_daily_budget_automatic() and\
        not ad_group_source.source.can_update_daily_budget_manual() or\
+       ad_group.campaign.landing_mode or\
        _is_end_date_past(ad_group_settings) or\
        ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
-        enabled = False
-        message = _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings)
+        message = _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings)
 
     return {
-        'enabled': enabled,
+        'enabled': message is None,
         'message': message
     }
 
 
-def _get_editable_fields_status_setting(ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources):
+def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_settings,
+                                        ad_group_source_settings, allowed_sources):
     message = None
 
-    if not ad_group_source.source.can_update_state() or (
-       ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
+    if ad_group_source.source_id not in allowed_sources:
+        message = 'Please contact support to enable this source.'
+    elif ad_group.campaign.landing_mode:
+        message = 'Please add additional budget to your campaign to make changes.'
+    elif not ad_group_source.source.can_update_state() or (
+            ad_group_source.ad_group.content_ads_tab_with_cms and not ad_group_source.can_manage_content_ads):
         message = _get_status_setting_disabled_message(ad_group_source)
     elif ad_group_source_settings is not None and\
             ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
         message = _get_status_setting_disabled_message_for_target_regions(
             ad_group_source, ad_group_settings, ad_group_source_settings)
-    if message is None and\
-            ad_group_settings.retargeting_ad_groups != [] and\
+    elif ad_group_settings.retargeting_ad_groups != [] and\
             not (ad_group_source.source.can_modify_retargeting_automatically() or
                  ad_group_source.source.can_modify_retargeting_manually()):
         message = 'This source can not be enabled because it does not support retargeting.'
-
-    if ad_group_source.source_id not in allowed_sources:
-        message = 'Please contact support to enable this source.'
 
     return {
         'enabled': message is None,
@@ -959,7 +959,10 @@ def _get_status_setting_disabled_message_for_target_regions(
     return None
 
 
-def _get_bid_cpc_daily_budget_disabled_message(ad_group_source, ad_group_settings):
+def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings):
+    if ad_group.campaign.landing_mode:
+        return 'This value cannot be edited because campaign is in landing mode.'
+
     if ad_group_source.source.maintenance:
         return 'This value cannot be edited because the media source is currently in maintenance.'
 

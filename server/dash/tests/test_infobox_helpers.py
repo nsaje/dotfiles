@@ -591,19 +591,19 @@ class InfoBoxAccountHelpersTest(TestCase):
 
     def test_calculate_all_accounts_monthly_budget(self):
         today = datetime.datetime.utcnow()
-        day_index = max(0, today.day - 1)
-        day_budget_span = (self.budget.end_date - self.budget.start_date).days
-
         self.assertEqual(
-            (Decimal(self.budget.amount) * (Decimal(day_index)/day_budget_span)).quantize(Decimal('.01')),
+            Decimal(50.0),
             dash.infobox_helpers.calculate_all_accounts_monthly_budget(today).quantize(Decimal('.01'))
         )
 
         user = zemauth.models.User.objects.get(pk=1)
         campaign = dash.models.Campaign.objects.get(pk=1)
 
-        start_date_1 = datetime.datetime.today().date() - datetime.timedelta(days=30)
-        end_date_1 = start_date_1 + datetime.timedelta(days=15)
+        today = datetime.date.today()
+        first_of = datetime.date(today.year, today.month, 1)
+
+        start_date_1 = first_of - datetime.timedelta(days=15)
+        end_date_1 = first_of + datetime.timedelta(days=15)
         dash.models.BudgetLineItem.objects.create(
             campaign=campaign,
             credit=self.credit,
@@ -614,7 +614,7 @@ class InfoBoxAccountHelpersTest(TestCase):
         )
 
         self.assertEqual(
-            Decimal(self.budget.amount) * (Decimal(day_index)/day_budget_span),
+            Decimal(100.0),
             dash.infobox_helpers.calculate_all_accounts_monthly_budget(today)
         )
 
@@ -752,6 +752,19 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
         )
 
+        # adgroup is active, sources are active and campaign is in landing mode
+        ad_group.campaign.landing_mode = True
+        ad_group.campaign.save(None)
+
+        ad_group_settings = ad_group.get_current_settings()
+        self.assertEqual(
+            dash.constants.InfoboxStatus.LANDING_MODE,
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
+        )
+
+        ad_group.campaign.landing_mode = False
+        ad_group.campaign.save(None)
+
         # adgroup is active but sources are inactive
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group=ad_group
@@ -814,6 +827,15 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE,
+            dash.infobox_helpers.get_campaign_running_status(campaign)
+        )
+
+        # campaign is in landing mode
+        campaign.landing_mode = True
+        campaign.save(None)
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.LANDING_MODE,
             dash.infobox_helpers.get_campaign_running_status(campaign)
         )
 
@@ -911,6 +933,42 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
         self.assertEqual(100, allocated_credit)
         self.assertEqual(00, available_credit)
+
+    def test_calculate_allocated_and_available_credit_with_freed_budget(self):
+        account = dash.models.Account.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(0, available_credit)
+        self.assertEqual(0, allocated_credit)
+
+        user = zemauth.models.User.objects.get(pk=1)
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        credit = dash.models.CreditLineItem.objects.create(
+            account=account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
+
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(100, available_credit)
+
+        dash.models.BudgetLineItem.objects.create(
+            campaign=campaign,
+            credit=credit,
+            amount=40,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=user,
+            freed_cc=10*1e4
+        )
+
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(30, allocated_credit)
+        self.assertEqual(70, available_credit)
 
     def test_calculate_spend_and_available_budget(self):
         account = dash.models.Account.objects.get(pk=1)

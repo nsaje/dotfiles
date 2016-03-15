@@ -849,8 +849,8 @@ div[datepicker] {
 
 .infobox-all-accounts {
     .infobox-setting-label {
-        width: 185px;
-        max-width: 185px;
+        width: 138px;
+        max-width: 138px;
     }
 
     .infobox-body {
@@ -968,6 +968,15 @@ div[datepicker] {
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 15px 15px;
+}
+
+.infobox-landing-mode-icon {
+    color: @infobox-black;
+    text-align: center;
+    background-image: url('img/adgroup_status_landing_mode.svg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 18px 18px;
 }
 
 .infobox-icon {
@@ -2581,24 +2590,19 @@ div[datepicker] {
     margin: 0 5px 0 0;
 }
 
-.adgroup-status-enabled-running-icon {
+.adgroup-status-active-icon {
     .adgroup-status-icon-placeholder();
     background-image: url('img/adgroup_status_enabled_green.svg');
 }
 
-.adgroup-status-enabled-stopped-icon {
+.adgroup-status-inactive-icon {
     .adgroup-status-icon-placeholder();
     background-image: url('img/adgroup_status_enabled_red.svg');
 }
 
-.adgroup-status-paused-stopped-icon {
+.adgroup-status-stopped-icon {
     .adgroup-status-icon-placeholder();
     background-image: url('img/adgroup_status_paused_gray.svg');
-}
-
-.adgroup-status-paused-running-icon {
-    .adgroup-status-icon-placeholder();
-    background-image: url('img/adgroup_status_paused_red.svg');
 }
 
 .adgroup-status-landing-mode-icon {
@@ -2609,7 +2613,7 @@ div[datepicker] {
     background-image: url('img/adgroup_status_landing_mode.svg');
 }
 
-.adgroup-status-landing-mode-active-icon {
+.adgroup-status-landing-mode-selected-icon {
     .adgroup-status-landing-mode-icon();
     background-image: url('img/adgroup_status_landing_mode_white.svg');
 }
