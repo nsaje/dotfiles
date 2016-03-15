@@ -40,7 +40,6 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         $scope.clearErrors('value');
 
         if (!$scope.validate($scope.campaignGoal, $scope.errors)) {
-            console.log($scope.errors)
             return;
         }
         
