@@ -56,6 +56,7 @@ def _get_minimum_remaining_budget(campaign):
     return available_tomorrow, max_daily_budget
 
 
+@newrelic.agent.function_trace()
 def _get_budgets_active_on_date(date, campaign):
     return campaign.budgets.filter(
         start_date__lte=date,
@@ -63,6 +64,7 @@ def _get_budgets_active_on_date(date, campaign):
     ).select_related('credit')
 
 
+@newrelic.agent.function_trace()
 def _get_ags_settings_dict(date, ad_group_sources):
     ad_group_sources_settings = dash.models.AdGroupSourceSettings.objects.filter(
         ad_group_source__in=ad_group_sources,
@@ -76,6 +78,7 @@ def _get_ags_settings_dict(date, ad_group_sources):
     return ret
 
 
+@newrelic.agent.function_trace()
 def _get_max_daily_budget(date, campaign):
     ad_groups = _get_ad_groups_active_on_date(date, campaign)
     ad_group_sources = dash.models.AdGroupSource.objects.filter(
@@ -90,6 +93,7 @@ def _get_max_daily_budget(date, campaign):
     return max_daily_budget
 
 
+@newrelic.agent.function_trace()
 def _get_source_max_daily_budget(date, ad_group_source, ad_group_source_settings):
     ags_max_daily_budget = 0
     reached_day_before = False
@@ -109,6 +113,7 @@ def _get_source_max_daily_budget(date, ad_group_source, ad_group_source_settings
     return ags_max_daily_budget
 
 
+@newrelic.agent.function_trace()
 def _get_ad_groups_active_on_date(date, campaign):
     ad_group_settings = dash.models.AdGroupSettings.objects.filter(
         ad_group__in=campaign.adgroup_set.all(),
