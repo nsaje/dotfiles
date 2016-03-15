@@ -1,14 +1,16 @@
 import json
 
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.core.urlresolvers import reverse
 
+from zemauth.models import User
 
 class TestTestData(TestCase):
-    fixtures = ['test_api.yaml']
+    fixtures = ['test_models.yaml']
 
     def setUp(self):
-        pass
+        self.client = Client()
+        self.client.login(username=User.objects.get(pk=1).email, password='secret')
 
     def tearDown(self):
         pass
@@ -28,6 +30,3 @@ class TestTestData(TestCase):
         result = json.loads(response.content)
 
         self.assertTrue(result['success'])
-
-
-
