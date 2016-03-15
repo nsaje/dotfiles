@@ -805,7 +805,7 @@ class AccountOverview(api_common.BaseApiView):
             description='{} unallocated'.format(lc_helper.default_currency(
                 available_credit
             )),
-            tooltip='Allocated total and unallocated credit',
+            tooltip='Total allocated and unallocated credit',
         )
         settings.append(allocated_credit_setting.as_dict())
 
@@ -822,7 +822,7 @@ class AccountOverview(api_common.BaseApiView):
             description='{} remaining'.format(
                 lc_helper.default_currency(available_budget)
             ),
-            tooltip='Spent media and remaining media budget on all active budgets on this account'
+            tooltip='Spent and remaining budget'
         )
         settings.append(spent_credit_setting.as_dict())
 
@@ -2007,7 +2007,7 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         weekly_logged_users = infobox_helpers.count_weekly_logged_in_users()
         settings.append(infobox_helpers.OverviewSetting(
-            'Weekly logged-in users:',
+            'Logged-in users:',
             weekly_logged_users,
             tooltip="Number of users who logged-in in the past 7 days"
         ))
@@ -2015,7 +2015,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         weekly_active_users = infobox_helpers.get_weekly_active_users()
         weekly_active_user_emails = [u.email for u in weekly_active_users]
         email_list_setting = infobox_helpers.OverviewSetting(
-            'Weekly active users:',
+            'Active users:',
             '{}'.format(len(weekly_active_users)),
             tooltip='E-mails of self managed users in the past 7 days'
         )
@@ -2030,7 +2030,7 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions()
         settings.append(infobox_helpers.OverviewSetting(
-            'Weekly self-managed actions:',
+            'Self-managed actions:',
             weekly_sf_actions,
             tooltip="Number of actions taken by self-managed users "
                     "in the past 7 days"
