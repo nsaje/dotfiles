@@ -33,6 +33,7 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
                     if (value) breakdowns.push(key);
                 });
                 $scope.dataSource.breakdowns = breakdowns;
+                $scope.dataSource.defaultPagination = [2, 3, 5, 7];
                 $scope.load();
             };
 
