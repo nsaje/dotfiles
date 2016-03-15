@@ -60,7 +60,12 @@ describe('api', function () {
                 target_devices: ['mobile'],
                 target_regions: ['NC', '501'],
             },
-            goals: { primary: null, added: [], removed: [], modified: {}, },
+            goals: {
+                primary: null,
+                added: [],
+                removed: [],
+                modified: {},
+            },
         };
         var settings = {
             id: 1,

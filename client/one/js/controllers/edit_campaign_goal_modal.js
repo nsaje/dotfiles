@@ -1,4 +1,4 @@
-/* globals oneApp,options,constants */
+/* globals oneApp,options,constants,defaults */
 oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api', function ($scope, $modalInstance, api) { // eslint-disable-line max-len
     $scope.conversionGoalTypes = options.conversionGoalTypes;
     $scope.conversionWindows = options.conversionWindows;
@@ -17,7 +17,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
     }
 
     $scope.errors = {
-        conversionGoal: {}
+        conversionGoal: {},
     };
 
     $scope.setDefaultValue = function () {
@@ -32,21 +32,19 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
         }
         $scope.campaignGoal.value = defaultValue;
     };
-    
-    $scope.save = function () {
-        var campaign = $scope.campaign;
 
+    $scope.save = function () {
         $scope.clearErrors('type');
         $scope.clearErrors('value');
 
         if (!$scope.validate($scope.campaignGoal, $scope.errors)) {
             return;
         }
-        
+
         api.campaignGoalValidation.post(
             $scope.campaign.id,
             $scope.campaignGoal
-        ).then(function (response) {
+        ).then(function () {
             $modalInstance.close($scope.campaignGoal);
         }, function (response) {
             $scope.errors = api.campaignGoalValidation.convert.errorsFromApi(response);
@@ -83,7 +81,7 @@ oneApp.controller('EditCampaignGoalModalCtrl', ['$scope', '$modalInstance', 'api
 
         $scope.clearErrors('type');
         $scope.clearErrors('conversionGoal');
-        
+
         $scope.setDefaultValue();
         $scope.unit = unit || '';
     };

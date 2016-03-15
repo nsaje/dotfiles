@@ -1722,7 +1722,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             return result;
         }
 
-        function convertCampaignGoalsFromApi(goals) {
+        function convertCampaignGoalsFromApi (goals) {
             return (goals || []).map(function (goal) {
                 var converted = {
                     primary: goal.primary,
@@ -1741,10 +1741,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
             });
         }
 
-        function convertCampaignGoalsToApi(goals, campaignId) {
+        function convertCampaignGoalsToApi (goals, campaignId) {
             var data = {};
             goals = goals || {};
-            
             data.primary = goals.primary || null;
             data.modified = goals.modified || {};
             data.removed = goals.removed || [];
@@ -3087,9 +3086,9 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
         };
     }
 
-    function CampaignGoalValidation() {
+    function CampaignGoalValidation () {
         var self = this;
-        
+
         this.convert = {
             dataToApi: function (goal) {
                 var data = {
@@ -3109,7 +3108,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                 return resp.data.data.errors;
             }
         };
-        
+
         this.post = function (campaignId, goal) {
             var url = '/api/campaigns/' + campaignId + '/goals/validate/';
             return $http.post(url, self.convert.dataToApi(goal));

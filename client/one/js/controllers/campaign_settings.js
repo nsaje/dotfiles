@@ -9,7 +9,7 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
     $scope.discarded = null;
     $scope.campaignGoals = [],
     $scope.campaignGoalsDiff = {};
-    
+
     $scope.campaignHasFreshSettings = function () {
         return campaignFreshSettings.promise;
     };
@@ -23,7 +23,7 @@ oneApp.controller('CampaignSettingsCtrl', ['$scope', '$state', '$q', '$timeout',
             function (data) {
                 $scope.settings = data.settings;
                 $scope.campaignGoals = data.goals;
-                
+
                 $scope.discarded = discarded;
                 campaignFreshSettings.resolve(data.settings.name === 'New campaign');
             },

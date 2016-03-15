@@ -1,4 +1,4 @@
-/* global oneApp,constants*/
+/* global oneApp,constants,angular*/
 'use strict';
 
 oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
@@ -10,10 +10,10 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
             isPermissionInternal: '=zemIsPermissionInternal',
             model: '=model',
             campaign: '=campaign',
-            campaignGoals: '=goals'
+            campaignGoals: '=goals',
         },
         templateUrl: '/partials/zem_campaign_goals.html',
-        controller: ['$modal', '$scope', function ($modal, $scope) {        
+        controller: ['$modal', '$scope', function ($modal, $scope) {
             $scope.campaignGoals = $scope.campaignGoals || [];
             $scope.i = 0;
 
@@ -50,15 +50,15 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                 goal.primary = true;
                 $scope.model.primary = goal.id || null;
             };
-            
+
             $scope.deleteGoal = function (goal) {
                 var index = $scope.campaignGoals.indexOf(goal);
                 if (index === -1) {
                     return;
                 }
-                
+
                 $scope.campaignGoals.splice(index, 1);
-                
+
                 if (goal.id === undefined) { // new goal
                     index = $scope.model.added.indexOf(goal);
                     if (index !== -1) {
@@ -68,7 +68,7 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                     goal.removed = true;
                     $scope.model.removed.push(goal);
                 }
-                
+
                 if (goal.primary) {
                     goal.primary = false;
                     $scope.choosePrimary();
@@ -76,7 +76,9 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
             };
 
             $scope.choosePrimary = function () {
-                if (!$scope.campaignGoals.length) { return; }
+                if (!$scope.campaignGoals.length) {
+                    return;
+                }
                 $scope.campaignGoals[0].primary = true;
                 $scope.model.primary = $scope.campaignGoals[0].id;
             };
@@ -90,9 +92,13 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                 scope.isGoalAvailable = function (option) {
                     var isAvailable = true,
                         countConversionGoals = 0;
-                    if (goal && goal.type === option.value) { return true; }
+                    if (goal && goal.type === option.value) {
+                        return true;
+                    }
                     $scope.campaignGoals.forEach(function (goal) {
-                        if (goal.type === option.value) { isAvailable = false; }
+                        if (goal.type === option.value) {
+                            isAvailable = false;
+                        }
                         countConversionGoals += goal.type === constants.campaignGoalKPI.CPA;
                     });
                     if (option.value === constants.campaignGoalKPI.CPA && countConversionGoals < 5) {
@@ -107,24 +113,24 @@ oneApp.directive('zemCampaignGoals', ['$filter', function ($filter) {
                     if (newGoal.type !== constants.campaignGoalKPI.CPA) {
                         return true;
                     }
-                    
+
                     goalNames[newGoal.conversionGoal.name] = 1;
                     goalTypeIds[
                         newGoal.conversionGoal.type + '::' + newGoal.conversionGoal.goalId
                     ] = 1;
-                    
+
                     $scope.campaignGoals.forEach(function (goal) {
                         if (goal.type !== constants.campaignGoalKPI.CPA) {
                             return;
                         }
                         var typeId = goal.conversionGoal.type + '::' + goal.conversionGoal.goalId;
-                        if (! goalNames[goal.conversionGoal.name]) {
+                        if (!goalNames[goal.conversionGoal.name]) {
                             goalNames[goal.conversionGoal.name] = 0;
                         }
-                        if (! goalTypeIds[typeId]) {
+                        if (!goalTypeIds[typeId]) {
                             goalTypeIds[typeId] = 0;
                         }
-                        
+
                         goalNames[goal.conversionGoal.name]++;
                         goalTypeIds[typeId]++;
                     });
