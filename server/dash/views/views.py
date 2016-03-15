@@ -461,6 +461,8 @@ class CampaignAdGroups(api_common.BaseApiView):
 
         campaign = helpers.get_campaign(request.user, campaign_id)
         ad_group, ad_group_settings, actions = self._create_ad_group(campaign, request)
+        ad_group_settings.save(request)
+
         api.update_ad_group_redirector_settings(ad_group, ad_group_settings)
         actionlog.zwei_actions.send(actions)
 
@@ -491,13 +493,13 @@ class CampaignAdGroups(api_common.BaseApiView):
         return ad_group, ad_group_settings, actions
 
     def _create_new_settings(self, ad_group, request):
-        settings = ad_group.get_current_settings()  # get default ad group settings
+        current_settings = ad_group.get_current_settings()  # get default ad group settings
+        new_settings = current_settings.copy_settings()
         campaign_settings = ad_group.campaign.get_current_settings()
 
-        settings.target_devices = campaign_settings.target_devices
-        settings.target_regions = campaign_settings.target_regions
-        settings.save(request)
-        return settings
+        new_settings.target_devices = campaign_settings.target_devices
+        new_settings.target_regions = campaign_settings.target_regions
+        return new_settings
 
     def _add_media_sources(self, ad_group, ad_group_settings, request):
         sources = ad_group.campaign.account.allowed_sources.all()
@@ -523,7 +525,6 @@ class CampaignAdGroups(api_common.BaseApiView):
             changes_text = 'Created settings and automatically created campaigns for {} sources ({})'.format(
                 len(added_sources), ', '.join([source.name for source in added_sources]))
             ad_group_settings.changes_text = changes_text
-            ad_group_settings.save(request)
 
         return actions
 

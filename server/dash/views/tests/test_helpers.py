@@ -2,6 +2,7 @@
 import datetime
 import pytz
 
+from django.db import connection
 from django.test import TestCase, RequestFactory
 from django.conf import settings
 from django.http.request import HttpRequest
@@ -475,15 +476,18 @@ class RunningStateHelpersTestCase(TestCase):
 
         for ag in self.ad_groups:
             ags = ag.get_current_settings()
-            ags.state = constants.AdGroupSettingsState.ACTIVE
-            ags.save(None)
+            new_ags = ags.copy_settings()
+            new_ags.state = constants.AdGroupSettingsState.ACTIVE
+            new_ags.save(None)
 
         self.ad_groups_settings = models.AdGroupSettings.objects\
                                                         .filter(ad_group__in=self.ad_groups)\
                                                         .group_current_settings()
 
-        models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group_id__in=[1, 3]).update(
-            state=constants.AdGroupSettingsState.ACTIVE)
+        for agss in models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group_id__in=[1, 3]):
+            new_agss = agss.copy_settings()
+            new_agss.state = constants.AdGroupSettingsState.ACTIVE
+            new_agss.save(None)
 
         # ad group 7 has no ad group source settings, that is why it is counted as inactive
 
@@ -966,6 +970,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
         ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+        ad_group = ad_group_source.ad_group
         allowed_sources = set([ad_group_source.source_id])
 
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
@@ -986,22 +991,26 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         )
         action_log.save(None)
 
+        # update database directly to bypass model restrictions
+        q = 'UPDATE dash_adgroupsourcesettings SET state=%s WHERE ad_group_source_id=%s'
+        cursor = connection.cursor()
+        cursor.execute(q, [constants.AdGroupSourceSettingsState.INACTIVE, ad_group_source.id])
+
         for adgs_settings in models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source):
-            adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
-            adgs_settings.save(None)
+            result = helpers._get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_settings,
+                                                                 adgs_settings, allowed_sources)
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
-                                                             ad_group_settings, adgs_settings, allowed_sources)
-
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'This source needs to set DMA targeting manually, please contact support to enable this source.'
-        })
+            self.assertEqual(result, {
+                'enabled': False,
+                'message': 'This source needs to set DMA targeting manually, '
+                           'please contact support to enable this source.'
+            })
 
     def test_get_editable_fields_status_setting_waiting_manual_target_regions_multiple_action(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
         ad_group_source_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+        ad_group = ad_group_source.ad_group
         allowed_sources = set([ad_group_source.source_id])
 
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
@@ -1022,17 +1031,20 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         )
         action_log.save(None)
 
+        # update database directly to bypass model restrictions
+        q = 'UPDATE dash_adgroupsourcesettings SET state=%s WHERE ad_group_source_id=%s'
+        cursor = connection.cursor()
+        cursor.execute(q, [constants.AdGroupSourceSettingsState.INACTIVE, ad_group_source.id])
+
         for adgs_settings in models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source):
-            adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
-            adgs_settings.save(None)
+            result = helpers._get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_settings,
+                                                                 adgs_settings, allowed_sources)
 
-        result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
-                                                             ad_group_settings, adgs_settings, allowed_sources)
-
-        self.assertEqual(result, {
-            'enabled': False,
-            'message': 'This source needs to set DMA and U.S. state targeting manually, please contact support to enable this source.'
-        })
+            self.assertEqual(result, {
+                'enabled': False,
+                'message': 'This source needs to set DMA and U.S. state targeting manually, '
+                           'please contact support to enable this source.'
+            })
 
     def test_get_editable_fields_status_setting_no_manual_target_regions_action(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
@@ -1051,8 +1063,9 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_source.ad_group.content_ads_tab_with_cms = False
 
         for adgs_settings in models.AdGroupSourceSettings.objects.filter(ad_group_source=ad_group_source):
-            adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
-            adgs_settings.save(None)
+            new_adgs_settings = adgs_settings.copy_settings()
+            new_adgs_settings.state = constants.AdGroupSourceSettingsState.INACTIVE
+            new_adgs_settings.save(None)
 
         result = helpers._get_editable_fields_status_setting(ad_group_source.ad_group, ad_group_source,
                                                              ad_group_settings, adgs_settings, allowed_sources)
