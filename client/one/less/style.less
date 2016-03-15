@@ -2241,17 +2241,17 @@ div[datepicker] {
 
     .debug-panel {
         float:left;
-        margin: 20px;
+        margin-bottom: 20px;
         padding: 10px;
         border: 1px solid orange;
 
         label {
             padding: 10px;
-            font-size: 12pt; }
-
+            font-size: 12pt;
+        }
     }
 
-    table.zem-grid {
+    table {
         width: 100%;
 
         thead {
@@ -2262,9 +2262,6 @@ div[datepicker] {
             vertical-align: middle;
             padding: 8px;
             text-align: left;
-        }
-        a {
-            cursor: pointer;
         }
         tr {
             &.level-0 {
@@ -2298,6 +2295,10 @@ div[datepicker] {
                 td:not(:first-child) {
                     background-color: #ffffff;
                 }
+            }
+
+            a {
+                cursor: pointer;
             }
         }
     }

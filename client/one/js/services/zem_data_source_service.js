@@ -4,37 +4,32 @@
 oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
 
     function DataSource() {
-        var that = this;
-
         this.breakdowns = ['ad_group', 'age', 'date'];
-        this.defaultPagination = [2, 3, 5];
         this.endpoint = '/api/experimental/stats/testdata/';
+        this.defaultPagination = [2, 3, 5];
 
-        this.metaData = null;
         this.data = null;
 
         this.prepareBreakdownConfig = function (breakdown, size) {
             var level = 0;
-            if (breakdown) {
-                level = breakdown.level;
-            }
+            if (breakdown) level = breakdown.level;
 
             var ranges = [];
-            for (var i = 0; i < this.breakdowns.length; ++i) {
+            for (var i = 1; i <= this.breakdowns.length; ++i) {
                 var from = 0;
-                var to = this.defaultPagination[i];
+                var to = this.defaultPagination[i-1];
                 if (breakdown) {
-                    if (i + 1 < breakdown.level) {
-                        from = breakdown.position[i + 1];
+                    if (i < breakdown.level) {
+                        from = breakdown.position[i];
                         to = from + 1;
-                    } else if (breakdown.level === i + 1) {
+                    } else if (breakdown.level === i) {
                         from = breakdown.pagination.to;
                         if (size) {
                             if (size > 0) to = from + size;
                             else to = -1;
                         }
                         else {
-                            to = from + this.defaultPagination[i];
+                            to = from + this.defaultPagination[i-1];
                         }
                     }
                 }
@@ -73,6 +68,7 @@ oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
         this.fetch = function (breakdown, size) {
             var config = this.prepareBreakdownConfig(breakdown, size);
             var deferred = $q.defer();
+            var that = this;
             $http.get(this.endpoint, config).success(function (data, status) {
                 var breakdown = data.data[0];
                 that.applyBreakdown(breakdown);
@@ -83,10 +79,7 @@ oneApp.factory('zemDataSourceService', ['$http', '$q', function ($http, $q) {
             });
 
             return deferred.promise;
-        }
-
-
-        //this.fetchInitial();
+        };
     }
 
     return DataSource;

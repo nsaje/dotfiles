@@ -21,21 +21,10 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
     return {
         restrict: 'E',
         scope: {
-            //dataSource: '=zemDataSource',
+            // TODO: bindings
         },
         templateUrl: '/partials/zem_grid.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
-
-            $scope.DEBUG_BREAKDOWNS = {ad_group: true, age: true, sex: false, date: true};
-            $scope.DEBUG_APPLY_BREAKDOWN = function (){
-                var breakdowns = [];
-                angular.forEach($scope.DEBUG_BREAKDOWNS, function(value, key){
-                    if (value) breakdowns.push(key);
-                });
-                $scope.dataSource.breakdowns = breakdowns;
-                $scope.dataSource.defaultPagination = [2, 3, 5, 7];
-                $scope.load();
-            };
 
             $scope.dataSource = new zemDataSourceService();
             $scope.config = config;
@@ -94,21 +83,19 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
 
             $scope.toggleCollapse = function (gridRow) {
 
-                var idx = this.rows.indexOf(gridRow);
-
                 gridRow.collapsed = !gridRow.collapsed;
 
+                var idx = this.rows.indexOf(gridRow);
                 while (true) {
                     if (idx >= this.rows.length) break;
 
                     var child = this.rows[++idx];
                     if (child.level <= gridRow.level) break;
-
                     child.visible = !gridRow.collapsed && !child.parent.collapsed;
                 }
             };
 
-            // TODO: move to filter/template
+            // TODO: move to filter
             $scope.getRowClass = function (row) {
                 var classes = [];
                 classes.push ('level-'+row.level);
@@ -122,6 +109,20 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
             };
 
             $scope.load();
+
+            /////////////////////
+            // DEBUG PANEL
+            // TODO: move to development controller
+            $scope.DEBUG_BREAKDOWNS = {ad_group: true, age: true, sex: false, date: true};
+            $scope.DEBUG_APPLY_BREAKDOWN = function (){
+                var breakdowns = [];
+                angular.forEach($scope.DEBUG_BREAKDOWNS, function(value, key){
+                    if (value) breakdowns.push(key);
+                });
+                $scope.dataSource.breakdowns = breakdowns;
+                $scope.dataSource.defaultPagination = [2, 3, 5, 7];
+                $scope.load();
+            };
 
         }],
     };
