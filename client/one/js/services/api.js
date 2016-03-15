@@ -1728,13 +1728,13 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     primary: goal.primary,
                     value: goal.values.length ? goal.values[goal.values.length - 1].value : null,
                     type: goal.type,
-                    id: goal.id
+                    id: goal.id,
                 };
                 if (goal.conversion_goal) {
                     converted.conversionGoal = {
                         type: goal.conversion_goal.type,
                         name: goal.conversion_goal.name,
-                        goalId: goal.conversion_goal.goal_id
+                        goalId: goal.conversion_goal.goal_id,
                     };
                 }
                 return converted;
@@ -1743,21 +1743,26 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         function convertCampaignGoalsToApi(goals, campaignId) {
             var data = {};
+            goals = goals || {};
+            
             data.primary = goals.primary || null;
             data.modified = goals.modified || {};
             data.removed = goals.removed || [];
             data.added = (goals.added || []).map(function (goal) {
-                return {
+                var converted = {
                     primary: goal.primary,
-                    conversion_goal: {
+                    value: goal.value,
+                    type: goal.type,
+                    campaign_id: campaignId,
+                };
+                if (goal.conversionGoal) {
+                    converted.conversion_goal =  {
                         goal_id: goal.conversionGoal.goalId,
                         name: goal.conversionGoal.name,
                         type: goal.conversionGoal.type,
-                    },
-                    value: goal.value,
-                    type: goal.type,
-                    campaign_id: campaignId
-                };
+                    };
+                }
+                return converted;
             });
             return data;
         }
@@ -1773,7 +1778,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     }
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
-                        goals: convertCampaignGoalsFromApi(data.data.goals || [])
+                        goals: convertCampaignGoalsFromApi(data.data.goals)
                     });
                 }).
                 error(function (data, status, headers) {
@@ -1792,7 +1797,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
             var data = {
                 'settings': convertSettingsToApi(settings),
-                'goals': convertCampaignGoalsToApi(campaignGoals || {}, settings.id)
+                'goals': convertCampaignGoalsToApi(campaignGoals, settings.id)
             };
 
             $http.put(url, data, config).
