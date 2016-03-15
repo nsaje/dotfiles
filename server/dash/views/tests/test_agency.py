@@ -731,6 +731,7 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
         ad_group.campaign.landing_mode = True
         ad_group.campaign.save(None)
 
+        self.add_permissions(['can_control_ad_group_state_in_table'])
         response = self.client.post(
             reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
             json.dumps({'state': 1}),
