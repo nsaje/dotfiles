@@ -1,3 +1,4 @@
+import copy
 import csv
 import datetime
 import exc
@@ -90,7 +91,7 @@ class ReportRow(object):
 
 
 class GaReportRow(ReportRow):
-    def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, goals):
+    def __init__(self, ga_row_dict, report_date, content_ad_id, source_param, publisher_param, goals):
         ReportRow.__init__(self)
         self.raw_row = json.dumps(ga_row_dict or {})
         self.ga_row_dicts = [ga_row_dict]
@@ -108,11 +109,13 @@ class GaReportRow(ReportRow):
 
         self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id
+        self.ad_group_id = None
         self.source_param = source_param
+        self.publisher_param = publisher_param
         self.goals = goals
 
     def key(self):
-        return (self.report_date, self.content_ad_id, self.source_param)
+        return (self.report_date, self.content_ad_id, self.source_param, self.publisher_param)
 
     def merge_with(self, ga_report_row):
         self.ga_row_dicts.extend(ga_report_row.ga_row_dicts)
@@ -135,6 +138,16 @@ class GaReportRow(ReportRow):
             self.source_param != '' and\
             self.source_param is not None
 
+    def is_publisher_row_valid(self):
+        if not self.is_valid():
+            return False
+
+        return self.content_ad_id is not None and\
+            self.source_param != '' and\
+            self.source_param is not None and\
+            self.publisher_param != '' and\
+            self.publisher_param is not None
+
     def sessions(self):
         all_row_raw_sessions = [ga_row_dict['Sessions'].replace(',', '').strip() for ga_row_dict in self.ga_row_dicts]
         all_row_sessions = [int(raw_sessions) if raw_sessions not in ('', None) else 0 for raw_sessions in all_row_raw_sessions]
@@ -155,7 +168,7 @@ class GaReportRow(ReportRow):
 
 class OmnitureReportRow(ReportRow):
 
-    def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param):
+    def __init__(self, omniture_row_dict, report_date, content_ad_id, source_param, publisher_param):
         ReportRow.__init__(self)
         self.omniture_row_dict = [omniture_row_dict]
         self.raw_row = json.dumps(omniture_row_dict or {})
@@ -190,7 +203,9 @@ class OmnitureReportRow(ReportRow):
 
         self.report_date = report_date.isoformat()
         self.content_ad_id = content_ad_id
+        self.ad_group_id = None
         self.source_param = source_param
+        self.publisher_param = publisher_param
         self.goals = self._parse_goals(omniture_row_dict)
 
     def _parse_goals(self, row_dict):
@@ -205,7 +220,7 @@ class OmnitureReportRow(ReportRow):
         return goals
 
     def key(self):
-        return (self.report_date, self.content_ad_id, self.source_param)
+        return (self.report_date, self.content_ad_id, self.source_param, self.publisher_param)
 
     def merge_with(self, omniture_report_row):
         self.omniture_row_dict.extend(omniture_report_row.omniture_row_dict)
@@ -228,6 +243,16 @@ class OmnitureReportRow(ReportRow):
             self.source_param != '' and\
             self.source_param is not None
 
+    def is_publisher_row_valid(self):
+        if not self.is_valid():
+            return False
+
+        return self.content_ad_id is not None and\
+            self.source_param != '' and\
+            self.source_param is not None and\
+            self.publisher_param != '' and\
+            self.publisher_param is not None
+
 
 class Report(object):
 
@@ -243,11 +268,56 @@ class Report(object):
     def get_date(self):
         return self.start_date
 
-    def valid_entries(self):
-        return [entry for entry in self.entries.values() if entry.is_row_valid()]
+    def get_content_ad_stats(self):
+        result = {}
+
+        for key, entry in self.entries.iteritems():
+            if not entry.is_row_valid():
+                continue
+
+            result_key = (entry.report_date, entry.content_ad_id, entry.source_param)
+            if result_key not in result:
+                result[result_key] = copy.deepcopy(entry)
+            else:
+                result[result_key].merge_with(entry)
+
+        return result.values()
+
+    def get_publisher_stats(self):
+        result = {}
+
+        content_ad_ids = set([entry.content_ad_id for entry in self.entries.values()])
+
+        content_ads_ad_groups = dash.models.ContentAd.objects.filter(
+                pk__in=content_ad_ids
+        ).values_list('ad_group', 'pk')
+
+        ad_group_mapping = dict((k, v) for v, k in content_ads_ad_groups)
+
+        for key, entry in self.entries.iteritems():
+            if not entry.is_publisher_row_valid():
+                continue
+
+            ad_group_id = ad_group_mapping[entry.content_ad_id]
+
+            result_key = (
+                entry.report_date,
+                ad_group_id,
+                entry.publisher_param,
+                entry.source_param
+            )
+            if result_key not in result:
+                entry_copy = copy.deepcopy(entry)
+                entry_copy.ad_group_id = ad_group_id
+                entry_copy.content_ad_id = None
+                result[result_key] = entry_copy
+            else:
+                result[result_key].merge_with(entry)
+
+        return result.values()
 
     def reported_visits(self):
-        return sum(entry.visits for entry in self.valid_entries())
+        return sum(entry.visits for entry in self.get_content_ads_stat())
 
     def imported_visits(self):
         return self._imported_visits
@@ -440,7 +510,7 @@ class GAReportFromCSV(GAReport):
 
                 content_ad_id, source_param, publisher_param = self._parse_keyword_or_url(keyword_or_url)
                 goals = self._parse_goals(self.fieldnames, entry)
-                report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, goals)
+                report_entry = GaReportRow(entry, self.start_date, content_ad_id, source_param, publisher_param, goals)
                 self.add_imported_visits(report_entry.visits or 0)
 
                 existing_entry = self.entries.get(report_entry.key())
@@ -662,7 +732,7 @@ class OmnitureReport(Report):
 
             keyword = omniture_row_dict.get(tracking_code_col, '')
             content_ad_id, source_param, publisher_param = self._parse_z11z_keyword(keyword)
-            report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param)
+            report_entry = OmnitureReportRow(omniture_row_dict, self.start_date, content_ad_id, source_param, publisher_param)
             self.add_imported_visits(report_entry.visits or 0)
 
             existing_entry = self.entries.get(report_entry.key())

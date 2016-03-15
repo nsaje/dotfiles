@@ -433,10 +433,10 @@ def process_report_v2(report_task, report_type):
         _update_report_log_after_parsing(report, report_log, report_task)
 
         # serialize report - this happens even if report is failed/empty
-        valid_entries = report.valid_entries()
+        entries = report.get_content_ad_stats()
         update.process_report(
             report.get_date(),
-            valid_entries,
+            entries,
             report_type
         )
 
@@ -486,8 +486,8 @@ def process_omniture_report(ga_report_task):
         _update_report_log_after_parsing(report, report_log, ga_report_task)
 
         # serialize report - this happens even if report is failed/empty
-        valid_entries = report.valid_entries()
-        update.process_report(report.get_date(), valid_entries, reports.constants.ReportType.OMNITURE)
+        entries = report.get_content_ad_stats()
+        update.process_report(report.get_date(), entries, reports.constants.ReportType.OMNITURE)
 
         report_log.state = constants.ReportState.SUCCESS
         report_log.save()

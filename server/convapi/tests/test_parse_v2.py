@@ -414,7 +414,7 @@ Day Index,Sessions
 ,,,,,,,
 Landing Page,Device Category,Sessions,Goal Completions,% New Sessions,Avg. Session Duration,Pages / Session,Bounce Rate,New Users
 /unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo&_z1_pub=www.test.com,desktop,6,1,0.00%,<00:00:00,1,1.00%,1
-/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo&_z1_pub=www.foo.com,mobile,6,2,0.00%,00:00:00,1,1.00%,1
+/unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo&_z1_pub=www.test.com,mobile,6,2,0.00%,00:00:00,1,1.00%,1
 /unexpected-scenario?_z1_adgid=1&_z1_caid=1&_z1_msid=yahoo&_z1_pub=www.bar.com,tablet,6,3,0.00%,00:00:00,1,1.00%,1
 ,,600,96.33%,578,95.50%,1.06,00:00:10,0.00%,0,A$0.00
 ,,,,,,,
@@ -426,9 +426,10 @@ Day Index,Sessions
         parser = parse_v2.GAReportFromCSV(complete_csv)
         parser.parse()
         parser.validate()
-        self.assertEqual(1, len(parser.entries))
+        self.assertEqual(2, len(parser.entries))
 
-        valid_entries = parser.valid_entries()
+        # Content ads
+        valid_entries = parser.get_content_ad_stats()
         self.assertEqual(6, valid_entries[0].goals[parse_v2.DEFAULT_GOAL_NAME])
 
         self.assertTrue(parser.is_media_source_specified())
@@ -448,6 +449,30 @@ Day Index,Sessions
         self.assertEqual('2015-04-16', entry.report_date)
 
         self.assertEqual({parse_v2.DEFAULT_GOAL_NAME: 6}, entry.goals)
+
+        # Publishers
+        valid_entries = parser.get_publisher_stats()
+        self.assertEqual(3, valid_entries[0].goals[parse_v2.DEFAULT_GOAL_NAME])
+
+        self.assertTrue(parser.is_media_source_specified())
+        self.assertTrue(parser.is_content_ad_specified())
+
+        entry = valid_entries[0]
+        self.assertEqual(12, entry.visits)
+        self.assertEqual(12, entry.pageviews)
+        self.assertEqual(0.01, entry.bounce_rate)
+
+        self.assertEqual(2, entry.new_visits)
+        self.assertEqual(0, entry.bounced_visits)
+        self.assertEqual(0, entry.total_time_on_site)
+
+        self.assertEqual(None, entry.content_ad_id)
+        self.assertEqual(1, entry.ad_group_id)
+        self.assertEqual("www.test.com", entry.publisher_param)
+        self.assertEqual('yahoo', entry.source_param)
+        self.assertEqual('2015-04-16', entry.report_date)
+
+        self.assertEqual({parse_v2.DEFAULT_GOAL_NAME: 3}, entry.goals)
 
 
 class OmnitureReportTest(TestCase):
@@ -648,7 +673,7 @@ Segment: All Visits (No Segment),,,,,,,,,,
         self.assertTrue(all(entry.is_row_valid() for entry in report.entries.values()))
 
         self.assertEqual(datetime.date(2015, 9, 12), report.start_date)
-        valid_entries = report.valid_entries()
+        valid_entries = report.get_content_ad_stats()
         self.assertEqual(1, len(valid_entries))
         entry = valid_entries[0]
 
@@ -697,7 +722,8 @@ Segment: All Visits (No Segment),,,,,,,,,,
 ,Tracking Code,Visits,,New Sessions,Unique Visitors,,Bounce Rate,Pages/Session,Avg. Session Duration,Entries,,Bounces,,Page Views,,Total Seconds Spent,,Test Event (Event 1),
 1.,CSY-PB-ZM-AB-M-z11yahoo__foo.com1z:Gandalf-Is-Coming-Get-Ready-for-Winter-Storms,10,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,40,0.4%,0,0.0%,5,50.0%
 2.,CSY-PB-ZM-AB-MM-z11yahoo__bar.com1z:Gandalf-Is-Coming-Get-Ready-for-Winter-Storms,10,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,40,0.4%,0,0.0%,5,50.0%
-,Total,20,0.5%,100.00%,40,0.5%,100.0%,1.00,605:12:39,40,0.5%,40,0.6%,80,0.4%,0,0.0%,10,50.0%
+3.,CSY-PB-ZM-AB-MM-z12yahoo__bar.com1z:Gandalf-Is-Coming-Get-Ready-for-Winter-Storms,20,0.5%,100.00%,20,0.5%,100.0%,1.00,605:12:39,20,0.5%,20,0.6%,40,0.4%,0,0.0%,5,50.0%
+,Total,40,0.5%,100.00%,40,0.5%,100.0%,1.00,605:12:39,40,0.5%,40,0.6%,80,0.4%,0,0.0%,10,50.0%
 """.strip().decode('utf-8')
 
         report = parse_v2.OmnitureReport(csv_utils.convert_to_xls(csv_file))
@@ -705,11 +731,14 @@ Segment: All Visits (No Segment),,,,,,,,,,
         report.validate()
 
         self.assertTrue(all(entry.is_row_valid() for entry in report.entries.values()))
+        self.assertTrue(all(entry.is_publisher_row_valid() for entry in report.entries.values()))
 
         self.assertEqual(datetime.date(2015, 9, 12), report.start_date)
-        valid_entries = report.valid_entries()
-        self.assertEqual(1, len(valid_entries))
-        entry = valid_entries[0]
+
+        # Content ads
+        valid_entries = report.get_content_ad_stats()
+        self.assertEqual(2, len(valid_entries))
+        entry = valid_entries[1]
 
         self.assertEqual(20, entry.visits)
         self.assertEqual(80, entry.pageviews)
@@ -720,7 +749,25 @@ Segment: All Visits (No Segment),,,,,,,,,,
 
         self.assertEqual(1, entry.content_ad_id)
         self.assertEqual('yahoo', entry.source_param)
+        self.assertEqual('2015-09-12', entry.report_date)
 
+        self.assertEqual({'Test Event': 10}, entry.goals)
+
+        # Publishers
+        valid_entries = report.get_publisher_stats()
+        self.assertEqual(2, len(valid_entries))
+        entry = valid_entries[0]
+
+        self.assertEqual(30, entry.visits)
+        self.assertEqual(80, entry.pageviews)
+        self.assertEqual(1, entry.bounce_rate)
+        self.assertEqual(40, entry.new_visits)
+        self.assertEqual(30, entry.bounced_visits)
+        self.assertEqual(0, entry.total_time_on_site)
+
+        self.assertEqual(1, entry.ad_group_id)
+        self.assertEqual("bar.com", entry.publisher_param)
+        self.assertEqual('yahoo', entry.source_param)
         self.assertEqual('2015-09-12', entry.report_date)
 
         self.assertEqual({'Test Event': 10}, entry.goals)
