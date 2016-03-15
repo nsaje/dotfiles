@@ -749,6 +749,19 @@ class InfoBoxAccountHelpersTest(TestCase):
             dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
         )
 
+        # adgroup is active, sources are active and campaign is in landing mode
+        ad_group.campaign.landing_mode = True
+        ad_group.campaign.save(None)
+
+        ad_group_settings = ad_group.get_current_settings()
+        self.assertEqual(
+            dash.constants.InfoboxStatus.LANDING_MODE,
+            dash.infobox_helpers.get_adgroup_running_status(ad_group_settings)
+        )
+
+        ad_group.campaign.landing_mode = False
+        ad_group.campaign.save(None)
+
         # adgroup is active but sources are inactive
         source_settings = dash.models.AdGroupSourceSettings.objects.filter(
             ad_group_source__ad_group=ad_group
@@ -807,6 +820,15 @@ class InfoBoxAccountHelpersTest(TestCase):
 
         self.assertEqual(
             dash.constants.InfoboxStatus.ACTIVE,
+            dash.infobox_helpers.get_campaign_running_status(campaign)
+        )
+
+        # campaign is in landing mode
+        campaign.landing_mode = True
+        campaign.save(None)
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.LANDING_MODE,
             dash.infobox_helpers.get_campaign_running_status(campaign)
         )
 

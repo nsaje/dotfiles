@@ -1,5 +1,5 @@
-/*globals oneApp,moment,constants,options*/
-oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemOptimisationMetricsService', function ($location, $scope, $state, $timeout, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemOptimisationMetricsService) {
+/* globals oneApp,moment,constants,options*/
+oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$timeout', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemOptimisationMetricsService', function ($location, $scope, $state, $timeout, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemOptimisationMetricsService) { // eslint-disable-line max-len
     $scope.getTableDataRequestInProgress = false;
     $scope.addGroupRequestInProgress = false;
     $scope.isSyncInProgress = false;
@@ -417,12 +417,12 @@ oneApp.controller('CampaignAdGroupsCtrl', ['$location', '$scope', '$state', '$ti
                     id: data.id,
                     name: data.name,
                     contentAdsTabWithCMS: data.contentAdsTabWithCMS,
-                    status: 'stopped',
-                    state: 'paused',
+                    status: constants.adGroupSettingsState.INACTIVE,
+                    state: constants.adGroupRunningStatus.INACTIVE,
                 });
                 $state.go('main.adGroups.settings', {id: data.id});
             },
-            function (data) {
+            function () {
                 // error
                 return;
             }
