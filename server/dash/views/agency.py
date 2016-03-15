@@ -565,8 +565,10 @@ class CampaignSettings(api_common.BaseApiView):
         with transaction.atomic():
             goal_errors = self.set_goals(request, campaign, resource)
 
-        if goal_errors or any(goal_error for goal_error in goal_errors):
+        if any(goal_error for goal_error in goal_errors):
             errors['goals'] = goal_errors
+
+        if errors:
             raise exc.ValidationError(errors=errors)
 
         self.set_settings(request, new_settings, campaign, settings_form.cleaned_data)

@@ -2005,6 +2005,7 @@ class CampaignSettingsTest(AgencyViewTestCase):
             content_type='application/json',
         )
         content = json.loads(response.content)
+        print content
         self.assertTrue(content['success'])
 
         goals = models.CampaignGoal.objects.filter(campaign_id=1)
