@@ -489,7 +489,6 @@ class RunningStateHelpersTestCase(TestCase):
             new_agss.state = constants.AdGroupSettingsState.ACTIVE
             new_agss.save(None)
 
-
         # ad group 7 has no ad group source settings, that is why it is counted as inactive
 
         self.ad_group_sources_settings = models.AdGroupSourceSettings.objects.filter(
