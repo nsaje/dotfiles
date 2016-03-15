@@ -1743,10 +1743,10 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
 
         function convertCampaignGoalsToApi(goals, campaignId) {
             var data = {};
-            data.primary = goals.primary;
-            data.modified = goals.modified;
-            data.removed = goals.removed;
-            data.added = goals.added.map(function (goal) {
+            data.primary = goals.primary || null;
+            data.modified = goals.modified || {};
+            data.removed = goals.removed || [];
+            data.added = (goals.added || []).map(function (goal) {
                 return {
                     primary: goal.primary,
                     conversion_goal: {
@@ -1773,7 +1773,7 @@ oneApp.factory('api', ['$http', '$q', 'zemFilterService', function ($http, $q, z
                     }
                     deferred.resolve({
                         settings: convertSettingsFromApi(data.data.settings),
-                        goals: convertCampaignGoalsFromApi(data.data.goals)
+                        goals: convertCampaignGoalsFromApi(data.data.goals || {})
                     });
                 }).
                 error(function (data, status, headers) {
