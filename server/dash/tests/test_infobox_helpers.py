@@ -1,3 +1,4 @@
+import calendar
 import datetime
 
 from decimal import Decimal
@@ -443,8 +444,10 @@ class InfoBoxAccountHelpersTest(TestCase):
         campaign = dash.models.Campaign.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
 
-        start_date = datetime.datetime.today().date() - datetime.timedelta(days=30)
-        end_date = datetime.datetime.today().date() + datetime.timedelta(days=30)
+        today = datetime.datetime.today()
+        _, days_in_month = calendar.monthrange(today.year, today.month)
+        start_date = today.date() - datetime.timedelta(days=days_in_month-1)
+        end_date = today.date() + datetime.timedelta(days=days_in_month-1)
 
         self.credit = dash.models.CreditLineItem.objects.create(
             account=account,
