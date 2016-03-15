@@ -77,11 +77,11 @@ oneApp.controller('AdGroupCtrl', ['$scope', '$state', '$window', '$location', 'a
     };
 
     $scope.isAdGroupPaused = function () {
-        return $scope.adGroup && $scope.adGroup.state === 'paused';
+        return $scope.adGroup && $scope.adGroup.state === constants.adGroupSettingsState.INACTIVE;
     };
 
     $scope.isCampaignLanding = function () {
-        return $scope.adGroup && $scope.adGroup.state === 'enabled' &&
+        return $scope.adGroup && $scope.adGroup.state === constants.adGroupSettingsState.ACTIVE &&
             $scope.campaign && $scope.campaign.landingMode;
     };
 

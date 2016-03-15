@@ -149,8 +149,9 @@ class AdGroupSettingsTest(AgencyViewTestCase):
         req.user = User(id=1)
 
         for source_settings in models.AdGroupSourceSettings.objects.all():
-            source_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
-            source_settings.save(req)
+            new_source_settings = source_settings.copy_settings()
+            new_source_settings.state = constants.AdGroupSourceSettingsState.ACTIVE
+            new_source_settings.save(req)
 
         self.add_permissions(['settings_view'])
         response = self.client.get(
@@ -293,12 +294,13 @@ class AdGroupSettingsTest(AgencyViewTestCase):
             self.assertEqual(response_settings_dict['daily_budget_cc'], '')
 
             new_settings = ad_group.get_current_settings()
+            new_settings_copy = new_settings.copy_settings()
 
             request = HttpRequest()
             request.user = User(id=1)
 
             # can it actually be saved to the db
-            new_settings.save(request)
+            new_settings_copy.save(request)
 
             self.assertEqual(new_settings.cpc_cc, None)
             self.assertEqual(new_settings.daily_budget_cc, None)
@@ -318,8 +320,9 @@ class AdGroupSettingsTest(AgencyViewTestCase):
             ad_group = models.AdGroup.objects.get(pk=1)
             mock_actionlog_api.is_waiting_for_set_actions.return_value = True
             old_settings = ad_group.get_current_settings()
-            old_settings.autopilot_state = 2
-            old_settings.save(None)
+            new_settings = old_settings.copy_settings()
+            new_settings.autopilot_state = 2
+            new_settings.save(None)
             mock_actionlog_api.is_waiting_for_set_actions.return_value = True
             self.assertIsNotNone(old_settings.pk)
             self.settings_dict['settings']['autopilot_state'] = 1
@@ -332,7 +335,7 @@ class AdGroupSettingsTest(AgencyViewTestCase):
                 follow=True
             )
 
-            new_settings = ad_group.get_current_settings()
+            new_settings = ad_group.get_current_settings().copy_settings()
 
             request = HttpRequest()
             request.user = User(id=1)
@@ -721,6 +724,23 @@ class AdGroupSettingsStateTest(AgencyViewTestCase):
             follow=True,
         )
 
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
+        self.assertEqual(mock_zwei_send.called, False)
+
+    @patch('actionlog.zwei_actions.send')
+    def test_campaign_in_landing_mode(self, mock_zwei_send):
+        ad_group = models.AdGroup.objects.get(pk=2)
+        ad_group.campaign.landing_mode = True
+        ad_group.campaign.save(None)
+
+        self.add_permissions(['can_control_ad_group_state_in_table'])
+        response = self.client.post(
+            reverse('ad_group_settings_state', kwargs={'ad_group_id': ad_group.id}),
+            json.dumps({'state': 1}),
+            content_type='application/json',
+            follow=True,
+        )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
         self.assertEqual(mock_zwei_send.called, False)
@@ -2477,13 +2497,15 @@ class AccountAgencyTest(TestCase):
         self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
 
         ad_group_settings = models.AdGroupSettings.objects.get(pk=11122)
-        ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
-        ad_group_settings.save(None)
+        new_ad_group_settings = ad_group_settings.copy_settings()
+        new_ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
+        new_ad_group_settings.save(None)
 
         self.assertEqual(view.get_non_removable_sources(account, [2]), [])
 
-        ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
-        ad_group_settings.save(None)
+        new_ad_group_settings = new_ad_group_settings.copy_settings()
+        new_ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
+        new_ad_group_settings.save(None)
 
         self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
 
@@ -2510,10 +2532,10 @@ class AccountAgencyTest(TestCase):
         account = models.Account.objects.get(pk=111)
         self.assertEqual(view.get_non_removable_sources(account, [2]), [2])
 
+        request = HttpRequest()
+        request.user = User.objects.get(pk=1)
         campaign_settings = models.CampaignSettings.objects.get(pk=1112)
-        campaign_settings.archived = True
-        campaign_settings.save(None)
+        new_campaign_settings = campaign_settings.copy_settings()
+        new_campaign_settings.archived = True
+        new_campaign_settings.save(request)
         self.assertEqual(view.get_non_removable_sources(account, [2]), [])
-
-        campaign_settings.archived = False
-        campaign_settings.save(None)

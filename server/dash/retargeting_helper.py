@@ -9,7 +9,6 @@ def can_add_source_with_retargeting(source, ad_group_settings):
     '''
     if ad_group_settings.retargeting_ad_groups == []:
         return True
-
     return source.can_modify_retargeting_automatically() or\
         source.can_modify_retargeting_manually()
 

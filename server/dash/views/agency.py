@@ -250,10 +250,10 @@ class AdGroupSettingsState(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        settings = ad_group.get_current_settings()
+        current_settings = ad_group.get_current_settings()
         return self.create_api_response({
             'id': str(ad_group.pk),
-            'state': settings.state,
+            'state': current_settings.state,
         })
 
     @statsd_helper.statsd_timer('dash.api', 'ad_group_settings_state_post')
@@ -261,29 +261,34 @@ class AdGroupSettingsState(api_common.BaseApiView):
         if not request.user.has_perm('zemauth.can_control_ad_group_state_in_table'):
             raise exc.AuthorizationError()
 
-        ad_group = helpers.get_ad_group(request.user, ad_group_id)
+        ad_group = helpers.get_ad_group(request.user, ad_group_id, select_related=True)
         data = json.loads(request.body)
         new_state = data.get('state')
         self._validate_state(ad_group, new_state)
 
-        settings = ad_group.get_current_settings()
-        if settings.state != new_state:
-            settings.state = new_state
-            settings.save(request)
-            actionlog_api.init_set_ad_group_state(ad_group, settings.state, request, send=True)
+        current_settings = ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+
+        if new_settings.state != new_state:
+            new_settings.state = new_state
+            new_settings.save(request)
+            actionlog_api.init_set_ad_group_state(ad_group, new_settings.state, request, send=True)
 
         return self.create_api_response({
             'id': str(ad_group.pk),
-            'state': settings.state,
+            'state': new_settings.state,
         })
 
     def _validate_state(self, ad_group, state):
         if state is None or state not in constants.AdGroupSettingsState.get_all():
             raise exc.ValidationError()
 
-        # ACTIVE state is only valid when there is budget to spend
+        if ad_group.campaign.landing_mode:
+            raise exc.ValidationError('Please add additional budget to your campaign to make changes.')
+
         if state == constants.AdGroupSettingsState.ACTIVE and \
                 not validation_helpers.ad_group_has_available_budget(ad_group):
+            # ACTIVE state is only valid when there is budget to spend
             raise exc.ValidationError('Cannot enable ad group without available budget.')
 
 
