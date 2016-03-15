@@ -2235,79 +2235,70 @@ div[datepicker] {
     }
 }
 
-table.grid {
+.zem-grid-container {
     width: 100%;
-    border-bottom: 1px solid @border-color;
-    margin-bottom: 10px;
-    thead, tfoot {
-        background-color: #f6f6f6;
-        td, th {
+    overflow-x: auto;
+
+    .debug-panel {
+        float:left;
+        margin: 20px;
+        padding: 10px;
+        border: 1px solid orange;
+
+        label {
+            padding: 10px;
+            font-size: 12pt; }
+
+    }
+
+    table.zem-grid {
+        width: 100%;
+
+        thead {
+            background-color: #f6f6f6;
             font-weight: 600;
         }
-        th {
-            border-top: 2px solid @default-color;
+        th, td {
+            vertical-align: middle;
+            padding: 8px;
+            text-align: left;
         }
-    }
-    th, td {
-        border-top: 1px solid @border-color;
-        text-align: center;
-        vertical-align: middle;
-        padding: 8px;
-        text-align: left;
-
-        ul.row-actions {
-            padding: 0;
-            margin: 0;
-            list-style-type: none;
-            li {
-                display: inline-block;
-                padding: 0;
-                margin: 0;
-                color: #2fa8c7;
-                cursor: pointer;
-                text-decoration: underline;
+        a {
+            cursor: pointer;
+        }
+        tr {
+            &.level-0 {
+                background-color: #f6f6f6;
+                td:first-child {
+                    font-weight: 600;
+                }
             }
-        }
+            &.level-1 {
+                background-color: #F4F4F4;
+                td:first-child {
+                    padding-left: 20px;
+                }
+            }
 
-        &.outline {
-            font-weight: 900 !important;
-        }
+            &.level-2 {
+                background-color: #ececec;
+                td:first-child {
+                    padding-left: 40px;
+                }
+            }
 
-        &.text-row {
-            max-width: 200px;
-        }
-    }
+            &.level-3 {
+                background-color: #e8e8e8;
+                td:first-child {
+                    padding-left: 60px;
+                }
+            }
 
-    tr.row-not-selected td, tr.row-not-selected td i {
-        color: #d2d2d2;
-    }
-
-    tr.level-0{
-        background-color: #f6f6f6;
-        td {
-            font-weight: 600;
-            //border-top: 2px solid @default-color;
-        }
-    }
-
-    tr.level-1{
-        background-color: #F4F4F4;
-        td:first-child{
-            padding-left: 20px;
-        }
-    }
-
-    tr.level-2{
-        background-color: #ececec;
-        td:first-child{
-            padding-left: 40px;
-        }
-    }
-
-    tr.level-3{
-        td:first-child{
-            background-color: #e8e8e8;
-            padding-left: 60px;
+            &.level-last {
+                td:not(:first-child) {
+                    background-color: #ffffff;
+                }
+            }
         }
     }
 }

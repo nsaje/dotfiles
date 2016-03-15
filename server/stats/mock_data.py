@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from random import random
 
-TEST_COLUMNS = 10
+TEST_COLUMNS = 9
 TEST_COLUMNS_TYPES = ['int', 'string', 'string', 'string']
 TEST_BREAKDOWNS = ['date', 'age', 'ad_group']
 TEST_BREAKDOWNS_DATES = [(datetime(2016, 4, 1) + timedelta(days=i)).strftime('%b %d %Y') for i in range(30)]
@@ -11,25 +11,22 @@ TEST_BREAKDOWNS_SEX = ['man', 'woman']
 
 
 # stats
-#   -> data ~ totals
-#   -> breakdown (level-1)
-#       -> pagination
-#       -> rows []
-#           -> data ~ totals
-#           -> breakdown (level-2)
-#               -> pagination
-#               -> rows []
-#                   -> data ~ totals
-#                   -> breakdown (level-2)
-#                       -> pagination
-#                       -> rows []
-#                       -> ...
+# <breakdown>
+#   -> level (0->n)
+#   -> position - [a,b,c]
+#   -> pagination - from, to, size, count
+#   -> rows []
+#       -> row
+#           -> data
+#           -> <breakdown> - (level + 1)
+#
+# level 0 -> wrapper for total row and it's breakdown
+# level 1 -> first level breakdown - original rows  with potential breakdown
+# level 2-... -> breakdowns
 def generate_random_breakdowns(breakdowns, level):
     top_level_row = _generate_random_breakdown(breakdowns, level=1, position=(0,))
     top_level_breakdown = {
-        'pagination': {'from': 0, 'to': 1, 'size': 1},
         'rows': [top_level_row],
-        'position': [],
         'level': 0
     }
     return _get_breakdowns_for_level(top_level_breakdown, level)
@@ -48,14 +45,14 @@ def _get_breakdowns_for_level(breakdown, level):
 
 def _generate_random_breakdown(breakdowns, level=1, position=(0,), key='Total'):
     row = {
-        'data': _generate_random_row(key),
+        'stats': _generate_random_stats(key),
     }
 
     if level <= len(breakdowns):
         breakdown = {}
         row['breakdown'] = breakdown
 
-        keys, pagination = _get_breakdown_keys(breakdowns[level-1])
+        keys, pagination = _get_breakdown_keys(breakdowns[level - 1])
         rows = []
         breakdown['rows'] = rows
         breakdown['pagination'] = pagination
@@ -63,14 +60,15 @@ def _generate_random_breakdown(breakdowns, level=1, position=(0,), key='Total'):
         breakdown['position'] = position
 
         for idx, k in enumerate(keys):
-            r = _generate_random_breakdown(breakdowns, level + 1, position + (breakdowns[level-1]['range'][0]+idx,), k)
+            child_position = position + (pagination['from'] + idx, )
+            r = _generate_random_breakdown(breakdowns, level + 1, child_position, k)
             rows.append(r)
 
     return row
 
 
-def _generate_random_row(key):
-    return [key] + [('%.2f' % (random() * 10000)) for _ in range(TEST_COLUMNS)]
+def _generate_random_stats(key):
+    return [key] + [('%.2f' % (random() * 10000)) for _ in range(TEST_COLUMNS-1)]
 
 
 def _get_breakdown_keys(breakdown):
@@ -86,7 +84,8 @@ def _get_breakdown_keys(breakdown):
 
     keys_count = len(keys)
     keys_from = breakdown['range'][0]
-    keys_to = min(breakdown['range'][1], keys_count)
+    keys_to = breakdown['range'][1]
+    keys_to = min(keys_to, keys_count) if keys_to > 0 else keys_count
 
     if keys_from >= keys_to or keys_from < 0:
         raise Exception('Out of bounds')
@@ -94,7 +93,7 @@ def _get_breakdown_keys(breakdown):
     pagination = {
         'from': keys_from,
         'to': keys_to,
-        'size': keys_to-keys_from,
+        'size': keys_to - keys_from,
         'count': keys_count
     }
     keys = keys[keys_from:keys_to]

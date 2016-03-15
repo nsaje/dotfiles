@@ -3,19 +3,20 @@
 
 oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', function (config, zemDataSourceService, $window) {
 
-    function GridRow (type, level, dataRow) {
-        this.dataRow = dataRow;
-        this.data = dataRow.data;
+    var GridRowType = {
+        STATS: 1,
+        BREAKDOWN: 2
+    };
 
-        this.level = level;
+    function GridRow(type, level, data) {
         this.type = type;
-
-        this.collapsed = false;
-        this.visible = true;
+        this.level = level;
+        this.data = data;
 
         this.parent = null;
+        this.collapsed = false;
+        this.visible = true;
     }
-
 
     return {
         restrict: 'E',
@@ -25,17 +26,30 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
         templateUrl: '/partials/zem_grid.html',
         controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
 
+            $scope.DEBUG_BREAKDOWNS = {ad_group: true, age: true, sex: false, date: true};
+            $scope.DEBUG_APPLY_BREAKDOWN = function (){
+                var breakdowns = [];
+                angular.forEach($scope.DEBUG_BREAKDOWNS, function(value, key){
+                    if (value) breakdowns.push(key);
+                });
+                $scope.dataSource.breakdowns = breakdowns;
+                $scope.load();
+            };
+
             $scope.dataSource = new zemDataSourceService();
             $scope.config = config;
-            $scope.constants = constants;
+            $scope.GridRowType = GridRowType;
+
 
             $scope.rows = [];
+            $scope.columns = ['Name'];
+            for (var i = 0; i < 8; ++i) $scope.columns.push('Stat ' + (i + 1));
 
             $scope.load = function () {
-                $scope.dataSource.fetchInitial().then(
-                    function (breakdown){
+                $scope.dataSource.fetch().then(
+                    function (breakdown) {
                         var totalDataRow = breakdown.rows[0];
-                        var totalRow = new GridRow(0, 0, totalDataRow);
+                        var totalRow = new GridRow(GridRowType.STATS, 0, totalDataRow);
                         $scope.rows = $scope.parseBreakdown(totalRow, totalDataRow.breakdown);
                         $scope.rows.push(totalRow);
                     }, function (error) {
@@ -44,9 +58,9 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
                 );
             };
 
-            $scope.loadMore = function (row) {
-                $scope.dataSource.fetchMore(row.dataRow).then(
-                    function (breakdown){
+            $scope.loadMore = function (row, size) {
+                $scope.dataSource.fetch(row.data, size).then(
+                    function (breakdown) {
                         var rows = $scope.parseBreakdown(row, breakdown);
                         var idx = $scope.rows.indexOf(row);
                         rows.pop();
@@ -61,8 +75,8 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
                 var rows = [];
                 var level = breakdown.level;
 
-                breakdown.rows.forEach (function(dataRow) {
-                    var gridRow = new GridRow(0, level, dataRow);
+                breakdown.rows.forEach(function (dataRow) {
+                    var gridRow = new GridRow(GridRowType.STATS, level, dataRow);
                     gridRow.parent = parentGridRow;
                     rows.push(gridRow);
                     if (dataRow.breakdown) {
@@ -70,7 +84,7 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
                     }
                 });
 
-                var gridRow = new GridRow(1, level, breakdown);
+                var gridRow = new GridRow(GridRowType.BREAKDOWN, level, breakdown);
                 gridRow.parent = parentGridRow;
                 rows.push(gridRow);
 
@@ -95,13 +109,15 @@ oneApp.directive('zemGrid', ['config', 'zemDataSourceService', '$window', functi
 
             // TODO: move to filter/template
             $scope.getRowClass = function (row) {
-                switch (row.level) {
-                    case 0: return 'level-0';
-                    case 1: return 'level-1';
-                    case 2: return 'level-2';
-                    case 3: return 'level-3';
-                    default: return 'level-3';
+                var classes = [];
+                classes.push ('level-'+row.level);
+
+                if (row.level === $scope.dataSource.breakdowns.length)
+                {
+                    classes.push ('level-last');
                 }
+
+                return classes;
             };
 
             $scope.load();
