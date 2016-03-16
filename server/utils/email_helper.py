@@ -13,21 +13,22 @@ from utils import pagerduty_helper
 logger = logging.getLogger(__name__)
 
 
-def send_notification_mail(account_manager, subject, body, settings_url):
+def send_notification_mail(to_emails, subject, body, settings_url=None):
     try:
         send_mail(
             subject,
             body,
             'Zemanta <{}>'.format(settings.FROM_EMAIL),
-            [account_manager.email],
+            to_emails,
             fail_silently=False
         )
     except Exception as e:
         logger.exception('Account manager email notification was not sent because an exception was raised')
 
-        desc = {
-            'settings_url': settings_url
-        }
+        desc = {}
+        if settings_url:
+            desc['settings_url'] = settings_url
+
         pagerduty_helper.trigger(
             event_type=pagerduty_helper.PagerDutyEventType.SYSOPS,
             incident_key='account_manager_notification_mail_failed',
@@ -72,7 +73,7 @@ Zemanta
     campaign_settings = ad_group.campaign.get_current_settings()
 
     send_notification_mail(
-        campaign_settings.campaign_manager, subject, body, ad_group.campaign.get_campaign_url(request))
+        [campaign_settings.campaign_manager.email], subject, body, ad_group.campaign.get_campaign_url(request))
 
 
 def send_campaign_notification_email(campaign, request, changes_text):
@@ -109,7 +110,7 @@ Zemanta
     campaign_settings = campaign.get_current_settings()
 
     send_notification_mail(
-        campaign_settings.campaign_manager, subject, body, campaign.get_campaign_url(request))
+        [campaign_settings.campaign_manager.email], subject, body, campaign.get_campaign_url(request))
 
 
 def send_budget_notification_email(campaign, request, changes_text):
@@ -146,7 +147,7 @@ Zemanta
     campaign_settings = campaign.get_current_settings()
 
     send_notification_mail(
-        campaign_settings.campaign_manager, subject, body, campaign.get_campaign_url(request))
+        [campaign_settings.campaign_manager.email], subject, body, campaign.get_campaign_url(request))
 
 
 def send_account_pixel_notification(account, request):
@@ -174,7 +175,7 @@ Zemanta
     account_settings = account.get_current_settings()
 
     send_notification_mail(
-        account_settings.default_account_manager, subject, body, account.get_account_url(request))
+        [account_settings.default_account_manager.email], subject, body, account.get_account_url(request))
 
 
 def send_password_reset_email(user, request):

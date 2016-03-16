@@ -11,7 +11,7 @@ from reports import daily_statements
 import reports.models
 
 
-@patch('reports.daily_statements.datetime')
+@patch('utils.dates_helper.datetime')
 @patch('reports.models.AdGroupStats')
 class DailyStatementsTestCase(TestCase):
 

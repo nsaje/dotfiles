@@ -28,8 +28,8 @@ class UserAdmin(authadmin.UserAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (_('Personal info'), {'fields': ('username', 'first_name', 'last_name')}),
-        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
-                                       'show_onboarding_guidance', 
+        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_test_user',
+                                       'show_onboarding_guidance',
                                        'groups', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )

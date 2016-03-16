@@ -27,7 +27,6 @@ FIELD_PERMISSION_MAPPING = {
     'e_data_cost':    'zemauth.can_view_effective_costs',
     'license_fee':    'zemauth.can_view_effective_costs',
     'billing_cost':   'zemauth.can_view_effective_costs',
-    'license_fee':    'zemauth.can_view_effective_costs',
     'total_cost':     'zemauth.can_view_actual_costs',
     'media_cost':     'zemauth.can_view_actual_costs',
     'data_cost':      'zemauth.can_view_actual_costs',

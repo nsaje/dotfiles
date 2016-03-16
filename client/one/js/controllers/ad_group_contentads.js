@@ -1,5 +1,5 @@
 /*globals oneApp,moment,constants,options*/
-oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, api, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
+oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemOptimisationMetricsService', function ($scope, $state, $location, $timeout, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemOptimisationMetricsService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.order = '-cost';
@@ -131,7 +131,8 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
                 'bounce_rate', 'pv_per_visit', 'avg_tos',
                 'click_discrepancy'
             ]
-        }
+        },
+        zemOptimisationMetricsService.createColumnCategories(),
     ];
 
     var initColumns = function () {
@@ -147,6 +148,13 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
             $scope.columns.length - 1,
             $scope.hasPermission('zemauth.content_ads_postclick_engagement'),
             $scope.isPermissionInternal('zemauth.content_ads_postclick_engagement')
+        );
+
+        zemOptimisationMetricsService.insertAudienceOptimizationColumns(
+            $scope.columns,
+            $scope.columns.length - 2,
+            $scope.hasPermission('zemauth.campaign_goal_optimization'),
+            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
         );
     };
 
@@ -364,7 +372,6 @@ oneApp.controller('AdGroupAdsCtrl', ['$scope', '$state', '$location', '$timeout'
             $scope.setAdGroupData('page', $scope.pagination.currentPage);
 
             getTableData();
-            $scope.getAdGroupState();
         }
     };
 

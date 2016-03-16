@@ -1,0 +1,26 @@
+einsstatic:
+    container_name: einsstatic
+    hostname: einsstatic
+    image: digitallyseamless/nodejs-bower-grunt
+    ports:
+      - "9999:9999"
+    volumes:
+      - "./client/:/data/"
+    entrypoint: /bin/bash
+    command: -c "npm prune && npm install; grunt dev"
+    tty: true
+
+eins:
+    container_name: eins
+    hostname: eins
+    image: zemanta/z1
+    ports:
+      - "8000:8000"
+    links:
+      - "einsstatic"
+    volumes:
+      - "./server/:/app/zemanta-eins/"
+    working_dir: /app/zemanta-eins/
+    entrypoint: /bin/bash
+    command: -c "python manage.py runserver 0.0.0.0:8000"
+    tty: true

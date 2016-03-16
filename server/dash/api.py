@@ -27,6 +27,7 @@ from dash import threads
 
 import utils.url_helper
 import utils.statsd_helper
+import influx
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ def update_ad_group_source_state(ad_group_source, conf):
     if need_update:
         logger.info('we have to update %s', conf)
         if ad_group_source_state is None:
-            new_state = models.AdGroupSourceState.objects.create(ad_group_source=ad_group_source)
+            new_state = models.AdGroupSourceState(ad_group_source=ad_group_source)
         else:
             new_state = ad_group_source_state
             new_state.pk = None   # create a new state object as a copy of the old one
@@ -330,6 +331,7 @@ def order_additional_updates_after_campaign_creation(ad_group_source, request):
 
     ad_group_settings = ad_group_source.ad_group.get_current_settings()
     _set_target_region_manual_property_if_needed(ad_group_source, ad_group_settings, request)
+    _set_retargeting_manual_property_if_needed(ad_group_source, ad_group_settings, request)
 
     delayed_actions = actionlog.api.send_delayed_actionlogs([ad_group_source], send=False)
     actions.extend(delayed_actions)
@@ -369,6 +371,20 @@ def _set_target_region_manual_property_if_needed(ad_group_source, ad_group_setti
                 request,
                 'target_regions',
                 new_field_value
+        )
+
+
+def _set_retargeting_manual_property_if_needed(ad_group_source, ad_group_settings, request):
+    source = ad_group_source.source
+    if ad_group_settings.retargeting_ad_groups != [] and\
+            source.can_modify_retargeting_manually():
+
+        new_field_value = ad_group_settings.retargeting_ad_groups
+        actionlog.api.init_set_ad_group_manual_property(
+            ad_group_source,
+            request,
+            'retargeting_ad_groups',
+            new_field_value
         )
 
 
@@ -656,10 +672,17 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
         'propagation_consistency.content_ad.active_nonexisting.{}'.format(ad_group_source.source.tracking_slug),
         nr_nonexisting_active_content_ads
     )
+    influx.incr('propagation_consistency.content_ad',
+                nr_nonexisting_active_content_ads,
+                status='active_nonexisting', media_source=ad_group_source.source.tracking_slug)
+
     utils.statsd_helper.statsd_incr(
         'propagation_consistency.content_ad.inconsistent_internal_state.{}'.format(ad_group_source.source.tracking_slug),
         nr_inconsistent_internal_states
     )
+    influx.incr('propagation_consistency.content_ad',
+                nr_inconsistent_internal_states,
+                status='inconsistent_internal_state', media_source=ad_group_source.source.tracking_slug)
 
     if ad_group_source.ad_group.get_current_settings().state == constants.AdGroupSettingsState.ACTIVE:
         utils.statsd_helper.statsd_incr(
@@ -667,6 +690,9 @@ def update_multiple_content_ad_source_states(ad_group_source, content_ad_data):
                 ad_group_source.source.tracking_slug),
             nr_inconsistent_internal_states
         )
+        influx.incr('propagation_consistency.content_ad',
+                    nr_inconsistent_internal_states,
+                    status='inconsistent_internal_state_active_adgroups', media_source=ad_group_source.source.tracking_slug)
 
         if unsynced_content_ad_sources_actions:
             logger.info(
@@ -817,8 +843,7 @@ def order_ad_group_settings_update(ad_group, current_settings, new_settings, req
                     # do not create an action - only used for our redirector
                     continue
 
-                if field_name in ['retargeting_ad_groups']:
-                    # no manual actions for retargeting
+                if field_name in ['retargeting_ad_groups'] and not source.can_modify_retargeting_manually():
                     continue
 
                 if field_name == 'iab_category' and not source.can_modify_ad_group_iab_category_manual():

@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings) {
+oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemOptimisationMetricsService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemOptimisationMetricsService) {
     $scope.selectedTotals = true;
     $scope.selectedColumnsCount = 0;
     $scope.constants = constants;
@@ -411,31 +411,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
         bulkUpdatePublishers(publishersSelected, publishersNotSelected, state, level);
     };
 
-    $scope.columnCategories = [
-        {
-            'name': 'Traffic Acquisition',
-            'fields': [
-                'publisherSelected',
-                'blacklisted',
-                'domain',
-                'domain_link',
-                'exchange',
-                'cost',
-                'cpc',
-                'clicks',
-                'impressions',
-                'ctr',
-                'media_cost',
-                'data_cost',
-                'e_media_cost',
-                'e_data_cost',
-                'total_cost',
-                'billing_cost',
-                'license_fee'
-            ]
-        }
-    ];
-
     $scope.columns = [{
         name: '',
         field: 'publisherSelected',
@@ -646,6 +621,66 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
     }
     ];
 
+    $scope.columnCategories = [
+        {
+            'name': 'Traffic Acquisition',
+            'fields': [
+                'publisherSelected',
+                'blacklisted',
+                'domain',
+                'domain_link',
+                'exchange',
+                'cost',
+                'cpc',
+                'clicks',
+                'impressions',
+                'ctr',
+                'media_cost',
+                'data_cost',
+                'e_media_cost',
+                'e_data_cost',
+                'total_cost',
+                'billing_cost',
+                'license_fee'
+            ]
+        },
+        {
+            'name': 'Audience Metrics',
+            'fields': [
+                'visits', 'pageviews', 'percent_new_users',
+                'bounce_rate', 'pv_per_visit', 'avg_tos',
+                'click_discrepancy'
+            ]
+        },
+        {
+            'name': 'Conversions',
+            'fields': ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']
+        }, zemOptimisationMetricsService.createColumnCategories(),
+    ];
+
+    $scope.initColumns = function () {
+        zemPostclickMetricsService.insertAcquisitionColumns(
+            $scope.columns,
+            $scope.columns.length - 1,
+            $scope.hasPermission('zemauth.view_pubs_postclick_stats'),
+            $scope.isPermissionInternal('zemauth.view_pubs_postclick_stats')
+        );
+
+        zemPostclickMetricsService.insertEngagementColumns(
+            $scope.columns,
+            $scope.columns.length - 1,
+            $scope.hasPermission('zemauth.view_pubs_postclick_stats'),
+            $scope.isPermissionInternal('zemauth.view_pubs_postclick_stats')
+        );
+
+        zemOptimisationMetricsService.insertAudienceOptimizationColumns(
+            $scope.columns,
+            $scope.columns.length - 1,
+            $scope.hasPermission('zemauth.campaign_goal_optimization'),
+            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
+        );
+    };
+
     $scope.loadRequestInProgress = false;
 
     $scope.orderTableData = function (order) {
@@ -703,9 +738,6 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $scope.reflowGraph(1);
         });
     };
-/*    if ($window.isDemo) {
-        $window.demoActions.refreshAdGroupSourcesTable = getTableData;
-    }*/
 
     var getDailyStatsMetrics = function () {
         var values = $scope.chartMetricOptions.map(function (option) {
@@ -731,6 +763,17 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
 
     var setChartOptions = function (goals) {
         $scope.chartMetricOptions = options.adGroupChartMetrics;
+
+        if ($scope.hasPermission('zemauth.view_pubs_postclick_stats')) {
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatAcquisitionChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.view_pubs_postclick_stats')
+            );
+            $scope.chartMetricOptions = zemPostclickMetricsService.concatEngagementChartOptions(
+                $scope.chartMetricOptions,
+                $scope.isPermissionInternal('zemauth.view_pubs_postclick_stats')
+            );
+        }
 
         if ($scope.hasPermission('zemauth.can_view_effective_costs')) {
             $scope.chartMetricOptions = zemPostclickMetricsService.concatChartOptions(
@@ -895,9 +938,9 @@ oneApp.controller('AdGroupPublishersCtrl', ['$scope', '$state', '$location', '$t
             $location.search('page', page);
         }
 
-        $scope.loadPage();
+        $scope.initColumns();
 
-        $scope.getAdGroupState();    // To display message if the adgroup is paused
+        $scope.loadPage();
 
         getTableData();
         getDailyStats();

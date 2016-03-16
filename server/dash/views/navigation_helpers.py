@@ -23,8 +23,8 @@ def get_ad_group_dict(ad_group, ad_group_settings, ad_group_source_settings, inc
         'id': ad_group.id,
         'name': ad_group.name,
         'contentAdsTabWithCMS': ad_group.content_ads_tab_with_cms,
-        'status': constants.AdGroupRunningStatus.get_text(running_status).lower(),
-        'state': constants.AdGroupSettingsState.get_text(state).lower()
+        'status': running_status,
+        'state': state
     }
     if include_archived_flag:
         ad_group_dict['archived'] = ad_group_settings.archived if ad_group_settings else False
@@ -36,7 +36,8 @@ def get_campaign_dict(campaign, campaign_settings=None, include_archived_flag=Fa
 
     campaign_dict = {
         'id': campaign.id,
-        'name': campaign.name
+        'name': campaign.name,
+        'landingMode': campaign.landing_mode,
     }
 
     if include_archived_flag:

@@ -224,6 +224,13 @@ class AdGroupAdsPlusTableTest(TestCase):
             'bounce_rate': 12.0,
             'pv_per_visit': 0.9,
             'avg_tos': 1.0,
+            u'cpa': 0,
+            u'total_pageviews': 0,
+            u'unbounced_visits': 0,
+            u'total_seconds': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
         }
 
         expected_row_2 = {
@@ -264,6 +271,13 @@ class AdGroupAdsPlusTableTest(TestCase):
             'bounce_rate': None,
             'pv_per_visit': None,
             'avg_tos': None,
+            u'cpa': 0,
+            u'total_pageviews': 0,
+            u'unbounced_visits': 0,
+            u'total_seconds': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
         }
         self.assertItemsEqual(sorted(result['data']['rows']), [expected_row_1, expected_row_2])
 
@@ -294,6 +308,13 @@ class AdGroupAdsPlusTableTest(TestCase):
             'bounce_rate': 11.0,
             'pv_per_visit': 0.8,
             'avg_tos': 0.9,
+            'avg_cost_per_non_bounced_visitor': 0,
+            'avg_cost_per_pageview': 0,
+            'avg_cost_per_second': 0,
+            'total_pageviews': 0,
+            'unbounced_visits': 0,
+            'total_seconds': 0,
+            'cpa': 0,
         })
 
         batches = models.UploadBatch.objects.filter(
@@ -749,6 +770,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
             'domain': 'example.com',
             'exchange': 'adiant',
         }]
@@ -767,6 +796,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 99.0,
             'impressions': 1560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -845,22 +882,54 @@ class AdGroupPublishersTableTest(TestCase):
             u'impressions': 10560,
             u'domain': 'example.com',
             u'domain_link': 'http://example.com',
+            u'visits': 15,
+            u'click_discrepancy': 3,
+            u'pageviews': 100,
+            u'new_visits': 50,
+            u'percent_new_users': 0.5,
+            u'bounce_rate': 0.3,
+            u'pv_per_visit': 10,
+            u'avg_tos': 20,
+            u'total_pageviews': 0,
+            u'unbounced_visits': 0,
+            u'total_seconds': 0,
+            u'cpa': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
         }
 
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
 
         self.assertIn('totals', result['data'])
-        self.assertEqual(result['data']['totals'], {	u'clicks': 323,
-                                                        u'cpc': 1.2,
-                                                        u'ctr': 99.0,
-                                                        u'media_cost': 2.1,
-                                                        u'license_fee': 0.2,
-                                                        u'total_cost': 4.2,
-                                                        u'billing_cost': 4.2,
-                                                        u'e_data_cost': 1.9,
-                                                        u'data_cost': 1.9,
-                                                        u'e_media_cost': 2.1,
-                                                        u'impressions': 1560})
+        self.assertEqual(result['data']['totals'], {
+            u'clicks': 323,
+            u'cpc': 1.2,
+            u'ctr': 99.0,
+            u'media_cost': 2.1,
+            u'license_fee': 0.2,
+            u'total_cost': 4.2,
+            u'billing_cost': 4.2,
+            u'e_data_cost': 1.9,
+            u'data_cost': 1.9,
+            u'e_media_cost': 2.1,
+            u'impressions': 1560,
+            u'visits': 15,
+            u'click_discrepancy': 3,
+            u'pageviews': 100,
+            u'new_visits': 50,
+            u'percent_new_users': 0.5,
+            u'bounce_rate': 0.3,
+            u'pv_per_visit': 10,
+            u'avg_tos': 20,
+            u'total_pageviews': 0,
+            u'unbounced_visits': 0,
+            u'total_seconds': 0,
+            u'cpa': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
+        })
 
 
     @patch('dash.table.reports.api_publishers.query_active_publishers')
@@ -879,6 +948,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
             'domain': 'example.com',
             'exchange': 'adsnative',
         }]
@@ -894,6 +971,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
         }
         mock_active.side_effect = [mock_stats1, mock_stats2]
 
@@ -961,7 +1046,22 @@ class AdGroupPublishersTableTest(TestCase):
             u'billing_cost': 2.4,
             u'impressions': 10560,
             u'clicks': 123,
-            u'source_id': 1
+            u'source_id': 1,
+            u'visits': 15,
+            u'click_discrepancy': 3,
+            u'pageviews': 100,
+            u'new_visits': 50,
+            u'percent_new_users': 0.5,
+            u'bounce_rate': 0.3,
+            u'pv_per_visit': 10,
+            u'avg_tos': 20,
+            u'cpa': 0,
+            u'total_pageviews': 0,
+            u'unbounced_visits': 0,
+            u'total_seconds': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
         })
 
     """
@@ -1115,6 +1215,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
             'domain': 'test_1',
             'exchange': 'outbrain',
         }]
@@ -1133,6 +1241,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 99.0,
             'impressions': 1560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -1213,22 +1329,54 @@ class AdGroupPublishersTableTest(TestCase):
             u'impressions': 10560,
             u'domain': 'test_1',
             u'domain_link': '',
+            u'visits': 15,
+            u'click_discrepancy': 3,
+            u'pageviews': 100,
+            u'new_visits': 50,
+            u'percent_new_users': 0.5,
+            u'bounce_rate': 0.3,
+            u'pv_per_visit': 10,
+            u'avg_tos': 20,
+            u'cpa': 0,
+            u'total_pageviews': 0,
+            u'unbounced_visits': 0,
+            u'total_seconds': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
         }
 
         self.assertDictEqual(sorted(result['data']['rows'])[0], expected_row_1)
 
         self.assertIn('totals', result['data'])
-        self.assertEqual(result['data']['totals'], {	u'clicks': 323,
-                                                        u'cpc': 1.2,
-                                                        u'ctr': 99.0,
-                                                        u'media_cost': 2.1,
-                                                        u'license_fee': 0.2,
-                                                        u'total_cost': 4.2,
-                                                        u'billing_cost': 4.2,
-                                                        u'e_data_cost': 1.9,
-                                                        u'data_cost': 1.9,
-                                                        u'e_media_cost': 2.1,
-                                                        u'impressions': 1560})
+        self.assertEqual(result['data']['totals'], {
+            u'clicks': 323,
+            u'cpc': 1.2,
+            u'ctr': 99.0,
+            u'media_cost': 2.1,
+            u'license_fee': 0.2,
+            u'total_cost': 4.2,
+            u'billing_cost': 4.2,
+            u'e_data_cost': 1.9,
+            u'data_cost': 1.9,
+            u'e_media_cost': 2.1,
+            u'impressions': 1560,
+            u'visits': 15,
+            u'click_discrepancy': 3,
+            u'pageviews': 100,
+            u'new_visits': 50,
+            u'percent_new_users': 0.5,
+            u'bounce_rate': 0.3,
+            u'pv_per_visit': 10,
+            u'avg_tos': 20,
+            u'total_pageviews': 0,
+            u'unbounced_visits': 0,
+            u'total_seconds': 0,
+            u'cpa': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
+        })
 
 
     def test_get_reverse_order(self, mock_query):
@@ -1249,6 +1397,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
             'domain': 'example.com',
             'exchange': 'adiant',
         }]
@@ -1267,6 +1423,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -1326,10 +1490,24 @@ class AdGroupPublishersTableTest(TestCase):
             u'total_cost': 3,
             u'billing_cost': 3,
             u'license_fee': 0.6,
-            u'data_cost': 0,
             u'impressions': 10560,
             u'clicks': 123,
-            u'source_id': 7
+            u'source_id': 7,
+            u'visits': 15,
+            u'click_discrepancy': 3,
+            u'pageviews': 100,
+            u'new_visits': 50,
+            u'percent_new_users': 0.5,
+            u'bounce_rate': 0.3,
+            u'pv_per_visit': 10,
+            u'avg_tos': 20,
+            u'cpa': 0,
+            u'total_pageviews': 0,
+            u'unbounced_visits': 0,
+            u'total_seconds': 0,
+            u'avg_cost_per_non_bounced_visitor': 0,
+            u'avg_cost_per_pageview': 0,
+            u'avg_cost_per_second': 0,
         })
 
     def test_actual_hidden(self, mock_query):
@@ -1360,6 +1538,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
             'domain': 'example.com',
             'exchange': 'adiant',
         }]
@@ -1378,6 +1564,14 @@ class AdGroupPublishersTableTest(TestCase):
             'ctr': 100.0,
             'impressions': 10560,
             'date': date.isoformat(),
+            'visits': 15,
+            'click_discrepancy': 3,
+            'pageviews': 100,
+            'new_visits': 50,
+            'percent_new_users': 0.5,
+            'bounce_rate': 0.3,
+            'pv_per_visit': 10,
+            'avg_tos': 20,
         }
         mock_query.side_effect = [mock_stats1, mock_stats2]
 
@@ -1436,7 +1630,7 @@ class AdGroupPublishersTableTest(TestCase):
             u'license_fee': 0.6,
             u'impressions': 10560,
             u'clicks': 123,
-            u'source_id': 7
+            u'source_id': 7,
         })
 
 

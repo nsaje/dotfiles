@@ -10,6 +10,8 @@ from django.utils.http import urlsafe_base64_decode
 from django.template.response import TemplateResponse
 from django.shortcuts import resolve_url
 
+import influx
+
 import gauth
 from utils import statsd_helper
 from utils import email_helper
@@ -17,6 +19,7 @@ from zemauth.models import User
 from zemauth import forms
 
 
+@influx.timer('auth.signin_response_time')
 @statsd_helper.statsd_timer('auth', 'signin_response_time')
 def login(request, *args, **kwargs):
     """Wraps login view and injects certain query string values into

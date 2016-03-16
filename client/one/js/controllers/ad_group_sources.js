@@ -1,6 +1,6 @@
 /*globals oneApp,moment,constants,options*/
 
-oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService) {
+oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$timeout', '$window', 'api', 'zemPostclickMetricsService', 'zemFilterService', 'zemUserSettings', 'zemNavigationService', 'zemOptimisationMetricsService', function ($scope, $state, $location, $timeout, $window, api, zemPostclickMetricsService, zemFilterService, zemUserSettings, zemNavigationService, zemOptimisationMetricsService) {
     $scope.isSyncRecent = true;
     $scope.isSyncInProgress = false;
     $scope.isIncompletePostclickMetrics = false;
@@ -90,36 +90,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             });
         }
     };
-
-    $scope.columnCategories = [
-        {
-            'name': 'Traffic Acquisition',
-            'fields': [
-                'bid_cpc', 'daily_budget', 'cost', 'data_cost',
-                'cpc', 'clicks', 'impressions', 'ctr',
-                'yesterday_cost', 'supply_dash_url',
-                'current_bid_cpc', 'current_daily_budget',
-                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
-                'license_fee', 'e_yesterday_cost'
-            ]
-        },
-        {
-            'name': 'Audience Metrics',
-            'fields': [
-                'visits', 'pageviews', 'percent_new_users',
-                'bounce_rate', 'pv_per_visit', 'avg_tos',
-                'click_discrepancy'
-            ]
-        },
-        {
-            'name': 'Conversions',
-            'fields': ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']
-        },
-        {
-            'name': 'Data Sync',
-            'fields': ['last_sync']
-        }
-    ];
 
     $scope.columns = [
         {
@@ -519,6 +489,37 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         }
     ];
 
+    $scope.columnCategories = [
+        {
+            'name': 'Traffic Acquisition',
+            'fields': [
+                'bid_cpc', 'daily_budget', 'cost', 'data_cost',
+                'cpc', 'clicks', 'impressions', 'ctr',
+                'yesterday_cost', 'supply_dash_url',
+                'current_bid_cpc', 'current_daily_budget',
+                'media_cost', 'e_media_cost', 'e_data_cost', 'total_cost', 'billing_cost',
+                'license_fee', 'e_yesterday_cost'
+            ]
+        },
+        {
+            'name': 'Audience Metrics',
+            'fields': [
+                'visits', 'pageviews', 'percent_new_users',
+                'bounce_rate', 'pv_per_visit', 'avg_tos',
+                'click_discrepancy'
+            ]
+        },
+        {
+            'name': 'Conversions',
+            'fields': ['conversion_goal_1', 'conversion_goal_2', 'conversion_goal_3', 'conversion_goal_4', 'conversion_goal_5']
+        },
+        zemOptimisationMetricsService.createColumnCategories(),
+        {
+            'name': 'Data Sync',
+            'fields': ['last_sync']
+        }
+    ];
+
     $scope.initColumns = function () {
         zemPostclickMetricsService.insertAcquisitionColumns(
             $scope.columns,
@@ -539,6 +540,13 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
             $scope.columns.length - 2,
             $scope.hasPermission('zemauth.conversion_reports'),
             $scope.isPermissionInternal('zemauth.conversion_reports')
+        );
+
+        zemOptimisationMetricsService.insertAudienceOptimizationColumns(
+            $scope.columns,
+            $scope.columns.length - 1,
+            $scope.hasPermission('zemauth.campaign_goal_optimization'),
+            $scope.isPermissionInternal('zemauth.campaign_goal_optimization')
         );
     };
 
@@ -801,7 +809,6 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
         $scope.setAdGroupData('sourceTotals', $scope.selectedTotals);
         $location.search('source_totals', sourceTotals);
 
-        $scope.getAdGroupState();
         $scope.initColumns();
 
         getTableData();
@@ -833,7 +840,7 @@ oneApp.controller('AdGroupSourcesCtrl', ['$scope', '$state', '$location', '$time
                         name: source.name,
                         value: source.id,
                         hasPermission: true,
-                        disabled: !source.canTargetExistingRegions,
+                        disabled: !source.canTargetExistingRegions || !source.canRetarget,
                         notification: notificationMsg,
                     });
                 }

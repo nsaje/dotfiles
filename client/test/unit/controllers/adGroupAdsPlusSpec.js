@@ -28,7 +28,6 @@ describe('AdGroupAdsPlusCtrl', function () {
         $scope.isPermissionInternal = function () { return true; };
         $scope.hasPermission = function () { return true; };
         $scope.hasInfoboxPermission = function () { return true; };
-        $scope.getAdGroupState = function () {};
         $scope.dateRange = {
             startDate: {
                 isSame: function () {}

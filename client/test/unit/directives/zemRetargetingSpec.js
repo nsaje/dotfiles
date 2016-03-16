@@ -43,13 +43,13 @@ describe('zemRetargeting', function () {
         isolate.addAdgroup({id: 1});
         $scope.$digest();
         expect($scope.selectedAdgroupIds).toEqual([1]);
-        expect(isolate.availableAdgroups().length).toBe(1);
-        expect(isolate.availableAdgroups()[0].id).toBe(3);
+        expect(isolate.availableAdgroups().length).toBe(2);
+        expect(isolate.availableAdgroups()[0].id).toBe(2);
 
         isolate.addAdgroup({id: 3});
         $scope.$digest();
         expect($scope.selectedAdgroupIds).toEqual([1, 3]);
-        expect(isolate.availableAdgroups().length).toBe(0);
+        expect(isolate.availableAdgroups().length).toBe(1);
     });
 
     it('removes selected ad groups', function () {
@@ -61,13 +61,13 @@ describe('zemRetargeting', function () {
         isolate.removeSelectedAdgroup({id: 1});
         $scope.$digest();
         expect($scope.selectedAdgroupIds).toEqual([3]);
-        expect(isolate.availableAdgroups().length).toBe(1);
+        expect(isolate.availableAdgroups().length).toBe(2);
         expect(isolate.availableAdgroups()[0].id).toBe(1);
 
         isolate.removeSelectedAdgroup({id: 3});
         $scope.$digest();
         expect($scope.selectedAdgroupIds).toEqual([]);
-        expect(isolate.availableAdgroups().length).toBe(2);
+        expect(isolate.availableAdgroups().length).toBe(3);
     });
 
     it('shows archived ad groups when enabled', function () {

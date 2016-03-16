@@ -30,11 +30,16 @@ oneApp.directive('zemRetargeting', ['config', 'zemFilterService', '$state', func
                 }
 
                 var adgroups = $scope.retargetableAdgroups.filter(function (adgroup) {
-                    return !adgroup.archived || zemFilterService.isArchivedFilterOn();
-                }).filter(function (adgroup) {
                     return $scope.selectedAdgroupIds.indexOf(adgroup.id) < 0;
                 }).filter(function (adgroup) {
                     return adgroup.id !== parseInt($state.params.id);
+                });
+
+                adgroups.forEach(function (adgroup) {
+                    adgroup.suffix = '';
+                    if (adgroup.archived) {
+                        adgroup.suffix = ' (Archived)';
+                    }
                 });
 
                 return adgroups;

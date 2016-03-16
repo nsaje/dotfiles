@@ -32,7 +32,7 @@
         </div>
 
         <div class="infobox-setting-info-dropped" ng-show="isSet(detailsLabel) && isSet(detailsContent) && detailsVisible">
-            <div class="infobox-setting-info-dropped-content" ng-show="detailsVisible">{{ detailsContent }}</div>
+            <div class="infobox-setting-info-dropped-content" ng-show="detailsVisible"><div ng-bind-html="detailsContent"></div></div>
             <div ng-show="detailsVisible">
                 <a ng-click="hideDetails()" class="infobox-details-link">{{ detailsHideLabel }}</a>
             </div>

@@ -20,7 +20,6 @@ describe('AdGroupSourcesCtrlSpec', function () {
         $scope.hasPermission = function () { return true; };
         $scope.hasInfoboxPermission = function () { return true; };
         $scope.setAdGroupData = function () {};
-        $scope.getAdGroupState = function () {};
         $scope.adGroupData = {};
         $scope.dateRange = {
             startDate: {isSame: function () {}},

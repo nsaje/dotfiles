@@ -1,5 +1,5 @@
-/* globals oneApp, $, angular */
-oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemNavigationService', 'accountsAccess', function ( $scope, $state, $location, $document, $q, $modalStack, $timeout, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemNavigationService, accountsAccess) {
+/* globals oneApp, $, angular, constants */
+oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q', '$modalStack', '$timeout', 'zemMoment', 'user', 'zemUserSettings', 'api', 'zemFilterService', 'zemFullStoryService', 'zemIntercomService', 'zemNavigationService', 'accountsAccess', function ($scope, $state, $location, $document, $q, $modalStack, $timeout, zemMoment, user, zemUserSettings, api, zemFilterService, zemFullStoryService, zemIntercomService, zemNavigationService, accountsAccess) { // eslint-disable-line max-len
     $scope.accountsAccess = accountsAccess;
     $scope.accounts = [];
 
@@ -60,8 +60,8 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
 
     $scope.reflowGraph = function (delay) {
         $timeout(function () {
-             $scope.$broadcast('highchartsng.reflow');
-       }, delay);
+            $scope.$broadcast('highchartsng.reflow');
+        }, delay);
     };
 
     $scope.getDefaultAllAccountsState = function () {
@@ -335,11 +335,34 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
             $state.is('main.adGroups.sources') ||
             $state.is('main.adGroups.publishers') ||
             $state.is('main.campaigns.ad_groups') ||
-            $state.is('main.campaigns.sources') || 
+            $state.is('main.campaigns.sources') ||
             $state.is('main.accounts.campaigns') ||
-            $state.is('main.accounts.sources') || 
+            $state.is('main.accounts.sources') ||
             $state.is('main.allAccounts.accounts') ||
             $state.is('main.allAccounts.sources');
+    };
+
+    $scope.getAdGroupStatusClass = function (adGroup, campaign) {
+        if ((adGroup.state === constants.adGroupSettingsState.INACTIVE &&
+             adGroup.status === constants.adGroupRunningStatus.ACTIVE) ||
+            (adGroup.state === constants.adGroupSettingsState.ACTIVE &&
+            adGroup.status === constants.adGroupRunningStatus.INACTIVE)) {
+            return 'adgroup-status-inactive-icon';
+        }
+
+        if (adGroup.state === constants.adGroupSettingsState.INACTIVE) {
+            return 'adgroup-status-stopped-icon';
+        }
+
+        if (campaign.landingMode) {
+            if ($state.includes('main.adGroups', {id: adGroup.id.toString()})) {
+                return 'adgroup-status-landing-mode-selected-icon';
+            }
+
+            return 'adgroup-status-landing-mode-icon';
+        }
+
+        return 'adgroup-status-active-icon';
     };
 
     $scope.$on('$stateChangeSuccess', function () {
@@ -451,7 +474,7 @@ oneApp.controller('MainCtrl', ['$scope', '$state', '$location', '$document', '$q
         $scope.setPublisherFilterVisible(newValue);
     }, true);
 
-    
+
     $scope.init = function () {
         zemFullStoryService.identify($scope.user);
         zemIntercomService.boot($scope.user);
